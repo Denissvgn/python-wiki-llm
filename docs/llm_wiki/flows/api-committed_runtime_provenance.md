@@ -158,7 +158,7 @@ flowchart LR
 | capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 229 | `Path(wiki_dir)` |
 | capture_committed_knowledge | (…).read_bytes | 233 | `(root / name).read_bytes(data not statically known)` |
 | capture_committed_knowledge | SyncManifest.from_payload | 240 | `SyncManifest.from_payload(_decode_json_object(...), object_reader=...)` |
-| SyncManifest.from_payload | _mapping_value | 992 | `_mapping_value(value, 'manifest')` |
+| SyncManifest.from_payload | _mapping_value | 1004 | `_mapping_value(value, 'manifest')` |
 | _mapping_value | require_mapping | 139 | `require_mapping(value, error=SyncManifestError(...), require_string_keys=True, key_error=SyncManifestError(...))` |
 | require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 765 | `isinstance(value, Mapping)` |
 | require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 769 | `isinstance(key, str)` |

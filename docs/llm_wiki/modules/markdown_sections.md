@@ -40,12 +40,14 @@ flowchart LR
     n5["src/llm_wiki_cli/services/knowledge_evidence.py"]
     n6["src/llm_wiki_cli/services/markdown_sections.py"]
     n7["src/llm_wiki_cli/services/section_ownership.py"]
-    n8["src/llm_wiki_cli/services/task_context_v2.py"]
-    n9["src/llm_wiki_cli/services/task_evidence.py"]
+    n8["src/llm_wiki_cli/services/sync_transition_execution.py"]
+    n9["src/llm_wiki_cli/services/task_context_v2.py"]
+    n10["src/llm_wiki_cli/services/task_evidence.py"]
     n0 --> n1
     n0 --> n5
     n0 --> n6
     n0 --> n7
+    n0 --> n8
     n1 --> n6
     n2 --> n3
     n2 --> n6
@@ -55,9 +57,10 @@ flowchart LR
     n7 --> n5
     n7 --> n6
     n8 --> n6
-    n8 --> n7
-    n8 --> n9
     n9 --> n6
+    n9 --> n7
+    n9 --> n10
+    n10 --> n6
     click n0 "../modules/sync_cmd.md"
     click n1 "../modules/bootstrap_runtime.md"
     click n2 "../modules/record.md"
@@ -66,8 +69,9 @@ flowchart LR
     click n5 "../modules/knowledge_evidence.md"
     click n6 "../modules/markdown_sections.md"
     click n7 "../modules/section_ownership.md"
-    click n8 "../modules/task_context_v2.md"
-    click n9 "../modules/task_evidence.md"
+    click n8 "../modules/sync_transition_execution.md"
+    click n9 "../modules/task_context_v2.md"
+    click n10 "../modules/task_evidence.md"
 ```
 
 ### Internal neighbors
@@ -80,6 +84,7 @@ flowchart LR
 | Inbound | [refresh](../modules/refresh.md) |
 | Inbound | [documentation_worklist](../modules/documentation_worklist.md) |
 | Inbound | [section_ownership](../modules/section_ownership.md) |
+| Inbound | [sync_transition_execution](../modules/sync_transition_execution.md) |
 | Inbound | [task_context_v2](../modules/task_context_v2.md) |
 | Inbound | [task_evidence](../modules/task_evidence.md) |
 | Outbound | [knowledge_evidence](../modules/knowledge_evidence.md) |

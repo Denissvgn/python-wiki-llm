@@ -141,33 +141,33 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | validate_live_query_source_selection | SyncManifest.load | 298 | `SyncManifest.load(wiki_root)` |
-| SyncManifest.load | manifest_path.exists | 1125 | `manifest_path.exists(data not statically known)` |
-| SyncManifest.load | FileNotFoundError | 1126 | `FileNotFoundError(manifest_path)` |
-| SyncManifest.load | json.loads (src/llm_wiki_cli/services…fest.py:SyncManifest.load) | 1145 | `json.loads(manifest_path.read_text(...), object_pairs_hook=unique_object, parse_constant=reject_constant)` |
-| SyncManifest.load | manifest_path.read_text | 1146 | `manifest_path.read_text(encoding='utf-8')` |
-| SyncManifest.load | isinstance (src/llm_wiki_cli/services…fest.py:SyncManifest.load) | 1150 | `isinstance(data, dict)` |
-| SyncManifest.load | data.get (src/llm_wiki_cli/services…fest.py:SyncManifest.load) | 1150 | `data.get('version')` |
-| SyncManifest.load | StorageReadSession | 1153 | `StorageReadSession(wiki_dir)` |
-| SyncManifest.load | session.read | 1154 | `session.read(MANIFEST_FILENAME, MAX_EXPANDED_BYTES)` |
-| SyncManifest.load | SyncManifest.from_payload | 1155 | `cls.from_payload(decode_bytes(...), object_reader=session.read)` |
-| SyncManifest.from_payload | _mapping_value | 992 | `_mapping_value(value, 'manifest')` |
+| SyncManifest.load | manifest_path.exists | 1137 | `manifest_path.exists(data not statically known)` |
+| SyncManifest.load | FileNotFoundError | 1138 | `FileNotFoundError(manifest_path)` |
+| SyncManifest.load | json.loads (src/llm_wiki_cli/services…fest.py:SyncManifest.load) | 1157 | `json.loads(manifest_path.read_text(...), object_pairs_hook=unique_object, parse_constant=reject_constant)` |
+| SyncManifest.load | manifest_path.read_text | 1158 | `manifest_path.read_text(encoding='utf-8')` |
+| SyncManifest.load | isinstance (src/llm_wiki_cli/services…fest.py:SyncManifest.load) | 1162 | `isinstance(data, dict)` |
+| SyncManifest.load | data.get (src/llm_wiki_cli/services…fest.py:SyncManifest.load) | 1162 | `data.get('version')` |
+| SyncManifest.load | StorageReadSession | 1165 | `StorageReadSession(wiki_dir)` |
+| SyncManifest.load | session.read | 1166 | `session.read(MANIFEST_FILENAME, MAX_EXPANDED_BYTES)` |
+| SyncManifest.load | SyncManifest.from_payload | 1167 | `cls.from_payload(decode_bytes(...), object_reader=session.read)` |
+| SyncManifest.from_payload | _mapping_value | 1004 | `_mapping_value(value, 'manifest')` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_read | `manifest_path.read_text` | `SyncManifest.load` | 1146 |
+| filesystem_read | `manifest_path.read_text` | `SyncManifest.load` | 1158 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `SyncManifest.load` | `manifest_path.exists` | 1125 |
-| external_call | `SyncManifest.load` | `FileNotFoundError` | 1126 |
-| external_call | `SyncManifest.load` | `json.loads` | 1145 |
-| external_call | `SyncManifest.load` | `isinstance` | 1150 |
-| unresolved_call | `SyncManifest.load` | `data.get` | 1150 |
-| unresolved_call | `SyncManifest.load` | `session.read` | 1154 |
+| unresolved_call | `SyncManifest.load` | `manifest_path.exists` | 1137 |
+| external_call | `SyncManifest.load` | `FileNotFoundError` | 1138 |
+| external_call | `SyncManifest.load` | `json.loads` | 1157 |
+| external_call | `SyncManifest.load` | `isinstance` | 1162 |
+| unresolved_call | `SyncManifest.load` | `data.get` | 1162 |
+| unresolved_call | `SyncManifest.load` | `session.read` | 1166 |
 | step_limit | `validate_live_query_source_selection` | `first 12 steps` | 0 |
 | truncated_flow | `validate_live_query_source_selection` | `depth limit` | 0 |
 

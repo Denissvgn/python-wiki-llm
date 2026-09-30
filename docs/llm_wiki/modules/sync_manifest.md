@@ -45,10 +45,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (32) |
+| Inbound | `src` (33) |
 | Outbound | `src` (7) |
 
-> All 39 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 40 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -60,7 +60,7 @@ flowchart LR
 | [ManifestEvidenceBaseline](../entities/ManifestEvidenceBaseline.md) | 253 | — | Known or explicitly unknown evidence for one active concept page. |
 | [ManifestTombstone](../entities/ManifestTombstone.md) | 358 | — | Evidence retained for a stale module/entity page. |
 | [ManifestArtifactHashes](../entities/ManifestArtifactHashes.md) | 447 | — | All-or-none exact-byte commitment to the generated artifact set. |
-| [SyncManifest](../entities/SyncManifest.md) | 973 | — | Persistent v5 operational state used to generate the wiki. |
+| [SyncManifest](../entities/SyncManifest.md) | 985 | — | Persistent v5 operational state used to generate the wiki. |
 
 ## Functions
 

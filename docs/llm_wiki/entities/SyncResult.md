@@ -1,6 +1,6 @@
 # SyncResult
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:594`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:616`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)

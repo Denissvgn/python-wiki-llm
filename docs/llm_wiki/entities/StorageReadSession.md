@@ -41,7 +41,9 @@ flowchart LR
     n5["recover_knowledge_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
     n6["restore_pruned_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
     n7["SyncManifest.load (src/llm_wiki_cli/services/sync_manifest.py)"]
-    n8["ScopedTaskState.revalidate (src/llm_wiki_cli/services/task_context_v2.py)"]
+    n8["PageTransitionExecution.__init__ (src/llm_wiki_cli/services/sync_transition_execution.py)"]
+    n9["PageTransitionExecution.apply (src/llm_wiki_cli/services/sync_transition_execution.py)"]
+    n10["ScopedTaskState.revalidate (src/llm_wiki_cli/services/task_context_v2.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -50,6 +52,8 @@ flowchart LR
     n6 --> n0
     n7 --> n0
     n8 --> n0
+    n9 --> n0
+    n10 --> n0
     click n0 "../modules/knowledge_storage_io.md"
     click n1 "../modules/knowledge_artifacts.md"
     click n2 "../modules/knowledge_maintenance.md"
@@ -58,7 +62,9 @@ flowchart LR
     click n5 "../modules/knowledge_storage_lifecycle.md"
     click n6 "../modules/knowledge_storage_lifecycle.md"
     click n7 "../modules/sync_manifest.md"
-    click n8 "../modules/task_context_v2.md"
+    click n8 "../modules/sync_transition_execution.md"
+    click n9 "../modules/sync_transition_execution.md"
+    click n10 "../modules/task_context_v2.md"
 ```
 
 ### Summary
@@ -78,4 +84,6 @@ flowchart LR
 | `recover_knowledge_storage` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |
 | `restore_pruned_storage` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |
 | `SyncManifest.load` | call | [sync_manifest](../modules/sync_manifest.md) | 1 |
+| `PageTransitionExecution.__init__` | call | [sync_transition_execution](../modules/sync_transition_execution.md) | 1 |
+| `PageTransitionExecution.apply` | call | [sync_transition_execution](../modules/sync_transition_execution.md) | 1 |
 | `ScopedTaskState.revalidate` | call | [task_context_v2](../modules/task_context_v2.md) | 1 |

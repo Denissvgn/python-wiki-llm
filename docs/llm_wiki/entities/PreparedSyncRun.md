@@ -1,6 +1,6 @@
 # _PreparedSyncRun
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1695`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1755`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)
@@ -40,6 +40,8 @@ recomputing against a different source tree.
 | `log_missing` | `bool` | *required* | — |
 | `committed_state` | `CommittedKnowledgeState \| None` | `None` | — |
 | `reuse_observations_hash` | `str \| None` | `None` | — |
+| `page_transitions` | `PageTransitionPlan \| None` | `None` | — |
+| `transition_execution` | `PageTransitionExecution \| None` | `None` | — |
 
 ## Methods
 
@@ -57,8 +59,9 @@ flowchart LR
     n4["_finalize_prepared_sync (src/llm_wiki_cli/commands/sync_cmd.py)"]
     n5["_prepare_sync_run (src/llm_wiki_cli/commands/sync_cmd.py)"]
     n6["_print_selection_prune_summary (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n7["_run_sync_dry_run (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n8["_selection_pruning_has_changes (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n7["_run_prepared_sync (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n8["_run_sync_dry_run (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n9["_selection_pruning_has_changes (src/llm_wiki_cli/commands/sync_cmd.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -67,6 +70,7 @@ flowchart LR
     n6 --> n0
     n7 --> n0
     n8 --> n0
+    n9 --> n0
     click n0 "../modules/sync_cmd.md"
     click n1 "../modules/sync_cmd.md"
     click n2 "../modules/sync_cmd.md"
@@ -76,13 +80,14 @@ flowchart LR
     click n6 "../modules/sync_cmd.md"
     click n7 "../modules/sync_cmd.md"
     click n8 "../modules/sync_cmd.md"
+    click n9 "../modules/sync_cmd.md"
 ```
 
 ### Summary
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [sync_cmd](../modules/sync_cmd.md) | 0 | `application_diff`, `committed_state`, `diff`, `generator_refresh_required`, `graph_observations`, `infrastructure_plan`, `inventory`, `inventory_result`, `log_missing`, `manifest`, `page_maps`, `repair_only` |
+| [sync_cmd](../modules/sync_cmd.md) | 0 | `application_diff`, `committed_state`, `diff`, `generator_refresh_required`, `graph_observations`, `infrastructure_plan`, `inventory`, `inventory_result`, `log_missing`, `manifest`, `page_maps`, `page_transitions` |
 
 ### References
 
@@ -95,5 +100,6 @@ flowchart LR
 | `_prepare_sync_run` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
 | `_prepare_sync_run` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_print_selection_prune_summary` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_run_prepared_sync` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_run_sync_dry_run` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_selection_pruning_has_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |

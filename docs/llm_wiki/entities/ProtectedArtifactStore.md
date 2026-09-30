@@ -122,4 +122,4 @@ flowchart LR
 | `_load_transition_events` | type_reference | [controller](../modules/controller.md) | — |
 | `_open_store` | call | [controller](../modules/controller.md) | 1 |
 
-> References: showing 12 of 24 logical references; 12 omitted by the 12-row generated summary limit.
+> References: showing 12 of 25 logical references; 13 omitted by the 12-row generated summary limit.

@@ -47,6 +47,7 @@ flowchart LR
     n11["src/llm_wiki_cli/services/wiki_surface.py"]
     n0 --> n2
     n0 --> n3
+    n0 --> n5
     n0 --> n7
     n0 --> n8
     n0 --> n10

@@ -33,10 +33,10 @@ flowchart LR
     n8["src/llm_wiki_cli/services/knowledge_graph.py"]
     n9["src/llm_wiki_cli/services/knowledge_index.py"]
     n10["src/llm_wiki_cli/services/knowledge_links.py"]
-    n11["_entry_for (src/llm_wiki_cli/services/wiki_surface.py)"]
-    n12["_validate_page_id (src/llm_wiki_cli/services/wiki_surface.py)"]
-    n13["canonical_path (src/llm_wiki_cli/services/wiki_surface.py)"]
-    n14["mcp_uri (src/llm_wiki_cli/services/wiki_surface.py)"]
+    n11["src/llm_wiki_cli/services/sync_transitions.py"]
+    n12["_entry_for (src/llm_wiki_cli/services/wiki_surface.py)"]
+    n13["_validate_page_id (src/llm_wiki_cli/services/wiki_surface.py)"]
+    n14["canonical_path (src/llm_wiki_cli/services/wiki_surface.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -61,7 +61,7 @@ flowchart LR
     click n8 "../modules/knowledge_graph.md"
     click n9 "../modules/knowledge_index.md"
     click n10 "../modules/knowledge_links.md"
-    click n11 "../modules/wiki_surface.md"
+    click n11 "../modules/sync_transitions.md"
     click n12 "../modules/wiki_surface.md"
     click n13 "../modules/wiki_surface.md"
     click n14 "../modules/wiki_surface.md"
@@ -92,9 +92,9 @@ flowchart LR
 | `knowledge_graph` | import | [knowledge_graph](../modules/knowledge_graph.md) | — |
 | `knowledge_index` | import | [knowledge_index](../modules/knowledge_index.md) | — |
 | `knowledge_links` | import | [knowledge_links](../modules/knowledge_links.md) | — |
+| `sync_transitions` | import | [sync_transitions](../modules/sync_transitions.md) | — |
 | `_entry_for` | call | [wiki_surface](../modules/wiki_surface.md) | 1 |
 | `_validate_page_id` | call | [wiki_surface](../modules/wiki_surface.md) | 3 |
 | `canonical_path` | call | [wiki_surface](../modules/wiki_surface.md) | 1 |
-| `mcp_uri` | call | [wiki_surface](../modules/wiki_surface.md) | 1 |
 
-> References: showing 12 of 14 logical references; 2 omitted by the 12-row generated summary limit.
+> References: showing 12 of 15 logical references; 3 omitted by the 12-row generated summary limit.

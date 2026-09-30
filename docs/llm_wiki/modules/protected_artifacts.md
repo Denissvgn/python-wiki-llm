@@ -45,16 +45,20 @@ flowchart LR
     n0["src/llm_wiki_cli/services/calibration/controller.py"]
     n1["src/llm_wiki_cli/services/filesystem_guard.py"]
     n2["src/llm_wiki_cli/services/protected_artifacts.py"]
-    n3["src/llm_wiki_cli/services/validation.py"]
+    n3["src/llm_wiki_cli/services/sync_transition_execution.py"]
+    n4["src/llm_wiki_cli/services/validation.py"]
     n0 --> n1
     n0 --> n2
-    n0 --> n3
+    n0 --> n4
     n2 --> n1
-    n2 --> n3
+    n2 --> n4
+    n3 --> n1
+    n3 --> n2
     click n0 "../modules/controller.md"
     click n1 "../modules/filesystem_guard.md"
     click n2 "../modules/protected_artifacts.md"
-    click n3 "../modules/validation.md"
+    click n3 "../modules/sync_transition_execution.md"
+    click n4 "../modules/validation.md"
 ```
 
 ### Internal neighbors
@@ -62,6 +66,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [controller](../modules/controller.md) |
+| Inbound | [sync_transition_execution](../modules/sync_transition_execution.md) |
 | Outbound | [filesystem_guard](../modules/filesystem_guard.md) |
 | Outbound | [validation](../modules/validation.md) |
 

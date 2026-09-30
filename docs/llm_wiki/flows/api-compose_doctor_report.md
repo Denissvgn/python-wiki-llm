@@ -151,13 +151,13 @@ flowchart LR
 | _knowledge_declared | path.exists | 339 | `path.exists(data not statically known)` |
 | _knowledge_declared | path.is_symlink | 339 | `path.is_symlink(data not statically known)` |
 | _knowledge_declared | SyncManifest.load | 342 | `SyncManifest.load(wiki_root)` |
-| SyncManifest.load | manifest_path.exists | 1125 | `manifest_path.exists(data not statically known)` |
+| SyncManifest.load | manifest_path.exists | 1137 | `manifest_path.exists(data not statically known)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_read | `manifest_path.read_text` | `SyncManifest.load` | 1146 |
+| filesystem_read | `manifest_path.read_text` | `SyncManifest.load` | 1158 |
 
 ### Static analysis gaps
 
@@ -169,7 +169,7 @@ flowchart LR
 | external_call | `compose_doctor_report` | `TypeError` | 190 |
 | unresolved_call | `_knowledge_declared` | `path.exists` | 339 |
 | unresolved_call | `_knowledge_declared` | `path.is_symlink` | 339 |
-| unresolved_call | `SyncManifest.load` | `manifest_path.exists` | 1125 |
+| unresolved_call | `SyncManifest.load` | `manifest_path.exists` | 1137 |
 | step_limit | `compose_doctor_report` | `first 12 steps` | 0 |
 | truncated_flow | `compose_doctor_report` | `depth limit` | 0 |
 

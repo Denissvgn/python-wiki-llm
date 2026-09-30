@@ -16,6 +16,9 @@ sequenceDiagram
     participant p4 as docstring.split
     participant p5 as cls.get
     participant p6 as attr.get
+    participant p7 as Counter
+    participant p8 as duplicate_semantics.setdefault(…).append
+    participant p9 as duplicate_semantics.setdefault
     p0-->>p1: file_data.get
     p0->>p2: _first_doc_line
     p2-->>p3: info.get
@@ -29,6 +32,12 @@ sequenceDiagram
     p0->>p2: _first_doc_line
     p0-->>p5: cls.get
     p0-->>p1: file_data.get
+    p0-->>p7: Counter
+    p0-->>p1: file_data.get
+    p0-->>p1: file_data.get
+    p0->>p0: generated_semantics_for_file
+    p0-->>p8: duplicate_semantics.setdefault(…).append
+    p0-->>p9: duplicate_semantics.setdefault
 ```
 
 ## Data flow
@@ -69,7 +78,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `generated_semantics_for_file` | `filepath: str`, `file_data: Mapping[str, Any]` | - | - | `{...}` |
+| `generated_semantics_for_file` | `filepath: str`, `file_data: Mapping[str, Any]` | - | `result[...]` | `result` |
 | `file_data.get` | - | - | - | - |
 | `_first_doc_line` | `info: Mapping[str, Any]` | - | - | `...` |
 | `info.get` | - | - | - | - |
