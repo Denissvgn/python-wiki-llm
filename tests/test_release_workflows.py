@@ -1459,7 +1459,7 @@ def test_release_discovery_runs_only_core_and_reconciles_complete_evidence() -> 
     assert workflow["concurrency"] == {
         "group": (
             "${{ github.workflow }}-${{ inputs.candidate-sha }}-"
-            "${{ inputs.discovery-mode }}-${{ inputs.bandit-parity-verification }}-${{ inputs.ubuntu-suite-shadow }}-${{ inputs.windows-core-shards }}-${{ inputs.third-party-download-cache }}-${{ inputs.dependency-setup-verification }}"
+            "${{ inputs.discovery-mode }}-${{ inputs.bandit-parity-verification }}-${{ inputs.ubuntu-suite-shadow }}-${{ inputs.windows-core-shards }}-${{ inputs.third-party-download-cache }}-${{ inputs.dependency-setup-verification }}-${{ inputs.knowledge-policy-shadow }}"
         ),
         "cancel-in-progress": True,
     }
@@ -2016,6 +2016,7 @@ def test_bundle_overrides_skipped_ancestors_but_requires_every_producer() -> Non
         "!inputs.discovery-mode",
         "!inputs.bandit-parity-verification",
         "!inputs.ubuntu-suite-shadow",
+        "!inputs.knowledge-policy-shadow",
         *(f"needs.{name}.result == 'success'" for name in bundle["needs"] if name not in {"dependency-warm", "knowledge-maintenance"}),
         "(!inputs.dependency-setup-verification || needs.dependency-warm.result == 'success')",
         "(needs.freeze.outputs.knowledge-mode != 'required' || needs.knowledge-maintenance.result == 'success')",
@@ -2032,7 +2033,7 @@ def test_final_decision_requires_bundle_success_without_qualifying_diagnostics()
     assert "bundle" in job["needs"]
     step = _named_step(job, "Require complete pre-promotion qualification")
     assert step["if"] == (
-        "${{ always() && !inputs.bandit-parity-verification && needs.freeze.result == 'success' }}"
+        "${{ always() && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow && needs.freeze.result == 'success' }}"
     )
     assert "verify-qualification-completion" in step["run"]
     assert '--bundle-result "${{ needs.bundle.result }}"' in step["run"]
@@ -2044,3 +2045,40 @@ def test_final_decision_requires_bundle_success_without_qualifying_diagnostics()
     assert names.index("Emit deterministic aggregate") < names.index(step["name"])
     assert names.index(step["name"]) < names.index("Upload pre-promotion decision")
     assert "always()" in _named_step(job, "Upload pre-promotion decision")["if"]
+
+
+def test_policy_shadow_is_explicit_and_cannot_assemble_a_release():
+    workflow = _yaml("release-qualification.yml")
+    triggers = workflow.get("on", workflow.get(True))
+    assert isinstance(triggers, dict)
+    option = triggers["workflow_dispatch"]["inputs"]["knowledge-policy-shadow"]
+    assert option["type"] == "boolean" and option["default"] is False
+    jobs = workflow["jobs"]
+    assert "!inputs.knowledge-policy-shadow" in jobs["bundle"]["if"]
+    assert "${{ inputs.knowledge-policy-shadow }}" in workflow["concurrency"]["group"]
+    freeze = _named_step(jobs["freeze"], "Check recorded producer before qualification")
+    assert freeze["env"]["KNOWLEDGE_POLICY_SHADOW"] == "${{ inputs.knowledge-policy-shadow }}"
+    assert "--policy-shadow" in freeze["run"] and "continue-on-error" not in freeze
+    diagnostics = _named_step(jobs["freeze"], "Retain policy activation diagnostics")
+    assert diagnostics["if"] == "always()"
+    assert diagnostics["with"]["name"] == "maintenance-policy-activation"
+    binding = _named_step(jobs["freeze"], "Bind the workflow definition to the candidate")
+    assert '"${KNOWLEDGE_POLICY_SHADOW}" == "true"' in binding["run"]
+    assert "requires its own nonpromoting run" in binding["run"]
+    verify = _named_step(jobs["knowledge-maintenance"], "Verify captured policy and shadow parity")
+    assert verify["env"]["KNOWLEDGE_POLICY_SHADOW"] == "${{ inputs.knowledge-policy-shadow }}"
+    assert '--policy-shadow "${KNOWLEDGE_POLICY_SHADOW}"' in verify["run"]
+    proof = _named_step(jobs["decision"], "Require nonpromoting policy shadow verification")
+    assert "always()" in proof["if"] and "inputs.knowledge-policy-shadow" in proof["if"]
+    assert '"${MAINTENANCE_RESULT}" != "success"' in proof["run"]
+    assert '"${BUNDLE_RESULT}" != "skipped"' in proof["run"] and "exit 1" in proof["run"]
+
+
+def test_final_decision_cannot_report_success_after_candidate_freeze_failure():
+    decision = _yaml("release-qualification.yml")["jobs"]["decision"]
+    step = _named_step(decision, "Require successful candidate freeze")
+    assert step["if"] == "${{ always() && needs.freeze.result != 'success' }}"
+    assert step["env"] == {"FREEZE_RESULT": "${{ needs.freeze.result }}"}
+    assert "exit 1" in step["run"] and "continue-on-error" not in step
+    names = [candidate.get("name") for candidate in decision["steps"]]
+    assert names.index(step["name"]) < names.index("Emit deterministic aggregate")

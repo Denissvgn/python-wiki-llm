@@ -37,13 +37,18 @@ on:
         required: true
         default: false
         type: boolean
+      knowledge-policy-shadow:
+        description: Verify a fresh repository policy shadow proof; never assemble or qualify a release
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
 
 concurrency:
   group: >-
-    ${{ github.workflow }}-${{ inputs.candidate-sha }}-${{ inputs.discovery-mode }}-${{ inputs.bandit-parity-verification }}-${{ inputs.ubuntu-suite-shadow }}-${{ inputs.windows-core-shards }}-${{ inputs.third-party-download-cache }}-${{ inputs.dependency-setup-verification }}
+    ${{ github.workflow }}-${{ inputs.candidate-sha }}-${{ inputs.discovery-mode }}-${{ inputs.bandit-parity-verification }}-${{ inputs.ubuntu-suite-shadow }}-${{ inputs.windows-core-shards }}-${{ inputs.third-party-download-cache }}-${{ inputs.dependency-setup-verification }}-${{ inputs.knowledge-policy-shadow }}
   cancel-in-progress: true
 
 env:
@@ -101,6 +106,7 @@ jobs:
           DISCOVERY_MODE: ${{ inputs.discovery-mode }}
           BANDIT_PARITY_VERIFICATION: ${{ inputs.bandit-parity-verification }}
           UBUNTU_SUITE_SHADOW: ${{ inputs.ubuntu-suite-shadow }}
+          KNOWLEDGE_POLICY_SHADOW: ${{ inputs.knowledge-policy-shadow }}
           DEPENDENCY_SETUP_VERIFICATION: ${{ inputs.dependency-setup-verification }}
         run: |
           set -euo pipefail
@@ -116,6 +122,9 @@ jobs:
           fi
           if [ "${DEPENDENCY_SETUP_VERIFICATION}" == "true" ] && { [ "${DISCOVERY_MODE}" == "true" ] || [ "${BANDIT_PARITY_VERIFICATION}" == "true" ] || [ "${UBUNTU_SUITE_SHADOW}" == "true" ]; }; then
             refuse "dependency setup verification requires normal qualification"
+          fi
+          if [ "${KNOWLEDGE_POLICY_SHADOW}" == "true" ] && { [ "${DISCOVERY_MODE}" == "true" ] || [ "${BANDIT_PARITY_VERIFICATION}" == "true" ] || [ "${UBUNTU_SUITE_SHADOW}" == "true" ] || [ "${DEPENDENCY_SETUP_VERIFICATION}" == "true" ]; }; then
+            refuse "knowledge policy shadow requires its own nonpromoting run"
           fi
           if [ "${WORKFLOW_EVENT}" != "workflow_dispatch" ]; then
             refuse "event is ${WORKFLOW_EVENT}; qualification runs only from workflow_dispatch"
@@ -138,16 +147,32 @@ jobs:
       - name: Check recorded producer before qualification
         id: knowledge-policy
         shell: bash
+        env:
+          KNOWLEDGE_POLICY_SHADOW: ${{ inputs.knowledge-policy-shadow }}
         run: |
           set -euo pipefail
+          shadow=()
+          if [[ "${KNOWLEDGE_POLICY_SHADOW}" == "true" ]]; then
+            shadow=(--policy-shadow)
+          fi
           python -I release/knowledge_maintenance.py check-version --root . \
-            --output "${RUNNER_TEMP}/maintenance-version.json"
+            --output "${RUNNER_TEMP}/maintenance-version.json" "${shadow[@]}"
           python -I - "${RUNNER_TEMP}/maintenance-version.json" "${GITHUB_OUTPUT}" <<'PY'
           import json, pathlib, sys
           data = json.loads(pathlib.Path(sys.argv[1]).read_text())
           with pathlib.Path(sys.argv[2]).open("a") as stream:
               stream.write("mode=" + data["mode"] + "\n")
           PY
+
+      - name: Retain policy activation diagnostics
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          archive: true
+          name: maintenance-policy-activation
+          path: ${{ runner.temp }}/maintenance-version.json
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Validate identity and create one source archive
         id: freeze
@@ -2312,11 +2337,14 @@ jobs:
           name: evidence-rd-10
           path: incoming/action
       - name: Verify captured policy and shadow parity
+        shell: bash
+        env:
+          KNOWLEDGE_POLICY_SHADOW: ${{ inputs.knowledge-policy-shadow }}
         run: >-
           python -I incoming/tools/release/knowledge_maintenance.py verify
           --evidence incoming/action/maintenance --identity expected-identity.json
           --policy incoming/tools/release/knowledge-maintenance.json
-          --output verification.json
+          --output verification.json --policy-shadow "${KNOWLEDGE_POLICY_SHADOW}"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
@@ -2910,7 +2938,7 @@ jobs:
     # The optional shadow ancestor is skipped in normal runs. Override implicit
     # success(), then require every direct qualifying producer explicitly.
     if: >-
-      ${{ !cancelled() && !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow
+      ${{ !cancelled() && !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow
           && needs.freeze.result == 'success' && needs.core.result == 'success' && needs.core-windows.result == 'success'
           && needs.ubuntu-suites.result == 'success' && needs.security-behavior.result == 'success'
           && needs.mcp.result == 'success' && needs.toolchains.result == 'success'
@@ -3143,6 +3171,14 @@ jobs:
       - bundle
     runs-on: ubuntu-24.04
     steps:
+      - name: Require successful candidate freeze
+        if: ${{ always() && needs.freeze.result != 'success' }}
+        env:
+          FREEZE_RESULT: ${{ needs.freeze.result }}
+        run: |
+          echo "Qualification blocked: RD-00 candidate freeze ended with ${FREEZE_RESULT}." >> "${GITHUB_STEP_SUMMARY}"
+          echo "Inspect RD-00 and its maintenance-policy-activation diagnostics." >> "${GITHUB_STEP_SUMMARY}"
+          exit 1
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         if: ${{ needs.freeze.result == 'success' }}
         with:
@@ -3190,14 +3226,14 @@ jobs:
           --allow-non-go-exit-zero
           --output decision.json
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        if: ${{ always() && needs.freeze.outputs.knowledge-mode == 'required' }}
+        if: ${{ always() && (needs.freeze.outputs.knowledge-mode == 'required' || inputs.knowledge-policy-shadow) }}
         continue-on-error: true
         with:
           digest-mismatch: error
           name: knowledge-maintenance-verification
           path: maintenance
       - name: Require complete pre-promotion qualification
-        if: ${{ always() && !inputs.bandit-parity-verification && needs.freeze.result == 'success' }}
+        if: ${{ always() && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow && needs.freeze.result == 'success' }}
         run: >-
           python -I incoming/tools/release/qualification.py verify-qualification-completion
           --decision decision.json
@@ -3208,6 +3244,32 @@ jobs:
           --candidate-tree "${{ needs.freeze.outputs.tree }}"
           --maintenance-result "${{ needs.knowledge-maintenance.result }}"
           --maintenance-verification maintenance/verification.json
+      - name: Require nonpromoting policy shadow verification
+        if: ${{ always() && inputs.knowledge-policy-shadow && needs.freeze.result == 'success' }}
+        env:
+          MAINTENANCE_RESULT: ${{ needs.knowledge-maintenance.result }}
+          BUNDLE_RESULT: ${{ needs.bundle.result }}
+          CANDIDATE_SHA: ${{ needs.freeze.outputs.sha }}
+          CANDIDATE_TREE: ${{ needs.freeze.outputs.tree }}
+          CANDIDATE_VERSION: ${{ needs.freeze.outputs.version }}
+        run: |
+          set -euo pipefail
+          if [[ "${MAINTENANCE_RESULT}" != "success" || "${BUNDLE_RESULT}" != "skipped" ]]; then
+            echo "Policy shadow failed or unexpectedly attempted release assembly." >> "${GITHUB_STEP_SUMMARY}"
+            exit 1
+          fi
+          python -I - <<'PY'
+          import os, pathlib, runpy
+          tool = runpy.run_path("incoming/tools/release/knowledge_maintenance.py")
+          value = tool["leaf"]().strict_json(tool["read"](pathlib.Path("maintenance/verification.json")))
+          tool["verify_shadow_record"](value, {
+              "candidate_sha": os.environ["CANDIDATE_SHA"],
+              "candidate_tree": os.environ["CANDIDATE_TREE"],
+              "candidate_version": os.environ["CANDIDATE_VERSION"],
+          })
+          PY
+          echo "Policy shadow verified. This run cannot qualify or assemble a release." >> "${GITHUB_STEP_SUMMARY}"
+          echo "Review knowledge-maintenance-verification before updating the activation record." >> "${GITHUB_STEP_SUMMARY}"
       - name: Upload pre-promotion decision
         if: ${{ always() && needs.freeze.result == 'success' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

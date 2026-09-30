@@ -475,6 +475,86 @@ def test_v2_activation_binds_every_policy_input(changed):
         RELEASE["policy"](raw(value), implementation_hash=different)
 
 
+def test_policy_shadow_preserves_activation_validation_and_never_changes_required_config():
+    value = config("required")
+    before = deepcopy(value)
+    shadow = RELEASE["policy"](raw(value), implementation_hash="0" * 64, policy_shadow=True)
+    assert shadow["mode"] == "shadow" and value == before
+    with pytest.raises(ValueError, match="changed since"):
+        RELEASE["policy"](raw(value), implementation_hash="0" * 64)
+    value["activation"] = None
+    with pytest.raises(ValueError, match="activation"):
+        RELEASE["policy"](raw(value), policy_shadow=True)
+    with pytest.raises(ValueError, match="enabled"):
+        RELEASE["policy"](raw(config("disabled")), policy_shadow=True)
+    with pytest.raises(ValueError, match="boolean"):
+        RELEASE["policy"](raw(config("required")), policy_shadow="false")
+
+
+def test_stale_activation_cli_retains_actionable_diagnostics(tmp_path, monkeypatch):
+    output = tmp_path / "activation.json"
+    summary = tmp_path / "summary.md"
+    monkeypatch.setenv("GITHUB_STEP_SUMMARY", str(summary))
+    with pytest.raises(SystemExit) as exc:
+        RELEASE["main"](["check-version", "--root", str(ROOT), "--output", str(output)])
+    assert exc.value.code == 2
+    result = json.loads(output.read_text())
+    assert result["status"] == "blocked" and result["mode"] == "required"
+    assert result["activation"] == json.loads((ROOT / RELEASE["POLICY_PATH"]).read_text())["activation"]
+    assert result["current_implementation_sha256"] == RELEASE["composite_policy_digest"](lambda name: (ROOT / name).read_bytes())
+    assert "knowledge-policy-shadow=true" in result["remedy"]
+    assert "do not replace the digest without proof" in summary.read_text()
+
+
+def test_explicit_shadow_can_reach_candidate_preflight_without_rebinding_activation(tmp_path):
+    output = tmp_path / "shadow.json"
+    original = (ROOT / RELEASE["POLICY_PATH"]).read_bytes()
+    result = RELEASE["main"]([
+        "check-version", "--root", str(ROOT), "--output", str(output), "--policy-shadow",
+    ])
+    assert result == 0
+    report = json.loads(output.read_text())
+    assert report["mode"] == "shadow" and report["status"] == "full-preflight-required"
+    assert (ROOT / RELEASE["POLICY_PATH"]).read_bytes() == original
+
+
+@pytest.mark.parametrize("flag", ["false", "invalid"])
+def test_shadow_cli_does_not_treat_nontrue_text_as_permission(tmp_path, flag):
+    with pytest.raises(SystemExit) as exc:
+        RELEASE["main"]([
+            "check-version", "--root", str(ROOT), "--output", str(tmp_path / "result.json"),
+            "--policy-shadow", flag,
+        ])
+    assert exc.value.code == 2
+
+
+@pytest.mark.parametrize("mutation", ["none", "candidate", "policy", "missing-doctor", "failed", "mode", "digest", "missing-error"])
+def test_downloaded_shadow_proof_must_match_frozen_identity_and_implementation(mutation):
+    expected = {"candidate_sha": "a" * 40, "candidate_tree": "b" * 40, "candidate_version": "2.3.2"}
+    value = {
+        **expected, "schema_version": RELEASE["VERIFICATION_SCHEMA"],
+        "mode": "shadow", "status": "pass", "error": None,
+        "evidence_sha256": {name: "sha256:" + "c" * 64 for name in ("preflight.json", "ci-report.json", "policy.json", "doctor.json")},
+        "activation_proof": {
+            "schema_version": "agent-wiki-release-policy-shadow/v1", "qualification": "nonpromoting",
+            "policy": hp.POLICY_V2_ID,
+            "implementation_sha256": RELEASE["composite_policy_digest"](lambda name: (ROOT / name).read_bytes()),
+        },
+    }
+    if mutation == "candidate": value["candidate_sha"] = "d" * 40
+    if mutation == "policy": value["activation_proof"]["implementation_sha256"] = "0" * 64
+    if mutation == "missing-doctor": value["evidence_sha256"].pop("doctor.json")
+    if mutation == "failed": value["status"] = "fail"
+    if mutation == "mode": value["mode"] = "required"
+    if mutation == "digest": value["evidence_sha256"]["doctor.json"] = "unbound"
+    if mutation == "missing-error": value.pop("error")
+    if mutation == "none":
+        RELEASE["verify_shadow_record"](value, expected)
+    else:
+        with pytest.raises(ValueError, match="shadow proof"):
+            RELEASE["verify_shadow_record"](value, expected)
+
+
 @pytest.mark.parametrize("recorded_project", ["current"], indirect=True)
 def test_v2_preflight_and_policy_bind_the_captured_comparison(preflight_project):
     from llm_wiki_cli.services import lint_service
@@ -582,7 +662,8 @@ def test_shadow_requires_original_standalone_parity(tmp_path):
 
 @pytest.mark.parametrize("mode", ["shadow", "required"])
 @pytest.mark.parametrize("available", [True, False], ids=["published-artifact", "missing-artifact"])
-def test_workflow_consumer_uses_the_actual_action_upload(tmp_path, mode, available):
+@pytest.mark.parametrize("policy_shadow", [False, True], ids=["normal", "policy-shadow"])
+def test_workflow_consumer_uses_the_actual_action_upload(tmp_path, mode, available, policy_shadow):
     workflow = yaml.safe_load((ROOT / ".github/workflows/release-qualification.yml").read_text())
     producer = next(step for step in workflow["jobs"]["action"]["steps"] if step.get("name") == "Upload gate evidence")
     consumer = workflow["jobs"]["knowledge-maintenance"]["steps"]
@@ -618,14 +699,16 @@ def test_workflow_consumer_uses_the_actual_action_upload(tmp_path, mode, availab
     command = shlex.split(verify["run"])
     assert command[0] == "python"
     command[0] = sys.executable
+    command = [("true" if policy_shadow else "false") if value == "${KNOWLEDGE_POLICY_SHADOW}" else value for value in command]
     result = subprocess.run(command, cwd=tmp_path, stdin=subprocess.DEVNULL,
                             env={**os.environ, "GITHUB_STEP_SUMMARY": str(tmp_path / "summary.md")},
                             capture_output=True, text=True, check=False, timeout=30)
-    assert result.returncode == (1 if not available and mode == "required" else 0), result.stderr
+    assert result.returncode == (1 if not available and (mode == "required" or policy_shadow) else 0), result.stderr
     receipt = json.loads((tmp_path / "verification.json").read_text())
     assert receipt["status"] == ("pass" if available else "fail")
-    assert receipt["mode"] == mode and receipt["candidate_sha"] == binding["candidate_sha"]
+    assert receipt["mode"] == ("shadow" if policy_shadow else mode) and receipt["candidate_sha"] == binding["candidate_sha"]
     assert bool(receipt["evidence_sha256"]) is available
+    assert ("activation_proof" in receipt) is (policy_shadow and available)
 
 
 @pytest.fixture
