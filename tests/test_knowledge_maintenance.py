@@ -475,6 +475,47 @@ def test_v2_activation_binds_every_policy_input(changed):
         RELEASE["policy"](raw(value), implementation_hash=different)
 
 
+@pytest.mark.parametrize("schema", [RELEASE["CONFIG_SCHEMA"], RELEASE["CONFIG_V2_SCHEMA"]], ids=["v1", "v2"])
+@pytest.mark.parametrize("policy_shadow", [False, True], ids=["normal", "shadow"])
+@pytest.mark.parametrize("field,diagnostic", [("implementation_sha256", "implementation"), ("comparison_sha256", "evidence")])
+@pytest.mark.parametrize("invalid", [
+    pytest.param(None, id="null"),
+    pytest.param(True, id="boolean"),
+    pytest.param(123, id="integer"),
+    pytest.param(int("1" * 64), id="digest-shaped-integer"),
+    pytest.param({}, id="object"),
+    pytest.param([], id="array"),
+    pytest.param("", id="empty"),
+    pytest.param("garbage", id="nonhex"),
+    pytest.param("A" * 64, id="uppercase"),
+    pytest.param("a" * 63, id="short"),
+    pytest.param("a" * 65, id="long"),
+    pytest.param("a" * 64 + "\n", id="newline"),
+    pytest.param(" " + "a" * 64, id="leading-space"),
+])
+def test_activation_digests_reject_malformed_values_in_every_admission_mode(
+    schema, policy_shadow, field, diagnostic, invalid
+):
+    value = config("required")
+    value.update(schema_version=schema, policy=hp.POLICY_V2_ID if schema == RELEASE["CONFIG_V2_SCHEMA"] else hp.POLICY_ID)
+    value["activation"][field] = invalid
+    with pytest.raises(ValueError, match=f"invalid activation {diagnostic} digest") as exc:
+        RELEASE["policy"](raw(value), implementation_hash="f" * 64, policy_shadow=policy_shadow)
+    assert not isinstance(exc.value, RELEASE["ActivationMismatch"])
+
+
+@pytest.mark.parametrize("schema", [RELEASE["CONFIG_SCHEMA"], RELEASE["CONFIG_V2_SCHEMA"]], ids=["v1", "v2"])
+def test_valid_activation_digest_distinguishes_matching_and_stale_values(schema):
+    value = config("required")
+    value.update(schema_version=schema, policy=hp.POLICY_V2_ID if schema == RELEASE["CONFIG_V2_SCHEMA"] else hp.POLICY_ID)
+    value["activation"]["implementation_sha256"] = "a" * 64
+    assert RELEASE["policy"](raw(value), implementation_hash="a" * 64)["mode"] == "required"
+    assert RELEASE["policy"](raw(value), implementation_hash="a" * 64, policy_shadow=True)["mode"] == "shadow"
+    with pytest.raises(RELEASE["ActivationMismatch"]):
+        RELEASE["policy"](raw(value), implementation_hash="b" * 64)
+    assert RELEASE["policy"](raw(value), implementation_hash="b" * 64, policy_shadow=True)["mode"] == "shadow"
+
+
 def test_policy_shadow_preserves_activation_validation_and_never_changes_required_config():
     value = config("required")
     before = deepcopy(value)

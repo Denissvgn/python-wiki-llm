@@ -61,6 +61,12 @@ def leaf():
     return module
 
 
+def _require_activation_digest(value: object, kind: str) -> str:
+    if not isinstance(value, str) or re.fullmatch(r"[0-9a-f]{64}", value) is None:
+        raise ValueError(f"invalid activation {kind} digest")
+    return value
+
+
 def policy(raw: bytes, *, implementation_hash: str | None = None, policy_shadow: bool = False):
     if type(policy_shadow) is not bool:
         raise ValueError("policy shadow requires an explicit boolean")
@@ -112,10 +118,10 @@ def policy(raw: bytes, *, implementation_hash: str | None = None, policy_shadow:
             or activation["attempt"] <= 0
         ):
             raise ValueError("invalid activation run identity")
-        if not re.fullmatch(r"[0-9a-f]{64}", str(activation["comparison_sha256"])):
-            raise ValueError("invalid activation evidence digest")
+        _require_activation_digest(activation["comparison_sha256"], "evidence")
+        recorded = _require_activation_digest(activation["implementation_sha256"], "implementation")
         current = implementation_hash or _implementation_digest(value["schema_version"])
-        if activation["implementation_sha256"] != current and not policy_shadow:
+        if recorded != current and not policy_shadow:
             raise ActivationMismatch(activation, current)
     if policy_shadow:
         value["mode"] = "shadow"
