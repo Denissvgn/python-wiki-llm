@@ -32,6 +32,12 @@ CONTRACT = {
 }
 
 
+def configuration_contract(config: dict) -> dict:
+    """Bind every evaluated field except the replaceable activation record."""
+    hosted.require(isinstance(config, dict), "invalid policy configuration contract")
+    return deepcopy({key: value for key, value in config.items() if key != "activation"})
+
+
 def _regular(path: Path) -> bytes:
     hosted.require(not any(parent.is_symlink() for parent in (path, *path.parents)), "redirected trusted policy input")
     return maintenance.read(path, 1024 * 1024)
@@ -179,6 +185,10 @@ def verify_shadow(
         hosted.require(harness[maintenance.POLICY_PATH] == frozen[maintenance.POLICY_PATH], "frozen harness policy configuration differs from source")
         original_config = hosted._json(frozen[maintenance.POLICY_PATH])
         hosted.require(original_config.get("mode") == "required", "automatic activation requires a required policy")
+        evaluated_contract = configuration_contract(original_config)
+        current_config = hosted._json(_regular(policy_root / maintenance.POLICY_PATH))
+        hosted.require(evaluated_contract == configuration_contract(current_config),
+                       "frozen policy configuration differs from trusted checkout")
         implementation = (
             maintenance.composite_policy_digest(trusted.__getitem__)
             if original_config.get("schema_version") == maintenance.CONFIG_V2_SCHEMA
@@ -214,6 +224,7 @@ def verify_shadow(
             "candidate_tree": identity["source"]["tree"], "candidate_version": identity["version"],
             "run_id": run_id, "attempt": attempt, "request_id": request_id,
             "implementation_sha256": implementation, "verification_sha256": activation["comparison_sha256"],
+            "configuration": evaluated_contract,
             "artifacts": commitments, "receipt": receipt,
         }
         hosted.require(len(json.dumps(audit, sort_keys=True, separators=(",", ":")).encode("utf-8")) <= MAX_AUDIT, "policy activation audit exceeds byte limit")
@@ -227,6 +238,8 @@ def verify_shadow(
 def proposal(config: dict, verified: dict) -> dict:
     """Replace only the activation, retaining the caller's maintenance contract."""
     hosted.require(isinstance(config, dict) and config.get("mode") == "required", "automatic activation requires a required policy")
+    hosted.require(configuration_contract(config) == verified["audit"].get("configuration"),
+                   "activation proposal changes the evaluated configuration contract")
     result = deepcopy(config)
     result["activation"] = deepcopy(verified["activation"])
     maintenance.policy(json.dumps(result).encode("utf-8"), implementation_hash=verified["activation"]["implementation_sha256"])
@@ -311,6 +324,9 @@ def validate_activation_pr(
         hosted.require(isinstance(proposed, dict) and proposed.get("implementation_sha256") == digest, "activation pull request digest differs from branch")
         assert isinstance(proposed, dict)
         hosted.require(isinstance(proposed.get("candidate_sha"), str) and re.fullmatch(r"[0-9a-f]{40}", proposed["candidate_sha"]) is not None, "invalid activation candidate SHA")
+        evaluated_config = hosted._json(_content(client, maintenance.POLICY_PATH, proposed["candidate_sha"], limit=65536))
+        hosted.require(configuration_contract(evaluated_config) == configuration_contract(base_config),
+                       "activation proof configuration differs from current main")
         comparison = client.get(f"/compare/{proposed['candidate_sha']}...{base}")
         hosted.require(
             comparison.get("status") in {"ahead", "identical"}

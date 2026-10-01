@@ -10,6 +10,8 @@ import io
 import json
 from pathlib import Path
 import subprocess
+import sys
+import shutil
 from types import SimpleNamespace
 from typing import Any
 import zipfile
@@ -174,7 +176,7 @@ class FakeGitHub:
             return {"sha": sha}
         if path == "/pulls":
             number = len(self.pulls) + 1
-            self.pulls[number] = {"number": number, "user": self.bot, "state": "open", "head": {"ref": payload["head"], "sha": self.refs[payload["head"]]},
+            self.pulls[number] = {"number": number, "node_id": f"PR_node_{number}", "mergeable_state": "clean", "user": self.bot, "state": "open", "head": {"ref": payload["head"], "sha": self.refs[payload["head"]]},
                                   "base": {"ref": "main", "sha": self.main_sha}}
             return deepcopy(self.pulls[number])
         if path.endswith("/merge"):
@@ -183,6 +185,13 @@ class FakeGitHub:
             self.main_sha = self.pulls[number]["head"]["sha"]
             return {"merged": True, "sha": self.main_sha}
         raise AssertionError(f"unexpected {method} {path}")
+
+    def enable_auto_merge(self, node_id, head):
+        pr = next(value for value in self.pulls.values() if value["node_id"] == node_id)
+        assert pr["head"]["sha"] == head
+        self.mutations.append(("GRAPHQL", "enablePullRequestAutoMerge", {"pullRequestId": node_id, "expectedHeadOid": head}))
+        pr["auto_merge"] = {"merge_method": "squash"}
+        return pr
 
 
 @pytest.fixture
@@ -205,7 +214,9 @@ def shadow_proof(controller, receipt):
     digest = controller.policy_at(CANDIDATE)["implementation_sha256"]
     activation = {"candidate_sha": CANDIDATE, "run_id": receipt["run_id"], "attempt": 1,
                   "implementation_sha256": digest, "comparison_sha256": "e" * 64}
-    return {"activation": activation, "audit": {"repository": REPOSITORY, "implementation_sha256": digest, "request_id": receipt["request_id"]}}
+    from release.policy_activation import configuration_contract
+    return {"activation": activation, "audit": {"repository": REPOSITORY, "implementation_sha256": digest,
+            "request_id": receipt["request_id"], "configuration": configuration_contract(controller.policy_at(CANDIDATE)["configuration"])}}
 
 
 @pytest.mark.parametrize("current", [False, True])
@@ -408,7 +419,15 @@ def test_dry_reconciliation_performs_no_mutations(controller):
 
 
 def test_isolated_entrypoint_and_disabled_default(tmp_path):
-    result = subprocess.run([str(ROOT / ".venv/bin/python"), "-I", str(ROOT / "release/qualification_automation.py"), "reconcile", "--root", str(ROOT)],
+    checkout = tmp_path / "checkout"
+    (checkout / "release").mkdir(parents=True)
+    for name in ("qualification_automation.py", "qualification.py", "hosted_evidence.py", "knowledge_maintenance.py"):
+        shutil.copyfile(ROOT / "release" / name, checkout / "release" / name)
+    config = deepcopy(CONFIG)
+    config["enabled"] = False
+    (checkout / "release/automation.json").write_bytes(qa.canonical(config))
+    assert not (checkout / ".venv").exists()
+    result = subprocess.run([sys.executable, "-I", str(checkout / "release/qualification_automation.py"), "reconcile", "--root", str(checkout)],
                             capture_output=True, text=True, cwd=tmp_path)
     assert result.returncode == 0, result.stderr
     assert json.loads(result.stdout)["status"] == "blocked_setup"
@@ -618,6 +637,75 @@ def test_read_token_is_never_used_for_mutation():
     client = qa.GitHubClient(REPOSITORY, "read-token")
     with pytest.raises(qa.AutomationError, match="read credentials cannot mutate"):
         client.request("POST", "/git/refs", {})
+
+
+@pytest.mark.parametrize("response_kind", ["queued", "merged", "wrong-head", "wrong-method", "errors", "missing-request", "null-response", "null-pr"])
+def test_auto_merge_uses_exact_head_and_authenticates_graphql_response(monkeypatch, response_kind):
+    head = "d" * 40
+    payload = {"id": "PR_node_1", "headRefOid": head, "merged": False, "autoMergeRequest": {"mergeMethod": "SQUASH"}}
+    if response_kind == "merged": payload.update(merged=True, mergeCommit={"oid": "e" * 40}, autoMergeRequest=None)
+    if response_kind == "wrong-head": payload["headRefOid"] = "f" * 40
+    if response_kind == "wrong-method": payload["autoMergeRequest"] = {"mergeMethod": "MERGE"}
+    if response_kind == "missing-request": payload["autoMergeRequest"] = None
+    body: Any = {"data": {"enablePullRequestAutoMerge": {"pullRequest": payload}}}
+    if response_kind == "errors": body = {"errors": [{"message": "protected requirement"}]}
+    if response_kind == "null-response": body = None
+    if response_kind == "null-pr": body["data"]["enablePullRequestAutoMerge"]["pullRequest"] = None
+
+    def urlopen(request, timeout):
+        assert request.full_url == "https://api.github.com/graphql"
+        sent = json.loads(request.data)
+        assert sent["variables"] == {"id": "PR_node_1", "head": head}
+        assert "expectedHeadOid:$head" in sent["query"] and "mergeMethod:SQUASH" in sent["query"]
+        return HTTPResponse(body)
+
+    monkeypatch.setattr(qa.urllib.request, "urlopen", urlopen)
+    client = qa.GitHubClient(REPOSITORY, "opaque-token", write=True)
+    if response_kind in {"queued", "merged"}:
+        assert client.enable_auto_merge("PR_node_1", head) == payload
+    else:
+        with pytest.raises(qa.AutomationError):
+            client.enable_auto_merge("PR_node_1", head)
+
+
+def test_pending_protected_requirements_enable_native_auto_merge_and_resume_after_main_ci(controller):
+    receipt = controller.reconcile({"workflow_run": workflow_run()})
+    controller.shadow_verifier = lambda *args, **kwargs: shadow_proof(controller, receipt)
+    proposal = controller.reconcile({"workflow_run": controller.client.runs[receipt["run_id"]]})
+    pr = controller.client.pulls[proposal["pull_request"]]
+    head = pr["head"]["sha"]
+    pr["mergeable_state"] = "blocked"
+    pr_run = workflow_run(head, run_id=30, event="pull_request")
+    pr_run["pull_requests"] = [{"number": pr["number"]}]
+    controller.client.runs[30] = pr_run
+    controller.validate_pr = lambda *args, **kwargs: {"status": "pass"}
+    for name in qa.REQUIRED_CHECKS:
+        controller.client.checks.append({"name": name, "head_sha": head, "status": "completed", "conclusion": "success"})
+    waiting = controller.reconcile({"workflow_run": pr_run})
+    assert waiting["status"] == "waiting_activation_merge"
+    assert pr["state"] == "open"
+    assert not any(path.endswith("/merge") for _, path, _ in controller.client.mutations)
+    assert sum(path == "enablePullRequestAutoMerge" for _, path, _ in controller.client.mutations) == 1
+    assert controller.reconcile({"workflow_run": pr_run})["status"] == "waiting_activation_merge"
+    assert sum(path == "enablePullRequestAutoMerge" for _, path, _ in controller.client.mutations) == 1
+    # GitHub fulfills the remaining requirements and merges without another CI
+    # completion event. Its main push starts the next authenticated CI cycle.
+    controller.client.request("PUT", f"/pulls/{pr['number']}/merge", {"sha": head})
+    main_ci = workflow_run(head, run_id=40)
+    controller.client.runs[40] = main_ci
+    result = controller.reconcile({"workflow_run": main_ci})
+    assert result["status"] == "dispatched" and result["profile"] == "normal"
+
+
+def test_coordinator_rejects_proof_when_nonactivation_configuration_is_unevaluated(controller):
+    receipt = controller.reconcile({"workflow_run": workflow_run()})
+    verified = shadow_proof(controller, receipt)
+    verified["audit"]["configuration"]["thresholds"] = {"strict": 0.95}
+    before = len(controller.client.mutations)
+    with pytest.raises(qa.AutomationError, match="configuration is superseded"):
+        controller.activation_proposal(verified, CANDIDATE, receipt)
+    assert len(controller.client.mutations) == before
+    assert not controller.client.pulls
 
 
 def test_remote_inspection_does_not_need_enabled_bot(controller):

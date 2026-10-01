@@ -33,6 +33,11 @@ class ShadowEvidence:
         self.config = config
         inputs = {name: (ROOT / name).read_bytes() for name in maintenance.POLICY_INPUTS}
         self.source_files = {**inputs, maintenance.POLICY_PATH: raw(config)}
+        self.policy_root = root / "trusted"
+        for name, content in self.source_files.items():
+            target = self.policy_root / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(content)
         archive = source_archive(self.source_files)
         self.identity = {
             "schema_version": "agent-wiki-release-identity/v1", "repository": REPOSITORY,
@@ -124,7 +129,7 @@ class ShadowEvidence:
         return self.archives[artifact_id]
 
     def verify(self, **kwargs):
-        return activation.verify_shadow(REPOSITORY, RUN, 1, SHA, ROOT, client=self, **kwargs)
+        return activation.verify_shadow(REPOSITORY, RUN, 1, SHA, self.policy_root, client=self, **kwargs)
 
 
 @pytest.fixture
@@ -134,6 +139,7 @@ def shadow(tmp_path):
 
 def test_original_hosted_proof_generates_only_activation_and_bounded_audit(shadow):
     verified = shadow.verify(request_id=REQUEST)
+    assert verified["audit"]["configuration"] == activation.configuration_contract(shadow.config)
     assert verified["activation"] == {
         "candidate_sha": SHA, "run_id": RUN, "attempt": 1,
         "comparison_sha256": hosted.sha256(shadow.files["knowledge-maintenance-verification"]["verification.json"]),
@@ -151,6 +157,30 @@ def test_original_hosted_proof_generates_only_activation_and_bounded_audit(shado
     assert maintenance.policy(raw(updated))["mode"] == "required"
 
 
+@pytest.mark.parametrize("field", ["schema_version", "mode", "policy", "src_dir", "wiki_dir", "selection", "thresholds"])
+def test_proposal_rejects_every_unevaluated_configuration_field(shadow, field):
+    verified = shadow.verify()
+    current = deepcopy(shadow.config)
+    current[field] = {"strict": 0.95} if field == "thresholds" else "changed"
+    with pytest.raises(hosted.EvidenceError, match="configuration contract|required policy"):
+        activation.proposal(current, verified)
+
+
+def test_activation_only_changes_do_not_invalidate_the_evaluated_contract(shadow):
+    verified = shadow.verify()
+    current = deepcopy(shadow.config)
+    current["activation"]["implementation_sha256"] = "1" * 64
+    assert activation.proposal(current, verified)["activation"] == verified["activation"]
+
+
+def test_shadow_replay_rejects_configuration_only_changes_to_trusted_checkout(shadow):
+    current = deepcopy(shadow.config)
+    current["thresholds"] = {"strict": 0.95}
+    (shadow.policy_root / maintenance.POLICY_PATH).write_bytes(raw(current))
+    with pytest.raises(hosted.EvidenceError, match="configuration differs"):
+        shadow.verify()
+
+
 @pytest.mark.parametrize("recorded_project", ["current"], indirect=True)
 def test_composite_v2_proof_replays_real_analysis_comparison(preflight_project, tmp_path):
     from llm_wiki_cli.services import knowledge_maintenance as runtime, lint_service
@@ -159,6 +189,7 @@ def test_composite_v2_proof_replays_real_analysis_comparison(preflight_project, 
 
     shadow = ShadowEvidence(tmp_path / "hosted")
     shadow.config.update(schema_version=maintenance.CONFIG_V2_SCHEMA, policy=hp.POLICY_V2_ID)
+    (shadow.policy_root / maintenance.POLICY_PATH).write_bytes(raw(shadow.config))
     shadow.source_files[maintenance.POLICY_PATH] = raw(shadow.config)
     shadow.replace_source(shadow.source_files)
     shadow.identity.update(version="9.8.6", tag="v9.8.6")
@@ -370,6 +401,7 @@ class ActivationPullRequest:
         self.updated = activation.proposal(shadow.config, self.verified)
         self.contents = {(name, self.base): (ROOT / name).read_bytes() for name in maintenance.POLICY_INPUTS}
         self.contents[(maintenance.POLICY_PATH, self.base)] = raw(shadow.config)
+        self.contents[(maintenance.POLICY_PATH, SHA)] = raw(shadow.config)
         self.contents[(maintenance.POLICY_PATH, self.head)] = raw(self.updated)
         self.contents[(self.audit_path, self.head)] = raw(self.verified["audit"])
 
@@ -393,7 +425,7 @@ class ActivationPullRequest:
         return self.shadow.archive(artifact_id)
 
     def validate(self, **kwargs):
-        return activation.validate_activation_pr(REPOSITORY, 42, policy_root=ROOT, client=self,
+        return activation.validate_activation_pr(REPOSITORY, 42, policy_root=self.shadow.policy_root, client=self,
                                                  trusted_bot=self.bot, head_sha=self.head, **kwargs)
 
 
@@ -402,6 +434,18 @@ def test_activation_pr_replays_bot_proof_and_checks_exact_two_file_change(shadow
     result = client.validate()
     assert result["status"] == "pass" and result["head_sha"] == client.head
     assert result["activation"] == client.verified["activation"]
+
+
+def test_pr_verifier_rejects_base_configuration_drift_after_the_shadow_run(shadow):
+    client = ActivationPullRequest(shadow)
+    current = deepcopy(shadow.config)
+    current["thresholds"] = {"strict": 0.95}
+    changed = deepcopy(client.updated)
+    changed["thresholds"] = current["thresholds"]
+    client.contents[(maintenance.POLICY_PATH, client.base)] = raw(current)
+    client.contents[(maintenance.POLICY_PATH, client.head)] = raw(changed)
+    with pytest.raises(hosted.EvidenceError, match="configuration differs from current main"):
+        client.validate()
 
 
 def test_ordinary_pull_request_does_not_require_activation_bot_identity(shadow):

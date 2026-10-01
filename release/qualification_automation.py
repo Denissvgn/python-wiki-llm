@@ -99,6 +99,38 @@ class GitHubClient:
     def get(self, path: str) -> Any:
         return self.request("GET", path)
 
+    def enable_auto_merge(self, pull_request_id: str, head_sha: str) -> dict:
+        require(self.write, "read credentials cannot enable auto-merge")
+        require(isinstance(pull_request_id, str) and 0 < len(pull_request_id) <= 256, "invalid pull request node identity")
+        require(isinstance(head_sha, str) and SHA.fullmatch(head_sha), "invalid auto-merge head")
+        request = urllib.request.Request("https://api.github.com/graphql", method="POST",
+            data=canonical({
+                "query": "mutation($id:ID!,$head:GitObjectID!){enablePullRequestAutoMerge(input:{pullRequestId:$id,expectedHeadOid:$head,mergeMethod:SQUASH}){pullRequest{id headRefOid merged mergeCommit{oid} autoMergeRequest{mergeMethod}}}}",
+                "variables": {"id": pull_request_id, "head": head_sha},
+            }),
+            headers={"Accept": "application/vnd.github+json", "Authorization": f"Bearer {self.token}",
+                     "Content-Type": "application/json", "User-Agent": "agent-wiki-release-automation"})
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                raw = response.read(MAX_JSON + 1)
+                require(len(raw) <= MAX_JSON, "auto-merge response is oversized")
+                value = strict(raw)
+            require(isinstance(value, dict) and not value.get("errors"), "GitHub did not accept protected auto-merge")
+            pr = value["data"]["enablePullRequestAutoMerge"]["pullRequest"]
+            require(isinstance(pr, dict) and pr.get("id") == pull_request_id and pr.get("headRefOid") == head_sha, "auto-merge response identity differs")
+            if pr.get("merged") is True:
+                require(isinstance(pr.get("mergeCommit"), dict) and isinstance(pr["mergeCommit"].get("oid"), str)
+                        and SHA.fullmatch(pr["mergeCommit"]["oid"]), "auto-merge commit identity differs")
+            else:
+                require(isinstance(pr.get("autoMergeRequest"), dict) and pr["autoMergeRequest"].get("mergeMethod") == "SQUASH",
+                        "auto-merge was not enabled")
+            return pr
+        except urllib.error.HTTPError as exc:
+            exc.close()
+            raise AutomationError("protected auto-merge request failed") from exc
+        except (OSError, urllib.error.URLError, TimeoutError, KeyError, TypeError) as exc:
+            raise AutomationError("protected auto-merge could not be verified") from exc
+
     def list(self, path: str, key: str | None = None) -> list[dict]:
         rows: list[dict] = []
         separator = "&" if "?" in path else "?"
@@ -486,8 +518,10 @@ class Coordinator:
         require(current["status"] in {"current", "stale"}, "current main policy is malformed")
         candidate_policy = self.policy_at(run["head_sha"])
         require(candidate_policy["status"] in {"current", "stale"}, "shadow candidate policy is malformed")
-        if candidate_policy["implementation_sha256"] != current["implementation_sha256"]:
-            receipt.update(status="superseded", reason="main policy changed after the shadow candidate")
+        from release.policy_activation import configuration_contract
+        if (candidate_policy["implementation_sha256"] != current["implementation_sha256"]
+                or configuration_contract(candidate_policy["configuration"]) != configuration_contract(current["configuration"])):
+            receipt.update(status="superseded", reason="main policy implementation or configuration changed after the shadow candidate")
             self.save(receipt)
             return self.start(latest) if self.ci_success(latest) else self.result("waiting_ci", candidate_sha=latest)
         verified = verifier(self.repository, run["id"], run["run_attempt"], run["head_sha"], self.root,
@@ -507,6 +541,10 @@ class Coordinator:
         activation, audit = verified["activation"], verified["audit"]
         require(state["status"] in {"current", "stale"} and state["implementation_sha256"] == activation["implementation_sha256"], "activation is superseded")
         require(audit.get("repository") == self.repository and audit.get("implementation_sha256") == activation["implementation_sha256"], "audit differs from authenticated activation")
+        from release.policy_activation import configuration_contract
+        evaluated = strict(self.content(maintenance.POLICY_PATH, activation["candidate_sha"]))
+        require(configuration_contract(state["configuration"]) == configuration_contract(evaluated)
+                == audit.get("configuration"), "activation proof configuration is superseded")
         config = state["configuration"]
         if config["activation"] == activation:
             receipt.update(status="activation_merged", reason="verified activation is already on main")
@@ -621,6 +659,18 @@ class Coordinator:
         if not self.apply:
             return self.result("planned_activation_merge", pull_request=number, candidate_sha=run["head_sha"])
         require(self.main() == latest, "main advanced before activation merge")
+        pr = self.client.get(f"/pulls/{number}")
+        require(pr.get("head", {}).get("sha") == run["head_sha"], "activation head changed before protected merge")
+        if pr.get("mergeable_state") != "clean":
+            queued = pr.get("auto_merge")
+            if queued is None:
+                response = self.writer.enable_auto_merge(pr["node_id"], run["head_sha"])
+                if response.get("merged") is True:
+                    return self.result("activation_merged", pull_request=number, candidate_sha=response["mergeCommit"]["oid"])
+            else:
+                require(queued.get("merge_method", "").lower() == "squash", "existing auto-merge uses another method")
+            return self.result("waiting_activation_merge", pull_request=number, candidate_sha=run["head_sha"],
+                               reason="Protected auto-merge waits for remaining repository checks and approvals.")
         response = self.writer.request("PUT", f"/pulls/{number}/merge", {"merge_method": "squash", "sha": run["head_sha"]})
         require(response.get("merged") is True, "protected activation merge was not accepted")
         return self.result("activation_merged", pull_request=number, candidate_sha=response["sha"])
