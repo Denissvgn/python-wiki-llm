@@ -26,6 +26,30 @@ def composite_policy_digest(read_bytes) -> str:
     return hashlib.sha256(json.dumps(entries, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
+class ActivationMismatch(ValueError):
+    """The required policy must obtain a new reviewed shadow binding."""
+
+    def __init__(self, activation, current):
+        self.activation = activation
+        self.current = current
+        super().__init__(
+            "health policy changed since its reviewed shadow proof "
+            f"(recorded {activation['implementation_sha256']}, current {current}). "
+            "Run release qualification with knowledge-policy-shadow=true on the "
+            "intended candidate, review the verified proof, then update the activation record. "
+            "Normal qualification remains blocked; do not replace the digest without proof."
+        )
+
+
+def _implementation_digest(schema):
+    root = Path(__file__).resolve().parents[1]
+    return (
+        composite_policy_digest(lambda name: (root / name).read_bytes())
+        if schema == CONFIG_V2_SCHEMA
+        else hashlib.sha256((root / LEAF_PATH).read_bytes()).hexdigest()
+    )
+
+
 
 def leaf():
     path = Path(__file__).resolve().parents[1] / LEAF_PATH
@@ -37,7 +61,15 @@ def leaf():
     return module
 
 
-def policy(raw: bytes, *, implementation_hash: str | None = None):
+def _require_activation_digest(value: object, kind: str) -> str:
+    if not isinstance(value, str) or re.fullmatch(r"[0-9a-f]{64}", value) is None:
+        raise ValueError(f"invalid activation {kind} digest")
+    return value
+
+
+def policy(raw: bytes, *, implementation_hash: str | None = None, policy_shadow: bool = False):
+    if type(policy_shadow) is not bool:
+        raise ValueError("policy shadow requires an explicit boolean")
     module = leaf()
     value = module.strict_json(raw)
     if set(value) != {
@@ -64,6 +96,8 @@ def policy(raw: bytes, *, implementation_hash: str | None = None):
         raise ValueError(
             "release maintenance must evaluate the declared actual repository"
         )
+    if policy_shadow and value["mode"] == "disabled":
+        raise ValueError("policy shadow requires an enabled maintenance policy")
     if value["mode"] == "required":
         activation = value["activation"]
         if not isinstance(activation, dict) or set(activation) != {
@@ -84,16 +118,13 @@ def policy(raw: bytes, *, implementation_hash: str | None = None):
             or activation["attempt"] <= 0
         ):
             raise ValueError("invalid activation run identity")
-        if not re.fullmatch(r"[0-9a-f]{64}", str(activation["comparison_sha256"])):
-            raise ValueError("invalid activation evidence digest")
-        root = Path(__file__).resolve().parents[1]
-        current = implementation_hash or (
-            composite_policy_digest(lambda name: (root / name).read_bytes())
-            if value["schema_version"] == CONFIG_V2_SCHEMA
-            else hashlib.sha256((root / LEAF_PATH).read_bytes()).hexdigest()
-        )
-        if activation["implementation_sha256"] != current:
-            raise ValueError("health policy changed since its reviewed shadow proof")
+        _require_activation_digest(activation["comparison_sha256"], "evidence")
+        recorded = _require_activation_digest(activation["implementation_sha256"], "implementation")
+        current = implementation_hash or _implementation_digest(value["schema_version"])
+        if recorded != current and not policy_shadow:
+            raise ActivationMismatch(activation, current)
+    if policy_shadow:
+        value["mode"] = "shadow"
     return value
 
 
@@ -228,6 +259,35 @@ def admit(evidence: Path, identity, config, *, scope_prefix="candidate") -> dict
     return result
 
 
+def verify_shadow_record(value, expected):
+    """Require a complete downloaded proof bound to this frozen harness."""
+    if not isinstance(value, dict) or set(value) != {
+        "schema_version", "mode", "candidate_sha", "candidate_tree", "candidate_version",
+        "status", "error", "evidence_sha256", "activation_proof",
+    }:
+        raise ValueError("policy shadow proof fields do not match its schema")
+    config = policy(read(Path(__file__).resolve().parents[1] / POLICY_PATH), policy_shadow=True)
+    proof = value.get("activation_proof")
+    if (
+        value.get("schema_version") != VERIFICATION_SCHEMA
+        or value.get("mode") != "shadow" or value.get("status") != "pass"
+        or value.get("error") is not None
+        or any(value.get(key) != expected[key] for key in ("candidate_sha", "candidate_tree", "candidate_version"))
+        or proof != {
+            "schema_version": "agent-wiki-release-policy-shadow/v1",
+            "qualification": "nonpromoting", "policy": config["policy"],
+            "implementation_sha256": _implementation_digest(config["schema_version"]),
+        }
+    ):
+        raise ValueError("policy shadow proof differs from the candidate or policy implementation")
+    hashes = value.get("evidence_sha256")
+    if not isinstance(hashes, dict) or set(hashes) != {"preflight.json", "ci-report.json", "policy.json", "doctor.json"} or any(
+        not isinstance(digest, str) or re.fullmatch(r"sha256:[0-9a-f]{64}", digest) is None
+        for digest in hashes.values()
+    ):
+        raise ValueError("policy shadow proof lacks complete verified parity evidence")
+
+
 def bundle_policy(bundle: Path):
     source = bundle / "evidence/RD-00/source"
     archive = source / "candidate-source.tar"
@@ -283,6 +343,12 @@ def bundle_policy(bundle: Path):
     return result
 
 
+def _shadow_flag(value):
+    if value not in {"true", "false"}:
+        raise argparse.ArgumentTypeError("policy shadow must be true or false")
+    return value == "true"
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser()
     commands = parser.add_subparsers(dest="command", required=True)
@@ -294,6 +360,8 @@ def main(argv=None):
     check.add_argument("--policy", type=Path, required=True)
     for p in (before, check):
         p.add_argument("--output", type=Path, required=True)
+        p.add_argument("--policy-shadow", nargs="?", const=True, default=False, type=_shadow_flag,
+                       help="Verify a nonpromoting shadow proof despite a stale activation; never qualify a release")
     args = parser.parse_args(argv)
     try:
         config = policy(
@@ -301,13 +369,21 @@ def main(argv=None):
                 args.root / POLICY_PATH
                 if args.command == "check-version"
                 else args.policy
-            )
+            ),
+            policy_shadow=args.policy_shadow,
         )
         result = (
             version_check(args.root, config)
             if args.command == "check-version"
             else admit(args.evidence, leaf().strict_json(read(args.identity)), config)
         )
+        if args.policy_shadow and args.command == "verify" and result["status"] == "pass":
+            result["activation_proof"] = {
+                "schema_version": "agent-wiki-release-policy-shadow/v1",
+                "qualification": "nonpromoting",
+                "policy": config["policy"],
+                "implementation_sha256": _implementation_digest(config["schema_version"]),
+            }
         args.output.parent.mkdir(parents=True, exist_ok=True)
         with args.output.open("x", encoding="utf-8") as stream:
             json.dump(result, stream, indent=2, sort_keys=True)
@@ -329,10 +405,27 @@ def main(argv=None):
             return 1 if result["status"] == "blocked" else 0
         return (
             1
-            if config["mode"] == "required"
+            if (config["mode"] == "required" or args.policy_shadow)
             and result["status"] not in {"pass", "ready"}
             else 0
         )
+    except ActivationMismatch as exc:
+        result = {
+            "schema_version": "agent-wiki-release-policy-activation/v1",
+            "mode": "required", "status": "blocked",
+            "activation": exc.activation,
+            "current_implementation_sha256": exc.current,
+            "remedy": str(exc),
+        }
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        with args.output.open("x", encoding="utf-8") as stream:
+            json.dump(result, stream, indent=2, sort_keys=True)
+            stream.write("\n")
+        summary = os.environ.get("GITHUB_STEP_SUMMARY")
+        if summary:
+            with Path(summary).open("a", encoding="utf-8") as stream:
+                stream.write(f"## Repository policy activation blocked\n\n{exc}\n")
+        parser.exit(2, f"release maintenance evidence failed: {exc}\n")
     except (OSError, ValueError, KeyError, TypeError) as exc:
         parser.exit(2, f"release maintenance evidence failed: {exc}\n")
 

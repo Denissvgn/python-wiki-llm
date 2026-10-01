@@ -25,6 +25,16 @@ VERSION = "1.5.0"
 WORKFLOW_REF = "refs/heads/knowledge_layer"
 
 
+@pytest.mark.parametrize("wrapped", [False, True], ids=["proof", "verification"])
+def test_policy_shadow_proof_cannot_enter_a_qualified_bundle(tmp_path, wrapped):
+    proof = {"schema_version": "agent-wiki-release-policy-shadow/v1", "qualification": "nonpromoting"}
+    value = {"schema_version": "agent-wiki-release-knowledge-verification/v1", "activation_proof": proof} if wrapped else proof
+    path = tmp_path / "proof.json"
+    path.write_text(json.dumps(value), encoding="utf-8")
+    with pytest.raises(qualification.QualificationError, match="Nonqualifying shadow"):
+        qualification._reject_shadow_evidence(path)
+
+
 def _write_json(path: Path, payload: object) -> None:
     path.write_text(
         json.dumps(payload, sort_keys=True, indent=2) + "\n",

@@ -1597,7 +1597,9 @@ def _reject_shadow_evidence(root: Path) -> None:
 
 def _reject_shadow_value(value: object) -> None:
     if isinstance(value, dict) and (
-        value.get("schema_version") == "agent-wiki-ubuntu-shadow/v1"
+        (value.get("schema_version") == "agent-wiki-release-knowledge-verification/v1" and "activation_proof" in value)
+        or value.get("schema_version") == "agent-wiki-release-policy-shadow/v1"
+        or value.get("schema_version") == "agent-wiki-ubuntu-shadow/v1"
         or value.get("schema_version")
         in {
             "agent-wiki-ubuntu-execution/v1",
