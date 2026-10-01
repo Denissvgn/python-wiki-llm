@@ -11,6 +11,81 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  activation-proof:
+    name: Release activation proof
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    steps:
+      - name: Check out the trusted base verifier
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          ref: ${{ github.event.pull_request.base.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up verifier Python
+        id: python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+      - name: Create verifier environment
+        run: '"${{ steps.python.outputs.python-path }}" -m venv .venv'
+      - name: Verify activation-only proposals
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          PULL_REQUEST: ${{ github.event.pull_request.number }}
+          PROPOSED_HEAD: ${{ github.event.pull_request.head.sha }}
+          CANDIDATE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          if [[ -f release/qualification_automation.py ]]; then
+            .venv/bin/python -I release/qualification_automation.py inspect \
+              --root . --repository "${GITHUB_REPOSITORY}" \
+              --candidate-sha "${CANDIDATE_SHA}" --output activation-readiness.json
+          fi
+          if [[ "${EVENT}" == "pull_request" && -f release/qualification_automation.py ]]; then
+            .venv/bin/python -I release/qualification_automation.py validate-pr \
+              --root . --repository "${GITHUB_REPOSITORY}" \
+              --pull-request "${PULL_REQUEST}" --head-sha "${PROPOSED_HEAD}" \
+              --output activation-proof.json
+          else
+            echo 'Trusted verifier bootstrap or main CI; no activation PR was accepted.'
+          fi
+
+  complete:
+    name: CI complete
+    if: always()
+    needs: [activation-proof, core-check-inputs, core-check-comparison, typecheck, test, mcp-sdk, wiki-integrity, p0-oci-integration]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Set up gate Python
+        id: python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+      - name: Create gate environment
+        run: '"${{ steps.python.outputs.python-path }}" -m venv .venv'
+      - name: Require every mandatory CI producer
+        env:
+          PRODUCERS: ${{ toJSON(needs) }}
+        run: |
+          .venv/bin/python -I - <<'PY'
+          import json, os
+          producers = json.loads(os.environ["PRODUCERS"])
+          optional = {"core-check-inputs"}
+          if producers["core-check-inputs"].get("outputs", {}).get("enabled") != "true":
+              optional.add("core-check-comparison")
+          failed = [name for name, value in producers.items()
+                    if value["result"] not in ({"success", "skipped"} if name in optional else {"success"})]
+          if failed:
+              raise SystemExit("Required CI producers did not succeed: " + ", ".join(failed))
+          PY
+
   core-check-inputs:
     name: Freeze core-check comparison inputs
     if: ${{ github.event_name == 'pull_request' }}

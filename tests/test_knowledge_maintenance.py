@@ -532,41 +532,101 @@ def test_policy_shadow_preserves_activation_validation_and_never_changes_require
         RELEASE["policy"](raw(config("required")), policy_shadow="false")
 
 
-def test_stale_activation_cli_retains_actionable_diagnostics(tmp_path, monkeypatch):
+@pytest.fixture
+def explicit_activation_root(tmp_path):
+    root = tmp_path / "candidate"
+    (root / "release").mkdir(parents=True)
+    (root / "docs/llm_wiki").mkdir(parents=True)
+    shutil.copyfile(ROOT / "pyproject.toml", root / "pyproject.toml")
+    shutil.copyfile(ROOT / "docs/llm_wiki/.llm-wiki-knowledge.json", root / "docs/llm_wiki/.llm-wiki-knowledge.json")
+    registry_path = "src/llm_wiki_cli/services/analysis_contracts.json"
+    registry = json.loads((ROOT / registry_path).read_text())
+    for relative in [registry_path, *("src/llm_wiki_cli/" + name for name in registry["shared"])]:
+        target = root / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(ROOT / relative, target)
+    value = json.loads((ROOT / RELEASE["POLICY_PATH"]).read_text())
+    value["activation"]["implementation_sha256"] = "0" * 64
+    (root / RELEASE["POLICY_PATH"]).write_bytes(raw(value))
+    return root
+
+
+def test_stale_activation_cli_retains_actionable_diagnostics(tmp_path, monkeypatch, explicit_activation_root):
     output = tmp_path / "activation.json"
     summary = tmp_path / "summary.md"
     monkeypatch.setenv("GITHUB_STEP_SUMMARY", str(summary))
     with pytest.raises(SystemExit) as exc:
-        RELEASE["main"](["check-version", "--root", str(ROOT), "--output", str(output)])
+        RELEASE["main"](["check-version", "--root", str(explicit_activation_root), "--output", str(output)])
     assert exc.value.code == 2
     result = json.loads(output.read_text())
     assert result["status"] == "blocked" and result["mode"] == "required"
-    assert result["activation"] == json.loads((ROOT / RELEASE["POLICY_PATH"]).read_text())["activation"]
+    assert result["activation"] == json.loads((explicit_activation_root / RELEASE["POLICY_PATH"]).read_text())["activation"]
     assert result["current_implementation_sha256"] == RELEASE["composite_policy_digest"](lambda name: (ROOT / name).read_bytes())
     assert "knowledge-policy-shadow=true" in result["remedy"]
     assert "do not replace the digest without proof" in summary.read_text()
 
 
-def test_explicit_shadow_can_reach_candidate_preflight_without_rebinding_activation(tmp_path):
+def test_explicit_shadow_can_reach_candidate_preflight_without_rebinding_activation(tmp_path, explicit_activation_root):
     output = tmp_path / "shadow.json"
-    original = (ROOT / RELEASE["POLICY_PATH"]).read_bytes()
+    original = (explicit_activation_root / RELEASE["POLICY_PATH"]).read_bytes()
     result = RELEASE["main"]([
-        "check-version", "--root", str(ROOT), "--output", str(output), "--policy-shadow",
+        "check-version", "--root", str(explicit_activation_root), "--output", str(output), "--policy-shadow",
     ])
     assert result == 0
     report = json.loads(output.read_text())
     assert report["mode"] == "shadow" and report["status"] == "full-preflight-required"
-    assert (ROOT / RELEASE["POLICY_PATH"]).read_bytes() == original
+    assert (explicit_activation_root / RELEASE["POLICY_PATH"]).read_bytes() == original
 
 
 @pytest.mark.parametrize("flag", ["false", "invalid"])
-def test_shadow_cli_does_not_treat_nontrue_text_as_permission(tmp_path, flag):
+def test_shadow_cli_does_not_treat_nontrue_text_as_permission(tmp_path, flag, explicit_activation_root):
     with pytest.raises(SystemExit) as exc:
         RELEASE["main"]([
-            "check-version", "--root", str(ROOT), "--output", str(tmp_path / "result.json"),
+            "check-version", "--root", str(explicit_activation_root), "--output", str(tmp_path / "result.json"),
             "--policy-shadow", flag,
         ])
     assert exc.value.code == 2
+
+
+def test_normal_admission_accepts_a_matching_committed_activation(tmp_path, explicit_activation_root):
+    path = explicit_activation_root / RELEASE["POLICY_PATH"]
+    value = json.loads(path.read_text())
+    value["activation"]["implementation_sha256"] = RELEASE["composite_policy_digest"](lambda name: (ROOT / name).read_bytes())
+    path.write_bytes(raw(value))
+    output = tmp_path / "current.json"
+    assert RELEASE["main"](["check-version", "--root", str(explicit_activation_root), "--output", str(output), "--policy-shadow", "false"]) == 0
+    assert json.loads(output.read_text())["mode"] == "required"
+
+
+@pytest.mark.parametrize("failure", ["none", "source", "integrity", "maintenance", "bundle", "identity"])
+def test_policy_shadow_decision_does_not_invent_release_gate_success(failure):
+    identity = {
+        "schema_version": "agent-wiki-release-identity/v1", "repository": "example/agent-wiki",
+        "source": {"sha": "a" * 40, "tree": "b" * 40, "archive_sha256": "c" * 64, "commit_epoch": 123},
+        "version": "2.3.2", "tag": "v2.3.2", "mode": "policy-shadow",
+    }
+    verification = {
+        "schema_version": RELEASE["VERIFICATION_SCHEMA"], "mode": "shadow", "status": "pass", "error": None,
+        "candidate_sha": "a" * 40, "candidate_tree": "b" * 40, "candidate_version": "2.3.2",
+        "evidence_sha256": {name: "sha256:" + "d" * 64 for name in ("preflight.json", "ci-report.json", "policy.json", "doctor.json")},
+        "activation_proof": {
+            "schema_version": "agent-wiki-release-policy-shadow/v1", "qualification": "nonpromoting",
+            "policy": hp.POLICY_V2_ID,
+            "implementation_sha256": RELEASE["composite_policy_digest"](lambda name: (ROOT / name).read_bytes()),
+        },
+    }
+    states = {"source_result": "success", "integrity_result": "success", "maintenance_result": "success", "bundle_result": "skipped"}
+    if failure in {"source", "integrity", "maintenance"}:
+        states[failure + "_result"] = "failure"
+    if failure == "bundle": states["bundle_result"] = "success"
+    if failure == "identity": identity["mode"] = "candidate"
+    if failure == "none":
+        result = RELEASE["shadow_decision"](identity, verification, **states)
+        assert result["nonpromoting"] is True
+        assert result["gates"] == {"source": "PASS", "integrity": "PASS", "maintenance": "PASS"}
+    else:
+        with pytest.raises(ValueError):
+            RELEASE["shadow_decision"](identity, verification, **states)
 
 
 @pytest.mark.parametrize("mutation", ["none", "candidate", "policy", "missing-doctor", "failed", "mode", "digest", "missing-error"])

@@ -1,0 +1,9 @@
+{
+  "schema_version": "agent-wiki-release-automation-config/v1",
+  "enabled": false,
+  "trusted_bot": {
+    "login": "",
+    "id": null,
+    "check_app_id": null
+  }
+}

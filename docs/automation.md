@@ -121,6 +121,56 @@ that exact commit. Routine pull-request health remains advisory. The release
 workflow retains `evidence-rd-10` with original maintenance inputs and
 `knowledge-maintenance-verification` with the separate verification result.
 
+### Qualification after merging
+
+Repository release automation is disabled by default in
+[`release/automation.json`](../release/automation.json). When enabled, successful
+main CI starts the coordinator. A stale policy binding receives a bounded,
+nonpromoting evaluation of the committed repository and standalone doctor
+parity. This evaluation can run between releases, including when the current
+version is already published.
+
+The coordinator authenticates the original hosted artifacts and creates a bot
+pull request containing only the activation update and its audit receipt.
+Independent proof verification, complete CI, and up-to-date branch checks must
+pass before automatic squash merging. The merge starts fresh CI and normal
+qualification for that exact main commit. Normal qualification waits when the
+version, release tag, or changelog is not ready; unavailable remote checks are
+reported as blocked. Source, health, and integrity failures remain blocking.
+
+Configure the following before setting `enabled` to `true`:
+
+- Enable repository auto-merge and protect main through pull requests, with no
+  bypass actors and with force pushes and deletion prohibited.
+- Require `CI complete` and `Release activation proof`, with up-to-date checks.
+  Retain the existing integrity requirement.
+- Set `trusted_bot.login` and `trusted_bot.id` to the bot account, and
+  `trusted_bot.check_app_id` to its independent check publisher's GitHub App ID.
+- For GitHub App authentication, configure the repository variable
+  `RELEASE_AUTOMATION_APP_CLIENT_ID` and secret
+  `RELEASE_AUTOMATION_APP_PRIVATE_KEY`. The pinned adapter creates and revokes a
+  repository-scoped installation token for each coordinator run. Grant Actions,
+  Contents, Pull requests, and Checks write permissions, and Administration read
+  permission to inspect branch rules. Do not grant protection bypass.
+- Alternatively, provide a suitable bot credential through the
+  `RELEASE_AUTOMATION_TOKEN` secret. It must authenticate as the configured bot
+  and check publisher; the coordinator never substitutes the ordinary job token.
+
+Missing credentials or protections produce `blocked_setup` without dispatching
+qualification or changing the repository. Configure and enable automation
+through a normal pull request, then use **Release qualification automation** in
+Actions to resume the current main candidate. The optional retry input creates
+a new request only when explicitly selected; duplicate completion events reuse
+existing work.
+
+Pinned candidate branches and candidate/run/attempt identities prevent main
+advancing during dispatch from changing the qualified source. Changed policy
+inputs supersede older renewal evidence. Audit receipts remain committed under
+`release/policy-activations/` after hosted artifact retention expires.
+
+Automation finishes with verified qualified artifacts and their links. PyPI
+publication and release tag creation remain separate explicit operations.
+
 ## Git hook retirement
 
 Git hook installation has been removed. After updating the package, run the
