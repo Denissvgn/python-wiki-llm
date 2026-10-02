@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 import re
 import sys
+import urllib.parse
 
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -27,6 +28,28 @@ from release.qualification import QualificationError, _run
 
 REPOSITORY = "Denissvgn/python-wiki-llm"
 BRANCH_PREFIX = "codex/manual-policy-activation/"
+APPROVAL_COMMIT_MESSAGE = "Renew reviewed main policy approval"
+
+
+def _require_approval_pr(
+    pr: dict, repository: str, branch: str, base: str, head: str
+) -> None:
+    proposed_head, proposed_base = pr.get("head"), pr.get("base")
+    if not isinstance(proposed_head, dict) or not isinstance(proposed_base, dict):
+        raise ValueError("approval PR has incomplete source identity")
+    require(
+        pr.get("state") == "open"
+        and pr.get("draft") is False
+        and proposed_head.get("sha") == head
+        and proposed_head.get("ref") == branch
+        and isinstance(proposed_head.get("repo"), dict)
+        and proposed_head["repo"].get("full_name") == repository
+        and proposed_base.get("ref") == "main"
+        and proposed_base.get("sha") == base
+        and isinstance(proposed_base.get("repo"), dict)
+        and proposed_base["repo"].get("full_name") == repository,
+        "approval PR differs from the verified proposal",
+    )
 
 
 def main_identity(root: Path, client) -> str:
@@ -137,15 +160,12 @@ def create_pr(repository: str, result: dict, reader, writer, *, config: dict) ->
         reader.get("/git/ref/heads/main")["object"]["sha"] == base,
         "main advanced before approval proposal",
     )
+    existing = None
     try:
-        reader.get("/git/ref/heads/" + branch)
+        existing = reader.get("/git/ref/heads/" + branch)
     except APIError as exc:
         if exc.status != 404:
             raise
-    else:
-        raise ValueError(
-            "approval branch already exists; review its PR before creating another proposal"
-        )
     parent = reader.get("/git/commits/" + base)
     entries = []
     for name in result["files"]:
@@ -161,22 +181,61 @@ def create_pr(repository: str, result: dict, reader, writer, *, config: dict) ->
     tree = writer.request(
         "POST", "/git/trees", {"base_tree": parent["tree"]["sha"], "tree": entries}
     )
-    commit = writer.request(
-        "POST",
-        "/git/commits",
-        {
-            "message": "Renew reviewed main policy approval",
-            "tree": tree["sha"],
-            "parents": [base],
-        },
-    )
+    if existing is not None:
+        head = existing.get("object", {}).get("sha")
+        require(
+            existing.get("ref") == "refs/heads/" + branch
+            and existing.get("object", {}).get("type") == "commit"
+            and isinstance(head, str)
+            and re.fullmatch(r"[0-9a-f]{40}", head),
+            "approval branch has an invalid identity",
+        )
+        commit = reader.get("/git/commits/" + head)
+        require(
+            commit.get("sha") == head
+            and commit.get("tree", {}).get("sha") == tree["sha"]
+            and commit.get("message") == APPROVAL_COMMIT_MESSAGE
+            and isinstance(commit.get("parents"), list)
+            and len(commit["parents"]) == 1
+            and isinstance(commit["parents"][0], dict)
+            and commit["parents"][0].get("sha") == base,
+            "approval branch has unowned or superseded changes",
+        )
+    else:
+        commit = writer.request(
+            "POST",
+            "/git/commits",
+            {
+                "message": APPROVAL_COMMIT_MESSAGE,
+                "tree": tree["sha"],
+                "parents": [base],
+            },
+        )
     require(
         reader.get("/git/ref/heads/main")["object"]["sha"] == base,
         "main advanced before approval branch creation",
     )
-    writer.request(
-        "POST", "/git/refs", {"ref": "refs/heads/" + branch, "sha": commit["sha"]}
+    if existing is None:
+        writer.request(
+            "POST", "/git/refs", {"ref": "refs/heads/" + branch, "sha": commit["sha"]}
+        )
+    require(
+        reader.get("/git/ref/heads/" + branch).get("object", {}).get("sha")
+        == commit["sha"],
+        "approval branch changed before PR creation",
     )
+    owner_head = urllib.parse.quote(repository.split("/")[0] + ":" + branch, safe="")
+    prs = reader.list(f"/pulls?state=open&head={owner_head}")
+    require(len(prs) <= 1, "approval branch has ambiguous open PRs")
+    if prs:
+        pr = prs[0]
+        _require_approval_pr(pr, repository, branch, base, commit["sha"])
+        return {
+            **result,
+            "status": "pull_request_reused",
+            "url": pr["html_url"],
+            "head_sha": commit["sha"],
+        }
     pr = writer.request(
         "POST",
         "/pulls",
@@ -189,6 +248,7 @@ def create_pr(repository: str, result: dict, reader, writer, *, config: dict) ->
             "Independent proof verification and normal branch review are required before merge.",
         },
     )
+    _require_approval_pr(pr, repository, branch, base, commit["sha"])
     return {
         **result,
         "status": "pull_request_created",

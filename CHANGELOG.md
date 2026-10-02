@@ -20,6 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Policy approval retries recover matching branches and open PRs after
+  interrupted creation requests. Automatic proof replay retains its dispatch
+  identity when main advances or a prior manual approval uses the same policy.
 - Agent instructions and extractor failures explain authorized helper recovery
   and preserve the original read-only request for a bounded retry. Recovery
   commands support literal POSIX and PowerShell path arguments.

@@ -680,20 +680,29 @@ class Coordinator:
         if verifier is None:
             from release.policy_activation import verify_shadow
             verifier = verify_shadow
+        source = maintenance.activation_source_sha(activation)
+        receipts = [x for x in self.receipts(source) if x["profile"] == "policy-shadow" and x.get("run_id") == activation["run_id"]]
+        require(len(receipts) <= 1, "activation has ambiguous dispatch receipts")
+        if receipts:
+            # An automatic proposal's audit may exist only on its PR head.
+            # The authenticated dispatch receipt selects its pinned verifier.
+            return verifier(self.repository, activation["run_id"], activation["attempt"], source,
+                            self.root, client=self.client, request_id=receipts[0]["request_id"])
         if "proof_source_sha" in activation:
             audit = strict(self.content(AUDIT_PREFIX + activation["implementation_sha256"] + ".json", self.main()))
             require(isinstance(audit, dict), "invalid activation audit")
-            if audit.get("request_id") is None:
+            if (audit.get("request_id") is None
+                    and audit.get("candidate_sha") == source
+                    and audit.get("run_id") == activation["run_id"]
+                    and audit.get("attempt") == activation["attempt"]
+                    and audit.get("implementation_sha256") == activation["implementation_sha256"]):
                 verified = verifier(self.repository, activation["run_id"], activation["attempt"],
-                                    maintenance.activation_source_sha(activation), self.root,
+                                    source, self.root,
                                     client=self.client, main_proof=True)
                 require(verified["activation"] == activation and verified["audit"] == audit,
                         "manual activation differs from its authenticated proof")
                 return verified
-        receipts = [x for x in self.receipts(maintenance.activation_source_sha(activation)) if x["profile"] == "policy-shadow" and x.get("run_id") == activation["run_id"]]
-        require(len(receipts) == 1, "activation lacks its exact dispatch receipt")
-        return verifier(self.repository, activation["run_id"], activation["attempt"], maintenance.activation_source_sha(activation), self.root, client=self.client,
-                        request_id=receipts[0]["request_id"])
+        raise AutomationError("activation lacks its exact dispatch receipt or matching manual audit")
 
     def normal(self, run: dict, receipt: dict) -> dict:
         artifacts = self.client.list(f"/actions/runs/{run['id']}/artifacts", "artifacts")

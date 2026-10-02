@@ -198,8 +198,11 @@ requiring callers to find the policy-shadow switch among qualification options.
    without upstream tracking, commit those files, and push with an explicit
    same-name refspec. If main advances, rerun `prepare` instead of carrying
    other changes into that approval PR.
-   If the approval branch already exists, review its PR before creating another
-   proposal; the helper does not overwrite existing branch state.
+   Retry an interrupted approval request with the same proof. The helper reuses
+   an existing branch only when its commit, tree, and main parent match the
+   generated proposal, then returns its matching open PR or creates the missing
+   PR. Unrelated, stale, or concurrently changed state is rejected for review;
+   existing branch state is never overwritten.
 5. Merge only after the independent **Release activation proof** and normal
    required checks succeed and the approval is reviewed. The renewal workflow
    never merges the PR, creates release tags, or publishes distributions.
@@ -209,6 +212,12 @@ the reviewed policy proof was produced. Existing `candidate_sha` records remain
 readable; providing both names is rejected. Existing coordinator proof runs
 retain their pinned branch and correlation checks. Manual proofs are accepted
 from main only through the explicit manual verification route.
+
+The coordinator identifies automatic proofs through authenticated dispatch
+receipts before considering manual approvals. Automatic approval PRs can be
+rebased after main advances even when their proposed audit is not yet on main.
+A committed manual audit must match the proof source, run, attempt, and
+implementation before its original hosted evidence is replayed.
 
 An activation-only merge changes main's commit SHA without changing the policy
 implementation digest or evaluated configuration. Keep `proof_source_sha`
