@@ -24,6 +24,15 @@ authorized matching plugin or leave the limitation explicit.
 
 ## Prepared helpers and cache ownership
 
+During project setup, `llm-wiki init --prepare-extractors` detects the selected
+helper languages and prepares missing or stale helpers before scaffolding. It
+reuses current helpers and can be repeated after a package upgrade. Preparation
+may download dependencies or compile bundled helpers and requires the relevant
+toolchain. This is an explicit setup operation; read-only analysis never
+prepares helpers. For a custom cache, use
+`init --prepare-extractors --helper-cache-dir PATH` and the same cache base for
+subsequent analysis, or set `LLM_WIKI_CACHE_DIR` consistently.
+
 TypeScript/JavaScript, Go, Rust, and Haskell extraction runs through prepared
 helper toolchains. If extraction or lint reports a missing prepared helper, an
 authorized caller may prepare the package-owned helper cache and then repeat

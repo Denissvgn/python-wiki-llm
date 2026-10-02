@@ -13,6 +13,7 @@ from ..services.extractor_helpers import (
 )
 from ..services.source_snapshot import build_source_snapshot
 from ..services.source_selection import resolve_source_selection
+from ..services.helper_preparation import selected_helper_languages
 
 
 PREPARE_EXTRACTORS_PLAN_SCHEMA = "llm-wiki-prepare-extractors-plan/v1"
@@ -40,15 +41,7 @@ def _languages_from_snapshot(
     *,
     source_selection: str | Path | None = None,
 ) -> list[str]:
-    snapshot = build_source_snapshot(
-        src_dir,
-        source_selection=source_selection,
-    )
-    return [
-        language
-        for language in SUPPORTED_HELPERS
-        if snapshot.files_by_language.get(language)
-    ]
+    return selected_helper_languages(src_dir, source_selection=source_selection)
 
 
 def _print_plan(languages: list[str], output_format: str) -> None:

@@ -22,6 +22,7 @@ from ..services.filesystem_guard import (
     ensure_guarded_directory,
     unlink_guarded_bytes,
 )
+from ..services.helper_preparation import ensure_source_helpers
 from ..services.rendering_lifecycle import (
     reference_recovery_command,
     select_render_profile,
@@ -93,6 +94,14 @@ def _managed_schema_agents() -> tuple[str, ...]:
 def run(args):
     wiki_dir = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
     validate_path(wiki_dir, "--wiki-dir")
+    prepare_extractors = bool(getattr(args, "prepare_extractors", False))
+    helper_cache_dir = getattr(args, "helper_cache_dir", None)
+    if helper_cache_dir is not None and not prepare_extractors:
+        print(
+            "Error: --helper-cache-dir requires --prepare-extractors during init.",
+            file=sys.stderr,
+        )
+        raise SystemExit(2)
     try:
         require_safe_wiki_scaffold(wiki_dir)
         require_safe_config_path(wiki_dir)
@@ -301,6 +310,28 @@ def run(args):
                 file=sys.stderr,
             )
             raise SystemExit(2) from exc
+
+    if prepare_extractors:
+        print("Preparing selected extractor helpers...", flush=True)
+        try:
+            results = ensure_source_helpers(
+                ".", cache_dir=helper_cache_dir, source_selection=source_selection
+            )
+        except (ValueError, OSError) as exc:
+            print(f"Error preparing extractor helpers: {exc}", file=sys.stderr)
+            raise SystemExit(1) from exc
+        for result in results:
+            print(f"{result.language}: {result.status} - {result.message}")
+        if any(result.status not in {"prepared", "already_current"} for result in results):
+            print(
+                "Error: extractor helper preparation did not complete. "
+                "Resolve the reported problem and rerun the same init command; "
+                "successfully prepared helpers will be reused.",
+                file=sys.stderr,
+            )
+            raise SystemExit(1)
+        if not results:
+            print("No extractor helpers required for the selected source files.")
 
     print(f"Initializing LLM Wiki with {agent} schema...")
 

@@ -356,6 +356,15 @@ def _add_init_command(subparsers):
         default=None,
         help="Skip installing the wiki-reference skill into the agent's skills directory (.claude/skills for claude, .llm-wiki/skills otherwise)",
     )
+    init_parser.add_argument(
+        "--prepare-extractors",
+        action="store_true",
+        help=(
+            "Prepare missing or stale helpers for selected source languages during "
+            "setup; may download dependencies or compile bundled helpers"
+        ),
+    )
+    _add_helper_cache_argument(init_parser)
     init_issue_reporting = init_parser.add_mutually_exclusive_group()
     init_issue_reporting.add_argument(
         "--issue-reporting",
