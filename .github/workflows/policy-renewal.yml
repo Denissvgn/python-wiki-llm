@@ -1,0 +1,117 @@
+name: Renew policy approval
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Evaluate current main policy, or prepare its reviewed approval PR
+        required: true
+        default: evaluate
+        type: choice
+        options: [evaluate, prepare]
+      proof-run-id:
+        description: Successful Release qualification policy-proof run ID (prepare only)
+        required: false
+        default: ""
+        type: string
+      proof-attempt:
+        description: Attempt number of that successful proof run
+        required: true
+        default: "1"
+        type: string
+
+permissions:
+  contents: read
+  actions: write
+  pull-requests: read
+
+concurrency:
+  group: manual-policy-renewal-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  renewal:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      HAS_APP_KEY: ${{ secrets.RELEASE_AUTOMATION_APP_PRIVATE_KEY != '' }}
+    steps:
+      - name: Require the main-branch workflow
+        env:
+          RUN_REF: ${{ github.ref }}
+          WORKFLOW_REF: ${{ github.workflow_ref }}
+          WORKFLOW_SHA: ${{ github.workflow_sha }}
+          RUN_SHA: ${{ github.sha }}
+        run: |
+          test "${RUN_REF}" = refs/heads/main
+          test "${WORKFLOW_REF}" = "${GITHUB_REPOSITORY}/.github/workflows/policy-renewal.yml@refs/heads/main"
+          test "${WORKFLOW_SHA}" = "${RUN_SHA}"
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          ref: ${{ github.workflow_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        id: python
+        with:
+          python-version: "3.13"
+      - name: Create the renewal environment
+        run: '"${{ steps.python.outputs.python-path }}" -m venv .venv'
+      - name: Acquire optional approval PR credentials
+        id: app
+        if: ${{ inputs.operation == 'prepare' && vars.RELEASE_AUTOMATION_APP_CLIENT_ID != '' && env.HAS_APP_KEY == 'true' }}
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.RELEASE_AUTOMATION_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_AUTOMATION_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-actions: read
+          permission-contents: write
+          permission-pull-requests: write
+      - name: Evaluate or prepare reviewed approval
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          POLICY_RENEWAL_TOKEN: ${{ steps.app.outputs.token || secrets.RELEASE_AUTOMATION_TOKEN }}
+          OPERATION: ${{ inputs.operation }}
+          PROOF_RUN_ID: ${{ inputs.proof-run-id }}
+          PROOF_ATTEMPT: ${{ inputs.proof-attempt }}
+        run: |
+          set -euo pipefail
+          proof=()
+          if [[ "${OPERATION}" == prepare ]]; then
+            proof=(--proof-run-id "${PROOF_RUN_ID}" --proof-attempt "${PROOF_ATTEMPT}")
+          fi
+          .venv/bin/python -I release/policy_renewal.py "${OPERATION}" \
+            --root . --repository "${GITHUB_REPOSITORY}" "${proof[@]}" \
+            --apply --output renewal-status.json
+      - name: Retain verified approval proposal
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          archive: true
+          name: policy-approval-proposal
+          path: |
+            renewal-status.json
+            policy-approval-proposal/
+          if-no-files-found: error
+          retention-days: 90
+      - name: Explain the next release step
+        if: always()
+        run: |
+          .venv/bin/python -I - <<'PY'
+          import json, os, pathlib
+          path = pathlib.Path("renewal-status.json")
+          data = json.loads(path.read_text()) if path.is_file() else {"status": "blocked", "reason": "No renewal result was produced."}
+          with pathlib.Path(os.environ["GITHUB_STEP_SUMMARY"]).open("a") as stream:
+              stream.write("## Policy approval\n\nStatus: **" + data["status"] + "**.\n\n")
+              stream.write(data.get("reason", data.get("next_step", "")) + "\n\n")
+              if data.get("proof_source_sha"):
+                  stream.write("Proof source commit: `" + data["proof_source_sha"] + "`\n\n")
+              if data.get("url"):
+                  stream.write("[Open workflow or approval PR](" + data["url"] + ")\n\n")
+              if data["status"] == "dispatched":
+                  stream.write("Proof run title: `Release qualification [" + data["request_id"] + "]`\n\n")
+                  stream.write("Wait for the policy-proof run to pass, then select prepare and enter its run ID.\n")
+              stream.write("After reviewing and merging the approval PR, qualify the new main SHA. The historical proof source SHA stays unchanged. No release is published by this workflow.\n")
+          PY

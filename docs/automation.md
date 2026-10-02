@@ -171,6 +171,55 @@ inputs supersede older renewal evidence. Audit receipts remain committed under
 Automation finishes with verified qualified artifacts and their links. PyPI
 publication and release tag creation remain separate explicit operations.
 
+## Manual policy approval and main releases
+
+Use **Renew policy approval** in Actions when the required policy binding is
+stale. This workflow works independently of whether the recurring release
+coordinator is enabled. It runs from `main` and offers a choice instead of
+requiring callers to find the policy-shadow switch among qualification options.
+
+1. Select `evaluate`. The workflow captures current main and dispatches a
+   nonpromoting policy proof through **Release qualification**. Its summary
+   links to qualification runs. Wait for the proof run to complete successfully.
+2. Run **Renew policy approval** again with `prepare`, that proof's run ID, and
+   its successful attempt number. The trusted verifier authenticates the
+   hosted artifacts, replays the evidence, and checks that the proof source is
+   in main history with unchanged policy implementation and configuration.
+3. Review the generated approval PR. With the configured GitHub App or
+   `RELEASE_AUTOMATION_TOKEN`, the workflow creates an activation-only PR from
+   `codex/manual-policy-activation/<implementation-digest>`. The credential
+   must belong to a repository maintainer or the configured trusted bot and
+   must trigger ordinary PR checks. The default job token is used for proof
+   dispatch and reading evidence, not for creating the approval PR.
+4. Without a PR credential, download `policy-approval-proposal`. Its generated
+   `release/knowledge-maintenance.json` and
+   `release/policy-activations/<implementation-digest>.json` are the two files
+   for a maintainer approval PR. Create the named branch from current main
+   without upstream tracking, commit those files, and push with an explicit
+   same-name refspec. If main advances, rerun `prepare` instead of carrying
+   other changes into that approval PR.
+   If the approval branch already exists, review its PR before creating another
+   proposal; the helper does not overwrite existing branch state.
+5. Merge only after the independent **Release activation proof** and normal
+   required checks succeed and the approval is reviewed. The renewal workflow
+   never merges the PR, creates release tags, or publishes distributions.
+
+New activation records use `proof_source_sha`: the historical commit on which
+the reviewed policy proof was produced. Existing `candidate_sha` records remain
+readable; providing both names is rejected. Existing coordinator proof runs
+retain their pinned branch and correlation checks. Manual proofs are accepted
+from main only through the explicit manual verification route.
+
+An activation-only merge changes main's commit SHA without changing the policy
+implementation digest or evaluated configuration. Keep `proof_source_sha`
+pointing to the proof commit; use the new main SHA as `candidate-sha` for normal
+**Release qualification**. Run qualification from main with policy shadow off.
+After it succeeds, dry-run **Promote qualified artifacts to PyPI** from main
+using that qualification run, `refs/heads/main`, and the bundle's distribution
+hashes. Create the release tag at the qualified SHA before requesting actual
+publication with the same bundle. Further release-source changes require a
+new full qualification.
+
 ## Git hook retirement
 
 Git hook installation has been removed. After updating the package, run the

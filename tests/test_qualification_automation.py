@@ -363,6 +363,28 @@ def test_manual_resume_requires_successful_exact_main_ci(controller):
     assert not controller.client.mutations
 
 
+def test_coordinator_replays_manual_approval_without_automatic_receipt(controller, monkeypatch):
+    activation = {"proof_source_sha": CANDIDATE, "run_id": 123, "attempt": 1,
+                  "implementation_sha256": "a" * 64, "comparison_sha256": "b" * 64}
+    audit = {"request_id": None}
+    verified = {"activation": deepcopy(activation), "audit": deepcopy(audit)}
+    calls = []
+
+    def verifier(*args, **kwargs):
+        calls.append(kwargs)
+        return deepcopy(verified)
+
+    controller.shadow_verifier = verifier
+    monkeypatch.setattr(controller, "content", lambda *args: qa.canonical(audit))
+    monkeypatch.setattr(controller, "receipts", lambda *args: pytest.fail("manual proof has no automatic receipt"))
+    assert controller._verify_activation(activation) == verified
+    assert calls[0]["main_proof"] is True
+    activation["attempt"] = 2
+    with pytest.raises(ValueError, match="authenticated proof"):
+        controller._verify_activation(activation)
+    assert not controller.client.mutations
+
+
 def test_failed_qualification_requires_explicit_retry(controller):
     result = controller.reconcile({"workflow_run": workflow_run()})
     run = controller.client.runs[result["run_id"]]

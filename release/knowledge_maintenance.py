@@ -35,7 +35,8 @@ class ActivationMismatch(ValueError):
         super().__init__(
             "health policy changed since its reviewed shadow proof "
             f"(recorded {activation['implementation_sha256']}, current {current}). "
-            "Run release qualification with knowledge-policy-shadow=true on the "
+            "Use Renew policy approval on main: evaluate, then prepare its approval PR. "
+            "Alternatively, run release qualification with knowledge-policy-shadow=true on the "
             "intended candidate, review the verified proof, then update the activation record. "
             "Normal qualification remains blocked; do not replace the digest without proof."
         )
@@ -64,6 +65,17 @@ def leaf():
 def _require_activation_digest(value: object, kind: str) -> str:
     if not isinstance(value, str) or re.fullmatch(r"[0-9a-f]{64}", value) is None:
         raise ValueError(f"invalid activation {kind} digest")
+    return value
+
+
+def activation_source_sha(activation: dict) -> str:
+    """Read the historical proof source, accepting the legacy field name."""
+    keys = set(activation) & {"proof_source_sha", "candidate_sha"}
+    if len(keys) != 1:
+        raise ValueError("activation requires exactly one proof source SHA")
+    value = activation[next(iter(keys))]
+    if not isinstance(value, str) or re.fullmatch(r"[0-9a-f]{40}", value) is None:
+        raise ValueError("invalid activation proof source SHA")
     return value
 
 
@@ -100,8 +112,7 @@ def policy(raw: bytes, *, implementation_hash: str | None = None, policy_shadow:
         raise ValueError("policy shadow requires an enabled maintenance policy")
     if value["mode"] == "required":
         activation = value["activation"]
-        if not isinstance(activation, dict) or set(activation) != {
-            "candidate_sha",
+        if not isinstance(activation, dict) or set(activation) - {"candidate_sha", "proof_source_sha"} != {
             "run_id",
             "attempt",
             "comparison_sha256",
@@ -110,9 +121,9 @@ def policy(raw: bytes, *, implementation_hash: str | None = None, policy_shadow:
             raise ValueError(
                 "required maintenance lacks a reviewed hosted activation record"
             )
+        activation_source_sha(activation)
         if (
-            not re.fullmatch(r"[0-9a-f]{40}", str(activation["candidate_sha"]))
-            or type(activation["run_id"]) is not int
+            type(activation["run_id"]) is not int
             or activation["run_id"] <= 0
             or type(activation["attempt"]) is not int
             or activation["attempt"] <= 0

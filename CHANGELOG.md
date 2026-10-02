@@ -7,9 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [2.3.2] - 2026-09-30
+## [2.3.2] - 2026-10-02
+
+### Added
+
+- Optional extractor preparation during `init`, with automatic source-language
+  selection, valid helper reuse, and recovery guidance that preserves the
+  source and helper cache for later analysis.
+- A dedicated main-branch policy approval workflow that produces reviewed
+  activation updates from verified hosted evidence. New records name their
+  historical source `proof_source_sha`, while existing records remain readable.
 
 ### Fixed
+
+- Agent instructions and extractor failures explain authorized helper recovery
+  and preserve the original read-only request for a bounded retry. Recovery
+  commands support literal POSIX and PowerShell path arguments.
 
 - Sync binds renamed entity pages to their recorded source owner, preserving
   authored descriptions when another module gains a same-named class.
