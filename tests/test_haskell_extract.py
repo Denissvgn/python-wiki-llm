@@ -111,8 +111,10 @@ class TestHaskellExtractorWrapper:
 
         assert inventory == {}
         assert extractor.last_error is not None
-        assert "prepare-extractors --language haskell" in extractor.last_error
-        assert "prepare-extractors --language haskell" in capsys.readouterr().err
+        assert "prepare-extractors" in extractor.last_error
+        assert "--language" in extractor.last_error
+        assert "haskell" in extractor.last_error
+        assert "retry the original command" in capsys.readouterr().err
 
     def test_no_haskell_files_skips_helper_probe(self, tmp_path, monkeypatch):
         helper_calls = []

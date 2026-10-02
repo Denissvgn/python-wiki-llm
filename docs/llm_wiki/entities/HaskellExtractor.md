@@ -1,6 +1,6 @@
 # HaskellExtractor
 
-**Location:** `src/llm_wiki_cli/extractors/haskell_extractor.py:36`
+**Location:** `src/llm_wiki_cli/extractors/haskell_extractor.py:37`
 **Kind:** Class
 **Bases:** —
 **Module:** [haskell_extractor](../modules/haskell_extractor.md)

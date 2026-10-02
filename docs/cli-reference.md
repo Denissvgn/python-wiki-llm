@@ -49,6 +49,8 @@ Scaffold the wiki structure and agent constraint file.
 
 ```bash
 llm-wiki init --agent claude
+llm-wiki init --agent claude --prepare-extractors
+llm-wiki init --prepare-extractors --helper-cache-dir .cache/llm-wiki-helpers
 llm-wiki init --agent copilot --wiki-dir .wiki
 llm-wiki init --agent cursor --no-quality-hints
 llm-wiki init --agent generic --issue-reporting
@@ -61,6 +63,29 @@ instructions are off by default; use `--no-issue-reporting` to explicitly omit
 them when refreshing an existing initialization. On a refresh, omitting
 `--agent` reuses the stored agent; a project with no stored selection defaults
 to `generic`.
+
+Add `--prepare-extractors` to automatically prepare missing or stale extractor
+helpers before creating or refreshing the wiki scaffold. Setup detects helper
+languages from the selected source files, honoring `--source-selection` and
+the stored selection on subsequent runs. Current helpers are reused without
+requiring their build tools. Preparation may download dependencies or compile
+bundled helpers; the relevant Node.js/npm, Go, Cargo, or GHC toolchain must be
+available when a helper needs preparation. TypeScript/JavaScript analysis still
+requires Node.js to run its prepared helper.
+
+If preparation fails, setup exits unsuccessfully before changing the scaffold
+or agent configuration. Fix the reported problem and rerun the same command;
+helpers that were successfully prepared are reused. Repeat this setup after a
+package upgrade or a change in selected languages. The flag applies only to
+that invocation and does not enable preparation in read-only commands.
+
+`--helper-cache-dir PATH` requires `--prepare-extractors` and selects the same
+cache base as `prepare-extractors --cache-dir PATH`. Otherwise setup uses
+`LLM_WIKI_CACHE_DIR` or the repository's `.git/llm-wiki-extractors/`. Projects
+without Git need an explicit cache location only when selected languages need
+helpers. A custom cache location is not saved in the agent configuration:
+pass it to later commands with `--helper-cache-dir PATH`, or set
+`LLM_WIKI_CACHE_DIR` consistently for setup and analysis.
 
 ## `bootstrap`
 
@@ -424,6 +449,11 @@ JSON payload includes top-level `warnings` only when such diagnostics exist.
 Prepare TypeScript/JavaScript dependencies and cached Go/Rust/Haskell helper
 binaries outside the lint/extract hot path.
 
+For automatic preparation during project setup, use
+`llm-wiki init --prepare-extractors`. This reuses valid helpers and prepares only
+missing or stale ones. `prepare-extractors` also checks the current build
+toolchain when explicitly rebuilding or refreshing the cache.
+
 ```bash
 llm-wiki prepare-extractors --src-dir .
 llm-wiki prepare-extractors --src-dir . --plan --format json
@@ -447,6 +477,18 @@ Commands that consume prepared Go/Rust/Haskell helpers accept
 `--helper-cache-dir PATH`.
 This is separate from inventory-command `--cache-dir PATH`, which only controls
 where `llm-wiki-inventory-cache.json` is read and written.
+
+Missing-helper errors include a preparation command for the failing language,
+source root, and resolved helper cache. Run that command as an authorized setup
+step, then retry the original analysis with the same options. Keep
+`--source-selection` on the analysis command; a language-specific preparation
+command uses `--language` and cannot also take `--source-selection`. If no Git
+cache is available, the remedy proposes a cache under the source root's
+`.llm-wiki/`; select that base on later reads with `--helper-cache-dir` where
+supported, or `LLM_WIKI_CACHE_DIR`. Preparation failures include toolchain and
+retry guidance. `llm-wiki doctor --capabilities` provides read-only diagnosis.
+After updating the package, `llm-wiki upgrade` refreshes managed agent
+instructions so agents follow the helper recovery procedure.
 
 ## `lint` and `ci-check`
 

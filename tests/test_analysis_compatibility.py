@@ -75,6 +75,23 @@ def test_capture_rejects_unclassified_or_missing_inputs(tmp_path):
     assert capture.capture_analysis(registry, package_root=package) == {}
 
 
+def test_installed_package_has_complete_analysis_classification():
+    from llm_wiki_cli.config import EXTRACTOR_REGISTRY
+
+    rules = capture.registry()
+    assert "services/helper_preparation.py" in rules["classified_python_files"]
+    # Setup code is classified without entering the observation commitments.
+    assert "services/helper_preparation.py" not in rules["shared"]
+    assert all(
+        "services/helper_preparation.py" not in paths
+        for paths in rules["providers"].values()
+    )
+    captured = capture.capture_analysis(EXTRACTOR_REGISTRY, languages={"python"})
+    assert set(captured) == {
+        "agent-wiki-cli", "llm-wiki/extractor/python", "llm-wiki/extractor/infrastructure"
+    }
+
+
 def test_custom_executor_does_not_receive_builtin_identity():
     result = capture.capture_analysis({"python": "custom:Extractor"}, languages={"python"})
     assert "llm-wiki/extractor/python" not in result

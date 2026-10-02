@@ -134,7 +134,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| expand_task_storage_receipt | expand_storage_receipt | 1365 | `expand_storage_receipt(receipt)` |
+| expand_task_storage_receipt | expand_storage_receipt | 1372 | `expand_storage_receipt(receipt)` |
 | expand_storage_receipt | isinstance (src/llm_wiki_cli/services…py:expand_storage_receipt) | 94 | `isinstance(receipt, Mapping)` |
 | expand_storage_receipt | ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt) | 95 | `ValueError('storage receipt must be an object')` |
 | expand_storage_receipt | receipt.get (src/llm_wiki_cli/services…py:expand_storage_receipt) | 96 | `receipt.get('schema_version')` |

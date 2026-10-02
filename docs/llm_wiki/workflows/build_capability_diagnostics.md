@@ -12,11 +12,12 @@
 4. `extractor_helpers.get_prepared_typescript_root`
 5. `extractor_helpers.get_prepared_binary`
 6. `extractor_helpers._manifest_path`
-7. `plugins.read_lock`
-8. `plugins.PluginError`
-9. `plugins.validate_plugin`
-10. `plugins.plugin_store`
+7. `extractor_helpers.helper_preparation_argv`
+8. `plugins.read_lock`
+9. `plugins.PluginError`
+10. `plugins.validate_plugin`
 11. `plugins.plugin_store`
+12. `plugins.plugin_store`
 
 ## Touches
 

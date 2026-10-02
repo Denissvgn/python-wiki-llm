@@ -752,6 +752,43 @@ def test_compact_schema_omits_expanded_procedural_catalogs() -> None:
     ) in text
 
 
+@pytest.mark.parametrize("agent", schema.SCHEMA_FILENAMES)
+@pytest.mark.parametrize("profile", list(SchemaRenderProfile))
+def test_generated_agents_have_actionable_helper_recovery(agent, profile):
+    content = _squash_ws(
+        _build_schema_content(agent, "docs/llm_wiki", render_profile=profile)
+    )
+    if profile is SchemaRenderProfile.COMPACT:
+        assert "with setup authorization, follow its remedy, then retry once" in content
+        assert "disclose failure and use source/wiki evidence" in content
+        assert "Reads never prepare helpers" in content
+    else:
+        assert "## Helper recovery" in content
+        assert "If setup is already authorized" in content
+        assert "retry the original command once, retaining `--read-only`" in content
+        assert "do not claim the failed context command succeeded" in content
+        assert "do not add `--source-selection`" in content
+        assert "do not run `init`, `bootstrap`, or `sync`" in content
+
+
+def test_managed_helper_recovery_is_reachable_from_context_guidance():
+    references = (
+        Path(__file__).parents[1] / "src/llm_wiki_cli/skills/wiki-reference/references"
+    )
+    context = (references / "context-query.md").read_text(encoding="utf-8")
+    recovery = _squash_ws(
+        (references / "extractors-dependencies.md").read_text(encoding="utf-8")
+    )
+    assert (
+        "extractors-dependencies.md#recover-a-failed-context-or-extraction-command"
+        in context
+    )
+    assert "without asking again" in recovery
+    assert "retry the original analysis command once" in recovery
+    assert "continue the task with targeted source inspection" in recovery
+    assert "Do not invoke `init`, `bootstrap`, or `sync`" in recovery
+
+
 def test_compact_issue_reporting_requires_exact_ignore_proof() -> None:
     content = build_compact_schema_content(
         "generic",

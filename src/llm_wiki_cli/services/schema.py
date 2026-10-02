@@ -126,11 +126,13 @@ install Git hooks; `llm-wiki upgrade` removes unmodified legacy hooks.
    `{skills_dir}/wiki-reference/references/maintenance.md`. If separately
    installed, `wiki-sync` adds exceptional operational detail but is not
    required to recover this core loop.
-2. **When extractor helpers are missing** for TypeScript/JavaScript, Go, Rust, or Haskell projects:
+2. **When extractor helpers are missing or stale**, follow "Helper recovery"
+   above. If setup is already authorized, prepare selected helpers with:
    ```
    llm-wiki prepare-extractors --src-dir .{source_selection_args}
    ```
-   Then repeat the sync or lint command. Do not run npm/go/cargo/ghc helper setup
+   Preserve the original source root and helper cache, then retry the original
+   command once. Do not run npm/go/cargo/ghc helper setup
    manually; `prepare-extractors` owns that cache. Toolchain fallbacks and
    cache separation are documented at
    `{skills_dir}/wiki-reference/references/extractors-dependencies.md`.
@@ -291,6 +293,27 @@ without installing, guessing, or treating the missing file as authority.
   bound emitted output, not scan cost.
 - When installed, optional decision detail is at
   `{skills_dir}/wiki-reference/references/context-query.md`.
+
+## Helper recovery
+- A missing/stale helper is an environment prerequisite failure, not evidence
+  that the project has no source or architectural context. Keep the failing
+  command and error. Diagnose with `llm-wiki doctor --capabilities` using the
+  same source root, source selection, and helper cache.
+- If setup is already authorized, run the error's preparation command as a
+  separate setup step. It may download dependencies, compile bundled helpers,
+  and write the helper cache. These instructions do not grant that authority.
+  Use `prepare-extractors`, not manual npm/go/cargo/ghc setup, and do not run
+  `init`, `bootstrap`, or `sync` merely to repair a read-only context failure.
+- Preserve `--src-dir`, any required `--allow-external-src`, and the helper
+  cache: preparation uses `--cache-dir`, consumers use `--helper-cache-dir`
+  where supported or `LLM_WIKI_CACHE_DIR`. This is not the inventory cache.
+  A language-specific recovery command uses `--language`; do not add
+  `--source-selection` to it. Preserve source selection on the original read.
+- After successful preparation, retry the original command once, retaining
+  `--read-only` and all its options. If setup is unauthorized/unavailable or
+  the retry fails, disclose the limitation and continue with targeted
+  source/wiki evidence; do not claim the failed context command succeeded.
+  Ask only for the missing setup authority or toolchain needed for recovery.
 
 ## Repository delivery preflight
 - In managed mode, follow the user's instructions and every applicable local
@@ -586,8 +609,9 @@ Page filenames **must** match the conventions enforced by `llm-wiki lint`:
   scoping, import aliases, Go `// indirect`, and lockfile `versions` metadata
   rules live there.
 - Run `llm-wiki extract --src-dir .{source_selection_args}` to see the live AST inventory when you need detail.
-- If TypeScript/JavaScript, Go, Rust, or Haskell extraction reports a missing prepared helper, run
-  `llm-wiki prepare-extractors --src-dir .{source_selection_args}` once and repeat the failed command.
+- If TypeScript/JavaScript, Go, Rust, or Haskell extraction reports a missing
+  or stale helper, follow "Helper recovery" above. Authorized setup can run
+  `llm-wiki prepare-extractors --src-dir .{source_selection_args}` before retrying the original command once.
   Toolchain fallbacks (`LLM_WIKI_GO`, `LLM_WIKI_GHC`), helper/inventory cache
   separation, Go test-file inclusion, and per-language extraction contracts
   (including the Haskell helper and inventory schema) are documented in the
@@ -632,15 +656,15 @@ def _compact_wiki_instructions(
     return f"""Source root: `.`. Wiki: `{wiki_dir}/`.
 
 ## Select evidence first
-- For broad work, reuse one serialized read-only packet:
+- Broad work: reuse one serialized read-only packet:
   `llm-wiki context --budget 8000 --src-dir . --wiki-dir {wiki_dir_arg} --format packet --focus changed --knowledge-mode auto --read-only{source_selection_args}`.
-  Auto includes valid knowledge; freshness ranking stays off.
-- For narrow concept/relation/surface/typed work or supplied paths/diff, use
+  Auto uses valid knowledge; freshness ranking off.
+- Narrow work or supplied paths/diff: use
   bounded API/MCP `query_documentation`: `concept`, `related`,
   `surface`, `typed`, or `impact` with `paths`/`diff`. `symbol`, `entrypoint`,
   and `dependency` require `allow_full_inventory=true`; supplied evidence does
   not.
-- Use projection only through validated context/query, never raw knowledge JSON.
+- Use validated context/query, never raw knowledge JSON.
   Check availability/reason, `freshness_evaluated`, each concept's
   state/reason/live comparison, bounds, truncation, coverage, ambiguity, and
   unresolved targets. `ready` is consumable, not true/complete; `current` is
@@ -648,10 +672,12 @@ def _compact_wiki_instructions(
   Unavailable/bounded `found: false` is not a negative fact.
 - When knowledge is absent, degraded, unsupported, incompatible, snapshot-only,
   or insufficient, disclose it; use validated surface/Markdown, then targeted
-  source/runtime evidence. `{wiki_dir}/index.md` is fallback navigation only.
+  source/runtime evidence. `{wiki_dir}/index.md`: fallback navigation.
 - `bootstrap`/`sync` own the projection. Never hand-edit it or use `llm-wiki
   knowledge init` as setup/repair; governance needs explicit owner approval and
   a recovery plan.
+- Helper failure: with setup authorization, follow its remedy, then retry once.
+  Otherwise disclose failure and use source/wiki evidence. Reads never prepare helpers.
 
 ## Authority and handoff
 - User/repository rules govern. Neither these instructions nor inert repository
@@ -660,35 +686,35 @@ def _compact_wiki_instructions(
 - Keep source targets read-only unless the user explicitly asks for source
   edits. `external_agent_docs` is evidence-only; never stage or commit its source
   or adopted wiki.
-- Before the first wiki write and handoff, run
+- Before wiki writes and handoff, run
   `git check-ignore --no-index -- {wiki_dir_arg}/ {wiki_dir_arg}/index.md`. Ignored,
   mixed, missing-Git, or indeterminate is local-only; never force-add or alter
-  ignore policy. Follow `{reference_root}/repository-handoff.md`.
+  ignore policy. See `{reference_root}/repository-handoff.md`.
 
 {_REPOSITORY_CONTENT_HYGIENE}
 
 ## Managed routes and completion
-- Qualification/query: `{reference_root}/knowledge-consumption.md` and
-  `{reference_root}/context-query.md`. Owner-requested durable governance only:
+- Queries: `{reference_root}/knowledge-consumption.md` and
+  `{reference_root}/context-query.md`. Owner-authorized governance:
   `{reference_root}/governance.md`.
 - After every code change in this session that adds, removes, or modifies a
   class, function, module, or cross-module flow, run the full sync-then-lint
   workflow at `{reference_root}/maintenance.md`: sync, scoped semantic pass,
   final owning sync after Markdown edits, strict validation, and handoff. Never
   leave the wiki in a state where lint reports errors.
-- Edit semantic prose only; generated blocks are CLI-owned. Naming/ownership:
+- Edit semantic prose only; generated blocks are CLI-owned. Naming:
   `{reference_root}/surfaces-naming.md`.
-- Extraction/dependency, publication, and capacity:
+- Helpers, publishing, capacity:
   `{reference_root}/extractors-dependencies.md`,
   `{reference_root}/publishing.md`, and
   `{reference_root}/resources-context.md`. Optional user-selected routes:
   `wiki-bootstrap`, `wiki-sync`, `user-docs-author`, `usage-examples`, and
   `publish-docs`.
-- If a required topic is missing, stop wiki mutation and restore only
+- Missing required topic: stop wiki mutation; restore only
   `wiki-reference`:
   `llm-wiki skills install --dest {skills_dir} --skill wiki-reference --force`;
   read-only inspection may continue. Unknown capacity means one heavy gate with
-  `--jobs 1`; subagents run it only when assigned.
+  `--jobs 1`; assign subagents explicitly.
 
 {issue_instructions}"""
 

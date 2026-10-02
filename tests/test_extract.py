@@ -3858,20 +3858,10 @@ class TestUnsupportedSources:
         assert result.inventory == {}
         assert result.statuses["haskell"].state == "failed"
         assert result.statuses["haskell"].files_found == 2
-        assert (
-            "prepare-extractors --language haskell"
-            in result.statuses["haskell"].message
-        )
-        assert (
-            result.statuses["haskell"].message.count(
-                "prepare-extractors --language haskell"
-            )
-            == 1
-        )
-        assert (
-            "before extract/bootstrap/sync/lint/ci-check"
-            in result.statuses["haskell"].message
-        )
+        assert "--language" in result.statuses["haskell"].message
+        assert result.statuses["haskell"].message.count("prepare-extractors") == 1
+        assert "retry the original command" in result.statuses["haskell"].message
+        assert "unprepared-helper-cache" in result.statuses["haskell"].message
         assert "before lint/extract" not in result.statuses["haskell"].message
         assert (
             extract_cmd.unsupported_source_summary(

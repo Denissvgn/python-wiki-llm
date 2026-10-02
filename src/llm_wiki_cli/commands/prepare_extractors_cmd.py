@@ -8,11 +8,13 @@ from ..config import validate_source_root
 from ..services.extractor_helpers import (
     SUPPORTED_HELPERS,
     HelperPrepareResult,
+    helper_preparation_failure_hint,
     prepare_helper,
     resolve_helper_cache_root,
 )
 from ..services.source_snapshot import build_source_snapshot
 from ..services.source_selection import resolve_source_selection
+from ..services.helper_preparation import selected_helper_languages
 
 
 PREPARE_EXTRACTORS_PLAN_SCHEMA = "llm-wiki-prepare-extractors-plan/v1"
@@ -40,15 +42,7 @@ def _languages_from_snapshot(
     *,
     source_selection: str | Path | None = None,
 ) -> list[str]:
-    snapshot = build_source_snapshot(
-        src_dir,
-        source_selection=source_selection,
-    )
-    return [
-        language
-        for language in SUPPORTED_HELPERS
-        if snapshot.files_by_language.get(language)
-    ]
+    return selected_helper_languages(src_dir, source_selection=source_selection)
 
 
 def _print_plan(languages: list[str], output_format: str) -> None:
@@ -68,7 +62,10 @@ def _print_plan(languages: list[str], output_format: str) -> None:
 
 def _format_result(result: HelperPrepareResult) -> str:
     detail = f" ({result.path})" if result.path else ""
-    return f"{result.language}: {result.status} - {result.message}{detail}"
+    message = f"{result.language}: {result.status} - {result.message}{detail}"
+    if result.status == "failed":
+        message += f"\nNext step: {helper_preparation_failure_hint(result.language)}"
+    return message
 
 
 def run(args) -> None:
@@ -132,7 +129,13 @@ def run(args) -> None:
         return
 
     print(f"Preparing extractor helpers in: {Path(cache_root)}")
-    results = [prepare_helper(language, cache_root) for language in languages]
+    results = []
+    for language in languages:
+        try:
+            result = prepare_helper(language, cache_root)
+        except OSError as exc:
+            result = HelperPrepareResult(language, "failed", str(exc))
+        results.append(result)
     for result in results:
         print(_format_result(result))
 

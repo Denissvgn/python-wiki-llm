@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any
 
 from .inventory_cache import ENV_CACHE_DIR
+from .paths import render_shell_command
 
 ENV_GO_BINARY = "LLM_WIKI_GO"
 ENV_GHC_BINARY = "LLM_WIKI_GHC"
@@ -24,6 +25,12 @@ HELPER_CACHE_DIRNAME = "llm-wiki-extractors"
 HELPER_MANIFEST = "current.json"
 HELPER_MANIFEST_VERSION = 2
 SUPPORTED_HELPERS = ("typescript", "go", "rust", "haskell")
+HELPER_TOOLCHAIN_HINTS = {
+    "typescript": "Install Node.js with npm, or make node and npm available on PATH",
+    "go": "Install Go or set LLM_WIKI_GO to a working Go executable",
+    "rust": "Install the Rust toolchain with Cargo, or make cargo available on PATH",
+    "haskell": "Install GHC 9.6.x or set LLM_WIKI_GHC to a supported GHC executable",
+}
 SUPPORTED_GHC_MAJOR = 9
 SUPPORTED_GHC_MINOR = 6
 
@@ -362,10 +369,40 @@ def _manifest_current(cache_root: Path, language: str) -> dict[str, Any] | None:
     return manifest
 
 
-def _prepared_message(language: str) -> str:
+def helper_preparation_argv(
+    language: str, src_dir: str | Path = ".", cache_dir: str | None = None
+) -> list[str]:
+    """Describe cache-only recovery for one helper without executing or writing.
+
+    An explicit language avoids scanning a different source-selection profile.
+    The resolved cache base preserves CLI, environment, Git and worktree lookup.
+    """
+    if language not in SUPPORTED_HELPERS:
+        raise ValueError(f"Unsupported helper language: {language}")
+    source_root = Path(src_dir).resolve()
+    cache_root = resolve_helper_cache_root(source_root, cache_dir)
+    cache_base = (
+        cache_root.parent if cache_root is not None else source_root / ".llm-wiki"
+    )
+    argv = [
+        "llm-wiki",
+        "prepare-extractors",
+        "--language",
+        language,
+        "--src-dir",
+        str(source_root),
+    ]
+    if not source_root.is_relative_to(Path.cwd().resolve()):
+        argv.append("--allow-external-src")
+    argv.extend(["--cache-dir", str(cache_base)])
+    return argv
+
+
+def helper_preparation_failure_hint(language: str) -> str:
     return (
-        f"{language} helper is not prepared. Run "
-        "`llm-wiki prepare-extractors` before lint/extract."
+        f"{HELPER_TOOLCHAIN_HINTS[language]}. "
+        "If the toolchain is available, resolve the reported build/download or "
+        "cache-write error. Then rerun the same preparation command."
     )
 
 
@@ -410,12 +447,31 @@ def missing_helper_message(
     language: str, src_dir: str | Path = ".", cache_dir: str | None = None
 ) -> str:
     cache_root = resolve_helper_cache_root(src_dir, cache_dir)
+    argv = helper_preparation_argv(language, src_dir, cache_dir)
+    shell = "PowerShell" if os.name == "nt" else "POSIX shell"
+    command = render_shell_command(argv, windows=os.name == "nt")
+    reason = (
+        f"{language} helper cache directory is unavailable."
+        if cache_root is None
+        else f"{language} helper is not prepared (missing, stale, or invalid)."
+    )
+    retry = "Then retry the original command with the same source selection and helper cache."
     if cache_root is None:
-        return (
-            f"{language} helper cache directory is unavailable. Run "
-            "`llm-wiki prepare-extractors --cache-dir PATH` before lint/extract."
+        cache_arg = render_shell_command([argv[-1]], windows=os.name == "nt")
+        if os.name == "nt":
+            cache_arg = cache_arg.removeprefix("& ")
+        retry = (
+            f"Then select that cache with --helper-cache-dir {cache_arg} on commands "
+            "that support it, or set LLM_WIKI_CACHE_DIR to that cache base, "
+            "and retry the original command with the same source selection."
         )
-    return _prepared_message(language)
+    return (
+        f"{reason} Recovery ({shell}): `{command}`. "
+        "Preparation writes the helper cache and may download dependencies or "
+        "compile bundled helpers; run it only when setup is authorized. "
+        f"{retry} Read-only commands never prepare helpers. "
+        "If setup is unavailable, report the limitation and use targeted source/wiki evidence."
+    )
 
 
 def typescript_dependencies_ready(

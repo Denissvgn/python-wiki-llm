@@ -1422,3 +1422,35 @@ Added explicit task requirements, qualified context composition, public query/se
 - Workflow pages created: 1
 - Dependency pages initialized: 0
 - Surface policy updated: no
+
+## 2026-10-02
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.3.2`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:2df741d1105ab35a7d59f6617808f17f445e80acc2ecdfb4b95eea816c9f7176`
+- Pages created: 1
+- Pages updated: 56
+- Pages metadata-only: 2
+- Pages skipped (unchanged): 1404
+- Pages deprecated: 0
+- Semantic fields preserved: 6
+- Moved entities: none
+
+## 2026-10-02
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.3.2`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:58ebf18d71bb32140815701fbad288532c4fad6d82b3fe5099ba0d8fe1228a98`
+- Pages created: 0
+- Pages updated: 0
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1462
+- Pages deprecated: 0
+- Semantic fields preserved: 0
+- Moved entities: none

@@ -57,6 +57,7 @@ EXPECTED_CURRENT_SECTIONS = {
     SchemaRenderProfile.EXPANDED_INLINE: (
         ("Preamble/markers", None),
         ("Before you start", "## Before you start"),
+        ("Helper recovery", "## Helper recovery"),
         ("Repository delivery preflight", "## Repository delivery preflight"),
         ("Native knowledge preflight", "## Native knowledge preflight"),
         ("Expanded repository content hygiene", "## Repository content hygiene"),

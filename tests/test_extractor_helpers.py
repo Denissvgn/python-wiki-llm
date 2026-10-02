@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import shlex
 import subprocess
 import types
 from pathlib import Path
@@ -11,6 +12,7 @@ from pathlib import Path
 import pytest
 
 from llm_wiki_cli.commands import prepare_extractors_cmd
+from llm_wiki_cli import cli
 from llm_wiki_cli.config import PathValidationError
 from llm_wiki_cli.services import extractor_helpers
 from llm_wiki_cli.services.extractor_helpers import (
@@ -30,6 +32,124 @@ from llm_wiki_cli.services.extractor_helpers import (
     resolve_helper_cache_root,
 )
 from llm_wiki_cli.services.source_selection import SourceSelectionError
+from llm_wiki_cli.services.paths import render_shell_command
+
+
+@pytest.mark.parametrize("language", extractor_helpers.SUPPORTED_HELPERS)
+@pytest.mark.parametrize("cache_mode", ["git", "worktree", "env", "explicit", "no-git"])
+def test_helper_recovery_plan_preserves_language_root_and_cache(
+    tmp_path, monkeypatch, capsys, language, cache_mode
+):
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    # An external source and quoted paths must survive the printed remedy.
+    source = tmp_path / "source $value's space"
+    source.mkdir()
+    monkeypatch.chdir(workspace)
+    monkeypatch.delenv("LLM_WIKI_CACHE_DIR", raising=False)
+    cache_dir = None
+    if cache_mode == "git":
+        (source / ".git").mkdir()
+        cache_base = source / ".git"
+    elif cache_mode == "worktree":
+        cache_base = tmp_path / "git metadata" / "worktrees" / "source"
+        cache_base.mkdir(parents=True)
+        (source / ".git").write_text(f"gitdir: {cache_base}\n", encoding="utf-8")
+    elif cache_mode == "env":
+        cache_base = tmp_path / "environment cache"
+        monkeypatch.setenv("LLM_WIKI_CACHE_DIR", str(cache_base))
+    elif cache_mode == "explicit":
+        cache_base = workspace / "explicit cache"
+        cache_dir = "explicit cache"
+        monkeypatch.setenv("LLM_WIKI_CACHE_DIR", str(tmp_path / "wrong cache"))
+    else:
+        cache_base = source / ".llm-wiki"
+    before = {
+        str(p.relative_to(tmp_path)): p.read_bytes()
+        for p in tmp_path.rglob("*")
+        if p.is_file()
+    }
+    argv = extractor_helpers.helper_preparation_argv(language, source, cache_dir)
+    assert argv[:4] == ["llm-wiki", "prepare-extractors", "--language", language]
+    assert argv[argv.index("--src-dir") + 1] == str(source)
+    assert "--allow-external-src" in argv
+    assert argv[-2:] == ["--cache-dir", str(cache_base)]
+    assert "--source-selection" not in argv
+    assert shlex.split(render_shell_command(argv)) == argv
+    message = extractor_helpers.missing_helper_message(language, source, cache_dir)
+    assert render_shell_command(argv, windows=os.name == "nt") in message
+    assert "only when setup is authorized" in message
+    assert "retry the original command" in message
+    assert "Read-only commands never prepare helpers" in message
+    if cache_mode == "no-git":
+        assert "set LLM_WIKI_CACHE_DIR to that cache base" in message
+    monkeypatch.setattr(
+        prepare_extractors_cmd,
+        "prepare_helper",
+        lambda *a: pytest.fail("remedy plan must not prepare"),
+    )
+    args = cli._build_parser().parse_args(argv[1:] + ["--plan", "--format", "json"])
+    prepare_extractors_cmd.run(args)
+    assert json.loads(capsys.readouterr().out)["languages"] == [language]
+    assert before == {
+        str(p.relative_to(tmp_path)): p.read_bytes()
+        for p in tmp_path.rglob("*")
+        if p.is_file()
+    }
+    assert not (cache_base / HELPER_CACHE_DIRNAME).exists()
+
+
+def test_local_recovery_does_not_request_external_source_access(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    argv = extractor_helpers.helper_preparation_argv("typescript", ".")
+    assert "--allow-external-src" not in argv
+
+
+def test_recovery_quoting_preserves_shell_metacharacters():
+    argv = ["llm-wiki", "--cache-dir", "cache&' $HOME %TEMP% ! ` ‘left’ ‚low‛"]
+    assert shlex.split(render_shell_command(argv)) == argv
+    assert render_shell_command(argv, windows=True) == (
+        "& 'llm-wiki' '--cache-dir' 'cache&'' $HOME %TEMP% ! ` ‘‘left’’ ‚‚low‛‛'"
+    )
+
+
+@pytest.mark.parametrize(
+    "language,prerequisite",
+    [
+        ("typescript", "Node.js with npm"),
+        ("go", "LLM_WIKI_GO"),
+        ("rust", "Cargo"),
+        ("haskell", "LLM_WIKI_GHC"),
+    ],
+)
+@pytest.mark.parametrize("io_failure", [False, True], ids=["toolchain", "cache-write"])
+def test_failed_preparation_prints_prerequisite_and_retry_guidance(
+    tmp_path, monkeypatch, capsys, language, prerequisite, io_failure
+):
+    monkeypatch.chdir(tmp_path)
+
+    def fail_preparation(*args):
+        if io_failure:
+            raise PermissionError("cache not writable")
+        return HelperPrepareResult(language, "failed", "tool unavailable")
+
+    monkeypatch.setattr(prepare_extractors_cmd, "prepare_helper", fail_preparation)
+    args = cli._build_parser().parse_args(
+        [
+            "prepare-extractors",
+            "--language",
+            language,
+            "--cache-dir",
+            str(tmp_path / "cache"),
+        ]
+    )
+    with pytest.raises(SystemExit) as exc:
+        prepare_extractors_cmd.run(args)
+    assert exc.value.code == 1
+    output = capsys.readouterr().out
+    assert ("cache not writable" if io_failure else "tool unavailable") in output
+    assert prerequisite in output
+    assert "rerun the same preparation command" in output
 
 
 def _write_fixture(root: Path, rel_path: str, content: str = "fixture\n") -> None:

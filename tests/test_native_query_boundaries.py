@@ -153,6 +153,9 @@ def test_unprepared_live_helper_has_the_same_unavailable_category(consumer, oper
     assert failure.value.code == "workspace-state-error"
     assert failure.value.details == {"field": "src_dir"}
     assert "prepared helpers" in str(failure.value)
+    assert "llm-wiki doctor --capabilities" in str(failure.value)
+    assert "same source root (--src-dir)" in str(failure.value)
+    assert "authorized setup step" in str(failure.value)
     assert "private-name" not in str(failure.value)
     assert str(consumer) not in str(failure.value)
     assert not (consumer / "empty-cache").exists()

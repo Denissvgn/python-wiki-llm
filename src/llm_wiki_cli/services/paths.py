@@ -62,6 +62,15 @@ def shell_quote(value: str | Path) -> str:
     return shlex.quote(str(value))
 
 
+def render_shell_command(argv: list[str], *, windows: bool = False) -> str:
+    """Render literal arguments for POSIX shells or Windows PowerShell."""
+    if windows:
+        # PowerShell also recognizes typographic single quotes as delimiters.
+        quotes = str.maketrans({char: char * 2 for char in "'‘’‚‛"})
+        return "& " + " ".join("'" + arg.translate(quotes) + "'" for arg in argv)
+    return shlex.join(argv)
+
+
 def display_project_path(path: Path) -> str:
     """Render a checkout-local path with stable POSIX separators."""
 

@@ -381,6 +381,15 @@ GENERATED_SECTION_COVERAGE: tuple[GeneratedSectionCoverage, ...] = (
         profiles=_EXPANDED_ONLY,
     ),
     GeneratedSectionCoverage(
+        "Helper recovery",
+        "## Helper recovery",
+        InstructionOwner.KERNEL,
+        (_topic("extractors-dependencies"),),
+        _profiled_topic_routes(_QUALITY, _COMPACT_ROUTES, "extractors-dependencies"),
+        retained_kernel=True,
+        profiles=_EXPANDED_ONLY,
+    ),
+    GeneratedSectionCoverage(
         "Repository delivery preflight",
         _HANDOFF,
         InstructionOwner.KERNEL,

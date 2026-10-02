@@ -30,13 +30,17 @@ Run these commands from your project root. Choose `generic` for an `AGENTS.md`
 instruction file, or select one of the [supported agents](#agent-support).
 
 ```bash
-llm-wiki init --agent generic
+llm-wiki init --agent generic --prepare-extractors
 ```
 
-For TypeScript/JavaScript, Go, Rust, or Haskell, first prepare the required
-helpers with `llm-wiki prepare-extractors --src-dir .`.
-[Helper setup](docs/cli-reference.md#prepare-extractors) is explicit and may
-download dependencies or compile a bundled helper. Python needs no helper.
+`--prepare-extractors` automatically prepares missing or stale helpers for the
+selected TypeScript/JavaScript, Go, Rust, or Haskell source files and reuses
+current helpers. Install the relevant toolchain first: Node.js with npm, Go,
+Cargo, or GHC. Python needs no helper.
+[Helper setup](docs/cli-reference.md#prepare-extractors) may download dependencies
+or compile a bundled helper. Omit the flag to scaffold without preparation;
+read-only commands never prepare helpers. You can rerun the setup command after
+a package upgrade or use `llm-wiki prepare-extractors --src-dir .` separately.
 
 ```bash
 llm-wiki bootstrap --src-dir . --wiki-dir docs/llm_wiki

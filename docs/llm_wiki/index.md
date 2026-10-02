@@ -7,7 +7,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 | Surface | Count | Start here |
 |---|---:|---|
 | Entities | 628 | [Open section](#entities) |
-| Modules | 213 | [Open section](#modules) |
+| Modules | 214 | [Open section](#modules) |
 | Workflows | 164 | [Open section](#workflows) |
 | Guides | 6 | [Open section](#guides) |
 | Entry-point flows | 454 | [Open section](#entry-point-flows) |
@@ -717,6 +717,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [health_details](modules/health_details.md) - Capture detailed health once from an operation's already evaluated inputs.
 - [health_policy](modules/health_policy.md) - Pure release-health decisions derived from one validated CI evaluation.
 - [health_summary](modules/health_summary.md) - Pure presentation helpers for detailed local and CI health reports.
+- [helper_preparation](modules/helper_preparation.md) - Explicit setup-time preparation for helpers selected by a source boundary.
 - [hook_cmd](modules/hook_cmd.md) - Compatibility imports for legacy hook recognition; installation is retired.
 - [host_broker](modules/host_broker.md) - Supported host-authentication context for external calibration brokers.
 - [immutable](modules/immutable.md) - Detached immutable model graphs that retain ordinary JSON container shapes.
