@@ -349,6 +349,32 @@ def _shadow_flag(value):
     return value == "true"
 
 
+def shadow_decision(identity, verification, *, source_result, integrity_result, maintenance_result, bundle_result):
+    """Emit only the bounded policy gates, never a qualifying RD decision."""
+    spec = importlib.util.spec_from_file_location("_policy_source_identity", Path(__file__).with_name("qualification.py"))
+    assert spec and spec.loader
+    qualification = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = qualification
+    spec.loader.exec_module(qualification)
+    try:
+        identity = qualification.validate_policy_identity(identity)
+    except qualification.QualificationError as exc:
+        raise ValueError(str(exc)) from exc
+    expected = {
+        "candidate_sha": identity["source"]["sha"],
+        "candidate_tree": identity["source"]["tree"],
+        "candidate_version": identity["version"],
+    }
+    if (source_result, integrity_result, maintenance_result, bundle_result) != ("success", "success", "success", "skipped"):
+        raise ValueError("policy shadow producers did not all succeed or attempted release assembly")
+    verify_shadow_record(verification, expected)
+    return {
+        "schema_version": "agent-wiki-release-policy-decision/v1", **expected,
+        "status": "pass", "nonpromoting": True,
+        "gates": {"source": "PASS", "integrity": "PASS", "maintenance": "PASS"},
+    }
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser()
     commands = parser.add_subparsers(dest="command", required=True)
@@ -362,8 +388,25 @@ def main(argv=None):
         p.add_argument("--output", type=Path, required=True)
         p.add_argument("--policy-shadow", nargs="?", const=True, default=False, type=_shadow_flag,
                        help="Verify a nonpromoting shadow proof despite a stale activation; never qualify a release")
+    decision = commands.add_parser("shadow-decision")
+    decision.add_argument("--identity", type=Path, required=True)
+    decision.add_argument("--verification", type=Path, required=True)
+    decision.add_argument("--output", type=Path, required=True)
+    for name in ("source-result", "integrity-result", "maintenance-result", "bundle-result"):
+        decision.add_argument("--" + name, required=True)
     args = parser.parse_args(argv)
     try:
+        if args.command == "shadow-decision":
+            result = shadow_decision(
+                leaf().strict_json(read(args.identity)), leaf().strict_json(read(args.verification)),
+                source_result=args.source_result, integrity_result=args.integrity_result,
+                maintenance_result=args.maintenance_result, bundle_result=args.bundle_result,
+            )
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            with args.output.open("x", encoding="utf-8") as stream:
+                json.dump(result, stream, indent=2, sort_keys=True)
+                stream.write("\n")
+            return 0
         config = policy(
             read(
                 args.root / POLICY_PATH

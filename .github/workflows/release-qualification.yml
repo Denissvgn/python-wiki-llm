@@ -1,8 +1,14 @@
 name: Release qualification
+run-name: ${{ inputs.automation-request-id != '' && format('Release qualification [{0}]', inputs.automation-request-id) || 'Release qualification' }}
 
 on:
   workflow_dispatch:
     inputs:
+      automation-request-id:
+        description: Optional coordinator correlation identity
+        required: false
+        default: ""
+        type: string
       candidate-sha:
         description: Full pushed Git SHA to qualify
         required: true
@@ -107,6 +113,7 @@ jobs:
           BANDIT_PARITY_VERIFICATION: ${{ inputs.bandit-parity-verification }}
           UBUNTU_SUITE_SHADOW: ${{ inputs.ubuntu-suite-shadow }}
           KNOWLEDGE_POLICY_SHADOW: ${{ inputs.knowledge-policy-shadow }}
+          AUTOMATION_REQUEST_ID: ${{ inputs.automation-request-id }}
           DEPENDENCY_SETUP_VERIFICATION: ${{ inputs.dependency-setup-verification }}
         run: |
           set -euo pipefail
@@ -125,6 +132,9 @@ jobs:
           fi
           if [ "${KNOWLEDGE_POLICY_SHADOW}" == "true" ] && { [ "${DISCOVERY_MODE}" == "true" ] || [ "${BANDIT_PARITY_VERIFICATION}" == "true" ] || [ "${UBUNTU_SUITE_SHADOW}" == "true" ] || [ "${DEPENDENCY_SETUP_VERIFICATION}" == "true" ]; }; then
             refuse "knowledge policy shadow requires its own nonpromoting run"
+          fi
+          if [[ -n "${AUTOMATION_REQUEST_ID}" && ! "${AUTOMATION_REQUEST_ID}" =~ ^[0-9a-f]{64}$ ]]; then
+            refuse "automation request identity must be a lowercase SHA-256"
           fi
           if [ "${WORKFLOW_EVENT}" != "workflow_dispatch" ]; then
             refuse "event is ${WORKFLOW_EVENT}; qualification runs only from workflow_dispatch"
@@ -178,13 +188,14 @@ jobs:
         id: freeze
         env:
           CANDIDATE_SHA: ${{ inputs.candidate-sha }}
+          SOURCE_PROFILE: ${{ inputs.knowledge-policy-shadow && 'policy-shadow' || 'candidate' }}
         run: >-
           python -I release/qualification.py freeze-source
           --root .
           --output "${RUNNER_TEMP}/frozen"
           --expected-sha "${CANDIDATE_SHA}"
           --repository "${{ github.repository }}"
-          --mode candidate
+          --mode "${SOURCE_PROFILE}"
           --required-ancestor 432d4c54da4a250f84f60b921f721ba8d6af6e81
           --required-ancestor e69b5e28b31d5558b9746919b78adeaccc972c68
           --check-registry
@@ -291,7 +302,7 @@ jobs:
 
   dependency-controls:
     name: Dependency setup verification controls
-    if: ${{ inputs.dependency-setup-verification && !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow }}
+    if: ${{ inputs.dependency-setup-verification && !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow }}
     needs: freeze
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -376,7 +387,7 @@ jobs:
 
   dependency-warm:
     name: Dependency setup verification with native cache hit
-    if: ${{ inputs.dependency-setup-verification && !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && github.event_name == 'workflow_dispatch' && github.ref_type == 'branch' && !github.event.repository.fork }}
+    if: ${{ inputs.dependency-setup-verification && !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && github.event_name == 'workflow_dispatch' && github.ref_type == 'branch' && !github.event.repository.fork && !inputs.knowledge-policy-shadow }}
     needs: [freeze, dependency-controls]
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -455,7 +466,7 @@ jobs:
 
   core:
     name: RD-01/RD-02 core (${{ matrix.lane }})
-    if: ${{ !inputs.bandit-parity-verification }}
+    if: ${{ !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}
     needs: freeze
     runs-on: ${{ matrix.os }}
     strategy:
@@ -608,7 +619,7 @@ jobs:
 
   core-windows-plan:
     name: Plan Windows core shards
-    if: ${{ !inputs.bandit-parity-verification && needs.freeze.outputs.core-layout == 'windows-sharded' }}
+    if: ${{ !inputs.bandit-parity-verification && needs.freeze.outputs.core-layout == 'windows-sharded' && !inputs.knowledge-policy-shadow }}
     needs: freeze
     runs-on: windows-2025
     timeout-minutes: 360
@@ -685,7 +696,7 @@ jobs:
 
   core-windows-shards:
     name: Execute Windows core shard (${{ matrix.shard }})
-    if: ${{ !inputs.bandit-parity-verification && needs.freeze.outputs.core-layout == 'windows-sharded' }}
+    if: ${{ !inputs.bandit-parity-verification && needs.freeze.outputs.core-layout == 'windows-sharded' && !inputs.knowledge-policy-shadow }}
     needs: [freeze, core-windows-plan]
     runs-on: windows-2025
     timeout-minutes: 360
@@ -794,7 +805,7 @@ jobs:
     if: >-
       ${{ !cancelled() && !inputs.bandit-parity-verification && needs.freeze.result == 'success'
           && (needs.freeze.outputs.core-layout == 'unsharded'
-              || (needs.core-windows-plan.result == 'success' && needs.core-windows-shards.result == 'success')) }}
+              || (needs.core-windows-plan.result == 'success' && needs.core-windows-shards.result == 'success')) && !inputs.knowledge-policy-shadow }}
     needs: [freeze, core-windows-plan, core-windows-shards]
     runs-on: windows-2025
     timeout-minutes: 360
@@ -1013,7 +1024,7 @@ jobs:
     name: Reconcile core skip diagnostics
     if: >-
       ${{ always() && !inputs.bandit-parity-verification && needs.freeze.result == 'success' &&
-          (inputs.discovery-mode || needs.core.result == 'failure' || needs.core-windows.result == 'failure' || needs.core-windows.result == 'skipped') }}
+          (inputs.discovery-mode || needs.core.result == 'failure' || needs.core-windows.result == 'failure' || needs.core-windows.result == 'skipped') && !inputs.knowledge-policy-shadow }}
     needs: [freeze, core, core-windows]
     runs-on: ubuntu-24.04
     steps:
@@ -1081,7 +1092,7 @@ jobs:
 
   ubuntu-suites:
     name: RD-03/RD-04/RD-05 Ubuntu suites
-    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow }}
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow }}
     needs: freeze
     runs-on: ubuntu-24.04
     timeout-minutes: 45
@@ -1184,7 +1195,7 @@ jobs:
 
   ubuntu-shadow:
     name: Ubuntu suites shadow comparison
-    if: ${{ inputs.ubuntu-suite-shadow && !inputs.discovery-mode && !inputs.bandit-parity-verification }}
+    if: ${{ inputs.ubuntu-suite-shadow && !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}
     needs: freeze
     runs-on: ubuntu-24.04
     timeout-minutes: 60
@@ -1276,7 +1287,7 @@ jobs:
 
   security-behavior:
     name: RD-04 security behavior (${{ matrix.os }})
-    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}
     needs: freeze
     runs-on: ${{ matrix.os }}
     strategy:
@@ -1355,7 +1366,7 @@ jobs:
 
   mcp:
     name: RD-06 MCP SDK (Python ${{ matrix.python }})
-    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}
     needs: freeze
     runs-on: ubuntu-24.04
     strategy:
@@ -1429,7 +1440,7 @@ jobs:
 
   toolchains:
     name: RD-07 prepared extractor toolchains
-    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}
     needs: freeze
     runs-on: ubuntu-24.04
     timeout-minutes: 45
@@ -1695,7 +1706,7 @@ jobs:
 
   oci:
     name: RD-08 real OCI isolation
-    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}
     needs: freeze
     runs-on: ubuntu-24.04
     timeout-minutes: 25
@@ -1820,7 +1831,7 @@ jobs:
 
   static:
     name: RD-09 static and dependency security
-    if: ${{ !inputs.discovery-mode }}
+    if: ${{ !inputs.discovery-mode && !inputs.knowledge-policy-shadow }}
     needs: freeze
     runs-on: ubuntu-24.04
     steps:
@@ -2357,7 +2368,7 @@ jobs:
 
   build:
     name: RD-11 independent build ${{ matrix.copy }}
-    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}
     needs: freeze
     runs-on: ubuntu-24.04
     strategy:
@@ -2552,7 +2563,7 @@ jobs:
 
   reproducible:
     name: RD-11 compare independent build bytes
-    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}
     needs: [freeze, build]
     runs-on: ubuntu-24.04
     steps:
@@ -2600,7 +2611,7 @@ jobs:
 
   artifact-smoke:
     name: RD-12 artifact-only ${{ matrix.kind }} smoke
-    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}
     needs: [freeze, reproducible]
     runs-on: ubuntu-24.04
     strategy:
@@ -2686,7 +2697,7 @@ jobs:
 
   smoke-parity:
     name: RD-12 wheel/sdist parity
-    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}
     needs: [freeze, artifact-smoke]
     runs-on: ubuntu-24.04
     steps:
@@ -2732,7 +2743,7 @@ jobs:
 
   owner-lanes:
     name: Require every allowlisted skip owner to pass
-    if: ${{ always() && !inputs.discovery-mode && !inputs.bandit-parity-verification && needs.freeze.result == 'success' }}
+    if: ${{ always() && !inputs.discovery-mode && !inputs.bandit-parity-verification && needs.freeze.result == 'success' && !inputs.knowledge-policy-shadow }}
     needs:
       - freeze
       - ubuntu-shadow
@@ -2883,7 +2894,7 @@ jobs:
 
   analysis-compatibility:
     name: Installed analysis compatibility
-    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow }}
+    if: ${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow }}
     needs: freeze
     runs-on: ubuntu-24.04
     permissions:
@@ -3198,7 +3209,7 @@ jobs:
           test -f incoming/tools/release/qualification.py
           test -f incoming/tools/tests/release_artifact_smoke.py
       - name: Emit deterministic aggregate
-        if: ${{ needs.freeze.result == 'success' }}
+        if: ${{ needs.freeze.result == 'success' && !inputs.knowledge-policy-shadow }}
         run: >-
           python -I incoming/tools/release/qualification.py aggregate
           --candidate-sha "${{ needs.freeze.outputs.sha }}"
@@ -3252,6 +3263,8 @@ jobs:
           CANDIDATE_SHA: ${{ needs.freeze.outputs.sha }}
           CANDIDATE_TREE: ${{ needs.freeze.outputs.tree }}
           CANDIDATE_VERSION: ${{ needs.freeze.outputs.version }}
+          SOURCE_SHA256: ${{ needs.freeze.outputs.source-sha256 }}
+          POLICY_COMMIT_EPOCH: ${{ needs.freeze.outputs.commit-epoch }}
         run: |
           set -euo pipefail
           if [[ "${MAINTENANCE_RESULT}" != "success" || "${BUNDLE_RESULT}" != "skipped" ]]; then
@@ -3259,15 +3272,22 @@ jobs:
             exit 1
           fi
           python -I - <<'PY'
-          import os, pathlib, runpy
-          tool = runpy.run_path("incoming/tools/release/knowledge_maintenance.py")
-          value = tool["leaf"]().strict_json(tool["read"](pathlib.Path("maintenance/verification.json")))
-          tool["verify_shadow_record"](value, {
-              "candidate_sha": os.environ["CANDIDATE_SHA"],
-              "candidate_tree": os.environ["CANDIDATE_TREE"],
-              "candidate_version": os.environ["CANDIDATE_VERSION"],
-          })
+          import json, os, pathlib
+          identity = {
+              "schema_version": "agent-wiki-release-identity/v1",
+              "repository": os.environ["GITHUB_REPOSITORY"],
+              "source": {"sha": os.environ["CANDIDATE_SHA"], "tree": os.environ["CANDIDATE_TREE"],
+                         "archive_sha256": os.environ["SOURCE_SHA256"], "commit_epoch": int(os.environ["POLICY_COMMIT_EPOCH"])},
+              "version": os.environ["CANDIDATE_VERSION"], "tag": "v" + os.environ["CANDIDATE_VERSION"],
+              "mode": "policy-shadow",
+          }
+          pathlib.Path("policy-identity.json").write_text(json.dumps(identity), encoding="utf-8")
           PY
+          python -I incoming/tools/release/knowledge_maintenance.py shadow-decision \
+            --identity policy-identity.json --verification maintenance/verification.json \
+            --source-result success --integrity-result "${{ needs.action.result }}" \
+            --maintenance-result "${MAINTENANCE_RESULT}" --bundle-result "${BUNDLE_RESULT}" \
+            --output decision.json
           echo "Policy shadow verified. This run cannot qualify or assemble a release." >> "${GITHUB_STEP_SUMMARY}"
           echo "Review knowledge-maintenance-verification before updating the activation record." >> "${GITHUB_STEP_SUMMARY}"
       - name: Upload pre-promotion decision

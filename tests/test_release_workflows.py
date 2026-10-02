@@ -1448,7 +1448,7 @@ def test_bandit_parity_is_opt_in_and_uses_current_static_evidence() -> None:
     for job_name, candidate_job in workflow["jobs"].items():
         if job_name not in {"freeze", "static", "decision"}:
             assert "!inputs.bandit-parity-verification" in candidate_job["if"], job_name
-    assert workflow["jobs"]["static"]["if"] == "${{ !inputs.discovery-mode }}"
+    assert workflow["jobs"]["static"]["if"] == "${{ !inputs.discovery-mode && !inputs.knowledge-policy-shadow }}"
     assert "always()" in workflow["jobs"]["decision"]["if"]
     binding = _named_step(workflow["jobs"]["freeze"], "Bind the workflow definition to the candidate")
     assert "mutually exclusive" in binding["run"]
@@ -1480,6 +1480,8 @@ def test_release_discovery_runs_only_core_and_reconciles_complete_evidence() -> 
         expected = "${{ !inputs.discovery-mode }}" if job_name == "static" else "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}"
         if job_name == "ubuntu-suites":
             expected = "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow }}"
+        if job_name != "action":
+            expected = expected.replace(" }}", " && !inputs.knowledge-policy-shadow }}")
         assert jobs[job_name]["if"] == expected
     assert "!inputs.discovery-mode" in jobs["owner-lanes"]["if"]
     assert jobs["decision"]["if"] == (

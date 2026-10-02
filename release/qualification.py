@@ -36,6 +36,7 @@ else:  # pragma: no cover - only freeze reads TOML
 
 
 IDENTITY_SCHEMA = "agent-wiki-release-identity/v1"
+ELIGIBILITY_SCHEMA = "agent-wiki-release-eligibility/v1"
 ALLOWLIST_SCHEMA = "agent-wiki-release-skip-allowlist/v1"
 SKIP_DISCOVERY_SCHEMA = "agent-wiki-release-skip-discovery/v1"
 JUNIT_PROJECTION_SCHEMA = "agent-wiki-release-junit-projection/v1"
@@ -70,6 +71,10 @@ PACKAGE_NAME = "agent-wiki-cli"
 
 class QualificationError(RuntimeError):
     """A release contract is absent, malformed, or inconsistent."""
+
+
+class RegistryVersionExists(QualificationError):
+    """The candidate version has already been published."""
 
 
 def _strict_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -224,7 +229,7 @@ def _check_registry_unused(version: str) -> None:
     try:
         with urllib.request.urlopen(request, timeout=20) as response:
             if response.status == 200:
-                raise QualificationError(
+                raise RegistryVersionExists(
                     f"{PACKAGE_NAME} {version} already exists on PyPI"
                 )
             raise QualificationError(
@@ -240,7 +245,98 @@ def _check_registry_unused(version: str) -> None:
         raise QualificationError(f"PyPI preflight unavailable: {exc}") from exc
 
 
+def _validate_release_changelog(root: Path, version: str, tag: str) -> None:
+    changelog = (root / "CHANGELOG.md").read_text(encoding="utf-8")
+    headings = re.findall(
+        rf"^## \[{re.escape(version)}\] - \d{{4}}-\d{{2}}-\d{{2}}$",
+        changelog,
+        flags=re.MULTILINE,
+    )
+    if len(headings) != 1:
+        raise QualificationError(
+            f"CHANGELOG.md must contain exactly one dated {version} heading"
+        )
+    if "[Unreleased]:" not in changelog or f"compare/{tag}...HEAD" not in changelog:
+        raise QualificationError("CHANGELOG.md has no matching Unreleased comparison")
+    if f"[{version}]:" not in changelog:
+        raise QualificationError(f"CHANGELOG.md has no [{version}] comparison link")
+
+
+def release_eligibility(
+    root: Path, *, check_registry: bool = True
+) -> dict[str, Any]:
+    """Inspect release preparation without freezing source or changing the repository."""
+    root = root.resolve()
+    result: dict[str, Any] = {
+        "schema_version": ELIGIBILITY_SCHEMA,
+        "status": "eligible",
+        "version": None,
+        "tag": None,
+        "reason": None,
+    }
+
+    def blocked(status: str, reason: str) -> dict[str, Any]:
+        result.update(status=status, reason=reason)
+        return result
+
+    try:
+        version = _project_version(root)
+        tag = f"v{version}"
+        result.update(version=version, tag=tag)
+        candidate_version = tuple(int(component) for component in version.split("."))
+    except (OSError, UnicodeError, ValueError, QualificationError) as exc:
+        return blocked("waiting_release_preparation", str(exc))
+
+    try:
+        released_versions: list[tuple[int, int, int]] = []
+        for existing in _run(["git", "tag", "--list", "v*"], cwd=root).stdout.splitlines():
+            match = re.fullmatch(r"v(\d+)\.(\d+)\.(\d+)", existing)
+            if match:
+                major, minor, patch = match.groups()
+                released_versions.append((int(major), int(minor), int(patch)))
+        if released_versions and candidate_version <= max(released_versions):
+            return blocked(
+                "waiting_release_preparation",
+                f"candidate version {version} is not newer than the latest release",
+            )
+        try:
+            _validate_release_changelog(root, version, tag)
+        except (OSError, UnicodeError, QualificationError) as exc:
+            return blocked("waiting_release_preparation", str(exc))
+        tag_result = _run(
+            ["git", "rev-parse", "--verify", "--quiet", f"refs/tags/{tag}"],
+            cwd=root,
+            check=False,
+        )
+        if tag_result.returncode == 0:
+            return blocked(
+                "waiting_release_preparation", f"candidate tag {tag} already exists locally"
+            )
+        if tag_result.returncode != 1:
+            raise QualificationError(
+                f"candidate tag lookup failed ({tag_result.returncode}): "
+                f"{tag_result.stderr.strip()}"
+            )
+        remote_tag = _run(
+            ["git", "ls-remote", "--tags", "origin", f"refs/tags/{tag}", f"refs/tags/{tag}^{{}}"],
+            cwd=root,
+        ).stdout.strip()
+        if remote_tag:
+            return blocked(
+                "waiting_release_preparation", f"candidate tag {tag} already exists on origin"
+            )
+        if check_registry:
+            _check_registry_unused(version)
+    except RegistryVersionExists as exc:
+        return blocked("waiting_release_preparation", str(exc))
+    except (OSError, QualificationError) as exc:
+        return blocked("blocked_unavailable", str(exc))
+    return result
+
+
 def freeze_source(args: argparse.Namespace) -> int:
+    if args.mode not in {"candidate", "tagged", "policy-shadow"}:
+        raise QualificationError("source freeze mode is unsupported")
     root = args.root.resolve()
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -281,61 +377,26 @@ def freeze_source(args: argparse.Namespace) -> int:
 
     version = _project_version(root)
     tag = f"v{version}"
-    candidate_version = tuple(int(component) for component in version.split("."))
-    released_versions: list[tuple[int, int, int]] = []
-    for existing in _run(["git", "tag", "--list", "v*"], cwd=root).stdout.splitlines():
-        match = re.fullmatch(r"v(\d+)\.(\d+)\.(\d+)", existing)
-        if match:
-            major, minor, patch = match.groups()
-            released_versions.append((int(major), int(minor), int(patch)))
-    if args.mode == "candidate" and released_versions:
-        if candidate_version <= max(released_versions):
-            raise QualificationError(
-                f"candidate version {version} is not newer than the latest release"
-            )
-    changelog = (root / "CHANGELOG.md").read_text(encoding="utf-8")
-    headings = re.findall(
-        rf"^## \[{re.escape(version)}\] - \d{{4}}-\d{{2}}-\d{{2}}$",
-        changelog,
-        flags=re.MULTILINE,
-    )
-    if len(headings) != 1:
-        raise QualificationError(
-            f"CHANGELOG.md must contain exactly one dated {version} heading"
+    if args.mode == "candidate":
+        eligibility = release_eligibility(root, check_registry=args.check_registry)
+        if eligibility["status"] != "eligible":
+            raise QualificationError(eligibility["reason"])
+    elif args.mode == "tagged":
+        _validate_release_changelog(root, version, tag)
+        tag_result = _run(
+            ["git", "rev-parse", "--verify", "--quiet", f"refs/tags/{tag}"],
+            cwd=root,
+            check=False,
         )
-    if "[Unreleased]:" not in changelog or f"compare/{tag}...HEAD" not in changelog:
-        raise QualificationError("CHANGELOG.md has no matching Unreleased comparison")
-    if f"[{version}]:" not in changelog:
-        raise QualificationError(f"CHANGELOG.md has no [{version}] comparison link")
-
-    tag_result = _run(
-        ["git", "rev-parse", "--verify", "--quiet", f"refs/tags/{tag}"],
-        cwd=root,
-        check=False,
-    )
-    if tag_result.returncode == 0:
+        if tag_result.returncode != 0:
+            raise QualificationError(f"required release tag {tag} is absent")
         resolved = _run(["git", "rev-list", "-n", "1", tag], cwd=root).stdout.strip()
-        if args.mode == "candidate":
-            raise QualificationError(f"candidate tag {tag} already exists locally")
         if resolved != sha:
             raise QualificationError(f"{tag} resolves to {resolved}, not {sha}")
-    elif args.mode == "tagged":
-        raise QualificationError(f"required release tag {tag} is absent")
-
-    remote_tag = _run(
-        [
-            "git",
-            "ls-remote",
-            "--tags",
-            "origin",
-            f"refs/tags/{tag}",
-            f"refs/tags/{tag}^{{}}",
-        ],
-        cwd=root,
-    ).stdout.strip()
-    if args.mode == "candidate" and remote_tag:
-        raise QualificationError(f"candidate tag {tag} already exists on origin")
-    if args.mode == "tagged":
+        remote_tag = _run(
+            ["git", "ls-remote", "--tags", "origin", f"refs/tags/{tag}", f"refs/tags/{tag}^{{}}"],
+            cwd=root,
+        ).stdout.strip()
         remote_shas = {
             line.split(maxsplit=1)[0]
             for line in remote_tag.splitlines()
@@ -355,7 +416,7 @@ def freeze_source(args: argparse.Namespace) -> int:
                 f"candidate does not contain required ancestor {ancestor}"
             )
 
-    if args.check_registry:
+    if args.mode == "tagged" and args.check_registry:
         _check_registry_unused(version)
 
     archive = output / "candidate-source.tar"
@@ -1157,7 +1218,7 @@ def compare_smoke(args: argparse.Namespace) -> int:
     return 0
 
 
-def _validate_identity(value: object) -> Mapping[str, Any]:
+def _validate_identity_fields(value: object) -> Mapping[str, Any]:
     identity = _require_object(
         value,
         name="identity",
@@ -1183,8 +1244,21 @@ def _validate_identity(value: object) -> Mapping[str, Any]:
     version = _require_string(identity["version"], "identity.version")
     if identity["tag"] != f"v{version}":
         raise QualificationError("identity.tag does not match identity.version")
+    return identity
+
+
+def _validate_identity(value: object) -> Mapping[str, Any]:
+    identity = _validate_identity_fields(value)
     if identity["mode"] not in {"candidate", "tagged"}:
         raise QualificationError("identity.mode is unsupported")
+    return identity
+
+
+def validate_policy_identity(value: object) -> Mapping[str, Any]:
+    """Validate a source identity usable only by nonpromoting policy consumers."""
+    identity = _validate_identity_fields(value)
+    if identity["mode"] != "policy-shadow":
+        raise QualificationError("policy source identity must be nonpromoting")
     return identity
 
 
@@ -1599,6 +1673,11 @@ def _reject_shadow_value(value: object) -> None:
     if isinstance(value, dict) and (
         (value.get("schema_version") == "agent-wiki-release-knowledge-verification/v1" and "activation_proof" in value)
         or value.get("schema_version") == "agent-wiki-release-policy-shadow/v1"
+        or value.get("schema_version") == "agent-wiki-release-policy-decision/v1"
+        or (
+            value.get("schema_version") == IDENTITY_SCHEMA
+            and value.get("mode") == "policy-shadow"
+        )
         or value.get("schema_version") == "agent-wiki-ubuntu-shadow/v1"
         or value.get("schema_version")
         in {
@@ -1633,6 +1712,12 @@ def _reject_shadow_value(value: object) -> None:
         raise QualificationError(
             "Nonqualifying shadow evidence cannot assemble or qualify a release"
         )
+    if isinstance(value, dict):
+        for child in value.values():
+            _reject_shadow_value(child)
+    elif isinstance(value, list):
+        for child in value:
+            _reject_shadow_value(child)
 
 
 
@@ -3211,7 +3296,7 @@ def _parser() -> argparse.ArgumentParser:
     freeze.add_argument("--output", type=Path, required=True)
     freeze.add_argument("--expected-sha", required=True)
     freeze.add_argument("--repository", required=True)
-    freeze.add_argument("--mode", choices=("candidate", "tagged"), default="candidate")
+    freeze.add_argument("--mode", choices=("candidate", "tagged", "policy-shadow"), default="candidate")
     freeze.add_argument("--check-registry", action="store_true")
     freeze.add_argument("--required-ancestor", action="append", default=[])
     freeze.set_defaults(function=freeze_source)

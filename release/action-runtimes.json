@@ -26,6 +26,12 @@
       "dependencies": [],
       "generated_actions": {}
     },
+    "actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1": {
+      "using": "node24",
+      "manifest_sha256": "2c4c77d1cafa8d792ab4a9d449799221baf95176a47692ad9a0b350b0a2618ed",
+      "dependencies": [],
+      "generated_actions": {}
+    },
     "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c": {
       "using": "node24",
       "manifest_sha256": "e98559b7a31ba31be4709f20d22102dc2737fa630f69a339eb89981151e505fe",

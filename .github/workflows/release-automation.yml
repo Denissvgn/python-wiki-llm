@@ -1,0 +1,117 @@
+name: Release qualification automation
+
+on:
+  workflow_run:
+    workflows: [CI, Release qualification]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      retry:
+        description: Explicitly retry a stopped request for the current main candidate
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+  checks: read
+
+concurrency:
+  group: release-automation-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    name: Reconcile merged candidate
+    if: >-
+      ${{ github.event_name == 'workflow_dispatch' ||
+          (github.event.workflow_run.head_repository.full_name == github.repository &&
+           github.event.workflow_run.status == 'completed') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      HAS_APP_KEY: ${{ secrets.RELEASE_AUTOMATION_APP_PRIVATE_KEY != '' }}
+    steps:
+      - name: Check out the trusted coordinator revision
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          ref: ${{ github.workflow_sha }}
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: false
+      - name: Set up coordinator Python
+        id: python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+      - name: Create the isolated coordinator environment
+        run: '"${{ steps.python.outputs.python-path }}" -m venv .venv'
+      - name: Inspect activation setup without credentials
+        id: setup
+        run: |
+          .venv/bin/python -I - <<'PY'
+          import json, os, pathlib
+          config = json.loads(pathlib.Path("release/automation.json").read_text())
+          enabled = config.get("enabled") is True
+          with pathlib.Path(os.environ["GITHUB_OUTPUT"]).open("a") as stream:
+              stream.write("enabled=" + str(enabled).lower() + "\n")
+          PY
+      - name: Acquire a repository-scoped short-lived bot token
+        id: app
+        if: ${{ steps.setup.outputs.enabled == 'true' && vars.RELEASE_AUTOMATION_APP_CLIENT_ID != '' && env.HAS_APP_KEY == 'true' }}
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.RELEASE_AUTOMATION_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_AUTOMATION_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-actions: write
+          permission-contents: write
+          permission-pull-requests: write
+          permission-checks: write
+          permission-administration: read
+      - name: Reconcile authenticated events
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          RELEASE_AUTOMATION_TOKEN: ${{ steps.app.outputs.token || secrets.RELEASE_AUTOMATION_TOKEN }}
+          RUN_EVENT: ${{ github.event_name }}
+          RETRY_FAILED: ${{ inputs.retry }}
+        run: |
+          set -euo pipefail
+          command=reconcile
+          retry=()
+          if [[ "${RUN_EVENT}" == "workflow_dispatch" ]]; then
+            command=resume
+            if [[ "${RETRY_FAILED}" == "true" ]]; then
+              retry=(--retry)
+            fi
+          fi
+          .venv/bin/python -I release/qualification_automation.py "${command}" \
+            --root . --repository "${GITHUB_REPOSITORY}" \
+            --event "${GITHUB_EVENT_PATH}" --apply "${retry[@]}" \
+            --output automation-status.json
+      - name: Retain automation status
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          archive: true
+          name: release-automation-status-${{ github.run_id }}-${{ github.run_attempt }}
+          path: automation-status.json
+          if-no-files-found: error
+          retention-days: 90
+      - name: Explain candidate disposition
+        if: always()
+        run: |
+          .venv/bin/python -I - <<'PY'
+          import json, os, pathlib
+          path = pathlib.Path("automation-status.json")
+          value = json.loads(path.read_text()) if path.is_file() else {"status": "blocked", "reason": "Coordinator did not produce a status."}
+          with pathlib.Path(os.environ["GITHUB_STEP_SUMMARY"]).open("a") as stream:
+              stream.write("## Release automation\n\n")
+              stream.write("Status: **" + value["status"] + "**.\n\n")
+              stream.write(value.get("reason", "") + "\n\n")
+              if value["status"] != "qualified":
+                  stream.write("This event has not qualified a candidate. No release was published.\n")
+          PY

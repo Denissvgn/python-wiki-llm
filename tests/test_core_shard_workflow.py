@@ -210,7 +210,7 @@ def test_windows_rollout_keeps_independent_platforms_and_explicit_unsharded_roll
     assert " ".join(logical["if"].split()) == (
         "${{ !cancelled() && !inputs.bandit-parity-verification && needs.freeze.result == 'success' "
         "&& (needs.freeze.outputs.core-layout == 'unsharded' "
-        "|| (needs.core-windows-plan.result == 'success' && needs.core-windows-shards.result == 'success')) }}"
+        "|| (needs.core-windows-plan.result == 'success' && needs.core-windows-shards.result == 'success')) && !inputs.knowledge-policy-shadow }}"
     )
     for name in ("core-windows-plan", "core-windows-shards", "core-windows"):
         job = jobs[name]
