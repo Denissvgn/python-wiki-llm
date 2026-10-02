@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import os
-import shlex
 import shutil
 import sys
 from pathlib import Path
@@ -12,6 +11,7 @@ from ..config import validate_source_root
 from ..extractors.common import LANGUAGE_EXTENSIONS
 from . import extractor_helpers as helpers, plugins
 from .source_snapshot import build_source_snapshot
+from .paths import render_shell_command
 
 DOCTOR_CAPABILITY_VERSION = "llm-wiki-doctor/v2"
 _PROVIDERS = {
@@ -20,12 +20,6 @@ _PROVIDERS = {
     "go": ("go-parser", ("go",)),
     "rust": ("syn", ("cargo",)),
     "haskell": ("ghc-parser", ("ghc",)),
-}
-_TOOL_HINTS = {
-    "typescript": "Install Node.js with npm",
-    "go": "Install Go or set LLM_WIKI_GO",
-    "rust": "Install the Rust toolchain with Cargo",
-    "haskell": "Install GHC 9.6 or later in the supported 9.x series, or set LLM_WIKI_GHC",
 }
 _LANGUAGE_LABELS = {
     "python": "Python",
@@ -107,25 +101,14 @@ def build_capability_diagnostics(
             )
         if state != "ready":
             remedy = {
-                "argv": [
-                    sys.executable,
-                    "-m",
-                    "llm_wiki_cli.cli",
-                    "prepare-extractors",
-                    "--src-dir",
-                    str(root),
-                    "--allow-external-src",
-                    "--language",
-                    language,
-                    "--cache-dir",
-                    str(cache_base),
-                ]
+                "argv": [sys.executable, "-m", "llm_wiki_cli.cli"]
+                + helpers.helper_preparation_argv(language, root, helper_cache_dir)[1:]
                 if artifact is None
                 else None,
                 "prerequisite": (
                     "Install Node.js or make node available on PATH"
                     if artifact
-                    else _TOOL_HINTS[language]
+                    else helpers.HELPER_TOOLCHAIN_HINTS[language]
                     if missing
                     else None
                 ),
@@ -307,11 +290,7 @@ def render_capability_doctor(report):
     from .doctor_service import _render_doctor_payload
 
     def command(argv):
-        if os.name == "nt":
-            # PowerShell recognizes typographic single quotes as delimiters too.
-            quotes = str.maketrans({char: char * 2 for char in "'‘’‚‛"})
-            return "& " + " ".join("'" + arg.translate(quotes) + "'" for arg in argv)
-        return shlex.join(argv)
+        return render_shell_command(argv, windows=os.name == "nt")
 
     shell = "PowerShell" if os.name == "nt" else "POSIX shell"
     lines = [f"Doctor: {report['status']} ({DOCTOR_CAPABILITY_VERSION})"]

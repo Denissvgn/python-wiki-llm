@@ -23,6 +23,7 @@ from ..services.filesystem_guard import (
     unlink_guarded_bytes,
 )
 from ..services.helper_preparation import ensure_source_helpers
+from ..services.extractor_helpers import helper_preparation_failure_hint
 from ..services.rendering_lifecycle import (
     reference_recovery_command,
     select_render_profile,
@@ -322,6 +323,8 @@ def run(args):
             raise SystemExit(1) from exc
         for result in results:
             print(f"{result.language}: {result.status} - {result.message}")
+            if result.status == "failed":
+                print(f"Next step: {helper_preparation_failure_hint(result.language)}")
         if any(result.status not in {"prepared", "already_current"} for result in results):
             print(
                 "Error: extractor helper preparation did not complete. "

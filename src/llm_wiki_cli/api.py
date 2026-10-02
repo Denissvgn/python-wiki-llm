@@ -831,7 +831,13 @@ def _raise_native_query_api_error(exc: Exception) -> NoReturn:
                 "Set allow_full_inventory=true to authorize a full-inventory query."
             )
         elif issubclass(leaf, WorkspaceStateError):
-            message = "A required documentation input or read capability is unavailable. Check access and prepared helpers."
+            message = (
+                "A required documentation input or read capability is unavailable. "
+                "Check access and prepared helpers. Run llm-wiki doctor --capabilities "
+                "with the same source selection and helper cache. If a helper needs "
+                "preparation, use its recovery command in an authorized setup step, "
+                "then retry the original read."
+            )
         elif issubclass(leaf, ArtifactIntegrityError):
             message = "Documentation artifacts do not satisfy the supported integrity contract."
         else:

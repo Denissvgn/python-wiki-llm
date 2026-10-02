@@ -3,6 +3,7 @@
 ## Contents
 
 - [Prepared helpers and cache ownership](#prepared-helpers-and-cache-ownership)
+- [Recover a failed context or extraction command](#recover-a-failed-context-or-extraction-command)
 - [Haskell extraction contract](#haskell-extraction-contract)
 - [Python and FastAPI static contracts](#python-and-fastapi-static-contracts)
 - [Optional-surface initialization](#optional-surface-initialization)
@@ -67,6 +68,42 @@ source-reading commands. `sync`, `lint`, `ci-check`, `extract`, and `bootstrap`
 expose `--helper-cache-dir`; `--cache-dir` is a separate inventory-cache option
 only on `sync` and `lint`. Never copy an option onto a command whose parser
 does not expose it.
+
+## Recover a failed context or extraction command
+
+A missing, stale, or invalid helper is a setup problem. It does not mean the
+repository has no architectural context or that analysis succeeded with an
+empty result. Keep the failed command and its error so the recovery and retry
+use the same inputs.
+
+1. Use the error's language-specific preparation command. For more diagnosis,
+   run `llm-wiki doctor --capabilities` with the same `--src-dir`,
+   `--source-selection`, and `--helper-cache-dir` where applicable. Doctor is
+   read-only and reports toolchain availability, helper state, and remedies.
+2. Check existing user/repository authorization. If setup is already
+   authorized, perform the preparation as a separate setup step without
+   asking again. Preparation writes a cache and may download dependencies or
+   compile bundled helpers. A read-only analysis request alone does not
+   authorize those effects. If authority is missing, explain the concrete
+   preparation command and its effects when requesting it.
+3. Preserve the source root and any required `--allow-external-src`. Preparation
+   takes `--cache-dir`; consumers take `--helper-cache-dir` where supported, or
+   use `LLM_WIKI_CACHE_DIR` consistently. Never substitute the inventory cache.
+   An error's explicit `--language` targets only that bundled helper; do not add
+   `--source-selection` to the same preparation command. Keep the selection on
+   the original analysis command. Outside Git, the remedy proposes an explicit
+   cache base; select that same base for subsequent reads.
+4. If a toolchain is missing, follow the prerequisite hint. If it is present,
+   inspect the reported build, download, or cache-write failure. Do not install
+   application dependencies or run helper package-manager commands manually.
+   Do not invoke `init`, `bootstrap`, or `sync` just to repair a read-only
+   context request: those operations have additional effects.
+5. After preparation succeeds, retry the original analysis command once with
+   all its options, including `--read-only`. If preparation is unavailable,
+   authorization is absent, or the retry still fails, state the limitation and
+   continue the task with targeted source inspection and available wiki pages.
+   Do not claim context was produced, hide incomplete language coverage, or
+   repeatedly retry unchanged failures.
 
 ## Haskell extraction contract
 

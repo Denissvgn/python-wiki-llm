@@ -17,6 +17,7 @@ from ..services.extractor_helpers import (
     ENV_EXTRACTOR_TIMEOUT,
     extractor_timeout_seconds,
     get_prepared_binary,
+    missing_helper_message,
 )
 
 _HASKELL_SCRIPTS_DIR = Path(__file__).parent / "haskell_scripts"
@@ -208,10 +209,8 @@ class HaskellExtractor:
 
 
 def _missing_haskell_helper_message(request: HaskellExtractionRequest) -> str:
-    return (
-        "haskell helper is not prepared. Run "
-        "`llm-wiki prepare-extractors --language haskell` before "
-        "extract/bootstrap/sync/lint/ci-check."
+    return missing_helper_message(
+        "haskell", request.src_dir, request.helper_cache_dir
     )
 
 

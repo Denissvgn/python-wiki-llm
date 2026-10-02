@@ -478,6 +478,18 @@ Commands that consume prepared Go/Rust/Haskell helpers accept
 This is separate from inventory-command `--cache-dir PATH`, which only controls
 where `llm-wiki-inventory-cache.json` is read and written.
 
+Missing-helper errors include a preparation command for the failing language,
+source root, and resolved helper cache. Run that command as an authorized setup
+step, then retry the original analysis with the same options. Keep
+`--source-selection` on the analysis command; a language-specific preparation
+command uses `--language` and cannot also take `--source-selection`. If no Git
+cache is available, the remedy proposes a cache under the source root's
+`.llm-wiki/`; select that base on later reads with `--helper-cache-dir` where
+supported, or `LLM_WIKI_CACHE_DIR`. Preparation failures include toolchain and
+retry guidance. `llm-wiki doctor --capabilities` provides read-only diagnosis.
+After updating the package, `llm-wiki upgrade` refreshes managed agent
+instructions so agents follow the helper recovery procedure.
+
 ## `lint` and `ci-check`
 
 Validate wiki links, orphan pages, entities, modules, workflows,

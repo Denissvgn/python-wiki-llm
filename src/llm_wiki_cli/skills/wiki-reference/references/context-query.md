@@ -4,6 +4,7 @@
 
 - [Choose the least costly truthful route](#choose-the-least-costly-truthful-route)
 - [Broad context and qualified packets](#broad-context-and-qualified-packets)
+- [When context fails because a helper is unavailable](#when-context-fails-because-a-helper-is-unavailable)
 - [Knowledge mode is not freshness preference](#knowledge-mode-is-not-freshness-preference)
 - [Exact dispatcher and supplied impact](#exact-dispatcher-and-supplied-impact)
 - [Exact identity and graph interpretation](#exact-identity-and-graph-interpretation)
@@ -65,6 +66,20 @@ Source selection reports exact candidate and returned counts under
 `bounds.files`. Its `truncated` flag means at least one file was omitted. The
 top-level context `truncated` flag is broader: it can also mean a returned
 file's detail was downgraded to fit the token budget.
+
+## When context fails because a helper is unavailable
+
+Treat a missing or stale extractor helper as a recoverable setup prerequisite,
+not as an empty context result. Follow
+[helper recovery](extractors-dependencies.md#recover-a-failed-context-or-extraction-command).
+When setup is already authorized, run the error's preparation command separately
+and retry the original read once, preserving its source selection, helper
+cache, and `--read-only` option. Preparation can write or download; the read-only
+command itself never performs it.
+
+If setup cannot proceed, disclose the failed command and limitation, then
+continue with targeted source/wiki evidence. Do not regenerate the wiki or
+claim the prescribed context command succeeded.
 
 ## Knowledge mode is not freshness preference
 

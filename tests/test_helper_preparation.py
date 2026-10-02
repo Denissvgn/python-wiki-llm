@@ -192,6 +192,7 @@ def test_init_failure_does_not_publish_scaffold_and_can_be_retried(
     assert not Path("docs/llm_wiki").exists()
     output = capsys.readouterr()
     assert "npm not found" in output.out
+    assert "Install Node.js with npm" in output.out
     assert "rerun the same init command" in output.err
     assert "initialized successfully" not in output.out
 
@@ -230,8 +231,20 @@ def test_init_rejects_unused_cache_option(tmp_project, capsys):
     [
         ["extract", "--deep", "--read-only"],
         ["context", "--budget", "1000", "--focus", "all", "--read-only"],
+        [
+            "context",
+            "--budget",
+            "8000",
+            "--format",
+            "packet",
+            "--focus",
+            "changed",
+            "--knowledge-mode",
+            "auto",
+            "--read-only",
+        ],
     ],
-    ids=["extract", "context"],
+    ids=["extract", "context", "context-packet"],
 )
 def test_read_only_commands_never_prepare_helpers(
     tmp_path, monkeypatch, capsys, arguments
@@ -249,5 +262,9 @@ def test_read_only_commands_never_prepare_helpers(
     with pytest.raises(SystemExit) as exc:
         cli.main()
     assert exc.value.code == 1
-    assert "not prepared" in capsys.readouterr().err
+    message = capsys.readouterr().err
+    assert "not prepared" in message
+    assert "prepare-extractors" in message
+    assert "retry the original command" in message
+    assert str(tmp_path / "cache") in message
     assert list(tmp_path.iterdir()) == [tmp_path / "main.ts"]
