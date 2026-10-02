@@ -96,7 +96,7 @@ flowchart LR
 | [InvalidRequestError](../entities/InvalidRequestError.md) | 361 | `LlmWikiApiError` | Raised when arguments or a submitted request contract are invalid. |
 | [WorkspaceStateError](../entities/WorkspaceStateError.md) | 365 | `LlmWikiApiError` | Raised when workspace state or an operational dependency is unusable. |
 | [ArtifactIntegrityError](../entities/ArtifactIntegrityError.md) | 369 | `LlmWikiApiError` | Raised when persisted or supplied artifact integrity cannot be trusted. |
-| [ContextSession](../entities/api_ContextSession.md) | 1386 | `_ContextSession` | Explicit disposable reuse, with the public API error contract. |
+| [ContextSession](../entities/api_ContextSession.md) | 1393 | `_ContextSession` | Explicit disposable reuse, with the public API error contract. |
 
 ## Functions
 

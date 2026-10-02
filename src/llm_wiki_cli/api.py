@@ -834,7 +834,8 @@ def _raise_native_query_api_error(exc: Exception) -> NoReturn:
             message = (
                 "A required documentation input or read capability is unavailable. "
                 "Check access and prepared helpers. Run llm-wiki doctor --capabilities "
-                "with the same source selection and helper cache. If a helper needs "
+                "with the same source root (--src-dir), source selection, and helper cache. "
+                "If a helper needs "
                 "preparation, use its recovery command in an authorized setup step, "
                 "then retry the original read."
             )

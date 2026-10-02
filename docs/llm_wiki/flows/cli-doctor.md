@@ -109,7 +109,7 @@ sequenceDiagram
     p21-->>p22: ctypes.WinDLL
 ```
 
-> Call sequence diagram shows 30 of 1331 interactions; 1301 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1341 interactions; 1311 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -184,7 +184,7 @@ flowchart LR
 | `getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)` | - | - | - | - |
 | `ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)` | - | - | - | - |
 | `build_capability_doctor` | `wiki_dir`, `src_dir`, `kwargs` | `sys`, `DOCTOR_CAPABILITY_VERSION` | - | `{...}` |
-| `build_capability_diagnostics` | `src_dir`, `helper_cache_dir`, `source_selection`, `allow_external_src`, `include_tests` | `helpers`, `_LANGUAGE_LABELS`, `sys`, `_TOOL_HINTS`, `LANGUAGE_EXTENSIONS`, `sys` | `tools[...]` | `{...}` |
+| `build_capability_diagnostics` | `src_dir`, `helper_cache_dir`, `source_selection`, `allow_external_src`, `include_tests` | `helpers`, `_LANGUAGE_LABELS`, `sys`, `helpers`, `LANGUAGE_EXTENSIONS`, `sys` | `tools[...]` | `{...}` |
 | `validate_source_root` | `path: str`, `label: str`, `allow_external: bool` | `sys`, `os`, `WindowsSecurityGuardError`, `sys` | - | `validate_path(...)`, `resolved` |
 | `validate_path` | `path: str`, `label: str` | - | - | `resolved` |
 | `PathValidationError` | - | - | - | - |
@@ -200,8 +200,8 @@ flowchart LR
 | run | getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 16 | `getattr(args, 'capabilities', False)` |
 | run | ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 18 | `ValueError('--capabilities and --report-schema are mutually exclusive')` |
 | run | build_capability_doctor | 21 | `build_capability_doctor(args.wiki_dir, args.src_dir, strict=args.strict, allow_external_src=args.allow_external_src, helper_cache_dir=args.helper_cache_dir, source_selection=args.source_selection, include_tests=args.include_tests, parallel_jobs=args.jobs, job_request=extraction_job_request_from_args(...))` |
-| build_capability_doctor | build_capability_diagnostics | 253 | `build_capability_diagnostics(src_dir, **=...)` |
-| build_capability_diagnostics | validate_source_root | 47 | `validate_source_root(str(...), '--src-dir', allow_external=allow_external_src)` |
+| build_capability_doctor | build_capability_diagnostics | 236 | `build_capability_diagnostics(src_dir, **=...)` |
+| build_capability_diagnostics | validate_source_root | 41 | `validate_source_root(str(...), '--src-dir', allow_external=allow_external_src)` |
 | validate_source_root | validate_path | 160 | `validate_path(path, label)` |
 | validate_path | PathValidationError | 134 | `PathValidationError(...)` |
 | validate_path | (…).resolve (src/llm_wiki_cli/config.py:validate_path) | 135 | `(Path.cwd() / path).resolve(data not statically known)` |
@@ -214,11 +214,11 @@ flowchart LR
 | output | `print` | `run` | 26 |
 | output | `print` | `run` | 45 |
 | output | `print` | `run` | 47 |
-| mutation | `argv.append` | `build_capability_doctor` | 287 |
-| mutation | `argv.extend` | `build_capability_doctor` | 289 |
-| mutation | `argv.extend` | `build_capability_doctor` | 291 |
-| mutation | `providers.append` | `build_capability_diagnostics` | 143 |
-| mutation | `plugin_states.append` | `build_capability_diagnostics` | 210 |
+| mutation | `argv.append` | `build_capability_doctor` | 270 |
+| mutation | `argv.extend` | `build_capability_doctor` | 272 |
+| mutation | `argv.extend` | `build_capability_doctor` | 274 |
+| mutation | `providers.append` | `build_capability_diagnostics` | 126 |
+| mutation | `plugin_states.append` | `build_capability_diagnostics` | 193 |
 
 ### Static analysis gaps
 

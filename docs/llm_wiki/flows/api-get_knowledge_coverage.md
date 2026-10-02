@@ -190,16 +190,16 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| get_knowledge_coverage | isinstance (src/llm_wiki_cli/api.py:get_knowledge_coverage) | 902 | `isinstance(value, bool)` |
-| get_knowledge_coverage | InvalidRequestError | 903 | `InvalidRequestError('must be a boolean', code='invalid-request', details={...})` |
-| get_knowledge_coverage | isinstance (src/llm_wiki_cli/api.py:get_knowledge_coverage) | 906 | `isinstance(helper_cache_dir, (...))` |
-| get_knowledge_coverage | InvalidRequestError | 907 | `InvalidRequestError('helper cache must be a path', code='invalid-request', details={...})` |
-| get_knowledge_coverage | InvalidRequestError | 921 | `InvalidRequestError('service owns its read scope', code='invalid-request', details={...})` |
-| get_knowledge_coverage | getattr (src/llm_wiki_cli/api.py:get_knowledge_coverage) | 926 | `getattr(service, 'knowledge_view', None)` |
-| get_knowledge_coverage | isinstance (src/llm_wiki_cli/api.py:get_knowledge_coverage) | 927 | `isinstance(view, KnowledgeReadView)` |
-| get_knowledge_coverage | InvalidRequestError | 928 | `InvalidRequestError('service requires a native read view', code='invalid-request', details={...})` |
-| get_knowledge_coverage | cast | 933 | `cast(KnowledgeCoverageResult, build_knowledge_coverage(...))` |
-| get_knowledge_coverage | build_knowledge_coverage | 933 | `build_knowledge_coverage(view)` |
+| get_knowledge_coverage | isinstance (src/llm_wiki_cli/api.py:get_knowledge_coverage) | 909 | `isinstance(value, bool)` |
+| get_knowledge_coverage | InvalidRequestError | 910 | `InvalidRequestError('must be a boolean', code='invalid-request', details={...})` |
+| get_knowledge_coverage | isinstance (src/llm_wiki_cli/api.py:get_knowledge_coverage) | 913 | `isinstance(helper_cache_dir, (...))` |
+| get_knowledge_coverage | InvalidRequestError | 914 | `InvalidRequestError('helper cache must be a path', code='invalid-request', details={...})` |
+| get_knowledge_coverage | InvalidRequestError | 928 | `InvalidRequestError('service owns its read scope', code='invalid-request', details={...})` |
+| get_knowledge_coverage | getattr (src/llm_wiki_cli/api.py:get_knowledge_coverage) | 933 | `getattr(service, 'knowledge_view', None)` |
+| get_knowledge_coverage | isinstance (src/llm_wiki_cli/api.py:get_knowledge_coverage) | 934 | `isinstance(view, KnowledgeReadView)` |
+| get_knowledge_coverage | InvalidRequestError | 935 | `InvalidRequestError('service requires a native read view', code='invalid-request', details={...})` |
+| get_knowledge_coverage | cast | 940 | `cast(KnowledgeCoverageResult, build_knowledge_coverage(...))` |
+| get_knowledge_coverage | build_knowledge_coverage | 940 | `build_knowledge_coverage(view)` |
 | build_knowledge_coverage | isinstance (src/llm_wiki_cli/services…:build_knowledge_coverage) | 23 | `isinstance(view, KnowledgeReadView)` |
 
 ### Boundary effects
@@ -212,11 +212,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `get_knowledge_coverage` | `isinstance` | 902 |
-| external_call | `get_knowledge_coverage` | `isinstance` | 906 |
-| external_call | `get_knowledge_coverage` | `getattr` | 926 |
-| external_call | `get_knowledge_coverage` | `isinstance` | 927 |
-| external_call | `get_knowledge_coverage` | `cast` | 933 |
+| external_call | `get_knowledge_coverage` | `isinstance` | 909 |
+| external_call | `get_knowledge_coverage` | `isinstance` | 913 |
+| external_call | `get_knowledge_coverage` | `getattr` | 933 |
+| external_call | `get_knowledge_coverage` | `isinstance` | 934 |
+| external_call | `get_knowledge_coverage` | `cast` | 940 |
 | external_call | `build_knowledge_coverage` | `isinstance` | 23 |
 | step_limit | `get_knowledge_coverage` | `first 12 steps` | 0 |
 | truncated_flow | `get_knowledge_coverage` | `depth limit` | 0 |

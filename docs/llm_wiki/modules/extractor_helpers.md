@@ -9,11 +9,20 @@ Resolves tool overrides and validates prepared helper manifests against their
 source, platform, and artifact identities. Unreadable or invalid manifests leave
 the helper unprepared so diagnostics can provide a corrective preparation command.
 
+Recovery commands preserve the failing language, resolved source root, and
+helper cache base. They request external-source access only when the root is
+outside the caller's workspace. POSIX and PowerShell rendering preserves
+literal path arguments. Without a Git or configured cache, the remedy proposes
+an explicit cache base and explains how subsequent reads should select it.
+Preparation remains a separate authorized operation; diagnostics do not invoke
+toolchains or change the source and wiki.
+
 ## Imports
 
 | Source | Symbols |
 |--------|---------|
 | `.inventory_cache` | `ENV_CACHE_DIR` |
+| `.paths` | `render_shell_command` |
 | `__future__` | `annotations` |
 | `dataclasses` | `dataclass` |
 | `hashlib` | `hashlib` |
@@ -32,58 +41,29 @@ the helper unprepared so diagnostics can provide a corrective preparation comman
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/commands/prepare_extractors_cmd.py"]
-    n1["src/llm_wiki_cli/extractors/go_extractor.py"]
-    n2["src/llm_wiki_cli/extractors/haskell_extractor.py"]
-    n3["src/llm_wiki_cli/extractors/rust_extractor.py"]
-    n4["src/llm_wiki_cli/extractors/ts_extractor.py"]
-    n5["src/llm_wiki_cli/services/analysis_capture.py"]
-    n6["src/llm_wiki_cli/services/capability_diagnostics.py"]
-    n7["src/llm_wiki_cli/services/extractor_helpers.py"]
-    n8["src/llm_wiki_cli/services/inventory_cache.py"]
-    n9["src/llm_wiki_cli/services/knowledge_maintenance.py"]
-    n0 --> n7
-    n1 --> n7
-    n2 --> n7
-    n3 --> n7
-    n4 --> n7
-    n5 --> n7
-    n6 --> n7
-    n7 --> n8
-    n8 --> n5
-    n9 --> n5
-    n9 --> n7
-    click n0 "../modules/prepare_extractors_cmd.md"
-    click n1 "../modules/go_extractor.md"
-    click n2 "../modules/haskell_extractor.md"
-    click n3 "../modules/rust_extractor.md"
-    click n4 "../modules/ts_extractor.md"
-    click n5 "../modules/analysis_capture.md"
-    click n6 "../modules/capability_diagnostics.md"
-    click n7 "../modules/extractor_helpers.md"
-    click n8 "../modules/inventory_cache.md"
-    click n9 "../modules/knowledge_maintenance.md"
+    n0["src"]
+    n1["src/llm_wiki_cli/services/extractor_helpers.py"]
+    n0 --> n1
+    n1 --> n0
+    click n1 "../modules/extractor_helpers.md"
 ```
+
+> Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [prepare_extractors_cmd](../modules/prepare_extractors_cmd.md) |
-| Inbound | [go_extractor](../modules/go_extractor.md) |
-| Inbound | [haskell_extractor](../modules/haskell_extractor.md) |
-| Inbound | [rust_extractor](../modules/rust_extractor.md) |
-| Inbound | [ts_extractor](../modules/ts_extractor.md) |
-| Inbound | [analysis_capture](../modules/analysis_capture.md) |
-| Inbound | [capability_diagnostics](../modules/capability_diagnostics.md) |
-| Inbound | [knowledge_maintenance](../modules/knowledge_maintenance.md) |
-| Outbound | [inventory_cache](../modules/inventory_cache.md) |
+| Inbound | `src` (10) |
+| Outbound | `src` (2) |
+
+> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [HelperPrepareResult](../entities/HelperPrepareResult.md) | 43 | — | — |
+| [HelperPrepareResult](../entities/HelperPrepareResult.md) | 50 | — | — |
 
 ## Functions
 
@@ -112,7 +92,8 @@ flowchart LR
 | `_load_manifest` | `(cache_root: Path, language: str) -> dict[str, Any] \| None` | — | — |
 | `_write_manifest` | `(cache_root: Path, language: str, data: dict[str, Any]) -> None` | — | — |
 | `_manifest_current` | `(cache_root: Path, language: str) -> dict[str, Any] \| None` | — | — |
-| `_prepared_message` | `(language: str) -> str` | — | — |
+| `helper_preparation_argv` | `(language: str, src_dir: str \| Path = '.', cache_dir: str \| None = None) -> list[str]` | — | Describe cache-only recovery for one helper without executing or writing. |
+| `helper_preparation_failure_hint` | `(language: str) -> str` | — | — |
 | `get_prepared_binary` | `(language: str, src_dir: str \| Path = '.', cache_dir: str \| None = None) -> Path \| None` | — | — |
 | `get_prepared_typescript_root` | `(src_dir: str \| Path = '.', cache_dir: str \| None = None) -> Path \| None` | — | — |
 | `missing_helper_message` | `(language: str, src_dir: str \| Path = '.', cache_dir: str \| None = None) -> str` | — | — |

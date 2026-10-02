@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [prepare_extractors_cmd](../modules/prepare_extractors_cmd.md)
-**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [extractor_helpers](../modules/extractor_helpers.md), [filesystem_guard](../modules/filesystem_guard.md), and 5 more
+**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [extractor_helpers](../modules/extractor_helpers.md), [filesystem_guard](../modules/filesystem_guard.md), and 6 more
 
 **Complete modules touched:**
 
@@ -10,6 +10,7 @@
 - [config](../modules/config.md)
 - [extractor_helpers](../modules/extractor_helpers.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [helper_preparation](../modules/helper_preparation.md)
 - [io](../modules/io.md)
 - [prepare_extractors_cmd](../modules/prepare_extractors_cmd.md)
 - [source_selection](../modules/source_selection.md)
@@ -73,7 +74,7 @@ sequenceDiagram
     p7->>p9: PathValidationError
 ```
 
-> Call sequence diagram shows 30 of 982 interactions; 952 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 987 interactions; 957 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -115,12 +116,12 @@ flowchart LR
     s1 -. "output print" .-> b3
     b4["output print"]
     s1 -. "output print" .-> b4
-    b5["output print"]
-    s1 -. "output print" .-> b5
-    b6["mutation result.append"]
-    s4 -. "mutation result.append" .-> b6
-    b7["mutation seen.add"]
-    s4 -. "mutation seen.add" .-> b7
+    b5["mutation results.append"]
+    s1 -. "mutation results.append" .-> b5
+    b6["output print"]
+    s1 -. "output print" .-> b6
+    b7["mutation result.append"]
+    s4 -. "mutation result.append" .-> b7
     click s1 "../modules/prepare_extractors_cmd.md"
     click s4 "../modules/prepare_extractors_cmd.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
@@ -155,43 +156,50 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run) | 75 | `getattr(args, 'src_dir', '.')` |
-| run | getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run) | 76 | `getattr(args, 'cache_dir', None)` |
-| run | _dedupe_languages | 77 | `_dedupe_languages(getattr(...))` |
-| _dedupe_languages | set (src/llm_wiki_cli/commands…_cmd.py:_dedupe_languages) | 24 | `set(data not statically known)` |
-| _dedupe_languages | result.append | 28 | `result.append(value)` |
-| _dedupe_languages | seen.add | 29 | `seen.add(value)` |
-| run | getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run) | 77 | `getattr(args, 'language', None)` |
-| run | getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run) | 78 | `getattr(args, 'source_selection', None)` |
-| run | bool (src/llm_wiki_cli/commands…are_extractors_cmd.py:run) | 79 | `bool(getattr(...))` |
-| run | getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run) | 79 | `getattr(args, 'allow_external_src', False)` |
-| run | bool (src/llm_wiki_cli/commands…are_extractors_cmd.py:run) | 80 | `bool(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run) | 72 | `getattr(args, 'src_dir', '.')` |
+| run | getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run) | 73 | `getattr(args, 'cache_dir', None)` |
+| run | _dedupe_languages | 74 | `_dedupe_languages(getattr(...))` |
+| _dedupe_languages | set (src/llm_wiki_cli/commands…_cmd.py:_dedupe_languages) | 26 | `set(data not statically known)` |
+| _dedupe_languages | result.append | 30 | `result.append(value)` |
+| _dedupe_languages | seen.add | 31 | `seen.add(value)` |
+| run | getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run) | 74 | `getattr(args, 'language', None)` |
+| run | getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run) | 75 | `getattr(args, 'source_selection', None)` |
+| run | bool (src/llm_wiki_cli/commands…are_extractors_cmd.py:run) | 76 | `bool(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run) | 76 | `getattr(args, 'allow_external_src', False)` |
+| run | bool (src/llm_wiki_cli/commands…are_extractors_cmd.py:run) | 77 | `bool(getattr(...))` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 89 |
-| output | `print` | `run` | 102 |
-| output | `print` | `run` | 117 |
-| output | `print` | `run` | 128 |
-| output | `print` | `run` | 134 |
-| output | `print` | `run` | 137 |
-| mutation | `result.append` | `_dedupe_languages` | 28 |
-| mutation | `seen.add` | `_dedupe_languages` | 29 |
+| output | `print` | `run` | 86 |
+| output | `print` | `run` | 99 |
+| output | `print` | `run` | 114 |
+| output | `print` | `run` | 125 |
+| output | `print` | `run` | 131 |
+| mutation | `results.append` | `run` | 138 |
+| output | `print` | `run` | 140 |
+| mutation | `result.append` | `_dedupe_languages` | 30 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
+| external_call | `run` | `getattr` | 72 |
+| external_call | `run` | `getattr` | 73 |
+| unresolved_call | `_dedupe_languages` | `seen.add` | 31 |
+| external_call | `run` | `getattr` | 74 |
 | external_call | `run` | `getattr` | 75 |
 | external_call | `run` | `getattr` | 76 |
-| external_call | `run` | `getattr` | 77 |
-| external_call | `run` | `getattr` | 78 |
-| external_call | `run` | `getattr` | 79 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 
 ## Behavior
 
-This flow starts at `run` and is classified as `cli`. The generated call and data-flow sections are bounded static projections; runtime conditions and side effects require source-level confirmation.
+The command validates the source root and either detects required helpers from
+the selected source snapshot or accepts an explicit language list. `--plan`
+prints that selection without cache writes or toolchain execution. Preparation
+resolves the helper cache, builds or installs bundled artifacts, and reports
+each result. Failed toolchain or filesystem operations include recovery hints
+and cause an unsuccessful exit. After recovery, callers retry their original
+analysis command with its source selection and helper cache intact.

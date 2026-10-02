@@ -34,7 +34,7 @@ flowchart TD
 | [validation](modules/validation.md) | 62 | 0 |
 | [config](modules/config.md) | 56 | 3 |
 | [services_contracts](modules/services_contracts.md) | 42 | 0 |
-| [source_snapshot](modules/source_snapshot.md) | 41 | 7 |
+| [source_snapshot](modules/source_snapshot.md) | 42 | 7 |
 | [io](modules/io.md) | 38 | 1 |
 | [wiki_surface](modules/wiki_surface.md) | 34 | 1 |
 | [sync_manifest](modules/sync_manifest.md) | 33 | 7 |
@@ -60,14 +60,15 @@ flowchart TD
 | [services_dependencies](modules/services_dependencies.md) | 13 | 8 |
 | [knowledge_graph](modules/knowledge_graph.md) | 13 | 6 |
 | [knowledge_storage_io](modules/knowledge_storage_io.md) | 13 | 4 |
+| [paths](modules/paths.md) | 13 | 0 |
 | [llm_wiki_cli___init__](modules/llm_wiki_cli___init__.md) | 12 | 0 |
 | [context_packet](modules/context_packet.md) | 12 | 26 |
 | [documentation_run_dependencies](modules/documentation_run_dependencies.md) | 11 | 24 |
 | [extraction_jobs](modules/extraction_jobs.md) | 11 | 0 |
 | [markdown_sections](modules/markdown_sections.md) | 11 | 1 |
-| [paths](modules/paths.md) | 11 | 0 |
 | [documentation_run_contracts](modules/documentation_run_contracts.md) | 10 | 3 |
 | [documentation_run_schema](modules/documentation_run_schema.md) | 10 | 2 |
+| [extractor_helpers](modules/extractor_helpers.md) | 10 | 2 |
 | [knowledge_loader](modules/knowledge_loader.md) | 10 | 9 |
 | [knowledge_packs](modules/knowledge_packs.md) | 10 | 3 |
 | [services_schema](modules/services_schema.md) | 10 | 4 |
@@ -78,7 +79,6 @@ flowchart TD
 | [skills](modules/skills.md) | 9 | 2 |
 | [workspace](modules/workspace.md) | 8 | 3 |
 | [entrypoints](modules/entrypoints.md) | 8 | 4 |
-| [extractor_helpers](modules/extractor_helpers.md) | 8 | 1 |
 | [immutable](modules/immutable.md) | 8 | 0 |
 | [imports](modules/imports.md) | 8 | 4 |
 | [infrastructure_inventory](modules/infrastructure_inventory.md) | 8 | 1 |
@@ -148,6 +148,7 @@ flowchart TD
 | [go_calls](modules/go_calls.md) | 2 | 0 |
 | [health_details](modules/health_details.md) | 2 | 10 |
 | [health_policy](modules/health_policy.md) | 2 | 2 |
+| [helper_preparation](modules/helper_preparation.md) | 2 | 2 |
 | [knowledge_links](modules/knowledge_links.md) | 2 | 4 |
 | [knowledge_storage_access](modules/knowledge_storage_access.md) | 2 | 11 |
 | [knowledge_storage_diagnostics](modules/knowledge_storage_diagnostics.md) | 2 | 13 |
@@ -173,7 +174,7 @@ flowchart TD
 | [ci_check_cmd](modules/ci_check_cmd.md) | 1 | 10 |
 | [docs_cmd](modules/docs_cmd.md) | 1 | 5 |
 | [doctor_cmd](modules/doctor_cmd.md) | 1 | 4 |
-| [init_cmd](modules/init_cmd.md) | 1 | 7 |
+| [init_cmd](modules/init_cmd.md) | 1 | 9 |
 | [install_ci_cmd](modules/install_ci_cmd.md) | 1 | 2 |
 | [install_cmd](modules/install_cmd.md) | 1 | 3 |
 | [knowledge_storage_cmd](modules/knowledge_storage_cmd.md) | 1 | 7 |
@@ -182,7 +183,7 @@ flowchart TD
 | [migrate_cmd](modules/migrate_cmd.md) | 1 | 19 |
 | [obsidian_cmd](modules/obsidian_cmd.md) | 1 | 4 |
 | [plugins_cmd](modules/plugins_cmd.md) | 1 | 4 |
-| [prepare_extractors_cmd](modules/prepare_extractors_cmd.md) | 1 | 4 |
+| [prepare_extractors_cmd](modules/prepare_extractors_cmd.md) | 1 | 5 |
 | [query_cmd](modules/query_cmd.md) | 1 | 3 |
 | [queue_cmd](modules/queue_cmd.md) | 1 | 1 |
 | [release_cmd](modules/release_cmd.md) | 1 | 1 |
@@ -206,7 +207,7 @@ flowchart TD
 | [rust_extractor](modules/rust_extractor.md) | 1 | 2 |
 | [api_diff](modules/api_diff.md) | 1 | 1 |
 | [canonical_pages](modules/canonical_pages.md) | 1 | 3 |
-| [capability_diagnostics](modules/capability_diagnostics.md) | 1 | 6 |
+| [capability_diagnostics](modules/capability_diagnostics.md) | 1 | 7 |
 | [context_session](modules/context_session.md) | 1 | 9 |
 | [dependency_versions](modules/dependency_versions.md) | 1 | 3 |
 | [documentation_claim_evidence](modules/documentation_claim_evidence.md) | 1 | 4 |

@@ -658,8 +658,8 @@ def _compact_wiki_instructions(
 ## Select evidence first
 - Broad work: reuse one serialized read-only packet:
   `llm-wiki context --budget 8000 --src-dir . --wiki-dir {wiki_dir_arg} --format packet --focus changed --knowledge-mode auto --read-only{source_selection_args}`.
-  Auto uses valid knowledge; freshness ranking is off.
-- For narrow work or supplied paths/diff, use
+  Auto uses valid knowledge; freshness ranking off.
+- Narrow work or supplied paths/diff: use
   bounded API/MCP `query_documentation`: `concept`, `related`,
   `surface`, `typed`, or `impact` with `paths`/`diff`. `symbol`, `entrypoint`,
   and `dependency` require `allow_full_inventory=true`; supplied evidence does
@@ -697,7 +697,7 @@ def _compact_wiki_instructions(
 - Queries: `{reference_root}/knowledge-consumption.md` and
   `{reference_root}/context-query.md`. Owner-authorized governance:
   `{reference_root}/governance.md`.
-- After every code change that adds, removes, or modifies a
+- After every code change in this session that adds, removes, or modifies a
   class, function, module, or cross-module flow, run the full sync-then-lint
   workflow at `{reference_root}/maintenance.md`: sync, scoped semantic pass,
   final owning sync after Markdown edits, strict validation, and handoff. Never

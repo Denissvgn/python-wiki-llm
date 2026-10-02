@@ -11,6 +11,7 @@
 3. `source_snapshot.build_source_snapshot`
 4. `extractor_helpers.resolve_helper_cache_root`
 5. `extractor_helpers.prepare_helper`
+6. `extractor_helpers.HelperPrepareResult`
 
 ## Touches
 

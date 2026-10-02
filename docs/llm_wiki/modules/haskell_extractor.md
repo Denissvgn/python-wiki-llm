@@ -10,7 +10,7 @@ Haskell source extractor backed by a prepared helper binary.
 
 | Source | Symbols |
 |--------|---------|
-| `..services.extractor_helpers` | `ENV_EXTRACTOR_TIMEOUT`, `extractor_timeout_seconds`, `get_prepared_binary` |
+| `..services.extractor_helpers` | `ENV_EXTRACTOR_TIMEOUT`, `extractor_timeout_seconds`, `get_prepared_binary`, `missing_helper_message` |
 | `.common` | `chunk_source_files_for_cli`, `discover_source_files`, `filter_bundled_inventory` |
 | `__future__` | `annotations` |
 | `dataclasses` | `dataclass` |
@@ -50,8 +50,8 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [HaskellExtractionRequest](../entities/HaskellExtractionRequest.md) | 26 | — | Internal request object for Haskell extraction orchestration. |
-| [HaskellExtractor](../entities/HaskellExtractor.md) | 36 | — | Extractor for Haskell source files using a prepared helper binary. |
+| [HaskellExtractionRequest](../entities/HaskellExtractionRequest.md) | 27 | — | Internal request object for Haskell extraction orchestration. |
+| [HaskellExtractor](../entities/HaskellExtractor.md) | 37 | — | Extractor for Haskell source files using a prepared helper binary. |
 
 ## Functions
 

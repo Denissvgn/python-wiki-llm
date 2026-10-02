@@ -32,17 +32,16 @@ sequenceDiagram
     participant p6 as _add_init_command
     participant p7 as subparsers.add_parser (src/llm_wiki_cli/cli.py:_add_init_command)
     participant p8 as init_parser.add_argument
-    participant p9 as init_parser.add_mutually_exclusive_group
-    participant p10 as init_issue_reporting.add_argument
-    participant p11 as _add_source_selection_argument
-    participant p12 as parser.add_argument (src/llm_wiki_cli/cli.py:_…source_selection_argument)
-    participant p13 as _add_extract_command
-    participant p14 as subparsers.add_parser (src/llm_wiki_cli/cli.py:_add_extract_command)
-    participant p15 as extract_parser.add_argument
-    participant p16 as _add_include_tests_argument
-    participant p17 as parser.add_argument (src/llm_wiki_cli/cli.py:_add_include_tests_argument)
-    participant p18 as _add_helper_cache_argument
-    participant p19 as parser.add_argument (src/llm_wiki_cli/cli.py:_add_helper_cache_argument)
+    participant p9 as _add_helper_cache_argument
+    participant p10 as parser.add_argument (src/llm_wiki_cli/cli.py:_add_helper_cache_argument)
+    participant p11 as init_parser.add_mutually_exclusive_group
+    participant p12 as init_issue_reporting.add_argument
+    participant p13 as _add_source_selection_argument
+    participant p14 as parser.add_argument (src/llm_wiki_cli/cli.py:_…source_selection_argument)
+    participant p15 as _add_extract_command
+    participant p16 as subparsers.add_parser (src/llm_wiki_cli/cli.py:_add_extract_command)
+    participant p17 as extract_parser.add_argument
+    participant p18 as _add_include_tests_argument
     p0->>p1: _build_parser
     p1-->>p2: argparse.ArgumentParser
     p1-->>p3: parser.add_argument (src/llm_wiki_cli/cli.py:_build_parser)
@@ -54,28 +53,28 @@ sequenceDiagram
     p6-->>p8: init_parser.add_argument
     p6-->>p8: init_parser.add_argument
     p6-->>p8: init_parser.add_argument
-    p6-->>p9: init_parser.add_mutually_exclusive_group
-    p6-->>p10: init_issue_reporting.add_argument
-    p6-->>p10: init_issue_reporting.add_argument
-    p6->>p11: _add_source_selection_argument
-    p11-->>p12: parser.add_argument (src/llm_wiki_cli/cli.py:_…source_selection_argument)
-    p5->>p13: _add_extract_command
-    p13-->>p14: subparsers.add_parser (src/llm_wiki_cli/cli.py:_add_extract_command)
-    p13-->>p15: extract_parser.add_argument
-    p13-->>p15: extract_parser.add_argument
-    p13-->>p15: extract_parser.add_argument
-    p13-->>p15: extract_parser.add_argument
-    p13-->>p15: extract_parser.add_argument
-    p13-->>p15: extract_parser.add_argument
-    p13-->>p15: extract_parser.add_argument
-    p13-->>p15: extract_parser.add_argument
-    p13->>p16: _add_include_tests_argument
-    p16-->>p17: parser.add_argument (src/llm_wiki_cli/cli.py:_add_include_tests_argument)
-    p13->>p18: _add_helper_cache_argument
-    p18-->>p19: parser.add_argument (src/llm_wiki_cli/cli.py:_add_helper_cache_argument)
+    p6-->>p8: init_parser.add_argument
+    p6->>p9: _add_helper_cache_argument
+    p9-->>p10: parser.add_argument (src/llm_wiki_cli/cli.py:_add_helper_cache_argument)
+    p6-->>p11: init_parser.add_mutually_exclusive_group
+    p6-->>p12: init_issue_reporting.add_argument
+    p6-->>p12: init_issue_reporting.add_argument
+    p6->>p13: _add_source_selection_argument
+    p13-->>p14: parser.add_argument (src/llm_wiki_cli/cli.py:_…source_selection_argument)
+    p5->>p15: _add_extract_command
+    p15-->>p16: subparsers.add_parser (src/llm_wiki_cli/cli.py:_add_extract_command)
+    p15-->>p17: extract_parser.add_argument
+    p15-->>p17: extract_parser.add_argument
+    p15-->>p17: extract_parser.add_argument
+    p15-->>p17: extract_parser.add_argument
+    p15-->>p17: extract_parser.add_argument
+    p15-->>p17: extract_parser.add_argument
+    p15-->>p17: extract_parser.add_argument
+    p15-->>p17: extract_parser.add_argument
+    p15->>p18: _add_include_tests_argument
 ```
 
-> Call sequence diagram shows 30 of 673 interactions; 643 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 675 interactions; 645 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
 
 ## Data flow
 
@@ -151,7 +150,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| main | _build_parser | 2567 | `_build_parser(data not statically known)` |
+| main | _build_parser | 2576 | `_build_parser(data not statically known)` |
 | _build_parser | argparse.ArgumentParser | 221 | `argparse.ArgumentParser(description='LLM Wiki CLI')` |
 | _build_parser | parser.add_argument (src/llm_wiki_cli/cli.py:_build_parser) | 222 | `parser.add_argument('--version', action='version', version=...)` |
 | _build_parser | parser.add_subparsers | 225 | `parser.add_subparsers(dest='command', required=True)` |
@@ -167,12 +166,12 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `main` | 2575 |
-| output | `print` | `main` | 2578 |
-| output | `print` | `main` | 2581 |
-| environment_read | `os.environ.get` | `main` | 2584 |
-| output | `print` | `main` | 2586 |
-| output | `print` | `main` | 2589 |
+| output | `print` | `main` | 2584 |
+| output | `print` | `main` | 2587 |
+| output | `print` | `main` | 2590 |
+| environment_read | `os.environ.get` | `main` | 2593 |
+| output | `print` | `main` | 2595 |
+| output | `print` | `main` | 2598 |
 
 ### Static analysis gaps
 
