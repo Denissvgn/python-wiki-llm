@@ -6,6 +6,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import textwrap
+from types import SimpleNamespace
 
 import pytest
 
@@ -309,6 +310,42 @@ def _restore_cwd():
     old = os.getcwd()
     yield
     os.chdir(old)
+
+
+@pytest.fixture(params=("posix", "nt"), ids=("posix", "powershell"))
+def assert_helper_recovery(request, monkeypatch):
+    """Check complete recovery guidance using the selected command shell."""
+    from llm_wiki_cli.services import extractor_helpers
+    from llm_wiki_cli.services.paths import render_shell_command
+
+    shell = request.param
+    monkeypatch.setattr(
+        extractor_helpers, "os", SimpleNamespace(**{**vars(os), "name": shell})
+    )
+
+    def check(message, *, language, src_dir=".", cache_dir=None):
+        source = Path(src_dir).resolve()
+        cache = extractor_helpers.resolve_helper_cache_root(source, cache_dir)
+        cache_base = cache.parent if cache is not None else source / ".llm-wiki"
+        argv = [
+            "llm-wiki",
+            "prepare-extractors",
+            "--language",
+            language,
+            "--src-dir",
+            str(source),
+        ]
+        if not source.is_relative_to(Path.cwd().resolve()):
+            argv.append("--allow-external-src")
+        argv.extend(["--cache-dir", str(cache_base)])
+        shell_label = "PowerShell" if shell == "nt" else "POSIX shell"
+        command = render_shell_command(argv, windows=shell == "nt")
+        assert f"Recovery ({shell_label}): `{command}`" in message
+        assert "only when setup is authorized" in message
+        assert "retry the original command" in message
+        assert "Read-only commands never prepare helpers" in message
+
+    return check
 
 
 @pytest.fixture

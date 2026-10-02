@@ -816,7 +816,9 @@ def test_ci_check_json_output_adds_execution_and_exits_nonzero(
     }
 
 
-def test_ci_check_reports_missing_haskell_helper_failure(tmp_path, monkeypatch, capsys):
+def test_ci_check_reports_missing_haskell_helper_failure(
+    tmp_path, monkeypatch, capsys, assert_helper_recovery
+):
     monkeypatch.chdir(tmp_path)
     (tmp_path / "wiki").mkdir()
     app_dir = tmp_path / "hls-analysis" / "app"
@@ -840,7 +842,7 @@ def test_ci_check_reports_missing_haskell_helper_failure(tmp_path, monkeypatch, 
     assert payload["diagnostics"] == []
     assert payload["issues"][0]["category"] == "extractor_failure"
     assert payload["issues"][0]["target"] == "haskell"
-    assert "prepare-extractors --language haskell" in payload["issues"][0]["message"]
+    assert_helper_recovery(payload["issues"][0]["message"], language="haskell")
     report_text = Path("report.md").read_text(encoding="utf-8")
     assert "haskell extraction failed" in report_text
     assert "Unsupported sources detected" not in report_text

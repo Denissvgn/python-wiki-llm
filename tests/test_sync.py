@@ -3289,7 +3289,7 @@ class TestDiffOutput:
     """sync prints a concise per-page summary to stdout."""
 
     def test_sync_reports_missing_haskell_helper_failure(
-        self, bootstrapped_project, capsys
+        self, bootstrapped_project, capsys, assert_helper_recovery
     ):
         proj, wiki_dir = bootstrapped_project
         hls_app = proj / "hls-analysis" / "app"
@@ -3302,7 +3302,7 @@ class TestDiffOutput:
         captured = capsys.readouterr()
         assert exc_info.value.code == 1
         assert "Error: haskell extraction failed" in captured.err
-        assert "prepare-extractors --language haskell" in captured.err
+        assert_helper_recovery(captured.err, language="haskell", src_dir=str(proj))
         assert "Unsupported sources detected" not in captured.out
         assert "Wiki is up to date." not in captured.out
 

@@ -428,7 +428,7 @@ class TestUnsupportedSources:
         assert "generated_javascript_bundle" not in diagnostics[0].message
 
     def test_lint_reports_missing_haskell_helper_as_extractor_failure(
-        self, tmp_path, monkeypatch
+        self, tmp_path, monkeypatch, assert_helper_recovery
     ):
         monkeypatch.chdir(tmp_path)
         wiki = tmp_path / "wiki"
@@ -454,7 +454,11 @@ class TestUnsupportedSources:
         issue = report.issues[0]
         assert issue.category == "extractor_failure"
         assert issue.target == "haskell"
-        assert "prepare-extractors --language haskell" in issue.message
+        assert_helper_recovery(
+            issue.message,
+            language="haskell",
+            cache_dir=str(tmp_path / "unprepared-helper-cache"),
+        )
         assert "Unsupported sources detected" not in lint_cmd.render_text(report)
 
 

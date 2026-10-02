@@ -554,7 +554,7 @@ class TestBootstrapCollisions:
         ]
 
     def test_bootstrap_reports_missing_haskell_helper_failure(
-        self, tmp_path, monkeypatch, capsys
+        self, tmp_path, monkeypatch, capsys, assert_helper_recovery
     ):
         monkeypatch.chdir(tmp_path)
         hls_app = tmp_path / "hls-analysis" / "app"
@@ -580,7 +580,7 @@ class TestBootstrapCollisions:
         assert exc_info.value.code == 1
         assert captured.out == ""
         assert "Error: haskell extraction failed" in captured.err
-        assert "prepare-extractors --language haskell" in captured.err
+        assert_helper_recovery(captured.err, language="haskell")
         assert "Unsupported sources detected" not in captured.err
         assert list((tmp_path / "wiki" / "modules").glob("*.md")) == []
 
