@@ -1,15 +1,15 @@
 {
-  "schema_version": "agent-wiki-release-knowledge-maintenance/v2",
+  "activation": {
+    "attempt": 1,
+    "comparison_sha256": "02b1e1415b3bab8094f1f0594fb6bba9af0dd07155870772294c64e0368a7984",
+    "implementation_sha256": "ae662a65017b592aefaf085a26f911acd50ce0fecc4d0ca9eec4327329a44579",
+    "proof_source_sha": "5a4dd706fdb57544a5843dae839542aa5e06516a",
+    "run_id": 37118400634
+  },
   "mode": "required",
   "policy": "strict-repository-health/v2",
-  "src_dir": ".",
-  "wiki_dir": "docs/llm_wiki",
+  "schema_version": "agent-wiki-release-knowledge-maintenance/v2",
   "selection": ".llm-wiki/source-selection.json",
-  "activation": {
-    "candidate_sha": "abdd274488f1d4817fb2171836c0b0e56240ad01",
-    "run_id": 36347797456,
-    "attempt": 1,
-    "comparison_sha256": "d565a12810f03f5171e8c952e4fad7c9d5673d240efa861c4eb52d6ba5c57dd9",
-    "implementation_sha256": "9683cbdf5e470e56254219de56860ca8188a39750fa8f325f5524e6eab2b89b3"
-  }
+  "src_dir": ".",
+  "wiki_dir": "docs/llm_wiki"
 }
