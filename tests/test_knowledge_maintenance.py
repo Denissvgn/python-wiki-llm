@@ -618,8 +618,10 @@ def test_policy_shadow_decision_does_not_invent_release_gate_success(failure):
     states = {"source_result": "success", "integrity_result": "success", "maintenance_result": "success", "bundle_result": "skipped"}
     if failure in {"source", "integrity", "maintenance"}:
         states[failure + "_result"] = "failure"
-    if failure == "bundle": states["bundle_result"] = "success"
-    if failure == "identity": identity["mode"] = "candidate"
+    if failure == "bundle":
+        states["bundle_result"] = "success"
+    if failure == "identity":
+        identity["mode"] = "candidate"
     if failure == "none":
         result = RELEASE["shadow_decision"](identity, verification, **states)
         assert result["nonpromoting"] is True
@@ -642,13 +644,20 @@ def test_downloaded_shadow_proof_must_match_frozen_identity_and_implementation(m
             "implementation_sha256": RELEASE["composite_policy_digest"](lambda name: (ROOT / name).read_bytes()),
         },
     }
-    if mutation == "candidate": value["candidate_sha"] = "d" * 40
-    if mutation == "policy": value["activation_proof"]["implementation_sha256"] = "0" * 64
-    if mutation == "missing-doctor": value["evidence_sha256"].pop("doctor.json")
-    if mutation == "failed": value["status"] = "fail"
-    if mutation == "mode": value["mode"] = "required"
-    if mutation == "digest": value["evidence_sha256"]["doctor.json"] = "unbound"
-    if mutation == "missing-error": value.pop("error")
+    if mutation == "candidate":
+        value["candidate_sha"] = "d" * 40
+    if mutation == "policy":
+        value["activation_proof"]["implementation_sha256"] = "0" * 64
+    if mutation == "missing-doctor":
+        value["evidence_sha256"].pop("doctor.json")
+    if mutation == "failed":
+        value["status"] = "fail"
+    if mutation == "mode":
+        value["mode"] = "required"
+    if mutation == "digest":
+        value["evidence_sha256"]["doctor.json"] = "unbound"
+    if mutation == "missing-error":
+        value.pop("error")
     if mutation == "none":
         RELEASE["verify_shadow_record"](value, expected)
     else:
