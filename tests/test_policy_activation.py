@@ -187,7 +187,9 @@ def test_main_policy_proof_requires_explicit_manual_verification(shadow):
 @pytest.mark.parametrize("field", ["candidate_sha", "proof_source_sha"])
 def test_policy_reads_legacy_and_explicit_proof_source_names(shadow, field):
     config = deepcopy(shadow.config)
-    source = config["activation"].pop("candidate_sha")
+    source = maintenance.activation_source_sha(config["activation"])
+    config["activation"].pop("candidate_sha", None)
+    config["activation"].pop("proof_source_sha", None)
     config["activation"][field] = source
     config["activation"]["implementation_sha256"] = hosted.sha256((ROOT / maintenance.LEAF_PATH).read_bytes())
     assert maintenance.policy(raw(config))["mode"] == "required"
