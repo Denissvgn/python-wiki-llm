@@ -121,6 +121,23 @@ that exact commit. Routine pull-request health remains advisory. The release
 workflow retains `evidence-rd-10` with original maintenance inputs and
 `knowledge-maintenance-verification` with the separate verification result.
 
+For TypeScript/JavaScript wiki refreshes, use the locked Node/npm toolchain for
+the active extraction process as well as helper preparation. A helper prepared
+with the lock can still be executed by a different `node` on `PATH`; that records
+a different runtime identity and can prevent portable release-health comparison.
+On a source checkout, prepare and activate the ignored local toolchain before
+refreshing:
+
+```bash
+bash .github/scripts/setup-llm-wiki-ci-toolchains.sh --mode routine \
+  --install-root .git/llm-wiki-ci-toolchains \
+  --environment-file .git/llm-wiki-ci-toolchains.env --python .venv/bin/python
+source .git/llm-wiki-ci-toolchains.env
+.venv/bin/python -m llm_wiki_cli.cli sync --jobs 1 --src-dir . --wiki-dir docs/llm_wiki
+.venv/bin/python -m llm_wiki_cli.cli doctor --strict --comparison-policy analysis-v1 \
+  --src-dir . --wiki-dir docs/llm_wiki
+```
+
 ### Qualification after merging
 
 Repository release automation is disabled by default in
