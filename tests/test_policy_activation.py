@@ -141,7 +141,7 @@ def test_original_hosted_proof_generates_only_activation_and_bounded_audit(shado
     verified = shadow.verify(request_id=REQUEST)
     assert verified["audit"]["configuration"] == activation.configuration_contract(shadow.config)
     assert verified["activation"] == {
-        "candidate_sha": SHA, "run_id": RUN, "attempt": 1,
+        "proof_source_sha": SHA, "run_id": RUN, "attempt": 1,
         "comparison_sha256": hosted.sha256(shadow.files["knowledge-maintenance-verification"]["verification.json"]),
         "implementation_sha256": hosted.sha256((ROOT / maintenance.LEAF_PATH).read_bytes()),
     }
@@ -171,6 +171,30 @@ def test_activation_only_changes_do_not_invalidate_the_evaluated_contract(shadow
     current = deepcopy(shadow.config)
     current["activation"]["implementation_sha256"] = "1" * 64
     assert activation.proposal(current, verified)["activation"] == verified["activation"]
+
+
+def test_main_policy_proof_requires_explicit_manual_verification(shadow):
+    shadow.run["head_branch"] = "main"
+    with pytest.raises(hosted.EvidenceError, match="run identity"):
+        shadow.verify()
+    verified = shadow.verify(main_proof=True)
+    assert verified["activation"]["proof_source_sha"] == SHA
+    assert verified["audit"]["request_id"] is None
+    with pytest.raises(hosted.EvidenceError, match="coordinator identity"):
+        shadow.verify(main_proof=True, request_id=REQUEST)
+
+
+@pytest.mark.parametrize("field", ["candidate_sha", "proof_source_sha"])
+def test_policy_reads_legacy_and_explicit_proof_source_names(shadow, field):
+    config = deepcopy(shadow.config)
+    source = config["activation"].pop("candidate_sha")
+    config["activation"][field] = source
+    config["activation"]["implementation_sha256"] = hosted.sha256((ROOT / maintenance.LEAF_PATH).read_bytes())
+    assert maintenance.policy(raw(config))["mode"] == "required"
+    assert maintenance.activation_source_sha(config["activation"]) == source
+    config["activation"]["proof_source_sha" if field == "candidate_sha" else "candidate_sha"] = "b" * 40
+    with pytest.raises(ValueError, match="exactly one"):
+        maintenance.policy(raw(config))
 
 
 def test_shadow_replay_rejects_configuration_only_changes_to_trusted_checkout(shadow):
@@ -434,6 +458,23 @@ def test_activation_pr_replays_bot_proof_and_checks_exact_two_file_change(shadow
     result = client.validate()
     assert result["status"] == "pass" and result["head_sha"] == client.head
     assert result["activation"] == client.verified["activation"]
+
+
+def test_manual_approval_pr_replays_main_proof_and_preserves_historical_sha(shadow):
+    client = ActivationPullRequest(shadow)
+    shadow.run["head_branch"] = "main"
+    verified = shadow.verify(main_proof=True)
+    client.pr["head"]["ref"] = "codex/manual-policy-activation/" + client.digest
+    client.pr["user"] = {"login": "maintainer", "id": 1234}
+    client.pr["author_association"] = "OWNER"
+    client.contents[(maintenance.POLICY_PATH, client.head)] = raw(activation.proposal(shadow.config, verified))
+    client.contents[(client.audit_path, client.head)] = raw(verified["audit"])
+    result = client.validate()
+    assert result["activation"]["proof_source_sha"] == SHA
+    assert client.base != SHA
+    client.pr["author_association"] = "NONE"
+    with pytest.raises(hosted.EvidenceError, match="authorized proposer"):
+        client.validate()
 
 
 def test_pr_verifier_rejects_base_configuration_drift_after_the_shadow_run(shadow):

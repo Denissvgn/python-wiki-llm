@@ -124,18 +124,21 @@ def _identity(value: Any, repository: str, candidate_sha: str, archive: bytes) -
 def verify_shadow(
     repository: str, run_id: int, attempt: int, candidate_sha: str,
     policy_root: Path, *, client: Any = None, request_id: str | None = None,
+    main_proof: bool = False,
 ) -> dict:
     """Authenticate one completed pinned run and replay its original policy evidence."""
     hosted.require(isinstance(repository, str) and re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository) is not None, "invalid repository")
     hosted.require(type(run_id) is int and run_id > 0 and type(attempt) is int and attempt > 0, "invalid policy-shadow run identity")
     hosted.require(isinstance(candidate_sha, str) and re.fullmatch(r"[0-9a-f]{40}", candidate_sha) is not None, "invalid candidate SHA")
     hosted.require(request_id is None or (isinstance(request_id, str) and re.fullmatch(r"[0-9a-f]{64}", request_id) is not None), "invalid renewal request identity")
+    hosted.require(type(main_proof) is bool and (not main_proof or request_id is None), "manual main proof cannot use a coordinator identity")
     client = client if client is not None else hosted.GitHub(repository)
     try:
         run = client.get(f"/actions/runs/{run_id}")
         hosted.require(
             isinstance(run, dict) and run.get("id") == run_id and run.get("run_attempt") == attempt
-            and run.get("head_sha") == candidate_sha and run.get("head_branch") == "codex/qualification/" + candidate_sha
+            and run.get("head_sha") == candidate_sha
+            and run.get("head_branch") == ("main" if main_proof else "codex/qualification/" + candidate_sha)
             and run.get("event") == "workflow_dispatch" and run.get("path", "").partition("@")[0] == hosted.WORKFLOW
             and run.get("status") == "completed" and run.get("conclusion") == "success"
             and run.get("repository", {}).get("full_name") == repository
@@ -216,7 +219,7 @@ def verify_shadow(
             "gates": {"source": "PASS", "integrity": "PASS", "maintenance": "PASS"},
         }, "policy shadow decision is incomplete or promoting")
         activation = {
-            "candidate_sha": candidate_sha, "run_id": run_id, "attempt": attempt,
+            "proof_source_sha": candidate_sha, "run_id": run_id, "attempt": attempt,
             "comparison_sha256": hosted.sha256(receipt_raw), "implementation_sha256": implementation,
         }
         audit = {
@@ -271,17 +274,20 @@ def validate_activation_pr(
     try:
         pr = client.get(f"/pulls/{number}")
         branch = pr.get("head", {}).get("ref", "")
-        if not isinstance(branch, str) or not branch.startswith("codex/policy-activation/"):
+        manual = isinstance(branch, str) and branch.startswith("codex/manual-policy-activation/")
+        prefix = "codex/manual-policy-activation/" if manual else "codex/policy-activation/"
+        if not isinstance(branch, str) or not branch.startswith(prefix):
             return {"status": "ignored", "pull_request": number}
-        digest = branch.removeprefix("codex/policy-activation/")
+        digest = branch.removeprefix(prefix)
         hosted.require(re.fullmatch(r"[0-9a-f]{64}", digest) is not None, "invalid activation branch digest")
-        hosted.require(
+        trusted_author = (
             isinstance(trusted_bot, dict) and isinstance(trusted_bot.get("login"), str) and bool(trusted_bot["login"])
             and type(trusted_bot.get("id")) is int and trusted_bot["id"] > 0
             and pr.get("user", {}).get("login") == trusted_bot["login"]
-            and pr.get("user", {}).get("id") == trusted_bot["id"],
-            "activation pull request is not owned by the trusted bot",
+            and pr.get("user", {}).get("id") == trusted_bot["id"]
         )
+        hosted.require(trusted_author or (manual and pr.get("author_association") in {"OWNER", "MEMBER", "COLLABORATOR"}),
+                       "activation pull request is not owned by an authorized proposer")
         hosted.require(
             pr.get("head", {}).get("repo", {}).get("full_name") == repository
             and pr.get("base", {}).get("repo", {}).get("full_name") == repository
@@ -323,19 +329,19 @@ def validate_activation_pr(
         proposed = updated.get("activation")
         hosted.require(isinstance(proposed, dict) and proposed.get("implementation_sha256") == digest, "activation pull request digest differs from branch")
         assert isinstance(proposed, dict)
-        hosted.require(isinstance(proposed.get("candidate_sha"), str) and re.fullmatch(r"[0-9a-f]{40}", proposed["candidate_sha"]) is not None, "invalid activation candidate SHA")
-        evaluated_config = hosted._json(_content(client, maintenance.POLICY_PATH, proposed["candidate_sha"], limit=65536))
+        proof_source = maintenance.activation_source_sha(proposed)
+        evaluated_config = hosted._json(_content(client, maintenance.POLICY_PATH, proof_source, limit=65536))
         hosted.require(configuration_contract(evaluated_config) == configuration_contract(base_config),
                        "activation proof configuration differs from current main")
-        comparison = client.get(f"/compare/{proposed['candidate_sha']}...{base}")
+        comparison = client.get(f"/compare/{proof_source}...{base}")
         hosted.require(
             comparison.get("status") in {"ahead", "identical"}
-            and comparison.get("merge_base_commit", {}).get("sha") == proposed["candidate_sha"],
+            and comparison.get("merge_base_commit", {}).get("sha") == proof_source,
             "activation proof candidate is not in protected main history",
         )
         verified = verify_shadow(
-            repository, proposed["run_id"], proposed["attempt"], proposed["candidate_sha"],
-            policy_root, client=client, request_id=audit.get("request_id"),
+            repository, proposed["run_id"], proposed["attempt"], proof_source,
+            policy_root, client=client, request_id=audit.get("request_id"), main_proof=manual,
         )
         hosted.require(audit == verified["audit"] and updated == proposal(base_config, verified), "activation pull request differs from authenticated proof")
         return {"status": "pass", "pull_request": number, "head_sha": head, "base_sha": base, "activation": verified["activation"]}

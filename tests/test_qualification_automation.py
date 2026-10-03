@@ -212,7 +212,7 @@ def activate(controller):
 
 def shadow_proof(controller, receipt):
     digest = controller.policy_at(CANDIDATE)["implementation_sha256"]
-    activation = {"candidate_sha": CANDIDATE, "run_id": receipt["run_id"], "attempt": 1,
+    activation = {"proof_source_sha": CANDIDATE, "run_id": receipt["run_id"], "attempt": 1,
                   "implementation_sha256": digest, "comparison_sha256": "e" * 64}
     from release.policy_activation import configuration_contract
     return {"activation": activation, "audit": {"repository": REPOSITORY, "implementation_sha256": digest,
@@ -361,6 +361,57 @@ def test_manual_resume_requires_successful_exact_main_ci(controller):
     controller.client.runs.clear()
     assert controller.reconcile({}, manual=True)["status"] == "waiting_ci"
     assert not controller.client.mutations
+
+
+def test_coordinator_replays_manual_approval_without_automatic_receipt(controller, monkeypatch):
+    activation = {"proof_source_sha": CANDIDATE, "run_id": 123, "attempt": 1,
+                  "implementation_sha256": "a" * 64, "comparison_sha256": "b" * 64}
+    audit = {"request_id": None, "candidate_sha": CANDIDATE, "run_id": 123,
+             "attempt": 1, "implementation_sha256": activation["implementation_sha256"]}
+    verified = {"activation": deepcopy(activation), "audit": deepcopy(audit)}
+    calls = []
+
+    def verifier(*args, **kwargs):
+        calls.append(kwargs)
+        return deepcopy(verified)
+
+    controller.shadow_verifier = verifier
+    monkeypatch.setattr(controller, "content", lambda *args: qa.canonical(audit))
+    monkeypatch.setattr(controller, "receipts", lambda *args: [])
+    assert controller._verify_activation(activation) == verified
+    assert calls[0]["main_proof"] is True
+    activation["attempt"] = 2
+    with pytest.raises(ValueError, match="matching manual audit"):
+        controller._verify_activation(activation)
+    assert len(calls) == 1
+    assert not controller.client.mutations
+
+
+@pytest.mark.parametrize("main_audit", ["missing", "prior-manual"])
+def test_automatic_proof_uses_dispatch_receipt_without_main_audit(controller, monkeypatch, main_audit):
+    receipt = controller.reconcile({"workflow_run": workflow_run()})
+    verified = shadow_proof(controller, receipt)
+    calls = []
+
+    def verifier(*args, **kwargs):
+        calls.append(kwargs)
+        return deepcopy(verified)
+
+    controller.shadow_verifier = verifier
+    audit_reads = []
+
+    def content(*args):
+        audit_reads.append(args)
+        if main_audit == "missing":
+            raise qa.APIError(404, "audit exists only on PR head")
+        return qa.canonical({"request_id": None, "candidate_sha": CANDIDATE,
+                             "run_id": receipt["run_id"] - 1})
+
+    monkeypatch.setattr(controller, "content", content)
+    assert controller._verify_activation(verified["activation"]) == verified
+    assert calls[0]["request_id"] == receipt["request_id"]
+    assert "main_proof" not in calls[0]
+    assert audit_reads == []
 
 
 def test_failed_qualification_requires_explicit_retry(controller):

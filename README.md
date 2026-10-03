@@ -1,5 +1,9 @@
 # LLM Wiki CLI
 
+[![CI](https://github.com/Denissvgn/python-wiki-llm/actions/workflows/ci.yml/badge.svg)](https://github.com/Denissvgn/python-wiki-llm/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+
 Build and maintain an architectural wiki for your codebase. LLM Wiki scans
 source into Markdown pages, keeps generated structure in sync, and supplies
 coding agents with searchable, bounded context. Agents add the explanations
