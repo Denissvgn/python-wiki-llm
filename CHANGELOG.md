@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Updated the TypeScript helper's brace expansion dependency to 5.0.12,
+  including upstream denial-of-service fixes.
 - Policy approval retries recover matching branches and open PRs after
   interrupted creation requests. Automatic proof replay retains its dispatch
   identity when main advances or a prior manual approval uses the same policy.

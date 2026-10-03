@@ -278,11 +278,16 @@ def test_proof_cannot_come_from_fork_or_other_repository(shadow, field):
 @pytest.mark.parametrize("mutation", ["missing", "duplicate", "failed", "wrong-attempt", "wrong-sha"])
 def test_each_policy_job_must_succeed_once_for_exact_attempt(shadow, mutation):
     job = next(item for item in shadow.jobs if item["name"] == "Repository knowledge maintenance")
-    if mutation == "missing": shadow.jobs.remove(job)
-    elif mutation == "duplicate": shadow.jobs.append(deepcopy(job))
-    elif mutation == "failed": job["conclusion"] = "failure"
-    elif mutation == "wrong-attempt": job["run_attempt"] = 2
-    else: job["head_sha"] = "c" * 40
+    if mutation == "missing":
+        shadow.jobs.remove(job)
+    elif mutation == "duplicate":
+        shadow.jobs.append(deepcopy(job))
+    elif mutation == "failed":
+        job["conclusion"] = "failure"
+    elif mutation == "wrong-attempt":
+        job["run_attempt"] = 2
+    else:
+        job["head_sha"] = "c" * 40
     with pytest.raises(hosted.EvidenceError, match="hosted policy producer"):
         shadow.verify()
 
@@ -290,14 +295,22 @@ def test_each_policy_job_must_succeed_once_for_exact_attempt(shadow, mutation):
 @pytest.mark.parametrize("mutation", ["missing", "duplicate", "expired", "wrong-run", "wrong-repository", "wrong-sha", "old-attempt", "digest-mismatch", "missing-member", "unsafe-member"])
 def test_artifact_origin_inventory_and_bytes_are_authenticated(shadow, mutation):
     artifact = next(item for item in shadow.artifacts if item["name"] == "evidence-rd-10")
-    if mutation == "missing": shadow.artifacts.remove(artifact)
-    elif mutation == "duplicate": shadow.artifacts.append(deepcopy(artifact))
-    elif mutation == "expired": artifact["expired"] = True
-    elif mutation == "wrong-run": artifact["workflow_run"]["id"] = RUN + 1
-    elif mutation == "wrong-repository": artifact["workflow_run"]["head_repository_id"] = 50
-    elif mutation == "wrong-sha": artifact["workflow_run"]["head_sha"] = "c" * 40
-    elif mutation == "old-attempt": artifact["created_at"] = "2026-09-20T10:05:00Z"
-    elif mutation == "digest-mismatch": shadow.archives[artifact["id"]] += b"altered"
+    if mutation == "missing":
+        shadow.artifacts.remove(artifact)
+    elif mutation == "duplicate":
+        shadow.artifacts.append(deepcopy(artifact))
+    elif mutation == "expired":
+        artifact["expired"] = True
+    elif mutation == "wrong-run":
+        artifact["workflow_run"]["id"] = RUN + 1
+    elif mutation == "wrong-repository":
+        artifact["workflow_run"]["head_repository_id"] = 50
+    elif mutation == "wrong-sha":
+        artifact["workflow_run"]["head_sha"] = "c" * 40
+    elif mutation == "old-attempt":
+        artifact["created_at"] = "2026-09-20T10:05:00Z"
+    elif mutation == "digest-mismatch":
+        shadow.archives[artifact["id"]] += b"altered"
     elif mutation == "missing-member":
         shadow.files["evidence-rd-10"].pop("maintenance/doctor.json")
         shadow.replace("evidence-rd-10")
@@ -330,8 +343,10 @@ def test_source_and_harness_are_bound_without_executing_downloaded_code(shadow, 
         shadow.files["candidate-source"]["candidate-source.tar"] += b"changed"
     elif mutation.startswith("harness"):
         files = dict(shadow.source_files)
-        if mutation == "harness-config": files[maintenance.POLICY_PATH] += b"\n"
-        else: files.pop(maintenance.LEAF_PATH)
+        if mutation == "harness-config":
+            files[maintenance.POLICY_PATH] += b"\n"
+        else:
+            files.pop(maintenance.LEAF_PATH)
         shadow.replace("qualification-harnesses", {"qualification-harnesses.tar": source_archive(files)})
     else:
         stream = io.BytesIO()
@@ -354,13 +369,18 @@ def test_source_and_harness_are_bound_without_executing_downloaded_code(shadow, 
 
 @pytest.mark.parametrize("mutation", ["receipt-hash", "wrong-candidate", "wrong-doctor", "editable-install", "wrong-scope"])
 def test_receipt_is_replayed_from_original_policy_and_parity_inputs(shadow, mutation):
-    if mutation == "receipt-hash": shadow.receipt["evidence_sha256"]["doctor.json"] = "sha256:" + "0" * 64
-    elif mutation == "wrong-candidate": shadow.receipt["candidate_sha"] = "c" * 40
-    elif mutation == "wrong-doctor": shadow.files["evidence-rd-10"]["maintenance/doctor.json"] = b'{}'
+    if mutation == "receipt-hash":
+        shadow.receipt["evidence_sha256"]["doctor.json"] = "sha256:" + "0" * 64
+    elif mutation == "wrong-candidate":
+        shadow.receipt["candidate_sha"] = "c" * 40
+    elif mutation == "wrong-doctor":
+        shadow.files["evidence-rd-10"]["maintenance/doctor.json"] = b'{}'
     else:
         preflight = json.loads(shadow.files["evidence-rd-10"]["maintenance/preflight.json"])
-        if mutation == "editable-install": preflight["installed"]["editable"] = True
-        else: preflight["binding"]["src_dir"] = "outside-candidate"
+        if mutation == "editable-install":
+            preflight["installed"]["editable"] = True
+        else:
+            preflight["binding"]["src_dir"] = "outside-candidate"
         shadow.files["evidence-rd-10"]["maintenance/preflight.json"] = raw(preflight)
     shadow.replace("knowledge-maintenance-verification", {"verification.json": raw(shadow.receipt)})
     shadow.replace("evidence-rd-10")
@@ -370,12 +390,18 @@ def test_receipt_is_replayed_from_original_policy_and_parity_inputs(shadow, muta
 
 @pytest.mark.parametrize("mutation", ["promotion-job", "promoting-artifact", "failed-decision", "promoting-decision", "incomplete-decision", "wrong-decision-candidate"])
 def test_policy_shadow_cannot_claim_release_qualification(shadow, mutation):
-    if mutation == "promotion-job": shadow.jobs[-1]["conclusion"] = "success"
-    elif mutation == "promoting-artifact": shadow.artifacts.append({"name": "qualified-release"})
-    elif mutation == "failed-decision": shadow.decision["status"] = "fail"
-    elif mutation == "promoting-decision": shadow.decision["nonpromoting"] = False
-    elif mutation == "incomplete-decision": shadow.decision["gates"].pop("integrity")
-    else: shadow.decision["candidate_sha"] = "c" * 40
+    if mutation == "promotion-job":
+        shadow.jobs[-1]["conclusion"] = "success"
+    elif mutation == "promoting-artifact":
+        shadow.artifacts.append({"name": "qualified-release"})
+    elif mutation == "failed-decision":
+        shadow.decision["status"] = "fail"
+    elif mutation == "promoting-decision":
+        shadow.decision["nonpromoting"] = False
+    elif mutation == "incomplete-decision":
+        shadow.decision["gates"].pop("integrity")
+    else:
+        shadow.decision["candidate_sha"] = "c" * 40
     shadow.replace("qualification-decision", {"decision.json": raw(shadow.decision)})
     with pytest.raises(hosted.EvidenceError, match="bounded profile|assembly|qualified release|decision"):
         shadow.verify()
@@ -432,10 +458,14 @@ class ActivationPullRequest:
         self.contents[(self.audit_path, self.head)] = raw(self.verified["audit"])
 
     def get(self, path):
-        if path == "/pulls/42": return deepcopy(self.pr)
-        if path == "/git/ref/heads/main": return deepcopy(self.main)
-        if path == "/git/commits/" + self.head: return deepcopy(self.commit)
-        if path == f"/compare/{SHA}...{self.base}": return deepcopy(self.comparison)
+        if path == "/pulls/42":
+            return deepcopy(self.pr)
+        if path == "/git/ref/heads/main":
+            return deepcopy(self.main)
+        if path == "/git/commits/" + self.head:
+            return deepcopy(self.commit)
+        if path == f"/compare/{SHA}...{self.base}":
+            return deepcopy(self.comparison)
         if path.startswith("/contents/"):
             encoded, _, query = path.removeprefix("/contents/").partition("?")
             name, ref = urllib.parse.unquote(encoded), urllib.parse.parse_qs(query)["ref"][0]
@@ -444,7 +474,8 @@ class ActivationPullRequest:
         return self.shadow.get(path)
 
     def list(self, path, key=None):
-        if path == "/pulls/42/files": return deepcopy(self.changed)
+        if path == "/pulls/42/files":
+            return deepcopy(self.changed)
         return self.shadow.list(path, key)
 
     def archive(self, artifact_id):
@@ -501,17 +532,28 @@ def test_ordinary_pull_request_does_not_require_activation_bot_identity(shadow):
 @pytest.mark.parametrize("mutation", ["wrong-bot-id", "wrong-bot-login", "fork", "wrong-base", "draft", "closed", "advanced-main", "extra-commit", "side-file", "wrong-head", "untrusted-policy", "changed-scope", "altered-audit", "altered-activation"])
 def test_activation_pr_refuses_untrusted_or_superseded_changes(shadow, mutation):
     client = ActivationPullRequest(shadow)
-    if mutation == "wrong-bot-id": client.pr["user"]["id"] += 1
-    elif mutation == "wrong-bot-login": client.pr["user"]["login"] = "hostile"
-    elif mutation == "fork": client.pr["head"]["repo"]["full_name"] = "hostile/fork"
-    elif mutation == "wrong-base": client.pr["base"]["ref"] = "release"
-    elif mutation == "draft": client.pr["draft"] = True
-    elif mutation == "closed": client.pr["state"] = "closed"
-    elif mutation == "advanced-main": client.main["object"]["sha"] = "e" * 40
-    elif mutation == "extra-commit": client.commit["parents"] = [{"sha": "e" * 40}]
-    elif mutation == "side-file": client.changed[1]["filename"] = "src/side.py"
-    elif mutation == "wrong-head": client.pr["head"]["sha"] = "e" * 40
-    elif mutation == "untrusted-policy": client.contents[(maintenance.LEAF_PATH, client.base)] += b"changed"
+    if mutation == "wrong-bot-id":
+        client.pr["user"]["id"] += 1
+    elif mutation == "wrong-bot-login":
+        client.pr["user"]["login"] = "hostile"
+    elif mutation == "fork":
+        client.pr["head"]["repo"]["full_name"] = "hostile/fork"
+    elif mutation == "wrong-base":
+        client.pr["base"]["ref"] = "release"
+    elif mutation == "draft":
+        client.pr["draft"] = True
+    elif mutation == "closed":
+        client.pr["state"] = "closed"
+    elif mutation == "advanced-main":
+        client.main["object"]["sha"] = "e" * 40
+    elif mutation == "extra-commit":
+        client.commit["parents"] = [{"sha": "e" * 40}]
+    elif mutation == "side-file":
+        client.changed[1]["filename"] = "src/side.py"
+    elif mutation == "wrong-head":
+        client.pr["head"]["sha"] = "e" * 40
+    elif mutation == "untrusted-policy":
+        client.contents[(maintenance.LEAF_PATH, client.base)] += b"changed"
     elif mutation == "changed-scope":
         client.updated["wiki_dir"] = "other/wiki"
         client.contents[(maintenance.POLICY_PATH, client.head)] = raw(client.updated)
@@ -540,8 +582,10 @@ def test_shadow_request_identity_requires_canonical_sha256(shadow, request_value
 @pytest.mark.parametrize("mutation", ["unmerged", "wrong-ancestor"])
 def test_activation_proof_must_come_from_merged_main_history(shadow, mutation):
     client = ActivationPullRequest(shadow)
-    if mutation == "unmerged": client.comparison["status"] = "diverged"
-    else: client.comparison["merge_base_commit"]["sha"] = "e" * 40
+    if mutation == "unmerged":
+        client.comparison["status"] = "diverged"
+    else:
+        client.comparison["merge_base_commit"]["sha"] = "e" * 40
     with pytest.raises(hosted.EvidenceError, match="protected main history"):
         client.validate()
 

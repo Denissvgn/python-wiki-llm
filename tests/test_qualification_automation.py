@@ -694,14 +694,21 @@ def test_read_token_is_never_used_for_mutation():
 def test_auto_merge_uses_exact_head_and_authenticates_graphql_response(monkeypatch, response_kind):
     head = "d" * 40
     payload = {"id": "PR_node_1", "headRefOid": head, "merged": False, "autoMergeRequest": {"mergeMethod": "SQUASH"}}
-    if response_kind == "merged": payload.update(merged=True, mergeCommit={"oid": "e" * 40}, autoMergeRequest=None)
-    if response_kind == "wrong-head": payload["headRefOid"] = "f" * 40
-    if response_kind == "wrong-method": payload["autoMergeRequest"] = {"mergeMethod": "MERGE"}
-    if response_kind == "missing-request": payload["autoMergeRequest"] = None
+    if response_kind == "merged":
+        payload.update(merged=True, mergeCommit={"oid": "e" * 40}, autoMergeRequest=None)
+    if response_kind == "wrong-head":
+        payload["headRefOid"] = "f" * 40
+    if response_kind == "wrong-method":
+        payload["autoMergeRequest"] = {"mergeMethod": "MERGE"}
+    if response_kind == "missing-request":
+        payload["autoMergeRequest"] = None
     body: Any = {"data": {"enablePullRequestAutoMerge": {"pullRequest": payload}}}
-    if response_kind == "errors": body = {"errors": [{"message": "protected requirement"}]}
-    if response_kind == "null-response": body = None
-    if response_kind == "null-pr": body["data"]["enablePullRequestAutoMerge"]["pullRequest"] = None
+    if response_kind == "errors":
+        body = {"errors": [{"message": "protected requirement"}]}
+    if response_kind == "null-response":
+        body = None
+    if response_kind == "null-pr":
+        body["data"]["enablePullRequestAutoMerge"]["pullRequest"] = None
 
     def urlopen(request, timeout):
         assert request.full_url == "https://api.github.com/graphql"
