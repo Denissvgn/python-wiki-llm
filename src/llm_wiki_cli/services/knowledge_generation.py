@@ -155,6 +155,7 @@ class KnowledgeGenerationInputs:
     governance: GovernanceLedger | None = None
     reuse_input_basis: Mapping[str, object] | None = None
     knowledge_format: str | None = None
+    implementation_observations: Mapping[str, Any] | None = None
 
 
 def build_knowledge_generation_plan(
@@ -398,6 +399,12 @@ def _build_knowledge_generation_plan(
             "manifest_generation_inputs.infrastructure",
             str(exc),
         ) from exc
+    from .implementation_evidence import project_concept_implementations
+
+    concept_implementations = project_concept_implementations(
+        inputs.implementation_observations, manifest.page_source_mappings,
+        producer=envelope.bundle.producer, source_content_hashes=source_hashes,
+    )
     knowledge = build_knowledge_index(
         KnowledgeIndexInputs(
             envelope=envelope,
@@ -410,6 +417,7 @@ def _build_knowledge_generation_plan(
             link_observations=observations,
             infrastructure_bases=infrastructure_bases,
             extensions=knowledge_extensions,
+            concept_extensions_by_page=concept_implementations,
         )
     )
     if inputs.governance is not None:

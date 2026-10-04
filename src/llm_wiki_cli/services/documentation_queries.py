@@ -848,11 +848,14 @@ class DocumentationGraphQueryService:
         limit: int = _DEFAULT_LIMIT,
         knowledge_view: Optional[KnowledgeReadView] = None,
         machine_verification: Optional[Mapping[str, Mapping[str, Any]]] = None,
+        inventory_result: object | None = None,
     ):
         if isinstance(limit, bool) or not isinstance(limit, int) or limit < 1:
             raise DocumentationQueryError("limit must be a positive integer.")
 
         self.limit = limit
+        # Preserve private captured metadata without altering public inventory.
+        self.inventory_result = inventory_result
         self.inventory = {
             _normalise_source_path(path, field="inventory path", required=False)
             or str(path).replace("\\", "/"): dict(data or {})
@@ -1756,6 +1759,11 @@ class DocumentationGraphQueryService:
                 "returned": bounded_observations.returned,
             }
         )
+        implementation = self._implementation_payload(locator)
+        if implementation is not None:
+            evidence = result["evidence"]
+            assert isinstance(evidence, dict)
+            evidence["implementation"] = implementation
         self._record_bound(
             result,
             "evidence.relationships",
@@ -2236,6 +2244,9 @@ class DocumentationGraphQueryService:
             "lifecycle": concept.get("lifecycle"),
             "freshness": self._compact_knowledge_freshness(locator),
         }
+        implementation = self._implementation_payload(locator)
+        if implementation is not None:
+            result["implementation"] = implementation
         extensions = concept.get("extensions", {})
         governance = (
             extensions.get(GOVERNANCE_EXTENSION_KEY)
@@ -2300,6 +2311,10 @@ class DocumentationGraphQueryService:
             "uid",
         )
         result = {name: compact[name] for name in allowed if name in compact}
+        if "implementation" in compact:
+            from .implementation_evidence import compact_implementation_summary
+
+            result["implementation"] = compact_implementation_summary(compact["implementation"])
         freshness = result.get("freshness")
         if isinstance(freshness, dict) and freshness.get("state") is None:
             freshness.update(
@@ -2310,6 +2325,14 @@ class DocumentationGraphQueryService:
                 }
             )
         return result
+
+    def _implementation_payload(self, locator: str) -> dict[str, Any] | None:
+        """Project the comparison already evaluated by this read session."""
+        report = getattr(self.knowledge_view, "implementation_report", None)
+        if report is None:
+            return None
+        comparison = report.by_locator.get(locator)
+        return None if comparison is None else comparison.to_payload()
 
     def _compact_section(
         self,

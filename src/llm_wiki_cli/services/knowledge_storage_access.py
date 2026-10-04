@@ -108,6 +108,37 @@ def _capture_slice(session, keys, max_bytes, max_records, max_expanded_bytes, in
             result = selected.to_payload()
             result["lookup_complete"] = False
             selected = KnowledgeSlice(canonical_bytes(result))
+    from .implementation_evidence import (
+        IMPLEMENTATION_KEY, DECLARATIONS_KEY, validate_concept_implementation, validate_implementation_collection,
+    )
+    observed = [c for c in reader.consumed_concepts.values()
+                if set(c.get("extensions", {})) & {IMPLEMENTATION_KEY, DECLARATIONS_KEY}]
+    if observed:
+        try:
+            validate_implementation_collection(observed, producer=bundle.producer, complete=False)
+        except (ValueError, TypeError, KeyError) as exc:
+            raise KnowledgeStorageError("implementation", str(exc)) from exc
+        # v6 currently catalogs whole fields. These reads stay within the
+        # request session budget and never claim whole-store validation.
+        manifest_payload = _decode_json_object(manifest_bytes, "manifest")
+        if manifest.storage_version == 6:
+            from .manifest_storage import ManifestStoreReader
+            catalogs = ManifestStoreReader(manifest_payload, session.read)
+            sources = catalogs.field("sources")
+            mappings = catalogs.field("page_source_mappings")
+        else:
+            sources = manifest_payload.get("sources", {})
+            mappings = manifest_payload.get("page_source_mappings", {})
+        source_hashes = {path: row.get("hash") for path, row in sources.items()}
+        for concept in observed:
+            path = concept["document"]["canonical_path"]
+            if path not in mappings:
+                raise KnowledgeStorageError("implementation", "selected owner mapping is absent")
+            try:
+                validate_concept_implementation(concept, producer=bundle.producer,
+                    source_content_hashes=source_hashes, mapping=mappings[path])
+            except (ValueError, TypeError, KeyError) as exc:
+                raise KnowledgeStorageError("implementation", str(exc)) from exc
     markdown: dict[str, str] = {}
     for concept in reader.consumed_concepts.values():
         relative = concept["document"]["canonical_path"]

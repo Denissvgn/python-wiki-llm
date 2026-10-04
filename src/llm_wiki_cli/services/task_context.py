@@ -154,7 +154,7 @@ def _result_body(request, profile, basis, plan, anchors, work, observations, fac
     return body
 
 
-def _empty_render(request, profile, counter, basis, plan, anchors, work, observations, facts):
+def _empty_render(request, profile, counter, basis, plan, anchors, work, observations, facts, implementation_bindings=None):
     settings = profile.settings
     accounting = {"budget_tokens": settings["budget_tokens"], "used_tokens": 0,
                   "counter_id": counter.identity, "mode": settings["budget_mode"],
@@ -163,8 +163,13 @@ def _empty_render(request, profile, counter, basis, plan, anchors, work, observa
                   "scope": "emitted-text-without-host-chat-framing"}
     while True:
         def render(value):
-            return canonical_json(_result_body(request, profile, basis, plan, anchors, work,
-                                              observations, facts, None, value)).decode("utf-8")
+            from .task_implementation import attach_bindings
+
+            body = _result_body(request, profile, basis, plan, anchors, work, observations, facts, None, value)
+            attach_bindings(body, implementation_bindings or {})
+            body.pop("result_id")
+            body["result_id"] = content_id(TASK_RESULT_SCHEMA, body)
+            return canonical_json(body).decode("utf-8")
         rendered = _accounted_render(render, accounting, counter)
         if accounting["used_tokens"] <= settings["budget_tokens"]:
             return TaskContext(True, rendered, accounting)
@@ -243,6 +248,7 @@ def _read_once(request, profile, counter, source_root, wiki_root, allow_external
                 only_files=None if scope == "full-inventory" else sorted(paths), respect_ignores=True,
                 max_source_files=settings["max_files"], max_source_bytes=settings["max_source_bytes"],
                 max_wiki_bytes=settings["max_wiki_bytes"],
+                capture_implementation_observations=settings["knowledge_mode"] != "off",
             )
             if captured.wiki_anchor != wiki_anchor:
                 raise packets.ContextPacketSourceMutationError("wiki")
@@ -348,6 +354,10 @@ def _read_once(request, profile, counter, source_root, wiki_root, allow_external
              "source_selection_compatible": not captured.basis_incompatible if captured else None,
              "native_availability_required": settings["knowledge_mode"] == "required"}
     basis["capture_id"] = content_id("llm-wiki-task-basis/v1", basis)
+    from .task_implementation import native_bindings
+
+    knowledge = getattr(getattr(service, "knowledge_view", None), "knowledge", None)
+    implementation_bindings = native_bindings(knowledge.concepts if knowledge is not None else ())
     if captured is not None:
         request_v3 = budget_request({"protocol": "llm-wiki-context/v3", "format": "packet",
             "budget_tokens": settings["budget_tokens"], "budget_mode": settings["budget_mode"],
@@ -368,8 +378,15 @@ def _read_once(request, profile, counter, source_root, wiki_root, allow_external
             return packet_cache[key]
 
         def envelope_renderer(value):
-            return canonical_json(_result_body(request, profile, basis, plan, anchors, work,
-                observations, facts, value["packet"], value["accounting"])).decode("utf-8")
+            from .task_implementation import attach_capture, attach_bindings
+
+            body = _result_body(request, profile, basis, plan, anchors, work,
+                observations, facts, value["packet"], value["accounting"])
+            attach_capture(body, captured.inventory_result)
+            attach_bindings(body, implementation_bindings)
+            body.pop("result_id")
+            body["result_id"] = content_id(TASK_RESULT_SCHEMA, body)
+            return canonical_json(body).decode("utf-8")
 
         while True:
             _cancel(cancelled)
@@ -381,7 +398,7 @@ def _read_once(request, profile, counter, source_root, wiki_root, allow_external
                 break
             facts.pop()
     else:
-        output = _empty_render(request, profile, counter, basis, plan, anchors, work, observations, facts)
+        output = _empty_render(request, profile, counter, basis, plan, anchors, work, observations, facts, implementation_bindings)
     _cancel(cancelled)
     if captured is not None:
         packets._assert_source_unchanged(captured.source_snapshot, captured.source_anchor)
@@ -531,6 +548,10 @@ def validate_task_context(rendered, request, *, profile=None, policy=None, count
             "profile", "basis", "plan", "anchors", "facts", "coverage", "omissions", "followups",
             "work", "packet", "accounting", "limitations", "result_id"
         } | ({"storage", "source_capture"} if scoped else set())
+        if isinstance(payload, dict) and "implementation_capture" in payload:
+            required_fields.add("implementation_capture")
+        if isinstance(payload, dict) and "implementation_bindings" in payload:
+            required_fields.add("implementation_bindings")
         if not isinstance(payload, dict) or set(payload) != required_fields:
             raise ValueError("invalid task envelope fields")
         if canonical_json(payload).decode("utf-8") != rendered:
@@ -639,6 +660,9 @@ def validate_task_context(rendered, request, *, profile=None, policy=None, count
             if (packet_request["knowledge_mode"] != effective.settings["knowledge_mode"]
                     or packet_request["prefer_fresh"] != effective.settings["prefer_fresh"]):
                 raise ValueError("packet/profile binding mismatch")
+        from .task_implementation import validate_task_implementations
+
+        validate_task_implementations(payload, effective.settings)
         if len(payload["followups"]) > effective.settings["max_followups"]:
             raise ValueError("too many followups")
         if any(item["automatic"] is not False or item["requires_host_authorization"] is not True for item in payload["followups"]):

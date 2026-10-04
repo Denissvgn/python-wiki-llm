@@ -187,8 +187,10 @@ class LiveKnowledgeEvaluation:
     source_content_hashes: Mapping[str, str]
     missing_source_paths: AbstractSet[str] = frozenset()
     concept_bases: Mapping[str, ConceptObservationBasis] = field(default_factory=dict)
-
     comparison_policy: str = field(default_factory=ac.selected_policy)
+    implementation_observations: Mapping | None = field(default=None, repr=False)
+    implementation_analysis_scope: str = "full-inventory"
+    implementation_analysis_compatibility_hash: str | None = None
 
 
 @dataclass(frozen=True)

@@ -68,6 +68,8 @@ where = ["src"]
     "py.typed",
     "services/analysis_contracts.json",
     "schemas/llm-wiki-knowledge-v1.schema.json",
+    "schemas/llm-wiki-implementation-evidence-v1.schema.json",
+    "schemas/llm-wiki-implementation-declarations-v1.schema.json",
     "schemas/llm-wiki-knowledge-v2.schema.json",
     "schemas/llm-wiki-knowledge-v3.schema.json",
     "schemas/llm-wiki-knowledge-v4.schema.json",

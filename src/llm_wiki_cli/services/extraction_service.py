@@ -2062,6 +2062,7 @@ def build_extract_payload(
     source_plugins_only: bool = False,
     source_selection: str | Path | None = None,
     source_snapshot: SourceSnapshot | None = None,
+    capture_implementation_observations: bool = False,
 ) -> ExtractPayloadResult:
     """Build the stable extract JSON payload without printing or exiting."""
     src_root = validate_source_root(
@@ -2180,6 +2181,7 @@ def build_extract_payload(
             helper_cache_dir=helper_cache_dir,
             include_tests=include_test_languages,
             capture_data_effect_observations=deep,
+            capture_implementation_observations=capture_implementation_observations,
             include_plugins=include_plugins,
             source_plugins_only=source_plugins_only,
         )

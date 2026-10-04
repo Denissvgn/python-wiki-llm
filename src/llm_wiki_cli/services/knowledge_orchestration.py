@@ -148,6 +148,7 @@ class RuntimeKnowledgeInputs:
     untrusted_evidence_page_paths: AbstractSet[str] = frozenset()
     regenerated_evidence_page_paths: AbstractSet[str] = frozenset()
     analysis_components: Mapping[str, Any] | None = None
+    implementation_observations: Mapping[str, Any] | None = None
     extractor_registry: Mapping[str, str] = field(default_factory=dict)
     plugin_extractor_components: Sequence[Mapping[str, Any]] = ()
     plugin_components: Sequence[Mapping[str, Any]] = ()
@@ -298,6 +299,7 @@ class RuntimeLiveEvaluationInputs:
     missing_source_paths: AbstractSet[str] = frozenset()
     inventory_complete: bool = True
     analysis_components: Mapping[str, Any] | None = None
+    implementation_observations: Mapping[str, Any] | None = None
     extractor_registry: Mapping[str, str] = field(default_factory=dict)
     plugin_extractor_components: Sequence[Mapping[str, Any]] = ()
     plugin_components: Sequence[Mapping[str, Any]] = ()
@@ -484,6 +486,7 @@ def build_runtime_knowledge_plan(
             governance=governance,
             reuse_input_basis=inputs.reuse_input_basis,
             knowledge_format=inputs.knowledge_format,
+            implementation_observations=inputs.implementation_observations,
         ),
     )
 
@@ -619,6 +622,8 @@ def build_runtime_live_evaluation(
         generation_option_allowlist=inputs.generation_option_allowlist,
         inventory_complete=inputs.inventory_complete,
     )
+    from .python_implementation import analysis_identity
+
     return LiveKnowledgeEvaluation(
         schema_version=KNOWLEDGE_SCHEMA_VERSION,
         producer=producer,
@@ -628,6 +633,9 @@ def build_runtime_live_evaluation(
             allowlist=prepared_generation_options.allowlist,
         ),
         source_content_hashes=source_hashes,
+        implementation_observations=inputs.implementation_observations,
+        implementation_analysis_scope=("full-inventory" if inputs.source_snapshot.only_files is None else "selected-source"),
+        implementation_analysis_compatibility_hash=analysis_identity(inputs.analysis_components),
         missing_source_paths=frozenset(inputs.missing_source_paths),
         concept_bases=_runtime_live_concept_bases(
             inputs.knowledge,

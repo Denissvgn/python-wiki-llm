@@ -1,0 +1,373 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:llm-wiki:implementation-declarations-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "owner",
+    "observations",
+    "bounds"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "llm-wiki-implementation-declarations/v1"
+    },
+    "owner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "coordinate",
+        "scope"
+      ],
+      "properties": {
+        "coordinate": {
+          "additionalProperties": false,
+          "properties": {
+            "occurrence": {
+              "maximum": 1000000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "qualified_owner": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            },
+            "source_path": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "source_path",
+            "qualified_owner",
+            "occurrence"
+          ],
+          "type": "object"
+        },
+        "scope": {
+          "enum": [
+            "module",
+            "class"
+          ]
+        }
+      }
+    },
+    "observations": {
+      "type": "array",
+      "maxItems": 128,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "evidence",
+          "line",
+          "lineage"
+        ],
+        "properties": {
+          "evidence": {
+            "$ref": "#/$defs/evidence"
+          },
+          "line": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9223372036854775807
+              }
+            ]
+          },
+          "lineage": {
+            "type": "array",
+            "maxItems": 128,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "coordinate",
+                "scope"
+              ],
+              "properties": {
+                "coordinate": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "occurrence": {
+                      "maximum": 1000000,
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "qualified_owner": {
+                      "maxLength": 4096,
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "source_path": {
+                      "maxLength": 4096,
+                      "minLength": 1,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "source_path",
+                    "qualified_owner",
+                    "occurrence"
+                  ],
+                  "type": "object"
+                },
+                "scope": {
+                  "enum": [
+                    "module",
+                    "class",
+                    "callable"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "bounds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total",
+        "returned",
+        "truncated",
+        "omitted",
+        "reason"
+      ],
+      "properties": {
+        "total": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "returned": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 128
+        },
+        "truncated": {
+          "type": "boolean"
+        },
+        "omitted": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "enum": [
+            null,
+            "missing-source",
+            "unsupported-language",
+            "unsupported-syntax",
+            "unsupported-producer",
+            "ambiguous-owner",
+            "legacy-evidence-absent",
+            "observation-limit",
+            "object-limit"
+          ]
+        }
+      }
+    }
+  },
+  "$defs": {
+    "evidence": {
+      "additionalProperties": false,
+      "description": "Captured scoped executable syntax evidence; no runtime equivalence or timeless freshness verdict.",
+      "properties": {
+        "aggregation": {
+          "additionalProperties": false,
+          "properties": {
+            "complete_scope": {
+              "type": "boolean"
+            },
+            "observations_returned": {
+              "maximum": 128,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "observations_total": {
+              "maximum": 1000000000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "truncated": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "complete_scope",
+            "observations_total",
+            "observations_returned",
+            "truncated"
+          ],
+          "type": "object"
+        },
+        "comparison_id": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "coordinate": {
+          "additionalProperties": false,
+          "properties": {
+            "occurrence": {
+              "maximum": 1000000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "qualified_owner": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            },
+            "source_path": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "source_path",
+            "qualified_owner",
+            "occurrence"
+          ],
+          "type": "object"
+        },
+        "documentation_hash": {
+          "anyOf": [
+            {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "executable_hash": {
+          "anyOf": [
+            {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "producer": {
+          "additionalProperties": false,
+          "properties": {
+            "algorithm": {
+              "maxLength": 128,
+              "minLength": 1,
+              "type": "string"
+            },
+            "analysis_compatibility_hash": {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "language": {
+              "maxLength": 32,
+              "minLength": 1,
+              "type": "string"
+            },
+            "parser": {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            },
+            "parser_version": {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "language",
+            "algorithm",
+            "parser",
+            "parser_version",
+            "analysis_compatibility_hash"
+          ],
+          "type": "object"
+        },
+        "schema_version": {
+          "const": "llm-wiki-implementation-evidence/v1"
+        },
+        "scope": {
+          "enum": [
+            "module",
+            "class",
+            "callable"
+          ]
+        },
+        "source_hash": {
+          "anyOf": [
+            {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "enum": [
+            "available",
+            "unavailable"
+          ]
+        },
+        "unavailable_reason": {
+          "enum": [
+            null,
+            "missing-source",
+            "unsupported-language",
+            "unsupported-syntax",
+            "unsupported-producer",
+            "ambiguous-owner",
+            "legacy-evidence-absent",
+            "observation-limit",
+            "object-limit"
+          ]
+        }
+      },
+      "required": [
+        "schema_version",
+        "coordinate",
+        "scope",
+        "status",
+        "producer",
+        "comparison_id",
+        "source_hash",
+        "executable_hash",
+        "documentation_hash",
+        "aggregation",
+        "unavailable_reason"
+      ],
+      "type": "object"
+    }
+  }
+}

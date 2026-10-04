@@ -156,6 +156,7 @@ class KnowledgeIndexInputs:
         default_factory=dict
     )
     extensions: Mapping[str, Any] = field(default_factory=dict)
+    concept_extensions_by_page: Mapping[str, Mapping[str, Any]] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -216,7 +217,7 @@ def build_knowledge_index(inputs: KnowledgeIndexInputs) -> KnowledgeIndex:
     """Build one deterministic v1 knowledge index without performing I/O."""
 
     context = _validate_and_join_inputs(inputs)
-    concepts = tuple(_concept_for_page(joined) for joined in context.joined_pages)
+    concepts = tuple(_concept_for_page(joined, inputs.concept_extensions_by_page.get(joined.page.relative_path, {})) for joined in context.joined_pages)
     relationships = [
         relationship
         for joined in context.joined_pages
@@ -1294,7 +1295,7 @@ def _observation_contains_authority_userinfo(
     )
 
 
-def _concept_for_page(joined: _JoinedPage) -> ConceptRecord:
+def _concept_for_page(joined: _JoinedPage, extensions: Mapping[str, Any]) -> ConceptRecord:
     concept_kind = concept_kind_for_page_kind(joined.page.kind)
     return ConceptRecord(
         locator=joined.page.mcp_uri,
@@ -1316,6 +1317,7 @@ def _concept_for_page(joined: _JoinedPage) -> ConceptRecord:
             ),
         ),
         lifecycle=Lifecycle.UNKNOWN,
+        extensions=extensions,
     )
 
 

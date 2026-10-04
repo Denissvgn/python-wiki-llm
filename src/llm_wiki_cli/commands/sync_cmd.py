@@ -2490,6 +2490,7 @@ def _extract_current_inventory(
         include_plugins=options.include_plugins,
         capture_data_effect_observations=True,
         capture_import_observations=True,
+        capture_implementation_observations=True,
     )
     if inventory_result.failed:
         print_inventory_failures(inventory_result)
@@ -4562,6 +4563,7 @@ def _finalize_prepared_sync(
                 result.regenerated_evidence_page_paths
             ),
             analysis_components=prepared.inventory_result.analysis_components,
+            implementation_observations=prepared.inventory_result.implementation_observations,
             extractor_registry=prepared.inventory_result.extractor_registry,
             plugin_extractor_components=(prepared.inventory_result.plugin_components),
             plugin_components=(prepared.inventory_result.producer_plugin_components),

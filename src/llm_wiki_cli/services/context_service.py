@@ -241,6 +241,7 @@ def get_inventory(
     source_selection: str | Path | None = None,
     source_snapshot: SourceSnapshot | None = None,
     helper_cache_dir: str | None = None,
+    capture_implementation_observations: bool = False,
 ) -> dict: ...
 
 
@@ -256,6 +257,7 @@ def get_inventory(
     source_selection: str | Path | None = None,
     source_snapshot: SourceSnapshot | None = None,
     helper_cache_dir: str | None = None,
+    capture_implementation_observations: bool = False,
 ) -> InventoryResult: ...
 
 
@@ -271,6 +273,7 @@ def get_inventory(
     source_selection: str | Path | None = None,
     source_snapshot: SourceSnapshot | None = None,
     helper_cache_dir: str | None = None,
+    capture_implementation_observations: bool = False,
 ) -> dict | InventoryResult: ...
 
 
@@ -285,8 +288,11 @@ def get_inventory(
     source_selection: str | Path | None = None,
     source_snapshot: SourceSnapshot | None = None,
     helper_cache_dir: str | None = None,
+    capture_implementation_observations: bool = False,
 ) -> dict | InventoryResult:
     """Build command inventory, optionally returning extraction metadata."""
+    if not isinstance(capture_implementation_observations, bool):
+        raise TypeError("capture_implementation_observations must be a boolean")
     inventory_options: dict[str, Any] = {
         "deep": deep,
         "parallel_jobs": (job_request.resolved_jobs if job_request is not None else 1),
@@ -299,6 +305,8 @@ def get_inventory(
         inventory_options["helper_cache_dir"] = helper_cache_dir
     if not include_plugins:
         inventory_options["include_plugins"] = False
+    if capture_implementation_observations:
+        inventory_options["capture_implementation_observations"] = True
     inventory_result = get_inventory_result(
         src_dir,
         **inventory_options,
@@ -822,6 +830,9 @@ def _render_markdown(payload: dict) -> str:
                                 else "no"
                             )
                         )
+                    implementation = concept.get("implementation")
+                    if isinstance(implementation, Mapping):
+                        lines.extend(_implementation_markdown(implementation))
             pages = selection.get("pages")
             if isinstance(pages, list) and pages:
                 lines.append("")
@@ -981,6 +992,10 @@ def _render_markdown(payload: dict) -> str:
                 f"- `{page.get('canonical_path')}` - {title} ({page.get('mcp_uri')})"
                 f"{badge}{_typed_graph_page_badge(page)}"
             )
+            if isinstance(summary, Mapping) and isinstance(
+                summary.get("implementation"), Mapping
+            ):
+                lines.extend(_implementation_markdown(summary["implementation"]))
             if isinstance(summary, dict) and isinstance(freshness, dict):
                 reason = freshness.get("reason")
                 hint = freshness.get("hint")
@@ -990,6 +1005,18 @@ def _render_markdown(payload: dict) -> str:
         lines.append("")
 
     return "\n".join(lines)
+
+
+def _implementation_markdown(value: Mapping[str, Any]) -> list[str]:
+    lines = [
+        f"  - executable syntax: {value.get('state')} "
+        f"({value.get('scope')}; {value.get('analysis_scope')})",
+        f"  - implementation reason: `{value.get('reason')}`",
+    ]
+    limitations = value.get("limitations")
+    if isinstance(limitations, (list, tuple)):
+        lines.extend(f"  - {limitation}" for limitation in limitations)
+    return lines
 
 
 def _markdown_context_coordinate(value: object) -> str:
@@ -1893,6 +1920,7 @@ def _capture_protocol_enrichment_session(
                 if query_knowledge_view is not None
                 else None
             ),
+            inventory_result=inventory_result,
         )
     except PathValidationError as exc:
         raise ProtocolRequestError(str(exc), "wiki_dir") from exc
@@ -2317,6 +2345,13 @@ def _knowledge_enriched_page_ref(
             if isinstance(machine_verification, Mapping):
                 status["machine_verification"] = _compact_context_machine_verification(
                     machine_verification
+                )
+            implementation = concept.get("implementation")
+            if isinstance(implementation, Mapping):
+                from .implementation_evidence import compact_implementation_summary
+
+                status["implementation"] = compact_implementation_summary(
+                    implementation
                 )
     enriched["knowledge"] = status
     return enriched
@@ -2821,6 +2856,9 @@ def _build_context_knowledge_view(
                         ),
                         inventory_complete=True,
                         analysis_components=inventory_result.analysis_components,
+                        implementation_observations=(
+                            inventory_result.implementation_observations
+                        ),
                         extractor_registry=inventory_result.extractor_registry,
                         plugin_extractor_components=(
                             inventory_result.plugin_components
@@ -3049,6 +3087,13 @@ def _build_context_impl(
         include_plugins=include_plugins,
         source_selection=source_selection,
         source_snapshot=source_snapshot,
+        capture_implementation_observations=(
+            selects_knowledge
+            or (
+                knowledge_mode is None
+                and (prefer_fresh or bool(_CONCEPT_FILTER_KEYS & set(filters or {})))
+            )
+        ),
     )
     inventory_result = (
         collected_inventory

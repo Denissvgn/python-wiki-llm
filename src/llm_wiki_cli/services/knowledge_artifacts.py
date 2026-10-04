@@ -1113,6 +1113,20 @@ def _validate_manifest_knowledge_parity(
             f"manifest.{exc.field}",
             exc.message,
         ) from exc
+    from .implementation_evidence import validate_concept_implementation
+
+    source_hashes = {path: row.get("hash") for path, row in manifest.sources.items()}
+    for concept in knowledge.concepts:
+        mapping = manifest.page_source_mappings.get(concept.document.canonical_path)
+        from .implementation_evidence import IMPLEMENTATION_KEY, DECLARATIONS_KEY
+        if mapping is None and set(concept.extensions) & {IMPLEMENTATION_KEY, DECLARATIONS_KEY}:
+            raise KnowledgeArtifactError("implementation", "committed owner mapping is absent")
+        try:
+            validate_concept_implementation(concept, producer=knowledge.bundle.producer,
+                source_content_hashes=source_hashes,
+                mapping=mapping)
+        except (ValueError, TypeError, KeyError) as exc:
+            raise KnowledgeArtifactError("implementation", str(exc)) from exc
     structural = {
         concept.document.canonical_path: concept
         for concept in knowledge.concepts

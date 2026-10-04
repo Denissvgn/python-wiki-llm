@@ -59,6 +59,7 @@ def query_service(captured, limit):
         flows=captured.flows, data_flows=captured.data_flows,
         dependency_analysis=captured.dependency_analysis,
         surface_index=captured.surface_evaluation.payload,
+        inventory_result=getattr(captured, "inventory_result", None),
     )
 
 
@@ -76,7 +77,14 @@ def observe_requirement(captured, service, records, requirement, *, scope, limit
             return "missing", None, "declaration-not-in-captured-scope"
         if len(matches) != 1:
             return "ambiguous", None, "select-an-exact-owner-and-occurrence"
-        observed = matches[0]
+        observed = dict(matches[0])
+        report = getattr(captured, "implementation_report", None)
+        if report is None:
+            report = getattr(getattr(captured, "knowledge_view", None), "implementation_report", None)
+        if report is not None:
+            from .implementation_evidence import select_implementation_comparison
+
+            observed["implementation"] = select_implementation_comparison(report, observed["selector"]).to_payload()
         citations = [{"path": observed["path"], "line": observed["line"],
                       "source_identity": captured.source_snapshot.captured_content_hashes.get(observed["path"])}]
         if type(observed["line"]) is not int or observed["line"] < 1:

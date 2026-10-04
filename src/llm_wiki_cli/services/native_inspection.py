@@ -56,6 +56,7 @@ def inspect_native_concept(
             data_flows=captured.data_flows,
             dependency_analysis=captured.dependency_analysis,
             surface_index=captured.surface_evaluation.payload,
+            inventory_result=captured.inventory_result,
         )
         wiki_anchor = captured.wiki_anchor
     else:

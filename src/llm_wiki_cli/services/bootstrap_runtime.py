@@ -4627,6 +4627,7 @@ def _extract_bootstrap_inventory(state: _BootstrapRunState):
         include_plugins=options.trust_source_plugins,
         capture_data_effect_observations=options.deep,
         capture_import_observations=options.deep,
+        capture_implementation_observations=True,
         source_plugins_only=options.trust_source_plugins
         and (
             options.source_adapter
@@ -5875,6 +5876,7 @@ def _finalize_bootstrap_artifacts(
                 state.written_structural_page_paths
             ),
             analysis_components=inventory_result.analysis_components,
+            implementation_observations=inventory_result.implementation_observations,
             extractor_registry=inventory_result.extractor_registry,
             plugin_extractor_components=inventory_result.plugin_components,
             plugin_components=inventory_result.producer_plugin_components,

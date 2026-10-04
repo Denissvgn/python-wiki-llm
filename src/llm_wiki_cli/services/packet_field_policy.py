@@ -77,6 +77,10 @@ FILTERS = _record(
 BOUND = _record("total returned truncated")
 SOURCE_BOUNDS = _record(files=BOUND)
 FRESHNESS = _record("state reason live_comparison_performed hint")
+IMPLEMENTATION = _record(
+    "state reason scope analysis_scope live_comparison_performed source_changed "
+    "documentation_changed truncated", limitations=_list(),
+)
 ENDPOINT = _record(
     "kind target_class locator uid canonical_path source_path external_uri resource "
     "symbol normalized_target coordinate_state"
@@ -88,6 +92,7 @@ COVERAGE = _record(
 CONCEPT = _record(
     "locator uid concept_kind title page_kind page_id canonical_path mcp_uri "
     "source_path role origin evidence verification lifecycle", freshness=FRESHNESS,
+    implementation=IMPLEMENTATION,
 )
 PAGE = _record("kind id title canonical_path source_path role mcp_uri")
 RELATIONSHIP = _record(

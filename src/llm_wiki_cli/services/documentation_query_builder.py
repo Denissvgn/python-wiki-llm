@@ -23,7 +23,11 @@ from .documentation_queries import (
     QUERY_IDENTITY_BYTE_LIMIT,
 )
 from .entrypoints import build_flow
-from .knowledge_consumption import KnowledgeReadView, load_knowledge_read_view
+from .knowledge_consumption import (
+    KnowledgeReadView,
+    attach_implementation_read_view,
+    load_knowledge_read_view,
+)
 from .knowledge_verification import (
     attach_machine_verification_read_view,
     verification_summaries_for_concepts,
@@ -366,9 +370,13 @@ def assemble_documentation_query_service(
     knowledge_view: object,
     machine_verification: Mapping[str, Mapping[str, Any]],
     service_factory: Any = DocumentationGraphQueryService,
+    inventory_result: object | None = None,
 ) -> DocumentationGraphQueryService:
     """Assemble the shared service with a caller-supplied service factory."""
 
+    captured_options = (
+        {} if inventory_result is None else {"inventory_result": inventory_result}
+    )
     return service_factory(
         inventory,
         call_edges=call_edges,
@@ -379,6 +387,7 @@ def assemble_documentation_query_service(
         limit=limit,
         knowledge_view=knowledge_view,
         machine_verification=machine_verification,
+        **captured_options,
     )
 
 
@@ -393,6 +402,7 @@ def build_documentation_query_service_from_view(
     data_flows: object = (),
     dependency_analysis: Mapping[str, Any] | None = None,
     surface_index: Mapping[str, Any] | None = None,
+    inventory_result: object | None = None,
 ) -> DocumentationGraphQueryService:
     """Assemble one service around an already evaluated native read view."""
 
@@ -410,6 +420,7 @@ def build_documentation_query_service_from_view(
         limit=limit,
         knowledge_view=evaluated_view,
         machine_verification=verification_summaries_for_concepts(evaluated_view),
+        inventory_result=inventory_result,
     )
 
 
@@ -475,6 +486,7 @@ def build_live_documentation_query_service(
         _assert_wiki_unchanged,
         _source_anchor,
         _wiki_anchor,
+        confirmed_missing_source_paths,
     )
 
     selected_extract_builder = (
@@ -548,6 +560,7 @@ def build_live_documentation_query_service(
     if source_plugins_only:
         extract_options["source_plugins_only"] = True
     extract_options["source_snapshot"] = source_snapshot
+    extract_options["capture_implementation_observations"] = True
     stage_started = perf_counter_ns()
     result = selected_extract_builder(str(source_root), **extract_options)
     stage_ns["extraction"] = perf_counter_ns() - stage_started
@@ -610,6 +623,36 @@ def build_live_documentation_query_service(
             snapshot_only=True,
             include_machine_verification=True,
         )
+        if isinstance(knowledge_view, KnowledgeReadView) and inventory_result is not None:
+            from .python_implementation import analysis_identity
+
+            evaluated_snapshot = getattr(inventory_result, "source_snapshot", None)
+            missing_paths = (
+                confirmed_missing_source_paths(evaluated_snapshot, selected_paths)
+                if isinstance(evaluated_snapshot, SourceSnapshot)
+                else frozenset()
+            )
+            knowledge_view = attach_implementation_read_view(
+                knowledge_view,
+                implementation_observations=getattr(
+                    inventory_result, "implementation_observations", None
+                ),
+                analysis_scope="selected-source",
+                captured_paths=(
+                    frozenset(evaluated_snapshot.captured_content_hashes) | missing_paths
+                    if isinstance(evaluated_snapshot, SourceSnapshot)
+                    else frozenset()
+                ),
+                source_content_hashes=(
+                    evaluated_snapshot.captured_content_hashes
+                    if isinstance(evaluated_snapshot, SourceSnapshot)
+                    else None
+                ),
+                analysis_compatibility_hash=analysis_identity(
+                    getattr(inventory_result, "analysis_components", None)
+                ),
+                missing_source_paths=missing_paths,
+            )
         query_surface_payload = (
             knowledge_view.surface
             if isinstance(knowledge_view, KnowledgeReadView)
@@ -658,6 +701,7 @@ def build_live_documentation_query_service(
         knowledge_view=knowledge_view,
         machine_verification=machine_verification,
         service_factory=service_factory,
+        inventory_result=inventory_result,
     )
     stage_ns["service_assembly"] = perf_counter_ns() - stage_started
     if guarded_snapshot is not None and source_anchor is not None:
