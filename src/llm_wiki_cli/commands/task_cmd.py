@@ -138,8 +138,29 @@ def run(args):
             write_utf8_stdout(result.rendered)
     except (ValueError, api.LlmWikiApiError) as exc:
         invalid = isinstance(exc, (ValueError, api.InvalidRequestError))
+        details = getattr(exc, "details", None) or {}
+        from ..services.knowledge_storage import KnowledgeStorageError
+
+        cause: BaseException | None = exc
+        seen = set()
+        while cause is not None and id(cause) not in seen:
+            seen.add(id(cause))
+            if isinstance(cause, KnowledgeStorageError) and cause.code == "flat-native-adoption-required":
+                details = {
+                    "reason": "flat-native-adoption-required",
+                    "next_action": (
+                        "Keep native requirements. With storage migration authorized, "
+                        "preview knowledge migrate --wiki-dir WIKI --to sharded-v2 "
+                        "--dry-run --recovery-dir RECOVERY. Use an empty recovery directory "
+                        "outside source/wiki, inspect the result before applying, and run "
+                        "knowledge storage-check --wiki-dir WIKI --full. "
+                        "Migration validates the complete snapshot; recover damaged authority."
+                    ),
+                }
+                break
+            cause = cause.__cause__
         print(json.dumps({"ok": False, "error": {"code": getattr(exc, "code", None) or
             ("invalid-request" if invalid else "workspace-state-error"),
-            "message": "Task context unavailable", "details": getattr(exc, "details", None) or {}}},
+            "message": "Task context unavailable", "details": details}},
             sort_keys=True), file=sys.stderr)
         raise SystemExit(2 if invalid else 1) from exc

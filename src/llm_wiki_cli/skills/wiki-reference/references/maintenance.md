@@ -31,7 +31,8 @@ Classify the wiki rather than guessing a repair:
 | Starting state | Maintenance route |
 | --- | --- |
 | Managed wiki with a valid manifest | Continue with the owning sync below. |
-| Established canonical wiki with `index.md` but no manifest | Let sync **seed a baseline manifest** from the current source state without modifying pages. Inspect that result, then continue with an ordinary owning sync when source changes must be applied. |
+| Ordinary-maintenance adoption marker present, but its owner/state/projections are missing or corrupt | Stop before sync, bootstrap or seeding. Restore a complete matching authority snapshot through `llm-wiki maintenance recover --wiki-dir docs/llm_wiki --recovery-dir <complete-snapshot> --expected-adoption-id <actual-id>`. Preserve the immutable marker and history; never reconstruct them from current pages. |
+| Established canonical wiki with `index.md` but no manifest and no maintenance-adoption marker | Let sync **seed a baseline manifest** from the current source state without modifying pages. Inspect that result, then continue with an ordinary owning sync when source changes must be applied. |
 | Manifest present but stored source hashes are invalid | Allow sync's bounded repair. If sync repairs only the manifest (its stored hashes were invalid, and no pages were modified), run the same sync command again before linting. |
 | Absent, empty, or exact untouched initialization scaffold | Use the installed bootstrap route; incremental maintenance cannot invent its initial semantic baseline. |
 | Other partial manifestless layout | Preview the supported migration route and resolve its diagnostics before sync. Do not overwrite it as though it were an empty wiki. |
@@ -173,6 +174,14 @@ owner's explicit decision. Source disappearance never authors lifecycle. A
 missing ledger is restored, not regenerated or reinitialized.
 
 ## Failure and recovery
+
+Ordinary maintenance adoption stores a complete `committed` recovery snapshot
+after successful publication. Use the actual retained complete directory and
+adoption identity, not an invented path or latest projection. Recovery does not
+approve prose or establish runtime currentness. Interrupted prepared adoption
+and captured dirty-prose recovery require their explicit recovery options;
+captured-preimage recovery requires owning sync before current review. Reads
+and ordinary sync never implicitly adopt, downgrade or remove the marker.
 
 - Stop on any sync, write, strict-lint, CI, or configured team-policy failure.
   Preserve the prior canonical state and report an unfinished gate as

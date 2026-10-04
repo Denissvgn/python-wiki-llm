@@ -16,7 +16,7 @@ from .knowledge_governance import (
 from .contracts import GOVERNANCE_EXTENSION_KEY
 from .knowledge_model import _parse_bundle
 from .knowledge_storage import (
-    MAX_EXPANDED_BYTES, MAX_OBJECT_BYTES, MAX_ROOT_BYTES, ROOT_FILENAME, STORE_SCHEMA,
+    LOGICAL_SCHEMA, MAX_EXPANDED_BYTES, MAX_OBJECT_BYTES, MAX_ROOT_BYTES, ROOT_FILENAME, STORE_SCHEMA,
     KnowledgeSlice, KnowledgeStorageError, KnowledgeStoreReader, canonical_bytes, digest,
 )
 from .knowledge_storage_io import StorageReadSession
@@ -77,8 +77,22 @@ def _capture_slice(session, keys, max_bytes, max_records, max_expanded_bytes, in
     except (ValueError, AttributeError, UnicodeError) as exc:
         raise KnowledgeStorageError("root", "invalid knowledge root") from exc
     if schema not in (STORE_SCHEMA, *PACKED_SCHEMAS):
+        code = "unsupported-schema-version"
+        if schema == LOGICAL_SCHEMA:
+            # Diagnose only a valid captured flat model; damaged or unknown
+            # roots must not receive an adoption hint. This does not audit its
+            # companion authority or authorize a migration.
+            from .knowledge_artifacts import _decode_json_object
+            from .knowledge_model import parse_knowledge_index
+
+            try:
+                parse_knowledge_index(_decode_json_object(raw, "knowledge_index"))
+            except ValueError:
+                pass
+            else:
+                code = "flat-native-adoption-required"
         raise KnowledgeStorageError("schema_version", "selected native reads require explicit sharded or packed storage adoption",
-                                    code="unsupported-schema-version")
+                                    code=code)
     reader = open_knowledge_store(raw, session.read, read_range=session.read_range, max_bytes=max_bytes,
                                   max_expanded_bytes=max_expanded_bytes)
     manifest_bytes = session.read(MANIFEST_FILENAME, MAX_EXPANDED_BYTES)

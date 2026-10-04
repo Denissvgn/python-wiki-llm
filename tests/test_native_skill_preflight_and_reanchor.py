@@ -69,7 +69,7 @@ NATIVE_RESPONSE_FIXTURES = (
         },
         "| `nonsemantic-source-change` |",
         "nonsemantic-source-change",
-        "byte-change diagnostic",
+        "recorded structure unchanged; behavior not evaluated",
         id="ready-nonsemantic-change",
     ),
     pytest.param(

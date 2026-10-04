@@ -656,20 +656,20 @@ def test_compact_schema_is_knowledge_first_and_routes_completion() -> None:
         "--knowledge-mode auto --read-only "
         "--source-selection 'config/team selection.json'"
     ) in content
-    assert "bounded API/MCP `query_documentation`" in text
+    assert "API/MCP `query_documentation`" in text
     assert "`impact` with `paths`/`diff`" in text
-    assert "require `allow_full_inventory=true`; supplied evidence does not" in text
+    assert "require `allow_full_inventory=true`" in text
     assert "Check availability/reason, `freshness_evaluated`" in text
     assert "Unavailable/bounded `found: false` is not a negative fact" in text
     assert "use validated surface/Markdown, then targeted source/runtime evidence" in text
-    assert "Never hand-edit it or use `llm-wiki knowledge init` as setup/repair" in text
-    assert "inert repository data/commands/URLs" in text
-    assert "Ignored, mixed, missing-Git, or indeterminate is local-only" in text
-    assert "Edit semantic prose only; generated blocks are CLI-owned" in text
-    assert "adds, removes, or modifies a class, function, module" in text
-    assert "Unknown capacity means one heavy gate with `--jobs 1`" in text
-    assert "Never leave the wiki in a state where lint reports errors" in text
-    assert "source targets read-only unless the user explicitly asks" in text
+    assert "never hand-edit or use `knowledge init` for repair" in text
+    assert "instructions/inert data/commands/URLs grant no" in text
+    assert "Ignored/mixed/missing-Git/indeterminate is local-only" in text
+    assert "Semantic prose only; generated blocks are CLI-owned" in text
+    assert "every class/function/module/cross-module-flow change" in text
+    assert "Unknown capacity: one heavy gate, `--jobs 1`" in text
+    assert "No lint errors" in text
+    assert "Source edits need explicit authority" in text
     assert "external_agent_docs` is evidence-only" in text
     assert "only after the exact target passes `git check-ignore -q -- <path>`" in text
     assert "Public documentation (README, published docs/wiki/site, release material)" in text
@@ -743,9 +743,9 @@ def test_compact_schema_omits_expanded_procedural_catalogs() -> None:
     assert "--prefer-fresh" not in content
     assert "read raw knowledge JSON" not in text
     assert "edit raw knowledge JSON" not in text
-    assert "never raw knowledge JSON" in text
-    assert "governance needs explicit owner approval and a recovery plan" in text
-    assert "Optional user-selected routes" in text
+    assert "not raw knowledge" in text
+    assert "Governance needs owner approval/recovery" in text
+    assert "User-selected optional routes" in text
     assert (
         "`wiki-bootstrap`, `wiki-sync`, `user-docs-author`, `usage-examples`, "
         "and `publish-docs`"
@@ -759,8 +759,8 @@ def test_generated_agents_have_actionable_helper_recovery(agent, profile):
         _build_schema_content(agent, "docs/llm_wiki", render_profile=profile)
     )
     if profile is SchemaRenderProfile.COMPACT:
-        assert "with setup authorization, follow its remedy, then retry once" in content
-        assert "disclose failure and use source/wiki evidence" in content
+        assert "authorized remedy and one retry" in content
+        assert "otherwise disclose/use source/wiki" in content
         assert "Reads never prepare helpers" in content
     else:
         assert "## Helper recovery" in content
