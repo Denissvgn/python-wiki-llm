@@ -162,6 +162,7 @@ class InventoryRequest:
     capture_import_observations: bool = False
     source_selection: str | Path | None = None
     source_plugins_only: bool = False
+    capture_implementation_observations: bool = False
 
     def __post_init__(self) -> None:
         object.__setattr__(
@@ -192,6 +193,7 @@ class InventoryResult:
         repr=False,
         compare=False,
     )
+    implementation_observations: dict | None = field(default=None, repr=False, compare=False)
 
     @property
     def job_plan(self) -> ExtractionJobPlan:
@@ -269,6 +271,7 @@ class _ExtractionOutcome:
     message: str = ""
     data_effect_observations: dict | None = None
     import_observations: dict | None = None
+    implementation_observations: dict | None = None
 
 
 @dataclass
@@ -289,6 +292,8 @@ class _InventoryBuildContext:
     plugin_lock_hash: str | None
     plugin_root: str | Path
     python_sidecars: dict[str, dict] = field(default_factory=dict)
+    captured_analysis: dict | None = None
+    implementation_analysis_hash: str | None = None
 
 
 @dataclass
@@ -365,6 +370,7 @@ def _run_extraction_plan(
             "last_import_observations",
             None,
         ),
+        implementation_observations=getattr(extractor, "last_implementation_observations", None),
     )
 
 
@@ -405,6 +411,7 @@ _LEGACY_INVENTORY_REQUEST_FIELDS = (
     "capture_import_observations",
     "source_selection",
     "source_plugins_only",
+    "capture_implementation_observations",
 )
 
 
@@ -502,6 +509,7 @@ def _build_inventory_result(request: InventoryRequest) -> InventoryResult:
         statuses,
         inventory,
     )
+    implementation_observations = _implementation_observations(context, outcomes_by_language)
     _save_inventory_cache(context, statuses)
     return _completed_inventory_result(
         context,
@@ -512,6 +520,7 @@ def _build_inventory_result(request: InventoryRequest) -> InventoryResult:
         producer_plugin_components=producer_plugin_components,
         evaluated_source_snapshot=evaluated_source_snapshot,
         outcomes_by_language=outcomes_by_language,
+        implementation_observations=implementation_observations,
     )
 
 
@@ -525,6 +534,7 @@ def _completed_inventory_result(
     producer_plugin_components: tuple[dict, ...],
     evaluated_source_snapshot: SourceSnapshot,
     outcomes_by_language: dict[str, _ExtractionOutcome],
+    implementation_observations: dict | None,
 ) -> InventoryResult:
     record_counts(inventory_files=len(inventory))
     if context.cache is not None:
@@ -532,7 +542,7 @@ def _completed_inventory_result(
             cache_hits=context.cache.stats.hits, cache_misses=context.cache.stats.misses
         )
     from .analysis_capture import capture_analysis
-    analysis = capture_analysis(context.registry, source_root=context.source_snapshot.root,
+    analysis = context.captured_analysis if context.request.capture_implementation_observations else capture_analysis(context.registry, source_root=context.source_snapshot.root,
                                 helper_cache_dir=context.request.helper_cache_dir,
                                 languages={v.get("language", "") for v in inventory.values()})
     return InventoryResult(
@@ -551,8 +561,46 @@ def _completed_inventory_result(
             context.plugin_lock_hash if producer_plugin_components else None
         ),
         source_snapshot=evaluated_source_snapshot,
+        implementation_observations=implementation_observations,
         **_python_extraction_sidecars(context, outcomes_by_language),
     )
+
+
+def _implementation_observations(context: _InventoryBuildContext, outcomes: dict[str, _ExtractionOutcome]) -> dict | None:
+    if not context.request.capture_implementation_observations:
+        return None
+    from .python_implementation import SCHEMA, comparison_id, envelope, producer
+    from .source_snapshot import SourceSnapshotMutationError
+    outcome = outcomes.get("python")
+    builtin = context.registry.get("python") == EXTRACTOR_REGISTRY["python"]
+    captured = outcome.implementation_observations if outcome is not None and builtin else None
+    if captured is not None and (not isinstance(captured, dict) or captured.get("schema_version") != SCHEMA):
+        raise ValueError("implementation sidecar schema is not owned by the captured extractor")
+    files = deepcopy(captured.get("files", {})) if isinstance(captured, dict) else {}
+    expected_producer = producer(context.implementation_analysis_hash)
+    if set(files) - set(context.source_snapshot.language_paths("python")):
+        raise ValueError("implementation sidecar contains unselected source paths")
+    for language, selected in context.source_snapshot.files_by_language.items():
+        for source in selected:
+            path = source.rel_path
+            expected = context.source_snapshot.captured_content_hashes.get(path)
+            if path in files:
+                if files[path]["source_hash"] != expected:
+                    raise SourceSnapshotMutationError("implementation_source", "AST source bytes differ from the captured source commitment")
+                if files[path]["producer"] != expected_producer:
+                    raise ValueError("implementation sidecar producer differs from the issuer-owned analysis capture")
+                for row in files[path]["observations"]:
+                    evidence = row["evidence"]
+                    if evidence["source_hash"] != expected or evidence["coordinate"]["source_path"] != path:
+                        raise SourceSnapshotMutationError("implementation_source", "scoped AST observation differs from the captured source commitment")
+                    if evidence["producer"] != expected_producer or expected_producer is None or evidence["comparison_id"] != comparison_id(expected_producer):
+                        raise ValueError("scoped implementation producer differs from the issuer-owned analysis capture")
+                continue
+            reason = "unsupported-language" if language != "python" else "unsupported-producer"
+            files[path] = {"source_hash": expected, "producer": None, "status": "unavailable", "reason": reason,
+                           "observations": [], "bounds": {"total": 1, "returned": 0, "truncated": True,
+                                                         "omitted": 1, "reason": reason}}
+    return envelope(files)
 
 
 @observed_phase("sidecar_observations")
@@ -742,6 +790,16 @@ def _prepare_inventory_build_context(
     cache_key, cache_files, source_hashes = _load_inventory_cache_state(
         request, source_snapshot, registry, cache, source_file_by_path
     )
+    captured_analysis = None
+    implementation_analysis_hash = None
+    if request.capture_implementation_observations:
+        from .analysis_capture import capture_analysis
+        from .python_implementation import analysis_identity
+        captured_analysis = capture_analysis(registry, source_root=source_snapshot.root,
+            helper_cache_dir=request.helper_cache_dir,
+            languages={language for language, files in source_snapshot.files_by_language.items() if files})
+        if registry.get("python") == EXTRACTOR_REGISTRY["python"]:
+            implementation_analysis_hash = analysis_identity(captured_analysis)
     return _InventoryBuildContext(
         request=request,
         source_snapshot=source_snapshot,
@@ -758,6 +816,8 @@ def _prepare_inventory_build_context(
         plugin_lock_path=plugin_lock_path,
         plugin_lock_hash=plugin_lock_hash,
         plugin_root=plugin_root,
+        captured_analysis=captured_analysis,
+        implementation_analysis_hash=implementation_analysis_hash,
     )
 
 
@@ -957,11 +1017,12 @@ def _plan_language_extraction(
         language
     )
     cached_by_language.setdefault(language, {})
+    capture_fresh_python = language == "python" and context.request.capture_implementation_observations
     fresh_source_files = (
         _fresh_inventory_source_files(
             context, language, source_files, cached_by_language
         )
-        if _can_use_inventory_cache(context, is_builtin)
+        if _can_use_inventory_cache(context, is_builtin) and not capture_fresh_python
         else list(source_files or [])
     )
     if _can_use_inventory_cache(context, is_builtin) and not fresh_source_files:
@@ -1103,6 +1164,9 @@ def _build_extraction_kwargs(
             kwargs["capture_import_observations"] = (
                 context.request.capture_import_observations
             )
+        if is_builtin and context.request.capture_implementation_observations:
+            kwargs["capture_implementation_observations"] = True
+            kwargs["implementation_analysis_hash"] = context.implementation_analysis_hash
     return kwargs
 
 

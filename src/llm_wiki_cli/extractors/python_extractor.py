@@ -8,6 +8,7 @@ from ..services.python_observations import (
     data_effect_sidecar,
     import_sidecar,
 )
+from ..services.python_implementation import capture as capture_implementation, envelope as implementation_envelope, producer as implementation_producer
 
 import ast
 import sys
@@ -1411,6 +1412,8 @@ def _scan_python_files(
     data_effect_observations: list[dict] | None = None,
     import_location_observations: list[dict] | None = None,
     defer_inventory_model_kinds: bool = False,
+    implementation_observations: dict[str, dict] | None = None,
+    implementation_analysis_hash: str | None = None,
 ) -> dict:
     """Scan Python files under *src_dir* and return a raw inventory dict.
 
@@ -1434,6 +1437,8 @@ def _scan_python_files(
 
     for py_file in py_files:
         rel = py_file.relative_to(src_path)
+        data = None
+        source = None
         try:
             data = py_file.read_bytes()
             try:
@@ -1442,19 +1447,28 @@ def _scan_python_files(
                 source = data.decode("cp1252")
             tree = ast.parse(source, filename=str(py_file))
         except UnicodeDecodeError:
+            if implementation_observations is not None:
+                implementation_observations[rel.as_posix()] = capture_implementation(None, data, rel.as_posix(), configured=implementation_producer(implementation_analysis_hash), reason="unsupported-syntax")
             print(
                 f"llm-wiki Python extractor: skipped undecodable file {rel.as_posix()}",
                 file=sys.stderr,
             )
             continue
         except OSError as exc:
+            if implementation_observations is not None:
+                implementation_observations[rel.as_posix()] = capture_implementation(None, None, rel.as_posix(), configured=implementation_producer(implementation_analysis_hash), reason="missing-source")
             print(
                 f"llm-wiki Python extractor: failed to read {rel.as_posix()}: {exc}",
                 file=sys.stderr,
             )
             continue
         except SyntaxError:
+            if implementation_observations is not None:
+                implementation_observations[rel.as_posix()] = capture_implementation(None, data, rel.as_posix(), configured=implementation_producer(implementation_analysis_hash), reason="unsupported-syntax")
             continue
+
+        if implementation_observations is not None:
+            implementation_observations[rel.as_posix()] = capture_implementation(tree, data, rel.as_posix(), configured=implementation_producer(implementation_analysis_hash), parsed_source=source)
 
         file_effect_observations: list[dict] | None = (
             [] if data_effect_observations is not None else None
@@ -1590,6 +1604,7 @@ class PythonExtractor:
     def __init__(self) -> None:
         self.last_data_effect_observations: dict | None = None
         self.last_import_observations: dict | None = None
+        self.last_implementation_observations: dict | None = None
 
     def extract(
         self,
@@ -1601,6 +1616,8 @@ class PythonExtractor:
         capture_data_effect_observations: bool = False,
         capture_import_observations: bool = False,
         defer_inventory_model_kinds: bool = False,
+        capture_implementation_observations: bool = False,
+        implementation_analysis_hash: str | None = None,
     ) -> dict:
         """Scan *src_dir* for Python files and return an inventory dict.
 
@@ -1618,6 +1635,8 @@ class PythonExtractor:
         )
         self.last_data_effect_observations = None
         self.last_import_observations = None
+        self.last_implementation_observations = None
+        implementations: dict[str, dict] | None = {} if capture_implementation_observations else None
         inventory = _scan_python_files(
             src_dir,
             deep=deep,
@@ -1627,6 +1646,8 @@ class PythonExtractor:
             data_effect_observations=observations,
             import_location_observations=import_observations,
             defer_inventory_model_kinds=defer_inventory_model_kinds,
+            implementation_observations=implementations,
+            implementation_analysis_hash=implementation_analysis_hash,
         )
         for entry in inventory.values():
             entry["language"] = "python"
@@ -1634,4 +1655,6 @@ class PythonExtractor:
             self.last_data_effect_observations = data_effect_sidecar(observations)
         if import_observations is not None:
             self.last_import_observations = import_sidecar(import_observations)
+        if implementations is not None:
+            self.last_implementation_observations = implementation_envelope(implementations)
         return inventory
