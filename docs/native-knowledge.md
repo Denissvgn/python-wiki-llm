@@ -15,6 +15,8 @@ audience value, adoption tiers, and candidate evaluation designs, see
 [Native knowledge use cases](native-knowledge-use-cases.md).
 For public imports, installation, workspace boundaries and compatibility, see
 [Integrating native knowledge](native-knowledge-provider.md).
+For durable source/prose review, explicit acknowledgment and complete recovery,
+see [Ordinary documentation review](maintenance.md).
 For a small downstream integration, follow the
 [native knowledge tutorial](../examples/native-knowledge/README.md). Its Python
 client bootstraps a separate project without installing agent instructions.

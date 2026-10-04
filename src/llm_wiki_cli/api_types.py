@@ -99,6 +99,71 @@ class MaintenanceQueueResult(TypedDict):
     queue_id: str
 
 
+class MaintenanceRecordResult(TypedDict):
+    record_id: str
+    coordinate: dict[str, Any]
+    target: dict[str, Any]
+    mapping: dict[str, Any]
+    recorded_status: Literal["pending", "acknowledged"]
+    effective_status: Literal["pending", "acknowledged"] | None
+    reasons: list[str]
+    recorded_basis: dict[str, Any]
+    expected_basis: dict[str, Any] | None
+    basis_available: bool
+    acknowledgment: dict[str, Any] | None
+    acknowledgment_history: list[dict[str, Any]]
+    history_bounds: dict[str, int | bool]
+    source_location: dict[str, Any] | None
+    qualification: Literal["snapshot", "current-capture", "current-basis-unavailable"]
+    governance_effect: Literal["none"]
+
+
+class MaintenanceStatusResult(TypedDict):
+    schema_version: str
+    availability: str
+    adoption_id: str | None
+    state_hash: str | None
+    analysis_scope: str
+    live_evaluation_performed: bool
+    native_prose_coherent: bool
+    requires_sync: bool
+    coverage: dict[str, Any]
+    bounds: dict[str, Any]
+    records: list[MaintenanceRecordResult]
+    limitations: list[str]
+
+
+class _MaintenanceAdoptionOptions(TypedDict, total=False):
+    already_adopted: bool
+    records: int
+    state_hash: str
+    coverage: dict[str, Any]
+    recovery_dir: str
+
+
+class MaintenanceAdoptionResult(_MaintenanceAdoptionOptions):
+    adoption_id: str
+    changed: bool
+
+
+class MaintenanceAcknowledgmentResult(TypedDict):
+    adoption_id: str
+    record_id: str
+    changed: bool
+    state_hash: str
+    acknowledgment_id: str
+    actor: dict[str, Any]
+    governance_effect: Literal["none"]
+
+
+class MaintenanceRecoveryResult(TypedDict):
+    adoption_id: str
+    restored: bool
+    state_hash: str
+    requires_sync: bool
+    prose_basis_validated: bool
+
+
 class KnowledgeCoverageCounts(TypedDict):
     total: int
     modeled: int
@@ -626,7 +691,11 @@ class DoctorV4Result(DoctorResult):
     health_details: HealthDetailsV2
 
 
-class NativeInspectionResult(TypedDict):
+class _NativeInspectionMaintenance(TypedDict, total=False):
+    maintenance: dict[str, Any]
+
+
+class NativeInspectionResult(_NativeInspectionMaintenance):
     """Bounded component results sharing one source/wiki read scope."""
 
     schema_version: str
@@ -641,6 +710,11 @@ class NativeInspectionResult(TypedDict):
 
 
 __all__ = [
+    "MaintenanceRecordResult",
+    "MaintenanceStatusResult",
+    "MaintenanceAdoptionResult",
+    "MaintenanceAcknowledgmentResult",
+    "MaintenanceRecoveryResult",
     "NativeInspectionResult",
     "ByteResultBounds",
     "CalleesResult",

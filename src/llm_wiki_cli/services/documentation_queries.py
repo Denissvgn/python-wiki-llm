@@ -1425,6 +1425,12 @@ class DocumentationGraphQueryService:
         result["concept"] = (
             None if locator is None else self._compact_knowledge_concept(locator)
         )
+        report = getattr(self.knowledge_view, "maintenance_report", None)
+        if report is not None:
+            from urllib.parse import quote
+            paths = [path for path in report.by_path if query in {path, "llm-wiki://" + quote(path[:-3], safe="/-._~")}]
+            if len(paths) == 1:
+                result["maintenance"] = report.for_path(paths[0])
         return result
 
     @_bounded_query_result
@@ -1764,6 +1770,11 @@ class DocumentationGraphQueryService:
             evidence = result["evidence"]
             assert isinstance(evidence, dict)
             evidence["implementation"] = implementation
+        maintenance = self._maintenance_payload(locator)
+        if maintenance is not None:
+            evidence = result["evidence"]
+            assert isinstance(evidence, dict)
+            evidence["maintenance"] = maintenance
         self._record_bound(
             result,
             "evidence.relationships",
@@ -2247,6 +2258,9 @@ class DocumentationGraphQueryService:
         implementation = self._implementation_payload(locator)
         if implementation is not None:
             result["implementation"] = implementation
+        maintenance = self._maintenance_payload(locator)
+        if maintenance is not None:
+            result["maintenance"] = maintenance
         extensions = concept.get("extensions", {})
         governance = (
             extensions.get(GOVERNANCE_EXTENSION_KEY)
@@ -2315,6 +2329,9 @@ class DocumentationGraphQueryService:
             from .implementation_evidence import compact_implementation_summary
 
             result["implementation"] = compact_implementation_summary(compact["implementation"])
+        if "maintenance" in compact:
+            from .maintenance_status import compact_maintenance_summary
+            result["maintenance"] = compact_maintenance_summary(compact["maintenance"])
         freshness = result.get("freshness")
         if isinstance(freshness, dict) and freshness.get("state") is None:
             freshness.update(
@@ -2325,6 +2342,13 @@ class DocumentationGraphQueryService:
                 }
             )
         return result
+
+    def _maintenance_payload(self, locator: str) -> dict[str, Any] | None:
+        report = getattr(self.knowledge_view, "maintenance_report", None)
+        if report is None:
+            return None
+        concept = self.concept_by_locator[locator]
+        return report.for_path(concept["document"]["canonical_path"])
 
     def _implementation_payload(self, locator: str) -> dict[str, Any] | None:
         """Project the comparison already evaluated by this read session."""

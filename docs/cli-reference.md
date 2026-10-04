@@ -12,7 +12,7 @@ task detector with Mermaid styling.
 | Task | Commands |
 |---|---|
 | Set up a wiki | [init](#init), [prepare-extractors](#prepare-extractors), [bootstrap](#bootstrap) |
-| Maintain and diagnose | [sync](#sync), [lint / ci-check](#lint-and-ci-check), [doctor](#doctor), [queue](#queue) |
+| Maintain and diagnose | [sync](#sync), [lint / ci-check](#lint-and-ci-check), [doctor](#doctor), [queue](#queue), [ordinary review](maintenance.md) |
 | Read and analyze | [extract](#extract), [context](#context), [source integration](#codebase-source-integration), [search](#search), [review](#review), [api-diff](#api-diff) |
 | Work with agents | [generate-prompt](#generate-prompt), [MCP](#mcp), [skills](#skills), [manual triggers](automation.md#manual-agent-triggers) |
 | Author and export docs | [docs](#docs), [site](#site), [Obsidian](#obsidian) |

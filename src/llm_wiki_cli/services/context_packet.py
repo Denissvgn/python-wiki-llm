@@ -405,6 +405,8 @@ class CapturedContextRead:
     explicit_changes: bool = False
     change_selection: Mapping[str, Any] | None = None
     wiki_integrity: Mapping[str, tuple[int, ...]] | None = None
+    raw_content_by_page: Mapping[str, bytes] | None = None
+    capture_implementation_requested: bool = False
 
     def __post_init__(self) -> None:
         if not isinstance(self.source_root, Path) or not self.source_root.is_absolute():
@@ -999,7 +1001,12 @@ def capture_context_read(
                 "source_selection",
             ) from exc
         basis_incompatible = True
-    return CapturedContextRead(
+    raw_pages = None
+    if capture_implementation_observations and knowledge_view.manifest_basis is not None and knowledge_view.manifest_basis.maintenance_state is not None:
+        from .knowledge_storage_io import read_guarded
+        raw_pages = {path: read_guarded(wiki_root / path, max_wiki_bytes or 64 * 1024 * 1024).content for path in surface_evaluation.content_by_path}
+        _assert_wiki_unchanged(wiki_root, wiki_anchor_after, reject_all_symlinks=strict_wiki_symlinks)
+    captured = CapturedContextRead(
         source_root=source_root,
         wiki_root=wiki_root,
         inventory_result=collected,
@@ -1019,7 +1026,14 @@ def capture_context_read(
         strict_wiki_symlinks=strict_wiki_symlinks,
         allow_external_src=allow_external_src,
         wiki_integrity=_freeze_json(wiki_integrity) if wiki_integrity is not None else None,
+        raw_content_by_page=_freeze_json(raw_pages) if raw_pages is not None else None,
+        capture_implementation_requested=capture_implementation_observations,
     )
+    from .maintenance_status import attach_maintenance_status
+    captured = attach_maintenance_status(captured)
+    _assert_source_inputs_unchanged(source_snapshot, source_anchor)
+    _assert_wiki_unchanged(wiki_root, wiki_anchor_after, reject_all_symlinks=strict_wiki_symlinks)
+    return captured
 
 
 def build_context_from_captured_read(
@@ -1228,6 +1242,11 @@ def _build_knowledge_context_from_captured_read(
     if selection_requested and captured.basis_incompatible:
         knowledge = dict(knowledge)
         knowledge["freshness_evaluated"] = False
+    maintenance_report = captured.knowledge_view.maintenance_report
+    if selection_requested and maintenance_report is not None:
+        from .maintenance_status import compact_maintenance_summary
+        knowledge = dict(knowledge)
+        knowledge["maintenance"] = compact_maintenance_summary(maintenance_report)
     enrichment["knowledge"] = knowledge
     if normalized["prefer_fresh"]:
         enrichment["ranking_policy"] = (
@@ -2823,10 +2842,18 @@ def _validate_explicit_knowledge_response(
     }
     _exact_fields(
         data,
-        required | {"selection"},
+        required | {"selection", "maintenance"},
         "response.knowledge",
         required=required,
     )
+    if "maintenance" in data:
+        from .maintenance_status import validate_maintenance_summary
+        try:
+            validate_maintenance_summary(data["maintenance"])
+        except (ValueError, TypeError) as exc:
+            raise ContextPacketMalformedError("response.knowledge.maintenance", str(exc)) from exc
+        if data["mode"] == "off":
+            raise ContextPacketMalformedError("response.knowledge.maintenance", "disabled native reads cannot expose ordinary maintenance")
     mode = data["mode"]
     if mode != request["knowledge_mode"]:
         raise ContextPacketMalformedError(
@@ -3389,7 +3416,7 @@ def _validate_explicit_concept(
         "lifecycle",
         "freshness",
     }
-    _exact_fields(value, required | {"uid", "implementation"}, field, required=required)
+    _exact_fields(value, required | {"uid", "implementation", "maintenance"}, field, required=required)
     for name in required - {"freshness"}:
         if not isinstance(value[name], str) or not value[name]:
             raise ContextPacketMalformedError(
@@ -3405,6 +3432,12 @@ def _validate_explicit_concept(
         _validate_implementation_summary(
             value["implementation"], f"{field}.implementation"
         )
+    if "maintenance" in value:
+        from .maintenance_status import validate_maintenance_summary
+        try:
+            validate_maintenance_summary(value["maintenance"])
+        except (ValueError, TypeError) as exc:
+            raise ContextPacketMalformedError(f"{field}.maintenance", str(exc)) from exc
     enum_fields = {
         "concept_kind": {item.value for item in ConceptKind},
         "origin": {item.value for item in Origin},

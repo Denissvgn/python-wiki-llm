@@ -184,6 +184,15 @@ def _native_observation(native, requirement, snapshot, paths, scope, limit, impl
         comparison = implementation_report.by_locator.get(concept["locator"])
         if comparison is not None:
             qualified["implementation"] = comparison.to_payload()
+    if native.maintenance_validation is not None:
+        from .maintenance_status import LIMITATIONS, validate_maintenance_summary
+        record_projection = concept.get("extensions", {}).get("llm-wiki/maintenance-record", {})
+        bounds = record_projection.get("bounds", {})
+        total = bounds.get("observations_total", 0)
+        qualified["maintenance"] = validate_maintenance_summary({"availability": "partial", "analysis_scope": "selected-header",
+            "live_evaluation_performed": False, "native_prose_coherent": True, "requires_sync": False,
+            "total": total, "pending": 0, "acknowledged": 0, "unavailable": total, "ambiguous": 0, "deleted": 0,
+            "untracked": 0, "truncated": bool(bounds.get("truncated")), "limitations": list(LIMITATIONS)})
     native_qualification = {"availability": "scoped", "root_hash": selected["root_hash"],
                             "whole_store_validated": False, "validation_scope": selected["validation_scope"]}
     observation: dict[str, Any] = {"found": True, "concept": qualified, "knowledge": native_qualification}
@@ -564,6 +573,12 @@ def validate_scoped_bindings(payload, normalized, profile):
             concept = fact["observation"]["concept"]
             if _native_key(fact["selector"]) not in _concept_aliases(concept):
                 raise ValueError("native observation does not match its exact selector")
+            if "maintenance" in concept:
+                from .maintenance_status import validate_maintenance_summary
+                summary = validate_maintenance_summary(concept["maintenance"])
+                bound = concept.get("extensions", {}).get("llm-wiki/maintenance-record", {}).get("bounds", {})
+                if (summary["analysis_scope"] != "selected-header" or summary["availability"] != "partial" or summary["live_evaluation_performed"] or summary["pending"] or summary["acknowledged"] or summary["total"] != bound.get("observations_total") or summary["unavailable"] != summary["total"]):
+                    raise ValueError("selected maintenance fact widened unread ledger validation")
             path = concept["document"]["canonical_path"]
             page_inputs = [item for item in inputs if item["path"] == path]
             if len(page_inputs) != 1 or page_inputs[0]["hash"] != concept["facets"]["semantics"]["page_hash"]:

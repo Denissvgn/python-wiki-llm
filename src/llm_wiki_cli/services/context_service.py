@@ -2353,6 +2353,10 @@ def _knowledge_enriched_page_ref(
                 status["implementation"] = compact_implementation_summary(
                     implementation
                 )
+            maintenance = concept.get("maintenance")
+            if isinstance(maintenance, Mapping):
+                from .maintenance_status import compact_maintenance_summary
+                status["maintenance"] = compact_maintenance_summary(maintenance)
     enriched["knowledge"] = status
     return enriched
 

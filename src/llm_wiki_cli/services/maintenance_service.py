@@ -18,17 +18,17 @@ from .maintenance_protocol import (
 from .wiki_write_basis import ACTIVE_WRITE_BASIS
 
 
-def _capture(src_dir, wiki_dir, **options):
+def _capture(src_dir, wiki_dir, *, require_ready=True, **options):
     from .context_packet import capture_context_read
 
     captured = capture_context_read(src_dir, str(wiki_dir), read_only=True,
         capture_implementation_observations=True, **options)
-    if not captured.knowledge_view.ready or captured.knowledge_view.knowledge is None:
+    if require_ready and (not captured.knowledge_view.ready or captured.knowledge_view.knowledge is None):
         raise MaintenanceProtocolError("knowledge-unavailable", "Maintenance requires a coherent native snapshot; recover adopted authority before ordinary repair")
     return captured
 
 
-def capture_maintenance_observations(captured, state=None, *, raw_pages=None):
+def capture_maintenance_observations(captured, state=None, *, raw_pages=None, knowledge=None, manifest=None):
     from .maintenance_evidence import captured_observations_from_knowledge
     from .python_implementation import analysis_identity
     from .source_snapshot import confirmed_missing_source_paths
@@ -40,10 +40,10 @@ def capture_maintenance_observations(captured, state=None, *, raw_pages=None):
     old_targets = {row["target"]["canonical_path"] for row in (state["observations"].values() if state is not None else ())}
     absent = {p for p in old_targets if not (captured.wiki_root / p).exists() and not (captured.wiki_root / p).is_symlink()}
     return captured_observations_from_knowledge(
-        captured.knowledge_view.knowledge,
+        knowledge if knowledge is not None else captured.knowledge_view.knowledge,
         content_by_page=captured.surface_evaluation.content_by_path,
         raw_content_by_page=raw_pages,
-        page_source_mappings=captured.knowledge_view.manifest_basis.page_source_mappings,
+        page_source_mappings=(manifest if manifest is not None else captured.knowledge_view.manifest_basis).page_source_mappings,
         captures=captured.inventory_result.implementation_observations,
         source_content_hashes=hashes, captured_paths=set(hashes) | set(missing),
         missing_source_paths=missing,
@@ -133,6 +133,8 @@ def adopt_maintenance_authority(src_dir, wiki_dir, *, recovery_dir, manifest_for
             if not source_snapshot_matches_current_files(captured.source_snapshot):
                 raise MaintenanceProtocolError("source-changed", "Source changed before adoption")
             result = commit_knowledge_artifacts(plan, fault_injector=fault_injector)
+            basis.assert_current()
+            save_recovery_snapshot(recovery / "committed", snapshot_wiki(root), marker=marker)
             return {"adoption_id": marker["adoption_id"], "changed": result.changed,
                     "records": len(state["records"]), "state_hash": digest(canonical_bytes(state)),
                     "coverage": {"source_backed_semantic_total": observations.source_backed_semantic_total,
@@ -302,3 +304,188 @@ def recover_maintenance_authority(wiki_dir, *, recovery_dir, expected_adoption_i
     return {"adoption_id": expected_adoption_id, "restored": True, "state_hash": digest(canonical_bytes(manifest.maintenance_state)),
             "requires_sync": metadata["kind"] == "captured-preimage",
             "prose_basis_validated": metadata["kind"] != "captured-preimage"}
+
+
+def _validate_status_request(live, record_id, limit):
+    from .maintenance_state import _identity
+    if type(live) is not bool or type(limit) is not int or not 1 <= limit <= 1000:
+        raise MaintenanceProtocolError("invalid-request", "live must be boolean and limit an integer from 1 to 1000")
+    if record_id is not None:
+        _identity(record_id)
+
+
+def _native_prose_coherent(root, knowledge, files):
+    """Check native normalized prose without treating ledger baselines as current."""
+    from .wiki_surface import collect_wiki_pages
+    from .io import decode_markdown_bytes
+    from .knowledge_envelope import hash_markdown_snapshot
+
+    try:
+        pages = {page.relative_path: decode_markdown_bytes(files[page.relative_path])
+                 for page in collect_wiki_pages(root)}
+        return hash_markdown_snapshot(pages) == knowledge.bundle.snapshot.markdown_snapshot_hash
+    except (ValueError, KeyError, OSError, UnicodeError):
+        return False
+
+
+def maintenance_report_from_captured(captured, *, raw_pages=None, historical_knowledge=None,
+                                    historical_manifest=None):
+    """Reuse one captured inventory; never extract again to decorate a read."""
+    from .maintenance_status import build_maintenance_status
+    from .python_implementation import analysis_identity
+
+    view = captured.knowledge_view
+    manifest = historical_manifest if historical_manifest is not None else view.manifest_basis
+    knowledge = historical_knowledge if historical_knowledge is not None else view.knowledge
+    if manifest is None or knowledge is None:
+        requested = getattr(captured, "capture_implementation_requested",
+                            captured.inventory_result.implementation_observations is not None)
+        if not requested:
+            return None
+        from .sync_manifest import SyncManifest
+        from .knowledge_orchestration import capture_committed_knowledge
+        from .knowledge_artifacts import KnowledgeArtifactError
+
+        try:
+            manifest = SyncManifest.load(captured.wiki_root)
+            if manifest.maintenance_state is None:
+                return None
+            guard_maintenance_owner(captured.wiki_root, manifest)
+            prior = capture_committed_knowledge(captured.wiki_root, manifest)
+            if prior.artifacts is None:
+                return None
+            knowledge = prior.artifacts.knowledge
+        except (MaintenanceProtocolError, KnowledgeArtifactError, ValueError, OSError):
+            # The native availability gap remains; this is never a repair seed.
+            return None
+    if manifest.maintenance_state is None:
+        return None
+    marker = guard_maintenance_owner(captured.wiki_root, manifest)
+    captured_raw = getattr(captured, "raw_content_by_page", None)
+    files = raw_pages if raw_pages is not None else captured_raw if captured_raw is not None else snapshot_wiki(captured.wiki_root)
+    capture = capture_maintenance_observations(captured, manifest.maintenance_state,
+        raw_pages=files, knowledge=knowledge, manifest=manifest)
+    return build_maintenance_status(manifest.maintenance_state, marker, capture,
+        implementation_observations=captured.inventory_result.implementation_observations,
+        analysis_compatibility_hash=analysis_identity(captured.inventory_result.analysis_components),
+        analysis_scope="full-inventory" if captured.source_snapshot.only_files is None else "selected-source",
+        native_prose_coherent=_native_prose_coherent(captured.wiki_root, knowledge, files))
+
+
+def get_maintenance_status_authority(src_dir, wiki_dir, *, live=True, record_id=None,
+                                     limit=30, **capture_options):
+    """Read current ordinary-review needs without publishing observations/history."""
+    from pathlib import Path
+    from .sync_manifest import SyncManifest
+    from .knowledge_orchestration import capture_committed_knowledge
+    from .maintenance_status import build_maintenance_status
+    from .source_snapshot import source_snapshot_matches_current_files
+
+    _validate_status_request(live, record_id, limit)
+    root = _absolute_path(Path(wiki_dir))
+    files = snapshot_wiki(root)
+    marker = guard_maintenance_owner(root)
+    try:
+        manifest = SyncManifest.load(root)
+    except FileNotFoundError:
+        manifest = None
+    prior = capture_committed_knowledge(root, manifest)
+    if marker is None:
+        report = build_maintenance_status(None, None, analysis_scope="snapshot")
+        captured = None
+    else:
+        if manifest is None or manifest.maintenance_state is None or prior.artifacts is None:
+            raise MaintenanceProtocolError("owner-invalid", "Maintenance requires complete validated authority")
+        knowledge = prior.artifacts.knowledge
+        if live:
+            captured = _capture(src_dir, root, require_ready=False, **capture_options)
+            report = maintenance_report_from_captured(captured, raw_pages=files,
+                historical_knowledge=knowledge, historical_manifest=manifest)
+            assert report is not None
+        else:
+            captured = None
+            report = build_maintenance_status(manifest.maintenance_state, marker,
+                native_prose_coherent=_native_prose_coherent(root, knowledge, files))
+    if captured is not None and not source_snapshot_matches_current_files(captured.source_snapshot):
+        raise MaintenanceProtocolError("source-changed", "Source changed during maintenance status capture")
+    prior.assert_current()
+    if snapshot_wiki(root) != files:
+        raise MaintenanceProtocolError("wiki-changed", "Wiki changed during maintenance status capture")
+    if record_id is not None and record_id not in report.by_record:
+        raise MaintenanceProtocolError("record-not-found", "Maintenance record is not owned by this adoption")
+    return report.to_payload(record_id=record_id, limit=limit)
+
+
+def acknowledge_maintenance_authority(src_dir, wiki_dir, *, record_id, expected_state_hash,
+                                       expected_basis, actor_kind, actor_id,
+                                       recovery_dir=None, **capture_options):
+    """Acknowledge one explicitly reviewed exact live basis under the writer locks."""
+    from pathlib import Path
+    from copy import deepcopy
+    from .maintenance_state import maintenance_core, maintenance_state_hash, _identity
+    from .maintenance_evidence import reconcile_pending_maintenance, owner_key
+    from .maintenance_projection import project_maintenance_knowledge
+    from .maintenance_protocol import maintenance_write_operation
+    from .sync_manifest import SyncManifest
+    from .knowledge_envelope import is_valid_sha256
+
+    _identity(record_id)
+    if not is_valid_sha256(expected_state_hash):
+        raise MaintenanceProtocolError("invalid-request", "Expected maintenance state hash must be canonical SHA-256")
+    core = maintenance_core()
+    actor = {"kind": actor_kind, "actor_id": actor_id, "authority": "ordinary-maintenance"}
+    event = {"schema_version": "llm-wiki-maintenance-event/v1", "record_id": record_id,
+             "expected_state_hash": expected_state_hash, "kind": "acknowledge",
+             "actor": actor, "basis": deepcopy(expected_basis)}
+    core.validate_schema("maintenance-event-v1", event)
+    root = _absolute_path(Path(wiki_dir))
+    directory = _outside_recovery(_absolute_path(Path(recovery_dir)), root, _absolute_path(Path(src_dir))) if recovery_dir is not None else None
+    with maintenance_write_operation(root, recovery_dir=directory) as write_basis:
+        if write_basis is None:
+            raise MaintenanceProtocolError("not-adopted", "Explicit maintenance adoption is required before acknowledgment")
+        manifest = SyncManifest.load(root)
+        state = manifest.maintenance_state
+        assert state is not None
+        if record_id not in state["records"]:
+            raise MaintenanceProtocolError("record-not-found", "Maintenance record is not owned by this adoption")
+        if state["records"][record_id]["mapping"]["state"] != "resolved":
+            raise MaintenanceProtocolError("mapping-unresolved", "Deleted or unresolved maintenance mappings cannot be acknowledged")
+        captured = _capture(src_dir, root, **capture_options)
+        write_basis.source_snapshot = captured.source_snapshot
+        write_basis.assert_current()
+        observations = capture_maintenance_observations(captured, state, raw_pages=write_basis.expected)
+        recorded = state["observations"][record_id]
+        incoming = deepcopy(observations.by_owner.get(owner_key(recorded["coordinate"], recorded["target"])))
+        if incoming is None or incoming["basis"] != expected_basis:
+            raise MaintenanceProtocolError("basis-changed", "Reviewed source/prose basis differs from the current captured record")
+        if incoming["implementation"]["status"] != "available" or incoming["presence"] != "present" or incoming["target_presence"] != "present":
+            raise MaintenanceProtocolError("basis-unavailable", "Acknowledgment requires available source/executable/prose evidence")
+        if recorded["basis"] == incoming["basis"] and state["records"][record_id]["status"] == "acknowledged":
+            # The core permits identical actor/basis replay despite an old CAS;
+            # the operation has independently recaptured and rechecked inputs.
+            replayed = core.transition(state, event, incoming["basis"])
+            if replayed == state:
+                return {"adoption_id": state["adoption_id"], "record_id": record_id,
+                        "state_hash": maintenance_state_hash(state), "changed": False,
+                        "acknowledgment_id": state["records"][record_id]["current_acknowledgment_id"],
+                        "actor": actor, "governance_effect": "none"}
+        if maintenance_state_hash(state) != expected_state_hash:
+            raise MaintenanceProtocolError("state-changed", "Maintenance authority changed after review capture")
+        updated = reconcile_pending_maintenance(state, guard_maintenance_owner(root, manifest), observations)
+        event["expected_state_hash"] = maintenance_state_hash(updated)
+        updated = core.transition(updated, event, incoming["basis"])
+        view = captured.knowledge_view
+        assert view.knowledge is not None and view.validated_artifacts is not None
+        marker = guard_maintenance_owner(root, manifest)
+        next_manifest = manifest.with_maintenance_state(updated)
+        knowledge = project_maintenance_knowledge(view.knowledge, updated, marker)
+        surface, _ = validated_artifact_bytes(view.validated_artifacts)
+        plan = build_knowledge_commit_plan(root, surface_index_bytes=surface,
+            knowledge_index=knowledge, manifest=next_manifest, prior=view.validated_artifacts,
+            maintenance_adoption=marker)
+        write_basis.assert_current()
+        result = commit_knowledge_artifacts(plan)
+        return {"adoption_id": updated["adoption_id"], "record_id": record_id,
+                "state_hash": maintenance_state_hash(updated), "changed": result.changed,
+                "acknowledgment_id": updated["records"][record_id]["current_acknowledgment_id"],
+                "actor": actor, "governance_effect": "none"}

@@ -658,6 +658,15 @@ def build_live_documentation_query_service(
             if isinstance(knowledge_view, KnowledgeReadView)
             else None
         )
+    if (isinstance(knowledge_view, KnowledgeReadView) and inventory_result is not None
+            and knowledge_view.manifest_basis is not None and knowledge_view.manifest_basis.maintenance_state is not None):
+        from .maintenance_status import attach_maintenance_view_from_inputs
+        from .knowledge_storage_io import read_guarded
+        maintenance_surface = surface_evaluation if selected_paths is None else surface_evaluator(wiki_root, inventory, src_dir=source_root, entry_points=entrypoints)
+        raw_pages = {path: read_guarded(wiki_root / path, 64 * 1024 * 1024).content for path in maintenance_surface.content_by_path}
+        knowledge_view = attach_maintenance_view_from_inputs(knowledge_view, inventory_result,
+            content_by_page=maintenance_surface.content_by_path, raw_content_by_page=raw_pages,
+            analysis_scope="full-inventory" if selected_paths is None else "selected-source")
     if isinstance(knowledge_view, KnowledgeReadView):
         knowledge_view = verification_view_attacher(
             wiki_root,

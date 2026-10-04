@@ -2050,6 +2050,119 @@ def test_lowercase_stage_compatibility_literal_remains_public():
     assert scan_internal_prose(literal) == []
 
 
+def _evaluation_query_identifier_spans(relative: str, text: str) -> set[tuple[int, int]]:
+    """Admit schema-owned error-message query IDs, never delivery labels."""
+    corpus_path = "tests/developer_value/corpus.json"
+    oracle_path = "tests/developer_value/oracles.py"
+    if relative not in {corpus_path, oracle_path}:
+        return set()
+    corpus = json.loads((REPO_ROOT / corpus_path).read_text(encoding="utf-8"))
+    retrieval = corpus["retrieval"]
+    known = {query["id"] for query in retrieval["queries"]
+             if query["category"] == "error-message"}
+    spans: set[tuple[int, int]] = set()
+    if relative == corpus_path:
+        decoder = json.JSONDecoder()
+
+        def space(index):
+            while index < len(text) and text[index].isspace():
+                index += 1
+            return index
+
+        def visit(index, path=(), parent=None):
+            index = space(index)
+            value, end = decoder.raw_decode(text, index)
+            if isinstance(value, str):
+                admitted = value in known and (
+                    (len(path) == 3 and path[:2] in {
+                        ("retrieval", "development_ids"), ("retrieval", "heldout_ids")
+                    }) or (len(path) == 4 and path[:2] == ("retrieval", "queries")
+                           and path[-1] == "id" and isinstance(parent, dict)
+                           and parent.get("category") == "error-message")
+                )
+                if admitted and text[index + 1:end - 1] == value:
+                    spans.add((index + 1, end - 1))
+            elif isinstance(value, dict):
+                cursor = space(index + 1)
+                for _ in value:
+                    key, cursor = decoder.raw_decode(text, cursor)
+                    cursor = space(cursor)
+                    assert text[cursor] == ":"
+                    cursor = space(visit(cursor + 1, (*path, key), value))
+                    if text[cursor] == ",":
+                        cursor = space(cursor + 1)
+            elif isinstance(value, list):
+                cursor = space(index + 1)
+                for ordinal, _ in enumerate(value):
+                    cursor = space(visit(cursor, (*path, ordinal), value))
+                    if text[cursor] == ",":
+                        cursor = space(cursor + 1)
+            return end
+
+        visit(0)
+    else:
+        lines = text.splitlines(keepends=True)
+
+        def offset(line, column):
+            return sum(map(len, lines[:line - 1])) + len(
+                lines[line - 1].encode("utf-8")[:column].decode("utf-8")
+            )
+
+        for node in ast.walk(ast.parse(text)):
+            if not isinstance(node, ast.Assign) or not any(
+                isinstance(target, ast.Name) and target.id == "DEVELOPMENT_IDS"
+                for target in node.targets
+            ):
+                continue
+            call = node.value
+            if not (isinstance(call, ast.Call) and isinstance(call.func, ast.Attribute)
+                    and call.func.attr == "split" and not call.args and not call.keywords
+                    and isinstance(call.func.value, ast.Constant)
+                    and isinstance(call.func.value.value, str)
+                    and call.func.value.value.split() == retrieval["development_ids"]):
+                continue
+            literal = call.func.value
+            assert literal.end_lineno is not None and literal.end_col_offset is not None
+            start = offset(literal.lineno, literal.col_offset)
+            end = offset(literal.end_lineno, literal.end_col_offset)
+            for match in re.finditer(r"\bM[0-9]+\b", text[start:end]):
+                if match.group() in known:
+                    spans.add((start + match.start(), start + match.end()))
+    return spans
+
+
+@pytest.mark.parametrize("relative", [
+    "tests/developer_value/corpus.json", "tests/developer_value/oracles.py",
+])
+def test_schema_owned_query_ids_are_not_delivery_milestones(relative):
+    text = (REPO_ROOT / relative).read_text(encoding="utf-8")
+    spans = _evaluation_query_identifier_spans(relative, text)
+    assert spans
+    assert all(re.fullmatch(r"M[0-9]+", text[start:end]) for start, end in spans)
+
+
+def test_query_identifier_admission_does_not_hide_actual_provenance():
+    path = "tests/developer_value/corpus.json"
+    payload = json.loads((REPO_ROOT / path).read_text(encoding="utf-8"))
+    marker = "M" + "1"
+    payload["notes"] = "milestone " + marker
+    payload["other_identifier"] = marker
+    text = json.dumps(payload, indent=2, sort_keys=True)
+    spans = _evaluation_query_identifier_spans(path, text)
+    notes = text.index("milestone " + marker) + len("milestone ")
+    other = text.index('"other_identifier": "' + marker + '"') + len('"other_identifier": "')
+    assert (notes, notes + len(marker)) not in spans
+    assert (other, other + len(marker)) not in spans
+    assert _evaluation_query_identifier_spans("src/example.py", '"' + marker + '"') == set()
+
+
+def test_oracle_identifier_admission_requires_exact_declared_query_split():
+    path = "tests/developer_value/oracles.py"
+    text = (REPO_ROOT / path).read_text(encoding="utf-8")
+    marker = "M" + "1"
+    assert _evaluation_query_identifier_spans(path, text.replace("S7 " + marker, "S7 milestone " + marker)) == set()
+
+
 def test_source_and_test_artifacts_have_no_implementation_plan_provenance():
     """Keep implementation planning labels out of source and verification assets."""
 
@@ -2074,8 +2187,11 @@ def test_source_and_test_artifacts_have_no_implementation_plan_provenance():
             relative,
             (REPO_ROOT / relative).read_bytes(),
         )
+        admitted_query_ids = _evaluation_query_identifier_spans(relative, text)
         for rule, pattern in content_patterns.items():
             for match in pattern.finditer(text):
+                if rule in {"numbered-milestone", "delivery-stage-label"} and (match.start(), match.end()) in admitted_query_ids:
+                    continue
                 line = text.count("\n", 0, match.start()) + 1
                 findings.append(
                     f"{relative}:{line}: {rule}: {match.group(0)!r}"

@@ -81,6 +81,10 @@ IMPLEMENTATION = _record(
     "state reason scope analysis_scope live_comparison_performed source_changed "
     "documentation_changed truncated", limitations=_list(),
 )
+MAINTENANCE = _record(
+    "availability analysis_scope live_evaluation_performed native_prose_coherent requires_sync "
+    "total pending acknowledged unavailable ambiguous deleted untracked truncated", limitations=_list(),
+)
 ENDPOINT = _record(
     "kind target_class locator uid canonical_path source_path external_uri resource "
     "symbol normalized_target coordinate_state"
@@ -92,7 +96,7 @@ COVERAGE = _record(
 CONCEPT = _record(
     "locator uid concept_kind title page_kind page_id canonical_path mcp_uri "
     "source_path role origin evidence verification lifecycle", freshness=FRESHNESS,
-    implementation=IMPLEMENTATION,
+    implementation=IMPLEMENTATION, maintenance=MAINTENANCE,
 )
 PAGE = _record("kind id title canonical_path source_path role mcp_uri")
 RELATIONSHIP = _record(
@@ -102,6 +106,7 @@ RELATIONSHIP = _record(
 )
 KNOWLEDGE = _record(
     "mode status availability reason selected freshness_evaluated",
+    maintenance=MAINTENANCE,
     bounds=_record(concepts=BOUND, pages=BOUND, relationships=BOUND),
     fallback=_record("used reason", evidence=_list()),
     selection=_record(

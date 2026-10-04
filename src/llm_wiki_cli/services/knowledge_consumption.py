@@ -306,6 +306,7 @@ class KnowledgeReadView:
         default_factory=MachineVerificationReadView
     )
     validated_artifacts: Any = field(default=None, repr=False, compare=False)
+    maintenance_report: Any = field(default=None, repr=False, compare=False)
     implementation_report: ImplementationReport | None = field(
         default=None, repr=False, compare=False
     )
@@ -618,6 +619,7 @@ def build_knowledge_read_view(
             load_state=load_result.status,
             underlying_load_state=load_result.underlying_status,
             validated_artifacts=load_result.validated_artifacts,
+            maintenance_report=_snapshot_maintenance_report(load_result),
             implementation_report=_implementation_report(
                 load_result.knowledge,
                 None
@@ -763,6 +765,13 @@ def _loaded_freshness(load_result, live_evaluation):
         return evaluate_knowledge_freshness(artifacts, live_evaluation)
     return evaluate_knowledge_freshness(load_result.knowledge, live_evaluation)
 
+
+
+def _snapshot_maintenance_report(load_result):
+    from .maintenance_status import build_maintenance_status, marker_from_validated_state
+    manifest = load_result.manifest_basis
+    state = manifest.maintenance_state if manifest is not None else None
+    return None if state is None else build_maintenance_status(state, marker_from_validated_state(state))
 
 def _implementation_report(knowledge, live_evaluation):
     """Compare captured syntax independently of structural freshness."""

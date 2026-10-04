@@ -55,6 +55,10 @@ from .api_types import (
     WikiPagesResult,
     SearchResult,
     MaintenanceQueueResult,
+    MaintenanceStatusResult,
+    MaintenanceAdoptionResult,
+    MaintenanceAcknowledgmentResult,
+    MaintenanceRecoveryResult,
 )
 from .config import (
     DEFAULT_WIKI_DIR,
@@ -581,6 +585,8 @@ def _raise_api_error(exc: Exception) -> NoReturn:
         _raise_context_packet_api_error(exc)
     if isinstance(exc, WorkflowRequestError):
         raise InvalidRequestError(str(exc), code="invalid-request", details={"field": exc.field}) from exc
+    if _is_maintenance_error(exc):
+        _raise_maintenance_api_error(exc)
     for leaf in _API_ERROR_LEAVES:
         if isinstance(exc, leaf):
             raise leaf(str(exc)) from exc
@@ -646,6 +652,34 @@ def _raise_api_error(exc: Exception) -> NoReturn:
     ):
         raise WorkspaceStateError(str(exc)) from exc
     raise WorkspaceStateError(str(exc)) from exc
+
+
+def _is_maintenance_error(exc: Exception) -> bool:
+    return type(exc).__module__ in {
+        "llm_wiki_cli.services.maintenance_protocol",
+        "llm_wiki_cli.services.maintenance_shapes",
+        "llm_wiki_cli.services.maintenance_state",
+    } and type(exc).__name__ in {"MaintenanceProtocolError", "MaintenanceError"}
+
+
+def _raise_maintenance_api_error(exc: Exception) -> NoReturn:
+    reason = getattr(exc, "reason", getattr(exc, "code", "maintenance-unavailable"))
+    details = {"reason": reason, "field": getattr(exc, "field", "maintenance")}
+    if reason in {
+        "schema-invalid", "identity-invalid", "coordinate-invalid", "target-invalid",
+        "selector-limit", "actor-invalid", "recovery-path", "recovery-source",
+        "recovery-intent", "registration-invalid", "record-collision",
+        "invalid-request", "record-not-found",
+    }:
+        raise InvalidRequestError(str(exc), code="invalid-request", details=details) from exc
+    if reason in {
+        "state-changed", "basis-changed", "stale-acknowledgment", "source-changed",
+        "wiki-changed", "recovery-conflict", "recovery-newer-owner", "lock-order",
+        "knowledge-unavailable", "owner-missing", "adoption-missing", "owner-incompatible",
+        "not-adopted", "mapping-unresolved", "basis-unavailable", "prose-reanchor-required",
+    }:
+        raise WorkspaceStateError(str(exc), code="maintenance-conflict", details=details) from exc
+    raise ArtifactIntegrityError(str(exc), code="maintenance-integrity", details=details) from exc
 
 
 def _api_boundary(
@@ -1450,6 +1484,97 @@ def build_maintenance_queue(
     return cast(MaintenanceQueueResult, build(src_dir, wiki_dir, limit=limit,
                 allow_external_src=allow_external_src, source_selection=source_selection,
                 helper_cache_dir=helper_cache_dir))
+
+
+@_api_boundary
+def adopt_maintenance(
+    src_dir: str = ".", wiki_dir: str = DEFAULT_WIKI_DIR, *,
+    recovery_dir: str | Path, manifest_format: Literal["v7", "indexed-v8"] | None = None,
+    source_selection: str | Path | None = None, helper_cache_dir: str | None = None,
+    allow_external_src: bool = False,
+) -> MaintenanceAdoptionResult:
+    """Explicitly adopt durable ordinary review without granting approval."""
+    from .services.maintenance_service import adopt_maintenance_authority
+    if type(allow_external_src) is not bool or manifest_format not in {None, "v7", "indexed-v8"}:
+        raise ValueError("Unsupported maintenance adoption options")
+    return cast(MaintenanceAdoptionResult, adopt_maintenance_authority(
+        src_dir, _validate_wiki_dir(wiki_dir), recovery_dir=recovery_dir,
+        manifest_format=manifest_format, source_selection=source_selection,
+        helper_cache_dir=helper_cache_dir, allow_external_src=allow_external_src,
+    ))
+
+
+@_api_boundary
+def get_maintenance_status(
+    src_dir: str = ".", wiki_dir: str = DEFAULT_WIKI_DIR, *,
+    live: bool = True, record_id: str | None = None, limit: int = 30,
+    source_selection: str | Path | None = None, helper_cache_dir: str | None = None,
+    allow_external_src: bool = False,
+) -> MaintenanceStatusResult:
+    """Read bounded recorded/current review state without altering authority."""
+    from .services.maintenance_service import get_maintenance_status_authority
+    from .services.maintenance_queue import validate_queue_limit
+    if type(live) is not bool or type(allow_external_src) is not bool:
+        raise ValueError("Maintenance status boolean options must be booleans")
+    validate_queue_limit(limit)
+    return cast(MaintenanceStatusResult, get_maintenance_status_authority(
+        src_dir, _validate_wiki_dir(wiki_dir), live=live, record_id=record_id, limit=limit,
+        source_selection=source_selection, helper_cache_dir=helper_cache_dir,
+        allow_external_src=allow_external_src,
+    ))
+
+
+@_api_boundary
+def acknowledge_maintenance(
+    src_dir: str = ".", wiki_dir: str = DEFAULT_WIKI_DIR, *,
+    record_id: str, expected_state_hash: str, expected_basis: Mapping[str, Any],
+    actor_kind: Literal["agent", "human"], actor_id: str,
+    recovery_dir: str | Path | None = None,
+    source_selection: str | Path | None = None, helper_cache_dir: str | None = None,
+    allow_external_src: bool = False,
+) -> MaintenanceAcknowledgmentResult:
+    """Acknowledge exactly reviewed current source/prose with an explicit actor."""
+    from .services.maintenance_service import acknowledge_maintenance_authority
+    from .services.maintenance_state import _detached, maintenance_core
+    if type(allow_external_src) is not bool:
+        raise ValueError("allow_external_src must be a boolean")
+    basis = _detached(expected_basis)
+    core = maintenance_core()
+    core.validate_schema("maintenance-event-v1", {
+        "schema_version": "llm-wiki-maintenance-event/v1", "kind": "acknowledge",
+        "record_id": record_id, "expected_state_hash": expected_state_hash,
+        "basis": basis,
+        "actor": {"kind": actor_kind, "actor_id": actor_id, "authority": "ordinary-maintenance"},
+    })
+    core._coordinate(basis["coordinate"])
+    core._target(basis["target"])
+    return cast(MaintenanceAcknowledgmentResult, acknowledge_maintenance_authority(
+        src_dir, _validate_wiki_dir(wiki_dir), record_id=record_id,
+        expected_state_hash=expected_state_hash, expected_basis=basis,
+        actor_kind=actor_kind, actor_id=actor_id, recovery_dir=recovery_dir,
+        source_selection=source_selection, helper_cache_dir=helper_cache_dir,
+        allow_external_src=allow_external_src,
+    ))
+
+
+@_api_boundary
+def recover_maintenance(
+    wiki_dir: str = DEFAULT_WIKI_DIR, *, recovery_dir: str | Path,
+    expected_adoption_id: str, src_dir: str | None = None,
+    allow_prepared_adoption: bool = False, allow_captured_preimage: bool = False,
+) -> MaintenanceRecoveryResult:
+    """Restore verified authority; unanchored authored bytes require later sync."""
+    from .services.maintenance_service import recover_maintenance_authority
+    from .services.maintenance_state import _identity
+    if type(allow_prepared_adoption) is not bool or type(allow_captured_preimage) is not bool:
+        raise ValueError("Maintenance recovery modes must be booleans")
+    _identity(expected_adoption_id)
+    return cast(MaintenanceRecoveryResult, recover_maintenance_authority(
+        _validate_wiki_dir(wiki_dir), recovery_dir=recovery_dir,
+        expected_adoption_id=expected_adoption_id, src_dir=src_dir,
+        allow_prepared_adoption=allow_prepared_adoption,
+        allow_captured_preimage=allow_captured_preimage,
+    ))
 
 
 @_api_boundary
@@ -3355,6 +3480,14 @@ use_p0_calibration_host_broker_authenticator = _deprecated_api_alias(
 
 
 __all__ = [
+    "MaintenanceStatusResult",
+    "MaintenanceAdoptionResult",
+    "MaintenanceAcknowledgmentResult",
+    "MaintenanceRecoveryResult",
+    "adopt_maintenance",
+    "get_maintenance_status",
+    "acknowledge_maintenance",
+    "recover_maintenance",
     "expand_task_storage_receipt",
     "KNOWLEDGE_COVERAGE_SCHEMA_VERSION",
     "NATIVE_INSPECTION_SCHEMA_VERSION",

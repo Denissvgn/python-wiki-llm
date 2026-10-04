@@ -786,6 +786,19 @@ class McpWikiService:
                                data={"field": "limit"}) from exc
 
     @ac.bound_comparison
+    def get_maintenance_status(self, record_id: str | None = None,
+                               limit: int = 30, live: bool = True) -> dict:
+        """Read ordinary review state; mutations remain outside this MCP surface."""
+        try:
+            return dict(public_api.get_maintenance_status(
+                _posix_string(self.src_dir), _posix_string(self.wiki_dir),
+                record_id=record_id, limit=limit, live=live,
+                **self._external_source_options(), **self._source_selection_options(),
+            ))
+        except LlmWikiApiError as exc:
+            raise _api_mcp_error(exc) from exc
+
+    @ac.bound_comparison
     def build_task_context(self, request: Mapping[str, Any]) -> str:
         from .task_contract import normalize_task_request
         from .task_context import _counter
@@ -1538,6 +1551,16 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
         strict_bool, strict_int = StrictBool, StrictInt
     get_maintenance_queue.__annotations__["limit"] = strict_int
     server.tool()(get_maintenance_queue)
+
+    def get_maintenance_status(record_id: str | None = None, limit: int = 30,
+                               live: bool = True) -> dict[str, Any]:
+        """Read bounded ordinary review status; never acknowledge or adopt."""
+        return _native_tool_call(service.get_maintenance_status,
+                                 record_id=record_id, limit=limit, live=live)
+
+    get_maintenance_status.__annotations__["limit"] = strict_int
+    get_maintenance_status.__annotations__["live"] = strict_bool
+    server.tool()(get_maintenance_status)
 
     @server.tool()
     def build_task_context(request: dict):

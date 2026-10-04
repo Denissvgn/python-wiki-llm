@@ -56,7 +56,7 @@ def validate_queue_limit(limit: object) -> int:
 
 
 def compose_queue(
-    pages, work_items, freshness, issues, metrics, *, limit=DEFAULT_QUEUE_LIMIT
+    pages, work_items, freshness, issues, metrics, *, limit=DEFAULT_QUEUE_LIMIT, maintenance_report=None
 ):
     """Rank captured evidence; unknown provenance never becomes confirmed drift."""
     limit = validate_queue_limit(limit)
@@ -164,6 +164,76 @@ def compose_queue(
                 "reasons": reasons,
             }
         )
+    if maintenance_report is not None:
+        from .maintenance_status import compact_maintenance_summary
+        by_path = {item["path"]: item for item in items}
+        for path, record_ids in maintenance_report.by_path.items():
+            rows = [maintenance_report.by_record[record_id] for record_id in record_ids]
+            if not any(row["recorded_status"] == "pending" or row["effective_status"] == "pending" or row["mapping"]["state"] != "resolved" for row in rows):
+                continue
+            item = by_path.get(path)
+            if item is None:
+                page = page_map.get(path, {})
+                source = rows[0]["coordinate"]["source_path"] if rows else None
+                item = {"path": path, "kind": page.get("kind", path.split("/", 1)[0]), "source_path": source,
+                    "classification": "actionable", "observed_change_category": "ordinary-maintenance", "freshness": {"state": "unknown", "reason": "maintenance-observation", "description": "Ordinary review is independently tracked", "live_comparison_performed": False},
+                    "ownership": {"surface_role": page.get("role"), "semantic_section": None, "instruction": "Review the exact ordinary semantic targets"}, "placeholder_signals": [], "work_status": None, "lint_severity": None, "reachable_from_index": None, "source_fan_in": None, "score": 0, "reasons": []}
+                items.append(item)
+                by_path[path] = item
+            observed = set().union(*(row["reasons"] for row in rows))
+            weights = {"executable-syntax-changed": 90, "source-deleted": 90, "move-unresolved": 65, "target-deleted": 60, "prose-changed": 45, "unreviewed": 40, "current-basis-unavailable": 10, "implementation-unavailable": 10, "producer-incompatible": 10, "source-basis-changed": 15}
+            for code in sorted(observed):
+                weight = weights.get(code, 20)
+                item["reasons"].append({"code": "maintenance:" + code, "message": "Ordinary semantic review: " + code, "weight": weight})
+                item["score"] += weight
+            item["classification"] = "actionable"
+            scoped = maintenance_report.for_path(path)
+            item["maintenance"] = compact_maintenance_summary(scoped)
+            scoped_rows = scoped["records"]
+            item["record_ids"] = [row["record_id"] for row in scoped_rows]
+            item["record_bounds"] = scoped["bounds"]
+            targets = [
+                {"record_id": row["record_id"], "coordinate": reference["coordinate"], "target": reference["target"], "attribution": role}
+                for row in scoped_rows
+                for role, reference in [("retained", {"coordinate": row["coordinate"], "target": row["target"]}), *(("candidate", candidate) for candidate in row["mapping"]["candidates"])]
+                if reference["target"]["canonical_path"] == path
+            ]
+            total_targets = sum(
+                reference["target"]["canonical_path"] == path
+                for row in rows
+                for reference in [{"target": row["target"]}, *row["mapping"]["candidates"]]
+            )
+            from .knowledge_storage import canonical_bytes
+            item["semantic_targets"] = targets[:128]
+            item["semantic_target_bounds"] = {"total": total_targets, "returned": len(item["semantic_targets"]), "omitted": total_targets - len(item["semantic_targets"]), "truncated": len(item["semantic_targets"]) < total_targets, "max_records": 128, "max_bytes": 65536}
+            while len(canonical_bytes({key: item[key] for key in ("record_ids", "record_bounds", "semantic_targets", "semantic_target_bounds", "maintenance")})) > 65536 and item["semantic_targets"]:
+                item["semantic_targets"].pop()
+                count = len(item["semantic_targets"])
+                item["semantic_target_bounds"].update(returned=count, omitted=total_targets - count, truncated=True)
+
+        gaps = {}
+        for target in maintenance_report.payload["coverage"].get("untracked_targets", ()):
+            gaps.setdefault(target["canonical_path"], []).append({"target": target, "reason": "untracked-semantic-target"})
+        for issue in maintenance_report.payload["coverage"].get("issues", ()):
+            if issue.get("canonical_path"):
+                gaps.setdefault(issue["canonical_path"], []).append({"reason": issue.get("reason", "capture-unavailable")})
+        for path, entries in gaps.items():
+            item = by_path.get(path)
+            if item is None:
+                page = page_map.get(path, {})
+                item = {"path": path, "kind": page.get("kind", path.split("/", 1)[0]), "source_path": page.get("source_path"), "classification": "informational", "observed_change_category": "ordinary-coverage-gap",
+                    "freshness": {"state": "unknown", "reason": "maintenance-capture-gap", "description": "Ordinary coverage is unavailable or untracked", "live_comparison_performed": False},
+                    "ownership": {"surface_role": page.get("role"), "semantic_section": None, "instruction": "Inspect actual untracked targets or source-level capture gaps"}, "placeholder_signals": [], "work_status": None, "lint_severity": None, "reachable_from_index": None, "source_fan_in": None, "score": 0, "reasons": []}
+                items.append(item)
+                by_path[path] = item
+            selected_gaps = list(entries[:128])
+            from .knowledge_storage import canonical_bytes
+            while len(canonical_bytes(selected_gaps)) > 65536 and selected_gaps:
+                selected_gaps.pop()
+            item["coverage_gaps"] = selected_gaps
+            item["coverage_gap_bounds"] = {"total": len(entries), "returned": len(selected_gaps), "omitted": len(entries) - len(selected_gaps), "truncated": len(selected_gaps) < len(entries)}
+            item["reasons"].append({"code": "maintenance:coverage-gap", "message": "Untracked semantic targets or unavailable captured basis", "weight": 20})
+            item["score"] += 20
     items.sort(key=lambda item: (-item["score"], item["path"]))
     return {
         "schema_version": QUEUE_SCHEMA,
@@ -210,6 +280,8 @@ def build_maintenance_queue(
         include_plugins=False,
         source_selection=source_selection,
         helper_cache_dir=helper_cache_dir,
+        _captured_inventory_result=captured.inventory_result,
+        _captured_source_snapshot=captured.source_snapshot,
     )
     work = build_documentation_worklist(
         captured.wiki_root,
@@ -255,6 +327,7 @@ def build_maintenance_queue(
         issues,
         captured.dependency_analysis.get("metrics", {}).get("metrics", {}),
         limit=limit,
+        maintenance_report=getattr(captured.knowledge_view, "maintenance_report", None),
     )
     if captured.basis_incompatible:
         result["limitations"].append(

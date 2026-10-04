@@ -14,6 +14,7 @@ from .commands import (
     init_cmd,
     install_cmd,
     knowledge_cmd,
+    maintenance_cmd,
     mcp_cmd,
     metrics_cmd,
     migrate_cmd,
@@ -185,6 +186,7 @@ _COMMAND_MODULES = {
     "docs": docs_cmd,
     "doctor": doctor_cmd,
     "queue": queue_cmd,
+    "maintenance": maintenance_cmd,
     "query": query_cmd,
     "task-context": task_cmd,
 }
@@ -215,6 +217,44 @@ def _add_queue_command(subparsers):
     parser.add_argument("--format", choices=("text", "json"), default="text")
     _add_source_selection_argument(parser)
     _add_helper_cache_argument(parser)
+
+
+def _add_maintenance_command(subparsers):
+    parser = subparsers.add_parser("maintenance", help="Adopt, inspect, acknowledge or recover ordinary prose review")
+    actions = parser.add_subparsers(dest="maintenance_action", required=True)
+    for name in ("adopt", "status", "acknowledge", "recover"):
+        action = actions.add_parser(name)
+        action.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR)
+        action.add_argument("--format", choices=("text", "json"), default="text" if name == "status" else "json")
+        if name != "recover":
+            action.add_argument("--src-dir", default=".")
+            action.add_argument("--allow-external-src", action="store_true")
+            _add_source_selection_argument(action)
+            _add_helper_cache_argument(action)
+        if name in {"adopt", "recover"}:
+            action.add_argument("--recovery-dir", required=True)
+        elif name == "acknowledge":
+            action.add_argument("--recovery-dir")
+        if name == "adopt":
+            action.add_argument("--manifest-format", choices=("v7", "indexed-v8"))
+        elif name == "status":
+            action.add_argument("--record-id")
+            action.add_argument("--limit", type=_queue_limit, default=30)
+            mode = action.add_mutually_exclusive_group()
+            mode.add_argument("--snapshot", action="store_true")
+            mode.add_argument("--live", dest="snapshot", action="store_false")
+            action.set_defaults(snapshot=False)
+        elif name == "acknowledge":
+            action.add_argument("--record-id", required=True)
+            action.add_argument("--expected-state-hash", required=True)
+            action.add_argument("--basis-file", required=True, help="Exact expected_basis JSON from current status; '-' reads stdin")
+            action.add_argument("--actor-kind", choices=("agent", "human"), required=True)
+            action.add_argument("--actor-id", required=True)
+        else:
+            action.add_argument("--src-dir")
+            action.add_argument("--expected-adoption-id", required=True)
+            action.add_argument("--allow-prepared-adoption", action="store_true")
+            action.add_argument("--allow-captured-preimage", action="store_true")
 
 
 def _build_parser():
@@ -273,6 +313,7 @@ def _register_commands(subparsers):
     _add_uninstall_command(subparsers)
     _add_status_command(subparsers)
     _add_queue_command(subparsers)
+    _add_maintenance_command(subparsers)
     _add_query_command(subparsers)
     _add_task_context_command(subparsers)
     _add_mcp_command(subparsers)
