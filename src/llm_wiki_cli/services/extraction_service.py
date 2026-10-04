@@ -1073,6 +1073,7 @@ def _fresh_inventory_source_files(
     source_files: list[str] | None,
     cached_by_language: dict[str, dict],
 ) -> list[str]:
+    from ..extractors.python_bindings import valid_python_constructor_facts
     fresh_source_files: list[str] = []
     cache = context.cache
     if cache is None:
@@ -1088,13 +1089,15 @@ def _fresh_inventory_source_files(
             continue
         if is_valid_cache_entry(cached_entry, source_file, file_hash) and (
             language != "python"
-            or valid_cached_sidecars(
+            or ((context.registry.get("python") != EXTRACTOR_REGISTRY["python"]
+                 or valid_python_constructor_facts(cached_entry["inventory"], require_capability=context.request.deep))
+            and valid_cached_sidecars(
                 cached_entry.get("python_observations"),
                 rel_path,
                 cached_entry["inventory"],
                 effects=context.request.capture_data_effect_observations,
                 imports=context.request.capture_import_observations,
-            )
+            ))
         ):
             cache.stats.hits += 1
             _record_cached_inventory_entry(

@@ -90,6 +90,8 @@ def test_extract_v1_data_flow_fields_are_additive_contract():
         "call_bindings",
         "main_block_call_bindings",
         "python_bindings",
+        "python_constructor_facts_version",
+        "classes[].python_constructor_dispatch",
         "python_import_scope",
         "calls[].args",
         "calls[].kwargs",
