@@ -1619,6 +1619,9 @@ def atomic_write_guarded_bytes(
         raise OSError(f"Guarded output path has no safe filename: {target}")
     if not isinstance(data, bytes):
         raise TypeError("Guarded output data must be bytes.")
+    from .wiki_write_basis import before_wiki_write, after_wiki_write
+
+    before_wiki_write(target, data)
     if os.name == "nt":
         _atomic_write_guarded_bytes_windows(
             target,
@@ -1634,6 +1637,7 @@ def atomic_write_guarded_bytes(
             require_single_link=require_single_link,
             expected_existing=expected_existing,
         )
+    after_wiki_write(target, data)
     return target
 
 
@@ -1676,6 +1680,14 @@ def ensure_guarded_directory(path: Path, *, mode: int = 0o755) -> Path:
 
 
 def unlink_guarded_bytes(path: Path, *, expected: bytes) -> None:
+    from .wiki_write_basis import before_wiki_write, after_wiki_write
+
+    before_wiki_write(path, None)
+    _unlink_guarded_bytes(path, expected=expected)
+    after_wiki_write(path, None)
+
+
+def _unlink_guarded_bytes(path: Path, *, expected: bytes) -> None:
     """Unlink one exact regular file without following a rebound parent path."""
 
     target = Path(path)

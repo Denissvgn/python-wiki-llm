@@ -136,7 +136,11 @@ def read_md(path: Path) -> str:
     Tries UTF-8 first; if that fails, falls back to cp1252 which covers
     common Windows-encoded punctuation (en-dash, em-dash, smart quotes).
     """
-    data = path.read_bytes()
+    return decode_markdown_bytes(path.read_bytes())
+
+
+def decode_markdown_bytes(data: bytes) -> str:
+    """Decode exact captured Markdown using the established reader policy."""
     try:
         text = data.decode("utf-8")
     except UnicodeDecodeError:
@@ -165,6 +169,9 @@ def write_bytes_atomic(path: str | Path, content: bytes) -> Path:
     if not isinstance(content, bytes):
         raise TypeError("content must be bytes")
     target = Path(path)
+    from .wiki_write_basis import before_wiki_write, after_wiki_write
+
+    before_wiki_write(target, content)
     target.parent.mkdir(parents=True, exist_ok=True)
     fd, tmp = tempfile.mkstemp(
         dir=target.parent,
@@ -181,6 +188,7 @@ def write_bytes_atomic(path: str | Path, content: bytes) -> Path:
         except OSError:
             pass
         raise
+    after_wiki_write(target, content)
     return target
 
 

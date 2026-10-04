@@ -1,4 +1,4 @@
-"""Service-level persistence boundary for the sync manifest v5 contract."""
+"""Persistent sync state with explicit versioned maintenance adoption."""
 
 from __future__ import annotations
 
@@ -42,6 +42,7 @@ if TYPE_CHECKING:
 
 MANIFEST_FILENAME = ".llm-wiki-manifest.json"
 MANIFEST_VERSION = 5
+MAINTENANCE_MANIFEST_VERSION = 7
 LEGACY_MANIFEST_VERSION = 4
 
 EVIDENCE_NOT_RECORDED = "evidence-not-recorded"
@@ -451,6 +452,7 @@ class ManifestArtifactHashes:
     knowledge_index_hash: str
     evaluated_envelope_hash: str
     governance_hash: str | None = None
+    maintenance_adoption_hash: str | None = None
 
     def __post_init__(self) -> None:
         for name, value in (
@@ -471,6 +473,9 @@ class ManifestArtifactHashes:
                 "must be 'sha256:' followed by 64 lowercase hexadecimal digits",
             )
 
+        if self.maintenance_adoption_hash is not None and not is_valid_sha256(self.maintenance_adoption_hash):
+            raise SyncManifestError("artifact_hashes.maintenance_adoption_hash", "must be a canonical SHA-256")
+
     def to_payload(self) -> dict[str, str]:
         payload = {
             "surface_index_hash": self.surface_index_hash,
@@ -479,6 +484,8 @@ class ManifestArtifactHashes:
         }
         if self.governance_hash is not None:
             payload["governance_hash"] = self.governance_hash
+        if self.maintenance_adoption_hash is not None:
+            payload["maintenance_adoption_hash"] = self.maintenance_adoption_hash
         return payload
 
     @classmethod
@@ -495,7 +502,7 @@ class ManifestArtifactHashes:
             data,
             field_name=field_name,
             required=required,
-            optional={"governance_hash"},
+            optional={"governance_hash", "maintenance_adoption_hash"},
         )
         try:
             return cls(
@@ -503,6 +510,7 @@ class ManifestArtifactHashes:
                 knowledge_index_hash=data["knowledge_index_hash"],  # type: ignore[arg-type]
                 evaluated_envelope_hash=data["evaluated_envelope_hash"],  # type: ignore[arg-type]
                 governance_hash=data.get("governance_hash"),  # type: ignore[arg-type]
+                maintenance_adoption_hash=data.get("maintenance_adoption_hash"),  # type: ignore[arg-type]
             )
         except SyncManifestError as exc:
             suffix = exc.field.split(".")[-1]
@@ -983,7 +991,7 @@ def validate_manifest_policy(generation_inputs: Mapping[str, Any]) -> None:
 
 @dataclass
 class SyncManifest:
-    """Persistent v5 operational state used to generate the wiki."""
+    """Operational state; maintenance is present only after explicit adoption."""
 
     sources: dict[str, dict] = field(default_factory=dict)
     surfaces: dict[str, dict] = field(default_factory=dict)
@@ -996,6 +1004,7 @@ class SyncManifest:
     artifact_hashes: ManifestArtifactHashes | None = None
     storage_version: int = field(default=5, repr=False, compare=False)
     storage_objects: dict[str, bytes] = field(default_factory=dict, repr=False, compare=False)
+    maintenance_state: dict[str, Any] | None = field(default=None, repr=False)
 
     @classmethod
     def from_payload(cls, value: object, *, object_reader=None) -> SyncManifest:
@@ -1003,20 +1012,20 @@ class SyncManifest:
 
         data = _mapping_value(value, "manifest")
         version = data.get("version")
-        if type(version) is int and version == 6:
+        if type(version) is int and version in {6, 8}:
             from .manifest_storage import ManifestStoreReader
             if object_reader is None:
-                raise SyncManifestError("catalogs", "v6 requires its committed catalog objects")
+                raise SyncManifestError("catalogs", f"v{version} requires its committed catalog objects")
             reader = ManifestStoreReader(data, object_reader)
             manifest = cls.from_payload(reader.materialize())
-            manifest.storage_version = 6
+            manifest.storage_version = version
             manifest.storage_objects = reader.objects
             return manifest
         if isinstance(version, bool) or not isinstance(version, int):
             raise SyncManifestError("version", "must be an integer")
         if version < 1:
             raise SyncManifestError("version", "must be positive")
-        if version > MANIFEST_VERSION:
+        if version > MANIFEST_VERSION and version != MAINTENANCE_MANIFEST_VERSION:
             raise SyncManifestError(
                 "version",
                 f"unsupported future manifest version {version}",
@@ -1072,7 +1081,7 @@ class SyncManifest:
                 "page_source_mappings",
                 "evidence_baselines",
                 "tombstones",
-            },
+            } | ({"maintenance_state", "adoption_id", "maintenance_state_hash"} if version == 7 else set()),
             optional={"artifact_hashes"},
         )
         surfaces_raw = _copy_mapping(data["surfaces"], "surfaces")
@@ -1117,6 +1126,13 @@ class SyncManifest:
             if "artifact_hashes" in data
             else None
         )
+        maintenance_state = None
+        if version == MAINTENANCE_MANIFEST_VERSION:
+            from .maintenance_state import validate_maintenance_state
+            try:
+                maintenance_state = validate_maintenance_state(data["maintenance_state"])
+            except (TypeError, ValueError) as exc:
+                raise SyncManifestError("maintenance_state", str(exc)) from exc
         manifest = cls(
             sources=sources,
             surfaces=surfaces,
@@ -1125,8 +1141,15 @@ class SyncManifest:
             evidence_baselines=evidence_baselines,
             tombstones=tombstones,
             artifact_hashes=artifact_hashes,
+            maintenance_state=maintenance_state,
+            storage_version=version,
         )
         manifest._validate_operational_state()
+        if version == 7:
+            from .maintenance_state import maintenance_state_hash
+            assert manifest.maintenance_state is not None
+            if data["adoption_id"] != manifest.maintenance_state["adoption_id"] or data["maintenance_state_hash"] != maintenance_state_hash(manifest.maintenance_state):
+                raise SyncManifestError("maintenance_state_hash", "root maintenance commitment differs from typed owner")
         return manifest
 
     @classmethod
@@ -1159,7 +1182,7 @@ class SyncManifest:
             object_pairs_hook=unique_object,
             parse_constant=reject_constant,
         )
-        if isinstance(data, dict) and data.get("version") == 6:
+        if isinstance(data, dict) and data.get("version") in {6, 8}:
             from .knowledge_storage_io import StorageReadSession
             from .knowledge_storage import decode_bytes, MAX_EXPANDED_BYTES
             session = StorageReadSession(wiki_dir)
@@ -1273,6 +1296,19 @@ class SyncManifest:
                 "artifact_hashes", "must be a ManifestArtifactHashes"
             )
 
+        if self.maintenance_state is not None:
+            from .maintenance_state import validate_maintenance_state
+            try:
+                validate_maintenance_state(self.maintenance_state)
+            except (TypeError, ValueError) as exc:
+                raise SyncManifestError("maintenance_state", str(exc)) from exc
+            if self.artifact_hashes is not None and self.artifact_hashes.maintenance_adoption_hash != self.maintenance_state["guard_hash"]:
+                raise SyncManifestError("artifact_hashes.maintenance_adoption_hash", "does not match the maintenance authority guard")
+        elif self.storage_version in {7, 8}:
+            raise SyncManifestError("maintenance_state", "adopted authority cannot be removed or downgraded")
+        elif self.artifact_hashes is not None and self.artifact_hashes.maintenance_adoption_hash is not None:
+            raise SyncManifestError("maintenance_state", "adoption commitment cannot exist without durable maintenance authority")
+
     @staticmethod
     def _validate_basis_mapping(
         basis: ConceptObservationBasis | None,
@@ -1293,11 +1329,11 @@ class SyncManifest:
             )
 
     def to_payload(self) -> dict[str, object]:
-        """Return the validated deterministic manifest v5 payload."""
+        """Emit legacy v5 or explicitly adopted maintenance v7 deterministically."""
 
         self._validate_operational_state()
         payload: dict[str, object] = {
-            "version": MANIFEST_VERSION,
+            "version": MAINTENANCE_MANIFEST_VERSION if self.maintenance_state is not None else MANIFEST_VERSION,
             "sources": self.sources,
             "surfaces": self.surfaces,
             "generation_inputs": self.generation_inputs,
@@ -1314,6 +1350,11 @@ class SyncManifest:
                 for path, tombstone in self.tombstones.items()
             },
         }
+        if self.maintenance_state is not None:
+            from .maintenance_state import maintenance_state_hash
+            payload["maintenance_state"] = deepcopy(self.maintenance_state)
+            payload["adoption_id"] = self.maintenance_state["adoption_id"]
+            payload["maintenance_state_hash"] = maintenance_state_hash(self.maintenance_state)
         if self.artifact_hashes is not None:
             payload["artifact_hashes"] = self.artifact_hashes.to_payload()
         return payload
@@ -1326,8 +1367,13 @@ class SyncManifest:
     def save(self, wiki_dir: Path) -> None:
         """Atomically write the manifest through the shared JSON boundary."""
 
+        if self.maintenance_state is not None:
+            raise SyncManifestError("maintenance_state", "adopted maintenance must publish through guarded manifest-last artifact commit")
         from .manifest_storage import build_manifest_store, current_manifest_format
-        if current_manifest_format(wiki_dir) == "indexed-v6" or self.storage_version == 6:
+        current_format = current_manifest_format(wiki_dir)
+        if current_format in {"v7", "indexed-v8"}:
+            raise SyncManifestError("maintenance_state", "cannot replace adopted authority with a legacy manifest")
+        if current_format == "indexed-v6" or self.storage_version == 6:
             from .filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory
             from .knowledge_governance import governance_lock
             from .knowledge_storage_io import read_guarded
@@ -1357,6 +1403,7 @@ class SyncManifest:
         knowledge_index_hash: str,
         evaluated_envelope_hash: str,
         governance_hash: str | None = None,
+        maintenance_adoption_hash: str | None = None,
     ) -> SyncManifest:
         """Return a copy carrying one complete artifact-set commitment."""
 
@@ -1367,6 +1414,7 @@ class SyncManifest:
                 knowledge_index_hash=knowledge_index_hash,
                 evaluated_envelope_hash=evaluated_envelope_hash,
                 governance_hash=governance_hash,
+                maintenance_adoption_hash=(maintenance_adoption_hash if maintenance_adoption_hash is not None else self.maintenance_state["guard_hash"] if self.maintenance_state is not None else None),
             ),
         )
 
@@ -1374,6 +1422,15 @@ class SyncManifest:
         """Return a copy with no artifact-set commitment."""
 
         return replace(self, artifact_hashes=None)
+
+    def with_maintenance_state(self, value: Mapping[str, Any]) -> SyncManifest:
+        """Replace explicit authority, invalidating projections until publication."""
+        from .maintenance_state import validate_maintenance_state
+        state = validate_maintenance_state(value)
+        return replace(
+            self, maintenance_state=state, artifact_hashes=None,
+            storage_version=8 if self.storage_version in {6, 8} else 7,
+        )
 
     def with_generation_state(
         self,
@@ -1660,6 +1717,8 @@ class SyncManifest:
             evidence_baselines=current_baselines,
             tombstones=tombstones,
             artifact_hashes=None,
+            maintenance_state=(deepcopy(previous_manifest.maintenance_state) if previous_manifest is not None else None),
+            storage_version=(previous_manifest.storage_version if previous_manifest is not None else 5),
         )
         manifest._validate_operational_state()
         return manifest
@@ -1758,6 +1817,7 @@ __all__ = [
     "MANIFEST_REPAIR_UNAVAILABLE",
     "MANIFEST_STATE_UNAVAILABLE",
     "MANIFEST_VERSION",
+    "MAINTENANCE_MANIFEST_VERSION",
     "PRODUCER_BASIS_INCOMPATIBLE",
     "SOURCE_MAPPING_CHANGED",
     "SourceSelectionPruneResult",

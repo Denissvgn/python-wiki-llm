@@ -238,7 +238,7 @@ def test_restore_refuses_each_changed_generation_header_and_keeps_backup(tmp_pat
 def test_restore_rechecks_generation_after_acquiring_the_storage_lock(tmp_path, monkeypatch):
     root, name, _ = orphan_fixture(tmp_path)
     applied = prune_knowledge_storage(root, dry_run=False, recovery_dir=tmp_path / 'recovery')
-    original_lock = lifecycle.governance_lock
+    original_lock = lifecycle.storage_writer_lock
 
     @contextmanager
     def changed_generation(*args, **kwargs):
@@ -247,7 +247,7 @@ def test_restore_rechecks_generation_after_acquiring_the_storage_lock(tmp_path, 
             header.write_bytes(header.read_bytes() + b'\n')
             yield
 
-    monkeypatch.setattr(lifecycle, 'governance_lock', changed_generation)
+    monkeypatch.setattr(lifecycle, 'storage_writer_lock', changed_generation)
     with pytest.raises(KnowledgeStorageError, match='changed'):
         restore_pruned_storage(root, applied['recovery_manifest'], dry_run=False)
     assert not (root / name).exists()

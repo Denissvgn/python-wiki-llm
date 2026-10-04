@@ -16,6 +16,8 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import cast
+from contextlib import contextmanager
+from ..services.maintenance_protocol import maintenance_write_operation, governance_writer_lock
 
 from ..services.knowledge_artifacts import (
     KNOWLEDGE_INDEX_FILENAME,
@@ -46,7 +48,6 @@ from ..services.knowledge_governance import (
     current_review_evidence,
     evaluate_review_event,
     governance_bundle_id_from_knowledge,
-    governance_lock,
     load_governance,
     move_concept,
     reconcile_concepts,
@@ -334,6 +335,12 @@ def _prepare_existing_mutation(
     return snapshot, loaded, updated, plan
 
 
+@contextmanager
+def _governance_mutation_operation(wiki_dir):
+    with maintenance_write_operation(wiki_dir), governance_writer_lock(wiki_dir):
+        yield
+
+
 def _run_existing_mutation(
     wiki_dir: Path,
     *,
@@ -357,7 +364,7 @@ def _run_existing_mutation(
         )
         return
 
-    with governance_lock(wiki_dir):
+    with _governance_mutation_operation(wiki_dir):
         snapshot, loaded, updated, plan = _prepare_existing_mutation(
             wiki_dir,
             mutation,
@@ -439,7 +446,7 @@ def _run_init(args) -> None:
         )
         return
 
-    with governance_lock(wiki_dir):
+    with _governance_mutation_operation(wiki_dir):
         snapshot, prior, expected_hash, updated = _init_ledger(
             wiki_dir,
             bundle_id=args.bundle_id,
@@ -567,7 +574,7 @@ def _run_move(args) -> None:
         )
         return
 
-    with governance_lock(wiki_dir):
+    with _governance_mutation_operation(wiki_dir):
         snapshot, loaded, updated, plan = prepare()
         _assert_snapshot_unchanged(wiki_dir, snapshot)
         write_result = save_governance(

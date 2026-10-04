@@ -101,6 +101,7 @@ class CommitStage(str, Enum):
     SURFACE_INDEX_WRITTEN = "surface-index-written"
     KNOWLEDGE_INDEX_WRITTEN = "knowledge-index-written"
     MANIFEST_WRITTEN = "manifest-written"
+    MAINTENANCE_ADOPTION_WRITTEN = "maintenance-adoption-written"
 
 
 @dataclass(frozen=True)
@@ -201,6 +202,7 @@ class KnowledgeCommitPlan:
     evaluated_envelope_hash: str
     storage_objects: tuple[PlannedArtifactWrite | SpooledArtifactWrite, ...] = ()
     storage_format: str = "v1"
+    maintenance_adoption: PlannedArtifactWrite | SpooledArtifactWrite | None = None
 
     @property
     def changed(self) -> bool:
@@ -211,6 +213,7 @@ class KnowledgeCommitPlan:
                 self.knowledge_index,
                 self.manifest,
                 *self.storage_objects,
+                *((self.maintenance_adoption,) if self.maintenance_adoption is not None else ()),
             )
         )
 
@@ -227,6 +230,7 @@ class KnowledgeCommitResult:
     dry_run: bool
     storage_objects: tuple[PlannedArtifactWrite | SpooledArtifactWrite, ...] = ()
     storage_format: str = "v1"
+    maintenance_adoption: PlannedArtifactWrite | SpooledArtifactWrite | None = None
 
     @property
     def changed(self) -> bool:
@@ -237,6 +241,7 @@ class KnowledgeCommitResult:
                 self.knowledge_index,
                 self.manifest,
                 *self.storage_objects,
+                *((self.maintenance_adoption,) if self.maintenance_adoption is not None else ()),
             )
         )
 
@@ -294,7 +299,7 @@ def validate_knowledge_artifacts(
     storage_statistics: Mapping[str, Any] = freeze({})
     store_reader = None
     storage_session = None
-    if schema_version not in (STORE_SCHEMA, *PACKED_SCHEMAS) and manifest.storage_version == 6 and wiki_dir is not None:
+    if schema_version not in (STORE_SCHEMA, *PACKED_SCHEMAS) and manifest.storage_version in {6, 8} and wiki_dir is not None:
         from .knowledge_storage_io import StorageReadSession
         storage_session = StorageReadSession(wiki_dir)
         if (storage_session.read(KNOWLEDGE_INDEX_FILENAME, len(knowledge_index_bytes)) != knowledge_index_bytes
@@ -483,6 +488,7 @@ def build_knowledge_commit_plan(
     manifest_format: str | None = None,
     prior: ValidatedKnowledgeArtifacts | None = None,
     spool=None,
+    maintenance_adoption: Mapping[str, Any] | None = None,
 ) -> KnowledgeCommitPlan:
     """Validate and plan one manifest-last knowledge artifact commit.
 
@@ -499,10 +505,40 @@ def build_knowledge_commit_plan(
 
     root = Path(wiki_dir)
     from .manifest_storage import build_manifest_store, current_manifest_format
-    if manifest_format not in {None, "v5", "indexed-v6"}:
-        raise KnowledgeArtifactError("manifest_format", "must be v5 or indexed-v6")
+    if manifest_format not in {None, "v5", "indexed-v6", "v7", "indexed-v8"}:
+        raise KnowledgeArtifactError("manifest_format", "must be v5, indexed-v6, v7 or indexed-v8")
     adopted_manifest_format = current_manifest_format(root)
+    explicit_manifest_format = manifest_format
     manifest_format = manifest_format or adopted_manifest_format
+    has_maintenance = getattr(manifest, "maintenance_state", None) is not None
+    if has_maintenance:
+        if explicit_manifest_format in {"v5", "indexed-v6"}:
+            raise KnowledgeArtifactError("maintenance", "explicit legacy format would discard maintenance authority")
+        if manifest_format == "v5":
+            manifest_format = "v7"
+        elif manifest_format == "indexed-v6":
+            manifest_format = "indexed-v8"
+    elif manifest_format in {"v7", "indexed-v8"}:
+        raise KnowledgeArtifactError("maintenance", "cannot discard adopted maintenance authority")
+    adoption_write = None
+    from .maintenance_protocol import ADOPTION_FILENAME, load_adoption_marker
+    from .knowledge_storage import canonical_bytes, digest
+    if has_maintenance:
+        from .maintenance_state import validate_maintenance_adoption
+
+        adoption = validate_maintenance_adoption(maintenance_adoption) if maintenance_adoption is not None else load_adoption_marker(root)
+        if adoption is None:
+            raise KnowledgeArtifactError("maintenance", "explicit adoption marker is required before publishing maintenance")
+        state = manifest.maintenance_state
+        assert state is not None
+        raw = canonical_bytes(adoption)
+        if state["adoption_id"] != adoption["adoption_id"] or state["guard_hash"] != digest(raw):
+            raise KnowledgeArtifactError("maintenance", "owner does not bind the supplied immutable adoption marker")
+        adoption_write = _planned_write(root / ADOPTION_FILENAME, ADOPTION_FILENAME, raw, guarded=True)
+        if adoption_write.previous_content is not None and adoption_write.previous_content != raw:
+            raise KnowledgeArtifactError("maintenance", "immutable adoption marker cannot be replaced")
+    elif maintenance_adoption is not None or (root / ADOPTION_FILENAME).exists() or (root / ADOPTION_FILENAME).is_symlink():
+        raise KnowledgeArtifactError("maintenance", "cannot publish a legacy owner into an adopted wiki")
     if knowledge_format not in {None, "v1", "sharded-v2", *PACKED_FORMATS}:
         raise KnowledgeArtifactError("knowledge_format", "must be v1, sharded-v2, packed-v3, packed-v3-deflate, packed-v4 or packed-v4-deflate")
     if knowledge_format is None:
@@ -550,7 +586,7 @@ def build_knowledge_commit_plan(
         governance_hash=validated.governance_hash,
     )
     try:
-        if manifest_format == "indexed-v6":
+        if manifest_format in {"indexed-v6", "indexed-v8"}:
             manifest_store = build_manifest_store(committed_manifest.to_payload())
             manifest_bytes = manifest_store.root_bytes
             manifest_objects = tuple(_planned_write(root / path, path, content, guarded=True, spool=spool)
@@ -559,11 +595,11 @@ def build_knowledge_commit_plan(
                 if artifact.previous_content is not None and artifact.previous_content != artifact.content:
                     raise KnowledgeStorageError(artifact.relative_path, "existing immutable catalog is corrupt")
             objects += manifest_objects
-            committed_manifest.storage_version = 6
+            committed_manifest.storage_version = 8 if has_maintenance else 6
             committed_manifest.storage_objects = dict(manifest_store.objects)
         else:
             manifest_bytes = formatted_json_bytes(committed_manifest.to_payload())
-            committed_manifest.storage_version = 5
+            committed_manifest.storage_version = 7 if has_maintenance else 5
             committed_manifest.storage_objects = {}
     except (TypeError, ValueError, UnicodeEncodeError) as exc:
         raise KnowledgeArtifactError(
@@ -575,13 +611,13 @@ def build_knowledge_commit_plan(
         root / SURFACE_INDEX_FILENAME,
         SURFACE_INDEX_FILENAME,
         surface_index_bytes,
-        guarded=knowledge_format != "v1" or manifest_format == "indexed-v6",
+        guarded=knowledge_format != "v1" or manifest_format in {"indexed-v6", "indexed-v8"} or has_maintenance,
     )
     knowledge_write = _planned_write(
         root / KNOWLEDGE_INDEX_FILENAME,
         KNOWLEDGE_INDEX_FILENAME,
         knowledge_index_bytes,
-        guarded=knowledge_format != "v1" or manifest_format == "indexed-v6",
+        guarded=knowledge_format != "v1" or manifest_format in {"indexed-v6", "indexed-v8"} or has_maintenance,
     )
     projections_change = surface.needs_write or knowledge_write.needs_write
     manifest_write = _planned_write(
@@ -589,7 +625,7 @@ def build_knowledge_commit_plan(
         MANIFEST_FILENAME,
         manifest_bytes,
         force_replace=projections_change,
-        guarded=knowledge_format != "v1" or manifest_format == "indexed-v6",
+        guarded=knowledge_format != "v1" or manifest_format in {"indexed-v6", "indexed-v8"} or has_maintenance,
     )
     return KnowledgeCommitPlan(
         surface_index=surface,
@@ -599,6 +635,7 @@ def build_knowledge_commit_plan(
         evaluated_envelope_hash=validated.evaluated_envelope_hash,
         storage_objects=objects,
         storage_format=knowledge_format,
+        maintenance_adoption=adoption_write,
     )
 
 
@@ -622,9 +659,34 @@ def commit_knowledge_artifacts(
     if fault_injector is not None and not callable(fault_injector):
         raise TypeError("fault_injector must be callable")
 
-    if not dry_run and (plan.storage_format != "v1" or plan.storage_objects):
-        _commit_sharded(plan, fault_injector)
-    elif not dry_run:
+    if not dry_run:
+        from .maintenance_protocol import storage_writer_lock, guard_maintenance_owner, load_adoption_marker
+
+        root = plan.knowledge_index.path.parent
+        with storage_writer_lock(root):
+            marker = load_adoption_marker(root)
+            if plan.maintenance_adoption is None and marker is not None:
+                raise KnowledgeArtifactError("maintenance", "legacy publication cannot discard adopted authority")
+            if marker is not None and plan.maintenance_adoption is not None and plan.maintenance_adoption.previous_content is not None:
+                guard_maintenance_owner(root)
+            if plan.storage_format != "v1" or plan.storage_objects or plan.maintenance_adoption is not None:
+                _commit_sharded(plan, fault_injector)
+            else:
+                _commit_flat(plan, fault_injector)
+    return KnowledgeCommitResult(
+        surface_index=plan.surface_index,
+        knowledge_index=plan.knowledge_index,
+        manifest=plan.manifest,
+        committed_manifest=plan.committed_manifest,
+        evaluated_envelope_hash=plan.evaluated_envelope_hash,
+        dry_run=dry_run,
+        storage_objects=plan.storage_objects,
+        storage_format=plan.storage_format,
+        maintenance_adoption=plan.maintenance_adoption,
+    )
+
+
+def _commit_flat(plan, fault_injector):
         _apply_write(
             plan.surface_index,
             CommitStage.SURFACE_INDEX_WRITTEN,
@@ -646,16 +708,6 @@ def commit_knowledge_artifacts(
         _verify_persisted(plan.knowledge_index)
         _verify_persisted(plan.manifest)
 
-    return KnowledgeCommitResult(
-        surface_index=plan.surface_index,
-        knowledge_index=plan.knowledge_index,
-        manifest=plan.manifest,
-        committed_manifest=plan.committed_manifest,
-        evaluated_envelope_hash=plan.evaluated_envelope_hash,
-        dry_run=dry_run,
-        storage_objects=plan.storage_objects,
-        storage_format=plan.storage_format,
-    )
 
 
 def _planned_write(
@@ -732,7 +784,7 @@ def current_knowledge_format(wiki_dir: str | Path) -> str:
 
 def _commit_sharded(plan: KnowledgeCommitPlan, fault: FaultInjector | None) -> None:
     from .filesystem_guard import atomic_write_guarded_bytes, ensure_guarded_directory
-    from .knowledge_governance import governance_lock
+    from .maintenance_protocol import storage_writer_lock
     from .knowledge_storage_io import read_guarded, _absolute_path
 
     root = _absolute_path(plan.knowledge_index.path.parent)
@@ -765,9 +817,12 @@ def _commit_sharded(plan: KnowledgeCommitPlan, fault: FaultInjector | None) -> N
         if stage is not None and fault is not None:
             fault(stage)
 
-    with governance_lock(root, _lock_filename="llm-wiki-storage.lock"):
-        for artifact in (plan.surface_index, plan.knowledge_index, plan.manifest):
+    with storage_writer_lock(root):
+        guarded = (*((plan.maintenance_adoption,) if plan.maintenance_adoption is not None else ()), plan.surface_index, plan.knowledge_index, plan.manifest)
+        for artifact in guarded:
             verify(artifact, before=True)
+        if plan.maintenance_adoption is not None:
+            apply(plan.maintenance_adoption, CommitStage.MAINTENANCE_ADOPTION_WRITTEN)
         for artifact in plan.storage_objects:
             apply(artifact)
         if fault is not None and any(a.needs_write for a in plan.storage_objects):
@@ -777,7 +832,7 @@ def _commit_sharded(plan: KnowledgeCommitPlan, fault: FaultInjector | None) -> N
         for artifact in (*plan.storage_objects, plan.surface_index, plan.knowledge_index):
             verify(artifact)
         apply(plan.manifest, CommitStage.MANIFEST_WRITTEN)
-        for artifact in (*plan.storage_objects, plan.surface_index, plan.knowledge_index, plan.manifest):
+        for artifact in (*plan.storage_objects, *guarded):
             verify(artifact)
 
 
@@ -1104,6 +1159,14 @@ def _validate_manifest_knowledge_parity(
 ) -> None:
     if not isinstance(manifest, SyncManifest):
         raise TypeError("manifest must be a SyncManifest")
+    from .maintenance_projection import validate_maintenance_projection, BINDING_KEY, RECORD_KEY
+
+    if manifest.maintenance_state is None and (BINDING_KEY in knowledge.extensions or any(RECORD_KEY in concept.extensions for concept in knowledge.concepts)):
+        raise KnowledgeArtifactError("maintenance", "reserved maintenance projection requires an adopted manifest owner")
+    try:
+        validate_maintenance_projection(knowledge, state=manifest.maintenance_state)
+    except (ValueError, TypeError, KeyError) as exc:
+        raise KnowledgeArtifactError("maintenance", str(exc)) from exc
     # Validate the caller's complete next-state manifest before deriving its
     # commit marker.
     try:

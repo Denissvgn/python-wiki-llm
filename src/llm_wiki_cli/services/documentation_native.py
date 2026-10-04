@@ -9,6 +9,7 @@ select plugins.
 
 from __future__ import annotations
 
+from contextlib import nullcontext
 import hashlib
 import json
 import stat
@@ -259,6 +260,7 @@ def evaluate_documentation_native_freshness(
                 missing_source_paths=missing_source_paths,
                 inventory_complete=True,
                 analysis_components=runtime.inventory_result.analysis_components,
+                implementation_observations=runtime.inventory_result.implementation_observations,
                 extractor_registry=runtime.inventory_result.extractor_registry,
                 plugin_extractor_components=(
                     runtime.inventory_result.plugin_components
@@ -309,6 +311,22 @@ def refresh_documentation_native_projection(
     source_selection: str | Path | None = None,
     fault_injector: Callable[[CommitStage], None] | None = None,
 ) -> DocumentationNativeRefresh:
+    from .maintenance_protocol import load_adoption_marker, maintenance_write_operation
+    operation = maintenance_write_operation(wiki_root) if load_adoption_marker(wiki_root) is not None else nullcontext()
+    with operation:
+        return _refresh_documentation_native_projection(
+            source_root=source_root, wiki_root=wiki_root,
+            trust_source_plugins=trust_source_plugins, helper_cache_dir=helper_cache_dir,
+            source_selection=source_selection, fault_injector=fault_injector,
+        )
+
+
+def _refresh_documentation_native_projection(
+    *, source_root: str | Path, wiki_root: str | Path,
+    trust_source_plugins: bool, helper_cache_dir: str | Path | None,
+    source_selection: str | Path | None,
+    fault_injector: Callable[[CommitStage], None] | None,
+) -> DocumentationNativeRefresh:
     """Recompute the native trio without mutating canonical Markdown."""
 
     source = _validated_directory(source_root, "source_root")
@@ -320,6 +338,11 @@ def refresh_documentation_native_projection(
         raise DocumentationNativeError(
             f"Cannot load the native refresh manifest: {exc}"
         ) from exc
+    from .maintenance_protocol import guard_maintenance_owner
+    try:
+        guard_maintenance_owner(wiki, manifest)
+    except (TypeError, ValueError, OSError) as exc:
+        raise DocumentationNativeError(f"Maintenance authority cannot be refreshed: {exc}") from exc
     artifact_hashes_before = _validate_refresh_artifact_basis(
         wiki,
         manifest,
@@ -342,6 +365,11 @@ def refresh_documentation_native_projection(
         source_snapshot=source_snapshot,
     )
     page_maps = _page_maps(runtime.inventory)
+    from .wiki_write_basis import ACTIVE_WRITE_BASIS
+    write_basis = ACTIVE_WRITE_BASIS.get()
+    if write_basis is not None:
+        write_basis.source_snapshot = runtime.source_snapshot
+        write_basis.assert_current()
     generation_options = _runtime_generation_options(manifest)
     surface = _evaluate_runtime_surface(
         source_root=source,
@@ -375,6 +403,7 @@ def refresh_documentation_native_projection(
                     page_maps
                 ),
                 analysis_components=runtime.inventory_result.analysis_components,
+                implementation_observations=runtime.inventory_result.implementation_observations,
                 extractor_registry=runtime.inventory_result.extractor_registry,
                 plugin_extractor_components=(
                     runtime.inventory_result.plugin_components
@@ -409,6 +438,8 @@ def refresh_documentation_native_projection(
         commit.knowledge_index.relative_path: commit.knowledge_index.content_hash,
         commit.manifest.relative_path: commit.manifest.content_hash,
     }
+    if commit.maintenance_adoption is not None:
+        expected_after[commit.maintenance_adoption.relative_path] = commit.maintenance_adoption.content_hash
     if artifact_hashes_after != expected_after:
         raise DocumentationNativeError(
             "Native projection refresh persisted an unexpected artifact set."
@@ -485,6 +516,7 @@ def _collect_runtime(
                 job_request=ExtractionJobRequest.resolved(1),
                 include_plugins=trust_source_plugins,
                 source_plugins_only=trust_source_plugins,
+                capture_implementation_observations=True,
             )
         )
     except (OSError, TypeError, UnicodeError, ValueError) as exc:
@@ -904,7 +936,7 @@ def _validate_refresh_artifact_basis(
             )
         surface_bytes = (wiki_root / SURFACE_INDEX_FILENAME).read_bytes()
         try:
-            if manifest_version in {MANIFEST_VERSION, 6}:
+            if manifest_version in {MANIFEST_VERSION, 6, 7, 8}:
                 validate_surface_index_bytes(surface_bytes)
             else:
                 _validate_legacy_surface_bytes(surface_bytes)
@@ -953,10 +985,10 @@ def _refresh_manifest_version(wiki_root: Path) -> int:
             "Native projection refresh manifest must contain an object."
         )
     version = payload.get("version")
-    if version not in {LEGACY_MANIFEST_VERSION, MANIFEST_VERSION, 6}:
+    if version not in {LEGACY_MANIFEST_VERSION, MANIFEST_VERSION, 6, 7, 8}:
         raise DocumentationNativeError(
             "Native projection refresh requires manifest version "
-            f"{LEGACY_MANIFEST_VERSION}, {MANIFEST_VERSION} or 6."
+            f"{LEGACY_MANIFEST_VERSION}, {MANIFEST_VERSION}, 6, 7 or 8."
         )
     assert isinstance(version, int)
     return version
@@ -1045,11 +1077,12 @@ def _native_artifact_hashes(
     allow_missing: bool = False,
 ) -> dict[str, str]:
     hashes: dict[str, str] = {}
+    from .maintenance_protocol import ADOPTION_FILENAME
     for name in (
         SURFACE_INDEX_FILENAME,
         KNOWLEDGE_INDEX_FILENAME,
         MANIFEST_FILENAME,
-    ):
+    ) + ((ADOPTION_FILENAME,) if (wiki_root / ADOPTION_FILENAME).exists() or (wiki_root / ADOPTION_FILENAME).is_symlink() else ()):
         path = wiki_root / name
         try:
             metadata = path.lstat()

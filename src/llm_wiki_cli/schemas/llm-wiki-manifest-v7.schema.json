@@ -1,0 +1,1079 @@
+{
+  "$id": "urn:llm-wiki:schema:manifest:v7",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Logical maintenance authority with independently committed immutable adoption marker and exact typed state commitment.",
+  "properties": {
+    "adoption_id": {
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+      "type": "string"
+    },
+    "artifact_hashes": {
+      "additionalProperties": false,
+      "properties": {
+        "evaluated_envelope_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "governance_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "knowledge_index_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "maintenance_adoption_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "surface_index_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "surface_index_hash",
+        "knowledge_index_hash",
+        "evaluated_envelope_hash",
+        "maintenance_adoption_hash"
+      ],
+      "type": "object"
+    },
+    "evidence_baselines": {
+      "type": "object"
+    },
+    "generation_inputs": {
+      "type": "object"
+    },
+    "maintenance_state": {
+      "$id": "urn:llm-wiki:maintenance-state-v1",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "adoption_id": {
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+          "type": "string"
+        },
+        "generation": {
+          "maximum": 1000000000,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "guard_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "observations": {
+          "additionalProperties": {
+            "additionalProperties": false,
+            "properties": {
+              "basis": {
+                "additionalProperties": false,
+                "properties": {
+                  "comparison_id": {
+                    "pattern": "^sha256:[0-9a-f]{64}$",
+                    "type": "string"
+                  },
+                  "coordinate": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "occurrence": {
+                        "maximum": 1000000,
+                        "minimum": 1,
+                        "type": "integer"
+                      },
+                      "qualified_owner": {
+                        "maxLength": 4096,
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "source_path": {
+                        "maxLength": 4096,
+                        "minLength": 1,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "source_path",
+                      "qualified_owner",
+                      "occurrence"
+                    ],
+                    "type": "object"
+                  },
+                  "documentation_hash": {
+                    "anyOf": [
+                      {
+                        "pattern": "^sha256:[0-9a-f]{64}$",
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "executable_hash": {
+                    "anyOf": [
+                      {
+                        "pattern": "^sha256:[0-9a-f]{64}$",
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "producer_hash": {
+                    "pattern": "^sha256:[0-9a-f]{64}$",
+                    "type": "string"
+                  },
+                  "prose_hash": {
+                    "anyOf": [
+                      {
+                        "pattern": "^sha256:[0-9a-f]{64}$",
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "scope": {
+                    "enum": [
+                      "module",
+                      "class",
+                      "callable"
+                    ]
+                  },
+                  "source_hash": {
+                    "anyOf": [
+                      {
+                        "pattern": "^sha256:[0-9a-f]{64}$",
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "target": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "canonical_path": {
+                        "maxLength": 4096,
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "ownership": {
+                        "const": "semantic"
+                      },
+                      "section_locator": {
+                        "maxLength": 4096,
+                        "minLength": 1,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "canonical_path",
+                      "section_locator",
+                      "ownership"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "coordinate",
+                  "source_hash",
+                  "executable_hash",
+                  "documentation_hash",
+                  "prose_hash",
+                  "comparison_id",
+                  "producer_hash",
+                  "target",
+                  "scope"
+                ],
+                "type": "object"
+              },
+              "coordinate": {
+                "additionalProperties": false,
+                "properties": {
+                  "occurrence": {
+                    "maximum": 1000000,
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "qualified_owner": {
+                    "maxLength": 4096,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "source_path": {
+                    "maxLength": 4096,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "source_path",
+                  "qualified_owner",
+                  "occurrence"
+                ],
+                "type": "object"
+              },
+              "implementation": {
+                "additionalProperties": false,
+                "properties": {
+                  "aggregation": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "complete_scope": {
+                        "type": "boolean"
+                      },
+                      "observations_returned": {
+                        "maximum": 128,
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "observations_total": {
+                        "maximum": 1000000000,
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "truncated": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "complete_scope",
+                      "observations_total",
+                      "observations_returned",
+                      "truncated"
+                    ],
+                    "type": "object"
+                  },
+                  "comparison_id": {
+                    "pattern": "^sha256:[0-9a-f]{64}$",
+                    "type": "string"
+                  },
+                  "coordinate": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "occurrence": {
+                        "maximum": 1000000,
+                        "minimum": 1,
+                        "type": "integer"
+                      },
+                      "qualified_owner": {
+                        "maxLength": 4096,
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "source_path": {
+                        "maxLength": 4096,
+                        "minLength": 1,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "source_path",
+                      "qualified_owner",
+                      "occurrence"
+                    ],
+                    "type": "object"
+                  },
+                  "documentation_hash": {
+                    "anyOf": [
+                      {
+                        "pattern": "^sha256:[0-9a-f]{64}$",
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "executable_hash": {
+                    "anyOf": [
+                      {
+                        "pattern": "^sha256:[0-9a-f]{64}$",
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "producer": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "algorithm": {
+                        "maxLength": 128,
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "analysis_compatibility_hash": {
+                        "pattern": "^sha256:[0-9a-f]{64}$",
+                        "type": "string"
+                      },
+                      "language": {
+                        "maxLength": 32,
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "parser": {
+                        "maxLength": 64,
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "parser_version": {
+                        "maxLength": 64,
+                        "minLength": 1,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "language",
+                      "algorithm",
+                      "parser",
+                      "parser_version",
+                      "analysis_compatibility_hash"
+                    ],
+                    "type": "object"
+                  },
+                  "schema_version": {
+                    "const": "llm-wiki-implementation-evidence/v1"
+                  },
+                  "scope": {
+                    "enum": [
+                      "module",
+                      "class",
+                      "callable"
+                    ]
+                  },
+                  "source_hash": {
+                    "anyOf": [
+                      {
+                        "pattern": "^sha256:[0-9a-f]{64}$",
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "status": {
+                    "enum": [
+                      "available",
+                      "unavailable"
+                    ]
+                  },
+                  "unavailable_reason": {
+                    "enum": [
+                      null,
+                      "missing-source",
+                      "unsupported-language",
+                      "unsupported-syntax",
+                      "unsupported-producer",
+                      "ambiguous-owner",
+                      "legacy-evidence-absent",
+                      "observation-limit",
+                      "object-limit"
+                    ]
+                  }
+                },
+                "required": [
+                  "schema_version",
+                  "coordinate",
+                  "scope",
+                  "status",
+                  "producer",
+                  "comparison_id",
+                  "source_hash",
+                  "executable_hash",
+                  "documentation_hash",
+                  "aggregation",
+                  "unavailable_reason"
+                ],
+                "type": "object"
+              },
+              "presence": {
+                "enum": [
+                  "present",
+                  "deleted",
+                  "ambiguous"
+                ]
+              },
+              "target": {
+                "additionalProperties": false,
+                "properties": {
+                  "canonical_path": {
+                    "maxLength": 4096,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "ownership": {
+                    "const": "semantic"
+                  },
+                  "section_locator": {
+                    "maxLength": 4096,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "canonical_path",
+                  "section_locator",
+                  "ownership"
+                ],
+                "type": "object"
+              },
+              "target_presence": {
+                "enum": [
+                  "present",
+                  "deleted"
+                ]
+              }
+            },
+            "required": [
+              "coordinate",
+              "presence",
+              "implementation",
+              "basis",
+              "target",
+              "target_presence"
+            ],
+            "type": "object"
+          },
+          "maxProperties": 100000,
+          "propertyNames": {
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "records": {
+          "additionalProperties": {
+            "additionalProperties": false,
+            "properties": {
+              "acknowledgment_history": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "acknowledgment_id": {
+                      "pattern": "^sha256:[0-9a-f]{64}$",
+                      "type": "string"
+                    },
+                    "actor": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "actor_id": {
+                          "maxLength": 256,
+                          "minLength": 1,
+                          "type": "string"
+                        },
+                        "authority": {
+                          "const": "ordinary-maintenance"
+                        },
+                        "kind": {
+                          "enum": [
+                            "agent",
+                            "human"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "actor_id",
+                        "authority"
+                      ],
+                      "type": "object"
+                    },
+                    "basis": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "comparison_id": {
+                          "pattern": "^sha256:[0-9a-f]{64}$",
+                          "type": "string"
+                        },
+                        "coordinate": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "occurrence": {
+                              "maximum": 1000000,
+                              "minimum": 1,
+                              "type": "integer"
+                            },
+                            "qualified_owner": {
+                              "maxLength": 4096,
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "source_path": {
+                              "maxLength": 4096,
+                              "minLength": 1,
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "source_path",
+                            "qualified_owner",
+                            "occurrence"
+                          ],
+                          "type": "object"
+                        },
+                        "documentation_hash": {
+                          "anyOf": [
+                            {
+                              "pattern": "^sha256:[0-9a-f]{64}$",
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "executable_hash": {
+                          "anyOf": [
+                            {
+                              "pattern": "^sha256:[0-9a-f]{64}$",
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "producer_hash": {
+                          "pattern": "^sha256:[0-9a-f]{64}$",
+                          "type": "string"
+                        },
+                        "prose_hash": {
+                          "anyOf": [
+                            {
+                              "pattern": "^sha256:[0-9a-f]{64}$",
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "scope": {
+                          "enum": [
+                            "module",
+                            "class",
+                            "callable"
+                          ]
+                        },
+                        "source_hash": {
+                          "anyOf": [
+                            {
+                              "pattern": "^sha256:[0-9a-f]{64}$",
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "target": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "canonical_path": {
+                              "maxLength": 4096,
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "ownership": {
+                              "const": "semantic"
+                            },
+                            "section_locator": {
+                              "maxLength": 4096,
+                              "minLength": 1,
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "canonical_path",
+                            "section_locator",
+                            "ownership"
+                          ],
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "coordinate",
+                        "source_hash",
+                        "executable_hash",
+                        "documentation_hash",
+                        "prose_hash",
+                        "comparison_id",
+                        "producer_hash",
+                        "target",
+                        "scope"
+                      ],
+                      "type": "object"
+                    },
+                    "basis_hash": {
+                      "pattern": "^sha256:[0-9a-f]{64}$",
+                      "type": "string"
+                    },
+                    "governance_effect": {
+                      "const": "none"
+                    },
+                    "record_id": {
+                      "maxLength": 128,
+                      "minLength": 1,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "acknowledgment_id",
+                    "record_id",
+                    "basis",
+                    "basis_hash",
+                    "actor",
+                    "governance_effect"
+                  ],
+                  "type": "object"
+                },
+                "maxItems": 128,
+                "type": "array"
+              },
+              "coordinate_history": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "occurrence": {
+                      "maximum": 1000000,
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "qualified_owner": {
+                      "maxLength": 4096,
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "source_path": {
+                      "maxLength": 4096,
+                      "minLength": 1,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "source_path",
+                    "qualified_owner",
+                    "occurrence"
+                  ],
+                  "type": "object"
+                },
+                "maxItems": 1024,
+                "minItems": 1,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "current_acknowledgment_id": {
+                "anyOf": [
+                  {
+                    "pattern": "^sha256:[0-9a-f]{64}$",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "last_present_basis": {
+                "additionalProperties": false,
+                "properties": {
+                  "comparison_id": {
+                    "pattern": "^sha256:[0-9a-f]{64}$",
+                    "type": "string"
+                  },
+                  "coordinate": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "occurrence": {
+                        "maximum": 1000000,
+                        "minimum": 1,
+                        "type": "integer"
+                      },
+                      "qualified_owner": {
+                        "maxLength": 4096,
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "source_path": {
+                        "maxLength": 4096,
+                        "minLength": 1,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "source_path",
+                      "qualified_owner",
+                      "occurrence"
+                    ],
+                    "type": "object"
+                  },
+                  "documentation_hash": {
+                    "anyOf": [
+                      {
+                        "pattern": "^sha256:[0-9a-f]{64}$",
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "executable_hash": {
+                    "anyOf": [
+                      {
+                        "pattern": "^sha256:[0-9a-f]{64}$",
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "producer_hash": {
+                    "pattern": "^sha256:[0-9a-f]{64}$",
+                    "type": "string"
+                  },
+                  "prose_hash": {
+                    "anyOf": [
+                      {
+                        "pattern": "^sha256:[0-9a-f]{64}$",
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "scope": {
+                    "enum": [
+                      "module",
+                      "class",
+                      "callable"
+                    ]
+                  },
+                  "source_hash": {
+                    "anyOf": [
+                      {
+                        "pattern": "^sha256:[0-9a-f]{64}$",
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "target": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "canonical_path": {
+                        "maxLength": 4096,
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "ownership": {
+                        "const": "semantic"
+                      },
+                      "section_locator": {
+                        "maxLength": 4096,
+                        "minLength": 1,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "canonical_path",
+                      "section_locator",
+                      "ownership"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "coordinate",
+                  "source_hash",
+                  "executable_hash",
+                  "documentation_hash",
+                  "prose_hash",
+                  "comparison_id",
+                  "producer_hash",
+                  "target",
+                  "scope"
+                ],
+                "type": "object"
+              },
+              "mapping": {
+                "additionalProperties": false,
+                "properties": {
+                  "candidates": {
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "coordinate": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "occurrence": {
+                              "maximum": 1000000,
+                              "minimum": 1,
+                              "type": "integer"
+                            },
+                            "qualified_owner": {
+                              "maxLength": 4096,
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "source_path": {
+                              "maxLength": 4096,
+                              "minLength": 1,
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "source_path",
+                            "qualified_owner",
+                            "occurrence"
+                          ],
+                          "type": "object"
+                        },
+                        "target": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "canonical_path": {
+                              "maxLength": 4096,
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "ownership": {
+                              "const": "semantic"
+                            },
+                            "section_locator": {
+                              "maxLength": 4096,
+                              "minLength": 1,
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "canonical_path",
+                            "section_locator",
+                            "ownership"
+                          ],
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "coordinate",
+                        "target"
+                      ],
+                      "type": "object"
+                    },
+                    "maxItems": 8,
+                    "type": "array",
+                    "uniqueItems": true
+                  },
+                  "previous_coordinate": {
+                    "anyOf": [
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "occurrence": {
+                            "maximum": 1000000,
+                            "minimum": 1,
+                            "type": "integer"
+                          },
+                          "qualified_owner": {
+                            "maxLength": 4096,
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          "source_path": {
+                            "maxLength": 4096,
+                            "minLength": 1,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "source_path",
+                          "qualified_owner",
+                          "occurrence"
+                        ],
+                        "type": "object"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "previous_target": {
+                    "anyOf": [
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "canonical_path": {
+                            "maxLength": 4096,
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          "ownership": {
+                            "const": "semantic"
+                          },
+                          "section_locator": {
+                            "maxLength": 4096,
+                            "minLength": 1,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "canonical_path",
+                          "section_locator",
+                          "ownership"
+                        ],
+                        "type": "object"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "state": {
+                    "enum": [
+                      "resolved",
+                      "deleted",
+                      "ambiguous"
+                    ]
+                  }
+                },
+                "required": [
+                  "state",
+                  "previous_coordinate",
+                  "candidates",
+                  "previous_target"
+                ],
+                "type": "object"
+              },
+              "reasons": {
+                "items": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "maxItems": 16,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "record_id": {
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$",
+                "type": "string"
+              },
+              "status": {
+                "enum": [
+                  "pending",
+                  "acknowledged"
+                ]
+              },
+              "target_history": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "canonical_path": {
+                      "maxLength": 4096,
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "ownership": {
+                      "const": "semantic"
+                    },
+                    "section_locator": {
+                      "maxLength": 4096,
+                      "minLength": 1,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "canonical_path",
+                    "section_locator",
+                    "ownership"
+                  ],
+                  "type": "object"
+                },
+                "maxItems": 1024,
+                "minItems": 1,
+                "type": "array",
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "record_id",
+              "coordinate_history",
+              "last_present_basis",
+              "status",
+              "reasons",
+              "mapping",
+              "acknowledgment_history",
+              "current_acknowledgment_id",
+              "target_history"
+            ],
+            "type": "object"
+          },
+          "maxProperties": 100000,
+          "propertyNames": {
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "schema_version": {
+          "const": "llm-wiki-maintenance-state/v1"
+        }
+      },
+      "required": [
+        "schema_version",
+        "adoption_id",
+        "guard_hash",
+        "generation",
+        "observations",
+        "records"
+      ],
+      "type": "object"
+    },
+    "maintenance_state_hash": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "page_source_mappings": {
+      "type": "object"
+    },
+    "sources": {
+      "type": "object"
+    },
+    "surfaces": {
+      "type": "object"
+    },
+    "tombstones": {
+      "type": "object"
+    },
+    "version": {
+      "const": 7
+    }
+  },
+  "required": [
+    "sources",
+    "surfaces",
+    "generation_inputs",
+    "page_source_mappings",
+    "evidence_baselines",
+    "tombstones",
+    "version",
+    "adoption_id",
+    "maintenance_state_hash",
+    "maintenance_state"
+  ],
+  "title": "Maintenance sync manifest v7",
+  "type": "object"
+}

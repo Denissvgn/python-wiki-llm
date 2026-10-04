@@ -181,7 +181,13 @@
     "services/legacy_hooks.py",
     "services/lint_service.py",
     "services/lockfile.py",
+    "services/maintenance_evidence.py",
+    "services/maintenance_projection.py",
+    "services/maintenance_protocol.py",
     "services/maintenance_queue.py",
+    "services/maintenance_service.py",
+    "services/maintenance_shapes.py",
+    "services/maintenance_state.py",
     "services/manifest_storage.py",
     "services/markdown_sections.py",
     "services/mcp_server.py",
@@ -242,6 +248,7 @@
     "services/wiki_scaffold.py",
     "services/wiki_surface.py",
     "services/wiki_surface_index.py",
+    "services/wiki_write_basis.py",
     "services/workflow_profile.py"
   ],
   "contract": "structural-observations/v1",
@@ -352,10 +359,17 @@
     "services/knowledge_evidence.py",
     "services/knowledge_model.py",
     "services/knowledge_orchestration.py",
+    "services/maintenance_evidence.py",
+    "services/maintenance_projection.py",
+    "services/maintenance_protocol.py",
+    "services/maintenance_service.py",
+    "services/maintenance_shapes.py",
+    "services/maintenance_state.py",
     "services/python_observations.py",
     "services/source_selection.py",
     "services/source_snapshot.py",
     "services/validation.py",
-    "services/wiki_surface.py"
+    "services/wiki_surface.py",
+    "services/wiki_write_basis.py"
   ]
 }

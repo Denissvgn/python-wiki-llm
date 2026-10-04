@@ -74,6 +74,7 @@ from .wiki_surface_index import (
     WIKI_SURFACE_INDEX_SCHEMA_VERSION,
 )
 from .wiki_surface import is_safe_page_id, iter_page_kinds
+from .maintenance_protocol import ADOPTION_FILENAME
 from .validation import (
     is_portable_relative_path,
     path_is_within as shared_path_is_within,
@@ -88,7 +89,7 @@ MANIFEST_FILENAME = ".llm-wiki-manifest.json"
 # itself uses the explicit set below.
 SUPPORTED_MANIFEST_VERSION = LEGACY_MANIFEST_VERSION
 SUPPORTED_MANIFEST_VERSIONS = frozenset(
-    {LEGACY_MANIFEST_VERSION, MANIFEST_VERSION, 6}
+    {LEGACY_MANIFEST_VERSION, MANIFEST_VERSION, 6, 7, 8}
 )
 
 # Fixed fail-closed bounds for untrusted existing-wiki inputs.  These limits are
@@ -164,6 +165,7 @@ _CANONICAL_ROOT_FILES = frozenset(
         MANIFEST_FILENAME,
         SURFACE_INDEX_FILENAME,
         KNOWLEDGE_INDEX_FILENAME,
+        ADOPTION_FILENAME,
     }
 )
 _CANONICAL_MARKDOWN_DIRS = frozenset(
@@ -2124,6 +2126,12 @@ def _load_and_validate_metadata(
     manifest_entry = files.get(MANIFEST_FILENAME)
     surface_entry = files.get(SURFACE_INDEX_FILENAME)
     knowledge_entry = files.get(KNOWLEDGE_INDEX_FILENAME)
+    adoption_entry = files.get(ADOPTION_FILENAME)
+    if adoption_entry is not None and manifest_entry is None:
+        raise DocumentationWikiInputError(
+            "Immutable maintenance marker exists without its owner; complete recovery is required.",
+            category="maintenance_owner_missing", path=MANIFEST_FILENAME,
+        )
     if manifest_entry is None and surface_entry is None:
         if knowledge_entry is not None:
             raise DocumentationWikiInputError(
@@ -2158,6 +2166,11 @@ def _load_and_validate_metadata(
         "manifest",
     )
     manifest_version = _validated_manifest_version(manifest)
+    if adoption_entry is not None and manifest_version not in {7, 8}:
+        raise DocumentationWikiInputError(
+            "Maintenance marker cannot be imported with a legacy owner; complete recovery is required.",
+            category="maintenance_owner_incomplete", path=MANIFEST_FILENAME,
+        )
 
     surface_bytes = _read_verified_bytes(surface_entry)
     if manifest_version == LEGACY_MANIFEST_VERSION:
@@ -2190,6 +2203,7 @@ def _load_and_validate_metadata(
         )
 
     sync_manifest = _validated_sync_manifest(manifest, files=files)
+    adoption = _validate_maintenance_input_authority(sync_manifest, adoption_entry)
     surface = _validated_native_surface(surface_bytes)
     canonical_markdown = _validate_native_page_parity(surface, files)
     marker = sync_manifest.artifact_hashes
@@ -2225,6 +2239,13 @@ def _load_and_validate_metadata(
         files=files,
     )
     _validate_native_marker(marker, validated)
+    if adoption is not None:
+        from .maintenance_projection import validate_maintenance_projection
+        try:
+            validate_maintenance_projection(validated.knowledge, state=sync_manifest.maintenance_state, marker=adoption,
+                raw_content_by_page={name: _read_verified_bytes(entry) for name, entry in canonical_markdown.items()})
+        except (TypeError, ValueError) as exc:
+            raise DocumentationWikiInputError(str(exc), category="maintenance_projection_invalid", path=KNOWLEDGE_INDEX_FILENAME) from exc
     _validate_native_markdown_snapshot(
         canonical_markdown,
         files,
@@ -2238,6 +2259,27 @@ def _load_and_validate_metadata(
         artifact_form=f"manifest_v{manifest_version}_native",
         legacy_index_only=False,
     )
+
+
+def _validate_maintenance_input_authority(manifest: SyncManifest, entry: _InputFile | None) -> dict[str, Any] | None:
+    state = manifest.maintenance_state
+    if state is None and entry is None:
+        return None
+    if state is None or entry is None:
+        raise DocumentationWikiInputError("Maintenance marker and typed owner must be retained together.", category="maintenance_owner_incomplete", path=ADOPTION_FILENAME)
+    from .maintenance_state import validate_maintenance_adoption
+    from .knowledge_storage import canonical_bytes, digest
+    try:
+        raw = _read_verified_bytes(entry)
+        if len(raw) > 65_536:
+            raise ValueError("maintenance marker exceeds its byte bound")
+        marker = validate_maintenance_adoption(_decode_json_object(raw, entry, "maintenance adoption"))
+        commitments = manifest.artifact_hashes
+        if raw != canonical_bytes(marker) or state["adoption_id"] != marker["adoption_id"] or state["guard_hash"] != digest(raw) or commitments is None or commitments.maintenance_adoption_hash != digest(raw):
+            raise ValueError("maintenance marker/owner commitments differ")
+        return marker
+    except (TypeError, ValueError) as exc:
+        raise DocumentationWikiInputError(str(exc), category="maintenance_owner_invalid", path=ADOPTION_FILENAME) from exc
 
 
 def _read_json_object(entry: _InputFile, label: str) -> dict[str, Any]:
@@ -3061,7 +3103,7 @@ def _resolve_metadata_freshness(
     available together on ``metadata`` and no input path needs to be reopened.
     """
 
-    if metadata.artifact_form in {"manifest_v5_surface", "manifest_v6_surface"}:
+    if metadata.artifact_form in {f"manifest_v{version}_surface" for version in (5, 6, 7, 8)}:
         if source_root is None:
             return (
                 "unverified",
@@ -3078,7 +3120,7 @@ def _resolve_metadata_freshness(
             ],
             (),
         )
-    if metadata.artifact_form in {"manifest_v5_native", "manifest_v6_native"}:
+    if metadata.artifact_form in {f"manifest_v{version}_native" for version in (5, 6, 7, 8)}:
         if source_root is None:
             return (
                 "unverified",

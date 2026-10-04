@@ -1,0 +1,48 @@
+{
+  "$id": "urn:llm-wiki:maintenance-adoption-v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "adoption_id": {
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$",
+      "type": "string"
+    },
+    "features": {
+      "additionalProperties": false,
+      "properties": {
+        "implementation_evidence": {
+          "const": 1,
+          "type": "integer"
+        },
+        "maintenance_state": {
+          "const": 1,
+          "type": "integer"
+        },
+        "ordinary_acknowledgment": {
+          "const": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "implementation_evidence",
+        "maintenance_state",
+        "ordinary_acknowledgment"
+      ],
+      "type": "object"
+    },
+    "min_manifest_version": {
+      "const": 7,
+      "type": "integer"
+    },
+    "schema_version": {
+      "const": "llm-wiki-maintenance-adoption/v1"
+    }
+  },
+  "required": [
+    "schema_version",
+    "adoption_id",
+    "min_manifest_version",
+    "features"
+  ],
+  "type": "object"
+}

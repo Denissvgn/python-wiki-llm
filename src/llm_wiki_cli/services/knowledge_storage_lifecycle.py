@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from contextlib import nullcontext
 import json
 import os
 from pathlib import Path
@@ -15,8 +16,14 @@ from .knowledge_artifacts import (
     build_knowledge_commit_plan, commit_knowledge_artifacts, current_knowledge_format,
     validate_knowledge_artifacts, validated_artifact_bytes, _commit_sharded,
 )
-from .knowledge_governance import GOVERNANCE_FILENAME, governance_lock
+from .knowledge_governance import GOVERNANCE_FILENAME
+from .maintenance_protocol import (
+    ADOPTION_FILENAME, guard_maintenance_owner, governance_writer_lock,
+    maintenance_write_operation, storage_writer_lock, MaintenanceProtocolError,
+    load_adoption_marker,
+)
 from .knowledge_index import serialize_knowledge_index
+from .io import decode_markdown_bytes
 from .knowledge_loader import load_knowledge_state
 from .knowledge_storage import (
     MAX_EXPANDED_BYTES, MAX_OBJECT_BYTES, OBJECT_DIRECTORY, ROOT_FILENAME,
@@ -52,14 +59,29 @@ def _committed_inputs(wiki_dir: str | Path):
     if SyncManifest.from_payload(json.loads(manifest_bytes), object_reader=session.read).to_payload() != state.manifest_basis.to_payload():
         raise KnowledgeStorageError("manifest", "changed after validation", code="storage-mutation")
     expected[MANIFEST_FILENAME] = manifest_bytes
+    adoption = guard_maintenance_owner(wiki_dir, state.manifest_basis)
+    if adoption is not None:
+        assert state.manifest_basis.artifact_hashes is not None
+        raw = session.read(ADOPTION_FILENAME, MAX_OBJECT_BYTES)
+        if digest(raw) != state.manifest_basis.artifact_hashes.maintenance_adoption_hash:
+            raise KnowledgeStorageError("maintenance", "immutable marker changed after validation", code="storage-mutation")
+        expected[ADOPTION_FILENAME] = raw
     for concept in state.knowledge.concepts:
         raw = session.read(concept.document.canonical_path, MAX_EXPANDED_BYTES)
-        if digest(raw) != concept.facets.semantics.page_hash:
+        if digest(decode_markdown_bytes(raw).encode("utf-8")) != concept.facets.semantics.page_hash:
             raise KnowledgeStorageError(concept.document.canonical_path, "authored input changed", code="storage-mutation")
+        if adoption is not None:
+            expected[concept.document.canonical_path] = raw
     marker = state.manifest_basis.artifact_hashes
     if marker is not None and marker.governance_hash is not None:
-        if digest(session.read(GOVERNANCE_FILENAME, MAX_OBJECT_BYTES)) != marker.governance_hash:
+        governance = session.read(GOVERNANCE_FILENAME, MAX_OBJECT_BYTES)
+        if digest(governance) != marker.governance_hash:
             raise KnowledgeStorageError("governance", "ledger changed after validation", code="storage-mutation")
+        if adoption is not None:
+            expected[GOVERNANCE_FILENAME] = governance
+    if adoption is not None:
+        from .maintenance_projection import validate_maintenance_prose
+        validate_maintenance_prose(state.manifest_basis.maintenance_state, state.knowledge, expected)
     return state, session, expected
 
 
@@ -110,18 +132,37 @@ def _backup(directory: Path, files: dict[str, bytes], target_hash: str, target_m
 def migrate_knowledge_storage(wiki_dir: str | Path, *, dry_run: bool = False,
                               recovery_dir: str | Path | None = None,
                               to: str = "sharded-v2") -> dict[str, Any]:
+    if type(dry_run) is not bool or to not in {"sharded-v2", *PACKED_FORMATS, "indexed-v6", "indexed-v8"}:
+        raise KnowledgeStorageError("request", "unsupported storage migration request")
+    try:
+        operation = maintenance_write_operation(wiki_dir, dry_run=dry_run) if load_adoption_marker(wiki_dir) is not None else nullcontext()
+        with operation:
+            return _migrate_knowledge_storage(wiki_dir, dry_run=dry_run, recovery_dir=recovery_dir, to=to)
+    except MaintenanceProtocolError as exc:
+        raise KnowledgeStorageError("maintenance", str(exc), code=exc.reason) from exc
+
+
+def _migrate_knowledge_storage(wiki_dir: str | Path, *, dry_run: bool,
+                               recovery_dir: str | Path | None,
+                               to: str) -> dict[str, Any]:
     """Explicitly adopt indexed storage, retaining verified recovery bytes outside the wiki."""
     if type(dry_run) is not bool:
         raise KnowledgeStorageError("dry_run", "must be boolean")
-    if to not in {"sharded-v2", *PACKED_FORMATS, "indexed-v6"}:
+    if to not in {"sharded-v2", *PACKED_FORMATS, "indexed-v6", "indexed-v8"}:
         raise KnowledgeStorageError("to", "unsupported migration format")
     root = _absolute_path(Path(wiki_dir))
     state, session, previous = _committed_inputs(root)
     assert state.knowledge is not None and state.manifest_basis is not None
+    adopted = state.manifest_basis.maintenance_state is not None
+    if to == "indexed-v8" and not adopted:
+        raise KnowledgeStorageError("to", "indexed-v8 requires explicit maintenance adoption")
+    if to == "indexed-v6" and adopted:
+        raise KnowledgeStorageError("to", "adopted authority cannot be downgraded to indexed-v6; select indexed-v8")
+    manifest_target = to if to in {"indexed-v6", "indexed-v8"} else None
     plan = build_knowledge_commit_plan(root, surface_index_bytes=previous[SURFACE_INDEX_FILENAME],
         knowledge_index=state.knowledge, manifest=state.manifest_basis.without_artifact_hashes(),
-        knowledge_format=None if to == "indexed-v6" else to,
-        manifest_format="indexed-v6" if to == "indexed-v6" else None,
+        knowledge_format=None if manifest_target is not None else to,
+        manifest_format=manifest_target,
         prior=state.validated_artifacts)
     # The complete v1 logical model was validated before encoding; the plan's
     # v2 full reader independently reconstructed/validated it before publication.
@@ -138,7 +179,7 @@ def migrate_knowledge_storage(wiki_dir: str | Path, *, dry_run: bool = False,
               "object_bytes": sum(len(a.content) for a in plan.storage_objects),
               "recovery_dir": None if recovery is None else str(recovery),
               "requires_recovery_dir": plan.changed and recovery is None,
-              "minimum_reader": ("manifest/v6" if to == "indexed-v6" else LOCAL_PACKED_SCHEMA if to.startswith("packed-v4")
+              "minimum_reader": ("manifest/v8" if to == "indexed-v8" else "manifest/v6" if to == "indexed-v6" else LOCAL_PACKED_SCHEMA if to.startswith("packed-v4")
                                  else PACKED_SCHEMA if to in PACKED_FORMATS else "llm-wiki-knowledge/v2"),
               "authority_preserved": ["Markdown", "governance ledger", "review history"],
               "git_history_changed": False}
@@ -153,7 +194,7 @@ def migrate_knowledge_storage(wiki_dir: str | Path, *, dry_run: bool = False,
         commit_knowledge_artifacts(plan)
         # Authority is never replaced; recheck it even after generated commits.
         for name in tuple(session.observations):
-            if name in previous:
+            if name in {ROOT_FILENAME, SURFACE_INDEX_FILENAME, MANIFEST_FILENAME} or is_storage_path(name):
                 continue
             session.read(name, len(session.observations[name].content))
     return report
@@ -180,10 +221,10 @@ def _read_recovery(directory: Path) -> tuple[dict[str, Any], dict[str, bytes]]:
     files = {}
     total = 0
     for name, info in metadata["files"].items():
-        if name not in {ROOT_FILENAME, SURFACE_INDEX_FILENAME, MANIFEST_FILENAME} and not is_storage_path(name):
+        if name not in {ROOT_FILENAME, SURFACE_INDEX_FILENAME, MANIFEST_FILENAME, ADOPTION_FILENAME, GOVERNANCE_FILENAME} and not is_storage_path(name) and not _canonical_markdown(name):
             raise KnowledgeStorageError("recovery", "contains a non-artifact path")
         if (not isinstance(info, dict) or set(info) != {"hash", "bytes"}
-                or type(info["bytes"]) is not int or not 0 < info["bytes"] <= MAX_EXPANDED_BYTES):
+                or type(info["bytes"]) is not int or not 0 <= info["bytes"] <= MAX_EXPANDED_BYTES):
             raise KnowledgeStorageError("recovery", "invalid file descriptor")
         total += info["bytes"]
         if total > MAX_EXPANDED_BYTES:
@@ -203,6 +244,18 @@ def _read_recovery(directory: Path) -> tuple[dict[str, Any], dict[str, bytes]]:
 
 def recover_knowledge_storage(wiki_dir: str | Path, recovery_dir: str | Path, *,
                               dry_run: bool = False) -> dict[str, Any]:
+    if type(dry_run) is not bool:
+        raise KnowledgeStorageError("dry_run", "must be boolean")
+    try:
+        operation = maintenance_write_operation(wiki_dir, dry_run=dry_run) if load_adoption_marker(wiki_dir) is not None else nullcontext()
+        with operation:
+            return _recover_knowledge_storage(wiki_dir, recovery_dir, dry_run=dry_run)
+    except MaintenanceProtocolError as exc:
+        raise KnowledgeStorageError("maintenance", str(exc), code=exc.reason) from exc
+
+
+def _recover_knowledge_storage(wiki_dir: str | Path, recovery_dir: str | Path, *,
+                              dry_run: bool) -> dict[str, Any]:
     """Restore an exact interrupted migration; refuse unrelated newer roots."""
     if type(dry_run) is not bool:
         raise KnowledgeStorageError("dry_run", "must be boolean")
@@ -214,6 +267,18 @@ def recover_knowledge_storage(wiki_dir: str | Path, recovery_dir: str | Path, *,
         knowledge_index_bytes=files[ROOT_FILENAME], manifest=manifest,
         object_reader=lambda path, _: files[path])
     marker = manifest.artifact_hashes
+    if manifest.maintenance_state is not None:
+        from .maintenance_state import validate_maintenance_adoption
+        from .maintenance_projection import validate_maintenance_projection
+        raw_adoption = files.get(ADOPTION_FILENAME)
+        if raw_adoption is None:
+            raise KnowledgeStorageError("recovery", "adopted recovery is missing its immutable marker")
+        recovered_adoption = validate_maintenance_adoption(decode_bytes(raw_adoption, limit=65_536, field="maintenance adoption"))
+        if canonical_bytes(recovered_adoption) != raw_adoption or digest(raw_adoption) != manifest.maintenance_state["guard_hash"]:
+            raise KnowledgeStorageError("recovery", "immutable adoption commitment differs")
+        validate_maintenance_projection(validated.knowledge, state=manifest.maintenance_state, marker=recovered_adoption, raw_content_by_page=files)
+    elif ADOPTION_FILENAME in files:
+        raise KnowledgeStorageError("recovery", "legacy recovery cannot discard adopted maintenance authority")
     if (marker is None or marker.knowledge_index_hash != validated.knowledge_index_hash
             or marker.surface_index_hash != validated.surface_index_hash
             or marker.evaluated_envelope_hash != validated.evaluated_envelope_hash
@@ -228,11 +293,17 @@ def recover_knowledge_storage(wiki_dir: str | Path, recovery_dir: str | Path, *,
         if digest(existing_manifest) not in {metadata["original_manifest_hash"], metadata["target_manifest_hash"]}:
             raise KnowledgeStorageError("recovery", "current manifest is outside this migration; refusing to overwrite it")
     for concept in validated.knowledge.concepts:
-        if digest(session.read(concept.document.canonical_path, MAX_EXPANDED_BYTES)) != concept.facets.semantics.page_hash:
+        if digest(decode_markdown_bytes(session.read(concept.document.canonical_path, MAX_EXPANDED_BYTES)).encode("utf-8")) != concept.facets.semantics.page_hash:
             raise KnowledgeStorageError("recovery", "current Markdown differs from the original generation")
     if marker.governance_hash is not None:
         if digest(session.read(GOVERNANCE_FILENAME, MAX_OBJECT_BYTES)) != marker.governance_hash:
             raise KnowledgeStorageError("recovery", "current governance differs from the original generation")
+    if manifest.maintenance_state is not None:
+        for name, content in files.items():
+            if name in {ROOT_FILENAME, SURFACE_INDEX_FILENAME, MANIFEST_FILENAME} or is_storage_path(name):
+                continue
+            if session.read(name, MAX_EXPANDED_BYTES) != content:
+                raise KnowledgeStorageError("recovery", "current authority differs from the preserved snapshot")
     writes = {}
     for name, content in files.items():
         path = root / name
@@ -262,6 +333,9 @@ def recover_knowledge_storage(wiki_dir: str | Path, recovery_dir: str | Path, *,
 def export_knowledge_v1(wiki_dir: str | Path, output: str | Path) -> dict[str, Any]:
     state, session, _ = _committed_inputs(wiki_dir)
     assert state.knowledge is not None
+    assert state.manifest_basis is not None
+    if state.manifest_basis.maintenance_state is not None:
+        raise KnowledgeStorageError("export", "adopted maintenance requires a complete authority bundle; standalone v1 export would omit its owner")
     raw = serialize_knowledge_index(state.knowledge).encode("utf-8")
     if len(raw) >= GIT_FAILURE_BYTES:
         raise KnowledgeStorageError("export", "complete v1 output exceeds the 95 MiB file policy", code="storage-limit")
@@ -275,6 +349,16 @@ def export_knowledge_v1(wiki_dir: str | Path, output: str | Path) -> dict[str, A
     ensure_guarded_directory(path.parent)
     atomic_write_guarded_bytes(path, raw, mode=0o644, expected_existing=None)
     return {"format": "v1", "bytes": len(raw), "hash": digest(raw), "output": str(path)}
+
+
+def _canonical_markdown(relative: str) -> bool:
+    from .wiki_surface import WikiSurfaceError, validate_exact_page_coordinate
+    if not relative.endswith(".md"):
+        return False
+    try:
+        return validate_exact_page_coordinate(relative) == relative
+    except WikiSurfaceError:
+        return False
 
 
 def is_storage_path(relative: str) -> bool:
@@ -379,7 +463,7 @@ def _prune_storage(wiki_dir, *, dry_run, plan, recovery_dir, safe, cancelled):
     root = _absolute_path(Path(wiki_dir))
     state, session, expected_inputs = _committed_inputs(root)
     assert state.validated_artifacts is not None and state.manifest_basis is not None
-    if current_knowledge_format(root) not in {"sharded-v2", *PACKED_FORMATS} and state.manifest_basis.storage_version != 6:
+    if current_knowledge_format(root) not in {"sharded-v2", *PACKED_FORMATS} and state.manifest_basis.storage_version not in {6, 8}:
         raise KnowledgeStorageError("format", "cleanup requires a committed indexed root")
     if plan is None:
         owned, unknown = stored_object_paths(root)
@@ -462,7 +546,7 @@ def _prune_storage(wiki_dir, *, dry_run, plan, recovery_dir, safe, cancelled):
     removed = []
     recovery = None
     if not dry_run:
-        with governance_lock(root, _lock_filename="llm-wiki-storage.lock"):
+        with governance_writer_lock(root), storage_writer_lock(root):
             session.recheck()
             if safe:
                 recovery = _prune_backup(root, recovery_dir, prepared, safe, cancelled)
@@ -539,7 +623,7 @@ def restore_pruned_storage(wiki_dir: str | Path, recovery_manifest: str | Path, 
             preimages[row["path"]] = raw
         check_generation()
         if not dry_run:
-            with governance_lock(root, _lock_filename="llm-wiki-storage.lock"):
+            with governance_writer_lock(root), storage_writer_lock(root):
                 check_generation()
                 for name, raw in preimages.items():
                     if cancelled is not None and cancelled():

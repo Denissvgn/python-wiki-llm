@@ -6254,9 +6254,22 @@ def _execute_bootstrap_options(
     *,
     _workspace_refresh_authorized: bool = False,
 ) -> BootstrapResult:
+    from .maintenance_protocol import guard_maintenance_owner, maintenance_write_operation
+
+    guard_maintenance_owner(options.wiki_dir)
     if not _workspace_refresh_authorized:
         _preflight_public_bootstrap(options)
     _preflight_bootstrap_source_selection(options)
+    with maintenance_write_operation(options.wiki_dir) as basis:
+        return _execute_bootstrap_options_locked(options, _workspace_refresh_authorized=_workspace_refresh_authorized, write_basis=basis)
+
+
+def _execute_bootstrap_options_locked(
+    options: _BootstrapRunOptions,
+    *,
+    _workspace_refresh_authorized: bool = False,
+    write_basis=None,
+) -> BootstrapResult:
     try:
         _preflight_bootstrap_governance(options.wiki_dir)
     except (GovernanceError, InfrastructureSyncError) as exc:
@@ -6265,6 +6278,9 @@ def _execute_bootstrap_options(
     _start_bootstrap(state)
 
     inventory_result = _extract_bootstrap_inventory(state)
+    if write_basis is not None:
+        write_basis.source_snapshot = inventory_result.source_snapshot
+        write_basis.assert_current()
     inventory = inventory_result.inventory
     if not state.options.openapi_file and _finish_if_empty_bootstrap_inventory(
         state, inventory

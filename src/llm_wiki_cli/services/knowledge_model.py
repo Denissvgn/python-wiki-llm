@@ -562,6 +562,12 @@ def parse_knowledge_index(payload: object) -> KnowledgeIndex:
         validate_implementation_collection(concepts, producer=bundle.producer)
     except (ValueError, TypeError, KeyError) as exc:
         raise KnowledgeModelError("concepts.extensions", str(exc)) from exc
+    from .maintenance_projection import validate_maintenance_projection
+
+    try:
+        validate_maintenance_projection(model)
+    except (ValueError, TypeError, KeyError) as exc:
+        raise KnowledgeModelError("maintenance", str(exc)) from exc
     # Governance is an independently versioned projection whose authority is
     # the separate ledger.  Validate its core lifecycle/UID/alias/event parity
     # only after the enclosing model and the other reserved extensions exist.
