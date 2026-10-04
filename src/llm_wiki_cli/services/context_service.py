@@ -1859,7 +1859,7 @@ def _capture_protocol_enrichment_session(
                 )
             ),
         )
-        call_edges = resolve_call_edges(inventory) if entrypoints else []
+        call_edges = resolve_call_edges(inventory)
         flows = [build_flow(entrypoint, call_edges) for entrypoint in entrypoints]
         data_flow_context = (
             build_data_flow_context(inventory, call_edges) if entrypoints else None

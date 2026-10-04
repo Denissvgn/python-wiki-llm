@@ -964,6 +964,7 @@ def valid_python_constructor_facts(inventory, *, require_capability=True):
                 and isinstance(call.get("name"), str)
                 and type(call.get("line")) is int
                 and call["line"] > 0
+                and ("column" not in call or type(call["column"]) is int and call["column"] >= 0)
                 and (
                     fact["kind"] != "constructed-receiver"
                     or fact["member"] == call["name"]

@@ -741,6 +741,7 @@ def test_public_dict_return_annotations_import_and_resolve():
                 "pages",
                 "callers",
                 "callees",
+                "coverage",
                 "flow",
                 "data_flow",
                 "path",
@@ -875,11 +876,11 @@ def test_public_dict_return_annotations_import_and_resolve():
         ),
         api_types.CallersResult: (
             bounded | {"callable", "callers"},
-            set(),
+            {"coverage"},
         ),
         api_types.CalleesResult: (
             bounded | {"callable", "callees"},
-            set(),
+            {"coverage"},
         ),
         api_types.DependencyNeighborhoodResult: (
             bounded

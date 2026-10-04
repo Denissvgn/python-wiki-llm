@@ -371,12 +371,15 @@ def assemble_documentation_query_service(
     machine_verification: Mapping[str, Mapping[str, Any]],
     service_factory: Any = DocumentationGraphQueryService,
     inventory_result: object | None = None,
+    snapshot_call_inventory: bool = False,
 ) -> DocumentationGraphQueryService:
     """Assemble the shared service with a caller-supplied service factory."""
 
     captured_options = (
         {} if inventory_result is None else {"inventory_result": inventory_result}
     )
+    if snapshot_call_inventory:
+        captured_options["snapshot_call_inventory"] = snapshot_call_inventory
     return service_factory(
         inventory,
         call_edges=call_edges,
@@ -403,6 +406,7 @@ def build_documentation_query_service_from_view(
     dependency_analysis: Mapping[str, Any] | None = None,
     surface_index: Mapping[str, Any] | None = None,
     inventory_result: object | None = None,
+    snapshot_call_inventory: bool = False,
 ) -> DocumentationGraphQueryService:
     """Assemble one service around an already evaluated native read view."""
 
@@ -421,6 +425,7 @@ def build_documentation_query_service_from_view(
         knowledge_view=evaluated_view,
         machine_verification=verification_summaries_for_concepts(evaluated_view),
         inventory_result=inventory_result,
+        snapshot_call_inventory=snapshot_call_inventory,
     )
 
 
@@ -443,6 +448,7 @@ def build_snapshot_documentation_query_service(
         knowledge_view=view,
         limit=limit,
         surface_index=view.surface,
+        snapshot_call_inventory=True,
     )
     _assert_wiki_unchanged(wiki_root, anchor)
     return service

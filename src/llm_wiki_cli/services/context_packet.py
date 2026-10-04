@@ -917,9 +917,7 @@ def capture_context_read(
                 include_plugins=False,
             )
         )
-        call_edges = tuple(
-            context_service.resolve_call_edges(inventory) if entrypoints else ()
-        )
+        call_edges = tuple(context_service.resolve_call_edges(inventory))
         flows = tuple(
             context_service.build_flow(entrypoint, list(call_edges))
             for entrypoint in entrypoints

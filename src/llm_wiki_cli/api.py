@@ -3067,6 +3067,11 @@ def query_documentation(
                 "callees": callee_result.get("callees", []),
             }
         )
+        call_coverage = caller_result.get("coverage")
+        if isinstance(call_coverage, Mapping) and call_coverage == callee_result.get(
+            "coverage"
+        ):
+            payload["coverage"] = dict(call_coverage)
         payload["bounds"].update(
             {
                 "pages": pages["bounds"]["pages"],

@@ -94,6 +94,7 @@ def test_extract_v1_data_flow_fields_are_additive_contract():
         "classes[].python_constructor_dispatch",
         "python_import_scope",
         "calls[].args",
+        "calls[].column",
         "calls[].kwargs",
         "classes[].attributes[].alias",
         "classes[].attributes[].annotated_metadata",

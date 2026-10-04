@@ -2425,9 +2425,18 @@ def test_knowledge_enrichment_reuses_one_live_inventory_and_read_view(
             "verification",
             "freshness",
             "lifecycle",
+            "implementation",
         }
         for summary in summaries
     )
+    from llm_wiki_cli.services.implementation_evidence import validate_implementation_summary
+
+    for summary in summaries:
+        implementation = validate_implementation_summary(summary["implementation"])
+        assert implementation["state"] == "unavailable"
+        assert implementation["reason"] == "legacy-evidence-absent"
+        assert implementation["live_comparison_performed"] is False
+        assert implementation["source_changed"] is None
     assert all(
         set(summary["freshness"])
         == {"state", "reason", "live_comparison_performed"}

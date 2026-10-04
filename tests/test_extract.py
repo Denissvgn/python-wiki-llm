@@ -2268,6 +2268,7 @@ class TestCallCapture:
             "name": "write_text",
             "attr": "path.write_text",
             "line": 2,
+            "column": 4,
             "args": [{"kind": "name", "value": "content"}],
             "kwargs": [
                 {"name": "encoding", "kind": "literal", "value": "'utf-8'"},
@@ -2293,11 +2294,13 @@ class TestCallCapture:
             {
                 "name": "helper",
                 "line": 2,
+                "column": 4,
                 "args": [{"kind": "literal", "value": "'first'"}],
             },
             {
                 "name": "helper",
                 "line": 3,
+                "column": 4,
                 "args": [{"kind": "literal", "value": "'second'"}],
             },
         ]
@@ -2387,6 +2390,7 @@ class TestCallCapture:
             "name": "helper",
             "attr": "self.helper",
             "line": 3,
+            "column": 15,
         }
 
 
@@ -2983,9 +2987,10 @@ class TestEntryPointSignals:
                 "name": "run",
                 "attr": "asyncio.run",
                 "line": 7,
+                "column": 4,
                 "args": [{"kind": "call", "value": "main_entry(...)"}],
             },
-            {"name": "main_entry", "line": 7},
+            {"name": "main_entry", "line": 7, "column": 16},
         ]
         assert "module_calls" not in data
 

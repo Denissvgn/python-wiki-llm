@@ -352,12 +352,18 @@ class DataFlowForEntrypointResult(_BoundedQueryResult):
     data_flow: dict[str, Any] | None
 
 
-class CallersResult(_BoundedQueryResult):
+class _StaticCallQueryOptions(TypedDict, total=False):
+    """Additive captured-source coverage for static call queries."""
+
+    coverage: dict[str, Any]
+
+
+class CallersResult(_BoundedQueryResult, _StaticCallQueryOptions):
     callable: dict[str, Any] | None
     callers: list[dict[str, Any]]
 
 
-class CalleesResult(_BoundedQueryResult):
+class CalleesResult(_BoundedQueryResult, _StaticCallQueryOptions):
     callable: dict[str, Any] | None
     callees: list[dict[str, Any]]
 
@@ -459,6 +465,7 @@ class DocumentationQueryResult(_DocumentationQueryRequired, total=False):
     pages: list[dict[str, Any]]
     callers: list[dict[str, Any]]
     callees: list[dict[str, Any]]
+    coverage: dict[str, Any]
     flow: dict[str, Any] | None
     data_flow: dict[str, Any] | None
     path: str | None

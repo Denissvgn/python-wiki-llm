@@ -190,6 +190,7 @@ def _call_record(node: ast.Call, *, include_arguments: bool = False) -> dict | N
             return None
         record = {"name": "<dynamic>", "line": node.lineno}
     if include_arguments:
+        record["column"] = node.col_offset
         record.update(_call_arguments(node))
     return record
 

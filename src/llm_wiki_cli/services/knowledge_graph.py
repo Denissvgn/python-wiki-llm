@@ -765,7 +765,7 @@ def _materialize_calls(state: _MaterializationState) -> None:
             or target_path
             or "unknown"
         )
-        edge_kind = str(edge.get("kind") or "unresolved")
+        edge_kind = str(edge.get("resolution") or edge.get("kind") or "unresolved")
         resolution = "unresolved"
         target: dict[str, Any]
         candidate_source_symbols: list[dict[str, Any]] = []
@@ -830,7 +830,7 @@ def _materialize_calls(state: _MaterializationState) -> None:
         )
         call_attributes = {
             key: edge[key]
-            for key in ("name", "args", "kwargs")
+            for key in ("name", "args", "kwargs", "constructor", "candidates")
             if key in edge
         }
         if candidate_source_symbols:
@@ -842,6 +842,12 @@ def _materialize_calls(state: _MaterializationState) -> None:
                 canonical_candidates[key]
                 for key in sorted(canonical_candidates)
             ]
+        location = _line_location(source_path, edge.get("line"))
+        invocation = edge.get("location")
+        if isinstance(invocation, Mapping):
+            column = invocation.get("column")
+            if type(column) is int and column >= 0:
+                location["column"] = column + 1
         state.add_edge(
             analyzer="calls",
             kind="calls",
@@ -853,7 +859,8 @@ def _materialize_calls(state: _MaterializationState) -> None:
                 "kind": "call",
                 "source": source_symbol_endpoint(source_path, source_symbol),
                 "target": sample_target,
-                "location": _line_location(source_path, edge.get("line")),
+                "location": location,
+                **({"reason": edge["reason"]} if edge.get("reason") else {}),
                 "attributes": call_attributes,
             },
         )

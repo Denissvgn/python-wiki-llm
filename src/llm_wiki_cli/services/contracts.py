@@ -237,6 +237,7 @@ EXTRACT_ADDITIVE_FIELDS = {
     "classes[].python_constructor_dispatch",
     "python_import_scope",
     "calls[].args",
+    "calls[].column",
     "calls[].kwargs",
     "classes[].attributes[].alias",
     "classes[].attributes[].annotated_metadata",
