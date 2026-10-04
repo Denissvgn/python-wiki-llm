@@ -804,7 +804,7 @@ def _add_knowledge_command(subparsers):
 
     storage_migrate = actions.add_parser("migrate", help="Explicitly adopt indexed sharded native knowledge storage")
     _add_knowledge_wiki_argument(storage_migrate)
-    storage_migrate.add_argument("--to", choices=["sharded-v2", "packed-v3", "packed-v3-deflate", "packed-v4", "packed-v4-deflate", "indexed-v6"], required=True)
+    storage_migrate.add_argument("--to", choices=["sharded-v2", "packed-v3", "packed-v3-deflate", "packed-v4", "packed-v4-deflate", "indexed-v6", "indexed-v8"], required=True)
     storage_migrate.add_argument("--recovery-dir", default=None,
                                  help="Recovery snapshot outside the wiki; defaults to Git metadata when available")
     _add_knowledge_dry_run(storage_migrate)

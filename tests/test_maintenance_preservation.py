@@ -104,6 +104,65 @@ def test_migration_and_recovery_preserve_marker_owner_and_authored_preimages(
     assert load_knowledge_state(wiki).knowledge is not None
 
 
+def test_indexed_manifest_cli_preserves_adopted_owner_and_recovery(
+    tmp_path, monkeypatch, capsys
+):
+    wiki = _project(tmp_path, monkeypatch, capsys)
+    before = _bytes(wiki)
+    authority = canonical_bytes(SyncManifest.load(wiki).maintenance_state)
+    marker = (wiki / ADOPTION_FILENAME).read_bytes()
+    arguments = [
+        "llm-wiki", "knowledge", "migrate", "--wiki-dir", "wiki",
+        "--to", "indexed-v8", "--recovery-dir", "storage-recovery",
+    ]
+    with patch.object(sys, "argv", [*arguments, "--dry-run"]):
+        cli.main()
+    preview = json.loads(capsys.readouterr().out)
+    assert preview["to"] == "indexed-v8" and preview["dry_run"]
+    assert preview["minimum_reader"] == "manifest/v8"
+    assert _bytes(wiki) == before
+    assert not Path("storage-recovery").exists()
+    with patch.object(sys, "argv", arguments):
+        cli.main()
+    result = json.loads(capsys.readouterr().out)
+    assert result["changed"] and result["to"] == "indexed-v8"
+    assert json.loads((wiki / MANIFEST_FILENAME).read_bytes())["version"] == 8
+    assert canonical_bytes(SyncManifest.load(wiki).maintenance_state) == authority
+    assert (wiki / ADOPTION_FILENAME).read_bytes() == marker
+    with patch.object(sys, "argv", [
+        "llm-wiki", "knowledge", "recover-storage", "--wiki-dir", "wiki",
+        "--recovery-dir", "storage-recovery",
+    ]):
+        cli.main()
+    recovery = json.loads(capsys.readouterr().out)
+    assert recovery["schema_version"] == "llm-wiki-storage-recovery/v1"
+    assert recovery["changed"] and recovery["dry_run"] is False
+    assert canonical_bytes(SyncManifest.load(wiki).maintenance_state) == authority
+    assert all((wiki / name).read_bytes() == raw for name, raw in before.items())
+
+
+def test_indexed_manifest_cli_requires_explicit_maintenance_adoption(
+    tmp_path, monkeypatch, capsys
+):
+    monkeypatch.chdir(tmp_path)
+    Path("src").mkdir()
+    Path("src/policy.py").write_text(POLICY_SOURCE, encoding="utf-8")
+    api.bootstrap_wiki("src", "wiki")
+    capsys.readouterr()
+    before = _bytes(Path("wiki"))
+    with patch.object(sys, "argv", [
+        "llm-wiki", "knowledge", "migrate", "--wiki-dir", "wiki",
+        "--to", "indexed-v8", "--recovery-dir", "storage-recovery",
+    ]), pytest.raises(SystemExit) as caught:
+        cli.main()
+    assert caught.value.code == 1
+    failure = json.loads(capsys.readouterr().out)
+    assert failure["ok"] is False
+    assert "requires explicit maintenance adoption" in failure["error"]["message"]
+    assert _bytes(Path("wiki")) == before
+    assert not Path("storage-recovery").exists()
+
+
 @pytest.mark.parametrize("operation", ["export", "downgrade"])
 def test_lossy_operations_refuse_without_changing_authority(
     tmp_path, monkeypatch, capsys, operation
