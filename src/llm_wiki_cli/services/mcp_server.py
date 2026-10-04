@@ -852,6 +852,28 @@ class McpWikiService:
             raise _api_mcp_error(exc) from exc
 
     @ac.bound_comparison
+    def read_compact_context_session(
+        self, session_id, request, view_options, *, if_result_id=None,
+        if_view_id=None, delta=False,
+    ):
+        try:
+            return self._session(session_id).read_compact(request,
+                view_options=view_options, if_result_id=if_result_id,
+                if_view_id=if_view_id, delta=delta)
+        except LlmWikiApiError as exc:
+            raise _api_mcp_error(exc) from exc
+
+    @ac.bound_comparison
+    def get_task_context_receipt(
+        self, session_id, request_id, result_id, *, current=False,
+    ):
+        try:
+            return self._session(session_id).canonical_receipt(
+                request_id, result_id, current=current)
+        except LlmWikiApiError as exc:
+            raise _api_mcp_error(exc) from exc
+
+    @ac.bound_comparison
     def hint_context_session(self, session_id, *, unsaved_buffers=False):
         try:
             self._session(session_id).hint(unsaved_buffers=unsaved_buffers)
@@ -1598,6 +1620,48 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
 
     read_context_session.__annotations__["delta"] = strict_bool
     server.tool()(read_context_session)
+
+    def read_compact_context_session(
+        session_id: str, request: dict, view_options: dict,
+        if_result_id: str | None = None, if_view_id: str | None = None,
+        delta: bool = False,
+    ):
+        """Return an opt-in counted view; fetch its canonical receipt explicitly."""
+        from mcp.types import CallToolResult, TextContent  # type: ignore[reportMissingImports]
+        from .workflow_profile import canonical_json
+
+        result = _native_tool_call(service.read_compact_context_session,
+            session_id, request, view_options, if_result_id=if_result_id,
+            if_view_id=if_view_id, delta=delta)
+        if isinstance(result, CallToolResult):
+            return result
+        metadata = result.metadata()
+        if result.view is not None:
+            view = result.view
+            text = view.rendered if view.ok else view.diagnostic_rendered
+            return CallToolResult(content=[TextContent(type="text", text=text)],
+                                  structuredContent=metadata, isError=not view.ok)
+        return CallToolResult(content=[TextContent(type="text",
+            text=canonical_json(metadata).decode("utf-8"))], structuredContent=metadata)
+
+    read_compact_context_session.__annotations__["delta"] = strict_bool
+    server.tool()(read_compact_context_session)
+
+    def get_task_context_receipt(
+        session_id: str, request_id: str, result_id: str, current: bool = False,
+    ):
+        """Fetch full canonical transport with explicit historical/current scope."""
+        from mcp.types import CallToolResult, TextContent  # type: ignore[reportMissingImports]
+
+        result = _native_tool_call(service.get_task_context_receipt,
+            session_id, request_id, result_id, current=current)
+        if isinstance(result, CallToolResult):
+            return result
+        return CallToolResult(content=[TextContent(type="text", text=result.canonical.rendered)],
+                              structuredContent=result.metadata())
+
+    get_task_context_receipt.__annotations__["current"] = strict_bool
+    server.tool()(get_task_context_receipt)
 
     def hint_context_session(session_id: str, unsaved_buffers: bool = False) -> dict[str, Any]:
         """Record an invalidation hint; it never establishes currentness."""

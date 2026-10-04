@@ -24,6 +24,7 @@ from . import context_packet as packets
 from .immutable import freeze
 from .io import first_unsafe_path_component
 from .task_contract import TaskContext, normalize_task_request, TASK_REQUEST_SCHEMA_V2, TASK_RESULT_SCHEMA_V2
+from .task_compact import CompactTaskContext, _CheckedCounter, normalize_view_options, render_compact_task_context
 from .task_context import TaskCancelledError, TaskRead, _counter, build_task_read, plan_source_read, validate_task_context
 from .workflow_profile import WorkflowRequestError, bounded_int, canonical_json, content_id, exact_fields
 
@@ -134,6 +135,40 @@ class SessionReply:
         return json_detach(self._metadata)
 
 
+@dataclass(frozen=True)
+class CompactSessionReply:
+    state: str
+    result_id: str | None
+    view_id: str | None
+    view: CompactTaskContext | None
+    canonical: TaskContext | None
+    delta: Mapping[str, Any] | None
+    _metadata: Mapping[str, Any]
+
+    def metadata(self) -> dict[str, Any]:
+        return json_detach(self._metadata)
+
+
+@dataclass(frozen=True)
+class CanonicalReceipt:
+    request_id: str
+    result_id: str
+    canonical: TaskContext
+    validation_scope: str
+    _metadata: Mapping[str, Any]
+
+    def metadata(self) -> dict[str, Any]:
+        return json_detach(self._metadata)
+
+
+@dataclass(frozen=True)
+class _Receipt:
+    entry: _Entry
+    request: Mapping[str, Any]
+    options: Mapping[str, Any]
+    view: CompactTaskContext
+
+
 def json_detach(value):
     import json
     return json.loads(canonical_json(value))
@@ -209,6 +244,8 @@ class ContextSession:
         self._options["profile"] = effective
         self._limit, self._max_bytes, self._ttl = max_entries, max_bytes, ttl_seconds
         self._entries: OrderedDict[str, _Entry] = OrderedDict()
+        self._receipts: OrderedDict[tuple[str, str], _Receipt] = OrderedDict()
+        self._custody: OrderedDict[tuple[str, str], None] = OrderedDict()
         self._owner = object()
         self._bytes = 0
         self._closed = False
@@ -236,12 +273,79 @@ class ContextSession:
 
     def _clear(self):
         self._entries.clear()
+        self._receipts.clear()
+        self._custody.clear()
         self._bytes = 0
+
+    @staticmethod
+    def _identity(entry):
+        payload = entry.read.result.to_payload()
+        return payload["request_id"], payload["result_id"]
+
+    def _recount(self):
+        identities = {self._identity(entry) for entry in self._entries.values()} | set(self._receipts)
+        for identity in list(self._custody):
+            if identity not in identities:
+                del self._custody[identity]
+        for identity in identities:
+            self._custody.setdefault(identity, None)
+        self._bytes = _memory_size((self._entries, self._receipts, self._custody)) if identities else 0
+
+    def _touch(self, identity):
+        self._custody[identity] = None
+        self._custody.move_to_end(identity)
+
+    def _drop_identity(self, identity):
+        for key in list(self._entries):
+            if self._identity(self._entries[key]) == identity:
+                del self._entries[key]
+        self._receipts.pop(identity, None)
+        self._custody.pop(identity, None)
+        self._recount()
 
     def _drop(self, key):
         entry = self._entries.pop(key, None)
         if entry is not None:
-            self._bytes = _memory_size(self._entries) if self._entries else 0
+            self._recount()
+
+    def _bound_custody(self):
+        self._recount()
+        while self._custody and (len(self._custody) > self._limit or self._bytes > self._max_bytes):
+            self._drop_identity(next(iter(self._custody)))
+
+    def _expire(self):
+        now = time.monotonic()
+        for key in list(self._entries):
+            if self._entries[key].expires <= now:
+                self._drop(key)
+        for identity in list(self._receipts):
+            if self._receipts[identity].entry.expires <= now:
+                self._drop_identity(identity)
+
+    def _publication_cancelled(self, cancelled):
+        if self._closed or self._unsaved or (cancelled is not None and cancelled()):
+            self._clear()
+            raise WorkflowRequestError("cancelled", "session publication cancelled or deferred")
+
+    def _check_publication(self, read, environment, request, profile, counter, cancelled, roots):
+        self._publication_cancelled(cancelled)
+        counter_basis = (counter.identity, counter.exact)
+        if read.result.ok and not self._validate(_Entry(read, environment, 0, 0, self._owner),
+                self._environment(), request, profile, counter, cold=True,
+                after_portable=lambda: self._publication_cancelled(cancelled)):
+            self._clear()
+            raise packets.ContextPacketSourceMutationError("session-inputs")
+        if (self._closed or self._unsaved or counter_basis != (counter.identity, counter.exact)
+                or environment != self._environment()):
+            self._clear()
+            raise packets.ContextPacketSourceMutationError("session-environment")
+        try:
+            self._roots_current()
+            if roots != (_root_stamp(self._source), _root_stamp(self._wiki)):
+                raise packets.ContextPacketSourceMutationError("session-roots")
+        except (ValueError, OSError, RuntimeError):
+            self._clear()
+            raise
 
     def _share_inputs(self, read):
         """Intern immutable bytes within this workspace; receipts stay per entry."""
@@ -273,7 +377,16 @@ class ContextSession:
             return False
         return True
 
-    def _validate(self, entry, environment, request, profile, counter, *, cold=False):
+    @staticmethod
+    def _reusable_read(read, environment):
+        if environment is None:
+            return False
+        if read.scoped_state is not None and not read.scoped_state.cacheable:
+            return False
+        return read.captured is None or all(
+            module.get("language") == "python" for module in read.captured.inventory.values())
+
+    def _validate(self, entry, environment, request, profile, counter, *, cold=False, after_portable=None):
         if not self._owns(entry) or entry.environment != environment or (environment is None and not cold):
             return False
         read = entry.read
@@ -284,7 +397,14 @@ class ContextSession:
         try:
             validate_task_context(read.result.rendered, request, profile=self._options["profile"],
                                   policy=self._options["policy"], counter=counter)
-            self._validation_work["passes"] = self._validation_work.get("passes", 0) + 1
+        except (ValueError, OSError, RuntimeError):
+            return False
+        self._validation_work["passes"] = self._validation_work.get("passes", 0) + 1
+        # Trusted portable validation may call a host counter. Observe cancellation
+        # after that callback, before the final callback-free input checks.
+        if after_portable is not None:
+            after_portable()
+        try:
             if read.scoped_state is not None:
                 from .task_context_v2 import ScopedTaskState
                 state = read.scoped_state
@@ -367,6 +487,27 @@ class ContextSession:
     @ac.bound_comparison
     def read(self, request, *, if_result_id=None, delta=False, reuse=True,
              cancelled: Callable[[], bool] | None = None) -> SessionReply:
+        reply = self._read(request, if_result_id=if_result_id, delta=delta, reuse=reuse, cancelled=cancelled)
+        assert isinstance(reply, SessionReply)
+        return reply
+
+    @ac.bound_comparison
+    def read_compact(self, request, *, view_options, if_result_id=None, if_view_id=None,
+                     delta=False, reuse=True, cancelled: Callable[[], bool] | None = None) -> CompactSessionReply:
+        with self._lock:
+            try:
+                if view_options is None:
+                    raise WorkflowRequestError("view_options", "an explicit compact view request is required")
+                reply = self._read(request, if_result_id=if_result_id, delta=delta, reuse=reuse,
+                                   cancelled=cancelled, view_options=view_options, if_view_id=if_view_id)
+            except Exception:
+                self._clear()
+                raise
+            assert isinstance(reply, CompactSessionReply)
+            return reply
+
+    def _read(self, request, *, if_result_id=None, delta=False, reuse=True,
+              cancelled=None, view_options=None, if_view_id=None):
         with self._lock:
             if self._closed:
                 raise WorkflowRequestError("session", "session is closed")
@@ -378,6 +519,16 @@ class ContextSession:
                 raise WorkflowRequestError("if_result_id", "must be a canonical result identity")
             normalized, profile = normalize_task_request(request, profile=self._options["profile"], policy=self._options["policy"])
             counter = _counter(profile.settings, self._options["counter"])
+            compact_options = (normalize_view_options(view_options, ceiling=profile.settings["budget_tokens"])
+                               if view_options is not None else None)
+            if compact_options is not None:
+                if normalized["schema_version"] != TASK_REQUEST_SCHEMA_V2:
+                    raise WorkflowRequestError("schema_version", "compact views require a task v2 request")
+                counter = _CheckedCounter(counter)
+            if if_view_id is not None and (not isinstance(if_view_id, str) or len(if_view_id) != 71
+                    or not if_view_id.startswith("sha256:")
+                    or any(c not in "0123456789abcdef" for c in if_view_id[7:])):
+                raise WorkflowRequestError("if_view_id", "must be a canonical view identity")
             if self._unsaved:
                 raise WorkflowRequestError("unsaved_buffers", "save or explicitly defer unsaved buffers before reading on-disk evidence")
             if cancelled is not None and (not callable(cancelled) or cancelled()):
@@ -386,14 +537,13 @@ class ContextSession:
             started = time.perf_counter_ns()
             self._validation_work = {}
             self._roots_current()
-            now = time.monotonic()
-            for key in list(self._entries):
-                if self._entries[key].expires <= now:
-                    self._drop(key)
+            self._expire()
+            roots = (_root_stamp(self._source), _root_stamp(self._wiki))
             environment = self._environment()
             key = content_id("llm-wiki-session-request/v1", {"request": normalized,
                 "counter": counter.identity, "counter_exact": counter.exact})
             entry = self._entries.get(key)
+            prior_receipt = self._receipts.get((normalized["request_id"], if_result_id)) if if_result_id else None
             base = next((item.read.result for item in self._entries.values()
                          if self._owns(item) and item.read.result.result_id == if_result_id), None) if if_result_id else None
             reused = bool(reuse and not self._dirty and entry is not None
@@ -402,6 +552,7 @@ class ContextSession:
                 assert entry is not None
                 read = entry.read
                 self._entries.move_to_end(key)
+                self._touch(self._identity(entry))
                 capture_reused = True
             else:
                 if entry is not None:
@@ -421,19 +572,21 @@ class ContextSession:
             if cancelled is not None and cancelled():
                 self._clear()
                 raise WorkflowRequestError("cancelled", "session read cancelled")
-            if read.result.ok and environment is not None and reuse and not reused and self._limit and self._max_bytes:
+            if (read.result.ok and environment is not None and reuse and not reused and self._limit and self._max_bytes
+                    and (compact_options is None or self._reusable_read(read, environment))):
                 detached = self._share_inputs(freeze(read))
                 size = _memory_size(detached)
                 if size <= self._max_bytes:
                     self._entries[key] = _Entry(detached, environment, time.monotonic() + self._ttl, size, self._owner)
-                    self._bytes = _memory_size(self._entries)
-                    while self._entries and (len(self._entries) > self._limit or self._bytes > self._max_bytes):
-                        self._drop(next(iter(self._entries)))
+                    self._touch(self._identity(self._entries[key]))
+                    self._bound_custody()
             current = read.result
             state, delta_payload = "full", None
             if current.ok and environment is not None and current.result_id == if_result_id:
                 state = "unchanged"
-            elif delta and base is not None and current.ok and base.to_payload().get("request_id") == normalized["request_id"]:
+            elif (delta and base is not None and current.ok
+                    and (compact_options is None or (environment is not None and self._reusable_read(read, environment)))
+                    and base.to_payload().get("request_id") == normalized["request_id"]):
                 candidate = build_delta(base, current)
                 try:
                     reconstructed = apply_task_delta(base.rendered, candidate, request,
@@ -442,6 +595,19 @@ class ContextSession:
                     reconstructed = None
                 if reconstructed is not None and len(canonical_json(candidate)) < len(current.rendered.encode("utf-8")):
                     state, delta_payload = "delta", candidate
+            compact_view = None
+            if compact_options is not None:
+                compact_view = render_compact_task_context(current, request, view_options=compact_options,
+                    profile=self._options["profile"], policy=self._options["policy"], counter=counter)
+                exact_base = bool(reused and prior_receipt is not None
+                    and self._owns(prior_receipt.entry) and prior_receipt.entry.expires > time.monotonic()
+                    and prior_receipt.options == compact_options and prior_receipt.view.ok
+                    and prior_receipt.entry.read.result.rendered == current.rendered
+                    and prior_receipt.view.canonical_text == current.rendered
+                    and prior_receipt.view.view_id == if_view_id
+                    and compact_view.ok and compact_view.view_id == if_view_id
+                    and current.result_id == if_result_id)
+                state = "unchanged" if exact_base else "full"
             snapshot = read.captured.source_snapshot if read.captured else None
             original_work = (read.scoped_state.original_work if read.scoped_state is not None
                              else current.to_payload().get("work", {})) or {}
@@ -467,16 +633,98 @@ class ContextSession:
                                         "embedded task work describes its originating read", "helper-backed captures use cold reads"]}
             # Counter callbacks and delta reconstruction happen before this final
             # check, so neither can mutate inputs and leave a false live claim.
-            if current.ok and not self._validate(_Entry(read, environment, 0, 0, self._owner), self._environment(),
-                                                request, profile, counter, cold=True):
-                self._clear()
-                raise packets.ContextPacketSourceMutationError("session-inputs")
-            self._roots_current()
+            if compact_view is not None:
+                emitted = "" if state == "unchanged" else (compact_view.rendered or compact_view.diagnostic_rendered)
+                metadata.update(view_id=compact_view.view_id, view_schema=compact_view.schema_version,
+                    emitted_context_bytes=len(emitted.encode("utf-8")),
+                    emitted_context_tokens=counter.count(emitted) if emitted else 0,
+                    accounting_scope="compact emitted text; canonical receipt and host framing are separate")
+            pending_receipt = None
+            if compact_view is not None and current.ok and self._limit and self._max_bytes:
+                assert current.result_id is not None and compact_options is not None
+                existing = self._entries.get(key)
+                owned = existing if existing is not None and existing.read.result.rendered == current.rendered else _Entry(
+                    freeze(read), environment, time.monotonic() + self._ttl, 0, self._owner)
+                pending_receipt = _Receipt(owned, freeze(json_detach(request)), freeze(compact_options), compact_view)
+            self._check_publication(read, environment, request, profile, counter, cancelled, roots)
+            if compact_view is not None and state == "unchanged" and (
+                    prior_receipt is None or if_result_id is None or prior_receipt.entry.expires <= time.monotonic()
+                    or self._receipts.get((normalized["request_id"], if_result_id)) is not prior_receipt):
+                state = "full"
+                metadata["state"] = state
+                metadata["emitted_context_bytes"] = len(compact_view.rendered.encode("utf-8"))
+                metadata["emitted_context_tokens"] = compact_view.accounting["used_tokens"]
+            if pending_receipt is not None:
+                identity = self._identity(pending_receipt.entry)
+                self._receipts[identity] = pending_receipt
+                self._touch(identity)
+                self._bound_custody()
+            metadata["work"].update(retained_bytes=self._bytes, entries=len(self._custody))
             metadata["work"].update(validation_passes=self._validation_work.get("passes", 0),
                                     validation_observed=dict(self._validation_work),
                                     elapsed_ns=time.perf_counter_ns() - started)
+            if compact_view is not None:
+                return CompactSessionReply(state, current.result_id, compact_view.view_id,
+                    compact_view if state == "full" else None, current,
+                    freeze(delta_payload) if delta_payload else None, freeze(metadata))
             return SessionReply(state, current.result_id, current if state == "full" else None,
                                 freeze(delta_payload) if delta_payload else None, freeze(metadata))
+
+    @ac.bound_comparison
+    def canonical_receipt(self, request_id, result_id, *, current=False,
+                          cancelled: Callable[[], bool] | None = None) -> CanonicalReceipt:
+        with self._lock:
+            try:
+                return self._canonical_receipt(request_id, result_id, current=current, cancelled=cancelled)
+            except Exception:
+                self._clear()
+                raise
+
+    def _canonical_receipt(self, request_id, result_id, *, current, cancelled):
+        with self._lock:
+            if self._closed or type(current) is not bool:
+                raise WorkflowRequestError("receipt", "closed session or invalid current flag")
+            for field, value in (("request_id", request_id), ("result_id", result_id)):
+                if (not isinstance(value, str) or len(value) != 71 or not value.startswith("sha256:")
+                        or any(c not in "0123456789abcdef" for c in value[7:])):
+                    raise WorkflowRequestError(field, "must be a canonical identity")
+            if cancelled is not None and (not callable(cancelled) or cancelled()):
+                self._clear()
+                raise WorkflowRequestError("cancelled", "receipt lookup cancelled")
+            self._roots_current()
+            self._expire()
+            identity = (request_id, result_id)
+            receipt = self._receipts.get(identity)
+            if receipt is None or not self._owns(receipt.entry):
+                raise WorkflowRequestError("receipt", "exact canonical receipt is not retained")
+            counter = _CheckedCounter(_counter(receipt.entry.read.profile.settings, self._options["counter"]))
+            self._validation_work = {}
+            roots = (_root_stamp(self._source), _root_stamp(self._wiki))
+            validated = validate_task_context(receipt.entry.read.result.rendered, receipt.request,
+                profile=self._options["profile"], policy=self._options["policy"], counter=counter)
+            if (validated["request_id"], validated["result_id"]) != identity:
+                raise WorkflowRequestError("receipt", "canonical receipt identity does not match its retained key")
+            if current:
+                if not self._reusable_read(receipt.entry.read, receipt.entry.environment):
+                    raise WorkflowRequestError("receipt", "receipt is historical only; current validation identity is unavailable")
+                if self._unsaved:
+                    raise WorkflowRequestError("unsaved_buffers", "save buffers before current receipt validation")
+                self._check_publication(receipt.entry.read, receipt.entry.environment, receipt.request,
+                    receipt.entry.read.profile, counter, cancelled, roots)
+            elif self._closed or (cancelled is not None and cancelled()):
+                self._clear()
+                raise WorkflowRequestError("cancelled", "receipt lookup cancelled")
+            self._roots_current()
+            if roots != (_root_stamp(self._source), _root_stamp(self._wiki)):
+                raise WorkflowRequestError("receipt", "receipt workspace ownership changed during validation")
+            if (receipt.entry.expires <= time.monotonic() or self._receipts.get(identity) is not receipt):
+                raise WorkflowRequestError("receipt", "exact canonical receipt ownership expired during validation")
+            self._touch(identity)
+            return CanonicalReceipt(request_id, result_id, receipt.entry.read.result,
+                "current-revalidated" if current else "historical-captured", freeze({
+                    "request_id": request_id, "result_id": result_id,
+                    "validation_scope": "current-revalidated" if current else "historical-captured",
+                    "work": dict(self._validation_work), "retained_bytes": self._bytes}))
 
     @ac.bound_comparison
     def hint(self, *, unsaved_buffers=False):

@@ -73,7 +73,11 @@ from .services.workflow_profile import (
     WorkflowProfile as WorkflowProfile, WorkflowPolicy as WorkflowPolicy, WorkflowRequestError,
 )
 from .services.task_contract import TaskContext as TaskContext
-from .services.context_session import ContextSession as _ContextSession, SessionReply as SessionReply
+from .services.task_compact import CompactTaskContext as CompactTaskContext
+from .services.context_session import (
+    ContextSession as _ContextSession, SessionReply as SessionReply,
+    CompactSessionReply as CompactSessionReply, CanonicalReceipt as CanonicalReceipt,
+)
 from .services.context_knowledge_contract import (
     KNOWLEDGE_MODE_REQUEST_FIELD,
     KNOWLEDGE_MODE_VALUES,
@@ -1408,6 +1412,64 @@ def expand_task_storage_receipt(receipt: Mapping[str, Any]) -> dict[str, Any]:
 
 @_api_boundary
 @ac.comparison_entrypoint
+def build_compact_task_context(
+    request: Mapping[str, Any], *, view_options: Mapping[str, Any],
+    src_dir: str = ".", wiki_dir: str = DEFAULT_WIKI_DIR,
+    profile: WorkflowProfile | Mapping[str, Any] | None = None,
+    policy: WorkflowPolicy | None = None, counter: TokenCounter | None = None,
+    allow_external_src: bool = False, source_selection: str | Path | None = None,
+    helper_cache_dir: str | None = None, cancelled: Callable[[], bool] | None = None,
+    comparison_policy: str | None = None,
+) -> CompactTaskContext:
+    """Build an opt-in view while retaining its exact canonical host receipt."""
+    from .services.task_compact_delivery import build_compact_task_context as build
+
+    return build(request, view_options=view_options, src_dir=src_dir, wiki_dir=wiki_dir,
+        profile=profile, policy=policy, counter=counter, allow_external_src=allow_external_src,
+        source_selection=source_selection, helper_cache_dir=helper_cache_dir, cancelled=cancelled)
+
+
+@_api_boundary
+def render_compact_task_context(
+    canonical_text: str, request: Mapping[str, Any], *, view_options: Mapping[str, Any],
+    profile: WorkflowProfile | Mapping[str, Any] | None = None,
+    policy: WorkflowPolicy | None = None, counter: TokenCounter | None = None,
+) -> CompactTaskContext:
+    """Present validated saved evidence without claiming current disk validation."""
+    from .services.task_compact import render_compact_task_context as render
+
+    return render(canonical_text, request, view_options=view_options,
+                  profile=profile, policy=policy, counter=counter)
+
+
+@_api_boundary
+def validate_compact_task_context(
+    compact_text: str, canonical_text: str, request: Mapping[str, Any], *,
+    view_options: Mapping[str, Any], profile: WorkflowProfile | Mapping[str, Any] | None = None,
+    policy: WorkflowPolicy | None = None, counter: TokenCounter | None = None,
+) -> dict[str, Any]:
+    """Validate a complete view against the original canonical request and receipt."""
+    from .services.task_compact import validate_compact_task_context as validate
+
+    return validate(compact_text, canonical_text, request, view_options=view_options,
+                    profile=profile, policy=policy, counter=counter)
+
+
+@_api_boundary
+def expand_compact_task_context(
+    compact_text: str, canonical_text: str, request: Mapping[str, Any], *,
+    view_options: Mapping[str, Any], profile: WorkflowProfile | Mapping[str, Any] | None = None,
+    policy: WorkflowPolicy | None = None, counter: TokenCounter | None = None,
+) -> dict[str, Any]:
+    """Recover projected facts only after full canonical and view validation."""
+    from .services.task_compact import expand_compact_task_context as expand
+
+    return expand(compact_text, canonical_text, request, view_options=view_options,
+                  profile=profile, policy=policy, counter=counter)
+
+
+@_api_boundary
+@ac.comparison_entrypoint
 def reconcile_task_context(
     rendered: str, request: Mapping[str, Any], *, src_dir: str = ".", wiki_dir: str = DEFAULT_WIKI_DIR,
     profile: WorkflowProfile | Mapping[str, Any] | None = None,
@@ -1432,6 +1494,25 @@ class ContextSession(_ContextSession):
              delta: bool = False, reuse: bool = True,
              cancelled: Callable[[], bool] | None = None) -> SessionReply:
         return super().read(request, if_result_id=if_result_id, delta=delta, reuse=reuse, cancelled=cancelled)
+
+    @_api_boundary
+    def read_compact(
+        self, request: Mapping[str, Any], *, view_options: Mapping[str, Any],
+        if_result_id: str | None = None, if_view_id: str | None = None,
+        delta: bool = False, reuse: bool = True,
+        cancelled: Callable[[], bool] | None = None,
+    ) -> CompactSessionReply:
+        return super().read_compact(request, view_options=view_options,
+            if_result_id=if_result_id, if_view_id=if_view_id, delta=delta,
+            reuse=reuse, cancelled=cancelled)
+
+    @_api_boundary
+    def canonical_receipt(
+        self, request_id: str, result_id: str, *, current: bool = False,
+        cancelled: Callable[[], bool] | None = None,
+    ) -> CanonicalReceipt:
+        return super().canonical_receipt(request_id, result_id,
+                                         current=current, cancelled=cancelled)
 
     @_api_boundary
     def hint(self, *, unsaved_buffers: bool = False) -> None:
@@ -3485,6 +3566,13 @@ use_p0_calibration_host_broker_authenticator = _deprecated_api_alias(
 
 
 __all__ = [
+    "CompactSessionReply",
+    "CanonicalReceipt",
+    "CompactTaskContext",
+    "build_compact_task_context",
+    "render_compact_task_context",
+    "validate_compact_task_context",
+    "expand_compact_task_context",
     "MaintenanceStatusResult",
     "MaintenanceAdoptionResult",
     "MaintenanceAcknowledgmentResult",

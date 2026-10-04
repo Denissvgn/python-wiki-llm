@@ -286,7 +286,13 @@ def _add_task_context_command(subparsers):
     parser.add_argument("--tokenizer", help="Trusted local tokenizer JSON")
     parser.add_argument("--allow-external-src", action="store_true")
     parser.add_argument("--allow-full-inventory", action="store_true", help="Permit explicit requests for a full source scan")
-    parser.add_argument("--output", help="Write canonical context to this file")
+    parser.add_argument("--output", help="Write the selected context view to this file")
+    parser.add_argument("--view", choices=["canonical", "compact-v1"], default="canonical",
+                        help="Explicit presentation; canonical remains the default")
+    parser.add_argument("--view-budget-tokens", type=int,
+                        help="Separate compact text budget within the host ceiling")
+    parser.add_argument("--canonical-output",
+                        help="Required compact host receipt destination outside source and wiki trees")
     _add_source_selection_argument(parser)
     _add_helper_cache_argument(parser)
 

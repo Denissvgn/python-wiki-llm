@@ -17,6 +17,10 @@ from llm_wiki_cli.services.documentation_queries import DocumentationGraphQueryS
 
 
 _PUBLIC_FUNCTION_NAMES = (
+    "build_compact_task_context",
+    "render_compact_task_context",
+    "validate_compact_task_context",
+    "expand_compact_task_context",
     "adopt_maintenance",
     "get_maintenance_status",
     "acknowledge_maintenance",
@@ -77,6 +81,10 @@ _PUBLIC_FUNCTION_NAMES = (
 
 _INVALID_REQUEST_FAILURES = frozenset(
     {
+        "build_compact_task_context",
+        "render_compact_task_context",
+        "validate_compact_task_context",
+        "expand_compact_task_context",
         "adopt_maintenance",
         "get_maintenance_status",
         "acknowledge_maintenance",
@@ -238,6 +246,10 @@ def _failure_cases(tmp_path: Path):
     query_service = cast(DocumentationGraphQueryService, _FailingQueryService())
 
     return {
+        "build_compact_task_context": lambda: api.build_compact_task_context({}, view_options={}),
+        "render_compact_task_context": lambda: api.render_compact_task_context("", {}, view_options={}),
+        "validate_compact_task_context": lambda: api.validate_compact_task_context("", "", {}, view_options={}),
+        "expand_compact_task_context": lambda: api.expand_compact_task_context("", "", {}, view_options={}),
         "adopt_maintenance": lambda: api.adopt_maintenance(
             recovery_dir=str(tmp_path / "recovery"),
             manifest_format=cast(Any, "invalid"),
@@ -609,6 +621,10 @@ def test_submitted_documentation_result_schema_is_invalid_request(
 
 def test_public_dict_return_annotations_import_and_resolve():
     expected = {
+        "build_compact_task_context": api.CompactTaskContext,
+        "render_compact_task_context": api.CompactTaskContext,
+        "validate_compact_task_context": dict[str, typing.Any],
+        "expand_compact_task_context": dict[str, typing.Any],
         "adopt_maintenance": api_types.MaintenanceAdoptionResult,
         "get_maintenance_status": api_types.MaintenanceStatusResult,
         "acknowledge_maintenance": api_types.MaintenanceAcknowledgmentResult,

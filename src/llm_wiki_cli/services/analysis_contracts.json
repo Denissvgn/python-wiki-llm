@@ -235,6 +235,7 @@
     "services/sync_transition_execution.py",
     "services/sync_transitions.py",
     "services/task_compact.py",
+    "services/task_compact_delivery.py",
     "services/task_context.py",
     "services/task_context_v2.py",
     "services/task_contract.py",

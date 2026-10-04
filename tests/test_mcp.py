@@ -2475,6 +2475,8 @@ def test_tool_registration_names_without_sdk(tmp_project):
         "build_task_context",
         "open_context_session",
         "read_context_session",
+        "read_compact_context_session",
+        "get_task_context_receipt",
         "hint_context_session",
         "close_context_session",
     ]
