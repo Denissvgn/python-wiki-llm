@@ -34,6 +34,38 @@ def _tree(root: Path) -> dict[str, bytes]:
     }
 
 
+@pytest.mark.parametrize("damage", ["missing", "malformed"])
+def test_public_bootstrap_preserves_adopted_owner_recovery_before_existing_target_refusal(
+    tmp_path, monkeypatch, capsys, damage
+):
+    from llm_wiki_cli import api
+    from llm_wiki_cli.services.maintenance_protocol import MaintenanceProtocolError
+
+    monkeypatch.chdir(tmp_path)
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "app.py").write_text("def run():\n    return 1\n")
+    wiki = tmp_path / "wiki"
+    api.bootstrap_wiki(str(source), str(wiki))
+    api.adopt_maintenance(str(source), str(wiki), recovery_dir="recovery")
+    capsys.readouterr()
+    manifest = wiki / ".llm-wiki-manifest.json"
+    if damage == "missing":
+        manifest.unlink()
+    else:
+        manifest.write_text("{}\n")
+    before = _tree(tmp_path)
+
+    def forbidden_inventory(*_args, **_kwargs):
+        pytest.fail("damaged adopted authority must refuse before extraction")
+
+    monkeypatch.setattr(bootstrap_cmd, "get_inventory_result", forbidden_inventory)
+    with pytest.raises(MaintenanceProtocolError) as stopped:
+        execute_bootstrap(BootstrapRequest(source_root=source, wiki_root=wiki))
+    assert stopped.value.reason == ("owner-missing" if damage == "missing" else "owner-invalid")
+    assert _tree(tmp_path) == before
+
+
 def test_api_and_typed_service_produce_equivalent_native_wiki_trees(
     tmp_path, capsys
 ):
