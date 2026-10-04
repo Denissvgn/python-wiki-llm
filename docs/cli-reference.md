@@ -741,7 +741,7 @@ The v3 `health_details` object adds:
   and generation-option hashes. Comparison still uses exact producer versions;
   `analysis_contract: null` means no cross-version compatibility contract is available.
 - Disjoint `modeled` and `unmodeled` counts whose sum is `total`. Modeled outcomes
-  distinguish current, nonsemantic change, changed/missing source, incompatible
+  distinguish current, source-byte change with unchanged recorded structure, changed/missing source, incompatible
   basis and unknown evidence. Missing recorded evidence does not make a modeled
   concept unmodeled.
 - Separate evaluation, comparison-attempt and compatible-content counts.
@@ -766,11 +766,11 @@ resulting indeterminate drift as unhealthy.
 | Exit code | Status | Meaning |
 |---|---|---|
 | `0` | `healthy` | The committed snapshot is coherent and no health downgrade was found. |
-| `1` | `degraded` | Knowledge remains usable, but availability is degraded, freshness was not evaluated, a review expired, or drift is indeterminate/nonsemantic. |
+| `1` | `degraded` | Knowledge remains usable, but availability is degraded, freshness was not evaluated, a review expired, or drift is indeterminate or source bytes changed while recorded structure matched. |
 | `2` | `unhealthy` | A mixed snapshot, invalid governance or receipt, unsupported state, or confirmed stale concept was found. |
 | `3` | `absent` | Knowledge artifacts are absent or the wiki has not been initialized. |
 
-`--strict` promotes indeterminate and nonsemantic source drift from degraded to
+`--strict` promotes indeterminate and source-byte drift from degraded to
 unhealthy. It does not change the JSON shape. Shell automation should capture
 the JSON before applying its own threshold because codes `1` through `3` are
 health results, not serialization failures. The supported Python API exposes

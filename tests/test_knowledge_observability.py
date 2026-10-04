@@ -162,7 +162,7 @@ def test_unknown_basis_incompatibility_guidance_fails_closed(reason_code):
     "state",
     [None, "not-evaluated", *tuple(
         value for value in ComputedFreshness
-        if value is not ComputedFreshness.BASIS_INCOMPATIBLE
+        if value not in {ComputedFreshness.BASIS_INCOMPATIBLE, ComputedFreshness.NONSEMANTIC_SOURCE_CHANGE}
     )],
 )
 def test_guidance_is_absent_outside_basis_incompatibility(state):

@@ -339,8 +339,8 @@ wiki checks, trusted plugin validation, or team-owned review policy.
 Use `fail-on: unhealthy` to allow degraded-but-usable knowledge while blocking
 mixed snapshots, invalid governance, confirmed stale concepts, and invalid
 verification receipts. Use `fail-on: degraded` when any degraded result must
-block the job. `strict: "true"` also classifies indeterminate or nonsemantic
-source drift as unhealthy. Replace `<FULL_RELEASE_COMMIT_SHA>` with the full
+block the job. `strict: "true"` also classifies indeterminate or source-byte
+drift as unhealthy. Replace `<FULL_RELEASE_COMMIT_SHA>` with the full
 40-character SHA of an immutable released commit supporting v4; never use a
 branch or tag for a protected workflow.
 

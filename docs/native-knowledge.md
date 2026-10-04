@@ -39,7 +39,7 @@ with an already-collected live source and producer basis:
 | State | Meaning |
 |---|---|
 | `current` | The complete comparable live basis matches the recorded basis. |
-| `nonsemantic-source-change` | Source bytes changed, but the concept-scoped observation did not. |
+| `nonsemantic-source-change` | Source changed; recorded structure unchanged; behavior not evaluated. |
 | `unknown` | The comparison lacks enough reliable information for a stronger result. |
 | `source-changed` | The concept-scoped observation changed. |
 | `source-missing` | A reliably mapped source is confirmed missing. |

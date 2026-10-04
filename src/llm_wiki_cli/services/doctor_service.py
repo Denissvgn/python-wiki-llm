@@ -275,7 +275,7 @@ def _render_doctor_payload(payload: Mapping[str, Any]) -> str:
                 f"{drift['state']} "
                 f"(confirmed={drift['confirmed_stale']}, "
                 f"indeterminate={drift['indeterminate']}, "
-                f"nonsemantic={drift['nonsemantic_changes']})"
+                f"source-byte-change={drift['nonsemantic_changes']})"
             ),
             (
                 "Verification receipt: "
@@ -283,6 +283,10 @@ def _render_doctor_payload(payload: Mapping[str, Any]) -> str:
             ),
         ]
     )
+    if drift["nonsemantic_changes"]:
+        from .freshness_wording import SOURCE_CHANGED_STRUCTURE_UNCHANGED
+
+        lines.append("Source-byte change:  " + SOURCE_CHANGED_STRUCTURE_UNCHANGED)
     if payload["unhealthy_reasons"]:
         lines.append("Unhealthy:            " + ", ".join(payload["unhealthy_reasons"]))
     if payload["degraded_reasons"]:

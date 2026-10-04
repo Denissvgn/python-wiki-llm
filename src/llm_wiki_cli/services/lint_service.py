@@ -2048,7 +2048,7 @@ def _check_knowledge_concepts(
         message = (
             f"Knowledge freshness for {concept.locator!r} is "
             f"{freshness.state.value} [reason={freshness.reason_code}]: "
-            f"{freshness.description}."
+            f"{freshness.description.rstrip('.')}."
         )
         if freshness.state is ComputedFreshness.NONSEMANTIC_SOURCE_CHANGE:
             _record_knowledge_drift(
@@ -2364,6 +2364,7 @@ def _measure_knowledge_phase(
 def _proven_nonsemantic_source_paths(
     view: KnowledgeReadView | None,
 ) -> frozenset[str]:
+    """Collect structural observation equality; executable behavior is unevaluated."""
     if (
         view is None
         or not view.ready

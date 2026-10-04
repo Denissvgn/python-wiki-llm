@@ -347,6 +347,7 @@ without installing, guessing, or treating the missing file as authority.
 - `ready` with live `current` means only unchanged since observation, not true,
   reviewed, approved, secure, semantically verified, or runtime-current.
   Preserve `nonsemantic-source-change` as a qualified byte-change diagnostic.
+  Render: "Source changed; recorded structure unchanged; behavior not evaluated."
   `source-changed`, `source-missing`, `basis-incompatible`, and `unknown` require
   inspection, refresh, deferral, or an explicit limitation rather than an
   authoritative current claim.

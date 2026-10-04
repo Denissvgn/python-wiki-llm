@@ -460,7 +460,7 @@ def knowledge_freshness_hint(
     state: ComputedFreshness | str | None,
     reason_code: object,
 ) -> str | None:
-    """Return static recovery guidance for one incompatible freshness basis.
+    """Return a shared interpretation or recovery guidance for freshness.
 
     The evaluator's reason vocabulary is closed.  Failing closed here ensures
     that a future incompatible reason cannot be presented without distinct
@@ -468,6 +468,10 @@ def knowledge_freshness_hint(
     """
 
     state_value = state.value if isinstance(state, ComputedFreshness) else state
+    if state_value == ComputedFreshness.NONSEMANTIC_SOURCE_CHANGE.value:
+        from .freshness_wording import SOURCE_CHANGED_STRUCTURE_UNCHANGED
+
+        return SOURCE_CHANGED_STRUCTURE_UNCHANGED
     if state_value != ComputedFreshness.BASIS_INCOMPATIBLE.value:
         return None
     if not isinstance(reason_code, str):

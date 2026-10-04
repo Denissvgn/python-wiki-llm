@@ -15,6 +15,7 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 
 from . import analysis_compatibility as ac
+from .freshness_wording import SOURCE_CHANGED_STRUCTURE_UNCHANGED
 
 from .contracts import (
     GOVERNANCE_HASH_EXTENSION_KEY,
@@ -91,7 +92,7 @@ _REASON_DESCRIPTIONS = MappingProxyType(
         REASON_LIVE_EVALUATION_NOT_PERFORMED: "live evaluation was not performed",
         REASON_RECORDED_BASIS_MATCHES_LIVE_EVALUATION: ("unchanged since observation"),
         REASON_SOURCE_BYTES_CHANGED_CONCEPT_OBSERVATION_UNCHANGED: (
-            "concept observation is unchanged since observation; source bytes changed"
+            SOURCE_CHANGED_STRUCTURE_UNCHANGED
         ),
         REASON_CONCEPT_OBSERVATION_CHANGED: (
             "concept observation changed since observation"

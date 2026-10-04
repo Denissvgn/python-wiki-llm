@@ -135,6 +135,7 @@
     "services/extraction_service.py",
     "services/extractor_helpers.py",
     "services/filesystem_guard.py",
+    "services/freshness_wording.py",
     "services/go_calls.py",
     "services/health_contract.py",
     "services/health_details.py",

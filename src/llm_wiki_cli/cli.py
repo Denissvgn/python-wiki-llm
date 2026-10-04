@@ -321,7 +321,7 @@ def _add_doctor_command(subparsers):
     doctor_parser.add_argument(
         "--strict",
         action="store_true",
-        help=("Classify indeterminate or nonsemantic source drift as unhealthy"),
+        help=("Classify indeterminate or source-byte drift as unhealthy"),
     )
     _add_helper_cache_argument(doctor_parser)
     _add_include_tests_argument(doctor_parser)

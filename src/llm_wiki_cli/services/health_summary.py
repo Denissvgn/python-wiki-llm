@@ -5,6 +5,8 @@ from __future__ import annotations
 import unicodedata
 from collections.abc import Mapping, Sequence
 
+from .freshness_wording import SOURCE_CHANGED_STRUCTURE_UNCHANGED
+
 
 FRESHNESS_ORDER = (
     "current", "basis-incompatible", "unknown", "nonsemantic-source-change",
@@ -12,7 +14,8 @@ FRESHNESS_ORDER = (
 )
 FRESHNESS_DISCLOSURE = (
     "Evaluated does not mean current. Unknown may include unmodeled or unavailable "
-    "evidence; zero confirmed drift alone does not establish currentness."
+    "evidence; zero confirmed drift alone does not establish currentness. "
+    "nonsemantic-source-change: " + SOURCE_CHANGED_STRUCTURE_UNCHANGED
 )
 
 
@@ -42,8 +45,8 @@ def summary_cell(value: object, limit: int = 240) -> str:
 def health_policy(strict: bool) -> str:
     """Describe classification independently of an Action's failure threshold."""
     if strict:
-        return "strict; indeterminate/nonsemantic drift is unhealthy"
-    return "non-strict; indeterminate/nonsemantic drift is degraded"
+        return "strict; indeterminate/source-byte drift is unhealthy"
+    return "non-strict; indeterminate/source-byte drift is degraded"
 
 
 def optional_status(state: str, *, absent: str) -> str:
