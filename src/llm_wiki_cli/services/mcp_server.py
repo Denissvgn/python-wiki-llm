@@ -722,14 +722,17 @@ class McpWikiService:
         kinds: list[str] | None = None,
         limit: int = 20,
         mode: str = "ranked",
+        include_source: bool = False,
     ) -> dict:
-        from .search_service import normalize_search, page_records, search_records
+        from .search_service import normalize_search, search_prevalidated_roots
 
         try:
             query, requested, limit, mode = normalize_search(query, kinds, limit, mode)
-            self._assert_source_selection_current()
-            return search_records(page_records(self.wiki_dir, requested, reader=read_md),
-                                  query, limit=limit, mode=mode)
+            self._assert_source_selection_pin_current()
+            return search_prevalidated_roots(query, source_root=Path(self.src_dir), wiki_root=self.wiki_dir,
+                               kinds=sorted(requested), limit=limit, mode=mode,
+                               include_source=include_source, reader=read_md,
+                               **self._source_selection_options())
         except ValueError as exc:
             if isinstance(exc, McpWikiError):
                 raise
@@ -1482,10 +1485,11 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
 
     @server.tool()
     def search_wiki(
-        query: str, kinds: list[str] | None = None, limit: int = 20, mode: str = "ranked"
+        query: str, kinds: list[str] | None = None, limit: int = 20, mode: str = "ranked",
+        include_source: bool = False,
     ) -> dict:
         """Search Markdown wiki pages and return snippets plus resource URIs."""
-        return service.search_wiki(query, kinds=kinds, limit=limit, mode=mode)
+        return service.search_wiki(query, kinds=kinds, limit=limit, mode=mode, include_source=include_source)
 
     @server.tool()
     def get_context(

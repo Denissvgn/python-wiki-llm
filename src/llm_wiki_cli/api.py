@@ -1341,15 +1341,16 @@ def build_budgeted_context(
 def search_wiki(
     query: str, *, src_dir: str = ".", wiki_dir: str = DEFAULT_WIKI_DIR,
     kinds: list[str] | None = None, limit: int = 20,
-    mode: Literal["ranked", "substring"] = "ranked",
+    mode: Literal["ranked", "ranked-v1", "ranked-v2", "substring"] = "ranked",
     source_selection: str | Path | None = None, allow_external_src: bool = False,
+    include_source: bool = False,
 ) -> SearchResult:
     """Search canonical wiki pages with bounded, deterministic lexical ranking."""
     from .services.search_service import search_wiki as search
 
     return cast(SearchResult, search(query, src_dir=src_dir, wiki_dir=wiki_dir,
                 kinds=kinds, limit=limit, mode=mode, source_selection=source_selection,
-                allow_external_src=allow_external_src))
+                allow_external_src=allow_external_src, include_source=include_source))
 
 
 @_api_boundary

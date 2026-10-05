@@ -17,6 +17,7 @@ def run(args):
         wiki_dir=args.wiki_dir,
         source_selection=args.source_selection,
         allow_external_src=args.allow_external_src,
+        include_source=getattr(args, "include_source", False),
     )
     if args.format == "json":
         print(json.dumps(result, ensure_ascii=False, sort_keys=True, indent=2))

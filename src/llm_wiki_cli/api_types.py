@@ -72,11 +72,14 @@ class _SearchMetadata(TypedDict, total=False):
     corpus_id: str
     scanned: dict[str, int]
     resource_limits: dict[str, int]
+    experimental: bool
+    definitive_answer: bool
+    source_indexing: dict[str, Any]
 
 
 class SearchResult(_SearchMetadata):
     query: str
-    mode: Literal["ranked", "substring"]
+    mode: Literal["ranked", "ranked-v1", "ranked-v2", "substring"]
     total: int
     returned: int
     count: int

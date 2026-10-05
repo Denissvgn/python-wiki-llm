@@ -219,6 +219,8 @@
     "services/runtime_output.py",
     "services/schema.py",
     "services/search_rank.py",
+    "services/search_lexical.py",
+    "services/search_source.py",
     "services/search_service.py",
     "services/section_ownership.py",
     "services/secure_file.py",

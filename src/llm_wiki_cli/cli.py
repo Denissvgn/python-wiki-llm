@@ -1432,7 +1432,9 @@ def _add_search_command(subparsers):
         default=20,
         help="Positive maximum results, capped at 100 (default: 20)",
     )
-    parser.add_argument("--mode", choices=["ranked", "substring"], default="ranked")
+    parser.add_argument("--mode", choices=["ranked", "ranked-v1", "ranked-v2", "substring"], default="ranked")
+    parser.add_argument("--include-source", action="store_true",
+                        help="Explicit bounded selected-source indexing with ranked-v2")
     parser.add_argument("--format", choices=["json", "text"], default="json")
     _add_source_selection_argument(parser)
 

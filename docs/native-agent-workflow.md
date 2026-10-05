@@ -28,6 +28,24 @@ Search discovery preserves ranking reasons and corpus bounds. Exact queries use
 the existing [native query contract](native-knowledge-provider.md). A maintenance
 queue is advisory and never applies recommendations.
 
+Ranked search weights informative terms and semantic sections, keeps exact page
+and declaration matches before fuzzy candidates, and labels relaxed matches for
+longer queries. `--mode ranked-v1` retains the earlier ranking policy;
+`--mode substring` performs literal text matching. All results remain discovery
+candidates and require exact inspection before a coding decision.
+
+Source text indexing is an explicit read and cost choice:
+
+```bash
+llm-wiki search "retry failure" --src-dir src --wiki-dir wiki --mode ranked-v2 --include-source
+```
+
+It requires a valid committed manifest and indexes only its mapped module sources
+inside the captured selection. Source snapshot validation and source-byte
+rechecks have separate costs; snippets can include static code or error-message text without proving
+runtime behavior. Narrow the selection when the declared indexing bounds cannot
+fit. Reads never execute the application, install helpers or migrate storage.
+
 ## Source-only task without a wiki
 
 Choose this route when the task needs source evidence. It requires neither
