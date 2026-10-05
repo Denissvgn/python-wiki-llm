@@ -285,15 +285,25 @@ def validate_knowledge_artifacts(
     manifest: SyncManifest,
     object_reader: Callable[[str, int], bytes] | None = None,
     wiki_dir: str | Path | None = None,
+    _validation_receipt: object | None = None,
+    _receipt_wiki_root: Path | None = None,
 ) -> ValidatedKnowledgeArtifacts:
     """Validate canonical projections, cross-artifact parity, and manifest basis."""
 
     surface_payload = validate_surface_index_bytes(surface_index_bytes)
 
-    knowledge_payload = _decode_json_object(
-        knowledge_index_bytes,
-        "knowledge_index_bytes",
-    )
+    receipt_model = None
+    if _validation_receipt is not None:
+        from .knowledge_index import _require_validation_receipt
+        if (_receipt_wiki_root is None or (wiki_dir is not None
+                and Path(wiki_dir).resolve() != _receipt_wiki_root)):
+            raise KnowledgeArtifactError("knowledge_index_bytes.receipt", "receipt requires its exact wiki root")
+        receipt_model = _require_validation_receipt(_validation_receipt, _receipt_wiki_root, knowledge_index_bytes)
+        knowledge_payload = _model_to_payload(receipt_model)
+    else:
+        if _receipt_wiki_root is not None:
+            raise KnowledgeArtifactError("knowledge_index_bytes.receipt", "receipt root requires a receipt")
+        knowledge_payload = _decode_json_object(knowledge_index_bytes, "knowledge_index_bytes")
     schema_version = knowledge_payload.get("schema_version")
     storage_objects: Mapping[str, bytes] = freeze(dict(manifest.storage_objects))
     storage_statistics: Mapping[str, Any] = freeze({})
@@ -352,7 +362,10 @@ def validate_knowledge_artifacts(
         )
     try:
         if store_reader is None:
-            knowledge, expected_knowledge_bytes = _validated_index_serialization(knowledge_payload)
+            if receipt_model is not None:
+                knowledge, expected_knowledge_bytes = receipt_model, knowledge_index_bytes
+            else:
+                knowledge, expected_knowledge_bytes = _validated_index_serialization(knowledge_payload)
         else:
             knowledge = validate_knowledge_index(knowledge_payload)
             if logical_digest(_model_to_payload(knowledge)) != store_reader.root["logical_hash"]:
@@ -457,6 +470,10 @@ def validate_knowledge_artifacts(
     from .knowledge_governance import governance_hash_from_knowledge
 
     governance_hash = governance_hash_from_knowledge(knowledge)
+    if _validation_receipt is not None:
+        from .knowledge_index import _require_validation_receipt
+        assert _receipt_wiki_root is not None
+        _require_validation_receipt(_validation_receipt, _receipt_wiki_root, knowledge_index_bytes)
     validated = ValidatedKnowledgeArtifacts(
         surface_payload=freeze(surface_payload),
         knowledge=knowledge,
@@ -546,6 +563,8 @@ def build_knowledge_commit_plan(
     if (knowledge_index_bytes is None) == (knowledge_index is None):
         raise KnowledgeArtifactError("knowledge_index", "supply exactly one logical model or canonical byte input")
     prepared_store = None
+    validation_receipt = None
+    receipt_root = root.absolute()
     if knowledge_index is not None:
         if knowledge_format != "v1":
             try:
@@ -554,13 +573,20 @@ def build_knowledge_commit_plan(
             except KnowledgeStorageError as exc:
                 raise KnowledgeArtifactError("knowledge_index", str(exc), code=exc.code) from exc
         else:
-            _, knowledge_index_bytes = _validated_index_serialization(knowledge_index)
+            from .knowledge_index import _has_validation_operation, _validated_index_receipt
+            if _has_validation_operation(receipt_root):
+                validation_receipt = _validated_index_receipt(knowledge_index, receipt_root)
+                knowledge_index_bytes = validation_receipt.content
+            else:
+                _, knowledge_index_bytes = _validated_index_serialization(knowledge_index)
     assert knowledge_index_bytes is not None
     validated = validate_knowledge_artifacts(
         surface_index_bytes=surface_index_bytes,
         knowledge_index_bytes=knowledge_index_bytes,
         manifest=manifest,
         object_reader=(None if prepared_store is None else lambda path, _: prepared_store.objects[path]),
+        _validation_receipt=validation_receipt,
+        _receipt_wiki_root=receipt_root if validation_receipt is not None else None,
     )
     objects: tuple[PlannedArtifactWrite | SpooledArtifactWrite, ...] = ()
     knowledge_hash = validated.knowledge_index_hash

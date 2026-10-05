@@ -48,6 +48,7 @@ from .knowledge_index import (
     KnowledgeIndexBuildError,
     KnowledgeIndexInputs,
     build_knowledge_index,
+    _knowledge_validation_operation,
 )
 from .knowledge_graph import (
     DEFAULT_EVIDENCE_LIMIT,
@@ -183,7 +184,8 @@ def build_knowledge_generation_plan(
     if not isinstance(inputs, KnowledgeGenerationInputs):
         raise TypeError("inputs must be a KnowledgeGenerationInputs")
     try:
-        return _build_knowledge_generation_plan(inputs)
+        with _knowledge_validation_operation(Path(inputs.wiki_dir).absolute()):
+            return _build_knowledge_generation_plan(inputs)
     except KnowledgeGenerationError:
         raise
     except (

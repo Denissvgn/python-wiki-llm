@@ -92,7 +92,7 @@ from .knowledge_model import (
     ProducerRecord,
     concept_kind_for_page_kind,
 )
-from .source_snapshot import SourceSnapshot
+from .source_snapshot import SourceSnapshot, source_snapshot_matches_current_files
 from .source_selection import (
     SourceSelectionError,
     selection_may_contain_path,
@@ -821,9 +821,23 @@ def _commit_runtime_knowledge(
 ) -> KnowledgeCommitResult:
     assert inputs.committed_state is not None
     inputs.committed_state.assert_current()
-    return commit_knowledge_artifacts(
-        plan, dry_run=dry_run, fault_injector=fault_injector
+    _require_runtime_source_current(inputs.source_snapshot)
+
+    def checked_stage(stage):
+        if fault_injector is not None:
+            fault_injector(stage)
+        _require_runtime_source_current(inputs.source_snapshot)
+
+    result = commit_knowledge_artifacts(
+        plan, dry_run=dry_run, fault_injector=checked_stage
     )
+    _require_runtime_source_current(inputs.source_snapshot)
+    return result
+
+
+def _require_runtime_source_current(snapshot: SourceSnapshot) -> None:
+    if not source_snapshot_matches_current_files(snapshot):
+        raise KnowledgeGenerationError("source_snapshot", "Source changed before native publication completed")
 
 
 def finalize_runtime_knowledge(
