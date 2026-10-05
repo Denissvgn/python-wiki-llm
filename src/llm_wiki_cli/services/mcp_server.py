@@ -723,16 +723,23 @@ class McpWikiService:
         limit: int = 20,
         mode: str = "ranked",
         include_source: bool = False,
+        discovery: str | None = None,
     ) -> dict:
-        from .search_service import normalize_search, search_prevalidated_roots
+        from .search_service import normalize_discovery, normalize_search, search_prevalidated_roots
+        from .search_discovery import DiscoveryError, MAX_DISCOVERY_BYTES
 
         try:
             query, requested, limit, mode = normalize_search(query, kinds, limit, mode)
+            normalize_discovery(discovery)
             self._assert_source_selection_pin_current()
             return search_prevalidated_roots(query, source_root=Path(self.src_dir), wiki_root=self.wiki_dir,
                                kinds=sorted(requested), limit=limit, mode=mode,
-                               include_source=include_source, reader=read_md,
+                               include_source=include_source, discovery=discovery, reader=read_md,
                                **self._source_selection_options())
+        except DiscoveryError as exc:
+            raise McpWikiError(str(exc), code=exc.code,
+                data={"reason": exc.code, "field": exc.field,
+                      "max_bytes": MAX_DISCOVERY_BYTES, "required_bytes": exc.required_bytes}) from exc
         except ValueError as exc:
             if isinstance(exc, McpWikiError):
                 raise
@@ -1487,9 +1494,11 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
     def search_wiki(
         query: str, kinds: list[str] | None = None, limit: int = 20, mode: str = "ranked",
         include_source: bool = False,
+        discovery: str | None = None,
     ) -> dict:
         """Search Markdown wiki pages and return snippets plus resource URIs."""
-        return service.search_wiki(query, kinds=kinds, limit=limit, mode=mode, include_source=include_source)
+        return service.search_wiki(query, kinds=kinds, limit=limit, mode=mode,
+                                   include_source=include_source, discovery=discovery)
 
     @server.tool()
     def get_context(

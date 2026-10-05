@@ -46,6 +46,40 @@ rechecks have separate costs; snippets can include static code or error-message 
 runtime behavior. Narrow the selection when the declared indexing bounds cannot
 fit. Reads never execute the application, install helpers or migrate storage.
 
+To connect a symptom query to exact inspection, request qualified discovery:
+
+```bash
+llm-wiki search "retry failure" --src-dir src --wiki-dir wiki --discovery qualified-v1
+```
+
+The additional `discovery` response groups the returned candidates by validated
+owner and retains each page and distinct narrative section. Groups cover only
+the returned results; section omissions and limits remain explicit. Recorded
+source and review information describes the captured state. It does not establish
+live freshness, runtime behavior, semantic correctness or current approval.
+Pending and contradictory prose remain visible as separate evidence.
+
+Select a candidate explicitly, then pass its exact `path` to
+`api.inspect_concept(path, src_dir="src", wiki_dir="wiki", live=False)`.
+Continue with the resolved locator only when that response identifies one
+concept. Missing, ambiguous or unavailable outcomes require investigation;
+another fuzzy result cannot replace the selected identity automatically.
+Use the resolved exact source, concept and section anchors in the native task
+request below. Its compact view preserves unresolved requirements and bounds.
+
+Qualified discovery uses bounded selected native reads where supported.
+A wiki without committed native storage, or a valid unsupported layout within
+the capture bounds, leaves
+an explicit unavailable qualification and does not authorize adoption or
+migration. Exceeding capture or output bounds aborts the read, as does missing
+or inconsistent committed authority. Plain Markdown
+pages can still be read by exact path. Discovery's recorded pending review is a
+separate capture: selected task context reports its own maintenance scope and
+may leave current review state unavailable. When review status is decisive,
+re-read the corresponding record with `api.get_maintenance_status(...,
+record_id=record_id, live=False)`; request a live status separately when an
+actual current comparison is needed.
+
 ## Source-only task without a wiki
 
 Choose this route when the task needs source evidence. It requires neither

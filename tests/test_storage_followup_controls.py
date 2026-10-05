@@ -366,7 +366,7 @@ def test_scoped_entries_share_bytes_with_exact_retained_accounting(tmp_path, mon
     shared = set(states[0].wiki_inputs) & set(states[1].wiki_inputs)
     assert shared
     assert all(states[0].wiki_inputs[path].content is states[1].wiki_inputs[path].content for path in shared)
-    assert session._bytes == _memory_size(session._entries)
-    assert session._bytes < sum(_memory_size(entry) for entry in session._entries.values())
+    assert session._bytes == _memory_size((session._entries, session._receipts, session._custody))
+    assert _memory_size(session._entries) < sum(_memory_size(entry) for entry in session._entries.values())
     session.close()
     assert session._bytes == 0

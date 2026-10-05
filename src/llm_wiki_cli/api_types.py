@@ -75,6 +75,7 @@ class _SearchMetadata(TypedDict, total=False):
     experimental: bool
     definitive_answer: bool
     source_indexing: dict[str, Any]
+    discovery: dict[str, Any]
 
 
 class SearchResult(_SearchMetadata):

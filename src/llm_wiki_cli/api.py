@@ -1344,13 +1344,21 @@ def search_wiki(
     mode: Literal["ranked", "ranked-v1", "ranked-v2", "substring"] = "ranked",
     source_selection: str | Path | None = None, allow_external_src: bool = False,
     include_source: bool = False,
+    discovery: Literal["qualified-v1"] | None = None,
 ) -> SearchResult:
     """Search canonical wiki pages with bounded, deterministic lexical ranking."""
     from .services.search_service import search_wiki as search
+    from .services.search_discovery import DiscoveryError, MAX_DISCOVERY_BYTES
 
-    return cast(SearchResult, search(query, src_dir=src_dir, wiki_dir=wiki_dir,
+    try:
+        return cast(SearchResult, search(query, src_dir=src_dir, wiki_dir=wiki_dir,
                 kinds=kinds, limit=limit, mode=mode, source_selection=source_selection,
-                allow_external_src=allow_external_src, include_source=include_source))
+                allow_external_src=allow_external_src, include_source=include_source,
+                discovery=discovery))
+    except DiscoveryError as exc:
+        raise InvalidRequestError(str(exc), code=exc.code,
+            details={"reason": exc.code, "field": exc.field,
+                     "max_bytes": MAX_DISCOVERY_BYTES, "required_bytes": exc.required_bytes}) from exc
 
 
 @_api_boundary

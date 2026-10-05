@@ -102,7 +102,8 @@ def test_compact_presentation_is_classified_without_changing_evidence_producer_i
 
 def test_search_consumers_do_not_change_source_evidence_producer_inputs():
     rules = capture.registry()
-    for name in ("services/search_lexical.py", "services/search_source.py"):
+    for name in ("services/search_lexical.py", "services/search_source.py",
+                 "services/search_discovery.py", "services/search_discovery_capture.py"):
         assert name in rules["classified_python_files"]
         assert name not in rules["shared"]
         assert all(name not in paths for paths in rules["providers"].values())

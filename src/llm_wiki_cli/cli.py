@@ -1435,6 +1435,8 @@ def _add_search_command(subparsers):
     parser.add_argument("--mode", choices=["ranked", "ranked-v1", "ranked-v2", "substring"], default="ranked")
     parser.add_argument("--include-source", action="store_true",
                         help="Explicit bounded selected-source indexing with ranked-v2")
+    parser.add_argument("--discovery", choices=["qualified-v1"],
+                        help="Group candidates with captured qualifications and exact inspection routes")
     parser.add_argument("--format", choices=["json", "text"], default="json")
     _add_source_selection_argument(parser)
 
