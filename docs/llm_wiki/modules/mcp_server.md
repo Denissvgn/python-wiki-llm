@@ -35,7 +35,7 @@ origin validation; stdio remains the default.
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
 | `.token_counting` | `TokenCounter`, `LocalTokenizerCounter` |
 | `.validation` | `posix_path_text`, `require_portable_relative_path` |
-| `.workflow_profile` | `WorkflowPolicy`, `WorkflowProfile`, `canonical_json` |
+| `.workflow_profile` | `WorkflowPolicy`, `WorkflowProfile`, `canonical_json`, `canonical_json` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Iterable`, `Mapping` |
 | `contextlib` | `asynccontextmanager` |
@@ -45,7 +45,7 @@ origin validation; stdio remains the default.
 | `json` | `json` |
 | `mcp` | `mcp` |
 | `mcp.server.fastmcp` | `FastMCP` |
-| `mcp.types` | `CallToolResult`, `TextContent`, `CallToolResult`, `TextContent`, `CallToolResult`, `TextContent`, `CallToolResult`, `TextContent` |
+| `mcp.types` | `CallToolResult`, `TextContent`, `CallToolResult`, `TextContent`, `CallToolResult`, `TextContent`, `CallToolResult`, `TextContent`, `CallToolResult`, `TextContent`, `CallToolResult`, `TextContent` |
 | `pathlib` | `Path` |
 | `pydantic` | `StrictBool`, `StrictInt` |
 | `re` | `re` |

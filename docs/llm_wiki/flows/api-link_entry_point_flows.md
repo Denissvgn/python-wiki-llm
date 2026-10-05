@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -22,28 +24,33 @@ sequenceDiagram
     participant p10 as str(…).rsplit (src/llm_wiki_cli/services…:link_entry_point_flows, 1)
     participant p11 as handler.get
     participant p12 as flow_ids.get
-    p0-->>p1: deepcopy
-    p0-->>p2: dict
-    p0-->>p3: entry.get
-    p0-->>p3: entry.get
-    p0-->>p4: str(…).rsplit (src/llm_wiki_cli/services….py:link_entry_point_flows)
-    p0-->>p5: str (src/llm_wiki_cli/services….py:link_entry_point_flows)
-    p0-->>p3: entry.get
-    p0-->>p6: str (src/llm_wiki_cli/services…:link_entry_point_flows, 1)
-    p0-->>p3: entry.get
-    p0-->>p5: str (src/llm_wiki_cli/services….py:link_entry_point_flows)
-    p0-->>p7: linked.get
-    p0-->>p8: isinstance
-    p0-->>p8: isinstance
-    p0-->>p9: operation.get
-    p0-->>p8: isinstance
-    p0-->>p10: str(…).rsplit (src/llm_wiki_cli/services…:link_entry_point_flows, 1)
-    p0-->>p5: str (src/llm_wiki_cli/services….py:link_entry_point_flows)
-    p0-->>p11: handler.get
-    p0-->>p12: flow_ids.get
-    p0-->>p5: str (src/llm_wiki_cli/services….py:link_entry_point_flows)
-    p0-->>p11: handler.get
+    p0-->>p1: deepcopy(dict(...))
+    p0-->>p2: dict(contracts)
+    p0-->>p3: entry.get('category')
+    p0-->>p3: entry.get('id')
+    p0-->>p4: str(…).rsplit (src/llm_wiki_cli/services….py:link_entry_point_flows)('.', 1)
+    p0-->>p5: str (src/llm_wiki_cli/services….py:link_entry_point_flows)(...)
+    p0-->>p3: entry.get('symbol')
+    p0-->>p6: str (src/llm_wiki_cli/services…:link_entry_point_flows, 1)(...)
+    p0-->>p3: entry.get('file')
+    p0-->>p5: str (src/llm_wiki_cli/services….py:link_entry_point_flows)(entry[...])
+    p0-->>p7: linked.get('operations')
+    p0-->>p8: isinstance(operations, list)
+    p0-->>p8: isinstance(operation, dict)
+    p0-->>p9: operation.get('handler')
+    p0-->>p8: isinstance(handler, Mapping)
+    p0-->>p10: str(…).rsplit (src/llm_wiki_cli/services…:link_entry_point_flows, 1)('.', 1)
+    p0-->>p5: str (src/llm_wiki_cli/services….py:link_entry_point_flows)(...)
+    p0-->>p11: handler.get('symbol')
+    p0-->>p12: flow_ids.get((...))
+    p0-->>p5: str (src/llm_wiki_cli/services….py:link_entry_point_flows)(...)
+    p0-->>p11: handler.get('file')
 ```
+
+> Call sequence diagram shows 21 of 21 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 9 of 9 (0 omitted); unresolved 12 of 12 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

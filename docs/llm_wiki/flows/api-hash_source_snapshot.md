@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -20,37 +22,42 @@ sequenceDiagram
     participant p8 as _hash_structured
     participant p9 as payload.values
     participant p10 as _validate_json_tree
-    participant p11 as set (src/llm_wiki_cli/services…ope.py:_validate_json_tree)
-    participant p12 as walk
-    participant p13 as sha256_bytes
+    participant p11 as sha256_bytes
+    participant p12 as canonical_json_bytes
+    participant p13 as set (src/llm_wiki_cli/services…ope.py:_validate_json_tree)
     participant p14 as hashlib.sha256(…).hexdigest
-    participant p15 as hashlib.sha256
-    participant p16 as canonical_json_bytes
-    participant p17 as canonical_json_text(…).encode
+    participant p15 as canonical_json_text(…).encode
+    participant p16 as walk
+    participant p17 as hashlib.sha256
     participant p18 as canonical_json_text
     participant p19 as json.dumps
     p0-->>p1: set (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)
-    p0-->>p2: enumerate
-    p0-->>p3: isinstance
+    p0-->>p2: enumerate(inputs)
+    p0-->>p3: isinstance(item, ConsumedInput)
     p0->>p4: KnowledgeEnvelopeError
     p0->>p4: KnowledgeEnvelopeError
-    p0-->>p5: seen_paths.add
-    p0-->>p6: records.append
-    p0-->>p7: records.sort
+    p0-->>p5: seen_paths.add(item.path)
+    p0-->>p6: records.append({...})
+    p0-->>p7: records.sort(key=...)
     p0->>p8: _hash_structured
     p8-->>p9: payload.values
     p8->>p10: _validate_json_tree
-    p10-->>p11: set (src/llm_wiki_cli/services…ope.py:_validate_json_tree)
-    p10-->>p12: walk
-    p8->>p13: sha256_bytes
-    p13-->>p14: hashlib.sha256(…).hexdigest
-    p13-->>p15: hashlib.sha256
-    p8->>p16: canonical_json_bytes
-    p16-->>p17: canonical_json_text(…).encode
-    p16->>p18: canonical_json_text
-    p18-->>p19: json.dumps
+    p8->>p11: sha256_bytes
+    p8->>p12: canonical_json_bytes
     p8->>p4: KnowledgeEnvelopeError
+    p10-->>p13: set (src/llm_wiki_cli/services…ope.py:_validate_json_tree)
+    p11-->>p14: hashlib.sha256(…).hexdigest
+    p12-->>p15: canonical_json_text(…).encode('utf-8')
+    p10-->>p16: walk(value, field_name)
+    p11-->>p17: hashlib.sha256(value)
+    p12->>p18: canonical_json_text
+    p18-->>p19: json.dumps(value, ensure_ascii=False, separators=(...), sort_keys=True, allow_nan=False)
 ```
+
+> Call sequence diagram shows 21 of 21 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 6 of 6 (0 omitted); unresolved 7 of 7 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

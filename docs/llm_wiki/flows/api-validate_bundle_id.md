@@ -6,51 +6,58 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as validate_bundle_id
     participant p1 as _machine_text
-    participant p2 as isinstance
-    participant p3 as ConceptIdentityError
-    participant p4 as len
-    participant p5 as value.strip
-    participant p6 as any
-    participant p7 as character.isspace
-    participant p8 as unicodedata.normalize
-    participant p9 as unicodedata.category(…).startswith
-    participant p10 as unicodedata.category
-    participant p11 as _BUNDLE_ID_RE.fullmatch
-    participant p12 as text.casefold
-    participant p13 as _looks_absolute_path
-    participant p14 as value.startswith
-    participant p15 as _WINDOWS_ABSOLUTE_RE.match
-    participant p16 as _contains_uri_userinfo
-    participant p17 as urlsplit
+    participant p2 as _BUNDLE_ID_RE.fullmatch
+    participant p3 as text.casefold
+    participant p4 as _looks_absolute_path
+    participant p5 as _contains_uri_userinfo
+    participant p6 as ConceptIdentityError
+    participant p7 as isinstance
+    participant p8 as value.startswith
+    participant p9 as urlsplit
+    participant p10 as _WINDOWS_ABSOLUTE_RE.match
+    participant p11 as len
+    participant p12 as value.strip
+    participant p13 as any
+    participant p14 as character.isspace
+    participant p15 as unicodedata.normalize
+    participant p16 as unicodedata.category(…).startswith
+    participant p17 as unicodedata.category
     p0->>p1: _machine_text
-    p1-->>p2: isinstance
-    p1->>p3: ConceptIdentityError
-    p1-->>p4: len
-    p1->>p3: ConceptIdentityError
-    p1-->>p5: value.strip
-    p1-->>p6: any
-    p1-->>p7: character.isspace
-    p1->>p3: ConceptIdentityError
-    p1-->>p8: unicodedata.normalize
-    p1->>p3: ConceptIdentityError
-    p1-->>p6: any
-    p1-->>p9: unicodedata.category(…).startswith
-    p1-->>p10: unicodedata.category
-    p1->>p3: ConceptIdentityError
-    p0-->>p11: _BUNDLE_ID_RE.fullmatch
-    p0-->>p12: text.casefold
-    p0->>p13: _looks_absolute_path
-    p13-->>p14: value.startswith
-    p13-->>p15: _WINDOWS_ABSOLUTE_RE.match
-    p0->>p16: _contains_uri_userinfo
-    p16-->>p17: urlsplit
-    p0->>p3: ConceptIdentityError
+    p0-->>p2: _BUNDLE_ID_RE.fullmatch(text)
+    p0-->>p3: text.casefold
+    p0->>p4: _looks_absolute_path
+    p0->>p5: _contains_uri_userinfo
+    p0->>p6: ConceptIdentityError
+    p1-->>p7: isinstance(value, str)
+    p4-->>p8: value.startswith((...))
+    p5-->>p9: urlsplit(value)
+    p1->>p6: ConceptIdentityError
+    p4-->>p10: _WINDOWS_ABSOLUTE_RE.match(value)
+    p1-->>p11: len(value)
+    p1->>p6: ConceptIdentityError
+    p1-->>p12: value.strip
+    p1-->>p13: any(...)
+    p1-->>p14: character.isspace
+    p1->>p6: ConceptIdentityError
+    p1-->>p15: unicodedata.normalize('NFC', value)
+    p1->>p6: ConceptIdentityError
+    p1-->>p13: any(...)
+    p1-->>p16: unicodedata.category(…).startswith('C')
+    p1-->>p17: unicodedata.category(character)
+    p1->>p6: ConceptIdentityError
 ```
+
+> Call sequence diagram shows 23 of 23 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 7 of 7 (0 omitted); unresolved 7 of 7 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

@@ -1,6 +1,6 @@
 # ContextPacketReconciliation
 
-**Location:** `src/llm_wiki_cli/services/context_packet.py:540`
+**Location:** `src/llm_wiki_cli/services/context_packet.py:543`
 **Kind:** Class
 **Bases:** —
 **Module:** [context_packet](../modules/context_packet.md)

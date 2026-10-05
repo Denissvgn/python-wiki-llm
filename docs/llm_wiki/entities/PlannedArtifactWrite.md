@@ -1,6 +1,6 @@
 # PlannedArtifactWrite
 
-**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:107`
+**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:108`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -37,7 +37,7 @@ flowchart LR
     n2["_planned_write (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
     n3["_verify_persisted (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
     n4["unchanged_commit_result (src/llm_wiki_cli/services/knowledge_reuse.py)"]
-    n5["recover_knowledge_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
+    n5["_recover_knowledge_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -66,4 +66,4 @@ flowchart LR
 | `_planned_write` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
 | `_verify_persisted` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |
 | `unchanged_commit_result` | call | [knowledge_reuse](../modules/knowledge_reuse.md) | 2 |
-| `recover_knowledge_storage` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |
+| `_recover_knowledge_storage` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |

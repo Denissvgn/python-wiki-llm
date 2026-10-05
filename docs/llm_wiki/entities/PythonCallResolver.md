@@ -1,6 +1,6 @@
 # _PythonCallResolver
 
-**Location:** `src/llm_wiki_cli/services/python_calls.py:66`
+**Location:** `src/llm_wiki_cli/services/python_calls.py:118`
 **Kind:** Class
 **Bases:** —
 **Module:** [python_calls](../modules/python_calls.md)
@@ -17,7 +17,7 @@ _Auto-generated from `_PythonCallResolver` in `src/llm_wiki_cli/services/python_
 
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
-| `__init__` | `(resolver: ModulePathResolver, fallback: str)` | — | — |
+| `__init__` | `(resolver: ModulePathResolver, fallback: str, *, constructor_mode = False)` | — | — |
 | `unknown` | `(kind = 'unresolved')` | — | — |
 | `binding` | `(binding: Mapping, tail: list[str], filepath: str)` | — | — |
 | `member` | `(module: str, members: list[str], origin: str, *, child_import = False)` | — | — |
@@ -28,7 +28,7 @@ _Auto-generated from `_PythonCallResolver` in `src/llm_wiki_cli/services/python_
 ```mermaid
 flowchart LR
     n0["_PythonCallResolver (src/llm_wiki_cli/services/python_calls.py)"]
-    n1["resolve_python_call (src/llm_wiki_cli/services/python_calls.py)"]
+    n1["resolve_python_call_decision (src/llm_wiki_cli/services/python_calls.py)"]
     n1 --> n0
     click n0 "../modules/python_calls.md"
     click n1 "../modules/python_calls.md"
@@ -44,4 +44,4 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `resolve_python_call` | call | [python_calls](../modules/python_calls.md) | 1 |
+| `resolve_python_call_decision` | call | [python_calls](../modules/python_calls.md) | 2 |

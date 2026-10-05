@@ -14,68 +14,80 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as concept_endpoint
     participant p1 as _normalise_endpoint
     participant p2 as _object
-    participant p3 as require_mapping
-    participant p4 as isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    participant p5 as key.encode
-    participant p6 as KnowledgeGraphError
-    participant p7 as dict
-    participant p8 as _enum
-    participant p9 as ', '.join
-    participant p10 as repr
-    participant p11 as require_choice
-    participant p12 as require_trimmed_text
-    participant p13 as require_nonempty_text
-    participant p14 as isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
-    participant p15 as value.strip (src/llm_wiki_cli/services….py:require_nonempty_text)
-    participant p16 as contains_control_character
-    participant p17 as frozenset
-    participant p18 as choice_error
-    participant p19 as endpoint.get
-    participant p20 as _only_fields
-    participant p21 as require_exact_fields
-    participant p22 as isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p23 as str
-    participant p24 as set
-    participant p25 as tuple
+    participant p3 as _enum
+    participant p4 as endpoint.get
+    participant p5 as _only_fields
+    participant p6 as len (src/llm_wiki_cli/services…ph.py:_normalise_endpoint)
+    participant p7 as KnowledgeGraphError
+    participant p8 as _locator
+    participant p9 as _name
+    participant p10 as _relative_path
+    participant p11 as _external_uri
+    participant p12 as _array
+    participant p13 as enumerate
+    participant p14 as any (src/llm_wiki_cli/services…ph.py:_normalise_endpoint)
+    participant p15 as _canonical_json
+    participant p16 as sorted (src/llm_wiki_cli/services…ph.py:_normalise_endpoint)
+    participant p17 as require_mapping
+    participant p18 as require_exact_fields
     p0->>p1: _normalise_endpoint
     p1->>p2: _object
-    p2->>p3: require_mapping
-    p3-->>p4: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    p3-->>p4: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    p3-->>p5: key.encode
-    p2->>p6: KnowledgeGraphError
-    p2->>p6: KnowledgeGraphError
-    p2-->>p7: dict
-    p1->>p8: _enum
-    p8->>p6: KnowledgeGraphError
-    p8-->>p9: ', '.join
-    p8-->>p10: repr
-    p8->>p11: require_choice
-    p11->>p12: require_trimmed_text
-    p12->>p13: require_nonempty_text
-    p13-->>p14: isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
-    p13-->>p15: value.strip (src/llm_wiki_cli/services….py:require_nonempty_text)
-    p13->>p16: contains_control_character
-    p11-->>p17: frozenset
-    p11-->>p18: choice_error
-    p1-->>p19: endpoint.get
-    p1->>p20: _only_fields
-    p20->>p21: require_exact_fields
-    p21-->>p22: isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p21-->>p23: str
-    p21-->>p24: set
-    p21-->>p24: set
-    p21-->>p24: set
-    p21-->>p25: tuple
+    p1->>p3: _enum
+    p1-->>p4: endpoint.get('kind')
+    p1->>p5: _only_fields
+    p1-->>p6: len (src/llm_wiki_cli/services…ph.py:_normalise_endpoint)(present)
+    p1->>p7: KnowledgeGraphError
+    p1->>p8: _locator
+    p1->>p9: _name
+    p1->>p5: _only_fields
+    p1->>p10: _relative_path
+    p1->>p9: _name
+    p1->>p5: _only_fields
+    p1->>p9: _name
+    p1->>p11: _external_uri
+    p1->>p5: _only_fields
+    p1->>p9: _name
+    p1->>p12: _array
+    p1->>p1: _normalise_endpoint
+    p1-->>p13: enumerate(raw_candidates)
+    p1-->>p14: any (src/llm_wiki_cli/services…ph.py:_normalise_endpoint)(...)
+    p1->>p7: KnowledgeGraphError
+    p1->>p15: _canonical_json
+    p1-->>p16: sorted (src/llm_wiki_cli/services…ph.py:_normalise_endpoint)(canonical)
+    p2->>p17: require_mapping
+    p3->>p7: KnowledgeGraphError
+    p5->>p18: require_exact_fields
+    p8->>p9: _name
+    p10->>p9: _name
+    p11->>p9: _name
 ```
 
-> Call sequence diagram shows 30 of 216 interactions; 186 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 216 interactions; 186 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 4 of 63 (59 omitted); unresolved 1 of 56 (55 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/validation.py:require_mapping` | 4 | - | external | 2 |
+| `src/llm_wiki_cli/services/validation.py:require_mapping` | 4 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/knowledge_graph.py:_object` | 3 | [src/llm_wiki_cli/services/knowledge_graph.py](../modules/knowledge_graph.md) | internal | 2 |
+| `src/llm_wiki_cli/services/knowledge_graph.py:_object` | 3 | - | external | 1 |
+| `src/llm_wiki_cli/services/knowledge_graph.py:_enum` | 11 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/knowledge_graph.py:_enum` | 11 | - | external | 1 |
+| `src/llm_wiki_cli/services/knowledge_graph.py:_enum` | 11 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_choice` | 15 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+> Omission summary shows 8 of 71 groups; 63 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -139,16 +151,16 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | concept_endpoint | _normalise_endpoint | 255 | `_normalise_endpoint({...}, 'endpoint')` |
-| _normalise_endpoint | _object | 1404 | `_object(value, path)` |
-| _object | require_mapping | 2302 | `require_mapping(value, error=KnowledgeGraphError(...), require_string_keys=True, key_error=KnowledgeGraphError(...))` |
+| _normalise_endpoint | _object | 1411 | `_object(value, path)` |
+| _object | require_mapping | 2309 | `require_mapping(value, error=KnowledgeGraphError(...), require_string_keys=True, key_error=KnowledgeGraphError(...))` |
 | require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 765 | `isinstance(value, Mapping)` |
 | require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 769 | `isinstance(key, str)` |
 | require_mapping | key.encode | 774 | `key.encode('utf-8')` |
-| _object | KnowledgeGraphError | 2304 | `KnowledgeGraphError(path, 'must be an object')` |
-| _object | KnowledgeGraphError | 2306 | `KnowledgeGraphError(path, 'object keys must be strings')` |
-| _object | dict | 2308 | `dict(selected)` |
-| _normalise_endpoint | _enum | 1405 | `_enum(endpoint.get(...), ENDPOINT_KINDS, ...)` |
-| _enum | KnowledgeGraphError | 2341 | `KnowledgeGraphError(path, ...)` |
+| _object | KnowledgeGraphError | 2311 | `KnowledgeGraphError(path, 'must be an object')` |
+| _object | KnowledgeGraphError | 2313 | `KnowledgeGraphError(path, 'object keys must be strings')` |
+| _object | dict | 2315 | `dict(selected)` |
+| _normalise_endpoint | _enum | 1412 | `_enum(endpoint.get(...), ENDPOINT_KINDS, ...)` |
+| _enum | KnowledgeGraphError | 2348 | `KnowledgeGraphError(path, ...)` |
 
 ### Boundary effects
 

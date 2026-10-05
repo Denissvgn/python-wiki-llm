@@ -6,27 +6,34 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as require_uuid
     participant p1 as require_trimmed_text
-    participant p2 as require_nonempty_text
-    participant p3 as isinstance
-    participant p4 as value.strip
-    participant p5 as contains_control_character
-    participant p6 as pattern.search
-    participant p7 as str
-    participant p8 as uuid.UUID
+    participant p2 as str
+    participant p3 as uuid.UUID
+    participant p4 as require_nonempty_text
+    participant p5 as isinstance
+    participant p6 as value.strip
+    participant p7 as contains_control_character
+    participant p8 as pattern.search
     p0->>p1: require_trimmed_text
-    p1->>p2: require_nonempty_text
-    p2-->>p3: isinstance
-    p2-->>p4: value.strip
-    p2->>p5: contains_control_character
-    p5-->>p6: pattern.search
-    p0-->>p7: str
-    p0-->>p8: uuid.UUID
+    p0-->>p2: str(uuid.UUID(...))
+    p0-->>p3: uuid.UUID(parsed)
+    p1->>p4: require_nonempty_text
+    p4-->>p5: isinstance(value, str)
+    p4-->>p6: value.strip
+    p4->>p7: contains_control_character
+    p7-->>p8: pattern.search(value)
 ```
+
+> Call sequence diagram shows 8 of 8 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 3 of 3 (0 omitted); unresolved 2 of 2 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

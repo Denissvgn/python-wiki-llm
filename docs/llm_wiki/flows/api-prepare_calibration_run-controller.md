@@ -16,6 +16,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -24,54 +26,70 @@ sequenceDiagram
     participant p2 as len (src/llm_wiki_cli/services…y:prepare_calibration_run)
     participant p3 as P0CalibrationSchemaError
     participant p4 as _json_round_trip
-    participant p5 as isinstance (src/llm_wiki_cli/services…oller.py:_json_round_trip)
-    participant p6 as json.dumps (src/llm_wiki_cli/services…oller.py:_json_round_trip)
-    participant p7 as json.loads (src/llm_wiki_cli/services…oller.py:_json_round_trip)
-    participant p8 as _validate_execution_manifest
-    participant p9 as _require_exact_fields
-    participant p10 as require_exact_fields
-    participant p11 as isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p12 as str (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p13 as set (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p14 as tuple (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p15 as sorted (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p16 as invalid_error
-    participant p17 as error_factory
-    participant p18 as label.title (src/llm_wiki_cli/services….py:_require_exact_fields)
-    participant p19 as AssertionError (src/llm_wiki_cli/services….py:_require_exact_fields)
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…y:prepare_calibration_run)
-    p0-->>p2: len (src/llm_wiki_cli/services…y:prepare_calibration_run)
+    participant p5 as _validate_execution_manifest
+    participant p6 as _load_control_workspace
+    participant p7 as Path (src/llm_wiki_cli/services…y:prepare_calibration_run)
+    participant p8 as enumerate (src/llm_wiki_cli/services…y:prepare_calibration_run)
+    participant p9 as P0CalibrationIntegrityError
+    participant p10 as _assert_controls_match
+    participant p11 as _validate_protected_root_placement
+    participant p12 as str (src/llm_wiki_cli/services…y:prepare_calibration_run)
+    participant p13 as uuid.uuid4 (src/llm_wiki_cli/services…y:prepare_calibration_run)
+    participant p14 as _implementation_worktree_roots
+    participant p15 as _compile_evidence_bundle
+    participant p16 as zip
+    participant p17 as _portable_control_record
+    participant p18 as any (src/llm_wiki_cli/services…y:prepare_calibration_run)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…y:prepare_calibration_run)(control_workspaces, (...))
+    p0-->>p2: len (src/llm_wiki_cli/services…y:prepare_calibration_run)(control_workspaces)
     p0->>p3: P0CalibrationSchemaError
     p0->>p4: _json_round_trip
-    p4-->>p5: isinstance (src/llm_wiki_cli/services…oller.py:_json_round_trip)
-    p4->>p3: P0CalibrationSchemaError
-    p4-->>p6: json.dumps (src/llm_wiki_cli/services…oller.py:_json_round_trip)
-    p4-->>p7: json.loads (src/llm_wiki_cli/services…oller.py:_json_round_trip)
-    p4->>p3: P0CalibrationSchemaError
-    p4-->>p5: isinstance (src/llm_wiki_cli/services…oller.py:_json_round_trip)
-    p4->>p3: P0CalibrationSchemaError
-    p0->>p8: _validate_execution_manifest
-    p8->>p9: _require_exact_fields
-    p9->>p10: require_exact_fields
-    p10-->>p11: isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p10-->>p12: str (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p10-->>p13: set (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p10-->>p13: set (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p10-->>p13: set (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p10-->>p14: tuple (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p10-->>p15: sorted (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p10-->>p14: tuple (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p10-->>p15: sorted (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p10-->>p16: invalid_error
-    p10-->>p17: error_factory
-    p9->>p3: P0CalibrationSchemaError
-    p9-->>p18: label.title (src/llm_wiki_cli/services….py:_require_exact_fields)
-    p9-->>p19: AssertionError (src/llm_wiki_cli/services….py:_require_exact_fields)
-    p9-->>p19: AssertionError (src/llm_wiki_cli/services….py:_require_exact_fields)
-    p9->>p3: P0CalibrationSchemaError
+    p0->>p5: _validate_execution_manifest
+    p0->>p6: _load_control_workspace
+    p0-->>p7: Path (src/llm_wiki_cli/services…y:prepare_calibration_run)(value)
+    p0-->>p8: enumerate (src/llm_wiki_cli/services…y:prepare_calibration_run)(control_workspaces, start=1)
+    p0->>p9: P0CalibrationIntegrityError
+    p0->>p9: P0CalibrationIntegrityError
+    p0->>p10: _assert_controls_match
+    p0->>p11: _validate_protected_root_placement
+    p0-->>p7: Path (src/llm_wiki_cli/services…y:prepare_calibration_run)(root)
+    p0-->>p12: str (src/llm_wiki_cli/services…y:prepare_calibration_run)(uuid.uuid4(...))
+    p0-->>p13: uuid.uuid4 (src/llm_wiki_cli/services…y:prepare_calibration_run)
+    p0->>p14: _implementation_worktree_roots
+    p0-->>p7: Path (src/llm_wiki_cli/services…y:prepare_calibration_run)(record[...])
+    p0->>p15: _compile_evidence_bundle
+    p0->>p15: _compile_evidence_bundle
+    p0->>p9: P0CalibrationIntegrityError
+    p0->>p6: _load_control_workspace
+    p0-->>p7: Path (src/llm_wiki_cli/services…y:prepare_calibration_run)(value)
+    p0-->>p8: enumerate (src/llm_wiki_cli/services…y:prepare_calibration_run)(control_workspaces, start=1)
+    p0->>p10: _assert_controls_match
+    p0-->>p16: zip(controls, refreshed_controls)
+    p0->>p17: _portable_control_record
+    p0->>p17: _portable_control_record
+    p0-->>p18: any (src/llm_wiki_cli/services…y:prepare_calibration_run)(...)
+    p0->>p9: P0CalibrationIntegrityError
+    p0-->>p2: len (src/llm_wiki_cli/services…y:prepare_calibration_run)(canonical_json_bytes(...))
 ```
 
-> Call sequence diagram shows 30 of 1294 interactions; 1264 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1294 interactions; 1264 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 13 of 350 (337 omitted); unresolved 0 of 396 (396 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/calibration/controller.py:_json_round_trip` | 5 | - | external | 4 |
+| `src/llm_wiki_cli/services/calibration/controller.py:_json_round_trip` | 5 | [src/llm_wiki_cli/services/calibration/controller.py](../modules/controller.md) | internal | 3 |
+| `src/llm_wiki_cli/services/calibration/controller.py:_validate_execution_manifest` | 13 | [src/llm_wiki_cli/services/calibration/controller.py](../modules/controller.md) | internal | 20 |
+| `src/llm_wiki_cli/services/calibration/controller.py:_require_exact_fields` | 14 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 2 |
+| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 15 | - | external | 9 |
+| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 15 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/calibration/controller.py:_require_exact_fields` | 14 | [src/llm_wiki_cli/services/calibration/controller.py](../modules/controller.md) | internal | 2 |
+| `src/llm_wiki_cli/services/calibration/controller.py:_require_exact_fields` | 14 | - | unresolved | 2 |
+> Omission summary shows 8 of 258 groups; 250 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

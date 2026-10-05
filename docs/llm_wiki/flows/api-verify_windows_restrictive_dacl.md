@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -15,58 +17,76 @@ sequenceDiagram
     participant p3 as Path
     participant p4 as stat.S_ISDIR
     participant p5 as _open_windows_directory_guard
-    participant p6 as ctypes.WinDLL (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p7 as create_file (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p8 as _windows_api_path
-    participant p9 as os.path.abspath
-    participant p10 as os.fspath
-    participant p11 as value.startswith
-    participant p12 as wintypes.HANDLE (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p13 as ctypes.get_last_error (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p14 as ctypes.WinError (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p15 as _WindowsDirectoryGuardUnavailableError
-    participant p16 as WindowsDirectoryGuardError
-    participant p17 as _ByHandleFileInformation (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p18 as get_information (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p19 as ctypes.byref (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p20 as _close_windows_handle
-    participant p21 as ctypes.WinDLL (src/llm_wiki_cli/services….py:_close_windows_handle)
-    participant p22 as close_handle
-    participant p23 as wintypes.HANDLE (src/llm_wiki_cli/services….py:_close_windows_handle)
-    participant p24 as int (src/llm_wiki_cli/services…n_windows_directory_guard)
+    participant p6 as _close_windows_handle
+    participant p7 as _open_windows_file_metadata_guard
+    participant p8 as ctypes.WinDLL (src/llm_wiki_cli/services…n_windows_directory_guard)
+    participant p9 as ctypes.WinDLL (src/llm_wiki_cli/services…ndows_file_metadata_guard)
+    participant p10 as create_file (src/llm_wiki_cli/services…n_windows_directory_guard)
+    participant p11 as create_file (src/llm_wiki_cli/services…ndows_file_metadata_guard)
+    participant p12 as _windows_api_path
+    participant p13 as wintypes.HANDLE (src/llm_wiki_cli/services…n_windows_directory_guard)
+    participant p14 as wintypes.HANDLE (src/llm_wiki_cli/services…ndows_file_metadata_guard)
+    participant p15 as ctypes.get_last_error (src/llm_wiki_cli/services…n_windows_directory_guard)
+    participant p16 as ctypes.WinError (src/llm_wiki_cli/services…ndows_file_metadata_guard)
+    participant p17 as ctypes.WinError (src/llm_wiki_cli/services…n_windows_directory_guard)
+    participant p18 as ctypes.get_last_error (src/llm_wiki_cli/services…ndows_file_metadata_guard)
+    participant p19 as _WindowsDirectoryGuardUnavailableError
+    participant p20 as WindowsFileGuardError
+    participant p21 as WindowsDirectoryGuardError
+    participant p22 as int (src/llm_wiki_cli/services…ndows_file_metadata_guard)
+    participant p23 as _ByHandleFileInformation (src/llm_wiki_cli/services…n_windows_directory_guard)
+    participant p24 as _assert_windows_regular_file_handle
+    participant p25 as get_information (src/llm_wiki_cli/services…n_windows_directory_guard)
     p0->>p1: WindowsSecurityGuardError
     p0-->>p2: Path(…).lstat
-    p0-->>p3: Path
+    p0-->>p3: Path(path)
     p0->>p1: WindowsSecurityGuardError
-    p0-->>p4: stat.S_ISDIR
+    p0-->>p4: stat.S_ISDIR(payload.st_mode)
     p0->>p5: _open_windows_directory_guard
-    p5-->>p6: ctypes.WinDLL (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p5-->>p7: create_file (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p5->>p8: _windows_api_path
-    p8-->>p9: os.path.abspath
-    p8-->>p10: os.fspath
-    p8-->>p11: value.startswith
-    p8-->>p11: value.startswith
-    p5-->>p12: wintypes.HANDLE (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p5-->>p13: ctypes.get_last_error (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p5-->>p14: ctypes.WinError (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p5->>p15: _WindowsDirectoryGuardUnavailableError
-    p5->>p16: WindowsDirectoryGuardError
-    p5-->>p17: _ByHandleFileInformation (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p5-->>p18: get_information (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p5-->>p19: ctypes.byref (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p5-->>p14: ctypes.WinError (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p5-->>p13: ctypes.get_last_error (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p5->>p20: _close_windows_handle
-    p20-->>p21: ctypes.WinDLL (src/llm_wiki_cli/services….py:_close_windows_handle)
-    p20-->>p22: close_handle
-    p20-->>p23: wintypes.HANDLE (src/llm_wiki_cli/services….py:_close_windows_handle)
-    p5-->>p24: int (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p5->>p16: WindowsDirectoryGuardError
-    p5-->>p24: int (src/llm_wiki_cli/services…n_windows_directory_guard)
+    p0-->>p3: Path(path)
+    p0->>p6: _close_windows_handle
+    p0->>p7: _open_windows_file_metadata_guard
+    p0-->>p3: Path(path)
+    p0->>p6: _close_windows_handle
+    p5-->>p8: ctypes.WinDLL (src/llm_wiki_cli/services…n_windows_directory_guard)('kernel32', use_last_error=True)
+    p7-->>p9: ctypes.WinDLL (src/llm_wiki_cli/services…ndows_file_metadata_guard)('kernel32', use_last_error=True)
+    p5-->>p10: create_file (src/llm_wiki_cli/services…n_windows_directory_guard)(_windows_api_path(...), desired_access, ..., None, _OPEN_EXISTING, ..., None)
+    p7-->>p11: create_file (src/llm_wiki_cli/services…ndows_file_metadata_guard)(_windows_api_path(...), ..., ..., None, 3, 2097152, None)
+    p5->>p12: _windows_api_path
+    p7->>p12: _windows_api_path
+    p5-->>p13: wintypes.HANDLE (src/llm_wiki_cli/services…n_windows_directory_guard)(...)
+    p7-->>p14: wintypes.HANDLE (src/llm_wiki_cli/services…ndows_file_metadata_guard)(...)
+    p5-->>p15: ctypes.get_last_error (src/llm_wiki_cli/services…n_windows_directory_guard)
+    p7-->>p16: ctypes.WinError (src/llm_wiki_cli/services…ndows_file_metadata_guard)(ctypes.get_last_error(...))
+    p5-->>p17: ctypes.WinError (src/llm_wiki_cli/services…n_windows_directory_guard)(error_number)
+    p7-->>p18: ctypes.get_last_error (src/llm_wiki_cli/services…ndows_file_metadata_guard)
+    p5->>p19: _WindowsDirectoryGuardUnavailableError
+    p7->>p20: WindowsFileGuardError
+    p5->>p21: WindowsDirectoryGuardError
+    p7-->>p22: int (src/llm_wiki_cli/services…ndows_file_metadata_guard)(handle)
+    p5-->>p23: _ByHandleFileInformation (src/llm_wiki_cli/services…n_windows_directory_guard)
+    p7->>p24: _assert_windows_regular_file_handle
+    p5-->>p25: get_information (src/llm_wiki_cli/services…n_windows_directory_guard)(handle, ctypes.byref(...))
 ```
 
-> Call sequence diagram shows 30 of 183 interactions; 153 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 183 interactions; 153 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 13 of 114 (101 omitted); unresolved 5 of 22 (17 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_windows_api_path` | 10 | - | external | 2 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_windows_api_path` | 10 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 7 | - | external | 10 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 7 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 6 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_close_windows_handle` | 25 | - | external | 2 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_close_windows_handle` | 25 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_verify_windows_handle_restrictive_dacl` | 35 | - | external | 50 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_verify_windows_handle_restrictive_dacl` | 35 | - | unresolved | 5 |
+> Omission summary shows 8 of 22 groups; 14 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

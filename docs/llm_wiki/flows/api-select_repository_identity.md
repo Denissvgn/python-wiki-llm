@@ -6,67 +6,83 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as select_repository_identity
     participant p1 as validate_configured_public_identity
-    participant p2 as isinstance (src/llm_wiki_cli/services…configured_public_identity)
-    participant p3 as KnowledgeEnvelopeError
-    participant p4 as value.strip (src/llm_wiki_cli/services…configured_public_identity)
-    participant p5 as _REPOSITORY_IDENTITY_RE.fullmatch (src/llm_wiki_cli/services…configured_public_identity)
-    participant p6 as value.casefold().endswith
-    participant p7 as value.casefold
-    participant p8 as _remote_mapping
-    participant p9 as isinstance (src/llm_wiki_cli/services…nvelope.py:_remote_mapping)
-    participant p10 as value.items
-    participant p11 as len
-    participant p12 as next
-    participant p13 as iter
-    participant p14 as remotes.get
-    participant p15 as isinstance (src/llm_wiki_cli/services…select_repository_identity)
-    participant p16 as normalize_vcs_remote
-    participant p17 as isinstance (src/llm_wiki_cli/services…pe.py:normalize_vcs_remote)
-    participant p18 as value.strip (src/llm_wiki_cli/services…pe.py:normalize_vcs_remote)
-    participant p19 as any (src/llm_wiki_cli/services…pe.py:normalize_vcs_remote)
-    participant p20 as ord
-    participant p21 as value.startswith
+    participant p2 as _remote_mapping
+    participant p3 as len
+    participant p4 as next
+    participant p5 as iter
+    participant p6 as remotes.get
+    participant p7 as isinstance (src/llm_wiki_cli/services…select_repository_identity)
+    participant p8 as normalize_vcs_remote
+    participant p9 as isinstance (src/llm_wiki_cli/services…configured_public_identity)
+    participant p10 as isinstance (src/llm_wiki_cli/services…nvelope.py:_remote_mapping)
+    participant p11 as isinstance (src/llm_wiki_cli/services…pe.py:normalize_vcs_remote)
+    participant p12 as KnowledgeEnvelopeError
+    participant p13 as value.strip (src/llm_wiki_cli/services…pe.py:normalize_vcs_remote)
+    participant p14 as value.strip (src/llm_wiki_cli/services…configured_public_identity)
+    participant p15 as value.items
+    participant p16 as any (src/llm_wiki_cli/services…pe.py:normalize_vcs_remote)
+    participant p17 as _REPOSITORY_IDENTITY_RE.fullmatch (src/llm_wiki_cli/services…configured_public_identity)
+    participant p18 as ord
+    participant p19 as value.casefold().endswith
+    participant p20 as value.startswith
+    participant p21 as value.casefold
     participant p22 as _WINDOWS_DRIVE_PREFIX_RE.match
     participant p23 as _MALFORMED_PERCENT_RE.search
     participant p24 as _normalize_scheme_remote
     p0->>p1: validate_configured_public_identity
-    p1-->>p2: isinstance (src/llm_wiki_cli/services…configured_public_identity)
-    p1->>p3: KnowledgeEnvelopeError
-    p1-->>p4: value.strip (src/llm_wiki_cli/services…configured_public_identity)
-    p1-->>p5: _REPOSITORY_IDENTITY_RE.fullmatch (src/llm_wiki_cli/services…configured_public_identity)
-    p1-->>p6: value.casefold().endswith
-    p1-->>p7: value.casefold
-    p1->>p3: KnowledgeEnvelopeError
-    p0->>p8: _remote_mapping
-    p8-->>p9: isinstance (src/llm_wiki_cli/services…nvelope.py:_remote_mapping)
-    p8->>p3: KnowledgeEnvelopeError
-    p8-->>p10: value.items
-    p8-->>p9: isinstance (src/llm_wiki_cli/services…nvelope.py:_remote_mapping)
-    p8->>p3: KnowledgeEnvelopeError
-    p8-->>p9: isinstance (src/llm_wiki_cli/services…nvelope.py:_remote_mapping)
-    p8->>p3: KnowledgeEnvelopeError
-    p0-->>p11: len
-    p0-->>p12: next
-    p0-->>p13: iter
-    p0-->>p14: remotes.get
-    p0-->>p15: isinstance (src/llm_wiki_cli/services…select_repository_identity)
-    p0->>p16: normalize_vcs_remote
-    p16-->>p17: isinstance (src/llm_wiki_cli/services…pe.py:normalize_vcs_remote)
-    p16-->>p18: value.strip (src/llm_wiki_cli/services…pe.py:normalize_vcs_remote)
-    p16-->>p19: any (src/llm_wiki_cli/services…pe.py:normalize_vcs_remote)
-    p16-->>p20: ord
-    p16-->>p21: value.startswith
-    p16-->>p22: _WINDOWS_DRIVE_PREFIX_RE.match
-    p16-->>p23: _MALFORMED_PERCENT_RE.search
-    p16->>p24: _normalize_scheme_remote
+    p0->>p2: _remote_mapping
+    p0-->>p3: len(remotes)
+    p0-->>p4: next(iter(...))
+    p0-->>p5: iter(remotes)
+    p0-->>p6: remotes.get(selected)
+    p0-->>p7: isinstance (src/llm_wiki_cli/services…select_repository_identity)(remote, str)
+    p0->>p8: normalize_vcs_remote
+    p1-->>p9: isinstance (src/llm_wiki_cli/services…configured_public_identity)(value, str)
+    p2-->>p10: isinstance (src/llm_wiki_cli/services…nvelope.py:_remote_mapping)(value, Mapping)
+    p8-->>p11: isinstance (src/llm_wiki_cli/services…pe.py:normalize_vcs_remote)(value, str)
+    p1->>p12: KnowledgeEnvelopeError
+    p2->>p12: KnowledgeEnvelopeError
+    p8-->>p13: value.strip (src/llm_wiki_cli/services…pe.py:normalize_vcs_remote)
+    p1-->>p14: value.strip (src/llm_wiki_cli/services…configured_public_identity)
+    p2-->>p15: value.items
+    p8-->>p16: any (src/llm_wiki_cli/services…pe.py:normalize_vcs_remote)(...)
+    p1-->>p17: _REPOSITORY_IDENTITY_RE.fullmatch (src/llm_wiki_cli/services…configured_public_identity)(value)
+    p2-->>p10: isinstance (src/llm_wiki_cli/services…nvelope.py:_remote_mapping)(name, str)
+    p8-->>p18: ord(char)
+    p1-->>p19: value.casefold().endswith('.git')
+    p2->>p12: KnowledgeEnvelopeError
+    p8-->>p20: value.startswith((...))
+    p1-->>p21: value.casefold
+    p2-->>p10: isinstance (src/llm_wiki_cli/services…nvelope.py:_remote_mapping)(remote, str)
+    p8-->>p22: _WINDOWS_DRIVE_PREFIX_RE.match(value)
+    p1->>p12: KnowledgeEnvelopeError
+    p2->>p12: KnowledgeEnvelopeError
+    p8-->>p23: _MALFORMED_PERCENT_RE.search(value)
+    p8->>p24: _normalize_scheme_remote
 ```
 
-> Call sequence diagram shows 30 of 54 interactions; 24 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 54 interactions; 24 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 11 of 14 (3 omitted); unresolved 10 of 29 (19 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_normalize_scheme_remote` | 31 | - | external | 1 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_normalize_scheme_remote` | 31 | - | unresolved | 4 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:normalize_vcs_remote` | 23 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 2 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_normalize_scp_remote` | 37 | - | unresolved | 6 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_normalized_remote_identity` | 44 | - | external | 2 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_normalized_remote_identity` | 44 | - | unresolved | 9 |
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

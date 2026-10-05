@@ -10,8 +10,9 @@
 2. `validation.portable_path_key`
 3. `validation.portable_path_key`
 4. `knowledge_storage_io.StorageReadSession`
-5. `markdown_sections.normalize_markdown`
-6. `sync_retained_links.repair_retained_page_links`
+5. `knowledge_storage_io.StorageReadSession.read`
+6. `markdown_sections.normalize_markdown`
+7. `sync_retained_links.repair_retained_page_links`
 
 ## Touches
 

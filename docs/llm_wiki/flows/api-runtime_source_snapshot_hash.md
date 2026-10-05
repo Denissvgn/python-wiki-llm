@@ -13,69 +13,82 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as runtime_source_snapshot_hash
     participant p1 as hash_source_snapshot
-    participant p2 as set (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)
-    participant p3 as enumerate
-    participant p4 as isinstance (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)
-    participant p5 as KnowledgeEnvelopeError
-    participant p6 as seen_paths.add
-    participant p7 as records.append
-    participant p8 as records.sort
-    participant p9 as _hash_structured
-    participant p10 as payload.values
-    participant p11 as _validate_json_tree
-    participant p12 as set (src/llm_wiki_cli/services…ope.py:_validate_json_tree)
-    participant p13 as walk
-    participant p14 as sha256_bytes
-    participant p15 as hashlib.sha256(…).hexdigest
-    participant p16 as hashlib.sha256
-    participant p17 as canonical_json_bytes
-    participant p18 as canonical_json_text(…).encode
-    participant p19 as canonical_json_text
-    participant p20 as json.dumps
-    participant p21 as runtime_consumed_inputs
-    participant p22 as isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)
-    participant p23 as TypeError
-    participant p24 as source_snapshot.to_consumed_inputs
-    participant p25 as _merge_explicit_consumed_input
-    participant p26 as KnowledgeGenerationError
+    participant p2 as runtime_consumed_inputs
+    participant p3 as set (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)
+    participant p4 as isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)
+    participant p5 as enumerate
+    participant p6 as TypeError
+    participant p7 as isinstance (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)
+    participant p8 as KnowledgeEnvelopeError
+    participant p9 as source_snapshot.to_consumed_inputs
+    participant p10 as seen_paths.add
+    participant p11 as _merge_explicit_consumed_input
+    participant p12 as records.append
+    participant p13 as generation_inputs.get
+    participant p14 as records.sort
+    participant p15 as tuple
+    participant p16 as _hash_structured
+    participant p17 as sorted
+    participant p18 as KnowledgeGenerationError
+    participant p19 as openapi.get
+    participant p20 as is_valid_sha256
     p0->>p1: hash_source_snapshot
-    p1-->>p2: set (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)
-    p1-->>p3: enumerate
-    p1-->>p4: isinstance (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)
-    p1->>p5: KnowledgeEnvelopeError
-    p1->>p5: KnowledgeEnvelopeError
-    p1-->>p6: seen_paths.add
-    p1-->>p7: records.append
-    p1-->>p8: records.sort
-    p1->>p9: _hash_structured
-    p9-->>p10: payload.values
-    p9->>p11: _validate_json_tree
-    p11-->>p12: set (src/llm_wiki_cli/services…ope.py:_validate_json_tree)
-    p11-->>p13: walk
-    p9->>p14: sha256_bytes
-    p14-->>p15: hashlib.sha256(…).hexdigest
-    p14-->>p16: hashlib.sha256
-    p9->>p17: canonical_json_bytes
-    p17-->>p18: canonical_json_text(…).encode
-    p17->>p19: canonical_json_text
-    p19-->>p20: json.dumps
-    p9->>p5: KnowledgeEnvelopeError
-    p0->>p21: runtime_consumed_inputs
-    p21-->>p22: isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)
-    p21-->>p23: TypeError
-    p21-->>p22: isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)
-    p21-->>p23: TypeError
-    p21-->>p24: source_snapshot.to_consumed_inputs
-    p21->>p25: _merge_explicit_consumed_input
-    p25->>p26: KnowledgeGenerationError
+    p0->>p2: runtime_consumed_inputs
+    p1-->>p3: set (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)
+    p2-->>p4: isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)(source_snapshot, SourceSnapshot)
+    p1-->>p5: enumerate(inputs)
+    p2-->>p6: TypeError('source_snapshot must be a SourceSnapshot')
+    p1-->>p7: isinstance (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)(item, ConsumedInput)
+    p2-->>p4: isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)(generation_inputs, Mapping)
+    p1->>p8: KnowledgeEnvelopeError
+    p2-->>p6: TypeError('generation_inputs must be a mapping')
+    p1->>p8: KnowledgeEnvelopeError
+    p2-->>p9: source_snapshot.to_consumed_inputs
+    p1-->>p10: seen_paths.add(item.path)
+    p2->>p11: _merge_explicit_consumed_input
+    p1-->>p12: records.append({...})
+    p2-->>p13: generation_inputs.get('openapi')
+    p1-->>p14: records.sort(key=...)
+    p2-->>p15: tuple(...)
+    p1->>p16: _hash_structured
+    p2-->>p17: sorted(consumed_by_path)
+    p2-->>p4: isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)(openapi, Mapping)
+    p2->>p18: KnowledgeGenerationError
+    p2-->>p19: openapi.get('path')
+    p2-->>p4: isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)(path, str)
+    p2->>p18: KnowledgeGenerationError
+    p2-->>p19: openapi.get('sha256')
+    p2->>p20: is_valid_sha256
+    p2->>p18: KnowledgeGenerationError
+    p2-->>p4: isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)(content_hash, str)
+    p2->>p11: _merge_explicit_consumed_input
 ```
 
-> Call sequence diagram shows 30 of 54 interactions; 24 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 54 interactions; 24 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 12 of 19 (7 omitted); unresolved 7 of 13 (6 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_hash_structured` | 11 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_hash_structured` | 11 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 2 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_validate_json_tree` | 13 | - | external | 1 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_validate_json_tree` | 13 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_hash_structured` | 11 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 2 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:sha256_bytes` | 16 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:sha256_bytes` | 16 | - | external | 1 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:canonical_json_bytes` | 19 | - | unresolved | 1 |
+> Omission summary shows 8 of 18 groups; 10 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 
@@ -143,7 +156,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| runtime_source_snapshot_hash | hash_source_snapshot | 1474 | `hash_source_snapshot(runtime_consumed_inputs(...))` |
+| runtime_source_snapshot_hash | hash_source_snapshot | 1521 | `hash_source_snapshot(runtime_consumed_inputs(...))` |
 | hash_source_snapshot | set (src/llm_wiki_cli/services…pe.py:hash_source_snapshot) | 734 | `set(data not statically known)` |
 | hash_source_snapshot | enumerate | 735 | `enumerate(inputs)` |
 | hash_source_snapshot | isinstance (src/llm_wiki_cli/services…pe.py:hash_source_snapshot) | 736 | `isinstance(item, ConsumedInput)` |

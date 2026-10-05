@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [init_cmd](../modules/init_cmd.md)
-**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [extractor_helpers](../modules/extractor_helpers.md), [filesystem_guard](../modules/filesystem_guard.md), and 13 more
+**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [extractor_helpers](../modules/extractor_helpers.md), [filesystem_guard](../modules/filesystem_guard.md), and 14 more
 
 **Complete modules touched:**
 
@@ -23,8 +23,11 @@
 - [validation](../modules/validation.md)
 - [wiki_lifecycle](../modules/wiki_lifecycle.md)
 - [wiki_surface](../modules/wiki_surface.md)
+- [wiki_write_basis](../modules/wiki_write_basis.md)
 
 ## Call sequence
+
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -32,60 +35,69 @@ sequenceDiagram
     participant p0 as run
     participant p1 as getattr (src/llm_wiki_cli/commands/init_cmd.py:run)
     participant p2 as validate_path
-    participant p3 as PathValidationError
-    participant p4 as (…).resolve
-    participant p5 as Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    participant p6 as Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)
-    participant p7 as resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
-    participant p8 as bool (src/llm_wiki_cli/commands/init_cmd.py:run)
-    participant p9 as print
-    participant p10 as SystemExit
-    participant p11 as require_safe_wiki_scaffold
-    participant p12 as Path (src/llm_wiki_cli/services…equire_safe_wiki_scaffold)
-    participant p13 as tuple (src/llm_wiki_cli/services…equire_safe_wiki_scaffold)
-    participant p14 as iter_directory_kinds
-    participant p15 as tuple (src/llm_wiki_cli/services…e.py:iter_directory_kinds)
-    participant p16 as first_unsafe_path_component
-    participant p17 as Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p18 as os.fspath (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p19 as os.path.abspath (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p20 as lexical.is_absolute
-    participant p21 as Path.cwd (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p22 as list (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p23 as pending_parts.pop
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/init_cmd.py:run)
+    participant p3 as bool (src/llm_wiki_cli/commands/init_cmd.py:run)
+    participant p4 as print
+    participant p5 as SystemExit
+    participant p6 as require_safe_wiki_scaffold
+    participant p7 as require_safe_config_path
+    participant p8 as inspect_config
+    participant p9 as get_agent_config_path
+    participant p10 as dict (src/llm_wiki_cli/commands/init_cmd.py:run)
+    participant p11 as config_requires_manual_recovery
+    participant p12 as Path (src/llm_wiki_cli/commands/init_cmd.py:run)
+    participant p13 as isinstance (src/llm_wiki_cli/commands/init_cmd.py:run)
+    participant p14 as stored.get
+    participant p15 as stored.pop
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/init_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
     p0->>p2: validate_path
-    p2->>p3: PathValidationError
-    p2-->>p4: (…).resolve
-    p2-->>p5: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    p2-->>p6: Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)
-    p2-->>p5: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    p2-->>p7: resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
-    p2->>p3: PathValidationError
-    p0-->>p8: bool (src/llm_wiki_cli/commands/init_cmd.py:run)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/init_cmd.py:run)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/init_cmd.py:run)
-    p0-->>p9: print
-    p0-->>p10: SystemExit
-    p0->>p11: require_safe_wiki_scaffold
-    p11-->>p12: Path (src/llm_wiki_cli/services…equire_safe_wiki_scaffold)
-    p11-->>p13: tuple (src/llm_wiki_cli/services…equire_safe_wiki_scaffold)
-    p11->>p14: iter_directory_kinds
-    p14-->>p15: tuple (src/llm_wiki_cli/services…e.py:iter_directory_kinds)
-    p11-->>p13: tuple (src/llm_wiki_cli/services…equire_safe_wiki_scaffold)
-    p11->>p16: first_unsafe_path_component
-    p16-->>p17: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p16-->>p18: os.fspath (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p16-->>p17: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p16-->>p19: os.path.abspath (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p16-->>p20: lexical.is_absolute
-    p16-->>p21: Path.cwd (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p16-->>p17: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p16-->>p22: list (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p16-->>p23: pending_parts.pop
+    p0-->>p3: bool (src/llm_wiki_cli/commands/init_cmd.py:run)(getattr(...))
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/init_cmd.py:run)(args, 'prepare_extractors', False)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/init_cmd.py:run)(args, 'helper_cache_dir', None)
+    p0-->>p4: print('Error: --helper-cache-dir requires --prepare-extractors during init.', file=sys.stderr)
+    p0-->>p5: SystemExit(2)
+    p0->>p6: require_safe_wiki_scaffold
+    p0->>p7: require_safe_config_path
+    p0-->>p4: print(..., file=sys.stderr)
+    p0-->>p5: SystemExit(2)
+    p0->>p8: inspect_config
+    p0->>p9: get_agent_config_path
+    p0-->>p4: print(..., file=sys.stderr)
+    p0-->>p5: SystemExit(2)
+    p0-->>p4: print(..., file=sys.stderr)
+    p0-->>p5: SystemExit(2)
+    p0-->>p10: dict (src/llm_wiki_cli/commands/init_cmd.py:run)(config_inspection.data)
+    p0->>p11: config_requires_manual_recovery
+    p0-->>p4: print(..., file=sys.stderr)
+    p0-->>p12: Path (src/llm_wiki_cli/commands/init_cmd.py:run)(wiki_dir)
+    p0-->>p5: SystemExit(2)
+    p0-->>p4: print(..., file=sys.stderr)
+    p0-->>p5: SystemExit(2)
+    p0-->>p13: isinstance (src/llm_wiki_cli/commands/init_cmd.py:run)(stored.get(...), str)
+    p0-->>p14: stored.get('pending_cleanup_agent')
+    p0-->>p4: print(…)
+    p0-->>p5: SystemExit(2)
+    p0-->>p15: stored.pop('pending_cleanup_agent', None)
+    p0-->>p15: stored.pop('pending_cleanup_reference', None)
 ```
 
-> Call sequence diagram shows 30 of 1878 interactions; 1848 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1890 interactions; 1860 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 21 of 782 (761 omitted); unresolved 3 of 448 (445 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/config.py:validate_path` | 3 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
+| `src/llm_wiki_cli/config.py:validate_path` | 3 | - | unresolved | 3 |
+| `src/llm_wiki_cli/config.py:validate_path` | 3 | - | external | 2 |
+| `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 16 | - | external | 3 |
+| `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 16 | [src/llm_wiki_cli/services/wiki_surface.py](../modules/wiki_surface.md) | internal | 1 |
+| `src/llm_wiki_cli/services/wiki_surface.py:iter_directory_kinds` | 19 | - | external | 1 |
+| `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 16 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 22 | - | external | 20 |
+> Omission summary shows 8 of 407 groups; 399 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

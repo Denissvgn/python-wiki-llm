@@ -2,7 +2,7 @@
 
 **Entry point:** `build_snapshot_documentation_query_service` (`api`)
 **Source:** [documentation_query_builder](../modules/documentation_query_builder.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [context_packet](../modules/context_packet.md), and 24 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [context_packet](../modules/context_packet.md), and 32 more
 
 **Complete modules touched:**
 
@@ -10,7 +10,9 @@
 - [canonical_json](../modules/canonical_json.md)
 - [context_packet](../modules/context_packet.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
+- [filesystem_guard](../modules/filesystem_guard.md)
 - [immutable](../modules/immutable.md)
+- [implementation_evidence](../modules/implementation_evidence.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -28,6 +30,12 @@
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
+- [maintenance_evidence](../modules/maintenance_evidence.md)
+- [maintenance_projection](../modules/maintenance_projection.md)
+- [maintenance_protocol](../modules/maintenance_protocol.md)
+- [maintenance_state](../modules/maintenance_state.md)
+- [maintenance_status](../modules/maintenance_status.md)
+- [manifest_storage](../modules/manifest_storage.md)
 - [section_ownership](../modules/section_ownership.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
@@ -36,71 +44,86 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as build_snapshot_documentation_query_service
     participant p1 as _wiki_anchor
-    participant p2 as str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)
-    participant p3 as directory_identity
-    participant p4 as path.stat
-    participant p5 as current.exists
-    participant p6 as root.exists
-    participant p7 as _domain_hash
-    participant p8 as sha256_bytes
-    participant p9 as hashlib.sha256(…).hexdigest
-    participant p10 as hashlib.sha256 (src/llm_wiki_cli/services…_evidence.py:sha256_bytes)
-    participant p11 as canonical_json_bytes
-    participant p12 as canonical_json_text(…).encode
-    participant p13 as canonical_json_text
-    participant p14 as json.dumps (src/llm_wiki_cli/services…ce.py:canonical_json_text)
-    participant p15 as walk
-    participant p16 as Path (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)
-    participant p17 as _assert_wiki_integrity
-    participant p18 as any (src/llm_wiki_cli/services…py:_assert_wiki_integrity)
-    participant p19 as Path (src/llm_wiki_cli/services…py:_assert_wiki_integrity)
-    participant p20 as tuple (src/llm_wiki_cli/services…py:_assert_wiki_integrity)
-    participant p21 as expected.items (src/llm_wiki_cli/services…py:_assert_wiki_integrity)
-    participant p22 as ContextPacketSourceMutationError
-    participant p23 as load_knowledge_read_view
-    participant p24 as isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view)
-    participant p25 as TypeError (src/llm_wiki_cli/services…:load_knowledge_read_view)
-    participant p26 as load_knowledge_state
-    participant p27 as isinstance (src/llm_wiki_cli/services…r.py:load_knowledge_state)
-    participant p28 as KnowledgeMismatchPolicy
+    participant p2 as load_knowledge_read_view
+    participant p3 as build_documentation_query_service_from_view
+    participant p4 as _assert_wiki_unchanged
+    participant p5 as str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)
+    participant p6 as isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view)
+    participant p7 as attach_machine_verification_read_view
+    participant p8 as _assert_wiki_integrity
+    participant p9 as directory_identity
+    participant p10 as TypeError (src/llm_wiki_cli/services…:load_knowledge_read_view)
+    participant p11 as assemble_documentation_query_service
+    participant p12 as current.exists
+    participant p13 as load_knowledge_state
+    participant p14 as verification_summaries_for_concepts
+    participant p15 as root.exists
+    participant p16 as _unsupported_reason
+    participant p17 as ContextPacketSourceMutationError
+    participant p18 as _domain_hash
+    participant p19 as KnowledgeLoadResult
+    participant p20 as walk
+    participant p21 as build_knowledge_read_view
+    participant p22 as Path (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)
+    participant p23 as path.stat
+    participant p24 as sha256_bytes
     p0->>p1: _wiki_anchor
-    p1-->>p2: str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)
-    p1->>p3: directory_identity
-    p3-->>p4: path.stat
-    p1-->>p5: current.exists
-    p1-->>p6: root.exists
-    p1->>p7: _domain_hash
-    p7->>p8: sha256_bytes
-    p8-->>p9: hashlib.sha256(…).hexdigest
-    p8-->>p10: hashlib.sha256 (src/llm_wiki_cli/services…_evidence.py:sha256_bytes)
-    p7->>p11: canonical_json_bytes
-    p11-->>p12: canonical_json_text(…).encode
-    p11->>p13: canonical_json_text
-    p13-->>p14: json.dumps (src/llm_wiki_cli/services…ce.py:canonical_json_text)
-    p1-->>p15: walk
-    p1-->>p16: Path (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)
-    p1->>p17: _assert_wiki_integrity
-    p17-->>p18: any (src/llm_wiki_cli/services…py:_assert_wiki_integrity)
-    p17->>p3: directory_identity
-    p17-->>p19: Path (src/llm_wiki_cli/services…py:_assert_wiki_integrity)
-    p17-->>p20: tuple (src/llm_wiki_cli/services…py:_assert_wiki_integrity)
-    p17-->>p21: expected.items (src/llm_wiki_cli/services…py:_assert_wiki_integrity)
-    p17->>p22: ContextPacketSourceMutationError
-    p1->>p7: _domain_hash
-    p0->>p23: load_knowledge_read_view
-    p23-->>p24: isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view)
-    p23-->>p25: TypeError (src/llm_wiki_cli/services…:load_knowledge_read_view)
-    p23->>p26: load_knowledge_state
-    p26-->>p27: isinstance (src/llm_wiki_cli/services…r.py:load_knowledge_state)
-    p26->>p28: KnowledgeMismatchPolicy
+    p0->>p2: load_knowledge_read_view
+    p0->>p3: build_documentation_query_service_from_view
+    p0->>p4: _assert_wiki_unchanged
+    p1-->>p5: str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)(current)
+    p2-->>p6: isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view)(include_machine_verification, bool)
+    p3->>p7: attach_machine_verification_read_view
+    p4->>p8: _assert_wiki_integrity
+    p1->>p9: directory_identity
+    p2-->>p10: TypeError (src/llm_wiki_cli/services…:load_knowledge_read_view)('include_machine_verification must be a boolean')
+    p3->>p11: assemble_documentation_query_service
+    p4->>p1: _wiki_anchor
+    p1-->>p12: current.exists
+    p2->>p13: load_knowledge_state
+    p3->>p14: verification_summaries_for_concepts
+    p4->>p1: _wiki_anchor
+    p1-->>p15: root.exists
+    p2->>p16: _unsupported_reason
+    p4->>p17: ContextPacketSourceMutationError
+    p1->>p18: _domain_hash
+    p2->>p19: KnowledgeLoadResult
+    p4->>p17: ContextPacketSourceMutationError
+    p1-->>p20: walk(root, Path(...))
+    p2->>p21: build_knowledge_read_view
+    p1-->>p22: Path (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)
+    p2->>p7: attach_machine_verification_read_view
+    p1->>p8: _assert_wiki_integrity
+    p1->>p18: _domain_hash
+    p9-->>p23: path.stat(follow_symlinks=False)
+    p18->>p24: sha256_bytes
 ```
 
-> Call sequence diagram shows 30 of 774 interactions; 744 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1162 interactions; 1132 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 3 of 421 (418 omitted); unresolved 5 of 233 (228 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:sha256_bytes` | 9 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:sha256_bytes` | 9 | - | external | 1 |
+| `src/llm_wiki_cli/services/context_packet.py:_domain_hash` | 8 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:canonical_json_bytes` | 12 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:canonical_json_bytes` | 12 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:canonical_json_text` | 14 | - | external | 1 |
+| `src/llm_wiki_cli/services/context_packet.py:_assert_wiki_integrity` | 18 | - | external | 3 |
+| `src/llm_wiki_cli/services/context_packet.py:_assert_wiki_integrity` | 18 | [src/llm_wiki_cli/services/source_snapshot.py](../modules/source_snapshot.md) | internal | 1 |
+> Omission summary shows 8 of 251 groups; 243 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -118,7 +141,7 @@ flowchart LR
     s7["7. root.exists"]
     s8["8. _domain_hash"]
     s9["9. sha256_bytes"]
-    s10["10. hashlib.sha256(…).hexdigest"]
+    s10["10. hashlib.sha256(…).hexdigest (src/llm_wiki_cli/services…_evidence.py:sha256_bytes)"]
     s11["11. hashlib.sha256 (src/llm_wiki_cli/services…_evidence.py:sha256_bytes)"]
     s12["12. canonical_json_bytes"]
     s1 -->|"_wiki_anchor(wiki_root)"| s2
@@ -129,7 +152,7 @@ flowchart LR
     s2 -. "root.exists(data not statically known)" .-> s7
     s2 -->|"_domain_hash(_WIKI_ANCHOR_DOMAIN, {...})"| s8
     s8 -->|"sha256_bytes(canonical_json_bytes(...))"| s9
-    s9 -. "hashlib.sha256(…).hexdigest(data not statically known)" .-> s10
+    s9 -. "hashlib.sha256(…).hexdigest (src/llm_wiki_cli/services…_evidence.py:sha256_bytes)(data not statically known)" .-> s10
     s9 -. "hashlib.sha256 (src/llm_wiki_cli/services…_evidence.py:sha256_bytes)(value)" .-> s11
     s8 -->|"canonical_json_bytes({...})"| s12
     click s1 "../modules/documentation_query_builder.md"
@@ -153,7 +176,7 @@ flowchart LR
 | `root.exists` | - | - | - | - |
 | `_domain_hash` | `domain: str`, `value: Mapping[str, Any]` | - | - | `sha256_bytes(...)` |
 | `sha256_bytes` | `value: bytes` | - | - | `...` |
-| `hashlib.sha256(…).hexdigest` | - | - | - | - |
+| `hashlib.sha256(…).hexdigest (src/llm_wiki_cli/services…_evidence.py:sha256_bytes)` | - | - | - | - |
 | `hashlib.sha256 (src/llm_wiki_cli/services…_evidence.py:sha256_bytes)` | - | - | - | - |
 | `canonical_json_bytes` | `value: Any` | - | - | `...` |
 
@@ -161,17 +184,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_snapshot_documentation_query_service | _wiki_anchor | 424 | `_wiki_anchor(wiki_root)` |
-| _wiki_anchor | str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor) | 4985 | `str(current)` |
-| _wiki_anchor | directory_identity | 4985 | `directory_identity(current)` |
-| directory_identity | path.stat | 686 | `path.stat(follow_symlinks=False)` |
-| _wiki_anchor | current.exists | 4986 | `current.exists(data not statically known)` |
-| _wiki_anchor | root.exists | 4989 | `root.exists(data not statically known)` |
-| _wiki_anchor | _domain_hash | 4990 | `_domain_hash(_WIKI_ANCHOR_DOMAIN, {...})` |
-| _domain_hash | sha256_bytes | 5120 | `sha256_bytes(canonical_json_bytes(...))` |
-| sha256_bytes | hashlib.sha256(…).hexdigest | 198 | `hashlib.sha256(value).hexdigest(data not statically known)` |
-| sha256_bytes | hashlib.sha256 (src/llm_wiki_cli/services…_evidence.py:sha256_bytes) | 198 | `hashlib.sha256(value)` |
-| _domain_hash | canonical_json_bytes | 5121 | `canonical_json_bytes({...})` |
+| build_snapshot_documentation_query_service | _wiki_anchor | 440 | `_wiki_anchor(wiki_root)` |
+| _wiki_anchor | str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor) | 5062 | `str(current)` |
+| _wiki_anchor | directory_identity | 5062 | `directory_identity(current)` |
+| directory_identity | path.stat | 687 | `path.stat(follow_symlinks=False)` |
+| _wiki_anchor | current.exists | 5063 | `current.exists(data not statically known)` |
+| _wiki_anchor | root.exists | 5066 | `root.exists(data not statically known)` |
+| _wiki_anchor | _domain_hash | 5067 | `_domain_hash(_WIKI_ANCHOR_DOMAIN, {...})` |
+| _domain_hash | sha256_bytes | 5197 | `sha256_bytes(canonical_json_bytes(...))` |
+| sha256_bytes | hashlib.sha256(…).hexdigest (src/llm_wiki_cli/services…_evidence.py:sha256_bytes) | 199 | `hashlib.sha256(value).hexdigest(data not statically known)` |
+| sha256_bytes | hashlib.sha256 (src/llm_wiki_cli/services…_evidence.py:sha256_bytes) | 199 | `hashlib.sha256(value)` |
+| _domain_hash | canonical_json_bytes | 5198 | `canonical_json_bytes({...})` |
 
 ### Boundary effects
 
@@ -181,11 +204,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `directory_identity` | `path.stat` | 686 |
-| unresolved_call | `_wiki_anchor` | `current.exists` | 4986 |
-| unresolved_call | `_wiki_anchor` | `root.exists` | 4989 |
-| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 198 |
-| external_call | `sha256_bytes` | `hashlib.sha256` | 198 |
+| unresolved_call | `directory_identity` | `path.stat` | 687 |
+| unresolved_call | `_wiki_anchor` | `current.exists` | 5063 |
+| unresolved_call | `_wiki_anchor` | `root.exists` | 5066 |
+| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 199 |
+| external_call | `sha256_bytes` | `hashlib.sha256` | 199 |
 | step_limit | `build_snapshot_documentation_query_service` | `first 12 steps` | 0 |
 | truncated_flow | `build_snapshot_documentation_query_service` | `depth limit` | 0 |
 

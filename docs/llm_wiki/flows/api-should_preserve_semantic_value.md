@@ -6,23 +6,30 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as should_preserve_semantic_value
     participant p1 as is_placeholder_description
-    participant p2 as value.strip
-    participant p3 as _AUTO_GENERATED_RE.match
-    participant p4 as (…).strip (src/llm_wiki_cli/services…ld_preserve_semantic_value)
-    participant p5 as (…).strip (src/llm_wiki_cli/services…preserve_semantic_value, 1)
-    participant p6 as old_generated.strip
+    participant p2 as (…).strip (src/llm_wiki_cli/services…ld_preserve_semantic_value)
+    participant p3 as (…).strip (src/llm_wiki_cli/services…preserve_semantic_value, 1)
+    participant p4 as old_generated.strip
+    participant p5 as value.strip
+    participant p6 as _AUTO_GENERATED_RE.match
     p0->>p1: is_placeholder_description
-    p1-->>p2: value.strip
-    p1-->>p3: _AUTO_GENERATED_RE.match
-    p0-->>p4: (…).strip (src/llm_wiki_cli/services…ld_preserve_semantic_value)
-    p0-->>p5: (…).strip (src/llm_wiki_cli/services…preserve_semantic_value, 1)
-    p0-->>p6: old_generated.strip
+    p0-->>p2: (…).strip (src/llm_wiki_cli/services…ld_preserve_semantic_value)
+    p0-->>p3: (…).strip (src/llm_wiki_cli/services…preserve_semantic_value, 1)
+    p0-->>p4: old_generated.strip
+    p1-->>p5: value.strip
+    p1-->>p6: _AUTO_GENERATED_RE.match(stripped)
 ```
+
+> Call sequence diagram shows 6 of 6 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 0 of 0 (0 omitted); unresolved 5 of 5 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

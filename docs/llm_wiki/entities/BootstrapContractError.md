@@ -28,7 +28,7 @@ flowchart LR
     n3["src/llm_wiki_cli/api.py"]
     n4["_bootstrap_result (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n5["_bootstrap_run_options_from_request (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
-    n6["_execute_bootstrap_options (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n6["_execute_bootstrap_options_locked (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n7["_preflight_bootstrap_source_selection (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n8["_preflight_public_bootstrap (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n0 --> n1
@@ -70,6 +70,6 @@ flowchart LR
 | `api` | import | [api](../modules/api.md) | — |
 | `_bootstrap_result` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |
 | `_bootstrap_run_options_from_request` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |
-| `_execute_bootstrap_options` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 2 |
+| `_execute_bootstrap_options_locked` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 2 |
 | `_preflight_bootstrap_source_selection` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 2 |
 | `_preflight_public_bootstrap` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |

@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -13,54 +15,78 @@ sequenceDiagram
     participant p1 as WindowsFileGuardError
     participant p2 as ctypes.WinDLL (src/llm_wiki_cli/services…windows_guarded_lock_file)
     participant p3 as _private_windows_security_attributes
-    participant p4 as ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes)
-    participant p5 as ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes)
-    participant p6 as _current_windows_user_sid
-    participant p7 as ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
-    participant p8 as ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)
-    participant p9 as wintypes.HANDLE (src/llm_wiki_cli/services…_current_windows_user_sid)
-    participant p10 as open_process_token
-    participant p11 as get_current_process
-    participant p12 as ctypes.byref (src/llm_wiki_cli/services…_current_windows_user_sid)
-    participant p13 as ctypes.WinError (src/llm_wiki_cli/services…_current_windows_user_sid)
-    participant p14 as ctypes.get_last_error (src/llm_wiki_cli/services…_current_windows_user_sid)
-    participant p15 as WindowsSecurityGuardError
-    participant p16 as wintypes.DWORD (src/llm_wiki_cli/services…_current_windows_user_sid)
-    participant p17 as get_token_information
-    participant p18 as ctypes.create_string_buffer
+    participant p4 as ctypes.set_last_error
+    participant p5 as create_file
+    participant p6 as _windows_api_path
+    participant p7 as Path
+    participant p8 as ctypes.byref (src/llm_wiki_cli/services…windows_guarded_lock_file)
+    participant p9 as ctypes.get_last_error (src/llm_wiki_cli/services…windows_guarded_lock_file)
+    participant p10 as wintypes.HANDLE (src/llm_wiki_cli/services…windows_guarded_lock_file)
+    participant p11 as ctypes.WinError (src/llm_wiki_cli/services…windows_guarded_lock_file)
+    participant p12 as int (src/llm_wiki_cli/services…windows_guarded_lock_file)
+    participant p13 as _assert_windows_regular_file_handle
+    participant p14 as _verify_windows_handle_restrictive_dacl
+    participant p15 as str
+    participant p16 as msvcrt.open_osfhandle
+    participant p17 as getattr
+    participant p18 as _close_windows_handle
+    participant p19 as ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes)
+    participant p20 as os.path.abspath
+    participant p21 as _windows_handle_information
+    participant p22 as ctypes.WinDLL (src/llm_wiki_cli/services…s_handle_restrictive_dacl)
+    participant p23 as os.fspath
+    participant p24 as int (src/llm_wiki_cli/services…ndows_regular_file_handle)
+    participant p25 as ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes)
     p0->>p1: WindowsFileGuardError
-    p0-->>p2: ctypes.WinDLL (src/llm_wiki_cli/services…windows_guarded_lock_file)
+    p0-->>p2: ctypes.WinDLL (src/llm_wiki_cli/services…windows_guarded_lock_file)('kernel32', use_last_error=True)
     p0->>p3: _private_windows_security_attributes
-    p3-->>p4: ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes)
-    p3-->>p4: ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes)
-    p3-->>p5: ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes)
-    p3-->>p5: ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes)
-    p3->>p6: _current_windows_user_sid
-    p6-->>p7: ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
-    p6-->>p7: ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
-    p6-->>p8: ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)
-    p6-->>p8: ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)
-    p6-->>p9: wintypes.HANDLE (src/llm_wiki_cli/services…_current_windows_user_sid)
-    p6-->>p10: open_process_token
-    p6-->>p11: get_current_process
-    p6-->>p12: ctypes.byref (src/llm_wiki_cli/services…_current_windows_user_sid)
-    p6-->>p13: ctypes.WinError (src/llm_wiki_cli/services…_current_windows_user_sid)
-    p6-->>p14: ctypes.get_last_error (src/llm_wiki_cli/services…_current_windows_user_sid)
-    p6->>p15: WindowsSecurityGuardError
-    p6-->>p16: wintypes.DWORD (src/llm_wiki_cli/services…_current_windows_user_sid)
-    p6-->>p17: get_token_information
-    p6-->>p12: ctypes.byref (src/llm_wiki_cli/services…_current_windows_user_sid)
-    p6-->>p13: ctypes.WinError (src/llm_wiki_cli/services…_current_windows_user_sid)
-    p6-->>p14: ctypes.get_last_error (src/llm_wiki_cli/services…_current_windows_user_sid)
-    p6->>p15: WindowsSecurityGuardError
-    p6-->>p18: ctypes.create_string_buffer
-    p6-->>p17: get_token_information
-    p6-->>p12: ctypes.byref (src/llm_wiki_cli/services…_current_windows_user_sid)
-    p6-->>p13: ctypes.WinError (src/llm_wiki_cli/services…_current_windows_user_sid)
-    p6-->>p14: ctypes.get_last_error (src/llm_wiki_cli/services…_current_windows_user_sid)
+    p0-->>p4: ctypes.set_last_error(0)
+    p0-->>p5: create_file(_windows_api_path(...), ..., ..., ctypes.byref(...), 4, ..., None)
+    p0->>p6: _windows_api_path
+    p0-->>p7: Path(path)
+    p0-->>p8: ctypes.byref (src/llm_wiki_cli/services…windows_guarded_lock_file)(security)
+    p0-->>p9: ctypes.get_last_error (src/llm_wiki_cli/services…windows_guarded_lock_file)
+    p0-->>p10: wintypes.HANDLE (src/llm_wiki_cli/services…windows_guarded_lock_file)(...)
+    p0-->>p11: ctypes.WinError (src/llm_wiki_cli/services…windows_guarded_lock_file)(last_error)
+    p0->>p1: WindowsFileGuardError
+    p0-->>p12: int (src/llm_wiki_cli/services…windows_guarded_lock_file)(handle)
+    p0->>p13: _assert_windows_regular_file_handle
+    p0-->>p7: Path(path)
+    p0->>p14: _verify_windows_handle_restrictive_dacl
+    p0-->>p15: str(path)
+    p0-->>p16: msvcrt.open_osfhandle(native_handle, ...)
+    p0-->>p17: getattr(os, 'O_BINARY', 0)
+    p0-->>p17: getattr(os, 'O_NOINHERIT', 0)
+    p0->>p18: _close_windows_handle
+    p3-->>p19: ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes)('advapi32', use_last_error=True)
+    p6-->>p20: os.path.abspath(os.fspath(...))
+    p13->>p21: _windows_handle_information
+    p14-->>p22: ctypes.WinDLL (src/llm_wiki_cli/services…s_handle_restrictive_dacl)('advapi32', use_last_error=True)
+    p3-->>p19: ctypes.WinDLL (src/llm_wiki_cli/services…ndows_security_attributes)('kernel32', use_last_error=True)
+    p6-->>p23: os.fspath(path)
+    p13-->>p24: int (src/llm_wiki_cli/services…ndows_regular_file_handle)(information.dwFileAttributes)
+    p14-->>p22: ctypes.WinDLL (src/llm_wiki_cli/services…s_handle_restrictive_dacl)('kernel32', use_last_error=True)
+    p3-->>p25: ctypes.POINTER (src/llm_wiki_cli/services…ndows_security_attributes)(wintypes.LPVOID)
 ```
 
-> Call sequence diagram shows 30 of 169 interactions; 139 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 169 interactions; 139 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 21 of 112 (91 omitted); unresolved 1 of 21 (20 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_private_windows_security_attributes` | 4 | - | external | 6 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_private_windows_security_attributes` | 4 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 2 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_current_windows_user_sid` | 9 | - | external | 19 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_current_windows_user_sid` | 9 | - | unresolved | 4 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_current_windows_user_sid` | 9 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 5 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_windows_sid_string` | 35 | - | external | 8 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_windows_sid_string` | 35 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_windows_sid_string` | 35 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 2 |
+> Omission summary shows 8 of 20 groups; 12 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

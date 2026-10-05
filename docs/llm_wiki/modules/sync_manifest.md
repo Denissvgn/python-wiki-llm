@@ -4,7 +4,7 @@
 
 ## Description
 
-Service-level persistence boundary for the sync manifest v5 contract.
+Persistent sync state with explicit versioned maintenance adoption.
 
 ## Imports
 
@@ -45,22 +45,22 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (33) |
+| Inbound | `src` (35) |
 | Outbound | `src` (7) |
 
-> All 40 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 42 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SyncManifestError](../entities/SyncManifestError.md) | 61 | `ValueError` | Field-specific validation failure for decoded manifest state. |
-| [SourceSelectionPruneResult](../entities/SourceSelectionPruneResult.md) | 72 | — | Manifest state removed because it falls outside a selected source set. |
-| [ManifestPageSource](../entities/ManifestPageSource.md) | 148 | — | Last observed source coordinate for one module or entity page. |
-| [ManifestEvidenceBaseline](../entities/ManifestEvidenceBaseline.md) | 253 | — | Known or explicitly unknown evidence for one active concept page. |
-| [ManifestTombstone](../entities/ManifestTombstone.md) | 358 | — | Evidence retained for a stale module/entity page. |
-| [ManifestArtifactHashes](../entities/ManifestArtifactHashes.md) | 447 | — | All-or-none exact-byte commitment to the generated artifact set. |
-| [SyncManifest](../entities/SyncManifest.md) | 985 | — | Persistent v5 operational state used to generate the wiki. |
+| [SyncManifestError](../entities/SyncManifestError.md) | 62 | `ValueError` | Field-specific validation failure for decoded manifest state. |
+| [SourceSelectionPruneResult](../entities/SourceSelectionPruneResult.md) | 73 | — | Manifest state removed because it falls outside a selected source set. |
+| [ManifestPageSource](../entities/ManifestPageSource.md) | 149 | — | Last observed source coordinate for one module or entity page. |
+| [ManifestEvidenceBaseline](../entities/ManifestEvidenceBaseline.md) | 254 | — | Known or explicitly unknown evidence for one active concept page. |
+| [ManifestTombstone](../entities/ManifestTombstone.md) | 359 | — | Evidence retained for a stale module/entity page. |
+| [ManifestArtifactHashes](../entities/ManifestArtifactHashes.md) | 448 | — | All-or-none exact-byte commitment to the generated artifact set. |
+| [SyncManifest](../entities/SyncManifest.md) | 993 | — | Operational state; maintenance is present only after explicit adoption. |
 
 ## Functions
 

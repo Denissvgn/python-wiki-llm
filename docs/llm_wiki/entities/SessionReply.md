@@ -1,6 +1,6 @@
 # SessionReply
 
-**Location:** `src/llm_wiki_cli/services/context_session.py:124`
+**Location:** `src/llm_wiki_cli/services/context_session.py:125`
 **Kind:** Class
 **Bases:** —
 **Module:** [context_session](../modules/context_session.md)
@@ -34,12 +34,21 @@ Separates full, unchanged or delta context delivery from session work telemetry.
 flowchart LR
     n0["SessionReply (src/llm_wiki_cli/services/context_session.py)"]
     n1["ContextSession.read (src/llm_wiki_cli/api.py)"]
-    n2["ContextSession.read (src/llm_wiki_cli/services/context_session.py)"]
+    n2["ContextSession.read_compact (src/llm_wiki_cli/api.py)"]
+    n3["ContextSession._read (src/llm_wiki_cli/services/context_session.py)"]
+    n4["ContextSession.read (src/llm_wiki_cli/services/context_session.py)"]
+    n5["ContextSession.read_compact (src/llm_wiki_cli/services/context_session.py)"]
     n1 --> n0
     n2 --> n0
+    n3 --> n0
+    n4 --> n0
+    n5 --> n0
     click n0 "../modules/context_session.md"
     click n1 "../modules/api.md"
-    click n2 "../modules/context_session.md"
+    click n2 "../modules/api.md"
+    click n3 "../modules/context_session.md"
+    click n4 "../modules/context_session.md"
+    click n5 "../modules/context_session.md"
 ```
 
 ### Summary
@@ -53,5 +62,7 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `ContextSession.read` | type_reference | [api](../modules/api.md) | — |
-| `ContextSession.read` | call | [context_session](../modules/context_session.md) | 1 |
+| `ContextSession.read_compact` | type_reference | [api](../modules/api.md) | — |
+| `ContextSession._read` | call | [context_session](../modules/context_session.md) | 1 |
 | `ContextSession.read` | type_reference | [context_session](../modules/context_session.md) | — |
+| `ContextSession.read_compact` | type_reference | [context_session](../modules/context_session.md) | — |

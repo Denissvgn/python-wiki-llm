@@ -6,63 +6,83 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as load_and_evaluate_verification_receipt
     participant p1 as load_verification_receipt
-    participant p2 as Path (src/llm_wiki_cli/services…load_verification_receipt)
-    participant p3 as first_unsafe_path_component
-    participant p4 as Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p5 as os.fspath
-    participant p6 as os.path.abspath
-    participant p7 as lexical.is_absolute
-    participant p8 as Path.cwd
-    participant p9 as list (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p10 as pending_parts.pop
-    participant p11 as current.lstat
-    participant p12 as getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p13 as stat.S_ISLNK (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p14 as bool
-    participant p15 as trusted_symlink_owner
-    participant p16 as callable
-    participant p17 as os.readlink
-    participant p18 as link_target.is_absolute
-    participant p19 as VerificationReceiptError
-    participant p20 as root.is_symlink
+    participant p2 as evaluate_verification_receipt
+    participant p3 as Path (src/llm_wiki_cli/services…load_verification_receipt)
+    participant p4 as validate_verification_receipt
+    participant p5 as first_unsafe_path_component
+    participant p6 as isinstance (src/llm_wiki_cli/services…uate_verification_receipt)
+    participant p7 as VerificationReceiptError
+    participant p8 as TypeError (src/llm_wiki_cli/services…uate_verification_receipt)
+    participant p9 as root.is_symlink
+    participant p10 as add
+    participant p11 as verification_receipt_path
+    participant p12 as dict (src/llm_wiki_cli/services…uate_verification_receipt)
+    participant p13 as _read_regular_receipt
+    participant p14 as deserialize_verification_receipt
+    participant p15 as _CHECKER_REGISTRY.get
+    participant p16 as VerificationReceiptEvaluation
+    participant p17 as tuple (src/llm_wiki_cli/services…uate_verification_receipt)
+    participant p18 as Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    participant p19 as Path (src/llm_wiki_cli/services…verification_receipt_path)
+    participant p20 as path.lstat
+    participant p21 as isinstance (src/llm_wiki_cli/services…lize_verification_receipt)
     p0->>p1: load_verification_receipt
-    p1-->>p2: Path (src/llm_wiki_cli/services…load_verification_receipt)
-    p1->>p3: first_unsafe_path_component
-    p3-->>p4: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p3-->>p5: os.fspath
-    p3-->>p4: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p3-->>p6: os.path.abspath
-    p3-->>p7: lexical.is_absolute
-    p3-->>p8: Path.cwd
-    p3-->>p4: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p3-->>p9: list (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p3-->>p10: pending_parts.pop
-    p3-->>p11: current.lstat
-    p3-->>p12: getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p3-->>p12: getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p3-->>p13: stat.S_ISLNK (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p3-->>p14: bool
-    p3-->>p14: bool
-    p3-->>p12: getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p3-->>p15: trusted_symlink_owner
-    p3-->>p16: callable
-    p3-->>p12: getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p3-->>p4: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p3-->>p4: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p3-->>p17: os.readlink
-    p3-->>p18: link_target.is_absolute
-    p3-->>p4: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p3-->>p9: list (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p1->>p19: VerificationReceiptError
-    p1-->>p20: root.is_symlink
+    p0->>p2: evaluate_verification_receipt
+    p1-->>p3: Path (src/llm_wiki_cli/services…load_verification_receipt)(wiki_dir)
+    p2->>p4: validate_verification_receipt
+    p1->>p5: first_unsafe_path_component
+    p2-->>p6: isinstance (src/llm_wiki_cli/services…uate_verification_receipt)(context, VerificationContext)
+    p1->>p7: VerificationReceiptError
+    p2-->>p8: TypeError (src/llm_wiki_cli/services…uate_verification_receipt)('context must be a VerificationContext')
+    p1-->>p9: root.is_symlink
+    p2-->>p10: add(VerificationInvalidationReason.KNOWLEDGE_CHANGED)
+    p1->>p7: VerificationReceiptError
+    p2-->>p10: add(VerificationInvalidationReason.SCOPE_CHANGED)
+    p1->>p11: verification_receipt_path
+    p2-->>p12: dict (src/llm_wiki_cli/services…uate_verification_receipt)(current_receipt.evidence)
+    p1->>p13: _read_regular_receipt
+    p2-->>p12: dict (src/llm_wiki_cli/services…uate_verification_receipt)(context.evidence)
+    p1->>p14: deserialize_verification_receipt
+    p2-->>p10: add(VerificationInvalidationReason.EVIDENCE_CHANGED)
+    p2-->>p12: dict (src/llm_wiki_cli/services…uate_verification_receipt)(current_receipt.evaluated_snapshot)
+    p2-->>p12: dict (src/llm_wiki_cli/services…uate_verification_receipt)(context.evaluated_snapshot)
+    p2-->>p10: add(VerificationInvalidationReason.SNAPSHOT_CHANGED)
+    p2-->>p15: _CHECKER_REGISTRY.get(check.checker_id)
+    p2-->>p10: add(VerificationInvalidationReason.UNKNOWN_CHECKER)
+    p2-->>p10: add(VerificationInvalidationReason.CHECKER_VERSION_CHANGED)
+    p2->>p16: VerificationReceiptEvaluation
+    p2-->>p17: tuple (src/llm_wiki_cli/services…uate_verification_receipt)(reasons)
+    p5-->>p18: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)(os.fspath(...))
+    p11-->>p19: Path (src/llm_wiki_cli/services…verification_receipt_path)(wiki_dir)
+    p13-->>p20: path.lstat
+    p14-->>p21: isinstance (src/llm_wiki_cli/services…lize_verification_receipt)(content, bytes)
 ```
 
-> Call sequence diagram shows 30 of 247 interactions; 217 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 247 interactions; 217 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 11 of 92 (81 omitted); unresolved 9 of 35 (26 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 4 | - | external | 19 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 4 | - | unresolved | 5 |
+| `src/llm_wiki_cli/services/verification_contracts.py:_read_regular_receipt` | 35 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 7 |
+| `src/llm_wiki_cli/services/verification_contracts.py:_read_regular_receipt` | 35 | - | external | 12 |
+| `src/llm_wiki_cli/services/verification_contracts.py:_read_regular_receipt` | 35 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/verification_contracts.py:deserialize_verification_receipt` | 58 | - | external | 3 |
+| `src/llm_wiki_cli/services/verification_contracts.py:deserialize_verification_receipt` | 58 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 6 |
+| `src/llm_wiki_cli/services/verification_contracts.py:deserialize_verification_receipt` | 58 | - | unresolved | 1 |
+> Omission summary shows 8 of 65 groups; 57 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

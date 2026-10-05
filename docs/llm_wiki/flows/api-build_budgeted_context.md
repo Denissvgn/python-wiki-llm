@@ -2,7 +2,7 @@
 
 **Entry point:** `build_budgeted_context` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 45 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 54 more
 
 **Complete modules touched:**
 
@@ -24,6 +24,8 @@
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [go_calls](../modules/go_calls.md)
+- [immutable](../modules/immutable.md)
+- [implementation_evidence](../modules/implementation_evidence.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
@@ -40,10 +42,17 @@
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
+- [maintenance_evidence](../modules/maintenance_evidence.md)
+- [maintenance_protocol](../modules/maintenance_protocol.md)
+- [maintenance_service](../modules/maintenance_service.md)
+- [maintenance_state](../modules/maintenance_state.md)
+- [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [packages](../modules/packages.md)
 - [plugins](../modules/plugins.md)
+- [python_bindings](../modules/python_bindings.md)
 - [python_calls](../modules/python_calls.md)
+- [python_implementation](../modules/python_implementation.md)
 - [python_imports](../modules/python_imports.md)
 - [services_dependencies](../modules/services_dependencies.md)
 - [source_selection](../modules/source_selection.md)
@@ -58,60 +67,89 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as build_budgeted_context (src/llm_wiki_cli/api.py)
     participant p1 as build_budgeted_context (src/llm_wiki_cli/services/context_budget.py)
     participant p2 as validate_request
-    participant p3 as isinstance (src/llm_wiki_cli/services…udget.py:validate_request)
-    participant p4 as any (src/llm_wiki_cli/services…udget.py:validate_request)
-    participant p5 as ProtocolRequestError
-    participant p6 as data.get (src/llm_wiki_cli/services…udget.py:validate_request)
-    participant p7 as set (src/llm_wiki_cli/services…udget.py:validate_request)
-    participant p8 as sorted (src/llm_wiki_cli/services…udget.py:validate_request)
-    participant p9 as dict (src/llm_wiki_cli/services…udget.py:validate_request)
-    participant p10 as legacy.pop
-    participant p11 as _validate_protocol_request
-    participant p12 as isinstance (src/llm_wiki_cli/services…validate_protocol_request)
-    participant p13 as data.get (src/llm_wiki_cli/services…validate_protocol_request)
-    participant p14 as _validate_protocol_request_impl
-    participant p15 as isinstance (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    participant p16 as any (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    participant p17 as data.get (src/llm_wiki_cli/services…ate_protocol_request_impl)
+    participant p3 as ValueError (src/llm_wiki_cli/services…py:build_budgeted_context)
+    participant p4 as EstimatedCounter
+    participant p5 as isinstance (src/llm_wiki_cli/services…py:build_budgeted_context)
+    participant p6 as request.get (src/llm_wiki_cli/services…py:build_budgeted_context)
+    participant p7 as capture_context_read
+    participant p8 as select_changes
+    participant p9 as replace (src/llm_wiki_cli/services…py:build_budgeted_context)
+    participant p10 as tuple (src/llm_wiki_cli/services…py:build_budgeted_context)
+    participant p11 as dict (src/llm_wiki_cli/services…py:build_budgeted_context)
+    participant p12 as affected_page_map
+    participant p13 as captured.surface_evaluation.payload.get
+    participant p14 as request.items (src/llm_wiki_cli/services…py:build_budgeted_context)
+    participant p15 as legacy.update
+    participant p16 as build_context_from_captured_read
+    participant p17 as fit_payload
+    participant p18 as _assert_source_unchanged
+    participant p19 as _assert_wiki_unchanged
+    participant p20 as _assert_selection_unchanged
+    participant p21 as isinstance (src/llm_wiki_cli/services…udget.py:validate_request)
+    participant p22 as isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)
+    participant p23 as validate_changes
+    participant p24 as (…).items
+    participant p25 as isinstance (src/llm_wiki_cli/services…ext_from_captured_read, 2)
+    participant p26 as copy.deepcopy
+    participant p27 as ContextPacketSourceMutationError
     p0->>p1: build_budgeted_context (src/llm_wiki_cli/services/context_budget.py)
     p1->>p2: validate_request
-    p2-->>p3: isinstance (src/llm_wiki_cli/services…udget.py:validate_request)
-    p2-->>p4: any (src/llm_wiki_cli/services…udget.py:validate_request)
-    p2-->>p3: isinstance (src/llm_wiki_cli/services…udget.py:validate_request)
-    p2->>p5: ProtocolRequestError
-    p2-->>p6: data.get (src/llm_wiki_cli/services…udget.py:validate_request)
-    p2->>p5: ProtocolRequestError
-    p2-->>p7: set (src/llm_wiki_cli/services…udget.py:validate_request)
-    p2->>p5: ProtocolRequestError
-    p2-->>p8: sorted (src/llm_wiki_cli/services…udget.py:validate_request)
-    p2-->>p8: sorted (src/llm_wiki_cli/services…udget.py:validate_request)
-    p2-->>p9: dict (src/llm_wiki_cli/services…udget.py:validate_request)
-    p2-->>p6: data.get (src/llm_wiki_cli/services…udget.py:validate_request)
-    p2-->>p6: data.get (src/llm_wiki_cli/services…udget.py:validate_request)
-    p2-->>p6: data.get (src/llm_wiki_cli/services…udget.py:validate_request)
-    p2-->>p10: legacy.pop
-    p2-->>p10: legacy.pop
-    p2-->>p10: legacy.pop
-    p2->>p11: _validate_protocol_request
-    p11-->>p12: isinstance (src/llm_wiki_cli/services…validate_protocol_request)
-    p11-->>p13: data.get (src/llm_wiki_cli/services…validate_protocol_request)
-    p11->>p14: _validate_protocol_request_impl
-    p14-->>p15: isinstance (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    p14->>p5: ProtocolRequestError
-    p14-->>p16: any (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    p14-->>p15: isinstance (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    p14->>p5: ProtocolRequestError
-    p14-->>p17: data.get (src/llm_wiki_cli/services…ate_protocol_request_impl)
-    p14->>p2: validate_request
+    p1-->>p3: ValueError (src/llm_wiki_cli/services…py:build_budgeted_context)('Exact mode requires an explicit trusted counter or --tokenizer FILE')
+    p1->>p4: EstimatedCounter
+    p1-->>p5: isinstance (src/llm_wiki_cli/services…py:build_budgeted_context)(counter.identity, str)
+    p1-->>p3: ValueError (src/llm_wiki_cli/services…py:build_budgeted_context)('Token counter must have a pinned identity')
+    p1-->>p3: ValueError (src/llm_wiki_cli/services…py:build_budgeted_context)('An estimated counter cannot satisfy exact mode')
+    p1-->>p6: request.get (src/llm_wiki_cli/services…py:build_budgeted_context)('counter_id')
+    p1-->>p3: ValueError (src/llm_wiki_cli/services…py:build_budgeted_context)('Requested counter_id does not match the trusted counter')
+    p1->>p7: capture_context_read
+    p1->>p8: select_changes
+    p1-->>p9: replace (src/llm_wiki_cli/services…py:build_budgeted_context)(captured, changed_files=tuple(...), explicit_changes=True, change_selection=changes)
+    p1-->>p10: tuple (src/llm_wiki_cli/services…py:build_budgeted_context)(changes[...])
+    p1-->>p11: dict (src/llm_wiki_cli/services…py:build_budgeted_context)(changes)
+    p1->>p12: affected_page_map
+    p1-->>p13: captured.surface_evaluation.payload.get('pages', (...))
+    p1-->>p14: request.items (src/llm_wiki_cli/services…py:build_budgeted_context)
+    p1-->>p15: legacy.update(protocol=context.KNOWLEDGE_PROTOCOL_VERSION, format='json', budget_tokens=...)
+    p1->>p16: build_context_from_captured_read
+    p1->>p17: fit_payload
+    p1->>p18: _assert_source_unchanged
+    p1->>p19: _assert_wiki_unchanged
+    p1->>p20: _assert_selection_unchanged
+    p2-->>p21: isinstance (src/llm_wiki_cli/services…udget.py:validate_request)(data, Mapping)
+    p7-->>p22: isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)(read_only, bool)
+    p8->>p23: validate_changes
+    p12-->>p24: (…).items
+    p16-->>p25: isinstance (src/llm_wiki_cli/services…ext_from_captured_read, 2)(captured, CapturedContextRead)
+    p17-->>p26: copy.deepcopy(payload)
+    p20->>p27: ContextPacketSourceMutationError
 ```
 
-> Call sequence diagram shows 30 of 3017 interactions; 2987 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 3355 interactions; 3325 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 12 of 1178 (1166 omitted); unresolved 5 of 1084 (1079 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/context_budget.py:validate_request` | 3 | - | external | 9 |
+| `src/llm_wiki_cli/services/context_budget.py:validate_request` | 3 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 7 |
+| `src/llm_wiki_cli/services/context_budget.py:validate_request` | 3 | - | unresolved | 10 |
+| `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 21 | - | external | 2 |
+| `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 21 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 21 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 1 |
+| `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 24 | - | external | 11 |
+| `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 24 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 12 |
+> Omission summary shows 8 of 788 groups; 780 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -185,7 +223,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_budgeted_context (src/llm_wiki_cli/api.py) | build_budgeted_context (src/llm_wiki_cli/services/context_budget.py) | 1296 | `build(src_dir, wiki_dir, request, counter=counter, allow_external_src=allow_external_src, source_selection=source_selection)` |
+| build_budgeted_context (src/llm_wiki_cli/api.py) | build_budgeted_context (src/llm_wiki_cli/services/context_budget.py) | 1334 | `build(src_dir, wiki_dir, request, counter=counter, allow_external_src=allow_external_src, source_selection=source_selection)` |
 | build_budgeted_context (src/llm_wiki_cli/services/context_budget.py) | validate_request | 208 | `validate_request(...)` |
 | validate_request | isinstance (src/llm_wiki_cli/services…udget.py:validate_request) | 34 | `isinstance(data, Mapping)` |
 | validate_request | any (src/llm_wiki_cli/services…udget.py:validate_request) | 34 | `any(...)` |

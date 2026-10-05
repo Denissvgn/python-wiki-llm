@@ -1,6 +1,6 @@
 # ArtifactIntegrityError
 
-**Location:** `src/llm_wiki_cli/api.py:369`
+**Location:** `src/llm_wiki_cli/api.py:377`
 **Kind:** Class
 **Bases:** `LlmWikiApiError`
 **Module:** [api](../modules/api.md)
@@ -25,11 +25,14 @@ flowchart LR
     n0["ArtifactIntegrityError (src/llm_wiki_cli/api.py)"]
     n1["LlmWikiApiError (src/llm_wiki_cli/api.py)"]
     n2["_raise_api_error (src/llm_wiki_cli/api.py)"]
+    n3["_raise_maintenance_api_error (src/llm_wiki_cli/api.py)"]
     n0 --> n1
     n2 --> n0
+    n3 --> n0
     click n0 "../modules/api.md"
     click n1 "../modules/api.md"
     click n2 "../modules/api.md"
+    click n3 "../modules/api.md"
 ```
 
 ### Summary
@@ -49,3 +52,4 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `_raise_api_error` | call | [api](../modules/api.md) | 3 |
+| `_raise_maintenance_api_error` | call | [api](../modules/api.md) | 1 |

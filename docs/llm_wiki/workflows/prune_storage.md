@@ -1,7 +1,7 @@
 # prune_storage
 
 **Entry point:** `knowledge_storage_lifecycle._prune_storage`
-**Modules involved:** [filesystem_guard](../modules/filesystem_guard.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_governance](../modules/knowledge_governance.md), [knowledge_packs](../modules/knowledge_packs.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md), [manifest_storage](../modules/manifest_storage.md)
+**Modules involved:** [filesystem_guard](../modules/filesystem_guard.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_packs](../modules/knowledge_packs.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md), [maintenance_protocol](../modules/maintenance_protocol.md), [manifest_storage](../modules/manifest_storage.md)
 
 > Remove only valid content-addressed objects unreachable from a full audit.
 
@@ -38,18 +38,19 @@
 28. `knowledge_storage.canonical_bytes`
 29. `knowledge_storage.canonical_bytes`
 30. `knowledge_storage.KnowledgeStorageError`
-31. `knowledge_governance.governance_lock`
-32. `filesystem_guard.unlink_guarded_bytes`
+31. `maintenance_protocol.governance_writer_lock`
+32. `maintenance_protocol.storage_writer_lock`
+33. `filesystem_guard.unlink_guarded_bytes`
 
 ## Touches
 
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
-- [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_packs](../modules/knowledge_packs.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md)
+- [maintenance_protocol](../modules/maintenance_protocol.md)
 - [manifest_storage](../modules/manifest_storage.md)
 
 ## Behavior

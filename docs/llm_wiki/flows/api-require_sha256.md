@@ -6,27 +6,34 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as require_sha256
     participant p1 as isinstance (src/llm_wiki_cli/services…lidation.py:require_sha256)
     participant p2 as require_trimmed_text
-    participant p3 as require_nonempty_text
-    participant p4 as isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)
-    participant p5 as value.strip
-    participant p6 as contains_control_character
-    participant p7 as pattern.search
-    participant p8 as _SHA256_RE.fullmatch
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…lidation.py:require_sha256)
+    participant p3 as _SHA256_RE.fullmatch
+    participant p4 as require_nonempty_text
+    participant p5 as isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)
+    participant p6 as value.strip
+    participant p7 as contains_control_character
+    participant p8 as pattern.search
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…lidation.py:require_sha256)(value, str)
     p0->>p2: require_trimmed_text
-    p2->>p3: require_nonempty_text
-    p3-->>p4: isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)
-    p3-->>p5: value.strip
-    p3->>p6: contains_control_character
-    p6-->>p7: pattern.search
-    p0-->>p8: _SHA256_RE.fullmatch
+    p0-->>p3: _SHA256_RE.fullmatch(parsed)
+    p2->>p4: require_nonempty_text
+    p4-->>p5: isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)(value, str)
+    p4-->>p6: value.strip
+    p4->>p7: contains_control_character
+    p7-->>p8: pattern.search(value)
 ```
+
+> Call sequence diagram shows 8 of 8 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 2 of 2 (0 omitted); unresolved 3 of 3 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

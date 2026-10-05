@@ -10,6 +10,7 @@ Pure presentation helpers for detailed local and CI health reports.
 
 | Source | Symbols |
 |--------|---------|
+| `.freshness_wording` | `SOURCE_CHANGED_STRUCTURE_UNCHANGED` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping`, `Sequence` |
 | `unicodedata` | `unicodedata` |
@@ -22,16 +23,20 @@ flowchart LR
     n0["integrations/github-action/render_summary.py"]
     n1["src/llm_wiki_cli/services/ci_report.py"]
     n2["src/llm_wiki_cli/services/doctor_service.py"]
-    n3["src/llm_wiki_cli/services/health_summary.py"]
+    n3["src/llm_wiki_cli/services/freshness_wording.py"]
+    n4["src/llm_wiki_cli/services/health_summary.py"]
     n0 --> n1
-    n0 --> n3
+    n0 --> n4
     n1 --> n2
-    n1 --> n3
+    n1 --> n4
     n2 --> n3
+    n2 --> n4
+    n4 --> n3
     click n0 "../modules/render_summary.md"
     click n1 "../modules/ci_report.md"
     click n2 "../modules/doctor_service.md"
-    click n3 "../modules/health_summary.md"
+    click n3 "../modules/freshness_wording.md"
+    click n4 "../modules/health_summary.md"
 ```
 
 ### Internal neighbors
@@ -41,6 +46,7 @@ flowchart LR
 | Inbound | [render_summary](../modules/render_summary.md) |
 | Inbound | [ci_report](../modules/ci_report.md) |
 | Inbound | [doctor_service](../modules/doctor_service.md) |
+| Outbound | [freshness_wording](../modules/freshness_wording.md) |
 
 ## Functions
 

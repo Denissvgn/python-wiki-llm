@@ -6,67 +6,83 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as hash_file
     participant p1 as _hash_file
-    participant p2 as Path (src/llm_wiki_cli/services…tion_policy.py:_hash_file)
-    participant p3 as os.path.abspath (src/llm_wiki_cli/services…tion_policy.py:_hash_file)
-    participant p4 as os.fspath (src/llm_wiki_cli/services…tion_policy.py:_hash_file)
-    participant p5 as guard_windows_directory_chain
-    participant p6 as WindowsDirectoryGuardError
-    participant p7 as Path (src/llm_wiki_cli/services…d_windows_directory_chain)
-    participant p8 as os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)
-    participant p9 as os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)
-    participant p10 as handles.append
-    participant p11 as _open_windows_directory_guard
-    participant p12 as ctypes.WinDLL (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p13 as create_file (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p14 as _windows_api_path
-    participant p15 as os.path.abspath (src/llm_wiki_cli/services…uard.py:_windows_api_path)
-    participant p16 as os.fspath (src/llm_wiki_cli/services…uard.py:_windows_api_path)
-    participant p17 as value.startswith
-    participant p18 as wintypes.HANDLE (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p19 as ctypes.get_last_error (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p20 as ctypes.WinError (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p21 as _WindowsDirectoryGuardUnavailableError
-    participant p22 as _ByHandleFileInformation (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p23 as get_information (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p24 as ctypes.byref (src/llm_wiki_cli/services…n_windows_directory_guard)
+    participant p2 as Path (src/llm_wiki_cli/services…ation_policy.py:hash_file)
+    participant p3 as Path (src/llm_wiki_cli/services…tion_policy.py:_hash_file)
+    participant p4 as os.path.abspath (src/llm_wiki_cli/services…tion_policy.py:_hash_file)
+    participant p5 as os.fspath (src/llm_wiki_cli/services…tion_policy.py:_hash_file)
+    participant p6 as guard_windows_directory_chain
+    participant p7 as _hash_windows_file
+    participant p8 as DocumentationPolicyError
+    participant p9 as hashlib.sha256 (src/llm_wiki_cli/services…tion_policy.py:_hash_file)
+    participant p10 as os.lstat (src/llm_wiki_cli/services…tion_policy.py:_hash_file)
+    participant p11 as _assert_safe_regular_file
+    participant p12 as _assert_same_file_identity
+    participant p13 as getattr (src/llm_wiki_cli/services…tion_policy.py:_hash_file)
+    participant p14 as os.open
+    participant p15 as os.fstat (src/llm_wiki_cli/services…tion_policy.py:_hash_file)
+    participant p16 as os.read
+    participant p17 as len (src/llm_wiki_cli/services…tion_policy.py:_hash_file)
+    participant p18 as digest.update (src/llm_wiki_cli/services…tion_policy.py:_hash_file)
+    participant p19 as _assert_stable_file_metadata
+    participant p20 as os.close (src/llm_wiki_cli/services…tion_policy.py:_hash_file)
+    participant p21 as _lstat
     p0->>p1: _hash_file
-    p1-->>p2: Path (src/llm_wiki_cli/services…tion_policy.py:_hash_file)
-    p1-->>p3: os.path.abspath (src/llm_wiki_cli/services…tion_policy.py:_hash_file)
-    p1-->>p4: os.fspath (src/llm_wiki_cli/services…tion_policy.py:_hash_file)
-    p1->>p5: guard_windows_directory_chain
-    p5->>p6: WindowsDirectoryGuardError
-    p5-->>p7: Path (src/llm_wiki_cli/services…d_windows_directory_chain)
-    p5-->>p8: os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)
-    p5-->>p9: os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)
-    p5->>p6: WindowsDirectoryGuardError
-    p5-->>p7: Path (src/llm_wiki_cli/services…d_windows_directory_chain)
-    p5-->>p10: handles.append
-    p5->>p11: _open_windows_directory_guard
-    p11-->>p12: ctypes.WinDLL (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p11-->>p13: create_file (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p11->>p14: _windows_api_path
-    p14-->>p15: os.path.abspath (src/llm_wiki_cli/services…uard.py:_windows_api_path)
-    p14-->>p16: os.fspath (src/llm_wiki_cli/services…uard.py:_windows_api_path)
-    p14-->>p17: value.startswith
-    p14-->>p17: value.startswith
-    p11-->>p18: wintypes.HANDLE (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p11-->>p19: ctypes.get_last_error (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p11-->>p20: ctypes.WinError (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p11->>p21: _WindowsDirectoryGuardUnavailableError
-    p11->>p6: WindowsDirectoryGuardError
-    p11-->>p22: _ByHandleFileInformation (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p11-->>p23: get_information (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p11-->>p24: ctypes.byref (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p11-->>p20: ctypes.WinError (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p11-->>p19: ctypes.get_last_error (src/llm_wiki_cli/services…n_windows_directory_guard)
+    p0-->>p2: Path (src/llm_wiki_cli/services…ation_policy.py:hash_file)(path)
+    p1-->>p3: Path (src/llm_wiki_cli/services…tion_policy.py:_hash_file)(os.path.abspath(...))
+    p1-->>p4: os.path.abspath (src/llm_wiki_cli/services…tion_policy.py:_hash_file)(os.fspath(...))
+    p1-->>p5: os.fspath (src/llm_wiki_cli/services…tion_policy.py:_hash_file)(path)
+    p1->>p6: guard_windows_directory_chain
+    p1->>p7: _hash_windows_file
+    p1->>p8: DocumentationPolicyError
+    p1-->>p9: hashlib.sha256 (src/llm_wiki_cli/services…tion_policy.py:_hash_file)
+    p1-->>p10: os.lstat (src/llm_wiki_cli/services…tion_policy.py:_hash_file)(path)
+    p1->>p11: _assert_safe_regular_file
+    p1->>p12: _assert_same_file_identity
+    p1-->>p13: getattr (src/llm_wiki_cli/services…tion_policy.py:_hash_file)(os, 'O_BINARY', 0)
+    p1-->>p13: getattr (src/llm_wiki_cli/services…tion_policy.py:_hash_file)(os, 'O_CLOEXEC', 0)
+    p1-->>p13: getattr (src/llm_wiki_cli/services…tion_policy.py:_hash_file)(os, 'O_NOFOLLOW', 0)
+    p1-->>p14: os.open(path, flags)
+    p1-->>p15: os.fstat (src/llm_wiki_cli/services…tion_policy.py:_hash_file)(descriptor)
+    p1->>p11: _assert_safe_regular_file
+    p1->>p12: _assert_same_file_identity
+    p1-->>p16: os.read(descriptor, ...)
+    p1-->>p17: len (src/llm_wiki_cli/services…tion_policy.py:_hash_file)(chunk)
+    p1->>p8: DocumentationPolicyError
+    p1-->>p18: digest.update (src/llm_wiki_cli/services…tion_policy.py:_hash_file)(chunk)
+    p1-->>p15: os.fstat (src/llm_wiki_cli/services…tion_policy.py:_hash_file)(descriptor)
+    p1->>p19: _assert_stable_file_metadata
+    p1->>p8: DocumentationPolicyError
+    p1-->>p20: os.close (src/llm_wiki_cli/services…tion_policy.py:_hash_file)(descriptor)
+    p1->>p21: _lstat
+    p1->>p11: _assert_safe_regular_file
+    p1->>p12: _assert_same_file_identity
 ```
 
-> Call sequence diagram shows 30 of 356 interactions; 326 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 356 interactions; 326 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 15 of 195 (180 omitted); unresolved 1 of 37 (36 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 6 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 9 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 6 | - | external | 9 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 6 | - | unresolved | 4 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 14 | - | external | 14 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 14 | - | unresolved | 3 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 14 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 9 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_windows_api_path` | 17 | - | external | 2 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_windows_api_path` | 17 | - | unresolved | 2 |
+> Omission summary shows 8 of 56 groups; 48 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

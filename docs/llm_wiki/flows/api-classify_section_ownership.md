@@ -6,27 +6,34 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as classify_section_ownership
     participant p1 as _coerce_page_kind
-    participant p2 as isinstance
-    participant p3 as PageKind
-    participant p4 as ValueError
-    participant p5 as _top_level_policy
-    participant p6 as title.casefold
-    participant p7 as _LOG_DATE_HEADING_RE.fullmatch
+    participant p2 as _top_level_policy
+    participant p3 as isinstance
+    participant p4 as title.casefold
+    participant p5 as PageKind
+    participant p6 as _LOG_DATE_HEADING_RE.fullmatch
+    participant p7 as ValueError
     participant p8 as _HTTP_OPERATION_HEADING_RE.match
     p0->>p1: _coerce_page_kind
-    p1-->>p2: isinstance
-    p1->>p3: PageKind
-    p1-->>p4: ValueError
-    p0->>p5: _top_level_policy
-    p5-->>p6: title.casefold
-    p5-->>p7: _LOG_DATE_HEADING_RE.fullmatch
-    p5-->>p8: _HTTP_OPERATION_HEADING_RE.match
+    p0->>p2: _top_level_policy
+    p1-->>p3: isinstance(page_kind, PageKind)
+    p2-->>p4: title.casefold
+    p1->>p5: PageKind
+    p2-->>p6: _LOG_DATE_HEADING_RE.fullmatch(title)
+    p1-->>p7: ValueError(...)
+    p2-->>p8: _HTTP_OPERATION_HEADING_RE.match(title)
 ```
+
+> Call sequence diagram shows 8 of 8 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 2 of 2 (0 omitted); unresolved 3 of 3 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

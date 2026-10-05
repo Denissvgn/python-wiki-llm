@@ -15,6 +15,7 @@ Loads one coherent committed native snapshot under the caller’s reject, rebuil
 | `.knowledge_envelope` | `KnowledgeEnvelopeError`, `hash_markdown_snapshot` |
 | `.knowledge_governance` | `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_FILENAME`, `GovernanceError`, `load_governance`, `validate_governance_projection` |
 | `.knowledge_model` | `KnowledgeIndex`, `KnowledgeLoadState` |
+| `.maintenance_protocol` | `ADOPTION_FILENAME`, `guard_maintenance_owner`, `MaintenanceProtocolError` |
 | `.progress` | `observed_phase` |
 | `.sync_manifest` | `MANIFEST_FILENAME`, `SyncManifest`, `SyncManifestError` |
 | `.wiki_surface` | `WikiSurfacePathError`, `collect_wiki_pages` |
@@ -45,9 +46,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (10) |
-| Outbound | `src` (9) |
+| Outbound | `src` (10) |
 
-> All 19 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 20 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

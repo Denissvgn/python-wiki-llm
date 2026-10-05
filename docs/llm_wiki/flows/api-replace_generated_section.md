@@ -6,67 +6,81 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as replace_generated_section
     participant p1 as section_body
-    participant p2 as normalize_markdown(…).splitlines (src/llm_wiki_cli/services…n_sections.py:section_body)
-    participant p3 as normalize_markdown
-    participant p4 as text.replace(…).replace
-    participant p5 as text.replace
-    participant p6 as section_bounds
-    participant p7 as heading.casefold
-    participant p8 as enumerate
-    participant p9 as _LEGACY_HEADING_RE.match
-    participant p10 as line.strip
-    participant p11 as len (src/llm_wiki_cli/services…sections.py:section_bounds)
-    participant p12 as match.group
-    participant p13 as match.group(…).strip().casefold
-    participant p14 as match.group(…).strip
-    participant p15 as range
-    participant p16 as lines[…].strip (src/llm_wiki_cli/services…sections.py:section_bounds)
-    participant p17 as next_match.group
-    participant p18 as (…).join(…).strip
-    participant p19 as '\n'.join (src/llm_wiki_cli/services…n_sections.py:section_body)
-    participant p20 as trim_blank_lines
-    participant p21 as len (src/llm_wiki_cli/services…ctions.py:trim_blank_lines)
-    participant p22 as lines[…].strip (src/llm_wiki_cli/services…ons.py:trim_blank_lines, 1)
-    participant p23 as lines[…].strip (src/llm_wiki_cli/services…ctions.py:trim_blank_lines)
-    participant p24 as replace_section_body
+    participant p2 as replace_section_body
+    participant p3 as existing.endswith
+    participant p4 as updated.endswith
+    participant p5 as normalize_markdown(…).splitlines (src/llm_wiki_cli/services…n_sections.py:section_body)
+    participant p6 as normalize_markdown(…).splitlines (src/llm_wiki_cli/services…ns.py:replace_section_body)
+    participant p7 as normalize_markdown
+    participant p8 as section_bounds
+    participant p9 as (…).join(…).strip
+    participant p10 as body.splitlines
+    participant p11 as '\n'.join (src/llm_wiki_cli/services…n_sections.py:section_body)
+    participant p12 as '\n'.join (src/llm_wiki_cli/services…ns.py:replace_section_body)
+    participant p13 as trim_blank_lines
+    participant p14 as text.replace(…).replace
+    participant p15 as heading.casefold
+    participant p16 as len (src/llm_wiki_cli/services…ctions.py:trim_blank_lines)
+    participant p17 as text.replace
+    participant p18 as enumerate
+    participant p19 as lines[…].strip (src/llm_wiki_cli/services…ons.py:trim_blank_lines, 1)
+    participant p20 as _LEGACY_HEADING_RE.match
+    participant p21 as lines[…].strip (src/llm_wiki_cli/services…ctions.py:trim_blank_lines)
+    participant p22 as line.strip
+    participant p23 as len (src/llm_wiki_cli/services…sections.py:section_bounds)
+    participant p24 as match.group
+    participant p25 as match.group(…).strip().casefold
+    participant p26 as match.group(…).strip
     p0->>p1: section_body
-    p1-->>p2: normalize_markdown(…).splitlines (src/llm_wiki_cli/services…n_sections.py:section_body)
-    p1->>p3: normalize_markdown
-    p3-->>p4: text.replace(…).replace
-    p3-->>p5: text.replace
-    p1->>p6: section_bounds
-    p6-->>p7: heading.casefold
-    p6-->>p8: enumerate
-    p6-->>p9: _LEGACY_HEADING_RE.match
-    p6-->>p10: line.strip
-    p6-->>p11: len (src/llm_wiki_cli/services…sections.py:section_bounds)
-    p6-->>p12: match.group
-    p6-->>p13: match.group(…).strip().casefold
-    p6-->>p14: match.group(…).strip
-    p6-->>p12: match.group
-    p6-->>p11: len (src/llm_wiki_cli/services…sections.py:section_bounds)
-    p6-->>p15: range
-    p6-->>p11: len (src/llm_wiki_cli/services…sections.py:section_bounds)
-    p6-->>p9: _LEGACY_HEADING_RE.match
-    p6-->>p16: lines[…].strip (src/llm_wiki_cli/services…sections.py:section_bounds)
-    p6-->>p11: len (src/llm_wiki_cli/services…sections.py:section_bounds)
-    p6-->>p17: next_match.group
-    p1-->>p18: (…).join(…).strip
-    p1-->>p19: '\n'.join (src/llm_wiki_cli/services…n_sections.py:section_body)
-    p1->>p20: trim_blank_lines
-    p20-->>p21: len (src/llm_wiki_cli/services…ctions.py:trim_blank_lines)
-    p20-->>p22: lines[…].strip (src/llm_wiki_cli/services…ons.py:trim_blank_lines, 1)
-    p20-->>p23: lines[…].strip (src/llm_wiki_cli/services…ctions.py:trim_blank_lines)
     p0->>p1: section_body
-    p0->>p24: replace_section_body
+    p0->>p2: replace_section_body
+    p0-->>p3: existing.endswith('\n')
+    p0-->>p4: updated.endswith('\n')
+    p1-->>p5: normalize_markdown(…).splitlines (src/llm_wiki_cli/services…n_sections.py:section_body)
+    p2-->>p6: normalize_markdown(…).splitlines (src/llm_wiki_cli/services…ns.py:replace_section_body)
+    p1->>p7: normalize_markdown
+    p2->>p7: normalize_markdown
+    p1->>p8: section_bounds
+    p2->>p8: section_bounds
+    p1-->>p9: (…).join(…).strip
+    p2-->>p10: body.splitlines
+    p1-->>p11: '\n'.join (src/llm_wiki_cli/services…n_sections.py:section_body)(trim_blank_lines(...))
+    p2-->>p12: '\n'.join (src/llm_wiki_cli/services…ns.py:replace_section_body)(...)
+    p1->>p13: trim_blank_lines
+    p7-->>p14: text.replace(…).replace('\r', '\n')
+    p8-->>p15: heading.casefold
+    p13-->>p16: len (src/llm_wiki_cli/services…ctions.py:trim_blank_lines)(lines)
+    p7-->>p17: text.replace('\r\n', '\n')
+    p8-->>p18: enumerate(lines)
+    p13-->>p19: lines[…].strip (src/llm_wiki_cli/services…ons.py:trim_blank_lines, 1)
+    p8-->>p20: _LEGACY_HEADING_RE.match(line.strip(...))
+    p13-->>p21: lines[…].strip (src/llm_wiki_cli/services…ctions.py:trim_blank_lines)
+    p8-->>p22: line.strip
+    p8-->>p23: len (src/llm_wiki_cli/services…sections.py:section_bounds)(match.group(...))
+    p8-->>p24: match.group(1)
+    p8-->>p25: match.group(…).strip().casefold
+    p8-->>p26: match.group(…).strip
+    p8-->>p24: match.group(2)
 ```
 
-> Call sequence diagram shows 30 of 37 interactions; 7 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 37 interactions; 7 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 3 of 7 (4 omitted); unresolved 19 of 22 (3 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/markdown_sections.py:section_bounds` | 7 | - | external | 4 |
+| `src/llm_wiki_cli/services/markdown_sections.py:section_bounds` | 7 | - | unresolved | 3 |
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

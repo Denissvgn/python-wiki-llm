@@ -6,19 +6,26 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as require_exact_choice
     participant p1 as require_string
-    participant p2 as isinstance
-    participant p3 as value.encode
-    participant p4 as frozenset
+    participant p2 as frozenset
+    participant p3 as isinstance
+    participant p4 as value.encode
     p0->>p1: require_string
-    p1-->>p2: isinstance
-    p1-->>p3: value.encode
-    p0-->>p4: frozenset
+    p0-->>p2: frozenset(choices)
+    p1-->>p3: isinstance(value, str)
+    p1-->>p4: value.encode('utf-8')
 ```
+
+> Call sequence diagram shows 4 of 4 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 2 of 2 (0 omitted); unresolved 1 of 1 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

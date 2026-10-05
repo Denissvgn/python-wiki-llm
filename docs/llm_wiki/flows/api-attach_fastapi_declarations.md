@@ -6,23 +6,30 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as attach_fastapi_declarations
     participant p1 as extract_fastapi_declarations
-    participant p2 as ast.parse
-    participant p3 as _FastAPIScanner
-    participant p4 as scanner.visit
-    participant p5 as scanner.result
-    participant p6 as file_entry.setdefault
+    participant p2 as file_entry.setdefault
+    participant p3 as ast.parse
+    participant p4 as _FastAPIScanner
+    participant p5 as scanner.visit
+    participant p6 as scanner.result
     p0->>p1: extract_fastapi_declarations
-    p1-->>p2: ast.parse
-    p1->>p3: _FastAPIScanner
-    p1-->>p4: scanner.visit
-    p1-->>p5: scanner.result
-    p0-->>p6: file_entry.setdefault
+    p0-->>p2: file_entry.setdefault('frameworks', {...})
+    p1-->>p3: ast.parse(source, filename=...)
+    p1->>p4: _FastAPIScanner
+    p1-->>p5: scanner.visit(tree)
+    p1-->>p6: scanner.result
 ```
+
+> Call sequence diagram shows 6 of 6 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 1 of 1 (0 omitted); unresolved 3 of 3 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

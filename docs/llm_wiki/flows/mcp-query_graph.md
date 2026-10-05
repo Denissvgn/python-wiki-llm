@@ -6,13 +6,20 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as query_graph
     participant p1 as service.query_graph
-    p0-->>p1: service.query_graph
+    p0-->>p1: service.query_graph(query)
 ```
+
+> Call sequence diagram shows 1 of 1 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 0 of 0 (0 omitted); unresolved 1 of 1 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 
@@ -36,7 +43,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| query_graph | service.query_graph | 1355 | `service.query_graph(query)` |
+| query_graph | service.query_graph | 1390 | `service.query_graph(query)` |
 
 ### Boundary effects
 
@@ -46,7 +53,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `query_graph` | `service.query_graph` | 1355 |
+| unresolved_call | `query_graph` | `service.query_graph` | 1390 |
 
 ## Behavior
 

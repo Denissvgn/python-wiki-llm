@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -13,10 +15,15 @@ sequenceDiagram
     participant p1 as isinstance
     participant p2 as contains_control_character
     participant p3 as pattern.search
-    p0-->>p1: isinstance
+    p0-->>p1: isinstance(value, str)
     p0->>p2: contains_control_character
-    p2-->>p3: pattern.search
+    p2-->>p3: pattern.search(value)
 ```
+
+> Call sequence diagram shows 3 of 3 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 1 of 1 (0 omitted); unresolved 1 of 1 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

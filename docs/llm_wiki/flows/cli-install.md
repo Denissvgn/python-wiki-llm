@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [install_cmd](../modules/install_cmd.md)
-**Modules touched:** [config](../modules/config.md), [install_cmd](../modules/install_cmd.md), [io](../modules/io.md), [plugins](../modules/plugins.md), and 2 more
+**Modules touched:** [config](../modules/config.md), [install_cmd](../modules/install_cmd.md), [io](../modules/io.md), [plugins](../modules/plugins.md), and 3 more
 
 **Complete modules touched:**
 
@@ -12,8 +12,11 @@
 - [plugins](../modules/plugins.md)
 - [services_schema](../modules/services_schema.md)
 - [validation](../modules/validation.md)
+- [wiki_write_basis](../modules/wiki_write_basis.md)
 
 ## Call sequence
+
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -21,59 +24,73 @@ sequenceDiagram
     participant p0 as run
     participant p1 as getattr (src/llm_wiki_cli/commands/install_cmd.py:run)
     participant p2 as validate_path
-    participant p3 as PathValidationError
-    participant p4 as (…).resolve
-    participant p5 as Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    participant p6 as Path.cwd().resolve
-    participant p7 as resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
-    participant p8 as install_plugin
-    participant p9 as resolve_plugin_ref
-    participant p10 as Path(…).expanduser (src/llm_wiki_cli/services….py:resolve_plugin_ref, 1)
-    participant p11 as Path (src/llm_wiki_cli/services…ins.py:resolve_plugin_ref)
-    participant p12 as direct.exists
-    participant p13 as direct.resolve
-    participant p14 as Path(…).resolve (src/llm_wiki_cli/services…ins.py:resolve_plugin_ref)
-    participant p15 as resolved.relative_to (src/llm_wiki_cli/services…ins.py:resolve_plugin_ref)
-    participant p16 as PluginError
-    participant p17 as _load_catalog
-    participant p18 as path.exists (src/llm_wiki_cli/services/plugins.py:_load_catalog)
-    participant p19 as json.loads (src/llm_wiki_cli/services/plugins.py:_load_catalog)
-    participant p20 as path.read_text (src/llm_wiki_cli/services/plugins.py:_load_catalog)
-    participant p21 as isinstance (src/llm_wiki_cli/services/plugins.py:_load_catalog)
-    participant p22 as raw.get (src/llm_wiki_cli/services/plugins.py:_load_catalog)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/install_cmd.py:run)
+    participant p3 as install_plugin
+    participant p4 as bool (src/llm_wiki_cli/commands/install_cmd.py:run)
+    participant p5 as print
+    participant p6 as sys.exit
+    participant p7 as _component_summary
+    participant p8 as read_config
+    participant p9 as refresh_skill_blocks
+    participant p10 as str (src/llm_wiki_cli/commands/install_cmd.py:run)
+    participant p11 as config.get
+    participant p12 as len (src/llm_wiki_cli/commands/install_cmd.py:run)
+    participant p13 as PathValidationError
+    participant p14 as resolve_plugin_ref
+    participant p15 as plugin.get (src/llm_wiki_cli/commands…cmd.py:_component_summary)
+    participant p16 as get_agent_config_path
+    participant p17 as SCHEMA_FILENAMES.get
+    participant p18 as (…).resolve
+    participant p19 as validate_plugin
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/install_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
     p0->>p2: validate_path
-    p2->>p3: PathValidationError
-    p2-->>p4: (…).resolve
-    p2-->>p5: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    p2-->>p6: Path.cwd().resolve
-    p2-->>p5: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    p2-->>p7: resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
-    p2->>p3: PathValidationError
-    p0->>p8: install_plugin
-    p8->>p9: resolve_plugin_ref
-    p9-->>p10: Path(…).expanduser (src/llm_wiki_cli/services….py:resolve_plugin_ref, 1)
-    p9-->>p11: Path (src/llm_wiki_cli/services…ins.py:resolve_plugin_ref)
-    p9-->>p12: direct.exists
-    p9-->>p13: direct.resolve
-    p9-->>p14: Path(…).resolve (src/llm_wiki_cli/services…ins.py:resolve_plugin_ref)
-    p9-->>p11: Path (src/llm_wiki_cli/services…ins.py:resolve_plugin_ref)
-    p9-->>p15: resolved.relative_to (src/llm_wiki_cli/services…ins.py:resolve_plugin_ref)
-    p9->>p16: PluginError
-    p9-->>p11: Path (src/llm_wiki_cli/services…ins.py:resolve_plugin_ref)
-    p9-->>p11: Path (src/llm_wiki_cli/services…ins.py:resolve_plugin_ref)
-    p9->>p17: _load_catalog
-    p17-->>p18: path.exists (src/llm_wiki_cli/services/plugins.py:_load_catalog)
-    p17-->>p19: json.loads (src/llm_wiki_cli/services/plugins.py:_load_catalog)
-    p17-->>p20: path.read_text (src/llm_wiki_cli/services/plugins.py:_load_catalog)
-    p17->>p16: PluginError
-    p17-->>p21: isinstance (src/llm_wiki_cli/services/plugins.py:_load_catalog)
-    p17-->>p21: isinstance (src/llm_wiki_cli/services/plugins.py:_load_catalog)
-    p17-->>p22: raw.get (src/llm_wiki_cli/services/plugins.py:_load_catalog)
-    p17-->>p21: isinstance (src/llm_wiki_cli/services/plugins.py:_load_catalog)
+    p0->>p3: install_plugin
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/install_cmd.py:run)(args, 'ref')
+    p0-->>p4: bool (src/llm_wiki_cli/commands/install_cmd.py:run)(getattr(...))
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/install_cmd.py:run)(args, 'dry_run', False)
+    p0-->>p4: bool (src/llm_wiki_cli/commands/install_cmd.py:run)(getattr(...))
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/install_cmd.py:run)(args, 'yes', False)
+    p0-->>p5: print(..., file=sys.stderr)
+    p0-->>p6: sys.exit(1)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/install_cmd.py:run)(args, 'dry_run', False)
+    p0-->>p5: print(...)
+    p0->>p7: _component_summary
+    p0-->>p5: print('Dry run: no files were changed.')
+    p0->>p8: read_config
+    p0->>p9: refresh_skill_blocks
+    p0-->>p10: str (src/llm_wiki_cli/commands/install_cmd.py:run)(config.get(...))
+    p0-->>p11: config.get('agent', 'generic')
+    p0-->>p5: print(...)
+    p0-->>p5: print(...)
+    p0->>p7: _component_summary
+    p0-->>p5: print(...)
+    p0-->>p12: len (src/llm_wiki_cli/commands/install_cmd.py:run)(refreshed)
+    p2->>p13: PathValidationError
+    p3->>p14: resolve_plugin_ref
+    p7-->>p15: plugin.get (src/llm_wiki_cli/commands…cmd.py:_component_summary)('components', [...])
+    p8->>p16: get_agent_config_path
+    p9-->>p17: SCHEMA_FILENAMES.get(agent)
+    p2-->>p18: (…).resolve
+    p3->>p19: validate_plugin
 ```
 
-> Call sequence diagram shows 30 of 377 interactions; 347 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 385 interactions; 355 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 16 of 123 (107 omitted); unresolved 4 of 153 (149 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/config.py:validate_path` | 3 | - | external | 2 |
+| `src/llm_wiki_cli/config.py:validate_path` | 3 | - | unresolved | 2 |
+| `src/llm_wiki_cli/config.py:validate_path` | 3 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 1 |
+| `src/llm_wiki_cli/services/plugins.py:resolve_plugin_ref` | 12 | - | unresolved | 9 |
+| `src/llm_wiki_cli/services/plugins.py:resolve_plugin_ref` | 12 | - | external | 5 |
+| `src/llm_wiki_cli/services/plugins.py:resolve_plugin_ref` | 12 | [src/llm_wiki_cli/services/plugins.py](../modules/plugins.md) | internal | 4 |
+| `src/llm_wiki_cli/services/plugins.py:_load_catalog` | 23 | - | unresolved | 7 |
+| `src/llm_wiki_cli/services/plugins.py:_load_catalog` | 23 | - | external | 7 |
+> Omission summary shows 8 of 105 groups; 97 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

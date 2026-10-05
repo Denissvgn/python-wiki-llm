@@ -6,66 +6,84 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as alias_key
     participant p1 as _alias_type
-    participant p2 as isinstance (src/llm_wiki_cli/services…governance.py:_alias_type)
-    participant p3 as GovernanceError
-    participant p4 as _identity_value
+    participant p2 as _identity_value
+    participant p3 as isinstance (src/llm_wiki_cli/services…governance.py:_alias_type)
+    participant p4 as GovernanceError
     participant p5 as validate_alias_value
     participant p6 as validate_alias_type
-    participant p7 as isinstance (src/llm_wiki_cli/services…ty.py:validate_alias_type)
-    participant p8 as AliasType
-    participant p9 as ConceptIdentityError
-    participant p10 as validate_locator
-    participant p11 as _machine_text
-    participant p12 as isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p13 as len (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p14 as value.strip (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p15 as any (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p16 as character.isspace (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p17 as unicodedata.normalize (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p18 as unicodedata.category(…).startswith (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p19 as unicodedata.category (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p20 as _contains_uri_userinfo
-    participant p21 as urlsplit
-    participant p22 as _looks_absolute_path
-    participant p23 as value.startswith
+    participant p7 as validate_locator
+    participant p8 as validate_natural_key
+    participant p9 as isinstance (src/llm_wiki_cli/services…ty.py:validate_alias_type)
+    participant p10 as _machine_text
+    participant p11 as AliasType
+    participant p12 as _contains_uri_userinfo
+    participant p13 as text.partition
+    participant p14 as ConceptIdentityError
+    participant p15 as _looks_absolute_path
+    participant p16 as _NATURAL_KEY_PREFIX_RE.fullmatch
+    participant p17 as _NATURAL_KEY_PAYLOAD_RE.fullmatch
+    participant p18 as validate_exact_page_coordinate
+    participant p19 as _INVALID_PERCENT_RE.search
+    participant p20 as _PERCENT_ESCAPE_RE.finditer
+    participant p21 as match.group
+    participant p22 as match.group(…).upper
     p0->>p1: _alias_type
-    p1-->>p2: isinstance (src/llm_wiki_cli/services…governance.py:_alias_type)
-    p1->>p3: GovernanceError
-    p0->>p4: _identity_value
-    p4->>p1: _alias_type
-    p4->>p5: validate_alias_value
+    p0->>p2: _identity_value
+    p1-->>p3: isinstance (src/llm_wiki_cli/services…governance.py:_alias_type)(value, str)
+    p2->>p1: _alias_type
+    p1->>p4: GovernanceError
+    p2->>p5: validate_alias_value
+    p2->>p4: GovernanceError
     p5->>p6: validate_alias_type
-    p6-->>p7: isinstance (src/llm_wiki_cli/services…ty.py:validate_alias_type)
-    p6->>p8: AliasType
-    p6->>p9: ConceptIdentityError
-    p5->>p10: validate_locator
-    p10->>p11: _machine_text
-    p11-->>p12: isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p11->>p9: ConceptIdentityError
-    p11-->>p13: len (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p11->>p9: ConceptIdentityError
-    p11-->>p14: value.strip (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p11-->>p15: any (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p11-->>p16: character.isspace (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p11->>p9: ConceptIdentityError
-    p11-->>p17: unicodedata.normalize (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p11->>p9: ConceptIdentityError
-    p11-->>p15: any (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p11-->>p18: unicodedata.category(…).startswith (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p11-->>p19: unicodedata.category (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p11->>p9: ConceptIdentityError
-    p10->>p20: _contains_uri_userinfo
-    p20-->>p21: urlsplit
-    p10->>p22: _looks_absolute_path
-    p22-->>p23: value.startswith
+    p5->>p7: validate_locator
+    p5->>p8: validate_natural_key
+    p6-->>p9: isinstance (src/llm_wiki_cli/services…ty.py:validate_alias_type)(value, AliasType)
+    p7->>p10: _machine_text
+    p8->>p10: _machine_text
+    p6->>p11: AliasType
+    p7->>p12: _contains_uri_userinfo
+    p8-->>p13: text.partition(':')
+    p6->>p14: ConceptIdentityError
+    p7->>p15: _looks_absolute_path
+    p8-->>p16: _NATURAL_KEY_PREFIX_RE.fullmatch(prefix)
+    p7->>p14: ConceptIdentityError
+    p8-->>p17: _NATURAL_KEY_PAYLOAD_RE.fullmatch(payload)
+    p7->>p18: validate_exact_page_coordinate
+    p8->>p14: ConceptIdentityError
+    p7->>p14: ConceptIdentityError
+    p8-->>p19: _INVALID_PERCENT_RE.search(payload)
+    p7->>p14: ConceptIdentityError
+    p8->>p14: ConceptIdentityError
+    p8-->>p20: _PERCENT_ESCAPE_RE.finditer(payload)
+    p8-->>p21: match.group(1)
+    p8-->>p22: match.group(…).upper
 ```
 
-> Call sequence diagram shows 30 of 106 interactions; 76 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 106 interactions; 76 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 2 of 27 (25 omitted); unresolved 7 of 27 (20 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 13 | - | external | 6 |
+| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 13 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 5 |
+| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 13 | - | unresolved | 3 |
+| `src/llm_wiki_cli/services/concept_identity.py:_contains_uri_userinfo` | 28 | - | external | 1 |
+| `src/llm_wiki_cli/services/concept_identity.py:_looks_absolute_path` | 30 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 34 | - | external | 4 |
+| `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 34 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 34 | [src/llm_wiki_cli/services/wiki_surface.py](../modules/wiki_surface.md) | internal | 7 |
+> Omission summary shows 8 of 22 groups; 14 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -131,11 +149,11 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | alias_key | _alias_type | 380 | `_alias_type(alias_type, 'alias.type')` |
-| _alias_type | isinstance (src/llm_wiki_cli/services…governance.py:_alias_type) | 3277 | `isinstance(value, str)` |
-| _alias_type | GovernanceError | 3278 | `GovernanceError(path, "must be 'locator' or 'natural-key'")` |
+| _alias_type | isinstance (src/llm_wiki_cli/services…governance.py:_alias_type) | 3281 | `isinstance(value, str)` |
+| _alias_type | GovernanceError | 3282 | `GovernanceError(path, "must be 'locator' or 'natural-key'")` |
 | alias_key | _identity_value | 381 | `_identity_value(value, selected_type, 'alias.value')` |
-| _identity_value | _alias_type | 3286 | `_alias_type(alias_type, ...)` |
-| _identity_value | validate_alias_value | 3288 | `validate_alias_value(..., value)` |
+| _identity_value | _alias_type | 3290 | `_alias_type(alias_type, ...)` |
+| _identity_value | validate_alias_value | 3292 | `validate_alias_value(..., value)` |
 | validate_alias_value | validate_alias_type | 486 | `validate_alias_type(alias_type)` |
 | validate_alias_type | isinstance (src/llm_wiki_cli/services…ty.py:validate_alias_type) | 475 | `isinstance(value, AliasType)` |
 | validate_alias_type | AliasType | 475 | `AliasType(value)` |
@@ -150,7 +168,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_alias_type` | `isinstance` | 3277 |
+| external_call | `_alias_type` | `isinstance` | 3281 |
 | external_call | `validate_alias_type` | `isinstance` | 475 |
 | step_limit | `alias_key` | `first 12 steps` | 0 |
 | truncated_flow | `alias_key` | `depth limit` | 0 |

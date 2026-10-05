@@ -2,27 +2,21 @@
 
 **Entry point:** `prepare_documentation_run` (`api`)
 **Source:** [prepare](../modules/prepare.md)
-**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [bootstrap_service](../modules/bootstrap_service.md), [common](../modules/common.md), and 33 more
+**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [bootstrap_service](../modules/bootstrap_service.md), and 29 more
 
 **Complete modules touched:**
 
 - [api_contracts](../modules/api_contracts.md)
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
 - [bootstrap_service](../modules/bootstrap_service.md)
-- [common](../modules/common.md)
-- [data_flow](../modules/data_flow.md)
 - [documentation_native](../modules/documentation_native.md)
 - [documentation_wiki_input](../modules/documentation_wiki_input.md)
-- [entrypoints](../modules/entrypoints.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
-- [imports](../modules/imports.md)
-- [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
-- [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_freshness](../modules/knowledge_freshness.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
@@ -30,10 +24,12 @@
 - [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [maintenance_projection](../modules/maintenance_projection.md)
+- [maintenance_protocol](../modules/maintenance_protocol.md)
+- [maintenance_shapes](../modules/maintenance_shapes.md)
+- [maintenance_state](../modules/maintenance_state.md)
 - [module_maps](../modules/module_maps.md)
-- [paths](../modules/paths.md)
 - [prepare](../modules/prepare.md)
-- [relationships](../modules/relationships.md)
 - [services_dependencies](../modules/services_dependencies.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
@@ -42,9 +38,10 @@
 - [wiki_lifecycle](../modules/wiki_lifecycle.md)
 - [wiki_media](../modules/wiki_media.md)
 - [wiki_surface](../modules/wiki_surface.md)
-- [wiki_surface_index](../modules/wiki_surface_index.md)
 
 ## Call sequence
+
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -53,53 +50,71 @@ sequenceDiagram
     participant p1 as _RefreshArchiveTransaction
     participant p2 as _InitialPrepareTransaction
     participant p3 as _prepare_documentation_run_impl
-    participant p4 as DocumentationSchemaError
-    participant p5 as site_name.strip
-    participant p6 as _validate_documentation_projection_policy
-    participant p7 as _resolve_workspace_root_argument
-    participant p8 as _recover_interrupted_refresh
-    participant p9 as resolve_documentation_policy
-    participant p10 as DocumentationIntakeBrief.from_values
-    participant p11 as _assert_existing_workspace_layout_safe
-    participant p12 as documentation_run_path
-    participant p13 as run_path.is_file
-    participant p14 as load_documentation_run
-    participant p15 as _load_bound_runtime_policy
-    participant p16 as _verify_initial_integrity_anchors
-    participant p17 as _assert_resume_compatible
+    participant p4 as _commit_refresh_archive
+    participant p5 as _commit_initial_prepare
+    participant p6 as _rollback_refresh_archive
+    participant p7 as DocumentationIntegrityError (src/llm_wiki_cli/services…prepare_documentation_run)
+    participant p8 as _rollback_initial_prepare
+    participant p9 as DocumentationSchemaError
+    participant p10 as site_name.strip
+    participant p11 as _validate_documentation_projection_policy
+    participant p12 as _resolve_workspace_root_argument
+    participant p13 as _recover_interrupted_refresh
+    participant p14 as resolve_documentation_policy
+    participant p15 as DocumentationIntakeBrief.from_values
+    participant p16 as _assert_existing_workspace_layout_safe
+    participant p17 as documentation_run_path
+    participant p18 as run_path.is_file
     p0-->>p1: _RefreshArchiveTransaction
     p0-->>p2: _InitialPrepareTransaction
     p0->>p3: _prepare_documentation_run_impl
-    p3-->>p4: DocumentationSchemaError
-    p3-->>p4: DocumentationSchemaError
-    p3-->>p5: site_name.strip
-    p3-->>p4: DocumentationSchemaError
-    p3-->>p4: DocumentationSchemaError
-    p3-->>p4: DocumentationSchemaError
-    p3-->>p4: DocumentationSchemaError
-    p3-->>p4: DocumentationSchemaError
-    p3-->>p6: _validate_documentation_projection_policy
-    p3-->>p4: DocumentationSchemaError
-    p3-->>p4: DocumentationSchemaError
-    p3-->>p4: DocumentationSchemaError
-    p3-->>p4: DocumentationSchemaError
-    p3-->>p4: DocumentationSchemaError
-    p3-->>p7: _resolve_workspace_root_argument
-    p3-->>p8: _recover_interrupted_refresh
-    p3-->>p9: resolve_documentation_policy
-    p3-->>p10: DocumentationIntakeBrief.from_values
-    p3-->>p11: _assert_existing_workspace_layout_safe
-    p3-->>p12: documentation_run_path
-    p3-->>p13: run_path.is_file
-    p3-->>p14: load_documentation_run
-    p3-->>p15: _load_bound_runtime_policy
-    p3-->>p16: _verify_initial_integrity_anchors
-    p3-->>p17: _assert_resume_compatible
-    p3-->>p5: site_name.strip
-    p3-->>p13: run_path.is_file
+    p0-->>p4: _commit_refresh_archive(refresh_transaction)
+    p0-->>p5: _commit_initial_prepare(initial_prepare_transaction)
+    p0-->>p6: _rollback_refresh_archive(refresh_transaction)
+    p0-->>p7: DocumentationIntegrityError (src/llm_wiki_cli/services…prepare_documentation_run)(...)
+    p0-->>p8: _rollback_initial_prepare(initial_prepare_transaction)
+    p0-->>p7: DocumentationIntegrityError (src/llm_wiki_cli/services…prepare_documentation_run)(...)
+    p3-->>p9: DocumentationSchemaError(...)
+    p3-->>p9: DocumentationSchemaError(...)
+    p3-->>p10: site_name.strip
+    p3-->>p9: DocumentationSchemaError('External user documentation requires a non-default site name.')
+    p3-->>p9: DocumentationSchemaError('semantic_budget must not be negative.')
+    p3-->>p9: DocumentationSchemaError('adjustment_loop_limit must be positive.')
+    p3-->>p9: DocumentationSchemaError(...)
+    p3-->>p9: DocumentationSchemaError('link_mode must be http or file.')
+    p3-->>p11: _validate_documentation_projection_policy(knowledge_mode, knowledge_public_repository_identity)
+    p3-->>p9: DocumentationSchemaError('bootstrap_source requires an explicit source_root.')
+    p3-->>p9: DocumentationSchemaError('bootstrap_source cannot also specify input_wiki_root.')
+    p3-->>p9: DocumentationSchemaError('bootstrap_source always uses require-current source freshness.')
+    p3-->>p9: DocumentationSchemaError('adopt_existing_wiki requires an explicit input_wiki_root.')
+    p3-->>p9: DocumentationSchemaError("Wiki-only adoption requires freshness_policy='allow-unverified'.")
+    p3-->>p12: _resolve_workspace_root_argument(workspace)
+    p3-->>p13: _recover_interrupted_refresh(workspace_root)
+    p3-->>p14: resolve_documentation_policy(…)
+    p3-->>p15: DocumentationIntakeBrief.from_values(…)
+    p3-->>p16: _assert_existing_workspace_layout_safe(workspace_root)
+    p3-->>p17: documentation_run_path(workspace_root)
+    p3-->>p18: run_path.is_file
 ```
 
-> Call sequence diagram shows 30 of 1407 interactions; 1377 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1114 interactions; 1084 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 0 of 263 (263 omitted); unresolved 29 of 353 (324 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/documentation_run/prepare.py:_prepare_documentation_run_impl` | 4 | - | unresolved | 134 |
+| `src/llm_wiki_cli/services/documentation_run/prepare.py:_prepare_documentation_run_impl` | 4 | [src/llm_wiki_cli/services/bootstrap_runtime.py](../modules/bootstrap_runtime.md) | internal | 2 |
+| `src/llm_wiki_cli/services/bootstrap_runtime.py:execute_bootstrap` | 57 | - | external | 1 |
+| `src/llm_wiki_cli/services/bootstrap_runtime.py:execute_bootstrap` | 57 | [src/llm_wiki_cli/services/bootstrap_runtime.py](../modules/bootstrap_runtime.md) | internal | 2 |
+| `src/llm_wiki_cli/services/bootstrap_runtime.py:_bootstrap_run_options_from_request` | 59 | - | unresolved | 5 |
+| `src/llm_wiki_cli/services/bootstrap_runtime.py:_bootstrap_run_options_from_request` | 59 | - | external | 5 |
+| `src/llm_wiki_cli/services/bootstrap_runtime.py:_bootstrap_run_options_from_request` | 59 | [src/llm_wiki_cli/services/bootstrap_service.py](../modules/bootstrap_service.md) | internal | 3 |
+| `src/llm_wiki_cli/services/bootstrap_runtime.py:_bootstrap_run_options_from_request` | 59 | [src/llm_wiki_cli/services/bootstrap_runtime.py](../modules/bootstrap_runtime.md) | internal | 1 |
+> Omission summary shows 8 of 269 groups; 261 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

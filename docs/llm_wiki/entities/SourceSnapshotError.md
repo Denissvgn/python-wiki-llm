@@ -1,6 +1,6 @@
 # SourceSnapshotError
 
-**Location:** `src/llm_wiki_cli/services/source_snapshot.py:102`
+**Location:** `src/llm_wiki_cli/services/source_snapshot.py:103`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [source_snapshot](../modules/source_snapshot.md)
@@ -35,10 +35,10 @@ flowchart LR
     n8["_bounded_source_walk (src/llm_wiki_cli/services/source_snapshot.py)"]
     n9["_build_source_snapshot (src/llm_wiki_cli/services/source_snapshot.py)"]
     n10["_captured_snapshot_inputs (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n11["_prune_dirnames (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n12["_read_ignore_control (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n13["_record_gitignore_rules (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n14["_record_source_file (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n11["_confirmed_source_path (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n12["_prune_dirnames (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n13["_read_ignore_control (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n14["_record_gitignore_rules (src/llm_wiki_cli/services/source_snapshot.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -94,9 +94,9 @@ flowchart LR
 | `_bounded_source_walk` | call | [source_snapshot](../modules/source_snapshot.md) | 2 |
 | `_build_source_snapshot` | call | [source_snapshot](../modules/source_snapshot.md) | 1 |
 | `_captured_snapshot_inputs` | call | [source_snapshot](../modules/source_snapshot.md) | 2 |
+| `_confirmed_source_path` | call | [source_snapshot](../modules/source_snapshot.md) | 1 |
 | `_prune_dirnames` | call | [source_snapshot](../modules/source_snapshot.md) | 2 |
 | `_read_ignore_control` | call | [source_snapshot](../modules/source_snapshot.md) | 2 |
 | `_record_gitignore_rules` | call | [source_snapshot](../modules/source_snapshot.md) | 7 |
-| `_record_source_file` | call | [source_snapshot](../modules/source_snapshot.md) | 2 |
 
-> References: showing 12 of 20 logical references; 8 omitted by the 12-row generated summary limit.
+> References: showing 12 of 21 logical references; 9 omitted by the 12-row generated summary limit.

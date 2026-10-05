@@ -1,8 +1,8 @@
 # NativeInspectionResult
 
-**Location:** `src/llm_wiki_cli/api_types.py:629`
+**Location:** `src/llm_wiki_cli/api_types.py:705`
 **Kind:** Class
-**Bases:** `TypedDict`
+**Bases:** `_NativeInspectionMaintenance`
 **Module:** [api_types](../modules/api_types.md)
 
 ## Description
@@ -33,11 +33,12 @@ Bounded component results sharing one source/wiki read scope.
 ```mermaid
 flowchart LR
     n0["NativeInspectionResult (src/llm_wiki_cli/api_types.py)"]
-    n1["TypedDict"]
+    n1["_NativeInspectionMaintenance (src/llm_wiki_cli/api_types.py)"]
     n2["inspect_concept (src/llm_wiki_cli/api.py)"]
     n0 --> n1
     n2 --> n0
     click n0 "../modules/api_types.md"
+    click n1 "../modules/api_types.md"
     click n2 "../modules/api.md"
 ```
 
@@ -51,7 +52,7 @@ flowchart LR
 
 | Kind | Entity | Module |
 |---|---|---|
-| Base | `TypedDict` | — |
+| Base | `_NativeInspectionMaintenance` | [api_types](../modules/api_types.md) |
 
 ### References
 

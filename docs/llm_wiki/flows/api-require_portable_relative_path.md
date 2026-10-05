@@ -6,65 +6,84 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as require_portable_relative_path
     participant p1 as isinstance
     participant p2 as _default_path_error
-    participant p3 as SharedValidationError
-    participant p4 as os.fspath
-    participant p5 as _syntax_key
-    participant p6 as type
-    participant p7 as len (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    participant p8 as any (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    participant p9 as _known_syntax
-    participant p10 as _PATH_SYNTAX.get
-    participant p11 as _PATH_SYNTAX.move_to_end (src/llm_wiki_cli/services…alidation.py:_known_syntax)
-    participant p12 as _check_path_collision
-    participant p13 as portable_path_key
-    participant p14 as unicodedata.normalize(…).casefold
-    participant p15 as unicodedata.normalize (src/llm_wiki_cli/services…ation.py:portable_path_key)
-    participant p16 as collision_seen.setdefault
-    participant p17 as collision_error
-    participant p18 as raw.encode
-    participant p19 as raw.replace
-    participant p20 as PurePosixPath
-    participant p21 as path.is_absolute
-    participant p22 as _WINDOWS_ABSOLUTE_RE.match
-    p0-->>p1: isinstance
+    participant p3 as os.fspath
+    participant p4 as _syntax_key
+    participant p5 as _known_syntax
+    participant p6 as _check_path_collision
+    participant p7 as raw.encode
+    participant p8 as raw.replace
+    participant p9 as PurePosixPath
+    participant p10 as path.is_absolute
+    participant p11 as _WINDOWS_ABSOLUTE_RE.match
+    participant p12 as path.as_posix
+    participant p13 as normalized.strip
+    participant p14 as canonical.casefold().endswith
+    participant p15 as canonical.casefold
+    participant p16 as required_suffix.casefold
+    participant p17 as require_portable_path_component
+    participant p18 as _remember_syntax
+    participant p19 as SharedValidationError
+    participant p20 as type
+    participant p21 as _PATH_SYNTAX.get
+    participant p22 as portable_path_key
+    p0-->>p1: isinstance(value, (...))
     p0->>p2: _default_path_error
-    p2->>p3: SharedValidationError
-    p0-->>p4: os.fspath
-    p0-->>p1: isinstance
+    p0-->>p3: os.fspath(value)
+    p0-->>p1: isinstance(raw, str)
     p0->>p2: _default_path_error
-    p0->>p5: _syntax_key
-    p5-->>p6: type
-    p5-->>p7: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    p5-->>p8: any (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    p5-->>p6: type
-    p5-->>p6: type
-    p5-->>p7: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    p0->>p9: _known_syntax
-    p9-->>p10: _PATH_SYNTAX.get
-    p9-->>p11: _PATH_SYNTAX.move_to_end (src/llm_wiki_cli/services…alidation.py:_known_syntax)
-    p0->>p12: _check_path_collision
-    p12->>p13: portable_path_key
-    p13-->>p14: unicodedata.normalize(…).casefold
-    p13-->>p15: unicodedata.normalize (src/llm_wiki_cli/services…ation.py:portable_path_key)
-    p12-->>p16: collision_seen.setdefault
-    p12->>p3: SharedValidationError
-    p12-->>p17: collision_error
-    p0-->>p18: raw.encode
+    p0->>p4: _syntax_key
+    p0->>p5: _known_syntax
+    p0->>p6: _check_path_collision
+    p0-->>p7: raw.encode('utf-8')
     p0->>p2: _default_path_error
     p0->>p2: _default_path_error
-    p0-->>p19: raw.replace
-    p0-->>p20: PurePosixPath
-    p0-->>p21: path.is_absolute
-    p0-->>p22: _WINDOWS_ABSOLUTE_RE.match
+    p0-->>p8: raw.replace('\\', '/')
+    p0-->>p9: PurePosixPath(normalized)
+    p0-->>p10: path.is_absolute
+    p0-->>p11: _WINDOWS_ABSOLUTE_RE.match(raw)
+    p0->>p2: _default_path_error
+    p0->>p2: _default_path_error
+    p0-->>p12: path.as_posix
+    p0-->>p13: normalized.strip
+    p0-->>p14: canonical.casefold().endswith(required_suffix.casefold(...))
+    p0-->>p15: canonical.casefold
+    p0-->>p16: required_suffix.casefold
+    p0->>p2: _default_path_error
+    p0->>p17: require_portable_path_component
+    p0->>p6: _check_path_collision
+    p0->>p18: _remember_syntax
+    p2->>p19: SharedValidationError
+    p4-->>p20: type(value)
+    p5-->>p21: _PATH_SYNTAX.get(key)
+    p6->>p22: portable_path_key
 ```
 
-> Call sequence diagram shows 30 of 58 interactions; 28 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 58 interactions; 28 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 5 of 17 (12 omitted); unresolved 10 of 20 (10 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/validation.py:_syntax_key` | 8 | - | external | 5 |
+| `src/llm_wiki_cli/services/validation.py:_known_syntax` | 15 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/validation.py:portable_path_key` | 19 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/validation.py:portable_path_key` | 19 | - | external | 1 |
+| `src/llm_wiki_cli/services/validation.py:_check_path_collision` | 18 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/validation.py:_check_path_collision` | 18 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_portable_path_component` | 40 | - | unresolved | 4 |
+| `src/llm_wiki_cli/services/validation.py:require_portable_path_component` | 40 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 5 |
+> Omission summary shows 8 of 11 groups; 3 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

@@ -1,6 +1,6 @@
 # _Candidate
 
-**Location:** `src/llm_wiki_cli/services/documentation_worklist.py:216`
+**Location:** `src/llm_wiki_cli/services/documentation_worklist.py:217`
 **Kind:** Class
 **Bases:** —
 **Module:** [documentation_worklist](../modules/documentation_worklist.md)

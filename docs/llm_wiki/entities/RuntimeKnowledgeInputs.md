@@ -1,6 +1,6 @@
 # RuntimeKnowledgeInputs
 
-**Location:** `src/llm_wiki_cli/services/knowledge_orchestration.py:131`
+**Location:** `src/llm_wiki_cli/services/knowledge_orchestration.py:134`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_orchestration](../modules/knowledge_orchestration.md)
@@ -32,6 +32,9 @@ Evaluated command state needed to plan one three-artifact commit.
 | `untrusted_evidence_page_paths` | `AbstractSet[str]` | `frozenset()` | — |
 | `regenerated_evidence_page_paths` | `AbstractSet[str]` | `frozenset()` | — |
 | `analysis_components` | `Mapping[str, Any] \| None` | `None` | — |
+| `maintenance_page_transitions` | `PageTransitionPlan \| None` | `None` | — |
+| `maintenance_previous_raw_content_by_page` | `Mapping[str, bytes] \| None` | `None` | — |
+| `implementation_observations` | `Mapping[str, Any] \| None` | `None` | — |
 | `extractor_registry` | `Mapping[str, str]` | `field(default_factory=dict)` | — |
 | `plugin_extractor_components` | `Sequence[Mapping[str, Any]]` | `()` | — |
 | `plugin_components` | `Sequence[Mapping[str, Any]]` | `()` | — |
@@ -67,7 +70,7 @@ flowchart LR
     n1["_migration_runtime_inputs (src/llm_wiki_cli/commands/migrate_cmd.py)"]
     n2["_finalize_prepared_sync (src/llm_wiki_cli/commands/sync_cmd.py)"]
     n3["_finalize_bootstrap_artifacts (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
-    n4["refresh_documentation_native_projection (src/llm_wiki_cli/services/documentation_native.py)"]
+    n4["_refresh_documentation_native_projection (src/llm_wiki_cli/services/documentation_native.py)"]
     n5["_commit_runtime_knowledge (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
     n6["_prepared_runtime_governance (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
     n7["_runtime_manifest_generation_inputs (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
@@ -111,7 +114,7 @@ flowchart LR
 | `_migration_runtime_inputs` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
 | `_finalize_prepared_sync` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
 | `_finalize_bootstrap_artifacts` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |
-| `refresh_documentation_native_projection` | call | [documentation_native](../modules/documentation_native.md) | 1 |
+| `_refresh_documentation_native_projection` | call | [documentation_native](../modules/documentation_native.md) | 1 |
 | `_commit_runtime_knowledge` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `_prepared_runtime_governance` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `_runtime_manifest_generation_inputs` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |

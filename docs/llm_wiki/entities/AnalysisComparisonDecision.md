@@ -1,6 +1,6 @@
 # AnalysisComparisonDecision
 
-**Location:** `src/llm_wiki_cli/api_types.py:600`
+**Location:** `src/llm_wiki_cli/api_types.py:672`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

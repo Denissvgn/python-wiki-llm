@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -22,22 +24,27 @@ sequenceDiagram
     participant p10 as lines[…].strip
     participant p11 as next_match.group
     p0-->>p1: heading.casefold
-    p0-->>p2: enumerate
-    p0-->>p3: _LEGACY_HEADING_RE.match
+    p0-->>p2: enumerate(lines)
+    p0-->>p3: _LEGACY_HEADING_RE.match(line.strip(...))
     p0-->>p4: line.strip
-    p0-->>p5: len
-    p0-->>p6: match.group
+    p0-->>p5: len(match.group(...))
+    p0-->>p6: match.group(1)
     p0-->>p7: match.group(…).strip().casefold
     p0-->>p8: match.group(…).strip
-    p0-->>p6: match.group
-    p0-->>p5: len
-    p0-->>p9: range
-    p0-->>p5: len
-    p0-->>p3: _LEGACY_HEADING_RE.match
+    p0-->>p6: match.group(2)
+    p0-->>p5: len(lines)
+    p0-->>p9: range(..., len(...))
+    p0-->>p5: len(lines)
+    p0-->>p3: _LEGACY_HEADING_RE.match(...)
     p0-->>p10: lines[…].strip
-    p0-->>p5: len
-    p0-->>p11: next_match.group
+    p0-->>p5: len(next_match.group(...))
+    p0-->>p11: next_match.group(1)
 ```
+
+> Call sequence diagram shows 16 of 16 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 6 of 6 (0 omitted); unresolved 10 of 10 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

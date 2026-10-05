@@ -1,6 +1,6 @@
 # ContextSession
 
-**Location:** `src/llm_wiki_cli/services/context_session.py:187`
+**Location:** `src/llm_wiki_cli/services/context_session.py:222`
 **Kind:** Class
 **Bases:** —
 **Module:** [context_session](../modules/context_session.md)
@@ -21,13 +21,26 @@ The bounded session implementation owns capture and rendering reuse, input reval
 | `_roots_current` | `()` | — | — |
 | `_environment` | `()` | — | — |
 | `_clear` | `()` | — | — |
+| `_identity` | `(entry)` | `@staticmethod` | — |
+| `_recount` | `()` | — | — |
+| `_touch` | `(identity)` | — | — |
+| `_drop_identity` | `(identity)` | — | — |
 | `_drop` | `(key)` | — | — |
+| `_bound_custody` | `()` | — | — |
+| `_expire` | `()` | — | — |
+| `_publication_cancelled` | `(cancelled)` | — | — |
+| `_check_publication` | `(read, environment, request, profile, counter, cancelled, roots)` | — | — |
 | `_share_inputs` | `(read)` | — | Intern immutable bytes within this workspace; receipts stay per entry. |
 | `_owns` | `(entry)` | — | — |
-| `_validate` | `(entry, environment, request, profile, counter, *, cold = False)` | — | — |
+| `_reusable_read` | `(read, environment)` | `@staticmethod` | — |
+| `_validate` | `(entry, environment, request, profile, counter, *, cold = False, after_portable = None)` | — | — |
 | `_build` | `(request, *, cancelled, shared = None)` | — | — |
 | `_compatible_capture` | `(normalized, profile, environment)` | — | — |
 | `read` | `(request, *, if_result_id = None, delta = False, reuse = True, cancelled: Callable[[], bool] \| None = None) -> SessionReply` | `@ac.bound_comparison` | — |
+| `read_compact` | `(request, *, view_options, if_result_id = None, if_view_id = None, delta = False, reuse = True, cancelled: Callable[[], bool] \| None = None) -> CompactSessionReply` | `@ac.bound_comparison` | — |
+| `_read` | `(request, *, if_result_id = None, delta = False, reuse = True, cancelled = None, view_options = None, if_view_id = None)` | — | — |
+| `canonical_receipt` | `(request_id, result_id, *, current = False, cancelled: Callable[[], bool] \| None = None) -> CanonicalReceipt` | `@ac.bound_comparison` | — |
+| `_canonical_receipt` | `(request_id, result_id, *, current, cancelled)` | — | — |
 | `hint` | `(*, unsaved_buffers = False)` | `@ac.bound_comparison` | — |
 | `close` | `()` | `@ac.bound_comparison` | — |
 | `__enter__` | `()` | — | — |
@@ -41,18 +54,21 @@ flowchart LR
     n0["ContextSession (src/llm_wiki_cli/services/context_session.py)"]
     n1["ContextSession (src/llm_wiki_cli/api.py)"]
     n2["src/llm_wiki_cli/api.py"]
+    n3["build_compact_task_context (src/llm_wiki_cli/services/task_compact_delivery.py)"]
     n1 --> n0
     n2 --> n0
+    n3 --> n0
     click n0 "../modules/context_session.md"
     click n1 "../modules/api.md"
     click n2 "../modules/api.md"
+    click n3 "../modules/task_compact_delivery.md"
 ```
 
 ### Summary
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [context_session](../modules/context_session.md) | 15 | — |
+| [context_session](../modules/context_session.md) | 28 | — |
 
 ### Structure
 
@@ -65,3 +81,4 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `api` | import | [api](../modules/api.md) | — |
+| `build_compact_task_context` | call | [task_compact_delivery](../modules/task_compact_delivery.md) | 1 |

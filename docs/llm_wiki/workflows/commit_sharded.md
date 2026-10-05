@@ -1,21 +1,21 @@
 # commit_sharded
 
 **Entry point:** `knowledge_artifacts._commit_sharded`
-**Modules involved:** [filesystem_guard](../modules/filesystem_guard.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_governance](../modules/knowledge_governance.md), [knowledge_storage_io](../modules/knowledge_storage_io.md)
+**Modules involved:** [filesystem_guard](../modules/filesystem_guard.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [maintenance_protocol](../modules/maintenance_protocol.md)
 
 ## Sequence
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
 1. `knowledge_storage_io._absolute_path`
 2. `filesystem_guard.ensure_guarded_directory`
-3. `knowledge_governance.governance_lock`
+3. `maintenance_protocol.storage_writer_lock`
 
 ## Touches
 
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
-- [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [maintenance_protocol](../modules/maintenance_protocol.md)
 
 ## Behavior
 

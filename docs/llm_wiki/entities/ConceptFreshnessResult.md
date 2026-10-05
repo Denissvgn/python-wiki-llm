@@ -1,6 +1,6 @@
 # ConceptFreshnessResult
 
-**Location:** `src/llm_wiki_cli/services/knowledge_freshness.py:207`
+**Location:** `src/llm_wiki_cli/services/knowledge_freshness.py:210`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_freshness](../modules/knowledge_freshness.md)

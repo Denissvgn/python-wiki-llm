@@ -6,64 +6,80 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as find_identity_collisions
     participant p1 as _typed_tuple
-    participant p2 as isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)
-    participant p3 as TypeError
-    participant p4 as tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple)
-    participant p5 as enumerate
-    participant p6 as defaultdict
-    participant p7 as allocations_by_uid[…].append
-    participant p8 as current_coordinates[…][…].append (src/llm_wiki_cli/services…nd_identity_collisions, 1)
-    participant p9 as current_coordinates[…][…].append (src/llm_wiki_cli/services…:find_identity_collisions)
-    participant p10 as identity_coordinate_key
-    participant p11 as validate_alias_type
-    participant p12 as isinstance (src/llm_wiki_cli/services…ty.py:validate_alias_type)
-    participant p13 as AliasType
-    participant p14 as ConceptIdentityError
-    participant p15 as validate_alias_value
-    participant p16 as validate_locator
-    participant p17 as _machine_text
-    participant p18 as isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p19 as len (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p20 as value.strip (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p21 as any (src/llm_wiki_cli/services…identity.py:_machine_text)
+    participant p2 as defaultdict
+    participant p3 as allocations_by_uid[…].append
+    participant p4 as current_coordinates[…][…].append (src/llm_wiki_cli/services…nd_identity_collisions, 1)
+    participant p5 as current_coordinates[…][…].append (src/llm_wiki_cli/services…:find_identity_collisions)
+    participant p6 as identity_coordinate_key
+    participant p7 as allocations_by_uid.items
+    participant p8 as len (src/llm_wiki_cli/services…:find_identity_collisions)
+    participant p9 as collisions.append
+    participant p10 as IdentityCollision
+    participant p11 as current_coordinates.items
+    participant p12 as values.items
+    participant p13 as tuple (src/llm_wiki_cli/services…:find_identity_collisions)
+    participant p14 as sorted
+    participant p15 as set
+    participant p16 as cast
+    participant p17 as aliases_by_coordinate[…].append
+    participant p18 as aliases_by_coordinate.items
     p0->>p1: _typed_tuple
-    p1-->>p2: isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)
-    p1-->>p3: TypeError
-    p1-->>p4: tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple)
-    p1-->>p3: TypeError
-    p1-->>p5: enumerate
-    p1-->>p2: isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)
-    p1-->>p3: TypeError
     p0->>p1: _typed_tuple
-    p0-->>p6: defaultdict
-    p0-->>p6: defaultdict
-    p0-->>p6: defaultdict
-    p0-->>p7: allocations_by_uid[…].append
-    p0-->>p8: current_coordinates[…][…].append (src/llm_wiki_cli/services…nd_identity_collisions, 1)
-    p0-->>p9: current_coordinates[…][…].append (src/llm_wiki_cli/services…:find_identity_collisions)
-    p0->>p10: identity_coordinate_key
-    p10->>p11: validate_alias_type
-    p11-->>p12: isinstance (src/llm_wiki_cli/services…ty.py:validate_alias_type)
-    p11->>p13: AliasType
-    p11->>p14: ConceptIdentityError
-    p10->>p15: validate_alias_value
-    p15->>p11: validate_alias_type
-    p15->>p16: validate_locator
-    p16->>p17: _machine_text
-    p17-->>p18: isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p17->>p14: ConceptIdentityError
-    p17-->>p19: len (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p17->>p14: ConceptIdentityError
-    p17-->>p20: value.strip (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p17-->>p21: any (src/llm_wiki_cli/services…identity.py:_machine_text)
+    p0-->>p2: defaultdict(list)
+    p0-->>p2: defaultdict(list)
+    p0-->>p2: defaultdict(list)
+    p0-->>p3: allocations_by_uid[…].append(allocation)
+    p0-->>p4: current_coordinates[…][…].append (src/llm_wiki_cli/services…nd_identity_collisions, 1)(allocation)
+    p0-->>p5: current_coordinates[…][…].append (src/llm_wiki_cli/services…:find_identity_collisions)(allocation)
+    p0->>p6: identity_coordinate_key
+    p0-->>p7: allocations_by_uid.items
+    p0-->>p8: len (src/llm_wiki_cli/services…:find_identity_collisions)(records)
+    p0-->>p9: collisions.append(IdentityCollision(...))
+    p0->>p10: IdentityCollision
+    p0-->>p11: current_coordinates.items
+    p0-->>p12: values.items
+    p0-->>p13: tuple (src/llm_wiki_cli/services…:find_identity_collisions)(sorted(...))
+    p0-->>p14: sorted(...)
+    p0-->>p8: len (src/llm_wiki_cli/services…:find_identity_collisions)(uids)
+    p0-->>p9: collisions.append(IdentityCollision(...))
+    p0->>p10: IdentityCollision
+    p0-->>p2: defaultdict(list)
+    p0-->>p15: set(allocations_by_uid)
+    p0-->>p16: cast(AliasType, alias.alias_type)
+    p0-->>p17: aliases_by_coordinate[…].append(alias)
+    p0->>p6: identity_coordinate_key
+    p0-->>p9: collisions.append(IdentityCollision(...))
+    p0->>p10: IdentityCollision
+    p0-->>p18: aliases_by_coordinate.items
+    p0-->>p13: tuple (src/llm_wiki_cli/services…:find_identity_collisions)(sorted(...))
+    p0-->>p14: sorted(...)
 ```
 
-> Call sequence diagram shows 30 of 167 interactions; 137 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 167 interactions; 137 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 12 of 60 (48 omitted); unresolved 11 of 45 (34 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/concept_identity.py:_typed_tuple` | 2 | - | external | 7 |
+| `src/llm_wiki_cli/services/concept_identity.py:identity_coordinate_key` | 17 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 2 |
+| `src/llm_wiki_cli/services/concept_identity.py:validate_alias_type` | 18 | - | external | 1 |
+| `src/llm_wiki_cli/services/concept_identity.py:validate_alias_type` | 18 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 2 |
+| `src/llm_wiki_cli/services/concept_identity.py:validate_alias_value` | 22 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 3 |
+| `src/llm_wiki_cli/services/concept_identity.py:validate_locator` | 24 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 6 |
+| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 25 | - | external | 6 |
+| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 25 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 5 |
+> Omission summary shows 8 of 35 groups; 27 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

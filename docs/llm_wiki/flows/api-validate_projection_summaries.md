@@ -14,6 +14,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -22,51 +24,62 @@ sequenceDiagram
     participant p2 as KnowledgeProjectionError
     participant p3 as re.fullmatch (src/llm_wiki_cli/services…date_projection_summaries)
     participant p4 as _validate_projection_structure
-    participant p5 as isinstance (src/llm_wiki_cli/services…date_projection_structure)
-    participant p6 as _require_sha256
-    participant p7 as require_sha256
-    participant p8 as isinstance (src/llm_wiki_cli/services…idation.py:require_sha256)
-    participant p9 as require_trimmed_text
-    participant p10 as require_nonempty_text
-    participant p11 as isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
-    participant p12 as value.strip (src/llm_wiki_cli/services….py:require_nonempty_text)
-    participant p13 as contains_control_character
-    participant p14 as _SHA256_RE.fullmatch
-    participant p15 as _require_mapping
-    participant p16 as require_mapping
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…date_projection_summaries)
+    participant p5 as any (src/llm_wiki_cli/services…date_projection_summaries)
+    participant p6 as set (src/llm_wiki_cli/services…date_projection_summaries)
+    participant p7 as len (src/llm_wiki_cli/services…date_projection_summaries)
+    participant p8 as sorted (src/llm_wiki_cli/services…date_projection_summaries)
+    participant p9 as details.append
+    participant p10 as ','.join
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…date_projection_summaries)(projection, KnowledgeProjection)
     p0->>p2: KnowledgeProjectionError
     p0->>p2: KnowledgeProjectionError
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…date_projection_summaries)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…date_projection_summaries)(projection.bundle, Mapping)
     p0->>p2: KnowledgeProjectionError
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…date_projection_summaries)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…date_projection_summaries)(projection.concepts, Mapping)
     p0->>p2: KnowledgeProjectionError
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…date_projection_summaries)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…date_projection_summaries)(projection.profile, KnowledgeProjectionProfile)
     p0->>p2: KnowledgeProjectionError
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…date_projection_summaries)
-    p0-->>p3: re.fullmatch (src/llm_wiki_cli/services…date_projection_summaries)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…date_projection_summaries)(projection.source_knowledge_hash, str)
+    p0-->>p3: re.fullmatch (src/llm_wiki_cli/services…date_projection_summaries)('sha256:[0-9a-f]{64}', projection.source_knowledge_hash)
     p0->>p2: KnowledgeProjectionError
     p0->>p4: _validate_projection_structure
-    p4-->>p5: isinstance (src/llm_wiki_cli/services…date_projection_structure)
-    p4->>p2: KnowledgeProjectionError
-    p4->>p2: KnowledgeProjectionError
-    p4-->>p5: isinstance (src/llm_wiki_cli/services…date_projection_structure)
-    p4->>p2: KnowledgeProjectionError
-    p4->>p6: _require_sha256
-    p6->>p7: require_sha256
-    p7-->>p8: isinstance (src/llm_wiki_cli/services…idation.py:require_sha256)
-    p7->>p9: require_trimmed_text
-    p9->>p10: require_nonempty_text
-    p10-->>p11: isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
-    p10-->>p12: value.strip (src/llm_wiki_cli/services….py:require_nonempty_text)
-    p10->>p13: contains_control_character
-    p7-->>p14: _SHA256_RE.fullmatch
-    p6->>p2: KnowledgeProjectionError
-    p4->>p15: _require_mapping
-    p15->>p16: require_mapping
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…date_projection_summaries)(canonical_paths, (...))
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…date_projection_summaries)(canonical_paths, Sequence)
+    p0-->>p5: any (src/llm_wiki_cli/services…date_projection_summaries)(...)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…date_projection_summaries)(path, str)
+    p0->>p2: KnowledgeProjectionError
+    p0-->>p6: set (src/llm_wiki_cli/services…date_projection_summaries)(canonical_paths)
+    p0-->>p7: len (src/llm_wiki_cli/services…date_projection_summaries)(expected_paths)
+    p0-->>p7: len (src/llm_wiki_cli/services…date_projection_summaries)(canonical_paths)
+    p0->>p2: KnowledgeProjectionError
+    p0-->>p6: set (src/llm_wiki_cli/services…date_projection_summaries)(projection.concepts)
+    p0-->>p8: sorted (src/llm_wiki_cli/services…date_projection_summaries)(...)
+    p0-->>p8: sorted (src/llm_wiki_cli/services…date_projection_summaries)(...)
+    p0-->>p9: details.append(...)
+    p0-->>p10: ','.join(missing)
+    p0-->>p9: details.append(...)
+    p0-->>p10: ','.join(stale)
+    p0->>p2: KnowledgeProjectionError
 ```
 
-> Call sequence diagram shows 30 of 700 interactions; 670 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 700 interactions; 670 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 16 of 183 (167 omitted); unresolved 4 of 137 (133 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/knowledge_projection.py:_validate_projection_structure` | 14 | - | external | 6 |
+| `src/llm_wiki_cli/services/knowledge_projection.py:_validate_projection_structure` | 14 | [src/llm_wiki_cli/services/knowledge_projection.py](../modules/knowledge_projection.md) | internal | 20 |
+| `src/llm_wiki_cli/services/knowledge_projection.py:_require_sha256` | 20 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_sha256` | 21 | - | external | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_sha256` | 21 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_trimmed_text` | 23 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 24 | - | external | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 24 | - | unresolved | 1 |
+> Omission summary shows 8 of 132 groups; 124 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

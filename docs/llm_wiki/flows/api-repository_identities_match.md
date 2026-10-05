@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -14,43 +16,48 @@ sequenceDiagram
     participant p2 as TypeError
     participant p3 as _repository_identity
     participant p4 as _nonempty_string
-    participant p5 as _string
-    participant p6 as require_string
-    participant p7 as isinstance (src/llm_wiki_cli/services…lidation.py:require_string)
-    participant p8 as value.encode
-    participant p9 as KnowledgeModelError
+    participant p5 as _REPOSITORY_IDENTITY_RE.fullmatch
+    participant p6 as KnowledgeModelError
+    participant p7 as text.lower().endswith
+    participant p8 as text.lower
+    participant p9 as _string
     participant p10 as require_nonempty_text
-    participant p11 as isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)
-    participant p12 as value.strip
-    participant p13 as contains_control_character
-    participant p14 as pattern.search
-    participant p15 as _REPOSITORY_IDENTITY_RE.fullmatch
-    participant p16 as text.lower().endswith
-    participant p17 as text.lower
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…epository_identities_match)
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…epository_identities_match)
-    p0-->>p2: TypeError
+    participant p11 as require_string
+    participant p12 as isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)
+    participant p13 as value.strip
+    participant p14 as contains_control_character
+    participant p15 as isinstance (src/llm_wiki_cli/services…lidation.py:require_string)
+    participant p16 as pattern.search
+    participant p17 as value.encode
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…epository_identities_match)(left, RepositoryRecord)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…epository_identities_match)(right, RepositoryRecord)
+    p0-->>p2: TypeError('left and right must be RepositoryRecord values')
+    p0->>p3: _repository_identity
     p0->>p3: _repository_identity
     p3->>p4: _nonempty_string
-    p4->>p5: _string
-    p5->>p6: require_string
-    p6-->>p7: isinstance (src/llm_wiki_cli/services…lidation.py:require_string)
-    p6-->>p8: value.encode
-    p5->>p9: KnowledgeModelError
-    p5->>p9: KnowledgeModelError
+    p3-->>p5: _REPOSITORY_IDENTITY_RE.fullmatch(text)
+    p3->>p6: KnowledgeModelError
+    p3-->>p7: text.lower().endswith('.git')
+    p3-->>p8: text.lower
+    p3->>p6: KnowledgeModelError
+    p4->>p9: _string
     p4->>p10: require_nonempty_text
-    p10-->>p11: isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)
-    p10-->>p12: value.strip
-    p10->>p13: contains_control_character
-    p13-->>p14: pattern.search
-    p4->>p9: KnowledgeModelError
-    p3-->>p15: _REPOSITORY_IDENTITY_RE.fullmatch
-    p3->>p9: KnowledgeModelError
-    p3-->>p16: text.lower().endswith
-    p3-->>p17: text.lower
-    p3->>p9: KnowledgeModelError
-    p0->>p3: _repository_identity
+    p4->>p6: KnowledgeModelError
+    p9->>p11: require_string
+    p10-->>p12: isinstance (src/llm_wiki_cli/services…n.py:require_nonempty_text)(value, str)
+    p9->>p6: KnowledgeModelError
+    p10-->>p13: value.strip
+    p9->>p6: KnowledgeModelError
+    p10->>p14: contains_control_character
+    p11-->>p15: isinstance (src/llm_wiki_cli/services…lidation.py:require_string)(value, str)
+    p14-->>p16: pattern.search(value)
+    p11-->>p17: value.encode('utf-8')
 ```
+
+> Call sequence diagram shows 23 of 23 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 5 of 5 (0 omitted); unresolved 6 of 6 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 
@@ -114,13 +121,13 @@ flowchart LR
 | repository_identities_match | isinstance (src/llm_wiki_cli/services…epository_identities_match) | 503 | `isinstance(right, RepositoryRecord)` |
 | repository_identities_match | TypeError | 506 | `TypeError('left and right must be RepositoryRecord values')` |
 | repository_identities_match | _repository_identity | 507 | `_repository_identity(left.identity, 'left.identity')` |
-| _repository_identity | _nonempty_string | 1804 | `_nonempty_string(value, path)` |
-| _nonempty_string | _string | 1711 | `_string(value, path)` |
-| _string | require_string | 1700 | `require_string(value, error=KnowledgeModelError(...), utf8_error=KnowledgeModelError(...))` |
+| _repository_identity | _nonempty_string | 1823 | `_nonempty_string(value, path)` |
+| _nonempty_string | _string | 1730 | `_string(value, path)` |
+| _string | require_string | 1719 | `require_string(value, error=KnowledgeModelError(...), utf8_error=KnowledgeModelError(...))` |
 | require_string | isinstance (src/llm_wiki_cli/services…lidation.py:require_string) | 744 | `isinstance(value, str)` |
 | require_string | value.encode | 748 | `value.encode('utf-8')` |
-| _string | KnowledgeModelError | 1702 | `KnowledgeModelError(path, 'must be a string')` |
-| _string | KnowledgeModelError | 1703 | `KnowledgeModelError(path, 'must contain only Unicode scalar values encodable as UTF-8')` |
+| _string | KnowledgeModelError | 1721 | `KnowledgeModelError(path, 'must be a string')` |
+| _string | KnowledgeModelError | 1722 | `KnowledgeModelError(path, 'must contain only Unicode scalar values encodable as UTF-8')` |
 
 ### Boundary effects
 

@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [team_cmd](../modules/team_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 32 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 35 more
 
 **Complete modules touched:**
 
@@ -27,11 +27,13 @@
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [packages](../modules/packages.md)
 - [plugins](../modules/plugins.md)
 - [progress](../modules/progress.md)
 - [python_contracts](../modules/python_contracts.md)
+- [python_implementation](../modules/python_implementation.md)
 - [python_imports](../modules/python_imports.md)
 - [python_observations](../modules/python_observations.md)
 - [resource_diagnostics](../modules/resource_diagnostics.md)
@@ -41,8 +43,11 @@
 - [team](../modules/team.md)
 - [team_cmd](../modules/team_cmd.md)
 - [validation](../modules/validation.md)
+- [wiki_write_basis](../modules/wiki_write_basis.md)
 
 ## Call sequence
+
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -50,64 +55,74 @@ sequenceDiagram
     participant p0 as run
     participant p1 as getattr (src/llm_wiki_cli/commands/team_cmd.py:run)
     participant p2 as _run_init
-    participant p3 as getattr (src/llm_wiki_cli/commands/team_cmd.py:_run_init)
-    participant p4 as validate_path
-    participant p5 as PathValidationError
-    participant p6 as (…).resolve (src/llm_wiki_cli/config.py:validate_path)
-    participant p7 as Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    participant p8 as Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)
-    participant p9 as resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
-    participant p10 as team_config_path
-    participant p11 as Path (src/llm_wiki_cli/services/team.py:team_config_path)
+    participant p3 as _run_check
+    participant p4 as _run_resolve_conflicts
+    participant p5 as print (src/llm_wiki_cli/commands/team_cmd.py:run)
+    participant p6 as sys.exit (src/llm_wiki_cli/commands/team_cmd.py:run)
+    participant p7 as getattr (src/llm_wiki_cli/commands/team_cmd.py:_run_init)
+    participant p8 as getattr (src/llm_wiki_cli/commands/team_cmd.py:_run_check)
+    participant p9 as getattr (src/llm_wiki_cli/commands…py:_run_resolve_conflicts)
+    participant p10 as validate_path
+    participant p11 as team_config_path
     participant p12 as path.exists (src/llm_wiki_cli/commands/team_cmd.py:_run_init)
-    participant p13 as print (src/llm_wiki_cli/commands/team_cmd.py:_run_init)
-    participant p14 as write_default_team_config
-    participant p15 as write_json_atomic
-    participant p16 as Path (src/llm_wiki_cli/services/io.py:write_json_atomic)
-    participant p17 as formatted_json_bytes
-    participant p18 as formatted_json_text(…).encode
-    participant p19 as formatted_json_text
-    participant p20 as json.dumps (src/llm_wiki_cli/services…ce.py:formatted_json_text)
-    participant p21 as write_bytes_atomic
-    participant p22 as isinstance (src/llm_wiki_cli/services/io.py:write_bytes_atomic)
-    participant p23 as TypeError (src/llm_wiki_cli/services/io.py:write_bytes_atomic)
-    participant p24 as Path (src/llm_wiki_cli/services/io.py:write_bytes_atomic)
-    participant p25 as target.parent.mkdir
-    participant p26 as tempfile.mkstemp
-    participant p27 as os.fdopen
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/team_cmd.py:run)
+    participant p13 as bool (src/llm_wiki_cli/commands/team_cmd.py:_run_check)
+    participant p14 as bool (src/llm_wiki_cli/commands…py:_run_resolve_conflicts)
+    participant p15 as print (src/llm_wiki_cli/commands/team_cmd.py:_run_init)
+    participant p16 as write_default_team_config
+    participant p17 as validate_source_root
+    participant p18 as str (src/llm_wiki_cli/commands/team_cmd.py:_run_check)
+    participant p19 as str (src/llm_wiki_cli/commands…py:_run_resolve_conflicts)
+    participant p20 as resolve_team_policy
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/team_cmd.py:run)(args, 'team_action', None)
     p0->>p2: _run_init
-    p2-->>p3: getattr (src/llm_wiki_cli/commands/team_cmd.py:_run_init)
-    p2->>p4: validate_path
-    p4->>p5: PathValidationError
-    p4-->>p6: (…).resolve (src/llm_wiki_cli/config.py:validate_path)
-    p4-->>p7: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    p4-->>p8: Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)
-    p4-->>p7: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    p4-->>p9: resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
-    p4->>p5: PathValidationError
-    p2->>p10: team_config_path
-    p10-->>p11: Path (src/llm_wiki_cli/services/team.py:team_config_path)
+    p0->>p3: _run_check
+    p0->>p4: _run_resolve_conflicts
+    p0-->>p5: print (src/llm_wiki_cli/commands/team_cmd.py:run)('Error: missing team action.', file=sys.stderr)
+    p0-->>p6: sys.exit (src/llm_wiki_cli/commands/team_cmd.py:run)(1)
+    p2-->>p7: getattr (src/llm_wiki_cli/commands/team_cmd.py:_run_init)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
+    p3-->>p8: getattr (src/llm_wiki_cli/commands/team_cmd.py:_run_check)(args, 'src_dir', '.')
+    p4-->>p9: getattr (src/llm_wiki_cli/commands…py:_run_resolve_conflicts)(args, 'src_dir', '.')
+    p2->>p10: validate_path
+    p3-->>p8: getattr (src/llm_wiki_cli/commands/team_cmd.py:_run_check)(args, 'wiki_dir', None)
+    p4-->>p9: getattr (src/llm_wiki_cli/commands…py:_run_resolve_conflicts)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
+    p2->>p11: team_config_path
+    p3-->>p8: getattr (src/llm_wiki_cli/commands/team_cmd.py:_run_check)(args, 'format', 'text')
+    p4-->>p9: getattr (src/llm_wiki_cli/commands…py:_run_resolve_conflicts)(args, 'format', 'text')
     p2-->>p12: path.exists (src/llm_wiki_cli/commands/team_cmd.py:_run_init)
-    p2-->>p13: print (src/llm_wiki_cli/commands/team_cmd.py:_run_init)
-    p2->>p14: write_default_team_config
-    p14->>p10: team_config_path
-    p14->>p15: write_json_atomic
-    p15-->>p16: Path (src/llm_wiki_cli/services/io.py:write_json_atomic)
-    p15->>p17: formatted_json_bytes
-    p17-->>p18: formatted_json_text(…).encode
-    p17->>p19: formatted_json_text
-    p19-->>p20: json.dumps (src/llm_wiki_cli/services…ce.py:formatted_json_text)
-    p15->>p21: write_bytes_atomic
-    p21-->>p22: isinstance (src/llm_wiki_cli/services/io.py:write_bytes_atomic)
-    p21-->>p23: TypeError (src/llm_wiki_cli/services/io.py:write_bytes_atomic)
-    p21-->>p24: Path (src/llm_wiki_cli/services/io.py:write_bytes_atomic)
-    p21-->>p25: target.parent.mkdir
-    p21-->>p26: tempfile.mkstemp
-    p21-->>p27: os.fdopen
+    p3-->>p13: bool (src/llm_wiki_cli/commands/team_cmd.py:_run_check)(getattr(...))
+    p4-->>p14: bool (src/llm_wiki_cli/commands…py:_run_resolve_conflicts)(getattr(...))
+    p2-->>p15: print (src/llm_wiki_cli/commands/team_cmd.py:_run_init)(...)
+    p3-->>p8: getattr (src/llm_wiki_cli/commands/team_cmd.py:_run_check)(args, 'allow_external_src', False)
+    p4-->>p9: getattr (src/llm_wiki_cli/commands…py:_run_resolve_conflicts)(args, 'allow_external_src', False)
+    p2->>p16: write_default_team_config
+    p3->>p17: validate_source_root
+    p4->>p17: validate_source_root
+    p2-->>p15: print (src/llm_wiki_cli/commands/team_cmd.py:_run_init)(...)
+    p3-->>p18: str (src/llm_wiki_cli/commands/team_cmd.py:_run_check)(src_root)
+    p4-->>p19: str (src/llm_wiki_cli/commands…py:_run_resolve_conflicts)(src_root)
+    p3->>p10: validate_path
+    p4->>p10: validate_path
+    p3->>p20: resolve_team_policy
 ```
 
-> Call sequence diagram shows 30 of 2286 interactions; 2256 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2397 interactions; 2367 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 18 of 655 (637 omitted); unresolved 1 of 826 (825 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/config.py:validate_path` | 5 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
+| `src/llm_wiki_cli/config.py:validate_path` | 5 | - | unresolved | 3 |
+| `src/llm_wiki_cli/config.py:validate_path` | 5 | - | external | 2 |
+| `src/llm_wiki_cli/services/team.py:team_config_path` | 13 | - | external | 1 |
+| `src/llm_wiki_cli/services/team.py:write_default_team_config` | 17 | [src/llm_wiki_cli/services/team.py](../modules/team.md) | internal | 2 |
+| `src/llm_wiki_cli/services/team.py:write_default_team_config` | 17 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
+| `src/llm_wiki_cli/services/io.py:write_json_atomic` | 19 | - | external | 1 |
+| `src/llm_wiki_cli/services/io.py:write_json_atomic` | 19 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
+> Omission summary shows 8 of 623 groups; 615 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

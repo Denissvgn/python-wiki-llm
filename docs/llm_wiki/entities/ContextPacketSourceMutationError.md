@@ -1,6 +1,6 @@
 # ContextPacketSourceMutationError
 
-**Location:** `src/llm_wiki_cli/services/context_packet.py:241`
+**Location:** `src/llm_wiki_cli/services/context_packet.py:242`
 **Kind:** Class
 **Bases:** `ContextPacketError`
 **Module:** [context_packet](../modules/context_packet.md)
@@ -31,11 +31,12 @@ flowchart LR
     n4["_assert_source_unchanged (src/llm_wiki_cli/services/context_packet.py)"]
     n5["_assert_wiki_integrity (src/llm_wiki_cli/services/context_packet.py)"]
     n6["_assert_wiki_unchanged (src/llm_wiki_cli/services/context_packet.py)"]
-    n7["wrapped (src/llm_wiki_cli/services/context_packet.py)"]
-    n8["ContextSession.read (src/llm_wiki_cli/services/context_session.py)"]
-    n9["_read_once (src/llm_wiki_cli/services/task_context.py)"]
-    n10["build_scoped_task_read (src/llm_wiki_cli/services/task_context_v2.py)"]
-    n11["ScopedTaskState.revalidate (src/llm_wiki_cli/services/task_context_v2.py)"]
+    n7["confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet.py)"]
+    n8["wrapped (src/llm_wiki_cli/services/context_packet.py)"]
+    n9["ContextSession._check_publication (src/llm_wiki_cli/services/context_session.py)"]
+    n10["_read_once (src/llm_wiki_cli/services/task_context.py)"]
+    n11["build_scoped_task_read (src/llm_wiki_cli/services/task_context_v2.py)"]
+    n12["ScopedTaskState.revalidate (src/llm_wiki_cli/services/task_context_v2.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -47,6 +48,7 @@ flowchart LR
     n9 --> n0
     n10 --> n0
     n11 --> n0
+    n12 --> n0
     click n0 "../modules/context_packet.md"
     click n1 "../modules/context_packet.md"
     click n2 "../modules/context_packet.md"
@@ -55,10 +57,11 @@ flowchart LR
     click n5 "../modules/context_packet.md"
     click n6 "../modules/context_packet.md"
     click n7 "../modules/context_packet.md"
-    click n8 "../modules/context_session.md"
-    click n9 "../modules/task_context.md"
-    click n10 "../modules/task_context_v2.md"
+    click n8 "../modules/context_packet.md"
+    click n9 "../modules/context_session.md"
+    click n10 "../modules/task_context.md"
     click n11 "../modules/task_context_v2.md"
+    click n12 "../modules/task_context_v2.md"
 ```
 
 ### Summary
@@ -82,8 +85,9 @@ flowchart LR
 | `_assert_source_unchanged` | call | [context_packet](../modules/context_packet.md) | 2 |
 | `_assert_wiki_integrity` | call | [context_packet](../modules/context_packet.md) | 1 |
 | `_assert_wiki_unchanged` | call | [context_packet](../modules/context_packet.md) | 2 |
+| `confirmed_missing_source_paths` | call | [context_packet](../modules/context_packet.md) | 1 |
 | `wrapped` | call | [context_packet](../modules/context_packet.md) | 1 |
-| `ContextSession.read` | call | [context_session](../modules/context_session.md) | 1 |
+| `ContextSession._check_publication` | call | [context_session](../modules/context_session.md) | 3 |
 | `_read_once` | call | [task_context](../modules/task_context.md) | 3 |
 | `build_scoped_task_read` | call | [task_context_v2](../modules/task_context_v2.md) | 2 |
 | `ScopedTaskState.revalidate` | call | [task_context_v2](../modules/task_context_v2.md) | 1 |

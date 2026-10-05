@@ -1,6 +1,6 @@
 # SourceSnapshot
 
-**Location:** `src/llm_wiki_cli/services/source_snapshot.py:140`
+**Location:** `src/llm_wiki_cli/services/source_snapshot.py:141`
 **Kind:** Class
 **Bases:** —
 **Module:** [source_snapshot](../modules/source_snapshot.md)
@@ -124,4 +124,4 @@ flowchart LR
 | `_apply_sync_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_build_generated_section_context` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 
-> References: showing 12 of 152 logical references; 140 omitted by the 12-row generated summary limit.
+> References: showing 12 of 158 logical references; 146 omitted by the 12-row generated summary limit.

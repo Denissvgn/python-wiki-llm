@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [migrate_cmd](../modules/migrate_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), and 38 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), and 41 more
 
 **Complete modules touched:**
 
@@ -33,6 +33,8 @@
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [maintenance_protocol](../modules/maintenance_protocol.md)
+- [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [migrate_cmd](../modules/migrate_cmd.md)
 - [packages](../modules/packages.md)
@@ -40,6 +42,7 @@
 - [plugins](../modules/plugins.md)
 - [progress](../modules/progress.md)
 - [python_contracts](../modules/python_contracts.md)
+- [python_implementation](../modules/python_implementation.md)
 - [python_imports](../modules/python_imports.md)
 - [python_observations](../modules/python_observations.md)
 - [resource_diagnostics](../modules/resource_diagnostics.md)
@@ -51,6 +54,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -59,54 +64,67 @@ sequenceDiagram
     participant p2 as Path (src/llm_wiki_cli/commands/migrate_cmd.py:run)
     participant p3 as bool (src/llm_wiki_cli/commands/migrate_cmd.py:run)
     participant p4 as validate_source_root
-    participant p5 as validate_path
-    participant p6 as PathValidationError
-    participant p7 as (…).resolve
-    participant p8 as Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    participant p9 as Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)
-    participant p10 as resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
-    participant p11 as Path(…).expanduser
-    participant p12 as Path (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p13 as candidate.is_absolute (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p14 as Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p15 as candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p16 as resolved.is_dir
-    participant p17 as os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p18 as windows_current_user_sid
-    participant p19 as WindowsSecurityGuardError
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)
-    p0-->>p2: Path (src/llm_wiki_cli/commands/migrate_cmd.py:run)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)
-    p0-->>p3: bool (src/llm_wiki_cli/commands/migrate_cmd.py:run)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)
+    participant p5 as str (src/llm_wiki_cli/commands/migrate_cmd.py:run)
+    participant p6 as validate_path
+    participant p7 as print (src/llm_wiki_cli/commands/migrate_cmd.py:run)
+    participant p8 as sys.exit (src/llm_wiki_cli/commands/migrate_cmd.py:run)
+    participant p9 as wiki_dir.exists (src/llm_wiki_cli/commands/migrate_cmd.py:run)
+    participant p10 as _build_migration_plan
+    participant p11 as _print_migration_governance_plan
+    participant p12 as _build_chunks
+    participant p13 as _print_chunk_plan
+    participant p14 as _print_migration_artifact_preview
+    participant p15 as _clear_migration_progress
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)(args, 'src_dir', '.')
+    p0-->>p2: Path (src/llm_wiki_cli/commands/migrate_cmd.py:run)(getattr(...))
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)(args, 'dry_run', False)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)(args, 'chunk_size', None)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)(args, 'chunk', None)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)(args, 'plan_chunks', False)
+    p0-->>p3: bool (src/llm_wiki_cli/commands/migrate_cmd.py:run)(getattr(...))
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)(args, 'allow_external_src', False)
     p0->>p4: validate_source_root
-    p4->>p5: validate_path
-    p5->>p6: PathValidationError
-    p5-->>p7: (…).resolve
-    p5-->>p8: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    p5-->>p9: Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)
-    p5-->>p8: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    p5-->>p10: resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
-    p5->>p6: PathValidationError
-    p4-->>p11: Path(…).expanduser
-    p4-->>p12: Path (src/llm_wiki_cli/config.py:validate_source_root)
-    p4-->>p13: candidate.is_absolute (src/llm_wiki_cli/config.py:validate_source_root)
-    p4-->>p14: Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
-    p4-->>p15: candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
-    p4->>p6: PathValidationError
-    p4-->>p16: resolved.is_dir
-    p4->>p6: PathValidationError
-    p4-->>p12: Path (src/llm_wiki_cli/config.py:validate_source_root)
-    p4-->>p17: os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
-    p4->>p18: windows_current_user_sid
-    p18->>p19: WindowsSecurityGuardError
+    p0-->>p5: str (src/llm_wiki_cli/commands/migrate_cmd.py:run)(source_root)
+    p0->>p6: validate_path
+    p0-->>p5: str (src/llm_wiki_cli/commands/migrate_cmd.py:run)(wiki_dir)
+    p0-->>p7: print (src/llm_wiki_cli/commands/migrate_cmd.py:run)('Error: --chunk and --plan-chunks require --chunk-size.', file=sys.stderr)
+    p0-->>p8: sys.exit (src/llm_wiki_cli/commands/migrate_cmd.py:run)(1)
+    p0-->>p9: wiki_dir.exists (src/llm_wiki_cli/commands/migrate_cmd.py:run)
+    p0-->>p7: print (src/llm_wiki_cli/commands/migrate_cmd.py:run)(..., file=sys.stderr)
+    p0-->>p8: sys.exit (src/llm_wiki_cli/commands/migrate_cmd.py:run)(1)
+    p0-->>p7: print (src/llm_wiki_cli/commands/migrate_cmd.py:run)(...)
+    p0-->>p7: print (src/llm_wiki_cli/commands/migrate_cmd.py:run)(...)
+    p0->>p10: _build_migration_plan
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)(args, 'source_selection', None)
+    p0->>p11: _print_migration_governance_plan
+    p0-->>p7: print (src/llm_wiki_cli/commands/migrate_cmd.py:run)('DRY-RUN: no files will be modified.')
+    p0->>p12: _build_chunks
+    p0->>p13: _print_chunk_plan
+    p0->>p14: _print_migration_artifact_preview
+    p0-->>p7: print (src/llm_wiki_cli/commands/migrate_cmd.py:run)('PLAN: no files modified.')
+    p0->>p15: _clear_migration_progress
+    p0-->>p7: print (src/llm_wiki_cli/commands/migrate_cmd.py:run)('\nNo pending migration changes.')
 ```
 
-> Call sequence diagram shows 30 of 3718 interactions; 3688 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 3939 interactions; 3909 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 21 of 1048 (1027 omitted); unresolved 1 of 1514 (1513 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 11 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
+| `src/llm_wiki_cli/config.py:validate_path` | 12 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
+| `src/llm_wiki_cli/config.py:validate_path` | 12 | - | unresolved | 3 |
+| `src/llm_wiki_cli/config.py:validate_path` | 12 | - | external | 2 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 11 | - | unresolved | 5 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 11 | - | external | 11 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 11 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 30 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 2 |
+> Omission summary shows 8 of 972 groups; 964 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

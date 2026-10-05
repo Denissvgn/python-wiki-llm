@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -13,8 +15,13 @@ sequenceDiagram
     participant p1 as hashlib.sha256(…).hexdigest
     participant p2 as hashlib.sha256
     p0-->>p1: hashlib.sha256(…).hexdigest
-    p0-->>p2: hashlib.sha256
+    p0-->>p2: hashlib.sha256(value)
 ```
+
+> Call sequence diagram shows 2 of 2 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 1 of 1 (0 omitted); unresolved 1 of 1 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 
@@ -41,8 +48,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| sha256_bytes | hashlib.sha256(…).hexdigest | 198 | `hashlib.sha256(value).hexdigest(data not statically known)` |
-| sha256_bytes | hashlib.sha256 | 198 | `hashlib.sha256(value)` |
+| sha256_bytes | hashlib.sha256(…).hexdigest | 199 | `hashlib.sha256(value).hexdigest(data not statically known)` |
+| sha256_bytes | hashlib.sha256 | 199 | `hashlib.sha256(value)` |
 
 ### Boundary effects
 
@@ -52,8 +59,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 198 |
-| external_call | `sha256_bytes` | `hashlib.sha256` | 198 |
+| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 199 |
+| external_call | `sha256_bytes` | `hashlib.sha256` | 199 |
 
 ## Behavior
 

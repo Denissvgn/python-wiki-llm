@@ -1,6 +1,6 @@
 # InventoryResult
 
-**Location:** `src/llm_wiki_cli/services/extraction_service.py:173`
+**Location:** `src/llm_wiki_cli/services/extraction_service.py:174`
 **Kind:** Class
 **Bases:** —
 **Module:** [extraction_service](../modules/extraction_service.md)
@@ -32,6 +32,7 @@ property gives callers a single fail-closed check across extractor statuses.
 | `analysis_components` | `dict \| None` | `field(default=None, repr=False, compare=False)` | — |
 | `data_effect_observations` | `dict \| None` | `field(default=None, repr=False, compare=False)` | — |
 | `import_observations` | `dict \| None` | `field(default=None, repr=False, compare=False)` | — |
+| `implementation_observations` | `dict \| None` | `field(default=None, repr=False, compare=False)` | — |
 
 ## Methods
 
@@ -89,7 +90,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [extraction_service](../modules/extraction_service.md) | 2 | `analysis_components`, `cache_stats`, `data_effect_observations`, `extraction_job_plan`, `extractor_registry`, `import_observations`, `inventory`, `plugin_components`, `plugin_lock_hash`, `plugin_lock_path`, `producer_plugin_components`, `source_snapshot` |
+| [extraction_service](../modules/extraction_service.md) | 2 | `analysis_components`, `cache_stats`, `data_effect_observations`, `extraction_job_plan`, `extractor_registry`, `implementation_observations`, `import_observations`, `inventory`, `plugin_components`, `plugin_lock_hash`, `plugin_lock_path`, `producer_plugin_components` |
 
 ### References
 
@@ -108,4 +109,4 @@ flowchart LR
 | `_capture_protocol_enrichment_session` | type_reference | [context_service](../modules/context_service.md) | — |
 | `get_inventory` | type_reference | [context_service](../modules/context_service.md) | — |
 
-> References: showing 12 of 23 logical references; 11 omitted by the 12-row generated summary limit.
+> References: showing 12 of 25 logical references; 13 omitted by the 12-row generated summary limit.

@@ -6,63 +6,79 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as verify
     participant p1 as build_verification_receipt
-    participant p2 as isinstance (src/llm_wiki_cli/services…build_verification_receipt)
-    participant p3 as TypeError (src/llm_wiki_cli/services…build_verification_receipt)
-    participant p4 as tuple (src/llm_wiki_cli/services…build_verification_receipt)
-    participant p5 as VerificationContractError
-    participant p6 as any
-    participant p7 as all
-    participant p8 as VerificationReceipt
-    participant p9 as run_verification
-    participant p10 as isinstance (src/llm_wiki_cli/services…tracts.py:run_verification)
-    participant p11 as TypeError (src/llm_wiki_cli/services…tracts.py:run_verification)
-    participant p12 as _selected_contracts
-    participant p13 as isinstance (src/llm_wiki_cli/services…cts.py:_selected_contracts)
-    participant p14 as tuple (src/llm_wiki_cli/services…cts.py:_selected_contracts)
-    participant p15 as sorted
-    participant p16 as len
-    participant p17 as set
-    participant p18 as UnknownVerificationCheckerError
-    participant p19 as _checker_id
-    participant p20 as isinstance (src/llm_wiki_cli/services…n_contracts.py:_checker_id)
+    participant p2 as run_verification
+    participant p3 as isinstance (src/llm_wiki_cli/services…build_verification_receipt)
+    participant p4 as isinstance (src/llm_wiki_cli/services…tracts.py:run_verification)
+    participant p5 as TypeError (src/llm_wiki_cli/services…build_verification_receipt)
+    participant p6 as TypeError (src/llm_wiki_cli/services…tracts.py:run_verification)
+    participant p7 as tuple (src/llm_wiki_cli/services…build_verification_receipt)
+    participant p8 as _selected_contracts
+    participant p9 as VerificationContractError
+    participant p10 as tuple (src/llm_wiki_cli/services…tracts.py:run_verification)
+    participant p11 as any
+    participant p12 as contract.run
+    participant p13 as all
+    participant p14 as VerificationReceipt
+    participant p15 as isinstance (src/llm_wiki_cli/services…cts.py:_selected_contracts)
+    participant p16 as tuple (src/llm_wiki_cli/services…cts.py:_selected_contracts)
+    participant p17 as sorted
+    participant p18 as len
+    participant p19 as set
+    participant p20 as UnknownVerificationCheckerError
     p0->>p1: build_verification_receipt
-    p1-->>p2: isinstance (src/llm_wiki_cli/services…build_verification_receipt)
-    p1-->>p3: TypeError (src/llm_wiki_cli/services…build_verification_receipt)
-    p1-->>p4: tuple (src/llm_wiki_cli/services…build_verification_receipt)
-    p1->>p5: VerificationContractError
-    p1-->>p6: any
-    p1-->>p2: isinstance (src/llm_wiki_cli/services…build_verification_receipt)
-    p1->>p5: VerificationContractError
-    p1-->>p7: all
-    p1->>p8: VerificationReceipt
-    p0->>p9: run_verification
-    p9-->>p10: isinstance (src/llm_wiki_cli/services…tracts.py:run_verification)
-    p9-->>p11: TypeError (src/llm_wiki_cli/services…tracts.py:run_verification)
-    p9->>p12: _selected_contracts
-    p12-->>p13: isinstance (src/llm_wiki_cli/services…cts.py:_selected_contracts)
-    p12->>p5: VerificationContractError
-    p12-->>p14: tuple (src/llm_wiki_cli/services…cts.py:_selected_contracts)
-    p12-->>p15: sorted
-    p12-->>p14: tuple (src/llm_wiki_cli/services…cts.py:_selected_contracts)
-    p12->>p5: VerificationContractError
-    p12-->>p16: len
-    p12->>p5: VerificationContractError
-    p12-->>p16: len
-    p12-->>p16: len
-    p12-->>p17: set
-    p12->>p5: VerificationContractError
-    p12-->>p13: isinstance (src/llm_wiki_cli/services…cts.py:_selected_contracts)
-    p12->>p18: UnknownVerificationCheckerError
-    p12->>p19: _checker_id
-    p19-->>p20: isinstance (src/llm_wiki_cli/services…n_contracts.py:_checker_id)
+    p0->>p2: run_verification
+    p1-->>p3: isinstance (src/llm_wiki_cli/services…build_verification_receipt)(context, VerificationContext)
+    p2-->>p4: isinstance (src/llm_wiki_cli/services…tracts.py:run_verification)(context, VerificationContext)
+    p1-->>p5: TypeError (src/llm_wiki_cli/services…build_verification_receipt)('context must be a VerificationContext')
+    p2-->>p6: TypeError (src/llm_wiki_cli/services…tracts.py:run_verification)('context must be a VerificationContext')
+    p1-->>p7: tuple (src/llm_wiki_cli/services…build_verification_receipt)(checks)
+    p2->>p8: _selected_contracts
+    p1->>p9: VerificationContractError
+    p2-->>p10: tuple (src/llm_wiki_cli/services…tracts.py:run_verification)(...)
+    p1-->>p11: any(...)
+    p2-->>p12: contract.run(context)
+    p1-->>p3: isinstance (src/llm_wiki_cli/services…build_verification_receipt)(check, VerificationCheckResult)
+    p1->>p9: VerificationContractError
+    p1-->>p13: all(...)
+    p1->>p14: VerificationReceipt
+    p8-->>p15: isinstance (src/llm_wiki_cli/services…cts.py:_selected_contracts)(checker_ids, (...))
+    p8->>p9: VerificationContractError
+    p8-->>p16: tuple (src/llm_wiki_cli/services…cts.py:_selected_contracts)(sorted(...))
+    p8-->>p17: sorted(_CHECKER_REGISTRY)
+    p8-->>p16: tuple (src/llm_wiki_cli/services…cts.py:_selected_contracts)(checker_ids)
+    p8->>p9: VerificationContractError
+    p8-->>p18: len(selected)
+    p8->>p9: VerificationContractError
+    p8-->>p18: len(selected)
+    p8-->>p18: len(set(...))
+    p8-->>p19: set(selected)
+    p8->>p9: VerificationContractError
+    p8-->>p15: isinstance (src/llm_wiki_cli/services…cts.py:_selected_contracts)(checker_id, str)
+    p8->>p20: UnknownVerificationCheckerError
 ```
 
-> Call sequence diagram shows 30 of 39 interactions; 9 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 39 interactions; 9 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 18 of 21 (3 omitted); unresolved 1 of 3 (2 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/verification_contracts.py:_selected_contracts` | 15 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 3 |
+| `src/llm_wiki_cli/services/verification_contracts.py:_checker_id` | 30 | - | external | 1 |
+| `src/llm_wiki_cli/services/verification_contracts.py:_checker_id` | 30 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/verification_contracts.py:_checker_id` | 30 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 1 |
+| `src/llm_wiki_cli/services/verification_contracts.py:_selected_contracts` | 15 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/verification_contracts.py:_selected_contracts` | 15 | - | external | 2 |
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

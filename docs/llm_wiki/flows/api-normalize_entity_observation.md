@@ -6,64 +6,86 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as normalize_entity_observation
     participant p1 as _validate_entity_coordinate
-    participant p2 as require_nonempty_text
-    participant p3 as isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
-    participant p4 as value.strip
-    participant p5 as contains_control_character
-    participant p6 as pattern.search
-    participant p7 as ValueError
-    participant p8 as require_positive_int
-    participant p9 as require_nonnegative_int
-    participant p10 as require_int
-    participant p11 as isinstance (src/llm_wiki_cli/services/validation.py:require_int)
-    participant p12 as _normalize_entity_observation
-    participant p13 as _inventory_language
-    participant p14 as isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)
-    participant p15 as _InventoryNormalizationError
-    participant p16 as file_data.get
-    participant p17 as isinstance (src/llm_wiki_cli/services…malize_entity_observation)
-    participant p18 as _record_array
+    participant p2 as _normalize_entity_observation
+    participant p3 as require_nonempty_text
+    participant p4 as _inventory_language
+    participant p5 as ValueError
+    participant p6 as isinstance (src/llm_wiki_cli/services…malize_entity_observation)
+    participant p7 as require_positive_int
+    participant p8 as _record_array
+    participant p9 as _record_name
+    participant p10 as _InventoryNormalizationError
+    participant p11 as _validate_entity_record
+    participant p12 as _structural_copy
+    participant p13 as isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
+    participant p14 as require_nonnegative_int
+    participant p15 as isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)
+    participant p16 as _validate_module_entity_record
+    participant p17 as set
+    participant p18 as value.strip
     participant p19 as isinstance (src/llm_wiki_cli/services…evidence.py:_record_array)
-    participant p20 as all (src/llm_wiki_cli/services…evidence.py:_record_array)
-    participant p21 as _record_name
+    participant p20 as record.get
+    participant p21 as _validate_optional_string_array
+    participant p22 as isinstance (src/llm_wiki_cli/services…dence.py:_structural_copy)
+    participant p23 as contains_control_character
+    participant p24 as file_data.get
     p0->>p1: _validate_entity_coordinate
-    p1->>p2: require_nonempty_text
-    p2-->>p3: isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
-    p2-->>p4: value.strip
-    p2->>p5: contains_control_character
-    p5-->>p6: pattern.search
-    p1-->>p7: ValueError
-    p1->>p8: require_positive_int
-    p8->>p9: require_nonnegative_int
-    p9->>p10: require_int
-    p10-->>p11: isinstance (src/llm_wiki_cli/services/validation.py:require_int)
-    p10-->>p11: isinstance (src/llm_wiki_cli/services/validation.py:require_int)
-    p1-->>p7: ValueError
-    p0->>p12: _normalize_entity_observation
-    p12->>p13: _inventory_language
-    p13-->>p14: isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)
-    p13->>p15: _InventoryNormalizationError
-    p13-->>p16: file_data.get
-    p13-->>p14: isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)
-    p13->>p15: _InventoryNormalizationError
-    p13->>p15: _InventoryNormalizationError
-    p12-->>p17: isinstance (src/llm_wiki_cli/services…malize_entity_observation)
-    p12->>p18: _record_array
-    p18->>p15: _InventoryNormalizationError
-    p18-->>p19: isinstance (src/llm_wiki_cli/services…evidence.py:_record_array)
-    p18->>p15: _InventoryNormalizationError
-    p18-->>p20: all (src/llm_wiki_cli/services…evidence.py:_record_array)
-    p18-->>p19: isinstance (src/llm_wiki_cli/services…evidence.py:_record_array)
-    p18->>p15: _InventoryNormalizationError
-    p12->>p21: _record_name
+    p0->>p2: _normalize_entity_observation
+    p1->>p3: require_nonempty_text
+    p2->>p4: _inventory_language
+    p1-->>p5: ValueError('entity_name must be a non-empty string')
+    p2-->>p6: isinstance (src/llm_wiki_cli/services…malize_entity_observation)(file_data, Mapping)
+    p1->>p7: require_positive_int
+    p2->>p8: _record_array
+    p1-->>p5: ValueError('occurrence must be a positive integer')
+    p2->>p9: _record_name
+    p2->>p10: _InventoryNormalizationError
+    p2->>p11: _validate_entity_record
+    p2->>p12: _structural_copy
+    p3-->>p13: isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)(value, str)
+    p7->>p14: require_nonnegative_int
+    p4-->>p15: isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)(file_data, Mapping)
+    p8->>p10: _InventoryNormalizationError
+    p9->>p3: require_nonempty_text
+    p11->>p16: _validate_module_entity_record
+    p12-->>p17: set
+    p3-->>p18: value.strip
+    p4->>p10: _InventoryNormalizationError
+    p8-->>p19: isinstance (src/llm_wiki_cli/services…evidence.py:_record_array)(value, list)
+    p9-->>p20: record.get('name')
+    p11->>p21: _validate_optional_string_array
+    p12-->>p22: isinstance (src/llm_wiki_cli/services…dence.py:_structural_copy)(value, Mapping)
+    p3->>p23: contains_control_character
+    p4-->>p24: file_data.get('language')
+    p8->>p10: _InventoryNormalizationError
+    p9->>p10: _InventoryNormalizationError
 ```
 
-> Call sequence diagram shows 30 of 109 interactions; 79 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 109 interactions; 79 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 8 of 27 (19 omitted); unresolved 3 of 11 (8 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/validation.py:contains_control_character` | 6 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_nonnegative_int` | 10 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_int` | 11 | - | external | 2 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:_inventory_language` | 16 | - | external | 1 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:_inventory_language` | 16 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 2 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:_record_array` | 24 | - | external | 2 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:_record_array` | 24 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:_validate_module_entity_record` | 37 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 3 |
+> Omission summary shows 8 of 35 groups; 27 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -125,14 +147,14 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| normalize_entity_observation | _validate_entity_coordinate | 237 | `_validate_entity_coordinate(entity_name, occurrence)` |
-| _validate_entity_coordinate | require_nonempty_text | 908 | `require_nonempty_text(entity_name, error=ValueError(...), reject_control_characters=False)` |
+| normalize_entity_observation | _validate_entity_coordinate | 238 | `_validate_entity_coordinate(entity_name, occurrence)` |
+| _validate_entity_coordinate | require_nonempty_text | 909 | `require_nonempty_text(entity_name, error=ValueError(...), reject_control_characters=False)` |
 | require_nonempty_text | isinstance (src/llm_wiki_cli/services….py:require_nonempty_text) | 623 | `isinstance(value, str)` |
 | require_nonempty_text | value.strip | 625 | `value.strip(data not statically known)` |
 | require_nonempty_text | contains_control_character | 631 | `contains_control_character(parsed, reject_delete_character=reject_delete_character)` |
 | contains_control_character | pattern.search | 685 | `pattern.search(value)` |
-| _validate_entity_coordinate | ValueError | 910 | `ValueError('entity_name must be a non-empty string')` |
-| _validate_entity_coordinate | require_positive_int | 913 | `require_positive_int(occurrence, invalid_error=ValueError(...))` |
+| _validate_entity_coordinate | ValueError | 911 | `ValueError('entity_name must be a non-empty string')` |
+| _validate_entity_coordinate | require_positive_int | 914 | `require_positive_int(occurrence, invalid_error=ValueError(...))` |
 | require_positive_int | require_nonnegative_int | 848 | `require_nonnegative_int(value, error=invalid_error)` |
 | require_nonnegative_int | require_int | 826 | `require_int(value, error=error)` |
 | require_int | isinstance (src/llm_wiki_cli/services/validation.py:require_int) | 818 | `isinstance(value, bool)` |
@@ -148,7 +170,7 @@ flowchart LR
 | external_call | `require_nonempty_text` | `isinstance` | 623 |
 | unresolved_call | `require_nonempty_text` | `value.strip` | 625 |
 | unresolved_call | `contains_control_character` | `pattern.search` | 685 |
-| external_call | `_validate_entity_coordinate` | `ValueError` | 910 |
+| external_call | `_validate_entity_coordinate` | `ValueError` | 911 |
 | external_call | `require_int` | `isinstance` | 818 |
 | step_limit | `normalize_entity_observation` | `first 12 steps` | 0 |
 | truncated_flow | `normalize_entity_observation` | `depth limit` | 0 |

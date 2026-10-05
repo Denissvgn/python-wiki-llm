@@ -1,7 +1,7 @@
 # build_scoped_task_read
 
 **Entry point:** `task_context_v2.build_scoped_task_read`
-**Modules involved:** [change_selection](../modules/change_selection.md), [config](../modules/config.md), [context_budget](../modules/context_budget.md), [context_packet](../modules/context_packet.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_storage_access](../modules/knowledge_storage_access.md), [source_selection](../modules/source_selection.md), [task_context](../modules/task_context.md), [task_context_v2](../modules/task_context_v2.md), [task_contract](../modules/task_contract.md), [task_evidence](../modules/task_evidence.md), [workflow_profile](../modules/workflow_profile.md)
+**Modules involved:** [change_selection](../modules/change_selection.md), [config](../modules/config.md), [context_budget](../modules/context_budget.md), [context_packet](../modules/context_packet.md), [implementation_evidence](../modules/implementation_evidence.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_storage_access](../modules/knowledge_storage_access.md), [python_implementation](../modules/python_implementation.md), [source_selection](../modules/source_selection.md), [task_context](../modules/task_context.md), [task_context_v2](../modules/task_context_v2.md), [task_contract](../modules/task_contract.md), [task_evidence](../modules/task_evidence.md), [workflow_profile](../modules/workflow_profile.md)
 
 ## Sequence
 
@@ -22,23 +22,26 @@
 14. `context_packet.ContextPacketUnavailableError`
 15. `workflow_profile.content_id`
 16. `workflow_profile.content_id`
-17. `task_evidence.declaration_records`
-18. `task_context._cancel`
-19. `task_evidence.observe_requirement`
-20. `task_evidence.observe_requirement`
-21. `knowledge_envelope.hash_source_snapshot`
-22. `workflow_profile.content_id`
-23. `context_budget._accounted_render`
-24. `task_contract.TaskContext`
-25. `task_contract.TaskContext`
-26. `task_context._cancel`
-27. `workflow_profile.WorkflowRequestError`
-28. `context_packet._assert_source_unchanged`
-29. `change_selection.select_changes`
-30. `context_packet.ContextPacketSourceMutationError`
-31. `workflow_profile.WorkflowRequestError`
-32. `context_packet.ContextPacketSourceMutationError`
-33. `task_context.TaskRead`
+17. `context_packet.confirmed_missing_source_paths`
+18. `implementation_evidence.compare_knowledge_implementation`
+19. `python_implementation.analysis_identity`
+20. `task_evidence.declaration_records`
+21. `task_context._cancel`
+22. `task_evidence.observe_requirement`
+23. `task_evidence.observe_requirement`
+24. `knowledge_envelope.hash_source_snapshot`
+25. `workflow_profile.content_id`
+26. `context_budget._accounted_render`
+27. `task_contract.TaskContext`
+28. `task_contract.TaskContext`
+29. `task_context._cancel`
+30. `workflow_profile.WorkflowRequestError`
+31. `context_packet._assert_source_unchanged`
+32. `change_selection.select_changes`
+33. `context_packet.ContextPacketSourceMutationError`
+34. `workflow_profile.WorkflowRequestError`
+35. `context_packet.ContextPacketSourceMutationError`
+36. `task_context.TaskRead`
 
 ## Touches
 
@@ -46,8 +49,10 @@
 - [config](../modules/config.md)
 - [context_budget](../modules/context_budget.md)
 - [context_packet](../modules/context_packet.md)
+- [implementation_evidence](../modules/implementation_evidence.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_storage_access](../modules/knowledge_storage_access.md)
+- [python_implementation](../modules/python_implementation.md)
 - [source_selection](../modules/source_selection.md)
 - [task_context](../modules/task_context.md)
 - [task_context_v2](../modules/task_context_v2.md)

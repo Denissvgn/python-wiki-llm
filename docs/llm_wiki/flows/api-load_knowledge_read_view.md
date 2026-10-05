@@ -2,13 +2,14 @@
 
 **Entry point:** `load_knowledge_read_view` (`api`)
 **Source:** [knowledge_consumption](../modules/knowledge_consumption.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [immutable](../modules/immutable.md), [infrastructure_sync](../modules/infrastructure_sync.md), and 23 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [filesystem_guard](../modules/filesystem_guard.md), [immutable](../modules/immutable.md), and 31 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
-- [canonical_json](../modules/canonical_json.md)
+- [filesystem_guard](../modules/filesystem_guard.md)
 - [immutable](../modules/immutable.md)
+- [implementation_evidence](../modules/implementation_evidence.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -26,6 +27,12 @@
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
+- [maintenance_evidence](../modules/maintenance_evidence.md)
+- [maintenance_projection](../modules/maintenance_projection.md)
+- [maintenance_protocol](../modules/maintenance_protocol.md)
+- [maintenance_shapes](../modules/maintenance_shapes.md)
+- [maintenance_state](../modules/maintenance_state.md)
+- [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [section_ownership](../modules/section_ownership.md)
@@ -36,6 +43,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -43,60 +52,81 @@ sequenceDiagram
     participant p1 as isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view)
     participant p2 as TypeError (src/llm_wiki_cli/services…:load_knowledge_read_view)
     participant p3 as load_knowledge_state
-    participant p4 as isinstance (src/llm_wiki_cli/services…r.py:load_knowledge_state)
-    participant p5 as KnowledgeMismatchPolicy
-    participant p6 as ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state)
-    participant p7 as callable (src/llm_wiki_cli/services…r.py:load_knowledge_state)
-    participant p8 as TypeError (src/llm_wiki_cli/services…r.py:load_knowledge_state)
-    participant p9 as Path (src/llm_wiki_cli/services…r.py:load_knowledge_state)
-    participant p10 as _load_once
-    participant p11 as _read_artifact
-    participant p12 as path.is_symlink (src/llm_wiki_cli/services…_loader.py:_read_artifact)
-    participant p13 as KnowledgeLoadIssue
-    participant p14 as path.exists (src/llm_wiki_cli/services…_loader.py:_read_artifact)
-    participant p15 as path.is_file (src/llm_wiki_cli/services…_loader.py:_read_artifact)
-    participant p16 as path.read_bytes (src/llm_wiki_cli/services…_loader.py:_read_artifact)
-    participant p17 as KnowledgeLoadResult
-    participant p18 as validate_surface_index_bytes
-    participant p19 as _decode_json_object
-    participant p20 as isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)
-    participant p21 as KnowledgeArtifactError
-    participant p22 as content.decode (src/llm_wiki_cli/services…ts.py:_decode_json_object)
-    participant p23 as json.loads (src/llm_wiki_cli/services…ts.py:_decode_json_object)
-    participant p24 as _unique_json_object
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…:load_knowledge_read_view)
+    participant p4 as _unsupported_reason
+    participant p5 as KnowledgeLoadResult
+    participant p6 as build_knowledge_read_view
+    participant p7 as attach_machine_verification_read_view
+    participant p8 as isinstance (src/llm_wiki_cli/services…r.py:load_knowledge_state)
+    participant p9 as _UNSUPPORTED_REASON_BY_ISSUE.get
+    participant p10 as isinstance (src/llm_wiki_cli/services…build_knowledge_read_view)
+    participant p11 as isinstance (src/llm_wiki_cli/services…ne_verification_read_view)
+    participant p12 as KnowledgeMismatchPolicy
+    participant p13 as TypeError (src/llm_wiki_cli/services…build_knowledge_read_view)
+    participant p14 as TypeError (src/llm_wiki_cli/services…ne_verification_read_view)
+    participant p15 as ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state)
+    participant p16 as _read_mode
+    participant p17 as replace (src/llm_wiki_cli/services…ne_verification_read_view)
+    participant p18 as _validate_load_result
+    participant p19 as load_machine_verification_read_view
+    participant p20 as callable (src/llm_wiki_cli/services…r.py:load_knowledge_state)
+    participant p21 as _loaded_freshness
+    participant p22 as TypeError (src/llm_wiki_cli/services…r.py:load_knowledge_state)
+    participant p23 as _knowledge_counts
+    participant p24 as Path (src/llm_wiki_cli/services…r.py:load_knowledge_state)
+    participant p25 as KnowledgeReadView
+    participant p26 as guard_maintenance_owner
+    participant p27 as _snapshot_maintenance_report
+    participant p28 as _implementation_report
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view)(include_machine_verification, bool)
+    p0-->>p2: TypeError (src/llm_wiki_cli/services…:load_knowledge_read_view)('include_machine_verification must be a boolean')
     p0->>p3: load_knowledge_state
-    p3-->>p4: isinstance (src/llm_wiki_cli/services…r.py:load_knowledge_state)
-    p3->>p5: KnowledgeMismatchPolicy
-    p3-->>p6: ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state)
-    p3-->>p6: ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state)
-    p3-->>p7: callable (src/llm_wiki_cli/services…r.py:load_knowledge_state)
-    p3-->>p8: TypeError (src/llm_wiki_cli/services…r.py:load_knowledge_state)
-    p3-->>p9: Path (src/llm_wiki_cli/services…r.py:load_knowledge_state)
-    p3->>p10: _load_once
-    p10->>p11: _read_artifact
-    p11-->>p12: path.is_symlink (src/llm_wiki_cli/services…_loader.py:_read_artifact)
-    p11->>p13: KnowledgeLoadIssue
-    p11-->>p14: path.exists (src/llm_wiki_cli/services…_loader.py:_read_artifact)
-    p11->>p13: KnowledgeLoadIssue
-    p11-->>p15: path.is_file (src/llm_wiki_cli/services…_loader.py:_read_artifact)
-    p11->>p13: KnowledgeLoadIssue
-    p11-->>p16: path.read_bytes (src/llm_wiki_cli/services…_loader.py:_read_artifact)
-    p11->>p13: KnowledgeLoadIssue
-    p10->>p17: KnowledgeLoadResult
-    p10->>p18: validate_surface_index_bytes
-    p18->>p19: _decode_json_object
-    p19-->>p20: isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)
-    p19->>p21: KnowledgeArtifactError
-    p19-->>p22: content.decode (src/llm_wiki_cli/services…ts.py:_decode_json_object)
-    p19->>p21: KnowledgeArtifactError
-    p19-->>p23: json.loads (src/llm_wiki_cli/services…ts.py:_decode_json_object)
-    p19->>p24: _unique_json_object
-    p24->>p21: KnowledgeArtifactError
+    p0->>p4: _unsupported_reason
+    p0->>p5: KnowledgeLoadResult
+    p0->>p6: build_knowledge_read_view
+    p0->>p7: attach_machine_verification_read_view
+    p3-->>p8: isinstance (src/llm_wiki_cli/services…r.py:load_knowledge_state)(policy, KnowledgeMismatchPolicy)
+    p4-->>p9: _UNSUPPORTED_REASON_BY_ISSUE.get(issue.code)
+    p6-->>p10: isinstance (src/llm_wiki_cli/services…build_knowledge_read_view)(load_result, KnowledgeLoadResult)
+    p7-->>p11: isinstance (src/llm_wiki_cli/services…ne_verification_read_view)(knowledge_view, KnowledgeReadView)
+    p3->>p12: KnowledgeMismatchPolicy
+    p6-->>p13: TypeError (src/llm_wiki_cli/services…build_knowledge_read_view)('load_result must be a KnowledgeLoadResult')
+    p7-->>p14: TypeError (src/llm_wiki_cli/services…ne_verification_read_view)('knowledge_view must be a KnowledgeReadView')
+    p3-->>p15: ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state)("policy must be 'reject', 'rebuild', or 'degraded'")
+    p6->>p16: _read_mode
+    p7-->>p17: replace (src/llm_wiki_cli/services…ne_verification_read_view)(knowledge_view, machine_verification=load_machine_verification_read_view(...))
+    p3-->>p15: ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state)('rebuild policy requires rebuild_callback')
+    p6->>p18: _validate_load_result
+    p7->>p19: load_machine_verification_read_view
+    p3-->>p20: callable (src/llm_wiki_cli/services…r.py:load_knowledge_state)(rebuild_callback)
+    p6->>p21: _loaded_freshness
+    p3-->>p22: TypeError (src/llm_wiki_cli/services…r.py:load_knowledge_state)('rebuild_callback must be callable')
+    p6->>p23: _knowledge_counts
+    p3-->>p24: Path (src/llm_wiki_cli/services…r.py:load_knowledge_state)(wiki_dir)
+    p6->>p25: KnowledgeReadView
+    p3->>p26: guard_maintenance_owner
+    p6->>p27: _snapshot_maintenance_report
+    p3->>p5: KnowledgeLoadResult
+    p6->>p28: _implementation_report
 ```
 
-> Call sequence diagram shows 30 of 1272 interactions; 1242 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1792 interactions; 1762 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 13 of 576 (563 omitted); unresolved 1 of 333 (332 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/maintenance_protocol.py:guard_maintenance_owner` | 12 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 1 |
+| `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 13 | - | external | 4 |
+| `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 13 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 16 | - | external | 20 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 16 | - | unresolved | 5 |
+| `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 13 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
+| `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 13 | - | unresolved | 3 |
+| `src/llm_wiki_cli/services/maintenance_protocol.py:guard_maintenance_owner` | 12 | - | external | 2 |
+> Omission summary shows 8 of 394 groups; 386 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -116,7 +146,7 @@ flowchart LR
     s9["9. callable (src/llm_wiki_cli/services…r.py:load_knowledge_state)"]
     s10["10. TypeError (src/llm_wiki_cli/services…r.py:load_knowledge_state)"]
     s11["11. Path (src/llm_wiki_cli/services…r.py:load_knowledge_state)"]
-    s12["12. _load_once"]
+    s12["12. guard_maintenance_owner"]
     s1 -. "isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view)(include_machine_verification, bool)" .-> s2
     s1 -. "TypeError (src/llm_wiki_cli/services…:load_knowledge_read_view)('include_machine_verification must be a boolean')" .-> s3
     s1 -->|"load_knowledge_state(wiki_dir, policy=KnowledgeMismatchPolicy.DEGRADED, markdown_pages=markdown_pages)"| s4
@@ -127,11 +157,11 @@ flowchart LR
     s4 -. "callable (src/llm_wiki_cli/services…r.py:load_knowledge_state)(rebuild_callback)" .-> s9
     s4 -. "TypeError (src/llm_wiki_cli/services…r.py:load_knowledge_state)('rebuild_callback must be callable')" .-> s10
     s4 -. "Path (src/llm_wiki_cli/services…r.py:load_knowledge_state)(wiki_dir)" .-> s11
-    s4 -->|"_load_once(root, markdown_pages=markdown_pages)"| s12
+    s4 -->|"guard_maintenance_owner(root)"| s12
     click s1 "../modules/knowledge_consumption.md"
     click s4 "../modules/knowledge_loader.md"
     click s6 "../modules/knowledge_loader.md"
-    click s12 "../modules/knowledge_loader.md"
+    click s12 "../modules/maintenance_protocol.md"
 ```
 
 ### Step data
@@ -141,7 +171,7 @@ flowchart LR
 | `load_knowledge_read_view` | `wiki_dir: str \| Path`, `live_evaluation: LiveKnowledgeEvaluation \| None`, `snapshot_only: bool`, `mode: KnowledgeReadMode \| str \| None`, `markdown_pages: Mapping[str, str \| bytes] \| None`, `include_machine_verification: bool` | `KnowledgeMismatchPolicy`, `KnowledgeStateLoadError`, `KnowledgeLoadState` | - | `view`, `attach_machine_verification_read_view(...)` |
 | `isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view)` | - | - | - | - |
 | `TypeError (src/llm_wiki_cli/services…:load_knowledge_read_view)` | - | - | - | - |
-| `load_knowledge_state` | `wiki_dir: str \| Path`, `policy: KnowledgeMismatchPolicy \| str`, `rebuild_callback: RebuildCallback \| None`, `markdown_pages: Mapping[str, str \| bytes] \| None` | `KnowledgeMismatchPolicy`, `KnowledgeMismatchPolicy`, `KnowledgeLoadState`, `KnowledgeMismatchPolicy`, `KnowledgeLoadState`, `KnowledgeMismatchPolicy`, `KnowledgeLoadState` | - | `result`, `replace(...)`, `KnowledgeLoadResult(...)` |
+| `load_knowledge_state` | `wiki_dir: str \| Path`, `policy: KnowledgeMismatchPolicy \| str`, `rebuild_callback: RebuildCallback \| None`, `markdown_pages: Mapping[str, str \| bytes] \| None` | `KnowledgeMismatchPolicy`, `KnowledgeMismatchPolicy`, `KnowledgeLoadState`, `KnowledgeLoadState`, `KnowledgeLoadState`, `KnowledgeMismatchPolicy`, `KnowledgeLoadState`, `KnowledgeMismatchPolicy` | - | `KnowledgeLoadResult(...)`, `result`, `replace(...)`, `replace(...)`, `KnowledgeLoadResult(...)` |
 | `isinstance (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | - | - | - | - |
 | `KnowledgeMismatchPolicy` | - | - | - | - |
 | `ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | - | - | - | - |
@@ -149,15 +179,15 @@ flowchart LR
 | `callable (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | - | - | - | - |
 | `TypeError (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | - | - | - | - |
 | `Path (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | - | - | - | - |
-| `_load_once` | `root: Path`, `markdown_pages: Mapping[str, str \| bytes] \| None` | `SURFACE_INDEX_FILENAME`, `KnowledgeLoadState`, `KnowledgeArtifactError`, `SURFACE_INDEX_FILENAME`, `KnowledgeLoadState`, `WikiSurfacePathError`, `KnowledgeEnvelopeError`, `SURFACE_INDEX_FILENAME` | - | `(...)`, `(...)`, `(...)`, `(...)`, `(...)`, `(...)`, `(...)`, `(...)` |
+| `guard_maintenance_owner` | `wiki_dir: str \| Path`, `manifest` | - | - | `None`, `None`, `marker` |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| load_knowledge_read_view | isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view) | 673 | `isinstance(include_machine_verification, bool)` |
-| load_knowledge_read_view | TypeError (src/llm_wiki_cli/services…:load_knowledge_read_view) | 674 | `TypeError('include_machine_verification must be a boolean')` |
-| load_knowledge_read_view | load_knowledge_state | 676 | `load_knowledge_state(wiki_dir, policy=KnowledgeMismatchPolicy.DEGRADED, markdown_pages=markdown_pages)` |
+| load_knowledge_read_view | isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view) | 692 | `isinstance(include_machine_verification, bool)` |
+| load_knowledge_read_view | TypeError (src/llm_wiki_cli/services…:load_knowledge_read_view) | 693 | `TypeError('include_machine_verification must be a boolean')` |
+| load_knowledge_read_view | load_knowledge_state | 695 | `load_knowledge_state(wiki_dir, policy=KnowledgeMismatchPolicy.DEGRADED, markdown_pages=markdown_pages)` |
 | load_knowledge_state | isinstance (src/llm_wiki_cli/services…r.py:load_knowledge_state) | 112 | `isinstance(policy, KnowledgeMismatchPolicy)` |
 | load_knowledge_state | KnowledgeMismatchPolicy | 113 | `KnowledgeMismatchPolicy(policy)` |
 | load_knowledge_state | ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state) | 116 | `ValueError("policy must be 'reject', 'rebuild', or 'degraded'")` |
@@ -165,7 +195,7 @@ flowchart LR
 | load_knowledge_state | callable (src/llm_wiki_cli/services…r.py:load_knowledge_state) | 119 | `callable(rebuild_callback)` |
 | load_knowledge_state | TypeError (src/llm_wiki_cli/services…r.py:load_knowledge_state) | 120 | `TypeError('rebuild_callback must be callable')` |
 | load_knowledge_state | Path (src/llm_wiki_cli/services…r.py:load_knowledge_state) | 122 | `Path(wiki_dir)` |
-| load_knowledge_state | _load_once | 123 | `_load_once(root, markdown_pages=markdown_pages)` |
+| load_knowledge_state | guard_maintenance_owner | 126 | `guard_maintenance_owner(root)` |
 
 ### Boundary effects
 
@@ -175,8 +205,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `load_knowledge_read_view` | `isinstance` | 673 |
-| external_call | `load_knowledge_read_view` | `TypeError` | 674 |
+| external_call | `load_knowledge_read_view` | `isinstance` | 692 |
+| external_call | `load_knowledge_read_view` | `TypeError` | 693 |
 | external_call | `load_knowledge_state` | `isinstance` | 112 |
 | external_call | `load_knowledge_state` | `ValueError` | 116 |
 | external_call | `load_knowledge_state` | `ValueError` | 118 |

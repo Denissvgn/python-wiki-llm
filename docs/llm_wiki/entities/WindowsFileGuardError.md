@@ -33,9 +33,9 @@ flowchart LR
     n8["_guarded_tree_entry_windows_path (src/llm_wiki_cli/services/filesystem_guard.py)"]
     n9["_open_windows_file_metadata_guard (src/llm_wiki_cli/services/filesystem_guard.py)"]
     n10["_open_windows_readonly_file_handle (src/llm_wiki_cli/services/filesystem_guard.py)"]
-    n11["_windows_handle_information (src/llm_wiki_cli/services/filesystem_guard.py)"]
-    n12["hold_windows_readonly_file (src/llm_wiki_cli/services/filesystem_guard.py)"]
-    n13["open_windows_guarded_lock_file (src/llm_wiki_cli/services/filesystem_guard.py)"]
+    n11["_unlink_guarded_bytes (src/llm_wiki_cli/services/filesystem_guard.py)"]
+    n12["_windows_handle_information (src/llm_wiki_cli/services/filesystem_guard.py)"]
+    n13["hold_windows_readonly_file (src/llm_wiki_cli/services/filesystem_guard.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -89,8 +89,8 @@ flowchart LR
 | `_guarded_tree_entry_windows_path` | call | [filesystem_guard](../modules/filesystem_guard.md) | 1 |
 | `_open_windows_file_metadata_guard` | call | [filesystem_guard](../modules/filesystem_guard.md) | 1 |
 | `_open_windows_readonly_file_handle` | call | [filesystem_guard](../modules/filesystem_guard.md) | 5 |
+| `_unlink_guarded_bytes` | call | [filesystem_guard](../modules/filesystem_guard.md) | 2 |
 | `_windows_handle_information` | call | [filesystem_guard](../modules/filesystem_guard.md) | 2 |
 | `hold_windows_readonly_file` | call | [filesystem_guard](../modules/filesystem_guard.md) | 1 |
-| `open_windows_guarded_lock_file` | call | [filesystem_guard](../modules/filesystem_guard.md) | 2 |
 
 > References: showing 12 of 17 logical references; 5 omitted by the 12-row generated summary limit.

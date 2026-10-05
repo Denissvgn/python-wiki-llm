@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -14,10 +16,15 @@ sequenceDiagram
     participant p2 as Path
     participant p3 as Path(…).resolve (src/llm_wiki_cli/services…py:resolved_paths_equal, 1)
     p0-->>p1: Path(…).resolve (src/llm_wiki_cli/services…on.py:resolved_paths_equal)
-    p0-->>p2: Path
+    p0-->>p2: Path(left)
     p0-->>p3: Path(…).resolve (src/llm_wiki_cli/services…py:resolved_paths_equal, 1)
-    p0-->>p2: Path
+    p0-->>p2: Path(right)
 ```
+
+> Call sequence diagram shows 4 of 4 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 2 of 2 (0 omitted); unresolved 2 of 2 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

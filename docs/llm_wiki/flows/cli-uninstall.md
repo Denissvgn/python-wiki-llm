@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [uninstall_cmd](../modules/uninstall_cmd.md)
-**Modules touched:** [ci_installer](../modules/ci_installer.md), [config](../modules/config.md), [filesystem_guard](../modules/filesystem_guard.md), [io](../modules/io.md), and 5 more
+**Modules touched:** [ci_installer](../modules/ci_installer.md), [config](../modules/config.md), [filesystem_guard](../modules/filesystem_guard.md), [io](../modules/io.md), and 6 more
 
 **Complete modules touched:**
 
@@ -15,8 +15,11 @@
 - [services_schema](../modules/services_schema.md)
 - [skills](../modules/skills.md)
 - [uninstall_cmd](../modules/uninstall_cmd.md)
+- [wiki_write_basis](../modules/wiki_write_basis.md)
 
 ## Call sequence
+
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -24,61 +27,70 @@ sequenceDiagram
     participant p0 as run
     participant p1 as getattr (src/llm_wiki_cli/commands/uninstall_cmd.py:run)
     participant p2 as validate_path
-    participant p3 as PathValidationError
-    participant p4 as (…).resolve
-    participant p5 as Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    participant p6 as Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)
-    participant p7 as resolved.relative_to
-    participant p8 as str (src/llm_wiki_cli/commands/uninstall_cmd.py:run)
-    participant p9 as Path (src/llm_wiki_cli/commands/uninstall_cmd.py:run)
-    participant p10 as _preflight_hooks
-    participant p11 as inspect_legacy_hooks
-    participant p12 as _hook_directories
-    participant p13 as Path.cwd().resolve (src/llm_wiki_cli/services…ooks.py:_hook_directories)
-    participant p14 as Path.cwd (src/llm_wiki_cli/services…ooks.py:_hook_directories)
-    participant p15 as _require_safe_path
-    participant p16 as first_unsafe_path_component
-    participant p17 as Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p18 as os.fspath (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p19 as os.path.abspath (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p20 as lexical.is_absolute
-    participant p21 as Path.cwd (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p22 as list
-    participant p23 as pending_parts.pop
-    participant p24 as current.lstat
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/uninstall_cmd.py:run)
+    participant p3 as str (src/llm_wiki_cli/commands/uninstall_cmd.py:run)
+    participant p4 as Path (src/llm_wiki_cli/commands/uninstall_cmd.py:run)
+    participant p5 as _preflight_hooks
+    participant p6 as _preflight_agent_schemas
+    participant p7 as _preflight_reference_skills
+    participant p8 as tuple (src/llm_wiki_cli/commands/uninstall_cmd.py:run)
+    participant p9 as _preflight_wiki_removal
+    participant p10 as _preflight_runtime_artifacts
+    participant p11 as _preflight_ci_workflow
+    participant p12 as print (src/llm_wiki_cli/commands/uninstall_cmd.py:run)
+    participant p13 as SystemExit
+    participant p14 as _remove_hooks
+    participant p15 as _clean_agent_schemas
+    participant p16 as display_project_path
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/uninstall_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
     p0->>p2: validate_path
-    p2->>p3: PathValidationError
-    p2-->>p4: (…).resolve
-    p2-->>p5: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    p2-->>p6: Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)
-    p2-->>p5: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    p2-->>p7: resolved.relative_to
-    p2->>p3: PathValidationError
-    p0-->>p8: str (src/llm_wiki_cli/commands/uninstall_cmd.py:run)
-    p0-->>p9: Path (src/llm_wiki_cli/commands/uninstall_cmd.py:run)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/uninstall_cmd.py:run)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/uninstall_cmd.py:run)
-    p0->>p10: _preflight_hooks
-    p10->>p11: inspect_legacy_hooks
-    p11->>p12: _hook_directories
-    p12-->>p13: Path.cwd().resolve (src/llm_wiki_cli/services…ooks.py:_hook_directories)
-    p12-->>p14: Path.cwd (src/llm_wiki_cli/services…ooks.py:_hook_directories)
-    p12->>p15: _require_safe_path
-    p15->>p16: first_unsafe_path_component
-    p16-->>p17: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p16-->>p18: os.fspath (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p16-->>p17: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p16-->>p19: os.path.abspath (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p16-->>p20: lexical.is_absolute
-    p16-->>p21: Path.cwd (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p16-->>p17: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p16-->>p22: list
-    p16-->>p23: pending_parts.pop
-    p16-->>p24: current.lstat
+    p0-->>p3: str (src/llm_wiki_cli/commands/uninstall_cmd.py:run)(wiki_dir_arg)
+    p0-->>p4: Path (src/llm_wiki_cli/commands/uninstall_cmd.py:run)(wiki_dir_arg)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/uninstall_cmd.py:run)(args, 'remove_wiki', False)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/uninstall_cmd.py:run)(args, 'dry_run', False)
+    p0->>p5: _preflight_hooks
+    p0->>p6: _preflight_agent_schemas
+    p0->>p7: _preflight_reference_skills
+    p0-->>p8: tuple (src/llm_wiki_cli/commands/uninstall_cmd.py:run)(...)
+    p0->>p9: _preflight_wiki_removal
+    p0->>p10: _preflight_runtime_artifacts
+    p0->>p11: _preflight_ci_workflow
+    p0-->>p12: print (src/llm_wiki_cli/commands/uninstall_cmd.py:run)(..., file=sys.stderr)
+    p0-->>p13: SystemExit(2)
+    p0-->>p12: print (src/llm_wiki_cli/commands/uninstall_cmd.py:run)('DRY RUN — no files will be modified:\n')
+    p0-->>p12: print (src/llm_wiki_cli/commands/uninstall_cmd.py:run)('LLM Wiki Uninstall')
+    p0-->>p12: print (src/llm_wiki_cli/commands/uninstall_cmd.py:run)(...)
+    p0-->>p12: print (src/llm_wiki_cli/commands/uninstall_cmd.py:run)('\n1. Git Hooks:')
+    p0->>p14: _remove_hooks
+    p0-->>p12: print (src/llm_wiki_cli/commands/uninstall_cmd.py:run)(' Nothing to remove.')
+    p0-->>p12: print (src/llm_wiki_cli/commands/uninstall_cmd.py:run)('\n2. Agent Constraint Blocks:')
+    p0->>p15: _clean_agent_schemas
+    p0-->>p12: print (src/llm_wiki_cli/commands/uninstall_cmd.py:run)(' Nothing to remove.')
+    p0-->>p12: print (src/llm_wiki_cli/commands/uninstall_cmd.py:run)('\n3. Wiki Directory:')
+    p0-->>p12: print (src/llm_wiki_cli/commands/uninstall_cmd.py:run)(...)
+    p0->>p16: display_project_path
+    p0-->>p12: print (src/llm_wiki_cli/commands/uninstall_cmd.py:run)(...)
+    p0->>p16: display_project_path
+    p0-->>p12: print (src/llm_wiki_cli/commands/uninstall_cmd.py:run)(...)
 ```
 
-> Call sequence diagram shows 30 of 1150 interactions; 1120 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1155 interactions; 1125 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 19 of 538 (519 omitted); unresolved 0 of 235 (235 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/config.py:validate_path` | 3 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
+| `src/llm_wiki_cli/config.py:validate_path` | 3 | - | unresolved | 3 |
+| `src/llm_wiki_cli/config.py:validate_path` | 3 | - | external | 2 |
+| `src/llm_wiki_cli/commands/uninstall_cmd.py:_preflight_hooks` | 15 | [src/llm_wiki_cli/services/legacy_hooks.py](../modules/legacy_hooks.md) | internal | 1 |
+| `src/llm_wiki_cli/services/legacy_hooks.py:inspect_legacy_hooks` | 16 | [src/llm_wiki_cli/services/legacy_hooks.py](../modules/legacy_hooks.md) | internal | 8 |
+| `src/llm_wiki_cli/services/legacy_hooks.py:_hook_directories` | 17 | - | unresolved | 9 |
+| `src/llm_wiki_cli/services/legacy_hooks.py:_hook_directories` | 17 | - | external | 7 |
+| `src/llm_wiki_cli/services/legacy_hooks.py:_hook_directories` | 17 | [src/llm_wiki_cli/services/legacy_hooks.py](../modules/legacy_hooks.md) | internal | 6 |
+> Omission summary shows 8 of 251 groups; 243 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

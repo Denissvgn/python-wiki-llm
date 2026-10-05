@@ -40,12 +40,14 @@ flowchart LR
     n6["src/llm_wiki_cli/services/knowledge_envelope.py"]
     n7["src/llm_wiki_cli/services/knowledge_maintenance.py"]
     n8["src/llm_wiki_cli/services/knowledge_orchestration.py"]
+    n9["src/llm_wiki_cli/services/python_implementation.py"]
     n0 --> n1
     n0 --> n3
     n0 --> n4
     n0 --> n6
     n2 --> n0
     n2 --> n5
+    n2 --> n9
     n3 --> n5
     n5 --> n0
     n5 --> n1
@@ -58,6 +60,8 @@ flowchart LR
     n8 --> n1
     n8 --> n4
     n8 --> n6
+    n8 --> n9
+    n9 --> n0
     click n0 "../modules/analysis_capture.md"
     click n1 "../modules/analysis_compatibility.md"
     click n2 "../modules/extraction_service.md"
@@ -67,6 +71,7 @@ flowchart LR
     click n6 "../modules/knowledge_envelope.md"
     click n7 "../modules/knowledge_maintenance.md"
     click n8 "../modules/knowledge_orchestration.md"
+    click n9 "../modules/python_implementation.md"
 ```
 
 ### Internal neighbors
@@ -77,6 +82,7 @@ flowchart LR
 | Inbound | [inventory_cache](../modules/inventory_cache.md) |
 | Inbound | [knowledge_maintenance](../modules/knowledge_maintenance.md) |
 | Inbound | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
+| Inbound | [python_implementation](../modules/python_implementation.md) |
 | Outbound | [analysis_compatibility](../modules/analysis_compatibility.md) |
 | Outbound | [extractor_helpers](../modules/extractor_helpers.md) |
 | Outbound | [immutable](../modules/immutable.md) |

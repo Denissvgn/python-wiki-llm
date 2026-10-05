@@ -2,17 +2,25 @@
 
 **Entry point:** `build_artifact_verification_context` (`api`)
 **Source:** [verification_contracts](../modules/verification_contracts.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_governance](../modules/knowledge_governance.md), and 9 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [concept_identity](../modules/concept_identity.md), [implementation_evidence](../modules/implementation_evidence.md), and 17 more
 
 **Complete modules touched:**
 
+- [analysis_compatibility](../modules/analysis_compatibility.md)
 - [concept_identity](../modules/concept_identity.md)
+- [implementation_evidence](../modules/implementation_evidence.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [maintenance_evidence](../modules/maintenance_evidence.md)
+- [maintenance_projection](../modules/maintenance_projection.md)
+- [maintenance_shapes](../modules/maintenance_shapes.md)
+- [maintenance_state](../modules/maintenance_state.md)
 - [markdown_sections](../modules/markdown_sections.md)
+- [python_implementation](../modules/python_implementation.md)
 - [section_ownership](../modules/section_ownership.md)
 - [validation](../modules/validation.md)
 - [verification_contracts](../modules/verification_contracts.md)
@@ -21,6 +29,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -28,61 +38,73 @@ sequenceDiagram
     participant p1 as isinstance (src/llm_wiki_cli/services…fact_verification_context)
     participant p2 as TypeError (src/llm_wiki_cli/services…fact_verification_context)
     participant p3 as _sha256
-    participant p4 as require_sha256
-    participant p5 as isinstance (src/llm_wiki_cli/services…idation.py:require_sha256)
-    participant p6 as require_trimmed_text
-    participant p7 as require_nonempty_text
-    participant p8 as isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
-    participant p9 as value.strip
-    participant p10 as contains_control_character
-    participant p11 as pattern.search
-    participant p12 as _SHA256_RE.fullmatch (src/llm_wiki_cli/services…idation.py:require_sha256)
-    participant p13 as VerificationContractError
-    participant p14 as knowledge_index_to_payload
-    participant p15 as isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload)
-    participant p16 as TypeError (src/llm_wiki_cli/services…nowledge_index_to_payload)
-    participant p17 as _emit_extensions
-    participant p18 as isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions)
-    participant p19 as _parse_extensions
-    participant p20 as _object (src/llm_wiki_cli/services/knowledge_model.py)
-    participant p21 as dict (src/llm_wiki_cli/services…nowledge_model.py:_object)
-    participant p22 as require_mapping
-    participant p23 as isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    participant p24 as key.encode
-    participant p25 as KnowledgeModelError
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…fact_verification_context)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…fact_verification_context)
-    p0->>p3: _sha256
-    p3->>p4: require_sha256
-    p4-->>p5: isinstance (src/llm_wiki_cli/services…idation.py:require_sha256)
-    p4->>p6: require_trimmed_text
-    p6->>p7: require_nonempty_text
-    p7-->>p8: isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
-    p7-->>p9: value.strip
-    p7->>p10: contains_control_character
-    p10-->>p11: pattern.search
-    p4-->>p12: _SHA256_RE.fullmatch (src/llm_wiki_cli/services…idation.py:require_sha256)
-    p3->>p13: VerificationContractError
+    participant p4 as knowledge_index_to_payload
+    participant p5 as knowledge.extensions.get (src/llm_wiki_cli/services…fact_verification_context)
+    participant p6 as projected.get
+    participant p7 as next (src/llm_wiki_cli/services…fact_verification_context)
+    participant p8 as VerificationContractError
+    participant p9 as selected.extensions.get
+    participant p10 as summary.get (src/llm_wiki_cli/services…fact_verification_context)
+    participant p11 as hash_json(…).removeprefix
+    participant p12 as hash_json
+    participant p13 as VerificationContext
+    participant p14 as tuple (src/llm_wiki_cli/services…fact_verification_context)
+    participant p15 as require_sha256
+    participant p16 as isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload)
+    participant p17 as TypeError (src/llm_wiki_cli/services…nowledge_index_to_payload)
+    participant p18 as _emit_extensions
+    participant p19 as _bundle_to_payload
+    participant p20 as _concept_to_payload
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…fact_verification_context)(knowledge, KnowledgeIndex)
+    p0-->>p2: TypeError (src/llm_wiki_cli/services…fact_verification_context)('knowledge must be a KnowledgeIndex')
     p0->>p3: _sha256
     p0->>p3: _sha256
     p0->>p3: _sha256
-    p0->>p14: knowledge_index_to_payload
-    p14-->>p15: isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload)
-    p14-->>p16: TypeError (src/llm_wiki_cli/services…nowledge_index_to_payload)
-    p14->>p17: _emit_extensions
-    p17-->>p18: isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions)
-    p17->>p19: _parse_extensions
-    p19->>p20: _object (src/llm_wiki_cli/services/knowledge_model.py)
-    p20-->>p21: dict (src/llm_wiki_cli/services…nowledge_model.py:_object)
-    p20->>p22: require_mapping
-    p22-->>p23: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    p22-->>p23: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    p22-->>p24: key.encode
-    p20->>p25: KnowledgeModelError
-    p20->>p25: KnowledgeModelError
+    p0->>p3: _sha256
+    p0->>p4: knowledge_index_to_payload
+    p0-->>p5: knowledge.extensions.get (src/llm_wiki_cli/services…fact_verification_context)(governance_key)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…fact_verification_context)(projected, Mapping)
+    p0-->>p6: projected.get('bundle_id')
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…fact_verification_context)(bundle_id, str)
+    p0-->>p7: next (src/llm_wiki_cli/services…fact_verification_context)(..., None)
+    p0->>p8: VerificationContractError
+    p0-->>p7: next (src/llm_wiki_cli/services…fact_verification_context)(...)
+    p0-->>p9: selected.extensions.get(governance_key)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…fact_verification_context)(summary, Mapping)
+    p0-->>p10: summary.get (src/llm_wiki_cli/services…fact_verification_context)('uid')
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…fact_verification_context)(projected_uid, str)
+    p0-->>p11: hash_json(…).removeprefix('sha256:')
+    p0->>p12: hash_json
+    p0->>p12: hash_json
+    p0->>p13: VerificationContext
+    p0-->>p14: tuple (src/llm_wiki_cli/services…fact_verification_context)(artifact_diagnostics)
+    p3->>p15: require_sha256
+    p4-->>p16: isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload)(model, KnowledgeIndex)
+    p3->>p8: VerificationContractError
+    p4-->>p17: TypeError (src/llm_wiki_cli/services…nowledge_index_to_payload)('model must be a KnowledgeIndex')
+    p4->>p18: _emit_extensions
+    p4->>p19: _bundle_to_payload
+    p4->>p20: _concept_to_payload
 ```
 
-> Call sequence diagram shows 30 of 1086 interactions; 1056 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1310 interactions; 1280 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 11 of 343 (332 omitted); unresolved 5 of 213 (208 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/validation.py:require_sha256` | 5 | - | external | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_sha256` | 5 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_trimmed_text` | 7 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 8 | - | external | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 8 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 8 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:contains_control_character` | 11 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_sha256` | 5 | - | unresolved | 1 |
+> Omission summary shows 8 of 296 groups; 288 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

@@ -1,6 +1,6 @@
 # WikiPagesResult
 
-**Location:** `src/llm_wiki_cli/api_types.py:263`
+**Location:** `src/llm_wiki_cli/api_types.py:328`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

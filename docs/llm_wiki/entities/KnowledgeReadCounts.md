@@ -1,6 +1,6 @@
 # KnowledgeReadCounts
 
-**Location:** `src/llm_wiki_cli/services/knowledge_consumption.py:266`
+**Location:** `src/llm_wiki_cli/services/knowledge_consumption.py:269`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_consumption](../modules/knowledge_consumption.md)

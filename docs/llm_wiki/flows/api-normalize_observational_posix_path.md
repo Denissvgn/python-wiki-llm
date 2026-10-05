@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -16,13 +18,18 @@ sequenceDiagram
     participant p4 as raw.startswith
     participant p5 as PurePosixPath(…).as_posix
     participant p6 as PurePosixPath
-    p0-->>p1: str(…).strip().replace
+    p0-->>p1: str(…).strip().replace('\\', '/')
     p0-->>p2: str(…).strip
-    p0-->>p3: str
-    p0-->>p4: raw.startswith
+    p0-->>p3: str(value)
+    p0-->>p4: raw.startswith('./')
     p0-->>p5: PurePosixPath(…).as_posix
-    p0-->>p6: PurePosixPath
+    p0-->>p6: PurePosixPath(raw)
 ```
+
+> Call sequence diagram shows 6 of 6 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 2 of 2 (0 omitted); unresolved 4 of 4 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

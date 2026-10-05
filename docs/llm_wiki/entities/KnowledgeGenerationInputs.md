@@ -1,6 +1,6 @@
 # KnowledgeGenerationInputs
 
-**Location:** `src/llm_wiki_cli/services/knowledge_generation.py:97`
+**Location:** `src/llm_wiki_cli/services/knowledge_generation.py:100`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_generation](../modules/knowledge_generation.md)
@@ -70,6 +70,15 @@ inventory source.
 | `governance` | `GovernanceLedger \| None` | `None` | — |
 | `reuse_input_basis` | `Mapping[str, object] \| None` | `None` | — |
 | `knowledge_format` | `str \| None` | `None` | — |
+| `maintenance_page_transitions` | `PageTransitionPlan \| None` | `None` | — |
+| `maintenance_previous_raw_content_by_page` | `Mapping[str, bytes] \| None` | `None` | — |
+| `implementation_observations` | `Mapping[str, Any] \| None` | `None` | — |
+| `maintenance_adoption` | `Mapping[str, Any] \| None` | `None` | — |
+| `maintenance_source_hashes` | `Mapping[str, str] \| None` | `None` | — |
+| `maintenance_captured_paths` | `AbstractSet[str] \| None` | `None` | — |
+| `maintenance_missing_source_paths` | `AbstractSet[str]` | `frozenset()` | — |
+| `maintenance_known_absent_pages` | `AbstractSet[str]` | `frozenset()` | — |
+| `maintenance_raw_content_by_page` | `Mapping[str, bytes] \| None` | `None` | — |
 
 ## Methods
 

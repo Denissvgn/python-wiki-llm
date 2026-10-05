@@ -21,9 +21,10 @@ llm-wiki extract --src-dir . --summary
 llm-wiki extract --src-dir . --deep
 ```
 
-Use `sync --dry-run` before a broad update. `ci-check` always applies strict
-validation, writes a Markdown report, and exits nonzero when blocking issues
-remain:
+Use `sync --dry-run` before a broad update. `ci-check` applies strict
+validation, writes a Markdown report by default, and exits nonzero when blocking
+issues remain. Use `--no-report` for console-only output; it does not disable
+validation:
 
 ```bash
 llm-wiki ci-check --jobs 1 --src-dir . --wiki-dir docs/llm_wiki

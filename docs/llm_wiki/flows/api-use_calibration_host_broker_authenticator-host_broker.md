@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -13,29 +15,34 @@ sequenceDiagram
     participant p1 as isinstance (src/llm_wiki_cli/services…_host_broker_authenticator)
     participant p2 as HostBrokerAuthenticationUnavailable
     participant p3 as _require_bounded_text
-    participant p4 as require_bounded_text
-    participant p5 as isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text)
-    participant p6 as len
-    participant p7 as value.strip
-    participant p8 as contains_control_character
-    participant p9 as pattern.search
-    participant p10 as HostBrokerAuthenticationError
-    participant p11 as _HOST_BROKER_AUTHENTICATOR.set
-    participant p12 as _HOST_BROKER_AUTHENTICATOR.reset
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…_host_broker_authenticator)
+    participant p4 as _HOST_BROKER_AUTHENTICATOR.set
+    participant p5 as _HOST_BROKER_AUTHENTICATOR.reset
+    participant p6 as require_bounded_text
+    participant p7 as HostBrokerAuthenticationError
+    participant p8 as isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text)
+    participant p9 as len
+    participant p10 as value.strip
+    participant p11 as contains_control_character
+    participant p12 as pattern.search
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…_host_broker_authenticator)(authenticator, HostBrokerAuthenticator)
     p0->>p2: HostBrokerAuthenticationUnavailable
     p0->>p3: _require_bounded_text
-    p3->>p4: require_bounded_text
-    p4-->>p5: isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text)
-    p4-->>p6: len
-    p4-->>p6: len
-    p4-->>p7: value.strip
-    p4->>p8: contains_control_character
-    p8-->>p9: pattern.search
-    p3->>p10: HostBrokerAuthenticationError
-    p0-->>p11: _HOST_BROKER_AUTHENTICATOR.set
-    p0-->>p12: _HOST_BROKER_AUTHENTICATOR.reset
+    p0-->>p4: _HOST_BROKER_AUTHENTICATOR.set(authenticator)
+    p0-->>p5: _HOST_BROKER_AUTHENTICATOR.reset(token)
+    p3->>p6: require_bounded_text
+    p3->>p7: HostBrokerAuthenticationError
+    p6-->>p8: isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text)(value, str)
+    p6-->>p9: len(value)
+    p6-->>p9: len(value)
+    p6-->>p10: value.strip
+    p6->>p11: contains_control_character
+    p11-->>p12: pattern.search(value)
 ```
+
+> Call sequence diagram shows 13 of 13 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 4 of 4 (0 omitted); unresolved 4 of 4 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

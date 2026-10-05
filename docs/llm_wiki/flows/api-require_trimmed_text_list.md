@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -18,19 +20,24 @@ sequenceDiagram
     participant p6 as len
     participant p7 as set
     participant p8 as sorted
-    p0-->>p1: isinstance
-    p0-->>p1: isinstance
-    p0-->>p1: isinstance
+    p0-->>p1: isinstance(value, container_type)
+    p0-->>p1: isinstance(value, Iterable)
+    p0-->>p1: isinstance(item, str)
     p0-->>p2: item.strip
     p0-->>p2: item.strip
-    p0-->>p3: any
-    p0-->>p4: ord
-    p0-->>p5: items.append
-    p0-->>p6: len
-    p0-->>p7: set
-    p0-->>p6: len
-    p0-->>p8: sorted
+    p0-->>p3: any(...)
+    p0-->>p4: ord(character)
+    p0-->>p5: items.append(item)
+    p0-->>p6: len(set(...))
+    p0-->>p7: set(items)
+    p0-->>p6: len(items)
+    p0-->>p8: sorted(items)
 ```
+
+> Call sequence diagram shows 12 of 12 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 9 of 9 (0 omitted); unresolved 3 of 3 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

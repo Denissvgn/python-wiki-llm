@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -14,11 +16,16 @@ sequenceDiagram
     participant p2 as TypeError
     participant p3 as json.dumps
     participant p4 as projection.to_payload
-    p0-->>p1: isinstance
-    p0-->>p2: TypeError
-    p0-->>p3: json.dumps
+    p0-->>p1: isinstance(projection, KnowledgeProjection)
+    p0-->>p2: TypeError('projection must be a KnowledgeProjection')
+    p0-->>p3: json.dumps(projection.to_payload(...), ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)
     p0-->>p4: projection.to_payload
 ```
+
+> Call sequence diagram shows 4 of 4 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 3 of 3 (0 omitted); unresolved 1 of 1 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

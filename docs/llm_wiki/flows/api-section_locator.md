@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -18,24 +20,29 @@ sequenceDiagram
     participant p6 as quote
     participant p7 as zip
     participant p8 as '/'.join
-    p0-->>p1: isinstance
-    p0-->>p2: ValueError
-    p0-->>p2: ValueError
-    p0-->>p3: tuple
-    p0-->>p3: tuple
-    p0-->>p4: len
-    p0-->>p4: len
-    p0-->>p2: ValueError
-    p0-->>p5: any
-    p0-->>p1: isinstance
-    p0-->>p2: ValueError
-    p0-->>p5: any
-    p0-->>p1: isinstance
-    p0-->>p2: ValueError
-    p0-->>p6: quote
-    p0-->>p7: zip
-    p0-->>p8: '/'.join
+    p0-->>p1: isinstance(page_locator, str)
+    p0-->>p2: ValueError('page_locator must be a non-empty string')
+    p0-->>p2: ValueError('page_locator must not already contain a fragment')
+    p0-->>p3: tuple(heading_path)
+    p0-->>p3: tuple(occurrence_path)
+    p0-->>p4: len(headings)
+    p0-->>p4: len(occurrences)
+    p0-->>p2: ValueError('heading_path and occurrence_path must be non-empty peers')
+    p0-->>p5: any(...)
+    p0-->>p1: isinstance(value, str)
+    p0-->>p2: ValueError('heading_path entries must be strings')
+    p0-->>p5: any(...)
+    p0-->>p1: isinstance(value, int)
+    p0-->>p2: ValueError('occurrence_path entries must be positive integers')
+    p0-->>p6: quote(title, safe='-._~')
+    p0-->>p7: zip(headings, occurrences)
+    p0-->>p8: '/'.join(components)
 ```
+
+> Call sequence diagram shows 17 of 17 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 16 of 16 (0 omitted); unresolved 1 of 1 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

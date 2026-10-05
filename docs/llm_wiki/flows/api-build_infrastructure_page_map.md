@@ -6,48 +6,55 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as build_infrastructure_page_map
     participant p1 as sorted
     participant p2 as infrastructure_page_name
-    participant p3 as source_path.replace(…).replace(…).replace
-    participant p4 as source_path.replace(…).replace
-    participant p5 as source_path.replace
-    participant p6 as by_stem.setdefault(…).append
-    participant p7 as by_stem.setdefault
-    participant p8 as by_stem.items
-    participant p9 as len
-    participant p10 as hash_json(…).removeprefix
-    participant p11 as hash_json
-    participant p12 as sha256_bytes
-    participant p13 as hashlib.sha256(…).hexdigest
-    participant p14 as hashlib.sha256
-    participant p15 as canonical_json_bytes
-    participant p16 as canonical_json_text(…).encode
+    participant p3 as by_stem.setdefault(…).append
+    participant p4 as by_stem.setdefault
+    participant p5 as by_stem.items
+    participant p6 as len
+    participant p7 as hash_json(…).removeprefix
+    participant p8 as hash_json
+    participant p9 as source_path.replace(…).replace(…).replace
+    participant p10 as sha256_bytes
+    participant p11 as source_path.replace(…).replace
+    participant p12 as canonical_json_bytes
+    participant p13 as source_path.replace
+    participant p14 as hashlib.sha256(…).hexdigest
+    participant p15 as canonical_json_text(…).encode
+    participant p16 as hashlib.sha256
     participant p17 as canonical_json_text
     participant p18 as json.dumps
-    p0-->>p1: sorted
+    p0-->>p1: sorted(source_paths)
     p0->>p2: infrastructure_page_name
-    p2-->>p3: source_path.replace(…).replace(…).replace
-    p2-->>p4: source_path.replace(…).replace
-    p2-->>p5: source_path.replace
-    p0-->>p6: by_stem.setdefault(…).append
-    p0-->>p7: by_stem.setdefault
-    p0-->>p1: sorted
-    p0-->>p8: by_stem.items
-    p0-->>p9: len
-    p0-->>p10: hash_json(…).removeprefix
-    p0->>p11: hash_json
-    p11->>p12: sha256_bytes
-    p12-->>p13: hashlib.sha256(…).hexdigest
-    p12-->>p14: hashlib.sha256
-    p11->>p15: canonical_json_bytes
-    p15-->>p16: canonical_json_text(…).encode
-    p15->>p17: canonical_json_text
-    p17-->>p18: json.dumps
+    p0-->>p3: by_stem.setdefault(…).append(source_path)
+    p0-->>p4: by_stem.setdefault(stem, [...])
+    p0-->>p1: sorted(by_stem.items(...))
+    p0-->>p5: by_stem.items
+    p0-->>p6: len(grouped_paths)
+    p0-->>p7: hash_json(…).removeprefix('sha256:')
+    p0->>p8: hash_json
+    p2-->>p9: source_path.replace(…).replace(…).replace('.', '_')
+    p8->>p10: sha256_bytes
+    p2-->>p11: source_path.replace(…).replace('/', '_')
+    p8->>p12: canonical_json_bytes
+    p2-->>p13: source_path.replace('\\', '/')
+    p10-->>p14: hashlib.sha256(…).hexdigest
+    p12-->>p15: canonical_json_text(…).encode('utf-8')
+    p10-->>p16: hashlib.sha256(value)
+    p12->>p17: canonical_json_text
+    p17-->>p18: json.dumps(value, ensure_ascii=False, separators=(...), sort_keys=True, allow_nan=False)
 ```
+
+> Call sequence diagram shows 19 of 19 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 5 of 5 (0 omitted); unresolved 9 of 9 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

@@ -36,6 +36,7 @@ Usage::
 | `.documentation_query_builder` | `validate_live_query_source_selection` |
 | `.extraction_jobs` | `ExtractionJobPlan`, `ExtractionJobRequest`, `print_extraction_job_plan` |
 | `.extraction_service` | `InventoryResult`, `_git_changed_files`, `_partition_snapshot_git_changes`, `analyze_data_flow`, `build_data_flow_context`, `build_flow`, `get_entry_points`, `get_docker_inventory`, `get_inventory_result`, `read_console_scripts`, `resolve_call_edges` |
+| `.implementation_evidence` | `compact_implementation_summary` |
 | `.infrastructure_inventory` | `get_yaml_infrastructure_inventory` |
 | `.io` | `write_text_output`, `write_utf8_stdout` |
 | `.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME` |
@@ -46,6 +47,7 @@ Usage::
 | `.knowledge_observability` | `knowledge_freshness_hint` |
 | `.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeLiveEvaluationInputs`, `build_runtime_live_evaluation`, `runtime_generation_options` |
 | `.knowledge_verification` | `attach_machine_verification_read_view`, `verification_summaries_for_concepts` |
+| `.maintenance_status` | `compact_maintenance_summary` |
 | `.plugins` | `runtime_project_plugins_enabled` |
 | `.source_selection` | `SourceSelectionError`, `resolve_source_selection` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
@@ -82,9 +84,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (9) |
-| Outbound | `src` (28) |
+| Outbound | `src` (30) |
 
-> All 34 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 36 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -92,17 +94,17 @@ flowchart LR
 |-------|------|-------|-------------|
 | [ProtocolRequestError](../entities/ProtocolRequestError.md) | 176 | `ValueError` | Validation error for Wiki-as-Context protocol requests. |
 | [KnowledgeRequiredUnavailableError](../entities/KnowledgeRequiredUnavailableError.md) | 191 | `RuntimeError` | Explicit required mode could not produce ready qualified knowledge. |
-| [_ProtocolEnrichmentSession](../entities/ProtocolEnrichmentSession.md) | 1784 | — | Operation-scoped query state captured from one knowledge read. |
+| [_ProtocolEnrichmentSession](../entities/ProtocolEnrichmentSession.md) | 1811 | — | Operation-scoped query state captured from one knowledge read. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
 | `_extractor_failure_message` | `(inventory_result) -> str` | — | Return a compact, structured error message for extractor failures. |
-| `get_inventory` | `(src_dir: str, *, deep: bool = False, return_result: Literal[False] = False, job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, include_plugins: bool = True, source_selection: str \| Path \| None = None, source_snapshot: SourceSnapshot \| None = None, helper_cache_dir: str \| None = None) -> dict` | `@overload` | — |
-| `get_inventory` | `(src_dir: str, *, deep: bool = False, return_result: Literal[True], job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, include_plugins: bool = True, source_selection: str \| Path \| None = None, source_snapshot: SourceSnapshot \| None = None, helper_cache_dir: str \| None = None) -> InventoryResult` | `@overload` | — |
-| `get_inventory` | `(src_dir: str, *, deep: bool = False, return_result: bool, job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, include_plugins: bool = True, source_selection: str \| Path \| None = None, source_snapshot: SourceSnapshot \| None = None, helper_cache_dir: str \| None = None) -> dict \| InventoryResult` | `@overload` | — |
-| `get_inventory` | `(src_dir: str, *, deep: bool = False, return_result: bool = False, job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, include_plugins: bool = True, source_selection: str \| Path \| None = None, source_snapshot: SourceSnapshot \| None = None, helper_cache_dir: str \| None = None) -> dict \| InventoryResult` | — | Build command inventory, optionally returning extraction metadata. |
+| `get_inventory` | `(src_dir: str, *, deep: bool = False, return_result: Literal[False] = False, job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, include_plugins: bool = True, source_selection: str \| Path \| None = None, source_snapshot: SourceSnapshot \| None = None, helper_cache_dir: str \| None = None, capture_implementation_observations: bool = False) -> dict` | `@overload` | — |
+| `get_inventory` | `(src_dir: str, *, deep: bool = False, return_result: Literal[True], job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, include_plugins: bool = True, source_selection: str \| Path \| None = None, source_snapshot: SourceSnapshot \| None = None, helper_cache_dir: str \| None = None, capture_implementation_observations: bool = False) -> InventoryResult` | `@overload` | — |
+| `get_inventory` | `(src_dir: str, *, deep: bool = False, return_result: bool, job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, include_plugins: bool = True, source_selection: str \| Path \| None = None, source_snapshot: SourceSnapshot \| None = None, helper_cache_dir: str \| None = None, capture_implementation_observations: bool = False) -> dict \| InventoryResult` | `@overload` | — |
+| `get_inventory` | `(src_dir: str, *, deep: bool = False, return_result: bool = False, job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, include_plugins: bool = True, source_selection: str \| Path \| None = None, source_snapshot: SourceSnapshot \| None = None, helper_cache_dir: str \| None = None, capture_implementation_observations: bool = False) -> dict \| InventoryResult` | — | Build command inventory, optionally returning extraction metadata. |
 | `_selected_git_changed_files` | `(src_dir: str, source_snapshot: SourceSnapshot \| None) -> list[str] \| None` | — | — |
 | `_estimate_tokens` | `(text: str) -> int` | — | Approximate token count using the ~4 chars/token heuristic. |
 | `_build_import_graph` | `(inventory: dict) -> dict[str, set[str]]` | — | Build a bidirectional import adjacency map from a deep inventory. |
@@ -117,6 +119,7 @@ flowchart LR
 | `_build_entry` | `(file_data: dict, priority: str, detail: str) -> dict` | — | Serialize one file at a specific detail level. |
 | `_entry_tokens` | `(filepath: str, entry: dict) -> int` | — | — |
 | `_render_markdown` | `(payload: dict) -> str` | — | Render the context payload as agent-friendly markdown. |
+| `_implementation_markdown` | `(value: Mapping[str, Any]) -> list[str]` | — | — |
 | `_markdown_context_coordinate` | `(value: object) -> str` | — | — |
 | `_typed_graph_page_badge` | `(page: Mapping[str, Any]) -> str` | — | — |
 | `_graph_query` | `(result: object) -> str` | — | — |

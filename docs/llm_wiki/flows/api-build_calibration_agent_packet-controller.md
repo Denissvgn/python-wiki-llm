@@ -16,70 +16,82 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as build_calibration_agent_packet
     participant p1 as _require_choice
-    participant p2 as require_choice
-    participant p3 as require_trimmed_text
-    participant p4 as require_nonempty_text
-    participant p5 as isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
-    participant p6 as value.strip
-    participant p7 as contains_control_character
-    participant p8 as pattern.search
-    participant p9 as frozenset (src/llm_wiki_cli/services…idation.py:require_choice)
-    participant p10 as choice_error
-    participant p11 as P0CalibrationSchemaError
-    participant p12 as ', '.join (src/llm_wiki_cli/services…roller.py:_require_choice)
-    participant p13 as sorted (src/llm_wiki_cli/services…roller.py:_require_choice)
-    participant p14 as _open_store
-    participant p15 as ProtectedArtifactStore
-    participant p16 as P0CalibrationIntegrityError
-    participant p17 as str (src/llm_wiki_cli/services…controller.py:_open_store)
-    participant p18 as store.lock
-    participant p19 as _load_run_locked
-    participant p20 as store.exists (src/llm_wiki_cli/services…oller.py:_load_run_locked)
-    participant p21 as _load_emergency_rejection
-    participant p22 as store.read_json (src/llm_wiki_cli/services…_load_emergency_rejection)
-    participant p23 as _require_exact_fields
-    participant p24 as require_exact_fields
-    participant p25 as isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p26 as str (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p27 as set (src/llm_wiki_cli/services…n.py:require_exact_fields)
+    participant p2 as _open_store
+    participant p3 as store.lock
+    participant p4 as _load_run_locked
+    participant p5 as P0CalibrationTransitionError
+    participant p6 as _recheck_bound_controls
+    participant p7 as _terminal_transition_locked
+    participant p8 as P0CalibrationIntegrityError
+    participant p9 as _authority_freshness_failure
+    participant p10 as _packet_path_for_role_state
+    participant p11 as P0CalibrationAgentPacket.from_dict
+    participant p12 as store.read_json (src/llm_wiki_cli/services…_calibration_agent_packet)
+    participant p13 as _assert_outbound_payload_safe
+    participant p14 as _bound_outbound_roots
+    participant p15 as _sha256_json
+    participant p16 as ', '.join (src/llm_wiki_cli/services…_calibration_agent_packet)
+    participant p17 as int (src/llm_wiki_cli/services…_calibration_agent_packet)
+    participant p18 as _required_mapping
+    participant p19 as manifest.get (src/llm_wiki_cli/services…_calibration_agent_packet)
+    participant p20 as sum (src/llm_wiki_cli/services…_calibration_agent_packet)
     p0->>p1: _require_choice
-    p1->>p2: require_choice
-    p2->>p3: require_trimmed_text
-    p3->>p4: require_nonempty_text
-    p4-->>p5: isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
-    p4-->>p6: value.strip
-    p4->>p7: contains_control_character
-    p7-->>p8: pattern.search
-    p2-->>p9: frozenset (src/llm_wiki_cli/services…idation.py:require_choice)
-    p2-->>p10: choice_error
-    p1->>p11: P0CalibrationSchemaError
-    p1->>p11: P0CalibrationSchemaError
-    p1-->>p12: ', '.join (src/llm_wiki_cli/services…roller.py:_require_choice)
-    p1-->>p13: sorted (src/llm_wiki_cli/services…roller.py:_require_choice)
-    p0->>p14: _open_store
-    p14->>p15: ProtectedArtifactStore
-    p14->>p16: P0CalibrationIntegrityError
-    p14-->>p17: str (src/llm_wiki_cli/services…controller.py:_open_store)
-    p0-->>p18: store.lock
-    p0->>p19: _load_run_locked
-    p19-->>p20: store.exists (src/llm_wiki_cli/services…oller.py:_load_run_locked)
-    p19->>p21: _load_emergency_rejection
-    p21-->>p22: store.read_json (src/llm_wiki_cli/services…_load_emergency_rejection)
-    p21->>p23: _require_exact_fields
-    p23->>p24: require_exact_fields
-    p24-->>p25: isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p24-->>p26: str (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p24-->>p27: set (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p24-->>p27: set (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p24-->>p27: set (src/llm_wiki_cli/services…n.py:require_exact_fields)
+    p0->>p2: _open_store
+    p0-->>p3: store.lock
+    p0->>p4: _load_run_locked
+    p0->>p5: P0CalibrationTransitionError
+    p0->>p6: _recheck_bound_controls
+    p0->>p7: _terminal_transition_locked
+    p0->>p8: P0CalibrationIntegrityError
+    p0->>p9: _authority_freshness_failure
+    p0->>p7: _terminal_transition_locked
+    p0->>p5: P0CalibrationTransitionError
+    p0->>p10: _packet_path_for_role_state
+    p0->>p11: P0CalibrationAgentPacket.from_dict
+    p0-->>p12: store.read_json (src/llm_wiki_cli/services…_calibration_agent_packet)(path)
+    p0->>p13: _assert_outbound_payload_safe
+    p0->>p14: _bound_outbound_roots
+    p0->>p15: _sha256_json
+    p0->>p7: _terminal_transition_locked
+    p0->>p8: P0CalibrationIntegrityError
+    p0->>p5: P0CalibrationTransitionError
+    p0->>p5: P0CalibrationTransitionError
+    p0-->>p16: ', '.join (src/llm_wiki_cli/services…_calibration_agent_packet)(incomplete)
+    p0-->>p17: int (src/llm_wiki_cli/services…_calibration_agent_packet)(role_state[...])
+    p0->>p7: _terminal_transition_locked
+    p0->>p5: P0CalibrationTransitionError
+    p0-->>p12: store.read_json (src/llm_wiki_cli/services…_calibration_agent_packet)(...)
+    p0->>p18: _required_mapping
+    p0-->>p19: manifest.get (src/llm_wiki_cli/services…_calibration_agent_packet)('budgets')
+    p0-->>p20: sum (src/llm_wiki_cli/services…_calibration_agent_packet)(...)
+    p0-->>p17: int (src/llm_wiki_cli/services…_calibration_agent_packet)(...)
 ```
 
-> Call sequence diagram shows 30 of 1427 interactions; 1397 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1427 interactions; 1397 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 3 of 313 (310 omitted); unresolved 5 of 500 (495 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/calibration/controller.py:_require_choice` | 2 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_choice` | 3 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_trimmed_text` | 4 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 5 | - | external | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 5 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 5 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:contains_control_character` | 8 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_choice` | 3 | - | external | 1 |
+> Omission summary shows 8 of 227 groups; 219 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

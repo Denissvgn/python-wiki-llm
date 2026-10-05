@@ -91,8 +91,8 @@ flowchart LR
 | `_surface_page_index` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 15 |
 | `_unique_json_object` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 1 |
 | `_validate_asset_path_list` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 3 |
-| `_validate_manifest_knowledge_parity` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 16 |
+| `_validate_manifest_knowledge_parity` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 20 |
 | `_validate_optional_surface_flow_fields` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 1 |
 | `_validate_surface_asset_counts` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 6 |
 
-> References: showing 12 of 32 logical references; 20 omitted by the 12-row generated summary limit.
+> References: showing 12 of 34 logical references; 22 omitted by the 12-row generated summary limit.

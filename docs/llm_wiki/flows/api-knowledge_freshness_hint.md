@@ -6,17 +6,24 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as knowledge_freshness_hint
     participant p1 as isinstance
     participant p2 as ValueError
-    p0-->>p1: isinstance
-    p0-->>p1: isinstance
-    p0-->>p2: ValueError
-    p0-->>p2: ValueError
+    p0-->>p1: isinstance(state, ComputedFreshness)
+    p0-->>p1: isinstance(reason_code, str)
+    p0-->>p2: ValueError('basis-incompatible freshness requires a known actionable reason code')
+    p0-->>p2: ValueError('basis-incompatible freshness requires a known actionable reason code')
 ```
+
+> Call sequence diagram shows 4 of 4 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 4 of 4 (0 omitted); unresolved 0 of 0 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 
@@ -39,7 +46,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `knowledge_freshness_hint` | `state: ComputedFreshness \| str \| None`, `reason_code: object` | `ComputedFreshness`, `ComputedFreshness`, `BASIS_INCOMPATIBLE_HINTS` | - | `None`, `BASIS_INCOMPATIBLE_HINTS[...]` |
+| `knowledge_freshness_hint` | `state: ComputedFreshness \| str \| None`, `reason_code: object` | `ComputedFreshness`, `ComputedFreshness`, `ComputedFreshness`, `BASIS_INCOMPATIBLE_HINTS` | - | `SOURCE_CHANGED_STRUCTURE_UNCHANGED`, `None`, `BASIS_INCOMPATIBLE_HINTS[...]` |
 | `isinstance` | - | - | - | - |
 | `isinstance` | - | - | - | - |
 | `ValueError` | - | - | - | - |
@@ -50,9 +57,9 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | knowledge_freshness_hint | isinstance | 470 | `isinstance(state, ComputedFreshness)` |
-| knowledge_freshness_hint | isinstance | 473 | `isinstance(reason_code, str)` |
-| knowledge_freshness_hint | ValueError | 474 | `ValueError('basis-incompatible freshness requires a known actionable reason code')` |
-| knowledge_freshness_hint | ValueError | 480 | `ValueError('basis-incompatible freshness requires a known actionable reason code')` |
+| knowledge_freshness_hint | isinstance | 477 | `isinstance(reason_code, str)` |
+| knowledge_freshness_hint | ValueError | 478 | `ValueError('basis-incompatible freshness requires a known actionable reason code')` |
+| knowledge_freshness_hint | ValueError | 484 | `ValueError('basis-incompatible freshness requires a known actionable reason code')` |
 
 ### Boundary effects
 
@@ -63,9 +70,9 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `knowledge_freshness_hint` | `isinstance` | 470 |
-| external_call | `knowledge_freshness_hint` | `isinstance` | 473 |
-| external_call | `knowledge_freshness_hint` | `ValueError` | 474 |
-| external_call | `knowledge_freshness_hint` | `ValueError` | 480 |
+| external_call | `knowledge_freshness_hint` | `isinstance` | 477 |
+| external_call | `knowledge_freshness_hint` | `ValueError` | 478 |
+| external_call | `knowledge_freshness_hint` | `ValueError` | 484 |
 
 ## Behavior
 

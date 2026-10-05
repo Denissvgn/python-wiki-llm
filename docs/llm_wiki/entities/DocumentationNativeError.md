@@ -1,6 +1,6 @@
 # DocumentationNativeError
 
-**Location:** `src/llm_wiki_cli/services/documentation_native.py:93`
+**Location:** `src/llm_wiki_cli/services/documentation_native.py:94`
 **Kind:** Class
 **Bases:** `RuntimeError`
 **Module:** [documentation_native](../modules/documentation_native.md)
@@ -30,12 +30,12 @@ flowchart LR
     n5["_markdown_hashes (src/llm_wiki_cli/services/documentation_native.py)"]
     n6["_native_artifact_hashes (src/llm_wiki_cli/services/documentation_native.py)"]
     n7["_native_source_snapshot_preflight (src/llm_wiki_cli/services/documentation_native.py)"]
-    n8["_refresh_manifest_version (src/llm_wiki_cli/services/documentation_native.py)"]
-    n9["_runtime_api_contracts (src/llm_wiki_cli/services/documentation_native.py)"]
-    n10["_validate_refresh_artifact_basis (src/llm_wiki_cli/services/documentation_native.py)"]
-    n11["_validated_directory (src/llm_wiki_cli/services/documentation_native.py)"]
-    n12["evaluate_documentation_native_freshness (src/llm_wiki_cli/services/documentation_native.py)"]
-    n13["refresh_documentation_native_projection (src/llm_wiki_cli/services/documentation_native.py)"]
+    n8["_refresh_documentation_native_projection (src/llm_wiki_cli/services/documentation_native.py)"]
+    n9["_refresh_manifest_version (src/llm_wiki_cli/services/documentation_native.py)"]
+    n10["_runtime_api_contracts (src/llm_wiki_cli/services/documentation_native.py)"]
+    n11["_validate_refresh_artifact_basis (src/llm_wiki_cli/services/documentation_native.py)"]
+    n12["_validated_directory (src/llm_wiki_cli/services/documentation_native.py)"]
+    n13["evaluate_documentation_native_freshness (src/llm_wiki_cli/services/documentation_native.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -86,11 +86,11 @@ flowchart LR
 | `_markdown_hashes` | call | [documentation_native](../modules/documentation_native.md) | 1 |
 | `_native_artifact_hashes` | call | [documentation_native](../modules/documentation_native.md) | 4 |
 | `_native_source_snapshot_preflight` | call | [documentation_native](../modules/documentation_native.md) | 1 |
+| `_refresh_documentation_native_projection` | call | [documentation_native](../modules/documentation_native.md) | 6 |
 | `_refresh_manifest_version` | call | [documentation_native](../modules/documentation_native.md) | 3 |
 | `_runtime_api_contracts` | call | [documentation_native](../modules/documentation_native.md) | 1 |
 | `_validate_refresh_artifact_basis` | call | [documentation_native](../modules/documentation_native.md) | 6 |
 | `_validated_directory` | call | [documentation_native](../modules/documentation_native.md) | 2 |
 | `evaluate_documentation_native_freshness` | call | [documentation_native](../modules/documentation_native.md) | 1 |
-| `refresh_documentation_native_projection` | call | [documentation_native](../modules/documentation_native.md) | 5 |
 
 > References: showing 12 of 13 logical references; 1 omitted by the 12-row generated summary limit.

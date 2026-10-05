@@ -35,6 +35,7 @@ separate from live reconciliation.
 | `.extraction_jobs` | `ExtractionJobPlan`, `ExtractionJobRequest` |
 | `.extraction_service` | `InventoryResult` |
 | `.filesystem_guard` | `guard_windows_directory_chain`, `hold_windows_readonly_file` |
+| `.implementation_evidence` | `validate_implementation_summary` |
 | `.knowledge_consumption` | `KnowledgeReadView` |
 | `.knowledge_envelope` | `KnowledgeEnvelopeError`, `hash_source_snapshot`, `validate_configured_public_identity` |
 | `.knowledge_evidence` | `canonical_json_bytes`, `is_valid_sha256`, `sha256_bytes` |
@@ -42,10 +43,12 @@ separate from live reconciliation.
 | `.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `ENDPOINT_KINDS`, `GRAPH_COVERAGE_ANALYZERS`, `GRAPH_EVIDENCE_STATES`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS`, `is_supported_relationship_kind` |
 | `.knowledge_model` | `ComputedFreshness`, `ConceptKind`, `EvidenceState`, `Lifecycle`, `Origin`, `Resolution`, `TargetClass`, `Verification`, `concept_kind_for_page_kind` |
 | `.knowledge_observability` | `knowledge_freshness_disclosure` |
+| `.knowledge_storage_io` | `read_guarded` |
 | `.knowledge_verification` | `verification_summaries_for_concepts` |
+| `.maintenance_status` | `attach_maintenance_status`, `compact_maintenance_summary`, `validate_maintenance_summary`, `validate_maintenance_summary` |
 | `.packet_field_policy` | `PUBLIC_URI_FIELDS`, `STRUCTURAL_PATH_FIELDS`, `STRING_CLASSES`, `UnclassifiedPacketField`, `classify_string`, `validate_field_coverage` |
 | `.plugins` | `runtime_plugin_fallback_root` |
-| `.source_snapshot` | `SourceSnapshotMutationError`, `directory_identity`, `SourceSnapshot`, `SourceSnapshotError`, `build_source_snapshot`, `capture_source_selection_inputs`, `source_snapshot_inputs_match_current_files`, `source_snapshot_matches_current_files` |
+| `.source_snapshot` | `directory_identity`, `SourceSnapshot`, `SourceSnapshotError`, `SourceSnapshotMutationError`, `build_source_snapshot`, `capture_source_selection_inputs`, `source_snapshot_inputs_match_current_files`, `source_snapshot_matches_current_files`, `confirmed_missing_source_paths` |
 | `.validation` | `require_repository_relative_path` |
 | `.wiki_media` | `contains_uri_authority_userinfo` |
 | `.wiki_surface_index` | `SurfaceIndexEvaluation`, `evaluate_surface_index` |
@@ -84,26 +87,26 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (12) |
-| Outbound | `src` (26) |
+| Inbound | `src` (13) |
+| Outbound | `src` (29) |
 
-> All 36 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 40 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_PacketWireContract](../entities/PacketWireContract.md) | 175 | — | One immutable schema/protocol/policy binding for canonical packets. |
-| [ContextPacketError](../entities/ContextPacketError.md) | 222 | `ValueError` | Base failure for context-packet construction and consumption. |
-| [ContextPacketMalformedError](../entities/ContextPacketMalformedError.md) | 228 | `ContextPacketError` | The supplied bytes do not satisfy the canonical packet contract. |
-| [ContextPacketSourceMutationError](../entities/ContextPacketSourceMutationError.md) | 241 | `ContextPacketError` | A captured source or wiki anchor changed before packet return. |
-| [ContextPacketUnavailableError](../entities/ContextPacketUnavailableError.md) | 253 | `ContextPacketError` | A required read-only packet capability is unavailable. |
-| [ContextPacketPathPolicyError](../entities/ContextPacketPathPolicyError.md) | 263 | `ContextPacketError` | A structural packet field violates its declared path policy. |
-| [CapturedContextRead](../entities/CapturedContextRead.md) | 383 | — | One coordinated in-memory source/wiki read used by a packet response. |
-| [QualifiedContextPacket](../entities/QualifiedContextPacket.md) | 434 | — | Immutable canonical packet bytes plus safe value accessors. |
-| [ContextPacketValidation](../entities/ContextPacketValidation.md) | 471 | — | Successful structural validation with explicitly unevaluated freshness. |
-| [ContextBasisComparison](../entities/ContextBasisComparison.md) | 514 | — | Comparison with caller data, which can never assert currentness. |
-| [ContextPacketReconciliation](../entities/ContextPacketReconciliation.md) | 540 | — | Consumer-time comparison against one fresh official read. |
+| [_PacketWireContract](../entities/PacketWireContract.md) | 176 | — | One immutable schema/protocol/policy binding for canonical packets. |
+| [ContextPacketError](../entities/ContextPacketError.md) | 223 | `ValueError` | Base failure for context-packet construction and consumption. |
+| [ContextPacketMalformedError](../entities/ContextPacketMalformedError.md) | 229 | `ContextPacketError` | The supplied bytes do not satisfy the canonical packet contract. |
+| [ContextPacketSourceMutationError](../entities/ContextPacketSourceMutationError.md) | 242 | `ContextPacketError` | A captured source or wiki anchor changed before packet return. |
+| [ContextPacketUnavailableError](../entities/ContextPacketUnavailableError.md) | 254 | `ContextPacketError` | A required read-only packet capability is unavailable. |
+| [ContextPacketPathPolicyError](../entities/ContextPacketPathPolicyError.md) | 264 | `ContextPacketError` | A structural packet field violates its declared path policy. |
+| [CapturedContextRead](../entities/CapturedContextRead.md) | 384 | — | One coordinated in-memory source/wiki read used by a packet response. |
+| [QualifiedContextPacket](../entities/QualifiedContextPacket.md) | 437 | — | Immutable canonical packet bytes plus safe value accessors. |
+| [ContextPacketValidation](../entities/ContextPacketValidation.md) | 474 | — | Successful structural validation with explicitly unevaluated freshness. |
+| [ContextBasisComparison](../entities/ContextBasisComparison.md) | 517 | — | Comparison with caller data, which can never assert currentness. |
+| [ContextPacketReconciliation](../entities/ContextPacketReconciliation.md) | 543 | — | Consumer-time comparison against one fresh official read. |
 
 ## Functions
 
@@ -115,7 +118,7 @@ flowchart LR
 | `_validate_reconciliation_contract` | `(*, packet_id: object, policy: object, state: object, current: object, facets: object, limitations: object) -> None` | — | — |
 | `_guarded_capture` | `(function)` | — | — |
 | `_guard_windows_inputs` | `(root: Path, paths: Iterable[str]) -> None` | — | — |
-| `capture_context_read` | `(src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, *, allow_external_src: bool = False, read_only: bool = True, job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, source_selection: str \| Path \| None = None, allow_selection_mismatch: bool = False, strict_wiki_symlinks: bool = False, helper_cache_dir: str \| None = None, only_files: Iterable[str] \| None = None, max_source_files: int \| None = None, max_source_bytes: int \| None = None, max_wiki_bytes: int \| None = None, respect_ignores: bool = False) -> CapturedContextRead` | `@_guarded_capture` | Capture one source inventory, wiki surface, and knowledge read view. |
+| `capture_context_read` | `(src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, *, allow_external_src: bool = False, read_only: bool = True, job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, source_selection: str \| Path \| None = None, allow_selection_mismatch: bool = False, strict_wiki_symlinks: bool = False, helper_cache_dir: str \| None = None, only_files: Iterable[str] \| None = None, max_source_files: int \| None = None, max_source_bytes: int \| None = None, max_wiki_bytes: int \| None = None, respect_ignores: bool = False, capture_implementation_observations: bool = True) -> CapturedContextRead` | `@_guarded_capture` | Capture one source inventory, wiki surface, and knowledge read view. |
 | `build_context_from_captured_read` | `(captured: CapturedContextRead, request: Mapping[str, Any], *, freshness_ranking_out: dict[str, int] \| None = None) -> tuple[dict[str, Any], list[str]]` | — | Build a versioned context payload solely from one captured read. |
 | `_build_legacy_context_from_captured_read` | `(captured: CapturedContextRead, normalized: Mapping[str, Any]) -> tuple[dict[str, Any], list[str]]` | — | Retain the frozen v1 response construction without semantic changes. |
 | `_build_knowledge_context_from_captured_read` | `(captured: CapturedContextRead, normalized: Mapping[str, Any], *, freshness_ranking_out: dict[str, int] \| None = None) -> tuple[dict[str, Any], list[str]]` | — | Build explicit v2 knowledge selection from the coordinated capture. |
@@ -163,6 +166,7 @@ flowchart LR
 | `_validate_collection_bound` | `(value: Any, field: str, *, returned_limit: int \| None = None) -> dict[str, int \| bool]` | — | — |
 | `_validate_explicit_selection` | `(value: Any, bounds: Mapping[str, Mapping[str, int \| bool]], *, freshness_evaluated: bool, source_priorities: Mapping[str, str] \| None) -> None` | — | — |
 | `_validate_explicit_concept` | `(value: Mapping[str, Any], field: str, *, freshness_evaluated: bool) -> None` | — | — |
+| `_validate_implementation_summary` | `(value: Any, field: str) -> None` | — | Validate curated syntax evidence without admitting raw native records. |
 | `_validate_explicit_page` | `(value: Mapping[str, Any], field: str) -> None` | — | — |
 | `_validate_wiki_page_coordinate` | `(*, page_kind: object, page_id: object, canonical_path: object, mcp_uri: object, role: object, field: str) -> None` | — | — |
 | `_validate_explicit_relationship` | `(value: Mapping[str, Any], field: str) -> None` | — | — |
@@ -193,6 +197,7 @@ flowchart LR
 | `_source_anchor` | `(snapshot: SourceSnapshot) -> str` | — | — |
 | `_source_snapshot_anchor_payload` | `(snapshot: SourceSnapshot) -> dict[str, Any]` | — | — |
 | `_assert_source_unchanged` | `(snapshot: SourceSnapshot, expected_anchor: str, *, metrics: dict[str, int] \| None = None) -> None` | — | — |
+| `confirmed_missing_source_paths` | `(snapshot: SourceSnapshot, requested_paths: Iterable[str]) -> frozenset[str]` | — | Adapt the shared source owner's guarded requested-absence observation. |
 | `_assert_source_inputs_unchanged` | `(snapshot: SourceSnapshot, expected_anchor: str) -> None` | — | — |
 | `_assert_selection_unchanged` | `(captured: CapturedContextRead) -> None` | — | — |
 | `_wiki_anchor` | `(root: Path, *, reject_all_symlinks: bool = False, max_bytes: int \| None = None, metrics: dict[str, int] \| None = None, integrity_out: dict[str, tuple[int, ...]] \| None = None, guard_windows: bool = False) -> str` | — | — |

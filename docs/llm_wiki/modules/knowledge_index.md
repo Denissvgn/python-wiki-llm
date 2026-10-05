@@ -67,11 +67,11 @@ flowchart LR
 |-------|------|-------|-------------|
 | [KnowledgeIndexBuildError](../entities/KnowledgeIndexBuildError.md) | 129 | `ValueError` | Field-specific failure at the pure knowledge-index join boundary. |
 | [KnowledgeIndexInputs](../entities/KnowledgeIndexInputs.md) | 144 | — | Already evaluated values required to construct one knowledge index. |
-| [_SurfacePage](../entities/SurfacePage.md) | 162 | — | — |
-| [_JoinedPage](../entities/JoinedPage.md) | 174 | — | — |
-| [_BuildContext](../entities/BuildContext.md) | 196 | — | — |
-| [_ExpectedLinkOutcome](../entities/ExpectedLinkOutcome.md) | 204 | — | — |
-| [_InvalidSurfaceJson](../entities/InvalidSurfaceJson.md) | 211 | `ValueError` | — |
+| [_SurfacePage](../entities/SurfacePage.md) | 163 | — | — |
+| [_JoinedPage](../entities/JoinedPage.md) | 175 | — | — |
+| [_BuildContext](../entities/BuildContext.md) | 197 | — | — |
+| [_ExpectedLinkOutcome](../entities/ExpectedLinkOutcome.md) | 205 | — | — |
+| [_InvalidSurfaceJson](../entities/InvalidSurfaceJson.md) | 212 | `ValueError` | — |
 
 ## Functions
 
@@ -104,7 +104,7 @@ flowchart LR
 | `_expected_observation_outcome` | `(observation: LinkObservation, source_path: str, page_locator_by_path: Mapping[str, str]) -> _ExpectedLinkOutcome \| None` | — | — |
 | `_contains_control_character` | `(value: str) -> bool` | — | — |
 | `_observation_contains_authority_userinfo` | `(observation: LinkObservation) -> bool` | — | — |
-| `_concept_for_page` | `(joined: _JoinedPage) -> ConceptRecord` | — | — |
+| `_concept_for_page` | `(joined: _JoinedPage, extensions: Mapping[str, Any]) -> ConceptRecord` | — | — |
 | `_structural_facet` | `(joined: _JoinedPage, concept_kind: ConceptKind) -> StructuralFacet` | — | — |
 | `_evidence_basis` | `(value: ConceptObservationBasis) -> EvidenceBasis` | — | — |
 | `_derived_relationship` | `(joined: _JoinedPage) -> RelationshipRecord \| None` | — | — |

@@ -37,15 +37,17 @@ flowchart LR
     n1["bootstrap_wiki (src/llm_wiki_cli/api.py)"]
     n2["_bootstrap_result (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n3["_execute_bootstrap_options (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
-    n4["_execute_documentation_workspace_refresh (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
-    n5["_finalize_bootstrap (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
-    n6["execute_bootstrap (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n4["_execute_bootstrap_options_locked (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n5["_execute_documentation_workspace_refresh (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n6["_finalize_bootstrap (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n7["execute_bootstrap (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
     n6 --> n0
+    n7 --> n0
     click n0 "../modules/bootstrap_service.md"
     click n1 "../modules/api.md"
     click n2 "../modules/bootstrap_runtime.md"
@@ -53,6 +55,7 @@ flowchart LR
     click n4 "../modules/bootstrap_runtime.md"
     click n5 "../modules/bootstrap_runtime.md"
     click n6 "../modules/bootstrap_runtime.md"
+    click n7 "../modules/bootstrap_runtime.md"
 ```
 
 ### Summary
@@ -69,6 +72,7 @@ flowchart LR
 | `_bootstrap_result` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |
 | `_bootstrap_result` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 | `_execute_bootstrap_options` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_execute_bootstrap_options_locked` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 | `_execute_documentation_workspace_refresh` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 | `_finalize_bootstrap` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 | `execute_bootstrap` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |

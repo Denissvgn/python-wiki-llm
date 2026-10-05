@@ -6,65 +6,80 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as qualify_claim_evidence
     participant p1 as _identifier
-    participant p2 as _text
-    participant p3 as require_trimmed_text
-    participant p4 as require_nonempty_text
-    participant p5 as isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
-    participant p6 as value.strip
-    participant p7 as contains_control_character
-    participant p8 as pattern.search
+    participant p2 as _portable_path
+    participant p3 as _text
+    participant p4 as _section_locator
+    participant p5 as _normalize_graph_query
+    participant p6 as _safe_evidence_link
+    participant p7 as _internal_evidence_ref
+    participant p8 as service.get_concept
     participant p9 as DocumentationClaimEvidenceError
-    participant p10 as _SAFE_ID_RE.fullmatch
-    participant p11 as _portable_path
-    participant p12 as require_portable_relative_path
-    participant p13 as isinstance (src/llm_wiki_cli/services…re_portable_relative_path)
-    participant p14 as _default_path_error
-    participant p15 as SharedValidationError
-    participant p16 as os.fspath
-    participant p17 as _syntax_key
-    participant p18 as type
-    participant p19 as len (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    participant p20 as any (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    participant p21 as _known_syntax
-    participant p22 as _PATH_SYNTAX.get
+    participant p10 as _mapping
+    participant p11 as selection.get
+    participant p12 as str (src/llm_wiki_cli/services…py:qualify_claim_evidence)
+    participant p13 as knowledge.get
+    participant p14 as bool
+    participant p15 as isinstance (src/llm_wiki_cli/services…py:qualify_claim_evidence)
+    participant p16 as selected.get (src/llm_wiki_cli/services…py:qualify_claim_evidence)
+    participant p17 as _freshness
+    participant p18 as freshness_value.get
     p0->>p1: _identifier
-    p1->>p2: _text
-    p2->>p3: require_trimmed_text
-    p3->>p4: require_nonempty_text
-    p4-->>p5: isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
-    p4-->>p6: value.strip
-    p4->>p7: contains_control_character
-    p7-->>p8: pattern.search
-    p2->>p9: DocumentationClaimEvidenceError
-    p1-->>p10: _SAFE_ID_RE.fullmatch
-    p1->>p9: DocumentationClaimEvidenceError
-    p0->>p11: _portable_path
-    p11->>p2: _text
-    p11->>p9: DocumentationClaimEvidenceError
-    p11->>p12: require_portable_relative_path
-    p12-->>p13: isinstance (src/llm_wiki_cli/services…re_portable_relative_path)
-    p12->>p14: _default_path_error
-    p14->>p15: SharedValidationError
-    p12-->>p16: os.fspath
-    p12-->>p13: isinstance (src/llm_wiki_cli/services…re_portable_relative_path)
-    p12->>p14: _default_path_error
-    p12->>p17: _syntax_key
-    p17-->>p18: type
-    p17-->>p19: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    p17-->>p20: any (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    p17-->>p18: type
-    p17-->>p18: type
-    p17-->>p19: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    p12->>p21: _known_syntax
-    p21-->>p22: _PATH_SYNTAX.get
+    p0->>p2: _portable_path
+    p0->>p3: _text
+    p0->>p4: _section_locator
+    p0->>p5: _normalize_graph_query
+    p0->>p6: _safe_evidence_link
+    p0->>p7: _internal_evidence_ref
+    p0-->>p8: service.get_concept(query)
+    p0->>p9: DocumentationClaimEvidenceError
+    p0->>p10: _mapping
+    p0-->>p11: selection.get('knowledge')
+    p0-->>p12: str (src/llm_wiki_cli/services…py:qualify_claim_evidence)(...)
+    p0-->>p13: knowledge.get('availability')
+    p0-->>p11: selection.get('concept')
+    p0-->>p14: bool(selection.get(...))
+    p0-->>p11: selection.get('ambiguous')
+    p0-->>p14: bool(selection.get(...))
+    p0-->>p11: selection.get('found')
+    p0-->>p15: isinstance (src/llm_wiki_cli/services…py:qualify_claim_evidence)(concept, Mapping)
+    p0-->>p14: bool(knowledge.get(...))
+    p0-->>p13: knowledge.get('freshness_evaluated', False)
+    p0-->>p13: knowledge.get('freshness')
+    p0-->>p15: isinstance (src/llm_wiki_cli/services…py:qualify_claim_evidence)(freshness_disclosure, str)
+    p0->>p9: DocumentationClaimEvidenceError
+    p0->>p10: _mapping
+    p0-->>p16: selected.get (src/llm_wiki_cli/services…py:qualify_claim_evidence)('freshness')
+    p0->>p17: _freshness
+    p0-->>p18: freshness_value.get('state')
+    p0-->>p12: str (src/llm_wiki_cli/services…py:qualify_claim_evidence)(...)
+    p0-->>p18: freshness_value.get('reason')
 ```
 
-> Call sequence diagram shows 30 of 273 interactions; 243 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 273 interactions; 243 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 7 of 85 (78 omitted); unresolved 11 of 70 (59 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/documentation_claim_evidence.py:_identifier` | 2 | [src/llm_wiki_cli/services/documentation_claim_evidence.py](../modules/documentation_claim_evidence.md) | internal | 2 |
+| `src/llm_wiki_cli/services/documentation_claim_evidence.py:_text` | 3 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_trimmed_text` | 4 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 5 | - | external | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 5 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 5 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:contains_control_character` | 8 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/documentation_claim_evidence.py:_text` | 3 | [src/llm_wiki_cli/services/documentation_claim_evidence.py](../modules/documentation_claim_evidence.md) | internal | 1 |
+> Omission summary shows 8 of 80 groups; 72 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

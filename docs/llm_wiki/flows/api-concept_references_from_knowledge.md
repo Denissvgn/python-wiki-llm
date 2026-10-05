@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -15,57 +17,71 @@ sequenceDiagram
     participant p3 as references.append (src/llm_wiki_cli/services…references_from_knowledge)
     participant p4 as ConceptGovernanceReference
     participant p5 as natural_key_for (src/llm_wiki_cli/services/knowledge_governance.py)
-    participant p6 as natural_key_for (src/llm_wiki_cli/services/concept_identity.py)
-    participant p7 as validate_concept_kind
-    participant p8 as _machine_text
-    participant p9 as isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p10 as ConceptIdentityError
-    participant p11 as len (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p12 as value.strip (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p13 as any (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p14 as character.isspace (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p15 as unicodedata.normalize (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p16 as unicodedata.category(…).startswith (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p17 as unicodedata.category (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p18 as _QUALIFIED_KIND_RE.fullmatch
-    participant p19 as require_repository_relative_path
-    participant p20 as isinstance (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p21 as _syntax_key
-    participant p22 as type
-    participant p23 as len (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…references_from_knowledge)
-    p0-->>p2: TypeError
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…references_from_knowledge)
-    p0-->>p3: references.append (src/llm_wiki_cli/services…references_from_knowledge)
+    participant p6 as _validated_references
+    participant p7 as natural_key_for (src/llm_wiki_cli/services/concept_identity.py)
+    participant p8 as isinstance (src/llm_wiki_cli/services….py:_validated_references)
+    participant p9 as GovernanceError
+    participant p10 as set
+    participant p11 as enumerate
+    participant p12 as _identity_value
+    participant p13 as _concept_kind
+    participant p14 as seen_locators.add
+    participant p15 as seen_keys.add
+    participant p16 as references.append (src/llm_wiki_cli/services….py:_validated_references)
+    participant p17 as tuple
+    participant p18 as sorted
+    participant p19 as item.locator.casefold
+    participant p20 as validate_concept_kind
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…references_from_knowledge)(knowledge, KnowledgeIndex)
+    p0-->>p2: TypeError('knowledge must be a KnowledgeIndex')
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…references_from_knowledge)(concept.concept_kind, ConceptKind)
+    p0-->>p3: references.append (src/llm_wiki_cli/services…references_from_knowledge)(ConceptGovernanceReference(...))
     p0->>p4: ConceptGovernanceReference
     p0->>p5: natural_key_for (src/llm_wiki_cli/services/knowledge_governance.py)
-    p5->>p6: natural_key_for (src/llm_wiki_cli/services/concept_identity.py)
-    p6->>p7: validate_concept_kind
-    p7->>p8: _machine_text
-    p8-->>p9: isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p8->>p10: ConceptIdentityError
-    p8-->>p11: len (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p8->>p10: ConceptIdentityError
-    p8-->>p12: value.strip (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p8-->>p13: any (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p8-->>p14: character.isspace (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p8->>p10: ConceptIdentityError
-    p8-->>p15: unicodedata.normalize (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p8->>p10: ConceptIdentityError
-    p8-->>p13: any (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p8-->>p16: unicodedata.category(…).startswith (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p8-->>p17: unicodedata.category (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p8->>p10: ConceptIdentityError
-    p7-->>p18: _QUALIFIED_KIND_RE.fullmatch
-    p7->>p10: ConceptIdentityError
-    p6->>p19: require_repository_relative_path
-    p19-->>p20: isinstance (src/llm_wiki_cli/services…_repository_relative_path)
-    p19->>p21: _syntax_key
-    p21-->>p22: type
-    p21-->>p23: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
+    p0->>p6: _validated_references
+    p5->>p7: natural_key_for (src/llm_wiki_cli/services/concept_identity.py)
+    p6-->>p8: isinstance (src/llm_wiki_cli/services….py:_validated_references)(values, (...))
+    p5->>p9: GovernanceError
+    p6-->>p8: isinstance (src/llm_wiki_cli/services….py:_validated_references)(values, Sequence)
+    p6->>p9: GovernanceError
+    p6-->>p10: set
+    p6-->>p10: set
+    p6-->>p11: enumerate(values)
+    p6-->>p8: isinstance (src/llm_wiki_cli/services….py:_validated_references)(value, ConceptGovernanceReference)
+    p6->>p9: GovernanceError
+    p6->>p4: ConceptGovernanceReference
+    p6->>p12: _identity_value
+    p6->>p13: _concept_kind
+    p6->>p12: _identity_value
+    p6->>p9: GovernanceError
+    p6->>p9: GovernanceError
+    p6-->>p14: seen_locators.add(reference.locator)
+    p6-->>p15: seen_keys.add(reference.natural_key)
+    p6-->>p16: references.append (src/llm_wiki_cli/services….py:_validated_references)(reference)
+    p6-->>p17: tuple(sorted(...))
+    p6-->>p18: sorted(references, key=...)
+    p6-->>p19: item.locator.casefold
+    p7->>p20: validate_concept_kind
 ```
 
-> Call sequence diagram shows 30 of 203 interactions; 173 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 203 interactions; 173 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 11 of 54 (43 omitted); unresolved 5 of 54 (49 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/concept_identity.py:validate_concept_kind` | 9 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 2 |
+| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 10 | - | external | 6 |
+| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 10 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 5 |
+| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 10 | - | unresolved | 3 |
+| `src/llm_wiki_cli/services/concept_identity.py:validate_concept_kind` | 9 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/concept_identity.py:natural_key_for` | 8 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 27 | - | external | 7 |
+| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 27 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 4 |
+> Omission summary shows 8 of 47 groups; 39 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

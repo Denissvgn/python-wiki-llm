@@ -6,39 +6,46 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as validate_concept_kind
     participant p1 as _machine_text
-    participant p2 as isinstance
+    participant p2 as _QUALIFIED_KIND_RE.fullmatch
     participant p3 as ConceptIdentityError
-    participant p4 as len
-    participant p5 as value.strip
-    participant p6 as any
-    participant p7 as character.isspace
-    participant p8 as unicodedata.normalize
-    participant p9 as unicodedata.category(…).startswith
-    participant p10 as unicodedata.category
-    participant p11 as _QUALIFIED_KIND_RE.fullmatch
+    participant p4 as isinstance
+    participant p5 as len
+    participant p6 as value.strip
+    participant p7 as any
+    participant p8 as character.isspace
+    participant p9 as unicodedata.normalize
+    participant p10 as unicodedata.category(…).startswith
+    participant p11 as unicodedata.category
     p0->>p1: _machine_text
-    p1-->>p2: isinstance
-    p1->>p3: ConceptIdentityError
-    p1-->>p4: len
-    p1->>p3: ConceptIdentityError
-    p1-->>p5: value.strip
-    p1-->>p6: any
-    p1-->>p7: character.isspace
-    p1->>p3: ConceptIdentityError
-    p1-->>p8: unicodedata.normalize
-    p1->>p3: ConceptIdentityError
-    p1-->>p6: any
-    p1-->>p9: unicodedata.category(…).startswith
-    p1-->>p10: unicodedata.category
-    p1->>p3: ConceptIdentityError
-    p0-->>p11: _QUALIFIED_KIND_RE.fullmatch
+    p0-->>p2: _QUALIFIED_KIND_RE.fullmatch(text)
     p0->>p3: ConceptIdentityError
+    p1-->>p4: isinstance(value, str)
+    p1->>p3: ConceptIdentityError
+    p1-->>p5: len(value)
+    p1->>p3: ConceptIdentityError
+    p1-->>p6: value.strip
+    p1-->>p7: any(...)
+    p1-->>p8: character.isspace
+    p1->>p3: ConceptIdentityError
+    p1-->>p9: unicodedata.normalize('NFC', value)
+    p1->>p3: ConceptIdentityError
+    p1-->>p7: any(...)
+    p1-->>p10: unicodedata.category(…).startswith('C')
+    p1-->>p11: unicodedata.category(character)
+    p1->>p3: ConceptIdentityError
 ```
+
+> Call sequence diagram shows 17 of 17 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 6 of 6 (0 omitted); unresolved 4 of 4 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

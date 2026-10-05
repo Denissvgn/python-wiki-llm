@@ -1,6 +1,6 @@
 # AnalysisComparisonContract
 
-**Location:** `src/llm_wiki_cli/api_types.py:594`
+**Location:** `src/llm_wiki_cli/api_types.py:666`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

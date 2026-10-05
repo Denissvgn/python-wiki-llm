@@ -6,63 +6,85 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as runtime_generation_options_hash
     participant p1 as prepare_runtime_generation_options
-    participant p2 as isinstance (src/llm_wiki_cli/services…runtime_generation_options)
-    participant p3 as TypeError
-    participant p4 as dict
-    participant p5 as tuple (src/llm_wiki_cli/services…runtime_generation_options)
-    participant p6 as dict.fromkeys
-    participant p7 as PreparedRuntimeGenerationOptions
-    participant p8 as tuple (src/llm_wiki_cli/services…me_generation_options_hash)
-    participant p9 as hash_generation_options
-    participant p10 as isinstance (src/llm_wiki_cli/services…py:hash_generation_options)
-    participant p11 as KnowledgeEnvelopeError
-    participant p12 as _normalized_allowlist
-    participant p13 as isinstance (src/llm_wiki_cli/services…e.py:_normalized_allowlist)
-    participant p14 as tuple (src/llm_wiki_cli/services…e.py:_normalized_allowlist)
-    participant p15 as any (src/llm_wiki_cli/services…e.py:_normalized_allowlist)
-    participant p16 as len
-    participant p17 as set (src/llm_wiki_cli/services…e.py:_normalized_allowlist)
-    participant p18 as sorted
-    participant p19 as _reject_unknown_option_keys
-    participant p20 as any (src/llm_wiki_cli/services…reject_unknown_option_keys)
+    participant p2 as tuple (src/llm_wiki_cli/services…me_generation_options_hash)
+    participant p3 as hash_generation_options
+    participant p4 as isinstance (src/llm_wiki_cli/services…runtime_generation_options)
+    participant p5 as isinstance (src/llm_wiki_cli/services…py:hash_generation_options)
+    participant p6 as TypeError
+    participant p7 as KnowledgeEnvelopeError
+    participant p8 as dict
+    participant p9 as tuple (src/llm_wiki_cli/services…runtime_generation_options)
+    participant p10 as _normalized_allowlist
+    participant p11 as dict.fromkeys
+    participant p12 as _reject_unknown_option_keys
+    participant p13 as PreparedRuntimeGenerationOptions
+    participant p14 as _reject_machine_local_paths
+    participant p15 as _hash_structured
+    participant p16 as isinstance (src/llm_wiki_cli/services…e.py:_normalized_allowlist)
+    participant p17 as any (src/llm_wiki_cli/services…reject_unknown_option_keys)
+    participant p18 as set (src/llm_wiki_cli/services…reject_machine_local_paths)
+    participant p19 as payload.values
+    participant p20 as isinstance (src/llm_wiki_cli/services…reject_unknown_option_keys)
+    participant p21 as walk (src/llm_wiki_cli/services…reject_machine_local_paths)
+    participant p22 as _validate_json_tree
+    participant p23 as tuple (src/llm_wiki_cli/services…e.py:_normalized_allowlist)
     p0->>p1: prepare_runtime_generation_options
-    p1-->>p2: isinstance (src/llm_wiki_cli/services…runtime_generation_options)
-    p1-->>p3: TypeError
-    p1-->>p4: dict
-    p1-->>p4: dict
-    p1-->>p5: tuple (src/llm_wiki_cli/services…runtime_generation_options)
-    p1-->>p6: dict.fromkeys
-    p1->>p7: PreparedRuntimeGenerationOptions
-    p0-->>p8: tuple (src/llm_wiki_cli/services…me_generation_options_hash)
-    p0->>p9: hash_generation_options
-    p9-->>p10: isinstance (src/llm_wiki_cli/services…py:hash_generation_options)
-    p9->>p11: KnowledgeEnvelopeError
-    p9-->>p10: isinstance (src/llm_wiki_cli/services…py:hash_generation_options)
-    p9->>p11: KnowledgeEnvelopeError
-    p9->>p12: _normalized_allowlist
-    p12-->>p13: isinstance (src/llm_wiki_cli/services…e.py:_normalized_allowlist)
-    p12->>p11: KnowledgeEnvelopeError
-    p12-->>p14: tuple (src/llm_wiki_cli/services…e.py:_normalized_allowlist)
-    p12->>p11: KnowledgeEnvelopeError
-    p12-->>p15: any (src/llm_wiki_cli/services…e.py:_normalized_allowlist)
-    p12-->>p13: isinstance (src/llm_wiki_cli/services…e.py:_normalized_allowlist)
-    p12->>p11: KnowledgeEnvelopeError
-    p12-->>p16: len
-    p12-->>p16: len
-    p12-->>p17: set (src/llm_wiki_cli/services…e.py:_normalized_allowlist)
-    p12->>p11: KnowledgeEnvelopeError
-    p12-->>p14: tuple (src/llm_wiki_cli/services…e.py:_normalized_allowlist)
-    p12-->>p18: sorted
-    p9->>p19: _reject_unknown_option_keys
-    p19-->>p20: any (src/llm_wiki_cli/services…reject_unknown_option_keys)
+    p0-->>p2: tuple (src/llm_wiki_cli/services…me_generation_options_hash)(RUNTIME_GENERATION_OPTION_DEFAULTS)
+    p0->>p3: hash_generation_options
+    p1-->>p4: isinstance (src/llm_wiki_cli/services…runtime_generation_options)(inventory_complete, bool)
+    p3-->>p5: isinstance (src/llm_wiki_cli/services…py:hash_generation_options)(values, Mapping)
+    p1-->>p6: TypeError('inventory_complete must be a boolean')
+    p3->>p7: KnowledgeEnvelopeError
+    p1-->>p8: dict(generation_options)
+    p3-->>p5: isinstance (src/llm_wiki_cli/services…py:hash_generation_options)(defaults, Mapping)
+    p1-->>p8: dict(generation_option_defaults)
+    p3->>p7: KnowledgeEnvelopeError
+    p1-->>p9: tuple (src/llm_wiki_cli/services…runtime_generation_options)(dict.fromkeys(...))
+    p3->>p10: _normalized_allowlist
+    p1-->>p11: dict.fromkeys((...))
+    p3->>p12: _reject_unknown_option_keys
+    p1->>p13: PreparedRuntimeGenerationOptions
+    p3->>p12: _reject_unknown_option_keys
+    p3->>p7: KnowledgeEnvelopeError
+    p3->>p14: _reject_machine_local_paths
+    p3->>p15: _hash_structured
+    p10-->>p16: isinstance (src/llm_wiki_cli/services…e.py:_normalized_allowlist)(value, (...))
+    p12-->>p17: any (src/llm_wiki_cli/services…reject_unknown_option_keys)(...)
+    p14-->>p18: set (src/llm_wiki_cli/services…reject_machine_local_paths)
+    p15-->>p19: payload.values
+    p10->>p7: KnowledgeEnvelopeError
+    p12-->>p20: isinstance (src/llm_wiki_cli/services…reject_unknown_option_keys)(key, str)
+    p14-->>p21: walk (src/llm_wiki_cli/services…reject_machine_local_paths)(value, field_name)
+    p15->>p22: _validate_json_tree
+    p10-->>p23: tuple (src/llm_wiki_cli/services…e.py:_normalized_allowlist)(value)
+    p12->>p7: KnowledgeEnvelopeError
 ```
 
-> Call sequence diagram shows 30 of 54 interactions; 24 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 54 interactions; 24 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 14 of 27 (13 omitted); unresolved 2 of 5 (3 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_normalized_allowlist` | 16 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 3 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_normalized_allowlist` | 16 | - | external | 7 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_reject_unknown_option_keys` | 30 | - | external | 3 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_reject_unknown_option_keys` | 30 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 1 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_validate_json_tree` | 45 | - | external | 1 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_validate_json_tree` | 45 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_hash_structured` | 43 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 2 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:sha256_bytes` | 48 | - | unresolved | 1 |
+> Omission summary shows 8 of 13 groups; 5 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 
@@ -119,16 +141,16 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| runtime_generation_options_hash | prepare_runtime_generation_options | 1147 | `prepare_runtime_generation_options(generation_options, generation_option_defaults=RUNTIME_GENERATION_OPTION_DEFAULTS, generation_option_allowlist=tuple(...), inventory_complete=inventory_complete)` |
-| prepare_runtime_generation_options | isinstance (src/llm_wiki_cli/services…runtime_generation_options) | 324 | `isinstance(inventory_complete, bool)` |
-| prepare_runtime_generation_options | TypeError | 325 | `TypeError('inventory_complete must be a boolean')` |
-| prepare_runtime_generation_options | dict | 326 | `dict(generation_options)` |
-| prepare_runtime_generation_options | dict | 328 | `dict(generation_option_defaults)` |
-| prepare_runtime_generation_options | tuple (src/llm_wiki_cli/services…runtime_generation_options) | 330 | `tuple(dict.fromkeys(...))` |
-| prepare_runtime_generation_options | dict.fromkeys | 331 | `dict.fromkeys((...))` |
-| prepare_runtime_generation_options | PreparedRuntimeGenerationOptions | 333 | `PreparedRuntimeGenerationOptions(values=values, defaults=defaults, allowlist=allowlist)` |
-| runtime_generation_options_hash | tuple (src/llm_wiki_cli/services…me_generation_options_hash) | 1150 | `tuple(RUNTIME_GENERATION_OPTION_DEFAULTS)` |
-| runtime_generation_options_hash | hash_generation_options | 1153 | `hash_generation_options(prepared.values, defaults=prepared.defaults, allowlist=prepared.allowlist)` |
+| runtime_generation_options_hash | prepare_runtime_generation_options | 1194 | `prepare_runtime_generation_options(generation_options, generation_option_defaults=RUNTIME_GENERATION_OPTION_DEFAULTS, generation_option_allowlist=tuple(...), inventory_complete=inventory_complete)` |
+| prepare_runtime_generation_options | isinstance (src/llm_wiki_cli/services…runtime_generation_options) | 339 | `isinstance(inventory_complete, bool)` |
+| prepare_runtime_generation_options | TypeError | 340 | `TypeError('inventory_complete must be a boolean')` |
+| prepare_runtime_generation_options | dict | 341 | `dict(generation_options)` |
+| prepare_runtime_generation_options | dict | 343 | `dict(generation_option_defaults)` |
+| prepare_runtime_generation_options | tuple (src/llm_wiki_cli/services…runtime_generation_options) | 345 | `tuple(dict.fromkeys(...))` |
+| prepare_runtime_generation_options | dict.fromkeys | 346 | `dict.fromkeys((...))` |
+| prepare_runtime_generation_options | PreparedRuntimeGenerationOptions | 348 | `PreparedRuntimeGenerationOptions(values=values, defaults=defaults, allowlist=allowlist)` |
+| runtime_generation_options_hash | tuple (src/llm_wiki_cli/services…me_generation_options_hash) | 1197 | `tuple(RUNTIME_GENERATION_OPTION_DEFAULTS)` |
+| runtime_generation_options_hash | hash_generation_options | 1200 | `hash_generation_options(prepared.values, defaults=prepared.defaults, allowlist=prepared.allowlist)` |
 | hash_generation_options | isinstance (src/llm_wiki_cli/services…py:hash_generation_options) | 827 | `isinstance(values, Mapping)` |
 
 ### Boundary effects
@@ -139,9 +161,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `prepare_runtime_generation_options` | `isinstance` | 324 |
-| external_call | `prepare_runtime_generation_options` | `TypeError` | 325 |
-| external_call | `prepare_runtime_generation_options` | `dict.fromkeys` | 331 |
+| external_call | `prepare_runtime_generation_options` | `isinstance` | 339 |
+| external_call | `prepare_runtime_generation_options` | `TypeError` | 340 |
+| external_call | `prepare_runtime_generation_options` | `dict.fromkeys` | 346 |
 | external_call | `hash_generation_options` | `isinstance` | 827 |
 | step_limit | `runtime_generation_options_hash` | `first 12 steps` | 0 |
 

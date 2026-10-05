@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -14,59 +16,73 @@ sequenceDiagram
     participant p2 as target.is_absolute
     participant p3 as OSError (src/llm_wiki_cli/services….py:guarded_tree_manifest)
     participant p4 as guard_windows_directory_chain
-    participant p5 as WindowsDirectoryGuardError
-    participant p6 as Path (src/llm_wiki_cli/services…d_windows_directory_chain)
-    participant p7 as os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)
-    participant p8 as os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)
-    participant p9 as handles.append
-    participant p10 as _open_windows_directory_guard
-    participant p11 as ctypes.WinDLL (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p12 as create_file (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p13 as _windows_api_path
-    participant p14 as os.path.abspath (src/llm_wiki_cli/services…uard.py:_windows_api_path)
-    participant p15 as os.fspath (src/llm_wiki_cli/services…uard.py:_windows_api_path)
-    participant p16 as value.startswith
-    participant p17 as wintypes.HANDLE (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p18 as ctypes.get_last_error (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p19 as ctypes.WinError (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p20 as _WindowsDirectoryGuardUnavailableError
-    participant p21 as _ByHandleFileInformation (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p22 as get_information (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p23 as ctypes.byref (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p24 as _close_windows_handle
-    p0-->>p1: Path (src/llm_wiki_cli/services….py:guarded_tree_manifest)
+    participant p5 as _guarded_tree_manifest_windows_path
+    participant p6 as getattr (src/llm_wiki_cli/services….py:guarded_tree_manifest)
+    participant p7 as os.open (src/llm_wiki_cli/services….py:guarded_tree_manifest)
+    participant p8 as os.close (src/llm_wiki_cli/services….py:guarded_tree_manifest)
+    participant p9 as _guarded_tree_manifest_posix_fd
+    participant p10 as WindowsDirectoryGuardError
+    participant p11 as os.walk
+    participant p12 as getattr (src/llm_wiki_cli/services…ed_tree_manifest_posix_fd)
+    participant p13 as Path (src/llm_wiki_cli/services…d_windows_directory_chain)
+    participant p14 as directory_names.sort
+    participant p15 as os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)
+    participant p16 as file_names.sort
+    participant p17 as OSError (src/llm_wiki_cli/services…ed_tree_manifest_posix_fd)
+    participant p18 as os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)
+    participant p19 as Path (src/llm_wiki_cli/services…ree_manifest_windows_path)
+    participant p20 as candidate.relative_to(…).as_posix
+    participant p21 as sorted
+    p0-->>p1: Path (src/llm_wiki_cli/services….py:guarded_tree_manifest)(path)
     p0-->>p2: target.is_absolute
-    p0-->>p3: OSError (src/llm_wiki_cli/services….py:guarded_tree_manifest)
+    p0-->>p3: OSError (src/llm_wiki_cli/services….py:guarded_tree_manifest)(...)
     p0->>p4: guard_windows_directory_chain
-    p4->>p5: WindowsDirectoryGuardError
-    p4-->>p6: Path (src/llm_wiki_cli/services…d_windows_directory_chain)
-    p4-->>p7: os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)
-    p4-->>p8: os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)
-    p4->>p5: WindowsDirectoryGuardError
-    p4-->>p6: Path (src/llm_wiki_cli/services…d_windows_directory_chain)
-    p4-->>p9: handles.append
-    p4->>p10: _open_windows_directory_guard
-    p10-->>p11: ctypes.WinDLL (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p10-->>p12: create_file (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p10->>p13: _windows_api_path
-    p13-->>p14: os.path.abspath (src/llm_wiki_cli/services…uard.py:_windows_api_path)
-    p13-->>p15: os.fspath (src/llm_wiki_cli/services…uard.py:_windows_api_path)
-    p13-->>p16: value.startswith
-    p13-->>p16: value.startswith
-    p10-->>p17: wintypes.HANDLE (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p10-->>p18: ctypes.get_last_error (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p10-->>p19: ctypes.WinError (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p10->>p20: _WindowsDirectoryGuardUnavailableError
-    p10->>p5: WindowsDirectoryGuardError
-    p10-->>p21: _ByHandleFileInformation (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p10-->>p22: get_information (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p10-->>p23: ctypes.byref (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p10-->>p19: ctypes.WinError (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p10-->>p18: ctypes.get_last_error (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p10->>p24: _close_windows_handle
+    p0-->>p1: Path (src/llm_wiki_cli/services….py:guarded_tree_manifest)(target.anchor)
+    p0->>p5: _guarded_tree_manifest_windows_path
+    p0-->>p6: getattr (src/llm_wiki_cli/services….py:guarded_tree_manifest)(os, 'O_NOFOLLOW', None)
+    p0-->>p6: getattr (src/llm_wiki_cli/services….py:guarded_tree_manifest)(os, 'O_DIRECTORY', None)
+    p0-->>p3: OSError (src/llm_wiki_cli/services….py:guarded_tree_manifest)('This POSIX platform cannot inventory guarded trees.')
+    p0-->>p6: getattr (src/llm_wiki_cli/services….py:guarded_tree_manifest)(os, 'O_CLOEXEC', 0)
+    p0-->>p7: os.open (src/llm_wiki_cli/services….py:guarded_tree_manifest)(target.anchor, flags)
+    p0-->>p7: os.open (src/llm_wiki_cli/services….py:guarded_tree_manifest)(component, flags, dir_fd=descriptor)
+    p0-->>p8: os.close (src/llm_wiki_cli/services….py:guarded_tree_manifest)(descriptor)
+    p0->>p9: _guarded_tree_manifest_posix_fd
+    p0-->>p8: os.close (src/llm_wiki_cli/services….py:guarded_tree_manifest)(descriptor)
+    p4->>p10: WindowsDirectoryGuardError
+    p5-->>p11: os.walk(root, topdown=True, followlinks=False)
+    p9-->>p12: getattr (src/llm_wiki_cli/services…ed_tree_manifest_posix_fd)(os, 'O_NOFOLLOW', None)
+    p4-->>p13: Path (src/llm_wiki_cli/services…d_windows_directory_chain)(os.path.abspath(...))
+    p5-->>p14: directory_names.sort
+    p9-->>p12: getattr (src/llm_wiki_cli/services…ed_tree_manifest_posix_fd)(os, 'O_DIRECTORY', None)
+    p4-->>p15: os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)(os.fspath(...))
+    p5-->>p16: file_names.sort
+    p9-->>p17: OSError (src/llm_wiki_cli/services…ed_tree_manifest_posix_fd)('This POSIX platform cannot inventory guarded trees.')
+    p4-->>p18: os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)(root)
+    p5-->>p19: Path (src/llm_wiki_cli/services…ree_manifest_windows_path)(current_root)
+    p9-->>p12: getattr (src/llm_wiki_cli/services…ed_tree_manifest_posix_fd)(os, 'O_CLOEXEC', 0)
+    p4->>p10: WindowsDirectoryGuardError
+    p5-->>p20: candidate.relative_to(…).as_posix
+    p9-->>p21: sorted(os.listdir(...))
 ```
 
-> Call sequence diagram shows 30 of 335 interactions; 305 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 335 interactions; 305 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 21 of 202 (181 omitted); unresolved 4 of 47 (43 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 5 | - | external | 6 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 5 | - | unresolved | 4 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 5 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 7 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 13 | - | external | 14 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 13 | - | unresolved | 3 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 13 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 9 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_windows_api_path` | 16 | - | external | 2 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_windows_api_path` | 16 | - | unresolved | 2 |
+> Omission summary shows 8 of 49 groups; 41 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

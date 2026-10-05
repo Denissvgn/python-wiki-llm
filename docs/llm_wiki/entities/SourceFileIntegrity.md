@@ -1,6 +1,6 @@
 # SourceFileIntegrity
 
-**Location:** `src/llm_wiki_cli/services/source_snapshot.py:128`
+**Location:** `src/llm_wiki_cli/services/source_snapshot.py:129`
 **Kind:** Class
 **Bases:** —
 **Module:** [source_snapshot](../modules/source_snapshot.md)

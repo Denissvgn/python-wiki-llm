@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -14,52 +16,57 @@ sequenceDiagram
     participant p2 as str (src/llm_wiki_cli/services…_flow_api_contract_section)
     participant p3 as item.get
     participant p4 as _operation_anchor
-    participant p5 as operation.get (src/llm_wiki_cli/services…racts.py:_operation_anchor)
-    participant p6 as _SAFE_ID_RE.sub(…).strip(…).lower
-    participant p7 as _SAFE_ID_RE.sub(…).strip
-    participant p8 as _SAFE_ID_RE.sub
-    participant p9 as str (src/llm_wiki_cli/services…racts.py:_operation_anchor)
-    participant p10 as operation.get (src/llm_wiki_cli/services…_flow_api_contract_section)
-    participant p11 as lines.append
-    participant p12 as _md_code
-    participant p13 as str(…).replace(…).replace
-    participant p14 as str(…).replace
-    participant p15 as str (src/llm_wiki_cli/services/api_contracts.py:_md_code)
-    participant p16 as max
-    participant p17 as len
+    participant p5 as operation.get (src/llm_wiki_cli/services…_flow_api_contract_section)
+    participant p6 as lines.append
+    participant p7 as _md_code
+    participant p8 as '\n'.join
+    participant p9 as operation.get (src/llm_wiki_cli/services…racts.py:_operation_anchor)
+    participant p10 as str(…).replace(…).replace
+    participant p11 as str(…).replace
+    participant p12 as str (src/llm_wiki_cli/services/api_contracts.py:_md_code)
+    participant p13 as _SAFE_ID_RE.sub(…).strip(…).lower
+    participant p14 as max
+    participant p15 as _SAFE_ID_RE.sub(…).strip
+    participant p16 as len
+    participant p17 as _SAFE_ID_RE.sub
     participant p18 as re.findall
-    participant p19 as text.startswith
-    participant p20 as text.endswith
-    participant p21 as '\n'.join
-    p0-->>p1: sorted
-    p0-->>p2: str (src/llm_wiki_cli/services…_flow_api_contract_section)
-    p0-->>p3: item.get
-    p0-->>p2: str (src/llm_wiki_cli/services…_flow_api_contract_section)
-    p0-->>p3: item.get
+    participant p19 as str (src/llm_wiki_cli/services…racts.py:_operation_anchor)
+    participant p20 as text.startswith
+    participant p21 as text.endswith
+    p0-->>p1: sorted(operations, key=...)
+    p0-->>p2: str (src/llm_wiki_cli/services…_flow_api_contract_section)(...)
+    p0-->>p3: item.get('path')
+    p0-->>p2: str (src/llm_wiki_cli/services…_flow_api_contract_section)(...)
+    p0-->>p3: item.get('method')
     p0->>p4: _operation_anchor
-    p4-->>p5: operation.get (src/llm_wiki_cli/services…racts.py:_operation_anchor)
-    p4-->>p5: operation.get (src/llm_wiki_cli/services…racts.py:_operation_anchor)
-    p4-->>p5: operation.get (src/llm_wiki_cli/services…racts.py:_operation_anchor)
-    p4-->>p6: _SAFE_ID_RE.sub(…).strip(…).lower
-    p4-->>p7: _SAFE_ID_RE.sub(…).strip
-    p4-->>p8: _SAFE_ID_RE.sub
-    p4-->>p9: str (src/llm_wiki_cli/services…racts.py:_operation_anchor)
-    p0-->>p10: operation.get (src/llm_wiki_cli/services…_flow_api_contract_section)
-    p0-->>p10: operation.get (src/llm_wiki_cli/services…_flow_api_contract_section)
-    p0-->>p11: lines.append
-    p0->>p12: _md_code
-    p12-->>p13: str(…).replace(…).replace
-    p12-->>p14: str(…).replace
-    p12-->>p15: str (src/llm_wiki_cli/services/api_contracts.py:_md_code)
-    p12-->>p16: max
-    p12-->>p17: len
-    p12-->>p18: re.findall
-    p12-->>p16: max
-    p12-->>p19: text.startswith
-    p12-->>p20: text.endswith
-    p0-->>p11: lines.append
-    p0-->>p21: '\n'.join
+    p0-->>p5: operation.get (src/llm_wiki_cli/services…_flow_api_contract_section)('method')
+    p0-->>p5: operation.get (src/llm_wiki_cli/services…_flow_api_contract_section)('path')
+    p0-->>p6: lines.append(...)
+    p0->>p7: _md_code
+    p0-->>p6: lines.append('')
+    p0-->>p8: '\n'.join(lines)
+    p4-->>p9: operation.get (src/llm_wiki_cli/services…racts.py:_operation_anchor)('id')
+    p7-->>p10: str(…).replace(…).replace('\n', ' ')
+    p4-->>p9: operation.get (src/llm_wiki_cli/services…racts.py:_operation_anchor)('method', '')
+    p7-->>p11: str(…).replace('|', '\\|')
+    p4-->>p9: operation.get (src/llm_wiki_cli/services…racts.py:_operation_anchor)('path', '')
+    p7-->>p12: str (src/llm_wiki_cli/services/api_contracts.py:_md_code)(value)
+    p4-->>p13: _SAFE_ID_RE.sub(…).strip(…).lower
+    p7-->>p14: max(..., default=0)
+    p4-->>p15: _SAFE_ID_RE.sub(…).strip('-')
+    p7-->>p16: len(match)
+    p4-->>p17: _SAFE_ID_RE.sub('-', str(...))
+    p7-->>p18: re.findall('`+', text)
+    p4-->>p19: str (src/llm_wiki_cli/services…racts.py:_operation_anchor)(identity)
+    p7-->>p14: max(1, ...)
+    p7-->>p20: text.startswith('`')
+    p7-->>p21: text.endswith('`')
 ```
+
+> Call sequence diagram shows 28 of 28 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 9 of 9 (0 omitted); unresolved 17 of 17 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -34,40 +36,51 @@ sequenceDiagram
     participant p22 as (…).encode
     participant p23 as json.dumps (src/llm_wiki_cli/services…py:is_pristine_wiki_target)
     participant p24 as formatted_json_bytes
-    participant p25 as formatted_json_text(…).encode
-    p0-->>p1: Path
+    participant p25 as raw_config.encode
+    p0-->>p1: Path(wiki_dir)
     p0-->>p2: root.is_symlink
     p0-->>p3: root.exists
     p0-->>p4: root.is_dir
     p0->>p5: iter_page_kinds
-    p0-->>p6: sorted
-    p0-->>p7: root.rglob
+    p0-->>p6: sorted(root.rglob(...))
+    p0-->>p7: root.rglob('*')
     p0-->>p8: path.is_symlink
     p0-->>p9: path.relative_to(…).as_posix
-    p0-->>p10: path.relative_to
-    p0-->>p11: set
+    p0-->>p10: path.relative_to(root)
+    p0-->>p11: set(paths_by_relative)
     p0-->>p12: paths_by_relative.items
     p0-->>p13: path.is_dir
     p0-->>p14: path.is_file
     p0-->>p15: path.stat
-    p0-->>p16: path.read_text
-    p0-->>p16: path.read_text
-    p0-->>p16: path.read_text
-    p0-->>p17: json.loads
-    p0-->>p18: isinstance
-    p0-->>p19: frozenset
-    p0-->>p19: frozenset
-    p0-->>p19: frozenset
-    p0-->>p20: any
-    p0-->>p21: type
-    p0-->>p11: set
+    p0-->>p16: path.read_text(encoding='utf-8')
+    p0-->>p16: path.read_text(encoding='utf-8')
+    p0-->>p16: path.read_text(encoding='utf-8')
+    p0-->>p17: json.loads(raw_config)
+    p0-->>p18: isinstance(config, dict)
+    p0-->>p19: frozenset(config)
+    p0-->>p19: frozenset(legacy_fields)
+    p0-->>p19: frozenset(profiled_fields)
+    p0-->>p20: any(...)
+    p0-->>p21: type(config[...])
+    p0-->>p11: set(config)
     p0-->>p22: (…).encode
-    p0-->>p23: json.dumps (src/llm_wiki_cli/services…py:is_pristine_wiki_target)
+    p0-->>p23: json.dumps (src/llm_wiki_cli/services…py:is_pristine_wiki_target)(legacy_config, indent=2)
     p0->>p24: formatted_json_bytes
-    p24-->>p25: formatted_json_text(…).encode
+    p0-->>p25: raw_config.encode('utf-8')
 ```
 
-> Call sequence diagram shows 30 of 33 interactions; 3 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 33 interactions; 3 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 12 of 13 (1 omitted); unresolved 16 of 17 (1 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_bytes` | 30 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_bytes` | 30 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_text` | 32 | - | external | 1 |
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

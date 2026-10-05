@@ -39,89 +39,23 @@ weaker accounting explicitly.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/api.py"]
-    n1["src/llm_wiki_cli/config.py"]
-    n2["src/llm_wiki_cli/services/change_selection.py"]
-    n3["src/llm_wiki_cli/services/context_budget.py"]
-    n4["src/llm_wiki_cli/services/context_packet.py"]
-    n5["src/llm_wiki_cli/services/context_service.py"]
-    n6["src/llm_wiki_cli/services/contracts.py"]
-    n7["src/llm_wiki_cli/services/io.py"]
-    n8["src/llm_wiki_cli/services/request_json.py"]
-    n9["src/llm_wiki_cli/services/task_context.py"]
-    n10["src/llm_wiki_cli/services/task_context_v2.py"]
-    n11["src/llm_wiki_cli/services/token_counting.py"]
+    n0["src"]
+    n1["src/llm_wiki_cli/services/context_budget.py"]
     n0 --> n1
-    n0 --> n3
-    n0 --> n4
-    n0 --> n5
-    n0 --> n6
-    n0 --> n9
-    n0 --> n11
-    n1 --> n7
-    n3 --> n1
-    n3 --> n2
-    n3 --> n4
-    n3 --> n5
-    n3 --> n6
-    n3 --> n7
-    n3 --> n8
-    n3 --> n11
-    n4 --> n1
-    n4 --> n2
-    n4 --> n5
-    n4 --> n6
-    n5 --> n1
-    n5 --> n2
-    n5 --> n3
-    n5 --> n4
-    n5 --> n6
-    n5 --> n7
-    n9 --> n1
-    n9 --> n2
-    n9 --> n3
-    n9 --> n4
-    n9 --> n5
-    n9 --> n7
-    n9 --> n8
-    n9 --> n10
-    n9 --> n11
-    n10 --> n1
-    n10 --> n2
-    n10 --> n3
-    n10 --> n4
-    n10 --> n5
-    n10 --> n9
-    click n0 "../modules/api.md"
-    click n1 "../modules/config.md"
-    click n2 "../modules/change_selection.md"
-    click n3 "../modules/context_budget.md"
-    click n4 "../modules/context_packet.md"
-    click n5 "../modules/context_service.md"
-    click n6 "../modules/services_contracts.md"
-    click n7 "../modules/io.md"
-    click n8 "../modules/request_json.md"
-    click n9 "../modules/task_context.md"
-    click n10 "../modules/task_context_v2.md"
-    click n11 "../modules/token_counting.md"
+    n1 --> n0
+    click n1 "../modules/context_budget.md"
 ```
+
+> Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [api](../modules/api.md) |
-| Inbound | [context_service](../modules/context_service.md) |
-| Inbound | [task_context](../modules/task_context.md) |
-| Inbound | [task_context_v2](../modules/task_context_v2.md) |
-| Outbound | [config](../modules/config.md) |
-| Outbound | [change_selection](../modules/change_selection.md) |
-| Outbound | [context_packet](../modules/context_packet.md) |
-| Outbound | [context_service](../modules/context_service.md) |
-| Outbound | [services_contracts](../modules/services_contracts.md) |
-| Outbound | [io](../modules/io.md) |
-| Outbound | [request_json](../modules/request_json.md) |
-| Outbound | [token_counting](../modules/token_counting.md) |
+| Inbound | `src` (5) |
+| Outbound | `src` (8) |
+
+> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -16,52 +18,60 @@ sequenceDiagram
     participant p4 as concept.extensions.get
     participant p5 as governance.get
     participant p6 as _frozen_summaries
-    participant p7 as MappingProxyType (src/llm_wiki_cli/services…ation.py:_frozen_summaries)
-    participant p8 as dict (src/llm_wiki_cli/services…ation.py:_frozen_summaries)
-    participant p9 as sorted (src/llm_wiki_cli/services…ation.py:_frozen_summaries)
-    participant p10 as dict (src/llm_wiki_cli/services…ion_summaries_for_concepts)
-    participant p11 as sorted (src/llm_wiki_cli/services…ion_summaries_for_concepts)
-    participant p12 as set
-    participant p13 as concept_coordinates.values
-    participant p14 as list
-    participant p15 as _deep_copy
-    participant p16 as isinstance (src/llm_wiki_cli/services…verification.py:_deep_copy)
-    participant p17 as str
-    participant p18 as sorted (src/llm_wiki_cli/services…verification.py:_deep_copy)
-    participant p19 as value.items
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…ion_summaries_for_concepts)
-    p0-->>p2: TypeError
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…ion_summaries_for_concepts)
-    p0-->>p2: TypeError
-    p0-->>p3: MappingProxyType (src/llm_wiki_cli/services…ion_summaries_for_concepts)
-    p0-->>p4: concept.extensions.get
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…ion_summaries_for_concepts)
-    p0-->>p5: governance.get
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…ion_summaries_for_concepts)
-    p0-->>p3: MappingProxyType (src/llm_wiki_cli/services…ion_summaries_for_concepts)
+    participant p7 as dict (src/llm_wiki_cli/services…ion_summaries_for_concepts)
+    participant p8 as sorted (src/llm_wiki_cli/services…ion_summaries_for_concepts)
+    participant p9 as set
+    participant p10 as concept_coordinates.values
+    participant p11 as list
+    participant p12 as _deep_copy
+    participant p13 as selected.checks.items
+    participant p14 as MappingProxyType (src/llm_wiki_cli/services…ation.py:_frozen_summaries)
+    participant p15 as isinstance (src/llm_wiki_cli/services…verification.py:_deep_copy)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…ion_summaries_for_concepts)(knowledge_view, KnowledgeReadView)
+    p0-->>p2: TypeError('knowledge_view must be a KnowledgeReadView')
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…ion_summaries_for_concepts)(selected, MachineVerificationReadView)
+    p0-->>p2: TypeError('evaluated must be a MachineVerificationReadView')
+    p0-->>p3: MappingProxyType (src/llm_wiki_cli/services…ion_summaries_for_concepts)({...})
+    p0-->>p4: concept.extensions.get(GOVERNANCE_EXTENSION_KEY)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…ion_summaries_for_concepts)(governance, Mapping)
+    p0-->>p5: governance.get('uid')
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…ion_summaries_for_concepts)(uid, str)
+    p0-->>p3: MappingProxyType (src/llm_wiki_cli/services…ion_summaries_for_concepts)({...})
     p0->>p6: _frozen_summaries
-    p6-->>p7: MappingProxyType (src/llm_wiki_cli/services…ation.py:_frozen_summaries)
-    p6-->>p7: MappingProxyType (src/llm_wiki_cli/services…ation.py:_frozen_summaries)
-    p6-->>p8: dict (src/llm_wiki_cli/services…ation.py:_frozen_summaries)
-    p6-->>p9: sorted (src/llm_wiki_cli/services…ation.py:_frozen_summaries)
-    p0-->>p10: dict (src/llm_wiki_cli/services…ion_summaries_for_concepts)
-    p0-->>p11: sorted (src/llm_wiki_cli/services…ion_summaries_for_concepts)
-    p0-->>p12: set
-    p0-->>p13: concept_coordinates.values
-    p0-->>p14: list
-    p0->>p15: _deep_copy
-    p15-->>p16: isinstance (src/llm_wiki_cli/services…verification.py:_deep_copy)
-    p15-->>p17: str
-    p15->>p15: _deep_copy
-    p15-->>p18: sorted (src/llm_wiki_cli/services…verification.py:_deep_copy)
-    p15-->>p19: value.items
-    p15-->>p17: str
-    p15-->>p16: isinstance (src/llm_wiki_cli/services…verification.py:_deep_copy)
-    p15->>p15: _deep_copy
-    p15-->>p16: isinstance (src/llm_wiki_cli/services…verification.py:_deep_copy)
+    p0-->>p7: dict (src/llm_wiki_cli/services…ion_summaries_for_concepts)(invalid)
+    p0-->>p8: sorted (src/llm_wiki_cli/services…ion_summaries_for_concepts)(set(...))
+    p0-->>p9: set(concept_coordinates.values(...))
+    p0-->>p10: concept_coordinates.values
+    p0-->>p11: list(selected.invalidation_reasons)
+    p0->>p12: _deep_copy
+    p0-->>p8: sorted (src/llm_wiki_cli/services…ion_summaries_for_concepts)(selected.checks.items(...))
+    p0-->>p13: selected.checks.items
+    p0->>p6: _frozen_summaries
+    p0-->>p3: MappingProxyType (src/llm_wiki_cli/services…ion_summaries_for_concepts)({...})
+    p0-->>p3: MappingProxyType (src/llm_wiki_cli/services…ion_summaries_for_concepts)({...})
+    p0->>p6: _frozen_summaries
+    p0-->>p7: dict (src/llm_wiki_cli/services…ion_summaries_for_concepts)(summary)
+    p0-->>p8: sorted (src/llm_wiki_cli/services…ion_summaries_for_concepts)(set(...))
+    p0-->>p9: set(concept_coordinates.values(...))
+    p0-->>p10: concept_coordinates.values
+    p6-->>p14: MappingProxyType (src/llm_wiki_cli/services…ation.py:_frozen_summaries)(...)
+    p12-->>p15: isinstance (src/llm_wiki_cli/services…verification.py:_deep_copy)(value, Mapping)
+    p6-->>p14: MappingProxyType (src/llm_wiki_cli/services…ation.py:_frozen_summaries)(dict(...))
 ```
 
-> Call sequence diagram shows 30 of 41 interactions; 11 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 41 interactions; 11 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 21 of 28 (7 omitted); unresolved 5 of 6 (1 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/knowledge_verification.py:_frozen_summaries` | 12 | - | external | 2 |
+| `src/llm_wiki_cli/services/knowledge_verification.py:_deep_copy` | 22 | - | external | 5 |
+| `src/llm_wiki_cli/services/knowledge_verification.py:_deep_copy` | 22 | [src/llm_wiki_cli/services/knowledge_verification.py](../modules/knowledge_verification.md) | internal | 3 |
+| `src/llm_wiki_cli/services/knowledge_verification.py:_deep_copy` | 22 | - | unresolved | 1 |
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

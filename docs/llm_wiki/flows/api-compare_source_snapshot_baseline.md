@@ -6,59 +6,66 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as compare_source_snapshot_baseline
     participant p1 as source_snapshot_tree_baseline
-    participant p2 as isinstance
-    participant p3 as DocumentationPolicyError
-    participant p4 as snapshot.hashes_for
-    participant p5 as TreeBaseline
-    participant p6 as _hash_labeled_hashes
-    participant p7 as hashlib.sha256
-    participant p8 as sorted (src/llm_wiki_cli/services…cy.py:_hash_labeled_hashes)
-    participant p9 as file_hashes.items
-    participant p10 as digest.update
-    participant p11 as path.replace(…).encode
-    participant p12 as path.replace
-    participant p13 as file_hash.encode
-    participant p14 as digest.hexdigest
-    participant p15 as IntegrityDifference
-    participant p16 as tuple
-    participant p17 as sorted (src/llm_wiki_cli/services…e_source_snapshot_baseline)
-    participant p18 as set
+    participant p2 as IntegrityDifference
+    participant p3 as tuple
+    participant p4 as sorted (src/llm_wiki_cli/services…e_source_snapshot_baseline)
+    participant p5 as set
+    participant p6 as isinstance
+    participant p7 as DocumentationPolicyError
+    participant p8 as snapshot.hashes_for
+    participant p9 as TreeBaseline
+    participant p10 as _hash_labeled_hashes
+    participant p11 as hashlib.sha256
+    participant p12 as sorted (src/llm_wiki_cli/services…cy.py:_hash_labeled_hashes)
+    participant p13 as file_hashes.items
+    participant p14 as digest.update
+    participant p15 as path.replace(…).encode
+    participant p16 as path.replace
+    participant p17 as file_hash.encode
+    participant p18 as digest.hexdigest
     p0->>p1: source_snapshot_tree_baseline
-    p1-->>p2: isinstance
-    p1->>p3: DocumentationPolicyError
-    p1-->>p4: snapshot.hashes_for
-    p1->>p5: TreeBaseline
-    p1->>p6: _hash_labeled_hashes
-    p6-->>p7: hashlib.sha256
-    p6-->>p8: sorted (src/llm_wiki_cli/services…cy.py:_hash_labeled_hashes)
-    p6-->>p9: file_hashes.items
-    p6-->>p10: digest.update
-    p6-->>p11: path.replace(…).encode
-    p6-->>p12: path.replace
-    p6-->>p10: digest.update
-    p6-->>p10: digest.update
-    p6-->>p13: file_hash.encode
-    p6-->>p10: digest.update
-    p6-->>p14: digest.hexdigest
-    p0->>p15: IntegrityDifference
-    p0-->>p16: tuple
-    p0-->>p17: sorted (src/llm_wiki_cli/services…e_source_snapshot_baseline)
-    p0-->>p18: set
-    p0-->>p18: set
-    p0-->>p16: tuple
-    p0-->>p17: sorted (src/llm_wiki_cli/services…e_source_snapshot_baseline)
-    p0-->>p18: set
-    p0-->>p18: set
-    p0-->>p16: tuple
-    p0-->>p17: sorted (src/llm_wiki_cli/services…e_source_snapshot_baseline)
-    p0-->>p18: set
-    p0-->>p18: set
+    p0->>p2: IntegrityDifference
+    p0-->>p3: tuple(sorted(...))
+    p0-->>p4: sorted (src/llm_wiki_cli/services…e_source_snapshot_baseline)(...)
+    p0-->>p5: set(after)
+    p0-->>p5: set(before)
+    p0-->>p3: tuple(sorted(...))
+    p0-->>p4: sorted (src/llm_wiki_cli/services…e_source_snapshot_baseline)(...)
+    p0-->>p5: set(before)
+    p0-->>p5: set(after)
+    p0-->>p3: tuple(sorted(...))
+    p0-->>p4: sorted (src/llm_wiki_cli/services…e_source_snapshot_baseline)(...)
+    p0-->>p5: set(before)
+    p0-->>p5: set(after)
+    p1-->>p6: isinstance(snapshot, SourceSnapshot)
+    p1->>p7: DocumentationPolicyError
+    p1-->>p8: snapshot.hashes_for
+    p1->>p9: TreeBaseline
+    p1->>p10: _hash_labeled_hashes
+    p10-->>p11: hashlib.sha256
+    p10-->>p12: sorted (src/llm_wiki_cli/services…cy.py:_hash_labeled_hashes)(file_hashes.items(...))
+    p10-->>p13: file_hashes.items
+    p10-->>p14: digest.update(...)
+    p10-->>p15: path.replace(…).encode('utf-8')
+    p10-->>p16: path.replace('\\', '/')
+    p10-->>p14: digest.update(b'\x00')
+    p10-->>p14: digest.update(file_hash.encode(...))
+    p10-->>p17: file_hash.encode('ascii')
+    p10-->>p14: digest.update(b'\x00')
+    p10-->>p18: digest.hexdigest
 ```
+
+> Call sequence diagram shows 30 of 30 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 15 of 15 (0 omitted); unresolved 10 of 10 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

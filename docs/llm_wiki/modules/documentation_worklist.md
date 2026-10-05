@@ -21,8 +21,9 @@ evidence yet.  Callers must never infer grounding from reuse eligibility alone.
 | Source | Symbols |
 |--------|---------|
 | `.io` | `read_md` |
-| `.markdown_sections` | `GENERATED_INDEX_INTROS` |
+| `.markdown_sections` | `GENERATED_INDEX_INTROS`, `parse_markdown_sections` |
 | `.validation` | `nonnegative_int_or_none`, `normalize_legacy_portable_relative_path`, `require_nonnegative_int`, `require_positive_int` |
+| `.wiki_media` | `iter_markdown_link_targets`, `local_link_path`, `mask_markdown_code` |
 | `.wiki_surface` | `PageKind`, `WikiSurfacePage`, `collect_wiki_pages`, `is_safe_page_id` |
 | `.wiki_surface_index` | `SURFACE_INDEX_FILENAME` |
 | `__future__` | `annotations` |
@@ -45,24 +46,28 @@ flowchart LR
     n4["src/llm_wiki_cli/services/maintenance_queue.py"]
     n5["src/llm_wiki_cli/services/markdown_sections.py"]
     n6["src/llm_wiki_cli/services/validation.py"]
-    n7["src/llm_wiki_cli/services/wiki_surface.py"]
-    n8["src/llm_wiki_cli/services/wiki_surface_index.py"]
+    n7["src/llm_wiki_cli/services/wiki_media.py"]
+    n8["src/llm_wiki_cli/services/wiki_surface.py"]
+    n9["src/llm_wiki_cli/services/wiki_surface_index.py"]
     n0 --> n2
     n0 --> n6
     n1 --> n2
     n1 --> n3
     n1 --> n6
-    n1 --> n8
+    n1 --> n7
+    n1 --> n9
     n2 --> n3
     n2 --> n5
     n2 --> n6
     n2 --> n7
     n2 --> n8
+    n2 --> n9
     n4 --> n2
-    n7 --> n6
-    n8 --> n3
     n8 --> n6
-    n8 --> n7
+    n9 --> n3
+    n9 --> n6
+    n9 --> n7
+    n9 --> n8
     click n0 "../modules/controller.md"
     click n1 "../modules/documentation_run_dependencies.md"
     click n2 "../modules/documentation_worklist.md"
@@ -70,8 +75,9 @@ flowchart LR
     click n4 "../modules/maintenance_queue.md"
     click n5 "../modules/markdown_sections.md"
     click n6 "../modules/validation.md"
-    click n7 "../modules/wiki_surface.md"
-    click n8 "../modules/wiki_surface_index.md"
+    click n7 "../modules/wiki_media.md"
+    click n8 "../modules/wiki_surface.md"
+    click n9 "../modules/wiki_surface_index.md"
 ```
 
 ### Internal neighbors
@@ -84,6 +90,7 @@ flowchart LR
 | Outbound | [io](../modules/io.md) |
 | Outbound | [markdown_sections](../modules/markdown_sections.md) |
 | Outbound | [validation](../modules/validation.md) |
+| Outbound | [wiki_media](../modules/wiki_media.md) |
 | Outbound | [wiki_surface](../modules/wiki_surface.md) |
 | Outbound | [wiki_surface_index](../modules/wiki_surface_index.md) |
 
@@ -91,10 +98,10 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [DocumentationWorklistError](../entities/DocumentationWorklistError.md) | 132 | `ValueError` | Raised when deterministic worklist inputs are invalid. |
-| [DocumentationWorkItem](../entities/DocumentationWorkItem.md) | 137 | — | One stable semantic-work unit or explicitly accounted reuse/deferral. |
-| [DocumentationWorklist](../entities/DocumentationWorklist.md) | 180 | — | Stable semantic worklist and deterministic coverage summary. |
-| [_Candidate](../entities/Candidate.md) | 216 | — | — |
+| [DocumentationWorklistError](../entities/DocumentationWorklistError.md) | 133 | `ValueError` | Raised when deterministic worklist inputs are invalid. |
+| [DocumentationWorkItem](../entities/DocumentationWorkItem.md) | 138 | — | One stable semantic-work unit or explicitly accounted reuse/deferral. |
+| [DocumentationWorklist](../entities/DocumentationWorklist.md) | 181 | — | Stable semantic worklist and deterministic coverage summary. |
+| [_Candidate](../entities/Candidate.md) | 217 | — | — |
 
 ## Functions
 

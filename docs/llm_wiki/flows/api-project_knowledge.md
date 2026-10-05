@@ -2,14 +2,15 @@
 
 **Entry point:** `project_knowledge` (`api`)
 **Source:** [knowledge_projection](../modules/knowledge_projection.md)
-**Modules touched:** [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [immutable](../modules/immutable.md), and 20 more
+**Modules touched:** [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [filesystem_guard](../modules/filesystem_guard.md), [immutable](../modules/immutable.md), and 24 more
 
 **Complete modules touched:**
 
-- [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
+- [filesystem_guard](../modules/filesystem_guard.md)
 - [immutable](../modules/immutable.md)
+- [implementation_evidence](../modules/implementation_evidence.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
@@ -24,6 +25,9 @@
 - [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [maintenance_projection](../modules/maintenance_projection.md)
+- [maintenance_shapes](../modules/maintenance_shapes.md)
+- [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [progress](../modules/progress.md)
 - [section_ownership](../modules/section_ownership.md)
@@ -33,65 +37,85 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as project_knowledge
     participant p1 as _projection_profile
-    participant p2 as isinstance (src/llm_wiki_cli/services…on.py:_projection_profile)
-    participant p3 as KnowledgeProjectionProfile
-    participant p4 as KnowledgeProjectionError
-    participant p5 as _relationship_limit
-    participant p6 as isinstance (src/llm_wiki_cli/services…on.py:_relationship_limit)
-    participant p7 as _validated_source
-    participant p8 as isinstance (src/llm_wiki_cli/services…tion.py:_validated_source)
-    participant p9 as TypeError (src/llm_wiki_cli/services…tion.py:_validated_source)
-    participant p10 as require_validated_artifacts
-    participant p11 as isinstance (src/llm_wiki_cli/services…quire_validated_artifacts)
-    participant p12 as TypeError (src/llm_wiki_cli/services…quire_validated_artifacts)
-    participant p13 as str (src/llm_wiki_cli/services…tion.py:_validated_source)
-    participant p14 as (…).encode (src/llm_wiki_cli/services…tion.py:_validated_source)
-    participant p15 as json.dumps (src/llm_wiki_cli/services…tion.py:_validated_source)
-    participant p16 as dict (src/llm_wiki_cli/services…tion.py:_validated_source)
-    participant p17 as serialize_knowledge_index(…).encode
-    participant p18 as serialize_knowledge_index
-    participant p19 as json.dumps (src/llm_wiki_cli/services…serialize_knowledge_index)
-    participant p20 as knowledge_index_to_payload
-    participant p21 as isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload)
-    participant p22 as TypeError (src/llm_wiki_cli/services…nowledge_index_to_payload)
+    participant p2 as _relationship_limit
+    participant p3 as _validated_source
+    participant p4 as _approved_public_repository_identity
+    participant p5 as validate_governance_projection
+    participant p6 as str (src/llm_wiki_cli/services…tion.py:project_knowledge)
+    participant p7 as _initial_omitted_counts
+    participant p8 as _governance_summary
+    participant p9 as governance_by_locator.items
+    participant p10 as isinstance (src/llm_wiki_cli/services…tion.py:project_knowledge)
+    participant p11 as summary.get (src/llm_wiki_cli/services…tion.py:project_knowledge)
+    participant p12 as _project_relationships
+    participant p13 as sorted (src/llm_wiki_cli/services…tion.py:project_knowledge)
+    participant p14 as _project_concept
+    participant p15 as relation_sets.get
+    participant p16 as _empty_relationships
+    participant p17 as KnowledgeProjectionError
+    participant p18 as MappingProxyType (src/llm_wiki_cli/services…tion.py:project_knowledge)
+    participant p19 as _project_bundle
+    participant p20 as _projection_warnings
+    participant p21 as KnowledgeProjection
+    participant p22 as omitted.items (src/llm_wiki_cli/services…tion.py:project_knowledge)
+    participant p23 as knowledge_freshness_disclosure
     p0->>p1: _projection_profile
-    p1-->>p2: isinstance (src/llm_wiki_cli/services…on.py:_projection_profile)
-    p1->>p3: KnowledgeProjectionProfile
-    p1->>p4: KnowledgeProjectionError
-    p0->>p5: _relationship_limit
-    p5-->>p6: isinstance (src/llm_wiki_cli/services…on.py:_relationship_limit)
-    p5-->>p6: isinstance (src/llm_wiki_cli/services…on.py:_relationship_limit)
-    p5->>p4: KnowledgeProjectionError
-    p0->>p7: _validated_source
-    p7-->>p8: isinstance (src/llm_wiki_cli/services…tion.py:_validated_source)
-    p7-->>p9: TypeError (src/llm_wiki_cli/services…tion.py:_validated_source)
-    p7->>p4: KnowledgeProjectionError
-    p7->>p4: KnowledgeProjectionError
-    p7->>p10: require_validated_artifacts
-    p10-->>p11: isinstance (src/llm_wiki_cli/services…quire_validated_artifacts)
-    p10-->>p12: TypeError (src/llm_wiki_cli/services…quire_validated_artifacts)
-    p10-->>p11: isinstance (src/llm_wiki_cli/services…quire_validated_artifacts)
-    p10-->>p12: TypeError (src/llm_wiki_cli/services…quire_validated_artifacts)
-    p7->>p4: KnowledgeProjectionError
-    p7-->>p13: str (src/llm_wiki_cli/services…tion.py:_validated_source)
-    p7->>p4: KnowledgeProjectionError
-    p7-->>p14: (…).encode (src/llm_wiki_cli/services…tion.py:_validated_source)
-    p7-->>p15: json.dumps (src/llm_wiki_cli/services…tion.py:_validated_source)
-    p7-->>p16: dict (src/llm_wiki_cli/services…tion.py:_validated_source)
-    p7-->>p17: serialize_knowledge_index(…).encode
-    p7->>p18: serialize_knowledge_index
-    p18-->>p19: json.dumps (src/llm_wiki_cli/services…serialize_knowledge_index)
-    p18->>p20: knowledge_index_to_payload
-    p20-->>p21: isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload)
-    p20-->>p22: TypeError (src/llm_wiki_cli/services…nowledge_index_to_payload)
+    p0->>p2: _relationship_limit
+    p0->>p3: _validated_source
+    p0->>p4: _approved_public_repository_identity
+    p0->>p5: validate_governance_projection
+    p0-->>p6: str (src/llm_wiki_cli/services…tion.py:project_knowledge)(governance[...])
+    p0->>p7: _initial_omitted_counts
+    p0->>p8: _governance_summary
+    p0-->>p6: str (src/llm_wiki_cli/services…tion.py:project_knowledge)(summary[...])
+    p0-->>p9: governance_by_locator.items
+    p0-->>p10: isinstance (src/llm_wiki_cli/services…tion.py:project_knowledge)(summary, Mapping)
+    p0-->>p10: isinstance (src/llm_wiki_cli/services…tion.py:project_knowledge)(summary.get(...), str)
+    p0-->>p11: summary.get (src/llm_wiki_cli/services…tion.py:project_knowledge)('uid')
+    p0->>p12: _project_relationships
+    p0-->>p13: sorted (src/llm_wiki_cli/services…tion.py:project_knowledge)(knowledge.concepts, key=...)
+    p0->>p14: _project_concept
+    p0-->>p15: relation_sets.get(concept.locator, _empty_relationships(...))
+    p0->>p16: _empty_relationships
+    p0->>p17: KnowledgeProjectionError
+    p0-->>p18: MappingProxyType (src/llm_wiki_cli/services…tion.py:project_knowledge)(projected)
+    p0->>p19: _project_bundle
+    p0->>p20: _projection_warnings
+    p0->>p21: KnowledgeProjection
+    p0-->>p18: MappingProxyType (src/llm_wiki_cli/services…tion.py:project_knowledge)(bundle)
+    p0-->>p18: MappingProxyType (src/llm_wiki_cli/services…tion.py:project_knowledge)(...)
+    p0-->>p13: sorted (src/llm_wiki_cli/services…tion.py:project_knowledge)(projected_concepts)
+    p0-->>p18: MappingProxyType (src/llm_wiki_cli/services…tion.py:project_knowledge)(...)
+    p0-->>p13: sorted (src/llm_wiki_cli/services…tion.py:project_knowledge)(omitted.items(...))
+    p0-->>p22: omitted.items (src/llm_wiki_cli/services…tion.py:project_knowledge)
+    p0->>p23: knowledge_freshness_disclosure
 ```
 
-> Call sequence diagram shows 30 of 1862 interactions; 1832 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1995 interactions; 1965 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 11 of 550 (539 omitted); unresolved 4 of 365 (361 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/knowledge_projection.py:_projection_profile` | 2 | - | external | 1 |
+| `src/llm_wiki_cli/services/knowledge_projection.py:_projection_profile` | 2 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 1 |
+| `src/llm_wiki_cli/services/knowledge_projection.py:_projection_profile` | 2 | [src/llm_wiki_cli/services/knowledge_projection.py](../modules/knowledge_projection.md) | internal | 1 |
+| `src/llm_wiki_cli/services/knowledge_projection.py:_relationship_limit` | 6 | - | external | 2 |
+| `src/llm_wiki_cli/services/knowledge_projection.py:_relationship_limit` | 6 | [src/llm_wiki_cli/services/knowledge_projection.py](../modules/knowledge_projection.md) | internal | 1 |
+| `src/llm_wiki_cli/services/knowledge_projection.py:_validated_source` | 10 | - | external | 5 |
+| `src/llm_wiki_cli/services/knowledge_projection.py:_validated_source` | 10 | [src/llm_wiki_cli/services/knowledge_projection.py](../modules/knowledge_projection.md) | internal | 6 |
+| `src/llm_wiki_cli/services/knowledge_projection.py:_validated_source` | 10 | [src/llm_wiki_cli/services/knowledge_artifacts.py](../modules/knowledge_artifacts.md) | internal | 2 |
+> Omission summary shows 8 of 458 groups; 450 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

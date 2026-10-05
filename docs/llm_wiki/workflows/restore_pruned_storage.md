@@ -1,7 +1,7 @@
 # restore_pruned_storage
 
 **Entry point:** `knowledge_storage_lifecycle.restore_pruned_storage`
-**Modules involved:** [filesystem_guard](../modules/filesystem_guard.md), [knowledge_governance](../modules/knowledge_governance.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md), [storage_spool](../modules/storage_spool.md)
+**Modules involved:** [filesystem_guard](../modules/filesystem_guard.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md), [maintenance_protocol](../modules/maintenance_protocol.md), [storage_spool](../modules/storage_spool.md)
 
 > Restore cleanup preimages into their recorded generation without overwrites.
 
@@ -27,19 +27,20 @@
 17. `knowledge_storage_io.read_guarded`
 18. `knowledge_storage.digest`
 19. `knowledge_storage.KnowledgeStorageError`
-20. `knowledge_governance.governance_lock`
-21. `knowledge_storage_io._absolute_path`
-22. `knowledge_storage_io.read_guarded`
-23. `filesystem_guard.ensure_guarded_directory`
-24. `filesystem_guard.atomic_write_guarded_bytes`
+20. `maintenance_protocol.governance_writer_lock`
+21. `maintenance_protocol.storage_writer_lock`
+22. `knowledge_storage_io._absolute_path`
+23. `knowledge_storage_io.read_guarded`
+24. `filesystem_guard.ensure_guarded_directory`
+25. `filesystem_guard.atomic_write_guarded_bytes`
 
 ## Touches
 
 - [filesystem_guard](../modules/filesystem_guard.md)
-- [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md)
+- [maintenance_protocol](../modules/maintenance_protocol.md)
 - [storage_spool](../modules/storage_spool.md)
 
 ## Behavior

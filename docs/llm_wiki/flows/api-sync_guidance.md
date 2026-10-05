@@ -6,21 +6,28 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as sync_guidance
     participant p1 as _render_recovery_command
-    participant p2 as _uses_windows_command_line
-    participant p3 as subprocess.list2cmdline
-    participant p4 as shlex.join
-    participant p5 as str
+    participant p2 as str
+    participant p3 as _uses_windows_command_line
+    participant p4 as subprocess.list2cmdline
+    participant p5 as shlex.join
     p0->>p1: _render_recovery_command
-    p1->>p2: _uses_windows_command_line
-    p1-->>p3: subprocess.list2cmdline
-    p1-->>p4: shlex.join
-    p0-->>p5: str
+    p0-->>p2: str(wiki_dir)
+    p1->>p3: _uses_windows_command_line
+    p1-->>p4: subprocess.list2cmdline(arguments)
+    p1-->>p5: shlex.join(arguments)
 ```
+
+> Call sequence diagram shows 5 of 5 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 3 of 3 (0 omitted); unresolved 0 of 0 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

@@ -6,61 +6,83 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as normalize_module_observation
     participant p1 as _normalize_module_observation
     participant p2 as _inventory_language
-    participant p3 as isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)
-    participant p4 as _InventoryNormalizationError
-    participant p5 as file_data.get (src/llm_wiki_cli/services…ce.py:_inventory_language)
-    participant p6 as isinstance (src/llm_wiki_cli/services…malize_module_observation)
-    participant p7 as _record_array
-    participant p8 as isinstance (src/llm_wiki_cli/services…evidence.py:_record_array)
-    participant p9 as all (src/llm_wiki_cli/services…evidence.py:_record_array)
-    participant p10 as _validate_import_record
-    participant p11 as record.get (src/llm_wiki_cli/services…y:_validate_import_record)
-    participant p12 as isinstance (src/llm_wiki_cli/services…y:_validate_import_record)
-    participant p13 as _validate_optional_strings
-    participant p14 as require_string
-    participant p15 as isinstance (src/llm_wiki_cli/services…idation.py:require_string)
-    participant p16 as value.encode
-    participant p17 as _validate_optional_booleans
-    participant p18 as require_bool
+    participant p3 as isinstance (src/llm_wiki_cli/services…malize_module_observation)
+    participant p4 as _record_array
+    participant p5 as _validate_import_record
+    participant p6 as _record_name
+    participant p7 as _validate_module_entity_record
+    participant p8 as seen_names.get
+    participant p9 as _copy_selected_fields
+    participant p10 as class_summaries.append
+    participant p11 as _validate_callable_record
+    participant p12 as function_summaries.append
+    participant p13 as _structural_copy
+    participant p14 as module_name.strip
+    participant p15 as _InventoryNormalizationError
+    participant p16 as _json_array
+    participant p17 as _validate_string_array
+    participant p18 as _validate_constant_record
+    participant p19 as constant_summaries.append
+    participant p20 as _validate_module_call_record
+    participant p21 as call_summaries.append
     p0->>p1: _normalize_module_observation
     p1->>p2: _inventory_language
-    p2-->>p3: isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)
-    p2->>p4: _InventoryNormalizationError
-    p2-->>p5: file_data.get (src/llm_wiki_cli/services…ce.py:_inventory_language)
-    p2-->>p3: isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)
-    p2->>p4: _InventoryNormalizationError
-    p2->>p4: _InventoryNormalizationError
-    p1-->>p6: isinstance (src/llm_wiki_cli/services…malize_module_observation)
-    p1->>p7: _record_array
-    p7->>p4: _InventoryNormalizationError
-    p7-->>p8: isinstance (src/llm_wiki_cli/services…evidence.py:_record_array)
-    p7->>p4: _InventoryNormalizationError
-    p7-->>p9: all (src/llm_wiki_cli/services…evidence.py:_record_array)
-    p7-->>p8: isinstance (src/llm_wiki_cli/services…evidence.py:_record_array)
-    p7->>p4: _InventoryNormalizationError
-    p1->>p7: _record_array
-    p1->>p7: _record_array
-    p1->>p10: _validate_import_record
-    p10-->>p11: record.get (src/llm_wiki_cli/services…y:_validate_import_record)
-    p10-->>p12: isinstance (src/llm_wiki_cli/services…y:_validate_import_record)
-    p10->>p4: _InventoryNormalizationError
-    p10->>p13: _validate_optional_strings
-    p13->>p14: require_string
-    p14-->>p15: isinstance (src/llm_wiki_cli/services…idation.py:require_string)
-    p14-->>p16: value.encode
-    p13->>p4: _InventoryNormalizationError
-    p10->>p13: _validate_optional_strings
-    p10->>p17: _validate_optional_booleans
-    p17->>p18: require_bool
+    p1-->>p3: isinstance (src/llm_wiki_cli/services…malize_module_observation)(file_data, Mapping)
+    p1->>p4: _record_array
+    p1->>p4: _record_array
+    p1->>p4: _record_array
+    p1->>p5: _validate_import_record
+    p1->>p6: _record_name
+    p1->>p7: _validate_module_entity_record
+    p1-->>p8: seen_names.get(name, 0)
+    p1->>p9: _copy_selected_fields
+    p1-->>p10: class_summaries.append(summary)
+    p1->>p11: _validate_callable_record
+    p1-->>p12: function_summaries.append(_copy_selected_fields(...))
+    p1->>p9: _copy_selected_fields
+    p1->>p13: _structural_copy
+    p1-->>p3: isinstance (src/llm_wiki_cli/services…malize_module_observation)(module_name, str)
+    p1-->>p14: module_name.strip
+    p1->>p15: _InventoryNormalizationError
+    p1->>p16: _json_array
+    p1->>p17: _validate_string_array
+    p1->>p4: _record_array
+    p1->>p4: _record_array
+    p1->>p18: _validate_constant_record
+    p1-->>p19: constant_summaries.append(_copy_selected_fields(...))
+    p1->>p9: _copy_selected_fields
+    p1->>p13: _structural_copy
+    p1->>p20: _validate_module_call_record
+    p1-->>p21: call_summaries.append(_copy_selected_fields(...))
+    p1->>p9: _copy_selected_fields
 ```
 
-> Call sequence diagram shows 30 of 120 interactions; 90 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 120 interactions; 90 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 2 of 27 (25 omitted); unresolved 6 of 21 (15 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:_inventory_language` | 3 | - | external | 2 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:_inventory_language` | 3 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 3 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:_inventory_language` | 3 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:_record_array` | 11 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 3 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:_record_array` | 11 | - | external | 3 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:_validate_import_record` | 20 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:_validate_import_record` | 20 | - | external | 1 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:_validate_import_record` | 20 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 4 |
+> Omission summary shows 8 of 48 groups; 40 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 
@@ -134,35 +156,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| normalize_module_observation | _normalize_module_observation | 219 | `_normalize_module_observation(file_data)` |
-| _normalize_module_observation | _inventory_language | 426 | `_inventory_language(file_data)` |
-| _inventory_language | isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language) | 542 | `isinstance(file_data, Mapping)` |
-| _inventory_language | _InventoryNormalizationError | 543 | `_InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)` |
-| _inventory_language | file_data.get (src/llm_wiki_cli/services…ce.py:_inventory_language) | 544 | `file_data.get('language')` |
-| _inventory_language | isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language) | 545 | `isinstance(language, str)` |
-| _inventory_language | _InventoryNormalizationError | 546 | `_InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)` |
-| _inventory_language | _InventoryNormalizationError | 548 | `_InventoryNormalizationError(UNKNOWN_UNSUPPORTED_LANGUAGE)` |
-| _normalize_module_observation | isinstance (src/llm_wiki_cli/services…malize_module_observation) | 427 | `isinstance(file_data, Mapping)` |
-| _normalize_module_observation | _record_array | 428 | `_record_array(file_data, 'classes', required=True)` |
-| _record_array | _InventoryNormalizationError | 560 | `_InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)` |
+| normalize_module_observation | _normalize_module_observation | 220 | `_normalize_module_observation(file_data)` |
+| _normalize_module_observation | _inventory_language | 427 | `_inventory_language(file_data)` |
+| _inventory_language | isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language) | 543 | `isinstance(file_data, Mapping)` |
+| _inventory_language | _InventoryNormalizationError | 544 | `_InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)` |
+| _inventory_language | file_data.get (src/llm_wiki_cli/services…ce.py:_inventory_language) | 545 | `file_data.get('language')` |
+| _inventory_language | isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language) | 546 | `isinstance(language, str)` |
+| _inventory_language | _InventoryNormalizationError | 547 | `_InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)` |
+| _inventory_language | _InventoryNormalizationError | 549 | `_InventoryNormalizationError(UNKNOWN_UNSUPPORTED_LANGUAGE)` |
+| _normalize_module_observation | isinstance (src/llm_wiki_cli/services…malize_module_observation) | 428 | `isinstance(file_data, Mapping)` |
+| _normalize_module_observation | _record_array | 429 | `_record_array(file_data, 'classes', required=True)` |
+| _record_array | _InventoryNormalizationError | 561 | `_InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `class_summaries.append` | `_normalize_module_observation` | 446 |
-| mutation | `function_summaries.append` | `_normalize_module_observation` | 451 |
-| mutation | `constant_summaries.append` | `_normalize_module_observation` | 480 |
-| mutation | `call_summaries.append` | `_normalize_module_observation` | 495 |
+| mutation | `class_summaries.append` | `_normalize_module_observation` | 447 |
+| mutation | `function_summaries.append` | `_normalize_module_observation` | 452 |
+| mutation | `constant_summaries.append` | `_normalize_module_observation` | 481 |
+| mutation | `call_summaries.append` | `_normalize_module_observation` | 496 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_inventory_language` | `isinstance` | 542 |
-| unresolved_call | `_inventory_language` | `file_data.get` | 544 |
-| external_call | `_inventory_language` | `isinstance` | 545 |
-| external_call | `_normalize_module_observation` | `isinstance` | 427 |
+| external_call | `_inventory_language` | `isinstance` | 543 |
+| unresolved_call | `_inventory_language` | `file_data.get` | 545 |
+| external_call | `_inventory_language` | `isinstance` | 546 |
+| external_call | `_normalize_module_observation` | `isinstance` | 428 |
 | step_limit | `normalize_module_observation` | `first 12 steps` | 0 |
 
 ## Behavior

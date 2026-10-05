@@ -38,7 +38,7 @@ flowchart LR
     n2["preflight (src/llm_wiki_cli/services/knowledge_maintenance.py)"]
     n3["capture_knowledge_slice (src/llm_wiki_cli/services/knowledge_storage_access.py)"]
     n4["_committed_inputs (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
-    n5["recover_knowledge_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
+    n5["_recover_knowledge_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
     n6["restore_pruned_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
     n7["SyncManifest.load (src/llm_wiki_cli/services/sync_manifest.py)"]
     n8["PageTransitionExecution.__init__ (src/llm_wiki_cli/services/sync_transition_execution.py)"]
@@ -84,7 +84,7 @@ flowchart LR
 | `preflight` | call | [knowledge_maintenance](../modules/knowledge_maintenance.md) | 1 |
 | `capture_knowledge_slice` | call | [knowledge_storage_access](../modules/knowledge_storage_access.md) | 1 |
 | `_committed_inputs` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |
-| `recover_knowledge_storage` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |
+| `_recover_knowledge_storage` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |
 | `restore_pruned_storage` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |
 | `SyncManifest.load` | call | [sync_manifest](../modules/sync_manifest.md) | 1 |
 | `PageTransitionExecution.__init__` | call | [sync_transition_execution](../modules/sync_transition_execution.md) | 1 |

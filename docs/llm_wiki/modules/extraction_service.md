@@ -18,10 +18,11 @@ and explicit extractor status, cache, plugin, and source-snapshot metadata.
 | `..extractors.common` | `LANGUAGE_EXTENSIONS`, `filter_bundled_source_inventory`, `inventory_language_for_path`, `normalize_include_tests` |
 | `..extractors.go_extractor` | `GoExtractionRequest` |
 | `..extractors.haskell_extractor` | `HaskellExtractionRequest` |
+| `..extractors.python_bindings` | `valid_python_constructor_facts` |
 | `..extractors.python_contracts` | `finalize_inventory_model_kinds` |
 | `..extractors.python_extractor` | `ComponentVisitor` |
 | `..extractors.rust_extractor` | `RustExtractionRequest` |
-| `.analysis_capture` | `capture_operation`, `capture_analysis` |
+| `.analysis_capture` | `capture_operation`, `capture_analysis`, `capture_analysis` |
 | `.api_contracts` | `attach_routes_to_entry_points`, `build_api_contracts` |
 | `.contracts` | `EXTRACT_DATA_FLOW_DETAILS_SCHEMA_VERSION`, `EXTRACT_SCHEMA_VERSION` |
 | `.data_flow` | `DEFAULT_DATA_FLOW_DETAILS_FLOW_LIMIT`, `analyze_data_flow`, `analyze_data_flow_detailed`, `build_data_flow_context`, `data_flow_effective_limits` |
@@ -35,12 +36,13 @@ and explicit extractor status, cache, plugin, and source-snapshot metadata.
 | `.packages` | `discover_packages`, `stamp_inventory_packages` |
 | `.plugins` | `get_extractor_registry`, `iter_components`, `load_entry_point`, `lock_path`, `parallel_safe_extractor_entry_points`, `runtime_project_plugins_enabled` |
 | `.progress` | `observed_phase`, `current_progress`, `with_progress`, `record_counts` |
-| `.python_calls` | `PythonCallContext`, `resolve_python_call` |
+| `.python_calls` | `PythonCallContext`, `resolve_python_call`, `resolve_python_call_decision` |
+| `.python_implementation` | `SCHEMA`, `comparison_id`, `envelope`, `producer`, `analysis_identity` |
 | `.python_imports` | `is_python_source` |
 | `.python_observations` | `data_effect_sidecar`, `import_sidecar`, `partition_sidecars`, `valid_cached_sidecars` |
 | `.resource_diagnostics` | `format_resource_failure` |
 | `.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `path_is_selected`, `resolve_source_selection`, `selection_may_contain_path` |
-| `.source_snapshot` | `SourceFile`, `SourceSnapshot`, `SourceSnapshotError`, `build_source_snapshot`, `format_unsupported_source_summary`, `unsupported_source_summary` |
+| `.source_snapshot` | `SourceFile`, `SourceSnapshot`, `SourceSnapshotError`, `build_source_snapshot`, `format_unsupported_source_summary`, `unsupported_source_summary`, `SourceSnapshotMutationError` |
 | `__future__` | `annotations` |
 | `concurrent.futures` | `ThreadPoolExecutor` |
 | `copy` | `deepcopy` |
@@ -74,10 +76,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (21) |
-| Outbound | `src` (27) |
+| Inbound | `src` (22) |
+| Outbound | `src` (29) |
 
-> All 48 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 51 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -85,14 +87,14 @@ flowchart LR
 |-------|------|-------|-------------|
 | [ExtractorStatus](../entities/ExtractorStatus.md) | 140 | — | — |
 | [InventoryRequest](../entities/InventoryRequest.md) | 148 | — | — |
-| [InventoryResult](../entities/InventoryResult.md) | 173 | — | — |
-| [ExtractPayloadResult](../entities/ExtractPayloadResult.md) | 206 | — | — |
-| [ExtractorFailureError](../entities/ExtractorFailureError.md) | 226 | `RuntimeError` | Raised when one or more extractors fail during payload construction. |
-| [_ExtractionPlan](../entities/ExtractionPlan.md) | 251 | — | — |
-| [_ExtractionOutcome](../entities/ExtractionOutcome.md) | 264 | — | — |
-| [_InventoryBuildContext](../entities/InventoryBuildContext.md) | 275 | — | — |
-| [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 295 | — | — |
-| [_ComposeParserState](../entities/ComposeParserState.md) | 3150 | — | — |
+| [InventoryResult](../entities/InventoryResult.md) | 174 | — | — |
+| [ExtractPayloadResult](../entities/ExtractPayloadResult.md) | 208 | — | — |
+| [ExtractorFailureError](../entities/ExtractorFailureError.md) | 228 | `RuntimeError` | Raised when one or more extractors fail during payload construction. |
+| [_ExtractionPlan](../entities/ExtractionPlan.md) | 253 | — | — |
+| [_ExtractionOutcome](../entities/ExtractionOutcome.md) | 266 | — | — |
+| [_InventoryBuildContext](../entities/InventoryBuildContext.md) | 278 | — | — |
+| [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 300 | — | — |
+| [_ComposeParserState](../entities/ComposeParserState.md) | 3239 | — | — |
 
 ## Functions
 
@@ -109,7 +111,8 @@ flowchart LR
 | `_coerce_inventory_request` | `(request, legacy_args: tuple, legacy_kwargs: dict) -> InventoryRequest` | — | — |
 | `get_inventory_result` | `(request = _MISSING_INVENTORY_REQUEST, *legacy_args, **legacy_kwargs) -> InventoryResult` | — | Scan source files across all registered languages and return inventory. |
 | `_build_inventory_result` | `(request: InventoryRequest) -> InventoryResult` | `@capture_operation` | — |
-| `_completed_inventory_result` | `(context: _InventoryBuildContext, *, inventory: dict, statuses: dict[str, ExtractorStatus], extraction_job_plan: ExtractionJobPlan, selected_plugin_components: tuple[dict, ...], producer_plugin_components: tuple[dict, ...], evaluated_source_snapshot: SourceSnapshot, outcomes_by_language: dict[str, _ExtractionOutcome]) -> InventoryResult` | — | — |
+| `_completed_inventory_result` | `(context: _InventoryBuildContext, *, inventory: dict, statuses: dict[str, ExtractorStatus], extraction_job_plan: ExtractionJobPlan, selected_plugin_components: tuple[dict, ...], producer_plugin_components: tuple[dict, ...], evaluated_source_snapshot: SourceSnapshot, outcomes_by_language: dict[str, _ExtractionOutcome], implementation_observations: dict \| None) -> InventoryResult` | — | — |
+| `_implementation_observations` | `(context: _InventoryBuildContext, outcomes: dict[str, _ExtractionOutcome]) -> dict \| None` | — | — |
 | `_python_extraction_sidecars` | `(context: _InventoryBuildContext, outcomes_by_language: dict[str, _ExtractionOutcome]) -> dict` | `@observed_phase('sidecar_observations')` | — |
 | `_inventory_plugin_state` | `(context: _InventoryBuildContext, statuses: dict[str, ExtractorStatus], inventory: dict) -> tuple[tuple[dict, ...], tuple[dict, ...], SourceSnapshot]` | — | — |
 | `_selected_extractor_plugin_components` | `(context: _InventoryBuildContext, statuses: dict[str, ExtractorStatus]) -> tuple[dict, ...]` | — | — |
@@ -163,7 +166,7 @@ flowchart LR
 | `_public_data_flow_coverage` | `(coverage: dict) -> dict` | — | — |
 | `_public_detailed_data_flow` | `(flow: dict) -> dict` | — | — |
 | `_data_flow_details_contract` | `(*, deep: bool, inventory: dict, unsupported_sources: dict, flows: list[dict]) -> dict` | — | — |
-| `build_extract_payload` | `(src_dir: str = '.', *, changed: bool = False, summary: bool = False, deep: bool = False, paths: list[str] \| None = None, package_filter: str \| None = None, include_empty: bool = False, helper_cache_dir: str \| None = None, include_tests: Iterable[str] \| None = None, openapi_file: str \| Path \| None = None, allow_external_src: bool = False, read_only: bool = False, include_plugins: bool = True, source_plugins_only: bool = False, source_selection: str \| Path \| None = None, source_snapshot: SourceSnapshot \| None = None) -> ExtractPayloadResult` | — | Build the stable extract JSON payload without printing or exiting. |
+| `build_extract_payload` | `(src_dir: str = '.', *, changed: bool = False, summary: bool = False, deep: bool = False, paths: list[str] \| None = None, package_filter: str \| None = None, include_empty: bool = False, helper_cache_dir: str \| None = None, include_tests: Iterable[str] \| None = None, openapi_file: str \| Path \| None = None, allow_external_src: bool = False, read_only: bool = False, include_plugins: bool = True, source_plugins_only: bool = False, source_selection: str \| Path \| None = None, source_snapshot: SourceSnapshot \| None = None, capture_implementation_observations: bool = False) -> ExtractPayloadResult` | — | Build the stable extract JSON payload without printing or exiting. |
 | `run` | `(args)` | — | — |
 | `_module_name` | `(filepath: str) -> str` | — | — |
 | `_build_symbol_file_index` | `(inventory: dict) -> dict[str, set[str]]` | — | — |

@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -18,21 +20,26 @@ sequenceDiagram
     participant p6 as component.endswith
     participant p7 as component.split(…)[…].casefold
     participant p8 as component.split
-    p0-->>p1: component.encode
+    p0-->>p1: component.encode('utf-8')
     p0->>p2: SharedValidationError
-    p0-->>p3: unicodedata.normalize
+    p0-->>p3: unicodedata.normalize('NFC', component)
     p0->>p2: SharedValidationError
-    p0-->>p4: any
-    p0-->>p5: ord
-    p0-->>p5: ord
+    p0-->>p4: any(...)
+    p0-->>p5: ord(character)
+    p0-->>p5: ord(character)
     p0->>p2: SharedValidationError
-    p0-->>p6: component.endswith
-    p0-->>p4: any
+    p0-->>p6: component.endswith((...))
+    p0-->>p4: any(...)
     p0->>p2: SharedValidationError
     p0-->>p7: component.split(…)[…].casefold
-    p0-->>p8: component.split
+    p0-->>p8: component.split('.', 1)
     p0->>p2: SharedValidationError
 ```
+
+> Call sequence diagram shows 14 of 14 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 5 of 5 (0 omitted); unresolved 4 of 4 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

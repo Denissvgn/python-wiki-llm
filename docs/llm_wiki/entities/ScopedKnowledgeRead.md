@@ -1,6 +1,6 @@
 # ScopedKnowledgeRead
 
-**Location:** `src/llm_wiki_cli/services/knowledge_storage_access.py:29`
+**Location:** `src/llm_wiki_cli/services/knowledge_storage_access.py:31`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_storage_access](../modules/knowledge_storage_access.md)
@@ -20,6 +20,8 @@ Owns a selected logical slice, its validated manifest header, consumed Markdown 
 | `markdown` | `dict[str, str]` | *required* | — |
 | `reader` | `KnowledgeStoreReader` | `field(repr=False)` | — |
 | `session` | `StorageReadSession` | `field(repr=False)` | — |
+| `maintenance_validation` | `dict[str, Any] \| None` | `field(default=None)` | — |
+| `maintenance_marker_present` | `bool` | `field(default=False, repr=False)` | — |
 
 ## Methods
 
@@ -49,7 +51,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [knowledge_storage_access](../modules/knowledge_storage_access.md) | 1 | `manifest`, `markdown`, `reader`, `session`, `slice` |
+| [knowledge_storage_access](../modules/knowledge_storage_access.md) | 1 | `maintenance_marker_present`, `maintenance_validation`, `manifest`, `markdown`, `reader`, `session`, `slice` |
 
 ### References
 

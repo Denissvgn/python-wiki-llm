@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -16,57 +18,73 @@ sequenceDiagram
     participant p4 as isinstance (src/llm_wiki_cli/services…tomic_write_private_bytes)
     participant p5 as TypeError (src/llm_wiki_cli/services…tomic_write_private_bytes)
     participant p6 as _atomic_write_private_bytes_windows
-    participant p7 as uuid.uuid4 (src/llm_wiki_cli/services…ite_private_bytes_windows)
-    participant p8 as guard_windows_directory_chain
-    participant p9 as WindowsDirectoryGuardError
-    participant p10 as Path (src/llm_wiki_cli/services…d_windows_directory_chain)
-    participant p11 as os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)
-    participant p12 as os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)
-    participant p13 as handles.append
-    participant p14 as _open_windows_directory_guard
-    participant p15 as ctypes.WinDLL (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p16 as create_file (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p17 as _windows_api_path
-    participant p18 as os.path.abspath (src/llm_wiki_cli/services…uard.py:_windows_api_path)
-    participant p19 as os.fspath (src/llm_wiki_cli/services…uard.py:_windows_api_path)
-    participant p20 as value.startswith
-    participant p21 as wintypes.HANDLE (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p22 as ctypes.get_last_error (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p23 as ctypes.WinError (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p24 as _WindowsDirectoryGuardUnavailableError
-    p0-->>p1: Path (src/llm_wiki_cli/services…tomic_write_private_bytes)
+    participant p7 as _atomic_write_private_bytes_posix
+    participant p8 as uuid.uuid4 (src/llm_wiki_cli/services…ite_private_bytes_windows)
+    participant p9 as getattr (src/llm_wiki_cli/services…write_private_bytes_posix)
+    participant p10 as guard_windows_directory_chain
+    participant p11 as OSError (src/llm_wiki_cli/services…write_private_bytes_posix)
+    participant p12 as Path (src/llm_wiki_cli/services…ite_private_bytes_windows)
+    participant p13 as os.path.lexists (src/llm_wiki_cli/services…ite_private_bytes_windows)
+    participant p14 as os.open
+    participant p15 as target.lstat
+    participant p16 as uuid.uuid4 (src/llm_wiki_cli/services…write_private_bytes_posix)
+    participant p17 as getattr (src/llm_wiki_cli/services…ite_private_bytes_windows)
+    participant p18 as stat.S_ISREG (src/llm_wiki_cli/services…ite_private_bytes_windows)
+    participant p19 as Path (src/llm_wiki_cli/services…write_private_bytes_posix)
+    participant p20 as WindowsFileGuardError
+    participant p21 as open_windows_private_write_file
+    participant p22 as os.fdopen (src/llm_wiki_cli/services…ite_private_bytes_windows)
+    participant p23 as os.close (src/llm_wiki_cli/services…write_private_bytes_posix)
+    p0-->>p1: Path (src/llm_wiki_cli/services…tomic_write_private_bytes)(path)
     p0-->>p2: target.is_absolute
-    p0-->>p3: OSError (src/llm_wiki_cli/services…tomic_write_private_bytes)
-    p0-->>p3: OSError (src/llm_wiki_cli/services…tomic_write_private_bytes)
-    p0-->>p4: isinstance (src/llm_wiki_cli/services…tomic_write_private_bytes)
-    p0-->>p5: TypeError (src/llm_wiki_cli/services…tomic_write_private_bytes)
+    p0-->>p3: OSError (src/llm_wiki_cli/services…tomic_write_private_bytes)(...)
+    p0-->>p3: OSError (src/llm_wiki_cli/services…tomic_write_private_bytes)(...)
+    p0-->>p4: isinstance (src/llm_wiki_cli/services…tomic_write_private_bytes)(data, bytes)
+    p0-->>p5: TypeError (src/llm_wiki_cli/services…tomic_write_private_bytes)('Private atomic output data must be bytes.')
     p0->>p6: _atomic_write_private_bytes_windows
-    p6-->>p7: uuid.uuid4 (src/llm_wiki_cli/services…ite_private_bytes_windows)
-    p6-->>p7: uuid.uuid4 (src/llm_wiki_cli/services…ite_private_bytes_windows)
-    p6->>p8: guard_windows_directory_chain
-    p8->>p9: WindowsDirectoryGuardError
-    p8-->>p10: Path (src/llm_wiki_cli/services…d_windows_directory_chain)
-    p8-->>p11: os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)
-    p8-->>p12: os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)
-    p8->>p9: WindowsDirectoryGuardError
-    p8-->>p10: Path (src/llm_wiki_cli/services…d_windows_directory_chain)
-    p8-->>p13: handles.append
-    p8->>p14: _open_windows_directory_guard
-    p14-->>p15: ctypes.WinDLL (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p14-->>p16: create_file (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p14->>p17: _windows_api_path
-    p17-->>p18: os.path.abspath (src/llm_wiki_cli/services…uard.py:_windows_api_path)
-    p17-->>p19: os.fspath (src/llm_wiki_cli/services…uard.py:_windows_api_path)
-    p17-->>p20: value.startswith
-    p17-->>p20: value.startswith
-    p14-->>p21: wintypes.HANDLE (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p14-->>p22: ctypes.get_last_error (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p14-->>p23: ctypes.WinError (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p14->>p24: _WindowsDirectoryGuardUnavailableError
-    p14->>p9: WindowsDirectoryGuardError
+    p0->>p7: _atomic_write_private_bytes_posix
+    p6-->>p8: uuid.uuid4 (src/llm_wiki_cli/services…ite_private_bytes_windows)
+    p7-->>p9: getattr (src/llm_wiki_cli/services…write_private_bytes_posix)(os, 'O_NOFOLLOW', None)
+    p6-->>p8: uuid.uuid4 (src/llm_wiki_cli/services…ite_private_bytes_windows)
+    p7-->>p9: getattr (src/llm_wiki_cli/services…write_private_bytes_posix)(os, 'O_DIRECTORY', None)
+    p6->>p10: guard_windows_directory_chain
+    p7-->>p11: OSError (src/llm_wiki_cli/services…write_private_bytes_posix)('This POSIX platform cannot provide no-follow directory writes.')
+    p6-->>p12: Path (src/llm_wiki_cli/services…ite_private_bytes_windows)(parent.anchor)
+    p7-->>p9: getattr (src/llm_wiki_cli/services…write_private_bytes_posix)(os, 'O_CLOEXEC', 0)
+    p6-->>p13: os.path.lexists (src/llm_wiki_cli/services…ite_private_bytes_windows)(target)
+    p7-->>p14: os.open(target.anchor, directory_flags)
+    p6-->>p15: target.lstat
+    p7-->>p16: uuid.uuid4 (src/llm_wiki_cli/services…write_private_bytes_posix)
+    p6-->>p17: getattr (src/llm_wiki_cli/services…ite_private_bytes_windows)(existing, 'st_file_attributes', 0)
+    p7-->>p16: uuid.uuid4 (src/llm_wiki_cli/services…write_private_bytes_posix)
+    p6-->>p18: stat.S_ISREG (src/llm_wiki_cli/services…ite_private_bytes_windows)(existing.st_mode)
+    p7-->>p19: Path (src/llm_wiki_cli/services…write_private_bytes_posix)(component)
+    p6->>p20: WindowsFileGuardError
+    p7-->>p11: OSError (src/llm_wiki_cli/services…write_private_bytes_posix)(...)
+    p6->>p21: open_windows_private_write_file
+    p7-->>p14: os.open(component, directory_flags, dir_fd=parent_fd)
+    p6-->>p22: os.fdopen (src/llm_wiki_cli/services…ite_private_bytes_windows)(descriptor, 'wb', closefd=True)
+    p7-->>p23: os.close (src/llm_wiki_cli/services…write_private_bytes_posix)(parent_fd)
 ```
 
-> Call sequence diagram shows 30 of 432 interactions; 402 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 432 interactions; 402 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 23 of 264 (241 omitted); unresolved 2 of 49 (47 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 11 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 9 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 11 | - | external | 9 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 11 | - | unresolved | 4 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 19 | - | external | 14 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 19 | - | unresolved | 3 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 19 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 9 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_windows_api_path` | 22 | - | external | 2 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_windows_api_path` | 22 | - | unresolved | 2 |
+> Omission summary shows 8 of 61 groups; 53 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -148,17 +166,17 @@ flowchart LR
 | atomic_write_private_bytes | isinstance (src/llm_wiki_cli/services…tomic_write_private_bytes) | 1565 | `isinstance(data, bytes)` |
 | atomic_write_private_bytes | TypeError (src/llm_wiki_cli/services…tomic_write_private_bytes) | 1566 | `TypeError('Private atomic output data must be bytes.')` |
 | atomic_write_private_bytes | _atomic_write_private_bytes_windows | 1568 | `_atomic_write_private_bytes_windows(target, data, expected_existing=expected_existing)` |
-| _atomic_write_private_bytes_windows | uuid.uuid4 (src/llm_wiki_cli/services…ite_private_bytes_windows) | 2462 | `uuid.uuid4(data not statically known)` |
-| _atomic_write_private_bytes_windows | uuid.uuid4 (src/llm_wiki_cli/services…ite_private_bytes_windows) | 2463 | `uuid.uuid4(data not statically known)` |
-| _atomic_write_private_bytes_windows | guard_windows_directory_chain | 2467 | `guard_windows_directory_chain(Path(...), relative_components)` |
+| _atomic_write_private_bytes_windows | uuid.uuid4 (src/llm_wiki_cli/services…ite_private_bytes_windows) | 2474 | `uuid.uuid4(data not statically known)` |
+| _atomic_write_private_bytes_windows | uuid.uuid4 (src/llm_wiki_cli/services…ite_private_bytes_windows) | 2475 | `uuid.uuid4(data not statically known)` |
+| _atomic_write_private_bytes_windows | guard_windows_directory_chain | 2479 | `guard_windows_directory_chain(Path(...), relative_components)` |
 | guard_windows_directory_chain | WindowsDirectoryGuardError | 170 | `WindowsDirectoryGuardError('Windows directory guards are unavailable on this platform.')` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_write | `quarantine.unlink` | `_atomic_write_private_bytes_windows` | 2541 |
-| filesystem_write | `temporary.unlink` | `_atomic_write_private_bytes_windows` | 2546 |
+| filesystem_write | `quarantine.unlink` | `_atomic_write_private_bytes_windows` | 2553 |
+| filesystem_write | `temporary.unlink` | `_atomic_write_private_bytes_windows` | 2558 |
 | mutation | `handles.append` | `guard_windows_directory_chain` | 182 |
 | mutation | `handles.append` | `guard_windows_directory_chain` | 189 |
 | mutation | `handles.append` | `guard_windows_directory_chain` | 216 |
@@ -172,8 +190,8 @@ flowchart LR
 | external_call | `atomic_write_private_bytes` | `OSError` | 1564 |
 | external_call | `atomic_write_private_bytes` | `isinstance` | 1565 |
 | external_call | `atomic_write_private_bytes` | `TypeError` | 1566 |
-| external_call | `_atomic_write_private_bytes_windows` | `uuid.uuid4` | 2462 |
-| external_call | `_atomic_write_private_bytes_windows` | `uuid.uuid4` | 2463 |
+| external_call | `_atomic_write_private_bytes_windows` | `uuid.uuid4` | 2474 |
+| external_call | `_atomic_write_private_bytes_windows` | `uuid.uuid4` | 2475 |
 | step_limit | `atomic_write_private_bytes` | `first 12 steps` | 0 |
 | truncated_flow | `atomic_write_private_bytes` | `depth limit` | 0 |
 

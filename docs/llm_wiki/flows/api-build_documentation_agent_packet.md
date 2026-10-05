@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -37,39 +39,48 @@ sequenceDiagram
     participant p25 as before_path.relative_to(…).as_posix
     participant p26 as before_path.relative_to
     participant p27 as hash_bytes
-    p0-->>p1: DocumentationSchemaError
-    p0-->>p2: _resolve_workspace_root_argument
-    p0-->>p3: load_documentation_run
-    p0-->>p4: _assert_packet_stage
-    p0-->>p5: _load_bound_runtime_policy
-    p0-->>p6: _verify_initial_integrity_anchors
-    p0-->>p7: _stage_contract
-    p0-->>p8: str
-    p0-->>p9: tuple
-    p0-->>p8: str
-    p0-->>p10: any
-    p0-->>p11: DocumentationIntegrityError
-    p0-->>p12: DocumentationTransitionError
-    p0-->>p13: transition_documentation_run
-    p0-->>p14: _read_json
-    p0-->>p15: _workspace_path
-    p0-->>p14: _read_json
-    p0-->>p15: _workspace_path
-    p0-->>p16: _validated_worklist_counts
-    p0-->>p17: run.stage_attempts.get
-    p0-->>p18: capture_tree_baseline
-    p0-->>p19: capture_generated_ownership
-    p0-->>p20: _capture_control_integrity_snapshot
-    p0-->>p21: _sha256_json
-    p0-->>p22: _write_json
+    p0-->>p1: DocumentationSchemaError(...)
+    p0-->>p2: _resolve_workspace_root_argument(workspace)
+    p0-->>p3: load_documentation_run(workspace_root)
+    p0-->>p4: _assert_packet_stage(run, stage)
+    p0-->>p5: _load_bound_runtime_policy(workspace_root, run)
+    p0-->>p6: _verify_initial_integrity_anchors(workspace_root, run)
+    p0-->>p7: _stage_contract(stage)
+    p0-->>p8: str(skill[...])
+    p0-->>p9: tuple(...)
+    p0-->>p8: str(skill_id)
+    p0-->>p10: any(...)
+    p0-->>p11: DocumentationIntegrityError(...)
+    p0-->>p12: DocumentationTransitionError('Blocked documentation run does not record a resumable state.')
+    p0-->>p13: transition_documentation_run(run, run.resume_state)
+    p0-->>p14: _read_json(_workspace_path(...))
+    p0-->>p15: _workspace_path(workspace_root, run.evidence[...])
+    p0-->>p14: _read_json(_workspace_path(...))
+    p0-->>p15: _workspace_path(workspace_root, run.evidence[...])
+    p0-->>p16: _validated_worklist_counts(worklist)
+    p0-->>p17: run.stage_attempts.get(stage, 0)
+    p0-->>p18: capture_tree_baseline(..., display=...)
+    p0-->>p19: capture_generated_ownership(...)
+    p0-->>p20: _capture_control_integrity_snapshot(workspace_root, run)
+    p0-->>p21: _sha256_json(control_snapshot)
+    p0-->>p22: _write_json(before_path, {...})
     p0-->>p23: before.to_dict
     p0-->>p24: _utc_now
     p0-->>p25: before_path.relative_to(…).as_posix
-    p0-->>p26: before_path.relative_to
-    p0-->>p27: hash_bytes
+    p0-->>p26: before_path.relative_to(workspace_root)
+    p0-->>p27: hash_bytes(before_path.read_bytes(...))
 ```
 
-> Call sequence diagram shows 30 of 68 interactions; 38 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 68 interactions; 38 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 0 of 0 (0 omitted); unresolved 30 of 68 (38 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/documentation_run/packet.py:build_documentation_agent_packet` | 1 | - | unresolved | 38 |
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

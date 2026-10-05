@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -13,56 +15,68 @@ sequenceDiagram
     participant p1 as Path (src/llm_wiki_cli/services…require_safe_wiki_scaffold)
     participant p2 as tuple (src/llm_wiki_cli/services…require_safe_wiki_scaffold)
     participant p3 as iter_directory_kinds
-    participant p4 as tuple (src/llm_wiki_cli/services…ce.py:iter_directory_kinds)
-    participant p5 as first_unsafe_path_component
-    participant p6 as Path (src/llm_wiki_cli/services…irst_unsafe_path_component)
-    participant p7 as os.fspath
-    participant p8 as os.path.abspath
-    participant p9 as lexical.is_absolute
-    participant p10 as Path.cwd
-    participant p11 as list
-    participant p12 as pending_parts.pop
-    participant p13 as current.lstat
-    participant p14 as getattr
-    participant p15 as stat.S_ISLNK
-    participant p16 as bool
-    participant p17 as trusted_symlink_owner
-    participant p18 as callable
-    participant p19 as os.readlink
-    participant p20 as link_target.is_absolute
-    p0-->>p1: Path (src/llm_wiki_cli/services…require_safe_wiki_scaffold)
-    p0-->>p2: tuple (src/llm_wiki_cli/services…require_safe_wiki_scaffold)
+    participant p4 as first_unsafe_path_component
+    participant p5 as WikiScaffoldPathError
+    participant p6 as directory.exists
+    participant p7 as directory.is_dir
+    participant p8 as path.exists
+    participant p9 as path.is_file
+    participant p10 as tuple (src/llm_wiki_cli/services…ce.py:iter_directory_kinds)
+    participant p11 as Path (src/llm_wiki_cli/services…irst_unsafe_path_component)
+    participant p12 as os.fspath
+    participant p13 as os.path.abspath
+    participant p14 as lexical.is_absolute
+    participant p15 as Path.cwd
+    participant p16 as list
+    participant p17 as pending_parts.pop
+    participant p18 as current.lstat
+    participant p19 as getattr
+    participant p20 as stat.S_ISLNK
+    participant p21 as bool
+    participant p22 as trusted_symlink_owner
+    p0-->>p1: Path (src/llm_wiki_cli/services…require_safe_wiki_scaffold)(wiki_dir)
+    p0-->>p2: tuple (src/llm_wiki_cli/services…require_safe_wiki_scaffold)(...)
     p0->>p3: iter_directory_kinds
-    p3-->>p4: tuple (src/llm_wiki_cli/services…ce.py:iter_directory_kinds)
-    p0-->>p2: tuple (src/llm_wiki_cli/services…require_safe_wiki_scaffold)
-    p0->>p5: first_unsafe_path_component
-    p5-->>p6: Path (src/llm_wiki_cli/services…irst_unsafe_path_component)
-    p5-->>p7: os.fspath
-    p5-->>p6: Path (src/llm_wiki_cli/services…irst_unsafe_path_component)
-    p5-->>p8: os.path.abspath
-    p5-->>p9: lexical.is_absolute
-    p5-->>p10: Path.cwd
-    p5-->>p6: Path (src/llm_wiki_cli/services…irst_unsafe_path_component)
-    p5-->>p11: list
-    p5-->>p12: pending_parts.pop
-    p5-->>p13: current.lstat
-    p5-->>p14: getattr
-    p5-->>p14: getattr
-    p5-->>p15: stat.S_ISLNK
-    p5-->>p16: bool
-    p5-->>p16: bool
-    p5-->>p14: getattr
-    p5-->>p17: trusted_symlink_owner
-    p5-->>p18: callable
-    p5-->>p14: getattr
-    p5-->>p6: Path (src/llm_wiki_cli/services…irst_unsafe_path_component)
-    p5-->>p6: Path (src/llm_wiki_cli/services…irst_unsafe_path_component)
-    p5-->>p19: os.readlink
-    p5-->>p20: link_target.is_absolute
-    p5-->>p6: Path (src/llm_wiki_cli/services…irst_unsafe_path_component)
+    p0-->>p2: tuple (src/llm_wiki_cli/services…require_safe_wiki_scaffold)(...)
+    p0->>p4: first_unsafe_path_component
+    p0->>p5: WikiScaffoldPathError
+    p0-->>p6: directory.exists
+    p0-->>p7: directory.is_dir
+    p0->>p5: WikiScaffoldPathError
+    p0-->>p8: path.exists
+    p0-->>p9: path.is_file
+    p0->>p5: WikiScaffoldPathError
+    p3-->>p10: tuple (src/llm_wiki_cli/services…ce.py:iter_directory_kinds)(...)
+    p4-->>p11: Path (src/llm_wiki_cli/services…irst_unsafe_path_component)(os.fspath(...))
+    p4-->>p12: os.fspath(path)
+    p4-->>p11: Path (src/llm_wiki_cli/services…irst_unsafe_path_component)(os.path.abspath(...))
+    p4-->>p13: os.path.abspath(lexical)
+    p4-->>p14: lexical.is_absolute
+    p4-->>p15: Path.cwd
+    p4-->>p11: Path (src/llm_wiki_cli/services…irst_unsafe_path_component)(absolute.anchor)
+    p4-->>p16: list(...)
+    p4-->>p17: pending_parts.pop(0)
+    p4-->>p18: current.lstat
+    p4-->>p19: getattr(metadata, 'st_file_attributes', 0)
+    p4-->>p19: getattr(stat, 'FILE_ATTRIBUTE_REPARSE_POINT', 0)
+    p4-->>p20: stat.S_ISLNK(metadata.st_mode)
+    p4-->>p21: bool(reparse_flag)
+    p4-->>p21: bool(...)
+    p4-->>p19: getattr(metadata, 'st_uid', None)
+    p4-->>p22: trusted_symlink_owner(current)
 ```
 
-> Call sequence diagram shows 30 of 38 interactions; 8 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 38 interactions; 8 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 17 of 24 (7 omitted); unresolved 8 of 9 (1 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 7 | - | external | 7 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 7 | - | unresolved | 1 |
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

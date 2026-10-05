@@ -1,6 +1,6 @@
 # KnowledgeCommitPlan
 
-**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:194`
+**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:195`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -22,6 +22,7 @@ A fully validated, immutable three-artifact commit plan.
 | `evaluated_envelope_hash` | `str` | *required* | — |
 | `storage_objects` | `tuple[PlannedArtifactWrite \| SpooledArtifactWrite, ...]` | `()` | — |
 | `storage_format` | `str` | `'v1'` | — |
+| `maintenance_adoption` | `PlannedArtifactWrite \| SpooledArtifactWrite \| None` | `None` | — |
 
 ## Methods
 
@@ -44,7 +45,7 @@ flowchart LR
     n7["_commit_runtime_knowledge (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
     n8["_stabilize_revision_only_noop (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
     n9["build_runtime_knowledge_plan (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
-    n10["recover_knowledge_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
+    n10["_recover_knowledge_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -72,7 +73,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [knowledge_artifacts](../modules/knowledge_artifacts.md) | 1 | `committed_manifest`, `evaluated_envelope_hash`, `knowledge_index`, `manifest`, `storage_format`, `storage_objects`, `surface_index` |
+| [knowledge_artifacts](../modules/knowledge_artifacts.md) | 1 | `committed_manifest`, `evaluated_envelope_hash`, `knowledge_index`, `maintenance_adoption`, `manifest`, `storage_format`, `storage_objects`, `surface_index` |
 
 ### References
 
@@ -88,4 +89,4 @@ flowchart LR
 | `_commit_runtime_knowledge` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `_stabilize_revision_only_noop` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `build_runtime_knowledge_plan` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
-| `recover_knowledge_storage` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |
+| `_recover_knowledge_storage` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |

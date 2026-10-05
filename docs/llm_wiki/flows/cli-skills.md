@@ -2,9 +2,11 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [skills_cmd](../modules/skills_cmd.md)
-**Modules touched:** [config](../modules/config.md), [io](../modules/io.md), [skills](../modules/skills.md), [skills_cmd](../modules/skills_cmd.md), [validation](../modules/validation.md)
+**Modules touched:** [config](../modules/config.md), [io](../modules/io.md), [skills](../modules/skills.md), [skills_cmd](../modules/skills_cmd.md), [validation](../modules/validation.md), [wiki_write_basis](../modules/wiki_write_basis.md)
 
 ## Call sequence
+
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -12,63 +14,69 @@ sequenceDiagram
     participant p0 as run
     participant p1 as getattr
     participant p2 as list_bundled_skills
-    participant p3 as root.is_dir
-    participant p4 as sorted (src/llm_wiki_cli/services…ls.py:list_bundled_skills)
-    participant p5 as root.iterdir
-    participant p6 as skill_dir.is_dir
-    participant p7 as manifest.is_file
-    participant p8 as _parse_skill_frontmatter
-    participant p9 as content.replace(…).replace(…).split
-    participant p10 as content.replace(…).replace
-    participant p11 as content.replace
-    participant p12 as lines[…].strip
-    participant p13 as line.strip
-    participant p14 as line.partition
-    participant p15 as key.strip
-    participant p16 as value.strip
-    participant p17 as read_md
-    participant p18 as path.read_bytes
-    participant p19 as data.decode
-    participant p20 as text.replace(…).replace (src/llm_wiki_cli/services/io.py:read_md)
-    participant p21 as text.replace (src/llm_wiki_cli/services/io.py:read_md)
-    participant p22 as skills.append
-    participant p23 as BundledSkill
-    participant p24 as _skill_files
-    participant p25 as path.relative_to(…).as_posix
-    participant p26 as path.relative_to (src/llm_wiki_cli/services/skills.py:_skill_files)
-    p0-->>p1: getattr
-    p0-->>p1: getattr
+    participant p3 as print (src/llm_wiki_cli/commands/skills_cmd.py:run)
+    participant p4 as render_skill_list_json
+    participant p5 as render_skill_list_text
+    participant p6 as export_skills
+    participant p7 as bool
+    participant p8 as _print_report
+    participant p9 as SystemExit
+    participant p10 as _default_install_dest
+    participant p11 as validate_path
+    participant p12 as install_skills
+    participant p13 as root.is_dir
+    participant p14 as json.dumps (src/llm_wiki_cli/services…py:render_skill_list_json)
+    participant p15 as lines.append (src/llm_wiki_cli/services…py:render_skill_list_text)
+    p0-->>p1: getattr(args, 'skills_action', None)
+    p0-->>p1: getattr(args, 'format', 'text')
     p0->>p2: list_bundled_skills
-    p2-->>p3: root.is_dir
-    p2-->>p4: sorted (src/llm_wiki_cli/services…ls.py:list_bundled_skills)
-    p2-->>p5: root.iterdir
-    p2-->>p6: skill_dir.is_dir
-    p2-->>p7: manifest.is_file
-    p2->>p8: _parse_skill_frontmatter
-    p8-->>p9: content.replace(…).replace(…).split
-    p8-->>p10: content.replace(…).replace
-    p8-->>p11: content.replace
-    p8-->>p12: lines[…].strip
-    p8-->>p13: line.strip
-    p8-->>p14: line.partition
-    p8-->>p15: key.strip
-    p8-->>p16: value.strip
-    p8-->>p15: key.strip
-    p8-->>p16: value.strip
-    p2->>p17: read_md
-    p17-->>p18: path.read_bytes
-    p17-->>p19: data.decode
-    p17-->>p19: data.decode
-    p17-->>p20: text.replace(…).replace (src/llm_wiki_cli/services/io.py:read_md)
-    p17-->>p21: text.replace (src/llm_wiki_cli/services/io.py:read_md)
-    p2-->>p22: skills.append
-    p2->>p23: BundledSkill
-    p2->>p24: _skill_files
-    p24-->>p25: path.relative_to(…).as_posix
-    p24-->>p26: path.relative_to (src/llm_wiki_cli/services/skills.py:_skill_files)
+    p0-->>p3: print (src/llm_wiki_cli/commands/skills_cmd.py:run)(render_skill_list_json(...), end='')
+    p0->>p4: render_skill_list_json
+    p0-->>p3: print (src/llm_wiki_cli/commands/skills_cmd.py:run)(render_skill_list_text(...), end='')
+    p0->>p5: render_skill_list_text
+    p0->>p6: export_skills
+    p0-->>p1: getattr(args, 'dest')
+    p0-->>p1: getattr(args, 'skill', None)
+    p0-->>p7: bool(getattr(...))
+    p0-->>p1: getattr(args, 'force', False)
+    p0->>p8: _print_report
+    p0-->>p9: SystemExit(1)
+    p0-->>p1: getattr(args, 'dest', None)
+    p0->>p10: _default_install_dest
+    p0->>p11: validate_path
+    p0->>p12: install_skills
+    p0-->>p1: getattr(args, 'skill', None)
+    p0-->>p7: bool(getattr(...))
+    p0-->>p1: getattr(args, 'force', False)
+    p0->>p8: _print_report
+    p0-->>p9: SystemExit(1)
+    p0-->>p3: print (src/llm_wiki_cli/commands/skills_cmd.py:run)(..., file=sys.stderr)
+    p0-->>p9: SystemExit(1)
+    p0-->>p3: print (src/llm_wiki_cli/commands/skills_cmd.py:run)('Error: missing skills action.', file=sys.stderr)
+    p0-->>p9: SystemExit(1)
+    p2-->>p13: root.is_dir
+    p4-->>p14: json.dumps (src/llm_wiki_cli/services…py:render_skill_list_json)({...}, indent=2)
+    p5-->>p15: lines.append (src/llm_wiki_cli/services…py:render_skill_list_text)(...)
 ```
 
-> Call sequence diagram shows 30 of 289 interactions; 259 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 298 interactions; 268 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 19 of 98 (79 omitted); unresolved 2 of 106 (104 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/skills.py:list_bundled_skills` | 4 | - | external | 1 |
+| `src/llm_wiki_cli/services/skills.py:list_bundled_skills` | 4 | - | unresolved | 4 |
+| `src/llm_wiki_cli/services/skills.py:list_bundled_skills` | 4 | [src/llm_wiki_cli/services/skills.py](../modules/skills.md) | internal | 3 |
+| `src/llm_wiki_cli/services/skills.py:_parse_skill_frontmatter` | 10 | - | unresolved | 10 |
+| `src/llm_wiki_cli/services/skills.py:list_bundled_skills` | 4 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
+| `src/llm_wiki_cli/services/io.py:read_md` | 21 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
+| `src/llm_wiki_cli/services/io.py:decode_markdown_bytes` | 22 | - | unresolved | 4 |
+| `src/llm_wiki_cli/services/io.py:read_md` | 21 | - | unresolved | 1 |
+> Omission summary shows 8 of 76 groups; 68 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

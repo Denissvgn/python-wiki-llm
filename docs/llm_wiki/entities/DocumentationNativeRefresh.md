@@ -1,6 +1,6 @@
 # DocumentationNativeRefresh
 
-**Location:** `src/llm_wiki_cli/services/documentation_native.py:108`
+**Location:** `src/llm_wiki_cli/services/documentation_native.py:109`
 **Kind:** Class
 **Bases:** —
 **Module:** [documentation_native](../modules/documentation_native.md)
@@ -35,13 +35,16 @@ One controller-owned native projection refresh.
 ```mermaid
 flowchart LR
     n0["DocumentationNativeRefresh (src/llm_wiki_cli/services/documentation_native.py)"]
-    n1["refresh_documentation_native_projection (src/llm_wiki_cli/services/documentation_native.py)"]
-    n2["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
+    n1["_refresh_documentation_native_projection (src/llm_wiki_cli/services/documentation_native.py)"]
+    n2["refresh_documentation_native_projection (src/llm_wiki_cli/services/documentation_native.py)"]
+    n3["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
     n1 --> n0
     n2 --> n0
+    n3 --> n0
     click n0 "../modules/documentation_native.md"
     click n1 "../modules/documentation_native.md"
-    click n2 "../modules/documentation_run_dependencies.md"
+    click n2 "../modules/documentation_native.md"
+    click n3 "../modules/documentation_run_dependencies.md"
 ```
 
 ### Summary
@@ -54,6 +57,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `refresh_documentation_native_projection` | call | [documentation_native](../modules/documentation_native.md) | 1 |
+| `_refresh_documentation_native_projection` | call | [documentation_native](../modules/documentation_native.md) | 1 |
+| `_refresh_documentation_native_projection` | type_reference | [documentation_native](../modules/documentation_native.md) | — |
 | `refresh_documentation_native_projection` | type_reference | [documentation_native](../modules/documentation_native.md) | — |
 | `dependencies` | import | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) | — |

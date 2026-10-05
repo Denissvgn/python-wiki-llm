@@ -2,7 +2,7 @@
 
 **Entry point:** `compose_doctor_report` (`api`)
 **Source:** [doctor_service](../modules/doctor_service.md)
-**Modules touched:** [doctor_service](../modules/doctor_service.md), [health_policy](../modules/health_policy.md), [knowledge_observability](../modules/knowledge_observability.md), and 5 more
+**Modules touched:** [doctor_service](../modules/doctor_service.md), [health_policy](../modules/health_policy.md), [knowledge_observability](../modules/knowledge_observability.md), and 6 more
 
 **Complete modules touched:**
 
@@ -11,11 +11,14 @@
 - [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [sync_manifest](../modules/sync_manifest.md)
 - [validation](../modules/validation.md)
 
 ## Call sequence
+
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -25,60 +28,74 @@ sequenceDiagram
     participant p2 as TypeError (src/llm_wiki_cli/services….py:compose_doctor_report)
     participant p3 as Path
     participant p4 as _availability_section
-    participant p5 as _knowledge_declared
-    participant p6 as path.exists
-    participant p7 as path.is_symlink
-    participant p8 as SyncManifest.load
-    participant p9 as manifest_path.exists
-    participant p10 as FileNotFoundError
-    participant p11 as json.loads (src/llm_wiki_cli/services…fest.py:SyncManifest.load)
-    participant p12 as manifest_path.read_text
-    participant p13 as isinstance (src/llm_wiki_cli/services…fest.py:SyncManifest.load)
-    participant p14 as data.get (src/llm_wiki_cli/services…fest.py:SyncManifest.load)
-    participant p15 as StorageReadSession
-    participant p16 as session.read
-    participant p17 as SyncManifest.from_payload
-    participant p18 as _mapping_value
-    participant p19 as require_mapping
-    participant p20 as SyncManifestError
-    participant p21 as data.get (src/llm_wiki_cli/services…SyncManifest.from_payload)
-    participant p22 as type
-    participant p23 as ManifestStoreReader
-    participant p24 as reader.materialize
-    participant p25 as isinstance (src/llm_wiki_cli/services…SyncManifest.from_payload)
-    p0-->>p1: isinstance (src/llm_wiki_cli/services….py:compose_doctor_report)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services….py:compose_doctor_report)
-    p0-->>p1: isinstance (src/llm_wiki_cli/services….py:compose_doctor_report)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services….py:compose_doctor_report)
-    p0-->>p3: Path
+    participant p5 as _freshness_section
+    participant p6 as _snapshot_section
+    participant p7 as _governance_section
+    participant p8 as _drift_section
+    participant p9 as _verification_section
+    participant p10 as classify_health_sections
+    participant p11 as bool (src/llm_wiki_cli/services….py:compose_doctor_report)
+    participant p12 as _issues
+    participant p13 as DoctorReport
+    participant p14 as _knowledge_declared
+    participant p15 as int (src/llm_wiki_cli/services…ice.py:_freshness_section)
+    participant p16 as sorted (src/llm_wiki_cli/services…vice.py:_snapshot_section)
+    participant p17 as isinstance (src/llm_wiki_cli/services…service.py:_drift_section)
+    participant p18 as unhealthy.append
+    participant p19 as len (src/llm_wiki_cli/services…vice.py:_snapshot_section)
+    participant p20 as _reasons
+    participant p21 as TypeError (src/llm_wiki_cli/services…service.py:_drift_section)
+    participant p22 as knowledge_freshness_disclosure
+    p0-->>p1: isinstance (src/llm_wiki_cli/services….py:compose_doctor_report)(lint, LintReport)
+    p0-->>p2: TypeError (src/llm_wiki_cli/services….py:compose_doctor_report)('lint must be a LintReport')
+    p0-->>p1: isinstance (src/llm_wiki_cli/services….py:compose_doctor_report)(strict, bool)
+    p0-->>p2: TypeError (src/llm_wiki_cli/services….py:compose_doctor_report)('strict must be a boolean')
+    p0-->>p3: Path(wiki_dir)
     p0->>p4: _availability_section
-    p4->>p5: _knowledge_declared
-    p5-->>p6: path.exists
-    p5-->>p7: path.is_symlink
-    p5->>p8: SyncManifest.load
-    p8-->>p9: manifest_path.exists
-    p8-->>p10: FileNotFoundError
-    p8-->>p11: json.loads (src/llm_wiki_cli/services…fest.py:SyncManifest.load)
-    p8-->>p12: manifest_path.read_text
-    p8-->>p13: isinstance (src/llm_wiki_cli/services…fest.py:SyncManifest.load)
-    p8-->>p14: data.get (src/llm_wiki_cli/services…fest.py:SyncManifest.load)
-    p8->>p15: StorageReadSession
-    p8-->>p16: session.read
-    p8->>p17: SyncManifest.from_payload
-    p17->>p18: _mapping_value
-    p18->>p19: require_mapping
-    p18->>p20: SyncManifestError
-    p18->>p20: SyncManifestError
-    p17-->>p21: data.get (src/llm_wiki_cli/services…SyncManifest.from_payload)
-    p17-->>p22: type
-    p17->>p20: SyncManifestError
-    p17->>p23: ManifestStoreReader
-    p17->>p17: SyncManifest.from_payload
-    p17-->>p24: reader.materialize
-    p17-->>p25: isinstance (src/llm_wiki_cli/services…SyncManifest.from_payload)
+    p0->>p5: _freshness_section
+    p0->>p6: _snapshot_section
+    p0->>p7: _governance_section
+    p0->>p8: _drift_section
+    p0->>p9: _verification_section
+    p0->>p10: classify_health_sections
+    p0-->>p11: bool (src/llm_wiki_cli/services….py:compose_doctor_report)(_issues(...))
+    p0->>p12: _issues
+    p0->>p13: DoctorReport
+    p4->>p14: _knowledge_declared
+    p5-->>p15: int (src/llm_wiki_cli/services…ice.py:_freshness_section)(summary.freshness_counts[...])
+    p6-->>p16: sorted (src/llm_wiki_cli/services…vice.py:_snapshot_section)(...)
+    p7->>p12: _issues
+    p8-->>p17: isinstance (src/llm_wiki_cli/services…service.py:_drift_section)(raw_counts, Mapping)
+    p9->>p12: _issues
+    p10-->>p18: unhealthy.append('source-selection-mismatch')
+    p4->>p14: _knowledge_declared
+    p5-->>p15: int (src/llm_wiki_cli/services…ice.py:_freshness_section)(view.freshness.counts[...])
+    p6-->>p19: len (src/llm_wiki_cli/services…vice.py:_snapshot_section)(view.projection_findings)
+    p7->>p20: _reasons
+    p8-->>p21: TypeError (src/llm_wiki_cli/services…service.py:_drift_section)('freshness counts_by_state must be a mapping')
+    p9->>p20: _reasons
+    p10-->>p18: unhealthy.append('knowledge-unsupported')
+    p5->>p22: knowledge_freshness_disclosure
 ```
 
-> Call sequence diagram shows 30 of 261 interactions; 231 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 316 interactions; 286 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 12 of 91 (79 omitted); unresolved 2 of 70 (68 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/doctor_service.py:_knowledge_declared` | 8 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/doctor_service.py:_knowledge_declared` | 8 | [src/llm_wiki_cli/services/sync_manifest.py](../modules/sync_manifest.md) | internal | 1 |
+| `src/llm_wiki_cli/services/sync_manifest.py:SyncManifest.load` | 11 | - | unresolved | 3 |
+| `src/llm_wiki_cli/services/sync_manifest.py:SyncManifest.load` | 11 | - | external | 3 |
+| `src/llm_wiki_cli/services/sync_manifest.py:SyncManifest.load` | 11 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 3 |
+| `src/llm_wiki_cli/services/knowledge_storage_io.py:StorageReadSession.read` | 19 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 2 |
+| `src/llm_wiki_cli/services/knowledge_storage_io.py:_require_relative_name` | 20 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/knowledge_storage_io.py:_require_relative_name` | 20 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
+> Omission summary shows 8 of 83 groups; 75 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -147,17 +164,17 @@ flowchart LR
 | compose_doctor_report | TypeError (src/llm_wiki_cli/services….py:compose_doctor_report) | 190 | `TypeError('strict must be a boolean')` |
 | compose_doctor_report | Path | 193 | `Path(wiki_dir)` |
 | compose_doctor_report | _availability_section | 194 | `_availability_section(lint, view, wiki_root)` |
-| _availability_section | _knowledge_declared | 305 | `_knowledge_declared(wiki_root)` |
-| _knowledge_declared | path.exists | 339 | `path.exists(data not statically known)` |
-| _knowledge_declared | path.is_symlink | 339 | `path.is_symlink(data not statically known)` |
-| _knowledge_declared | SyncManifest.load | 342 | `SyncManifest.load(wiki_root)` |
-| SyncManifest.load | manifest_path.exists | 1137 | `manifest_path.exists(data not statically known)` |
+| _availability_section | _knowledge_declared | 309 | `_knowledge_declared(wiki_root)` |
+| _knowledge_declared | path.exists | 343 | `path.exists(data not statically known)` |
+| _knowledge_declared | path.is_symlink | 343 | `path.is_symlink(data not statically known)` |
+| _knowledge_declared | SyncManifest.load | 346 | `SyncManifest.load(wiki_root)` |
+| SyncManifest.load | manifest_path.exists | 1160 | `manifest_path.exists(data not statically known)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_read | `manifest_path.read_text` | `SyncManifest.load` | 1158 |
+| filesystem_read | `manifest_path.read_text` | `SyncManifest.load` | 1181 |
 
 ### Static analysis gaps
 
@@ -167,9 +184,9 @@ flowchart LR
 | external_call | `compose_doctor_report` | `TypeError` | 188 |
 | external_call | `compose_doctor_report` | `isinstance` | 189 |
 | external_call | `compose_doctor_report` | `TypeError` | 190 |
-| unresolved_call | `_knowledge_declared` | `path.exists` | 339 |
-| unresolved_call | `_knowledge_declared` | `path.is_symlink` | 339 |
-| unresolved_call | `SyncManifest.load` | `manifest_path.exists` | 1137 |
+| unresolved_call | `_knowledge_declared` | `path.exists` | 343 |
+| unresolved_call | `_knowledge_declared` | `path.is_symlink` | 343 |
+| unresolved_call | `SyncManifest.load` | `manifest_path.exists` | 1160 |
 | step_limit | `compose_doctor_report` | `first 12 steps` | 0 |
 | truncated_flow | `compose_doctor_report` | `depth limit` | 0 |
 

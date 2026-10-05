@@ -6,63 +6,79 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as compare_tree_baseline
     participant p1 as capture_tree_baseline
-    participant p2 as limits.items
-    participant p3 as isinstance
-    participant p4 as DocumentationPolicyError
-    participant p5 as _resolve_existing_directory
-    participant p6 as Path(…).expanduser (src/llm_wiki_cli/services…esolve_existing_directory)
-    participant p7 as Path (src/llm_wiki_cli/services…esolve_existing_directory)
-    participant p8 as _lstat
-    participant p9 as os.lstat (src/llm_wiki_cli/services…entation_policy.py:_lstat)
-    participant p10 as _assert_safe_directory
-    participant p11 as stat.S_ISLNK (src/llm_wiki_cli/services…py:_assert_safe_directory)
-    participant p12 as _is_windows_reparse_point
-    participant p13 as int (src/llm_wiki_cli/services…_is_windows_reparse_point)
-    participant p14 as getattr (src/llm_wiki_cli/services…_is_windows_reparse_point)
-    participant p15 as bool
-    participant p16 as stat.S_ISDIR (src/llm_wiki_cli/services…py:_assert_safe_directory)
-    participant p17 as _resolve_path
-    participant p18 as Path(…).expanduser().resolve
-    participant p19 as Path(…).expanduser (src/llm_wiki_cli/services…n_policy.py:_resolve_path)
-    participant p20 as Path (src/llm_wiki_cli/services…n_policy.py:_resolve_path)
+    participant p2 as IntegrityDifference
+    participant p3 as tuple (src/llm_wiki_cli/services….py:compare_tree_baseline)
+    participant p4 as sorted (src/llm_wiki_cli/services….py:compare_tree_baseline)
+    participant p5 as set
+    participant p6 as limits.items
+    participant p7 as isinstance
+    participant p8 as DocumentationPolicyError
+    participant p9 as _resolve_existing_directory
+    participant p10 as frozenset
+    participant p11 as str (src/llm_wiki_cli/services….py:capture_tree_baseline)
+    participant p12 as _walk_regular_files
+    participant p13 as len (src/llm_wiki_cli/services….py:capture_tree_baseline)
+    participant p14 as int (src/llm_wiki_cli/services….py:capture_tree_baseline)
+    participant p15 as _hash_file
+    participant p16 as min
+    participant p17 as TreeBaseline
     p0->>p1: capture_tree_baseline
-    p1-->>p2: limits.items
-    p1-->>p3: isinstance
-    p1-->>p3: isinstance
-    p1->>p4: DocumentationPolicyError
-    p1->>p5: _resolve_existing_directory
-    p5-->>p6: Path(…).expanduser (src/llm_wiki_cli/services…esolve_existing_directory)
-    p5-->>p7: Path (src/llm_wiki_cli/services…esolve_existing_directory)
-    p5->>p8: _lstat
-    p8-->>p9: os.lstat (src/llm_wiki_cli/services…entation_policy.py:_lstat)
-    p8->>p4: DocumentationPolicyError
-    p5->>p10: _assert_safe_directory
-    p10-->>p11: stat.S_ISLNK (src/llm_wiki_cli/services…py:_assert_safe_directory)
-    p10->>p4: DocumentationPolicyError
-    p10->>p12: _is_windows_reparse_point
-    p12-->>p13: int (src/llm_wiki_cli/services…_is_windows_reparse_point)
-    p12-->>p14: getattr (src/llm_wiki_cli/services…_is_windows_reparse_point)
-    p12-->>p13: int (src/llm_wiki_cli/services…_is_windows_reparse_point)
-    p12-->>p14: getattr (src/llm_wiki_cli/services…_is_windows_reparse_point)
-    p12-->>p15: bool
-    p10->>p4: DocumentationPolicyError
-    p10-->>p16: stat.S_ISDIR (src/llm_wiki_cli/services…py:_assert_safe_directory)
-    p10->>p4: DocumentationPolicyError
-    p5->>p17: _resolve_path
-    p17-->>p18: Path(…).expanduser().resolve
-    p17-->>p19: Path(…).expanduser (src/llm_wiki_cli/services…n_policy.py:_resolve_path)
-    p17-->>p20: Path (src/llm_wiki_cli/services…n_policy.py:_resolve_path)
-    p17->>p4: DocumentationPolicyError
-    p5->>p8: _lstat
-    p5->>p10: _assert_safe_directory
+    p0->>p2: IntegrityDifference
+    p0-->>p3: tuple (src/llm_wiki_cli/services….py:compare_tree_baseline)(sorted(...))
+    p0-->>p4: sorted (src/llm_wiki_cli/services….py:compare_tree_baseline)(...)
+    p0-->>p5: set(after)
+    p0-->>p5: set(before)
+    p0-->>p3: tuple (src/llm_wiki_cli/services….py:compare_tree_baseline)(sorted(...))
+    p0-->>p4: sorted (src/llm_wiki_cli/services….py:compare_tree_baseline)(...)
+    p0-->>p5: set(before)
+    p0-->>p5: set(after)
+    p0-->>p3: tuple (src/llm_wiki_cli/services….py:compare_tree_baseline)(sorted(...))
+    p0-->>p4: sorted (src/llm_wiki_cli/services….py:compare_tree_baseline)(...)
+    p0-->>p5: set(before)
+    p0-->>p5: set(after)
+    p1-->>p6: limits.items
+    p1-->>p7: isinstance(value, bool)
+    p1-->>p7: isinstance(value, int)
+    p1->>p8: DocumentationPolicyError
+    p1->>p9: _resolve_existing_directory
+    p1-->>p10: frozenset(...)
+    p1-->>p11: str (src/llm_wiki_cli/services….py:capture_tree_baseline)(value)
+    p1->>p12: _walk_regular_files
+    p1-->>p13: len (src/llm_wiki_cli/services….py:capture_tree_baseline)(file_hashes)
+    p1->>p8: DocumentationPolicyError
+    p1-->>p14: int (src/llm_wiki_cli/services….py:capture_tree_baseline)(inspected.st_size)
+    p1->>p8: DocumentationPolicyError
+    p1->>p8: DocumentationPolicyError
+    p1->>p15: _hash_file
+    p1-->>p16: min(max_file_bytes, ...)
+    p1->>p17: TreeBaseline
 ```
 
-> Call sequence diagram shows 30 of 323 interactions; 293 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 323 interactions; 293 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 19 of 141 (122 omitted); unresolved 1 of 42 (41 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/documentation_policy.py:_resolve_existing_directory` | 7 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/documentation_policy.py:_resolve_existing_directory` | 7 | - | external | 1 |
+| `src/llm_wiki_cli/services/documentation_policy.py:_resolve_existing_directory` | 7 | [src/llm_wiki_cli/services/documentation_policy.py](../modules/documentation_policy.md) | internal | 9 |
+| `src/llm_wiki_cli/services/documentation_policy.py:_lstat` | 10 | - | external | 1 |
+| `src/llm_wiki_cli/services/documentation_policy.py:_lstat` | 10 | [src/llm_wiki_cli/services/documentation_policy.py](../modules/documentation_policy.md) | internal | 1 |
+| `src/llm_wiki_cli/services/documentation_policy.py:_assert_safe_directory` | 13 | - | external | 2 |
+| `src/llm_wiki_cli/services/documentation_policy.py:_assert_safe_directory` | 13 | [src/llm_wiki_cli/services/documentation_policy.py](../modules/documentation_policy.md) | internal | 4 |
+| `src/llm_wiki_cli/services/documentation_policy.py:_is_windows_reparse_point` | 16 | - | external | 5 |
+> Omission summary shows 8 of 61 groups; 53 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

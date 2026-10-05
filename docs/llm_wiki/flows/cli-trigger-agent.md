@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [trigger_cmd](../modules/trigger_cmd.md)
-**Modules touched:** [circuit_breaker](../modules/circuit_breaker.md), [common](../modules/common.md), [config](../modules/config.md), [extraction_service](../modules/extraction_service.md), and 21 more
+**Modules touched:** [circuit_breaker](../modules/circuit_breaker.md), [common](../modules/common.md), [config](../modules/config.md), [extraction_service](../modules/extraction_service.md), and 22 more
 
 **Complete modules touched:**
 
@@ -18,6 +18,7 @@
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [lockfile](../modules/lockfile.md)
+- [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [metrics](../modules/metrics.md)
 - [paths](../modules/paths.md)
@@ -34,69 +35,87 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as run
     participant p1 as getattr (src/llm_wiki_cli/commands/trigger_cmd.py:run)
     participant p2 as reset_breaker
-    participant p3 as save_state
-    participant p4 as _state_path
-    participant p5 as tempfile.mkstemp
-    participant p6 as os.fdopen
-    participant p7 as json.dump
-    participant p8 as os.replace
-    participant p9 as os.unlink
-    participant p10 as dict (src/llm_wiki_cli/services…_breaker.py:reset_breaker)
-    participant p11 as print (src/llm_wiki_cli/commands/trigger_cmd.py:run)
-    participant p12 as sys.exit
-    participant p13 as WikiLock
-    participant p14 as _lock_wait_seconds
-    participant p15 as os.environ.get (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)
-    participant p16 as raw_value.strip
-    participant p17 as float (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)
-    participant p18 as ValueError
+    participant p3 as print (src/llm_wiki_cli/commands/trigger_cmd.py:run)
+    participant p4 as sys.exit
+    participant p5 as WikiLock
+    participant p6 as _lock_wait_seconds
+    participant p7 as _run_sync
+    participant p8 as SystemExit
+    participant p9 as save_state
+    participant p10 as os.environ.get (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)
+    participant p11 as getattr (src/llm_wiki_cli/commands/trigger_cmd.py:_run_sync)
+    participant p12 as dict (src/llm_wiki_cli/services…_breaker.py:reset_breaker)
+    participant p13 as raw_value.strip
+    participant p14 as validate_path
+    participant p15 as float (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)
+    participant p16 as _validated_trigger_source
+    participant p17 as ValueError
+    participant p18 as time.monotonic (src/llm_wiki_cli/commands/trigger_cmd.py:_run_sync)
     participant p19 as math.isfinite (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)
-    participant p20 as _run_sync
-    participant p21 as getattr (src/llm_wiki_cli/commands/trigger_cmd.py:_run_sync)
-    participant p22 as validate_path
-    participant p23 as PathValidationError
-    participant p24 as (…).resolve
-    participant p25 as Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    participant p26 as Path.cwd().resolve
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/trigger_cmd.py:run)
+    participant p20 as _is_breaker_open
+    participant p21 as _record_trigger_start
+    participant p22 as _prepare_and_run_sync
+    participant p23 as record_failure
+    participant p24 as _record_trigger_finish
+    participant p25 as _state_path
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/trigger_cmd.py:run)(args, 'reset_breaker', False)
     p0->>p2: reset_breaker
-    p2->>p3: save_state
-    p3->>p4: _state_path
-    p3-->>p5: tempfile.mkstemp
-    p3-->>p6: os.fdopen
-    p3-->>p7: json.dump
-    p3-->>p8: os.replace
-    p3-->>p9: os.unlink
-    p2-->>p10: dict (src/llm_wiki_cli/services…_breaker.py:reset_breaker)
-    p0-->>p11: print (src/llm_wiki_cli/commands/trigger_cmd.py:run)
-    p0-->>p11: print (src/llm_wiki_cli/commands/trigger_cmd.py:run)
-    p0-->>p11: print (src/llm_wiki_cli/commands/trigger_cmd.py:run)
-    p0-->>p11: print (src/llm_wiki_cli/commands/trigger_cmd.py:run)
-    p0-->>p12: sys.exit
-    p0->>p13: WikiLock
-    p0->>p14: _lock_wait_seconds
-    p14-->>p15: os.environ.get (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)
-    p14-->>p16: raw_value.strip
-    p14-->>p17: float (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)
-    p14-->>p18: ValueError
-    p14-->>p19: math.isfinite (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)
-    p14-->>p18: ValueError
-    p0->>p20: _run_sync
-    p20-->>p21: getattr (src/llm_wiki_cli/commands/trigger_cmd.py:_run_sync)
-    p20->>p22: validate_path
-    p22->>p23: PathValidationError
-    p22-->>p24: (…).resolve
-    p22-->>p25: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    p22-->>p26: Path.cwd().resolve
+    p0-->>p3: print (src/llm_wiki_cli/commands/trigger_cmd.py:run)('Circuit breaker reset. Manual trigger-agent sync is re-enabled.')
+    p0-->>p3: print (src/llm_wiki_cli/commands/trigger_cmd.py:run)(...)
+    p0-->>p3: print (src/llm_wiki_cli/commands/trigger_cmd.py:run)("To use trigger-agent, you must specify a CLI-native agent like 'claude' or 'aider'.")
+    p0-->>p3: print (src/llm_wiki_cli/commands/trigger_cmd.py:run)('Example: llm-wiki trigger-agent --agent claude')
+    p0-->>p4: sys.exit(1)
+    p0->>p5: WikiLock
+    p0->>p6: _lock_wait_seconds
+    p0->>p7: _run_sync
+    p0-->>p3: print (src/llm_wiki_cli/commands/trigger_cmd.py:run)('Another llm-wiki sync is already running. Skipping.')
+    p0-->>p8: SystemExit(exc.exit_code)
+    p2->>p9: save_state
+    p6-->>p10: os.environ.get (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)('LLM_WIKI_LOCK_WAIT')
+    p7-->>p11: getattr (src/llm_wiki_cli/commands/trigger_cmd.py:_run_sync)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
+    p2-->>p12: dict (src/llm_wiki_cli/services…_breaker.py:reset_breaker)(_DEFAULT_STATE)
+    p6-->>p13: raw_value.strip
+    p7->>p14: validate_path
+    p6-->>p15: float (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)(raw_value)
+    p7->>p16: _validated_trigger_source
+    p6-->>p17: ValueError('LLM_WIKI_LOCK_WAIT must be a finite non-negative number of seconds.')
+    p7-->>p18: time.monotonic (src/llm_wiki_cli/commands/trigger_cmd.py:_run_sync)
+    p6-->>p19: math.isfinite (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)(wait_seconds)
+    p7->>p20: _is_breaker_open
+    p6-->>p17: ValueError('LLM_WIKI_LOCK_WAIT must be a finite non-negative number of seconds.')
+    p7->>p21: _record_trigger_start
+    p7->>p22: _prepare_and_run_sync
+    p7->>p23: record_failure
+    p7->>p24: _record_trigger_finish
+    p9->>p25: _state_path
 ```
 
-> Call sequence diagram shows 30 of 834 interactions; 804 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 858 interactions; 828 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 16 of 328 (312 omitted); unresolved 1 of 197 (196 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/circuit_breaker.py:save_state` | 4 | - | external | 5 |
+| `src/llm_wiki_cli/config.py:validate_path` | 27 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
+| `src/llm_wiki_cli/config.py:validate_path` | 27 | - | unresolved | 3 |
+| `src/llm_wiki_cli/config.py:validate_path` | 27 | - | external | 2 |
+| `src/llm_wiki_cli/commands/trigger_cmd.py:_validated_trigger_source` | 35 | - | external | 5 |
+| `src/llm_wiki_cli/commands/trigger_cmd.py:_validated_trigger_source` | 35 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 1 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 40 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 40 | - | unresolved | 5 |
+> Omission summary shows 8 of 229 groups; 221 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -15,26 +17,31 @@ sequenceDiagram
     participant p3 as isinstance (src/llm_wiki_cli/services…_host_broker_authenticator)
     participant p4 as _require_bounded_text
     participant p5 as require_bounded_text
-    participant p6 as isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text)
-    participant p7 as len
-    participant p8 as value.strip
-    participant p9 as contains_control_character
-    participant p10 as pattern.search
-    participant p11 as HostBrokerAuthenticationError
+    participant p6 as HostBrokerAuthenticationError
+    participant p7 as isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text)
+    participant p8 as len
+    participant p9 as value.strip
+    participant p10 as contains_control_character
+    participant p11 as pattern.search
     p0-->>p1: _HOST_BROKER_AUTHENTICATOR.get
     p0->>p2: HostBrokerAuthenticationUnavailable
-    p0-->>p3: isinstance (src/llm_wiki_cli/services…_host_broker_authenticator)
+    p0-->>p3: isinstance (src/llm_wiki_cli/services…_host_broker_authenticator)(authenticator, HostBrokerAuthenticator)
     p0->>p2: HostBrokerAuthenticationUnavailable
     p0->>p4: _require_bounded_text
     p4->>p5: require_bounded_text
-    p5-->>p6: isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text)
-    p5-->>p7: len
-    p5-->>p7: len
-    p5-->>p8: value.strip
-    p5->>p9: contains_control_character
-    p9-->>p10: pattern.search
-    p4->>p11: HostBrokerAuthenticationError
+    p4->>p6: HostBrokerAuthenticationError
+    p5-->>p7: isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text)(value, str)
+    p5-->>p8: len(value)
+    p5-->>p8: len(value)
+    p5-->>p9: value.strip
+    p5->>p10: contains_control_character
+    p10-->>p11: pattern.search(value)
 ```
+
+> Call sequence diagram shows 13 of 13 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 4 of 4 (0 omitted); unresolved 3 of 3 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

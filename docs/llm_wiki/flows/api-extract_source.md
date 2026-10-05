@@ -2,7 +2,7 @@
 
 **Entry point:** `extract_source` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [api_contracts](../modules/api_contracts.md), and 26 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [api_contracts](../modules/api_contracts.md), and 28 more
 
 **Complete modules touched:**
 
@@ -27,8 +27,10 @@
 - [paths](../modules/paths.md)
 - [plugins](../modules/plugins.md)
 - [progress](../modules/progress.md)
+- [python_bindings](../modules/python_bindings.md)
 - [python_calls](../modules/python_calls.md)
 - [python_contracts](../modules/python_contracts.md)
+- [python_implementation](../modules/python_implementation.md)
 - [python_imports](../modules/python_imports.md)
 - [python_observations](../modules/python_observations.md)
 - [resource_diagnostics](../modules/resource_diagnostics.md)
@@ -39,66 +41,82 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as extract_source
     participant p1 as build_extract_payload
-    participant p2 as validate_source_root
-    participant p3 as validate_path
-    participant p4 as PathValidationError
-    participant p5 as (…).resolve
-    participant p6 as Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    participant p7 as Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)
-    participant p8 as resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
-    participant p9 as Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p10 as Path (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p11 as candidate.is_absolute (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p12 as Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p13 as candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p14 as resolved.is_dir
-    participant p15 as os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p16 as windows_current_user_sid
-    participant p17 as WindowsSecurityGuardError
-    participant p18 as _current_windows_user_sid
-    participant p19 as ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
-    participant p20 as ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)
-    participant p21 as wintypes.HANDLE (src/llm_wiki_cli/services…_current_windows_user_sid)
-    participant p22 as open_process_token
-    participant p23 as get_current_process
+    participant p2 as _caused_by
+    participant p3 as WorkspaceStateError
+    participant p4 as str (src/llm_wiki_cli/api.py:extract_source)
+    participant p5 as _path_error_field
+    participant p6 as InvalidRequestError
+    participant p7 as cast
+    participant p8 as validate_source_root
+    participant p9 as set (src/llm_wiki_cli/api.py:_caused_by)
+    participant p10 as ValueError (src/llm_wiki_cli/services….py:build_extract_payload)
+    participant p11 as id
+    participant p12 as validate_source_paths
+    participant p13 as isinstance (src/llm_wiki_cli/api.py:_caused_by)
+    participant p14 as seen.add (src/llm_wiki_cli/api.py:_caused_by)
+    participant p15 as _source_snapshot_for_inventory_request
+    participant p16 as InventoryRequest
+    participant p17 as resolve_source_selection
+    participant p18 as normalize_include_tests
+    participant p19 as _git_changed_files
+    participant p20 as str (src/llm_wiki_cli/services….py:build_extract_payload)
     p0->>p1: build_extract_payload
-    p1->>p2: validate_source_root
-    p2->>p3: validate_path
-    p3->>p4: PathValidationError
-    p3-->>p5: (…).resolve
-    p3-->>p6: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    p3-->>p7: Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)
-    p3-->>p6: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    p3-->>p8: resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
-    p3->>p4: PathValidationError
-    p2-->>p9: Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)
-    p2-->>p10: Path (src/llm_wiki_cli/config.py:validate_source_root)
-    p2-->>p11: candidate.is_absolute (src/llm_wiki_cli/config.py:validate_source_root)
-    p2-->>p12: Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
-    p2-->>p13: candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
-    p2->>p4: PathValidationError
-    p2-->>p14: resolved.is_dir
-    p2->>p4: PathValidationError
-    p2-->>p10: Path (src/llm_wiki_cli/config.py:validate_source_root)
-    p2-->>p15: os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
-    p2->>p16: windows_current_user_sid
-    p16->>p17: WindowsSecurityGuardError
-    p16->>p18: _current_windows_user_sid
-    p18-->>p19: ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
-    p18-->>p19: ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
-    p18-->>p20: ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)
-    p18-->>p20: ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)
-    p18-->>p21: wintypes.HANDLE (src/llm_wiki_cli/services…_current_windows_user_sid)
-    p18-->>p22: open_process_token
-    p18-->>p23: get_current_process
+    p0->>p2: _caused_by
+    p0->>p3: WorkspaceStateError
+    p0-->>p4: str (src/llm_wiki_cli/api.py:extract_source)(exc)
+    p0->>p5: _path_error_field
+    p0-->>p4: str (src/llm_wiki_cli/api.py:extract_source)(exc)
+    p0->>p6: InvalidRequestError
+    p0-->>p4: str (src/llm_wiki_cli/api.py:extract_source)(exc)
+    p0->>p5: _path_error_field
+    p0-->>p4: str (src/llm_wiki_cli/api.py:extract_source)(exc)
+    p0->>p3: WorkspaceStateError
+    p0-->>p4: str (src/llm_wiki_cli/api.py:extract_source)(exc)
+    p0->>p6: InvalidRequestError
+    p0-->>p4: str (src/llm_wiki_cli/api.py:extract_source)(exc)
+    p0-->>p7: cast(ExtractSourceResult, result.payload)
+    p1->>p8: validate_source_root
+    p2-->>p9: set (src/llm_wiki_cli/api.py:_caused_by)
+    p1-->>p10: ValueError (src/llm_wiki_cli/services….py:build_extract_payload)('--openapi-file requires --deep.')
+    p2-->>p11: id(current)
+    p1->>p12: validate_source_paths
+    p2-->>p13: isinstance (src/llm_wiki_cli/api.py:_caused_by)(current, expected)
+    p1-->>p10: ValueError (src/llm_wiki_cli/services….py:build_extract_payload)('--changed and --paths are mutually exclusive.')
+    p2-->>p14: seen.add (src/llm_wiki_cli/api.py:_caused_by)(id(...))
+    p1->>p15: _source_snapshot_for_inventory_request
+    p2-->>p11: id(current)
+    p1->>p16: InventoryRequest
+    p1->>p17: resolve_source_selection
+    p1->>p18: normalize_include_tests
+    p1->>p19: _git_changed_files
+    p1-->>p20: str (src/llm_wiki_cli/services….py:build_extract_payload)(src_root)
 ```
 
-> Call sequence diagram shows 30 of 2842 interactions; 2812 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 3039 interactions; 3009 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 14 of 983 (969 omitted); unresolved 1 of 1294 (1293 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 3 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
+| `src/llm_wiki_cli/config.py:validate_path` | 4 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
+| `src/llm_wiki_cli/config.py:validate_path` | 4 | - | unresolved | 3 |
+| `src/llm_wiki_cli/config.py:validate_path` | 4 | - | external | 2 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 3 | - | unresolved | 5 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 3 | - | external | 11 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 3 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 22 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 2 |
+> Omission summary shows 8 of 676 groups; 668 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -159,8 +177,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| extract_source | build_extract_payload | 1098 | `extract_cmd.build_extract_payload(src_dir, changed=changed, summary=summary, deep=deep, paths=paths, package_filter=package, include_empty=include_empty, allow_external_src=allow_external_src, read_only=read_only, source_selection=source_selection)` |
-| build_extract_payload | validate_source_root | 2003 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
+| extract_source | build_extract_payload | 1136 | `extract_cmd.build_extract_payload(src_dir, changed=changed, summary=summary, deep=deep, paths=paths, package_filter=package, include_empty=include_empty, allow_external_src=allow_external_src, read_only=read_only, source_selection=source_selection)` |
+| build_extract_payload | validate_source_root | 2071 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
 | validate_source_root | validate_path | 160 | `validate_path(path, label)` |
 | validate_path | PathValidationError | 134 | `PathValidationError(...)` |
 | validate_path | (…).resolve | 135 | `(Path.cwd() / path).resolve(data not statically known)` |

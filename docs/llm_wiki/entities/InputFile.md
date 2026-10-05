@@ -1,6 +1,6 @@
 # _InputFile
 
-**Location:** `src/llm_wiki_cli/services/documentation_wiki_input.py:351`
+**Location:** `src/llm_wiki_cli/services/documentation_wiki_input.py:353`
 **Kind:** Class
 **Bases:** —
 **Module:** [documentation_wiki_input](../modules/documentation_wiki_input.md)
@@ -97,4 +97,4 @@ flowchart LR
 | `_open_windows_input_leaf` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
 | `_read_json_object` | type_reference | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
 
-> References: showing 12 of 20 logical references; 8 omitted by the 12-row generated summary limit.
+> References: showing 12 of 21 logical references; 9 omitted by the 12-row generated summary limit.

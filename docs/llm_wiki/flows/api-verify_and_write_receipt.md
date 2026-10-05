@@ -2,67 +2,100 @@
 
 **Entry point:** `verify_and_write_receipt` (`api`)
 **Source:** [verification_contracts](../modules/verification_contracts.md)
-**Modules touched:** [io](../modules/io.md), [knowledge_evidence](../modules/knowledge_evidence.md), [validation](../modules/validation.md), [verification_contracts](../modules/verification_contracts.md)
+**Modules touched:** [io](../modules/io.md), [knowledge_evidence](../modules/knowledge_evidence.md), [validation](../modules/validation.md), [verification_contracts](../modules/verification_contracts.md), and 1 more
+
+**Complete modules touched:**
+
+- [io](../modules/io.md)
+- [knowledge_evidence](../modules/knowledge_evidence.md)
+- [validation](../modules/validation.md)
+- [verification_contracts](../modules/verification_contracts.md)
+- [wiki_write_basis](../modules/wiki_write_basis.md)
 
 ## Call sequence
+
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as verify_and_write_receipt
     participant p1 as verify
-    participant p2 as build_verification_receipt
-    participant p3 as isinstance (src/llm_wiki_cli/services…uild_verification_receipt)
-    participant p4 as TypeError (src/llm_wiki_cli/services…uild_verification_receipt)
-    participant p5 as tuple (src/llm_wiki_cli/services…uild_verification_receipt)
-    participant p6 as VerificationContractError
-    participant p7 as any
-    participant p8 as all
-    participant p9 as VerificationReceipt
-    participant p10 as run_verification
-    participant p11 as isinstance (src/llm_wiki_cli/services…racts.py:run_verification)
-    participant p12 as TypeError (src/llm_wiki_cli/services…racts.py:run_verification)
-    participant p13 as _selected_contracts
-    participant p14 as isinstance (src/llm_wiki_cli/services…ts.py:_selected_contracts)
-    participant p15 as tuple (src/llm_wiki_cli/services…ts.py:_selected_contracts)
-    participant p16 as sorted (src/llm_wiki_cli/services…ts.py:_selected_contracts)
-    participant p17 as len (src/llm_wiki_cli/services…ts.py:_selected_contracts)
-    participant p18 as set (src/llm_wiki_cli/services…ts.py:_selected_contracts)
-    participant p19 as UnknownVerificationCheckerError
-    participant p20 as _checker_id
+    participant p2 as write_verification_receipt
+    participant p3 as build_verification_receipt
+    participant p4 as serialize_verification_receipt
+    participant p5 as run_verification
+    participant p6 as Path (src/llm_wiki_cli/services…rite_verification_receipt)
+    participant p7 as first_unsafe_path_component
+    participant p8 as VerificationReceiptError
+    participant p9 as root.is_symlink
+    participant p10 as root.is_dir
+    participant p11 as verification_receipt_path
+    participant p12 as path.is_symlink
+    participant p13 as path.exists
+    participant p14 as path.is_file
+    participant p15 as write_bytes_atomic
+    participant p16 as isinstance (src/llm_wiki_cli/services…uild_verification_receipt)
+    participant p17 as isinstance (src/llm_wiki_cli/services…racts.py:run_verification)
+    participant p18 as formatted_json_bytes
+    participant p19 as Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    participant p20 as Path (src/llm_wiki_cli/services…verification_receipt_path)
+    participant p21 as isinstance (src/llm_wiki_cli/services/io.py:write_bytes_atomic)
+    participant p22 as TypeError (src/llm_wiki_cli/services…uild_verification_receipt)
+    participant p23 as TypeError (src/llm_wiki_cli/services…racts.py:run_verification)
+    participant p24 as verification_receipt_to_payload
+    participant p25 as os.fspath
+    participant p26 as TypeError (src/llm_wiki_cli/services/io.py:write_bytes_atomic)
     p0->>p1: verify
-    p1->>p2: build_verification_receipt
-    p2-->>p3: isinstance (src/llm_wiki_cli/services…uild_verification_receipt)
-    p2-->>p4: TypeError (src/llm_wiki_cli/services…uild_verification_receipt)
-    p2-->>p5: tuple (src/llm_wiki_cli/services…uild_verification_receipt)
-    p2->>p6: VerificationContractError
-    p2-->>p7: any
-    p2-->>p3: isinstance (src/llm_wiki_cli/services…uild_verification_receipt)
-    p2->>p6: VerificationContractError
-    p2-->>p8: all
-    p2->>p9: VerificationReceipt
-    p1->>p10: run_verification
-    p10-->>p11: isinstance (src/llm_wiki_cli/services…racts.py:run_verification)
-    p10-->>p12: TypeError (src/llm_wiki_cli/services…racts.py:run_verification)
-    p10->>p13: _selected_contracts
-    p13-->>p14: isinstance (src/llm_wiki_cli/services…ts.py:_selected_contracts)
-    p13->>p6: VerificationContractError
-    p13-->>p15: tuple (src/llm_wiki_cli/services…ts.py:_selected_contracts)
-    p13-->>p16: sorted (src/llm_wiki_cli/services…ts.py:_selected_contracts)
-    p13-->>p15: tuple (src/llm_wiki_cli/services…ts.py:_selected_contracts)
-    p13->>p6: VerificationContractError
-    p13-->>p17: len (src/llm_wiki_cli/services…ts.py:_selected_contracts)
-    p13->>p6: VerificationContractError
-    p13-->>p17: len (src/llm_wiki_cli/services…ts.py:_selected_contracts)
-    p13-->>p17: len (src/llm_wiki_cli/services…ts.py:_selected_contracts)
-    p13-->>p18: set (src/llm_wiki_cli/services…ts.py:_selected_contracts)
-    p13->>p6: VerificationContractError
-    p13-->>p14: isinstance (src/llm_wiki_cli/services…ts.py:_selected_contracts)
-    p13->>p19: UnknownVerificationCheckerError
-    p13->>p20: _checker_id
+    p0->>p2: write_verification_receipt
+    p1->>p3: build_verification_receipt
+    p2->>p4: serialize_verification_receipt
+    p1->>p5: run_verification
+    p2-->>p6: Path (src/llm_wiki_cli/services…rite_verification_receipt)(wiki_dir)
+    p2->>p7: first_unsafe_path_component
+    p2->>p8: VerificationReceiptError
+    p2-->>p9: root.is_symlink
+    p2->>p8: VerificationReceiptError
+    p2-->>p10: root.is_dir
+    p2->>p8: VerificationReceiptError
+    p2->>p11: verification_receipt_path
+    p2-->>p12: path.is_symlink
+    p2->>p8: VerificationReceiptError
+    p2-->>p13: path.exists
+    p2-->>p14: path.is_file
+    p2->>p8: VerificationReceiptError
+    p2->>p15: write_bytes_atomic
+    p3-->>p16: isinstance (src/llm_wiki_cli/services…uild_verification_receipt)(context, VerificationContext)
+    p5-->>p17: isinstance (src/llm_wiki_cli/services…racts.py:run_verification)(context, VerificationContext)
+    p4->>p18: formatted_json_bytes
+    p7-->>p19: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)(os.fspath(...))
+    p11-->>p20: Path (src/llm_wiki_cli/services…verification_receipt_path)(wiki_dir)
+    p15-->>p21: isinstance (src/llm_wiki_cli/services/io.py:write_bytes_atomic)(content, bytes)
+    p3-->>p22: TypeError (src/llm_wiki_cli/services…uild_verification_receipt)('context must be a VerificationContext')
+    p5-->>p23: TypeError (src/llm_wiki_cli/services…racts.py:run_verification)('context must be a VerificationContext')
+    p4->>p24: verification_receipt_to_payload
+    p7-->>p25: os.fspath(path)
+    p15-->>p26: TypeError (src/llm_wiki_cli/services/io.py:write_bytes_atomic)('content must be bytes')
 ```
 
-> Call sequence diagram shows 30 of 191 interactions; 161 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 199 interactions; 169 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 10 of 75 (65 omitted); unresolved 5 of 25 (20 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/verification_contracts.py:build_verification_receipt` | 3 | - | external | 4 |
+| `src/llm_wiki_cli/services/verification_contracts.py:build_verification_receipt` | 3 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 3 |
+| `src/llm_wiki_cli/services/verification_contracts.py:run_verification` | 13 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 1 |
+| `src/llm_wiki_cli/services/verification_contracts.py:_selected_contracts` | 16 | - | external | 11 |
+| `src/llm_wiki_cli/services/verification_contracts.py:_selected_contracts` | 16 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 8 |
+| `src/llm_wiki_cli/services/verification_contracts.py:_checker_id` | 31 | - | external | 1 |
+| `src/llm_wiki_cli/services/verification_contracts.py:_checker_id` | 31 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/verification_contracts.py:_checker_id` | 31 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 1 |
+> Omission summary shows 8 of 49 groups; 41 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

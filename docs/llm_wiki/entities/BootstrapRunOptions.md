@@ -1,6 +1,6 @@
 # _BootstrapRunOptions
 
-**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4325`
+**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4387`
 **Kind:** Class
 **Bases:** —
 **Module:** [bootstrap_runtime](../modules/bootstrap_runtime.md)
@@ -51,15 +51,17 @@ flowchart LR
     n1["_bootstrap_run_options_from_args (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n2["_bootstrap_run_options_from_request (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n3["_execute_bootstrap_options (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
-    n4["_first_use_guidance (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
-    n5["_preflight_bootstrap_source_selection (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
-    n6["_preflight_public_bootstrap (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n4["_execute_bootstrap_options_locked (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n5["_first_use_guidance (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n6["_preflight_bootstrap_source_selection (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n7["_preflight_public_bootstrap (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
     n6 --> n0
+    n7 --> n0
     click n0 "../modules/bootstrap_runtime.md"
     click n1 "../modules/bootstrap_runtime.md"
     click n2 "../modules/bootstrap_runtime.md"
@@ -67,6 +69,7 @@ flowchart LR
     click n4 "../modules/bootstrap_runtime.md"
     click n5 "../modules/bootstrap_runtime.md"
     click n6 "../modules/bootstrap_runtime.md"
+    click n7 "../modules/bootstrap_runtime.md"
 ```
 
 ### Summary
@@ -84,6 +87,7 @@ flowchart LR
 | `_bootstrap_run_options_from_request` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |
 | `_bootstrap_run_options_from_request` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 | `_execute_bootstrap_options` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_execute_bootstrap_options_locked` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 | `_first_use_guidance` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 | `_preflight_bootstrap_source_selection` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 | `_preflight_public_bootstrap` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |

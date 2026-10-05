@@ -1,6 +1,6 @@
 # ContextPacketMalformedError
 
-**Location:** `src/llm_wiki_cli/services/context_packet.py:228`
+**Location:** `src/llm_wiki_cli/services/context_packet.py:229`
 **Kind:** Class
 **Bases:** `ContextPacketError`
 **Module:** [context_packet](../modules/context_packet.md)
@@ -96,4 +96,4 @@ flowchart LR
 | `_string_list` | call | [context_packet](../modules/context_packet.md) | 1 |
 | `_validate_assurance` | call | [context_packet](../modules/context_packet.md) | 2 |
 
-> References: showing 12 of 40 logical references; 28 omitted by the 12-row generated summary limit.
+> References: showing 12 of 41 logical references; 29 omitted by the 12-row generated summary limit.

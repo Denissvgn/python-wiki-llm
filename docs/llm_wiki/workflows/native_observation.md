@@ -1,19 +1,21 @@
 # native_observation
 
 **Entry point:** `task_context_v2._native_observation`
-**Modules involved:** [knowledge_storage](../modules/knowledge_storage.md), [markdown_sections](../modules/markdown_sections.md), [section_ownership](../modules/section_ownership.md), [task_context_v2](../modules/task_context_v2.md), [workflow_profile](../modules/workflow_profile.md)
+**Modules involved:** [knowledge_storage](../modules/knowledge_storage.md), [maintenance_status](../modules/maintenance_status.md), [markdown_sections](../modules/markdown_sections.md), [section_ownership](../modules/section_ownership.md), [task_context_v2](../modules/task_context_v2.md), [workflow_profile](../modules/workflow_profile.md)
 
 ## Sequence
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
 1. `knowledge_storage._concept_aliases`
-2. `section_ownership.observe_page_sections`
-3. `markdown_sections.parse_markdown_document`
-4. `workflow_profile.content_id`
+2. `maintenance_status.validate_maintenance_summary`
+3. `section_ownership.observe_page_sections`
+4. `markdown_sections.parse_markdown_document`
+5. `workflow_profile.content_id`
 
 ## Touches
 
 - [knowledge_storage](../modules/knowledge_storage.md)
+- [maintenance_status](../modules/maintenance_status.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [section_ownership](../modules/section_ownership.md)
 - [task_context_v2](../modules/task_context_v2.md)

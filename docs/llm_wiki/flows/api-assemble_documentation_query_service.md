@@ -6,13 +6,20 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as assemble_documentation_query_service
     participant p1 as service_factory
-    p0-->>p1: service_factory
+    p0-->>p1: service_factory(…)
 ```
+
+> Call sequence diagram shows 1 of 1 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 0 of 0 (0 omitted); unresolved 1 of 1 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 
@@ -29,14 +36,14 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `assemble_documentation_query_service` | `inventory: Mapping[str, Mapping[str, Any]]`, `call_edges: Iterable[Mapping[str, Any]]`, `flows: Iterable[Mapping[str, Any]]`, `data_flows: object`, `dependency_analysis: Mapping[str, Any] \| None`, `surface_index: Mapping[str, Any] \| None`, `limit: int`, `knowledge_view: object` | - | - | `service_factory(...)` |
+| `assemble_documentation_query_service` | `inventory: Mapping[str, Mapping[str, Any]]`, `call_edges: Iterable[Mapping[str, Any]]`, `flows: Iterable[Mapping[str, Any]]`, `data_flows: object`, `dependency_analysis: Mapping[str, Any] \| None`, `surface_index: Mapping[str, Any] \| None`, `limit: int`, `knowledge_view: object` | - | `captured_options[...]` | `service_factory(...)` |
 | `service_factory` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| assemble_documentation_query_service | service_factory | 372 | `service_factory(inventory, call_edges=call_edges, flows=flows, data_flows=data_flows, dependency_analysis=dependency_analysis, surface_index=surface_index, limit=limit, knowledge_view=knowledge_view, machine_verification=machine_verification)` |
+| assemble_documentation_query_service | service_factory | 383 | `service_factory(inventory, call_edges=call_edges, flows=flows, data_flows=data_flows, dependency_analysis=dependency_analysis, surface_index=surface_index, limit=limit, knowledge_view=knowledge_view, machine_verification=machine_verification, **=captured_options)` |
 
 ### Boundary effects
 
@@ -46,7 +53,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `assemble_documentation_query_service` | `service_factory` | 372 |
+| unresolved_call | `assemble_documentation_query_service` | `service_factory` | 383 |
 
 ## Behavior
 

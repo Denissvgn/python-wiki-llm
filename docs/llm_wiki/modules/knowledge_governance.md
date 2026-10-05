@@ -35,6 +35,7 @@ to the shared identity service while preserving governance error diagnostics.
 | `.knowledge_model` | `ConceptKind`, `ConceptRecord`, `EvidenceState`, `KnowledgeIndex`, `Lifecycle` |
 | `.validation` | `require_exact_fields`, `require_list`, `require_mapping`, `require_no_control_characters`, `require_nonnegative_int`, `require_sha256` |
 | `.wiki_media` | `contains_uri_authority_userinfo` |
+| `.wiki_write_basis` | `before_wiki_write`, `after_wiki_write` |
 | `__future__` | `annotations` |
 | `collections` | `defaultdict` |
 | `collections.abc` | `Iterator`, `Mapping`, `Sequence` |
@@ -72,10 +73,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (19) |
-| Outbound | `src` (9) |
+| Inbound | `src` (21) |
+| Outbound | `src` (10) |
 
-> All 27 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 30 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

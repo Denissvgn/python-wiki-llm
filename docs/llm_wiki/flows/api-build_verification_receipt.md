@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -17,16 +19,21 @@ sequenceDiagram
     participant p5 as any
     participant p6 as all
     participant p7 as VerificationReceipt
-    p0-->>p1: isinstance
-    p0-->>p2: TypeError
-    p0-->>p3: tuple
+    p0-->>p1: isinstance(context, VerificationContext)
+    p0-->>p2: TypeError('context must be a VerificationContext')
+    p0-->>p3: tuple(checks)
     p0->>p4: VerificationContractError
-    p0-->>p5: any
-    p0-->>p1: isinstance
+    p0-->>p5: any(...)
+    p0-->>p1: isinstance(check, VerificationCheckResult)
     p0->>p4: VerificationContractError
-    p0-->>p6: all
+    p0-->>p6: all(...)
     p0->>p7: VerificationReceipt
 ```
+
+> Call sequence diagram shows 9 of 9 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 6 of 6 (0 omitted); unresolved 0 of 0 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

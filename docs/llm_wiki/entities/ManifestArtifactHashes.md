@@ -1,6 +1,6 @@
 # ManifestArtifactHashes
 
-**Location:** `src/llm_wiki_cli/services/sync_manifest.py:447`
+**Location:** `src/llm_wiki_cli/services/sync_manifest.py:448`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_manifest](../modules/sync_manifest.md)
@@ -19,6 +19,7 @@ All-or-none exact-byte commitment to the generated artifact set.
 | `knowledge_index_hash` | `str` | *required* | — |
 | `evaluated_envelope_hash` | `str` | *required* | — |
 | `governance_hash` | `str \| None` | `None` | — |
+| `maintenance_adoption_hash` | `str \| None` | `None` | — |
 
 ## Methods
 
@@ -53,7 +54,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [sync_manifest](../modules/sync_manifest.md) | 3 | `evaluated_envelope_hash`, `governance_hash`, `knowledge_index_hash`, `surface_index_hash` |
+| [sync_manifest](../modules/sync_manifest.md) | 3 | `evaluated_envelope_hash`, `governance_hash`, `knowledge_index_hash`, `maintenance_adoption_hash`, `surface_index_hash` |
 
 ### References
 

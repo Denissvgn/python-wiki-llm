@@ -2,7 +2,7 @@
 
 **Entry point:** `callers` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 11 more
+**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 18 more
 
 **Complete modules touched:**
 
@@ -13,10 +13,17 @@
 - [documentation_queries](../modules/documentation_queries.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [implementation_evidence](../modules/implementation_evidence.md)
 - [io](../modules/io.md)
+- [knowledge_consumption](../modules/knowledge_consumption.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [maintenance_evidence](../modules/maintenance_evidence.md)
+- [maintenance_shapes](../modules/maintenance_shapes.md)
+- [maintenance_state](../modules/maintenance_state.md)
+- [maintenance_status](../modules/maintenance_status.md)
+- [python_implementation](../modules/python_implementation.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
@@ -24,66 +31,83 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as callers
     participant p1 as _normalize_query_input
-    participant p2 as callback (src/llm_wiki_cli/api.py:_normalize_query_input)
-    participant p3 as InvalidRequestError
-    participant p4 as str (src/llm_wiki_cli/api.py:_normalize_query_input)
-    participant p5 as normalize_documentation_query_text
-    participant p6 as isinstance (src/llm_wiki_cli/services…_documentation_query_text)
-    participant p7 as value.strip
-    participant p8 as DocumentationQueryError
-    participant p9 as len (src/llm_wiki_cli/services…_documentation_query_text)
-    participant p10 as selected.encode
-    participant p11 as _effective_query_limit
-    participant p12 as _normalize_query_limit
-    participant p13 as normalize_documentation_query_limit
-    participant p14 as isinstance (src/llm_wiki_cli/services…documentation_query_limit)
-    participant p15 as min
-    participant p16 as cast
-    participant p17 as _run_query
-    participant p18 as callback (src/llm_wiki_cli/api.py:_run_query)
-    participant p19 as str (src/llm_wiki_cli/api.py:_run_query)
-    participant p20 as _query_service(…).callers
-    participant p21 as _query_service
-    participant p22 as build_documentation_query_service
-    participant p23 as isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service)
+    participant p2 as normalize_documentation_query_text
+    participant p3 as _effective_query_limit
+    participant p4 as cast
+    participant p5 as _run_query
+    participant p6 as _query_service(…).callers
+    participant p7 as _query_service
+    participant p8 as callback (src/llm_wiki_cli/api.py:_normalize_query_input)
+    participant p9 as isinstance (src/llm_wiki_cli/services…_documentation_query_text)
+    participant p10 as _normalize_query_limit
+    participant p11 as callback (src/llm_wiki_cli/api.py:_run_query)
+    participant p12 as InvalidRequestError
+    participant p13 as value.strip
+    participant p14 as build_documentation_query_service
+    participant p15 as str (src/llm_wiki_cli/api.py:_normalize_query_input)
+    participant p16 as DocumentationQueryError
+    participant p17 as str (src/llm_wiki_cli/api.py:_run_query)
+    participant p18 as len (src/llm_wiki_cli/services…_documentation_query_text)
+    participant p19 as selected.encode
+    participant p20 as isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service)
+    participant p21 as normalize_documentation_query_limit
     p0->>p1: _normalize_query_input
-    p1-->>p2: callback (src/llm_wiki_cli/api.py:_normalize_query_input)
-    p1->>p3: InvalidRequestError
-    p1-->>p4: str (src/llm_wiki_cli/api.py:_normalize_query_input)
-    p0->>p5: normalize_documentation_query_text
-    p5-->>p6: isinstance (src/llm_wiki_cli/services…_documentation_query_text)
-    p5-->>p7: value.strip
-    p5->>p8: DocumentationQueryError
-    p5-->>p7: value.strip
-    p5-->>p9: len (src/llm_wiki_cli/services…_documentation_query_text)
-    p5-->>p10: selected.encode
-    p5->>p8: DocumentationQueryError
-    p0->>p11: _effective_query_limit
-    p11->>p12: _normalize_query_limit
-    p12->>p1: _normalize_query_input
-    p12->>p13: normalize_documentation_query_limit
-    p13-->>p14: isinstance (src/llm_wiki_cli/services…documentation_query_limit)
-    p13-->>p14: isinstance (src/llm_wiki_cli/services…documentation_query_limit)
-    p13->>p8: DocumentationQueryError
-    p13-->>p15: min
-    p0-->>p16: cast
-    p0->>p17: _run_query
-    p17-->>p18: callback (src/llm_wiki_cli/api.py:_run_query)
-    p17->>p3: InvalidRequestError
-    p17-->>p19: str (src/llm_wiki_cli/api.py:_run_query)
-    p0-->>p20: _query_service(…).callers
-    p0->>p21: _query_service
-    p21->>p3: InvalidRequestError
-    p21->>p22: build_documentation_query_service
-    p22-->>p23: isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service)
+    p0->>p2: normalize_documentation_query_text
+    p0->>p3: _effective_query_limit
+    p0-->>p4: cast(CallersResult, _run_query(...))
+    p0->>p5: _run_query
+    p0-->>p6: _query_service(…).callers(query)
+    p0->>p7: _query_service
+    p1-->>p8: callback (src/llm_wiki_cli/api.py:_normalize_query_input)
+    p2-->>p9: isinstance (src/llm_wiki_cli/services…_documentation_query_text)(value, str)
+    p3->>p10: _normalize_query_limit
+    p5-->>p11: callback (src/llm_wiki_cli/api.py:_run_query)
+    p7->>p12: InvalidRequestError
+    p1->>p12: InvalidRequestError
+    p2-->>p13: value.strip
+    p5->>p12: InvalidRequestError
+    p7->>p14: build_documentation_query_service
+    p1-->>p15: str (src/llm_wiki_cli/api.py:_normalize_query_input)(exc)
+    p2->>p16: DocumentationQueryError
+    p5-->>p17: str (src/llm_wiki_cli/api.py:_run_query)(exc)
+    p2-->>p13: value.strip
+    p2-->>p18: len (src/llm_wiki_cli/services…_documentation_query_text)(selected.encode(...))
+    p2-->>p19: selected.encode('utf-8')
+    p2->>p16: DocumentationQueryError
+    p10->>p1: _normalize_query_input
+    p14-->>p20: isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service)(value, bool)
+    p10->>p21: normalize_documentation_query_limit
+    p14->>p12: InvalidRequestError
+    p14-->>p20: isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service)(helper_cache_dir, (...))
+    p14->>p12: InvalidRequestError
+    p14->>p21: normalize_documentation_query_limit
 ```
 
-> Call sequence diagram shows 30 of 476 interactions; 446 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 828 interactions; 798 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 7 of 344 (337 omitted); unresolved 6 of 186 (180 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/documentation_query_builder.py:normalize_documentation_query_limit` | 17 | - | external | 3 |
+| `src/llm_wiki_cli/services/documentation_query_builder.py:normalize_documentation_query_limit` | 17 | [src/llm_wiki_cli/services/documentation_queries.py](../modules/documentation_queries.md) | internal | 1 |
+| `src/llm_wiki_cli/api.py:build_documentation_query_service` | 30 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 1 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 36 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
+| `src/llm_wiki_cli/config.py:validate_path` | 37 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
+| `src/llm_wiki_cli/config.py:validate_path` | 37 | - | unresolved | 3 |
+| `src/llm_wiki_cli/config.py:validate_path` | 37 | - | external | 2 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 36 | - | unresolved | 5 |
+> Omission summary shows 8 of 175 groups; 167 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -143,17 +167,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| callers | _normalize_query_input | 1973 | `_normalize_query_input(...)` |
-| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 1783 | `callback(data not statically known)` |
-| _normalize_query_input | InvalidRequestError | 1785 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
-| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 1786 | `str(exc)` |
-| callers | normalize_documentation_query_text | 1974 | `normalize_documentation_query_text(symbol, field='symbol')` |
-| normalize_documentation_query_text | isinstance (src/llm_wiki_cli/services…_documentation_query_text) | 60 | `isinstance(value, str)` |
-| normalize_documentation_query_text | value.strip | 60 | `value.strip(data not statically known)` |
-| normalize_documentation_query_text | DocumentationQueryError | 61 | `DocumentationQueryError(...)` |
-| normalize_documentation_query_text | value.strip | 62 | `value.strip(data not statically known)` |
-| normalize_documentation_query_text | len (src/llm_wiki_cli/services…_documentation_query_text) | 63 | `len(selected.encode(...))` |
-| normalize_documentation_query_text | selected.encode | 63 | `selected.encode('utf-8')` |
+| callers | _normalize_query_input | 2179 | `_normalize_query_input(...)` |
+| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 1989 | `callback(data not statically known)` |
+| _normalize_query_input | InvalidRequestError | 1991 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
+| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 1992 | `str(exc)` |
+| callers | normalize_documentation_query_text | 2180 | `normalize_documentation_query_text(symbol, field='symbol')` |
+| normalize_documentation_query_text | isinstance (src/llm_wiki_cli/services…_documentation_query_text) | 64 | `isinstance(value, str)` |
+| normalize_documentation_query_text | value.strip | 64 | `value.strip(data not statically known)` |
+| normalize_documentation_query_text | DocumentationQueryError | 65 | `DocumentationQueryError(...)` |
+| normalize_documentation_query_text | value.strip | 66 | `value.strip(data not statically known)` |
+| normalize_documentation_query_text | len (src/llm_wiki_cli/services…_documentation_query_text) | 67 | `len(selected.encode(...))` |
+| normalize_documentation_query_text | selected.encode | 67 | `selected.encode('utf-8')` |
 
 ### Boundary effects
 
@@ -163,11 +187,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalize_query_input` | `callback` | 1783 |
-| external_call | `normalize_documentation_query_text` | `isinstance` | 60 |
-| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 60 |
-| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 62 |
-| unresolved_call | `normalize_documentation_query_text` | `selected.encode` | 63 |
+| unresolved_call | `_normalize_query_input` | `callback` | 1989 |
+| external_call | `normalize_documentation_query_text` | `isinstance` | 64 |
+| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 64 |
+| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 66 |
+| unresolved_call | `normalize_documentation_query_text` | `selected.encode` | 67 |
 | step_limit | `callers` | `first 12 steps` | 0 |
 | truncated_flow | `callers` | `depth limit` | 0 |
 

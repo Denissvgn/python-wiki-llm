@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -29,43 +31,57 @@ sequenceDiagram
     participant p17 as source.joinpath
     participant p18 as Path(…).relative_to
     participant p19 as is_bundled_helper_implementation_path
-    participant p20 as _normalize_path_text
-    participant p21 as isinstance (src/llm_wiki_cli/extracto…n.py:_normalize_path_text)
-    participant p22 as path.as_posix (src/llm_wiki_cli/extracto…n.py:_normalize_path_text)
-    participant p23 as str(…).replace
+    participant p20 as helper_excludes.add
     p0-->>p1: Path(…).resolve (src/llm_wiki_cli/services…ntime_repository_evidence)
-    p0-->>p2: Path (src/llm_wiki_cli/services…ntime_repository_evidence)
+    p0-->>p2: Path (src/llm_wiki_cli/services…ntime_repository_evidence)(source_root)
     p0-->>p3: Path(…).resolve (src/llm_wiki_cli/services…me_repository_evidence, 1)
-    p0-->>p2: Path (src/llm_wiki_cli/services…ntime_repository_evidence)
-    p0-->>p4: isinstance (src/llm_wiki_cli/services…ntime_repository_evidence)
-    p0-->>p5: TypeError (src/llm_wiki_cli/services…ntime_repository_evidence)
+    p0-->>p2: Path (src/llm_wiki_cli/services…ntime_repository_evidence)(target_wiki_dir)
+    p0-->>p4: isinstance (src/llm_wiki_cli/services…ntime_repository_evidence)(source_snapshot, SourceSnapshot)
+    p0-->>p5: TypeError (src/llm_wiki_cli/services…ntime_repository_evidence)('source_snapshot must be a SourceSnapshot or None')
     p0-->>p6: source_snapshot.root.resolve
-    p0-->>p7: ValueError (src/llm_wiki_cli/services…ntime_repository_evidence)
-    p0-->>p8: selected_paths.add
-    p0-->>p9: selected_paths.update
+    p0-->>p7: ValueError (src/llm_wiki_cli/services…ntime_repository_evidence)('source_snapshot root must match source_root')
+    p0-->>p8: selected_paths.add(...)
+    p0-->>p9: selected_paths.update(...)
     p0-->>p10: source_snapshot.captured_input_kinds.items
-    p0-->>p11: tuple (src/llm_wiki_cli/services…ntime_repository_evidence)
-    p0-->>p12: sorted (src/llm_wiki_cli/services…ntime_repository_evidence)
-    p0-->>p13: str (src/llm_wiki_cli/services…ntime_repository_evidence)
+    p0-->>p11: tuple (src/llm_wiki_cli/services…ntime_repository_evidence)(sorted(...))
+    p0-->>p12: sorted (src/llm_wiki_cli/services…ntime_repository_evidence)(selected_paths, key=...)
+    p0-->>p13: str (src/llm_wiki_cli/services…ntime_repository_evidence)(path)
     p0-->>p14: set (src/llm_wiki_cli/services…ntime_repository_evidence)
     p0-->>p14: set (src/llm_wiki_cli/services…ntime_repository_evidence)
-    p0-->>p14: set (src/llm_wiki_cli/services…ntime_repository_evidence)
-    p0-->>p14: set (src/llm_wiki_cli/services…ntime_repository_evidence)
-    p0-->>p2: Path (src/llm_wiki_cli/services…ntime_repository_evidence)
-    p0-->>p15: enumerate (src/llm_wiki_cli/services…ntime_repository_evidence)
-    p0-->>p16: package_roots.add
-    p0-->>p17: source.joinpath
-    p0-->>p16: package_roots.add
-    p0-->>p18: Path(…).relative_to
-    p0-->>p2: Path (src/llm_wiki_cli/services…ntime_repository_evidence)
+    p0-->>p14: set (src/llm_wiki_cli/services…ntime_repository_evidence)(policy.include)
+    p0-->>p14: set (src/llm_wiki_cli/services…ntime_repository_evidence)(source_snapshot.selected_regular_paths)
+    p0-->>p2: Path (src/llm_wiki_cli/services…ntime_repository_evidence)(selected_path)
+    p0-->>p15: enumerate (src/llm_wiki_cli/services…ntime_repository_evidence)(parts)
+    p0-->>p16: package_roots.add(source.joinpath(...))
+    p0-->>p17: source.joinpath(...)
+    p0-->>p16: package_roots.add(source)
+    p0-->>p18: Path(…).relative_to('llm_wiki_cli')
+    p0-->>p2: Path (src/llm_wiki_cli/services…ntime_repository_evidence)(helper_path)
     p0->>p19: is_bundled_helper_implementation_path
-    p19->>p20: _normalize_path_text
-    p20-->>p21: isinstance (src/llm_wiki_cli/extracto…n.py:_normalize_path_text)
-    p20-->>p22: path.as_posix (src/llm_wiki_cli/extracto…n.py:_normalize_path_text)
-    p20-->>p23: str(…).replace
+    p0-->>p20: helper_excludes.add(candidate)
+    p0-->>p11: tuple (src/llm_wiki_cli/services…ntime_repository_evidence)(...)
+    p0-->>p11: tuple (src/llm_wiki_cli/services…ntime_repository_evidence)(sorted(...))
+    p0-->>p12: sorted (src/llm_wiki_cli/services…ntime_repository_evidence)(helper_excludes, key=...)
 ```
 
-> Call sequence diagram shows 30 of 236 interactions; 206 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 236 interactions; 206 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 18 of 98 (80 omitted); unresolved 11 of 75 (64 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/extractors/common.py:is_bundled_helper_implementation_path` | 27 | [src/llm_wiki_cli/extractors/common.py](../modules/common.md) | internal | 9 |
+| `src/llm_wiki_cli/extractors/common.py:_normalize_path_text` | 28 | - | external | 3 |
+| `src/llm_wiki_cli/extractors/common.py:_normalize_path_text` | 28 | - | unresolved | 2 |
+| `src/llm_wiki_cli/extractors/common.py:_is_windows_absolute_path_text` | 35 | - | external | 2 |
+| `src/llm_wiki_cli/extractors/common.py:_is_windows_absolute_path_text` | 35 | - | unresolved | 1 |
+| `src/llm_wiki_cli/extractors/common.py:is_bundled_helper_implementation_path` | 27 | - | external | 6 |
+| `src/llm_wiki_cli/extractors/common.py:is_bundled_helper_implementation_path` | 27 | - | unresolved | 8 |
+| `src/llm_wiki_cli/extractors/common.py:_is_absolute_path_text` | 41 | - | unresolved | 1 |
+> Omission summary shows 8 of 52 groups; 44 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -137,39 +153,39 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| collect_runtime_repository_evidence | Path(…).resolve (src/llm_wiki_cli/services…ntime_repository_evidence) | 960 | `Path(source_root).resolve(data not statically known)` |
-| collect_runtime_repository_evidence | Path (src/llm_wiki_cli/services…ntime_repository_evidence) | 960 | `Path(source_root)` |
-| collect_runtime_repository_evidence | Path(…).resolve (src/llm_wiki_cli/services…me_repository_evidence, 1) | 961 | `Path(target_wiki_dir).resolve(data not statically known)` |
-| collect_runtime_repository_evidence | Path (src/llm_wiki_cli/services…ntime_repository_evidence) | 961 | `Path(target_wiki_dir)` |
-| collect_runtime_repository_evidence | isinstance (src/llm_wiki_cli/services…ntime_repository_evidence) | 966 | `isinstance(source_snapshot, SourceSnapshot)` |
-| collect_runtime_repository_evidence | TypeError (src/llm_wiki_cli/services…ntime_repository_evidence) | 967 | `TypeError('source_snapshot must be a SourceSnapshot or None')` |
-| collect_runtime_repository_evidence | source_snapshot.root.resolve | 968 | `source_snapshot.root.resolve(data not statically known)` |
-| collect_runtime_repository_evidence | ValueError (src/llm_wiki_cli/services…ntime_repository_evidence) | 969 | `ValueError('source_snapshot root must match source_root')` |
-| collect_runtime_repository_evidence | selected_paths.add | 977 | `selected_paths.add(...)` |
-| collect_runtime_repository_evidence | selected_paths.update | 978 | `selected_paths.update(...)` |
-| collect_runtime_repository_evidence | source_snapshot.captured_input_kinds.items | 980 | `source_snapshot.captured_input_kinds.items(data not statically known)` |
+| collect_runtime_repository_evidence | Path(…).resolve (src/llm_wiki_cli/services…ntime_repository_evidence) | 1007 | `Path(source_root).resolve(data not statically known)` |
+| collect_runtime_repository_evidence | Path (src/llm_wiki_cli/services…ntime_repository_evidence) | 1007 | `Path(source_root)` |
+| collect_runtime_repository_evidence | Path(…).resolve (src/llm_wiki_cli/services…me_repository_evidence, 1) | 1008 | `Path(target_wiki_dir).resolve(data not statically known)` |
+| collect_runtime_repository_evidence | Path (src/llm_wiki_cli/services…ntime_repository_evidence) | 1008 | `Path(target_wiki_dir)` |
+| collect_runtime_repository_evidence | isinstance (src/llm_wiki_cli/services…ntime_repository_evidence) | 1013 | `isinstance(source_snapshot, SourceSnapshot)` |
+| collect_runtime_repository_evidence | TypeError (src/llm_wiki_cli/services…ntime_repository_evidence) | 1014 | `TypeError('source_snapshot must be a SourceSnapshot or None')` |
+| collect_runtime_repository_evidence | source_snapshot.root.resolve | 1015 | `source_snapshot.root.resolve(data not statically known)` |
+| collect_runtime_repository_evidence | ValueError (src/llm_wiki_cli/services…ntime_repository_evidence) | 1016 | `ValueError('source_snapshot root must match source_root')` |
+| collect_runtime_repository_evidence | selected_paths.add | 1024 | `selected_paths.add(...)` |
+| collect_runtime_repository_evidence | selected_paths.update | 1025 | `selected_paths.update(...)` |
+| collect_runtime_repository_evidence | source_snapshot.captured_input_kinds.items | 1027 | `source_snapshot.captured_input_kinds.items(data not statically known)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `selected_paths.add` | `collect_runtime_repository_evidence` | 977 |
-| mutation | `selected_paths.update` | `collect_runtime_repository_evidence` | 978 |
-| mutation | `package_roots.add` | `collect_runtime_repository_evidence` | 993 |
-| mutation | `package_roots.add` | `collect_runtime_repository_evidence` | 995 |
-| mutation | `helper_excludes.add` | `collect_runtime_repository_evidence` | 1001 |
+| mutation | `selected_paths.add` | `collect_runtime_repository_evidence` | 1024 |
+| mutation | `selected_paths.update` | `collect_runtime_repository_evidence` | 1025 |
+| mutation | `package_roots.add` | `collect_runtime_repository_evidence` | 1040 |
+| mutation | `package_roots.add` | `collect_runtime_repository_evidence` | 1042 |
+| mutation | `helper_excludes.add` | `collect_runtime_repository_evidence` | 1048 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `collect_runtime_repository_evidence` | `Path(source_root).resolve` | 960 |
-| unresolved_call | `collect_runtime_repository_evidence` | `Path(target_wiki_dir).resolve` | 961 |
-| external_call | `collect_runtime_repository_evidence` | `isinstance` | 966 |
-| external_call | `collect_runtime_repository_evidence` | `TypeError` | 967 |
-| unresolved_call | `collect_runtime_repository_evidence` | `source_snapshot.root.resolve` | 968 |
-| external_call | `collect_runtime_repository_evidence` | `ValueError` | 969 |
-| unresolved_call | `collect_runtime_repository_evidence` | `source_snapshot.captured_input_kinds.items` | 980 |
+| unresolved_call | `collect_runtime_repository_evidence` | `Path(source_root).resolve` | 1007 |
+| unresolved_call | `collect_runtime_repository_evidence` | `Path(target_wiki_dir).resolve` | 1008 |
+| external_call | `collect_runtime_repository_evidence` | `isinstance` | 1013 |
+| external_call | `collect_runtime_repository_evidence` | `TypeError` | 1014 |
+| unresolved_call | `collect_runtime_repository_evidence` | `source_snapshot.root.resolve` | 1015 |
+| external_call | `collect_runtime_repository_evidence` | `ValueError` | 1016 |
+| unresolved_call | `collect_runtime_repository_evidence` | `source_snapshot.captured_input_kinds.items` | 1027 |
 | step_limit | `collect_runtime_repository_evidence` | `first 12 steps` | 0 |
 | truncated_flow | `collect_runtime_repository_evidence` | `depth limit` | 0 |
 

@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -15,51 +17,64 @@ sequenceDiagram
     participant p3 as any (src/llm_wiki_cli/services…puts_from_captured_hashes)
     participant p4 as set (src/llm_wiki_cli/services…puts_from_captured_hashes)
     participant p5 as _repository_relative_path
-    participant p6 as require_repository_relative_path
-    participant p7 as isinstance (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p8 as _syntax_key
-    participant p9 as type
-    participant p10 as len (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    participant p11 as any (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    participant p12 as _known_syntax
-    participant p13 as _PATH_SYNTAX.get
-    participant p14 as _PATH_SYNTAX.move_to_end (src/llm_wiki_cli/services…lidation.py:_known_syntax)
-    participant p15 as value.strip
-    participant p16 as any (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p17 as ord (src/llm_wiki_cli/services…_repository_relative_path)
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes)
+    participant p6 as tuple (src/llm_wiki_cli/services…puts_from_captured_hashes)
+    participant p7 as ConsumedInput
+    participant p8 as _canonical_consumed_input_kind
+    participant p9 as sorted
+    participant p10 as require_repository_relative_path
+    participant p11 as isinstance (src/llm_wiki_cli/services…nical_consumed_input_kind)
+    participant p12 as tuple (src/llm_wiki_cli/services…nical_consumed_input_kind)
+    participant p13 as set (src/llm_wiki_cli/services…nical_consumed_input_kind)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes)(content_hashes, Mapping)
     p0->>p2: KnowledgeEnvelopeError
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes)(candidate_kinds, Mapping)
     p0->>p2: KnowledgeEnvelopeError
-    p0-->>p3: any (src/llm_wiki_cli/services…puts_from_captured_hashes)
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes)
+    p0-->>p3: any (src/llm_wiki_cli/services…puts_from_captured_hashes)(...)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes)(path, str)
     p0->>p2: KnowledgeEnvelopeError
-    p0-->>p3: any (src/llm_wiki_cli/services…puts_from_captured_hashes)
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes)
+    p0-->>p3: any (src/llm_wiki_cli/services…puts_from_captured_hashes)(...)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…puts_from_captured_hashes)(path, str)
     p0->>p2: KnowledgeEnvelopeError
-    p0-->>p4: set (src/llm_wiki_cli/services…puts_from_captured_hashes)
-    p0-->>p4: set (src/llm_wiki_cli/services…puts_from_captured_hashes)
+    p0-->>p4: set (src/llm_wiki_cli/services…puts_from_captured_hashes)(content_hashes)
+    p0-->>p4: set (src/llm_wiki_cli/services…puts_from_captured_hashes)(candidate_kinds)
     p0->>p2: KnowledgeEnvelopeError
     p0->>p5: _repository_relative_path
-    p5->>p6: require_repository_relative_path
-    p6-->>p7: isinstance (src/llm_wiki_cli/services…_repository_relative_path)
-    p6->>p8: _syntax_key
-    p8-->>p9: type
-    p8-->>p10: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    p8-->>p11: any (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    p8-->>p9: type
-    p8-->>p9: type
-    p8-->>p10: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    p6->>p12: _known_syntax
-    p12-->>p13: _PATH_SYNTAX.get
-    p12-->>p14: _PATH_SYNTAX.move_to_end (src/llm_wiki_cli/services…lidation.py:_known_syntax)
-    p6-->>p15: value.strip
-    p6-->>p16: any (src/llm_wiki_cli/services…_repository_relative_path)
-    p6-->>p17: ord (src/llm_wiki_cli/services…_repository_relative_path)
-    p6-->>p17: ord (src/llm_wiki_cli/services…_repository_relative_path)
+    p0-->>p6: tuple (src/llm_wiki_cli/services…puts_from_captured_hashes)(...)
+    p0->>p7: ConsumedInput
+    p0->>p8: _canonical_consumed_input_kind
+    p0-->>p9: sorted(content_hashes)
+    p5->>p10: require_repository_relative_path
+    p8-->>p11: isinstance (src/llm_wiki_cli/services…nical_consumed_input_kind)(value, (...))
+    p5->>p2: KnowledgeEnvelopeError
+    p8-->>p11: isinstance (src/llm_wiki_cli/services…nical_consumed_input_kind)(value, bytes)
+    p5->>p2: KnowledgeEnvelopeError
+    p8->>p2: KnowledgeEnvelopeError
+    p5->>p2: KnowledgeEnvelopeError
+    p8-->>p12: tuple (src/llm_wiki_cli/services…nical_consumed_input_kind)(value)
+    p8->>p2: KnowledgeEnvelopeError
+    p8->>p2: KnowledgeEnvelopeError
+    p8-->>p13: set (src/llm_wiki_cli/services…nical_consumed_input_kind)
+    p8-->>p11: isinstance (src/llm_wiki_cli/services…nical_consumed_input_kind)(candidate, ConsumedInputKind)
 ```
 
-> Call sequence diagram shows 30 of 113 interactions; 83 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 113 interactions; 83 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 15 of 43 (28 omitted); unresolved 0 of 28 (28 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 16 | - | external | 7 |
+| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 16 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 4 |
+| `src/llm_wiki_cli/services/validation.py:_syntax_key` | 18 | - | external | 6 |
+| `src/llm_wiki_cli/services/validation.py:_known_syntax` | 25 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 16 | - | unresolved | 5 |
+| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 39 | - | external | 4 |
+| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 39 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 13 |
+| `src/llm_wiki_cli/services/validation.py:_default_path_error` | 41 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+> Omission summary shows 8 of 21 groups; 13 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

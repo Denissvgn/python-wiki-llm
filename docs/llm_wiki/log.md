@@ -1470,3 +1470,69 @@ Added explicit task requirements, qualified context composition, public query/se
 - Pages deprecated: 0
 - Semantic fields preserved: 0
 - Moved entities: none
+
+## 2026-10-05
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.3.2`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:c7904b4c5d15d7850b023c8c8d18e28a4fc980a82e380a6f662a45bac5f73fd3`
+- Pages created: 83
+- Pages updated: 817
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 672
+- Pages deprecated: 4
+- Semantic fields preserved: 53
+- Moved entities: none
+- Flow pages initialized: 10 (api=9, cli=1)
+- Workflow pages created: 31
+- Dependency pages initialized: 0
+- Surface policy updated: no
+- Infrastructure added: 0
+- Infrastructure changed: 0
+- Infrastructure moved: 0
+- Infrastructure removed: 0
+- Unsupported infrastructure YAML: 2
+- Generated surface pages retired: 4
+
+### Documentation notes
+
+Added task paths for orientation, source changes, symptom investigation and documentation upkeep. The guides distinguish source/structural/executable observations from runtime verification, preserve native requirements during recovery, and keep ordinary agent review separate from human governance.
+
+## 2026-10-05
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.3.2`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:6835af4eb3d211e86faea4c09623b0d8d20644aef093f4609468fbca3c243c34`
+- Pages created: 0
+- Pages updated: 10
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1534
+- Pages deprecated: 0
+- Semantic fields preserved: 4
+- Moved entities: none
+
+## 2026-10-05
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.3.2`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:da20613f6df73695f33d225d97e67c710e77304f883ac8a80ddedd94c31566ac`
+- Pages created: 1
+- Pages updated: 9
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1532
+- Pages deprecated: 0
+- Semantic fields preserved: 0
+- Moved entities: none
+- Flow pages initialized: 0 (none)
+- Workflow pages created: 1
+- Dependency pages initialized: 0
+- Surface policy updated: no

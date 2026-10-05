@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -17,51 +19,63 @@ sequenceDiagram
     participant p5 as str
     participant p6 as handler.get
     participant p7 as _resolved_flow_route
-    participant p8 as operation.get (src/llm_wiki_cli/services…ts.py:_resolved_flow_route)
-    participant p9 as isinstance (src/llm_wiki_cli/services…ts.py:_resolved_flow_route)
-    participant p10 as method.strip
-    participant p11 as method.upper
-    participant p12 as path.strip
-    participant p13 as any
-    participant p14 as unknown.get
-    participant p15 as operation_id.strip
-    participant p16 as handler_routes.append
-    participant p17 as leaf_qualnames[…].add
-    participant p18 as symbol.rsplit
-    participant p19 as dict
-    p0-->>p1: defaultdict
-    p0-->>p1: defaultdict
-    p0-->>p2: contracts.get
-    p0-->>p3: operation.get (src/llm_wiki_cli/services…ach_routes_to_entry_points)
-    p0-->>p4: isinstance (src/llm_wiki_cli/services…ach_routes_to_entry_points)
-    p0-->>p5: str
-    p0-->>p6: handler.get
-    p0-->>p5: str
-    p0-->>p6: handler.get
-    p0-->>p5: str
-    p0-->>p6: handler.get
+    participant p8 as handler_routes.append
+    participant p9 as leaf_qualnames[…].add
+    participant p10 as symbol.rsplit
+    participant p11 as dict
+    participant p12 as item.get
+    participant p13 as routes.get
+    participant p14 as leaf_qualnames.get
+    participant p15 as set
+    participant p16 as len
+    participant p17 as next
+    participant p18 as iter
+    participant p19 as item.pop
+    p0-->>p1: defaultdict(list)
+    p0-->>p1: defaultdict(set)
+    p0-->>p2: contracts.get('operations', [...])
+    p0-->>p3: operation.get (src/llm_wiki_cli/services…ach_routes_to_entry_points)('handler')
+    p0-->>p4: isinstance (src/llm_wiki_cli/services…ach_routes_to_entry_points)(handler, Mapping)
+    p0-->>p5: str(...)
+    p0-->>p6: handler.get('file')
+    p0-->>p5: str(...)
+    p0-->>p6: handler.get('symbol')
+    p0-->>p5: str(...)
+    p0-->>p6: handler.get('qualname')
     p0->>p7: _resolved_flow_route
-    p7-->>p8: operation.get (src/llm_wiki_cli/services…ts.py:_resolved_flow_route)
-    p7-->>p8: operation.get (src/llm_wiki_cli/services…ts.py:_resolved_flow_route)
-    p7-->>p9: isinstance (src/llm_wiki_cli/services…ts.py:_resolved_flow_route)
-    p7-->>p10: method.strip
-    p7-->>p11: method.upper
-    p7-->>p9: isinstance (src/llm_wiki_cli/services…ts.py:_resolved_flow_route)
-    p7-->>p12: path.strip
-    p7-->>p13: any
-    p7-->>p9: isinstance (src/llm_wiki_cli/services…ts.py:_resolved_flow_route)
-    p7-->>p14: unknown.get
-    p7-->>p8: operation.get (src/llm_wiki_cli/services…ts.py:_resolved_flow_route)
-    p7-->>p8: operation.get (src/llm_wiki_cli/services…ts.py:_resolved_flow_route)
-    p7-->>p9: isinstance (src/llm_wiki_cli/services…ts.py:_resolved_flow_route)
-    p7-->>p15: operation_id.strip
-    p0-->>p16: handler_routes.append
-    p0-->>p17: leaf_qualnames[…].add
-    p0-->>p18: symbol.rsplit
-    p0-->>p19: dict
+    p0-->>p8: handler_routes.append(route)
+    p0-->>p9: leaf_qualnames[…].add(qualname)
+    p0-->>p10: symbol.rsplit('.', 1)
+    p0-->>p11: dict(entry)
+    p0-->>p5: str(...)
+    p0-->>p12: item.get('file')
+    p0-->>p5: str(...)
+    p0-->>p12: item.get('symbol')
+    p0-->>p13: routes.get((...))
+    p0-->>p14: leaf_qualnames.get((...), set(...))
+    p0-->>p10: symbol.rsplit('.', 1)
+    p0-->>p15: set
+    p0-->>p16: len(qualnames)
+    p0-->>p13: routes.get((...))
+    p0-->>p17: next(iter(...))
+    p0-->>p18: iter(qualnames)
+    p0-->>p12: item.get('category')
+    p0-->>p19: item.pop('routes', None)
 ```
 
-> Call sequence diagram shows 30 of 46 interactions; 16 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 46 interactions; 16 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 13 of 19 (6 omitted); unresolved 16 of 26 (10 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/api_contracts.py:_resolved_flow_route` | 13 | - | unresolved | 9 |
+| `src/llm_wiki_cli/services/api_contracts.py:_resolved_flow_route` | 13 | - | external | 5 |
+| `src/llm_wiki_cli/services/api_contracts.py:attach_routes_to_entry_points` | 1 | - | external | 1 |
+| `src/llm_wiki_cli/services/api_contracts.py:attach_routes_to_entry_points` | 1 | - | unresolved | 1 |
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

@@ -6,67 +6,85 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as build_module_observation_basis
     participant p1 as _validate_basis_inputs
-    participant p2 as _validate_source_path
-    participant p3 as require_repository_relative_path
-    participant p4 as isinstance (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p5 as _syntax_key
-    participant p6 as type
-    participant p7 as len (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    participant p8 as any (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    participant p9 as _known_syntax
-    participant p10 as _PATH_SYNTAX.get
-    participant p11 as _PATH_SYNTAX.move_to_end (src/llm_wiki_cli/services…lidation.py:_known_syntax)
-    participant p12 as value.strip (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p13 as any (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p14 as ord (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p15 as value.startswith
-    participant p16 as _WINDOWS_DRIVE_PREFIX_RE.match
-    participant p17 as value.split
-    participant p18 as PurePosixPath (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p19 as posixpath.normpath
-    participant p20 as require_portable_relative_path
-    participant p21 as isinstance (src/llm_wiki_cli/services…re_portable_relative_path)
-    participant p22 as _default_path_error
-    participant p23 as SharedValidationError
-    participant p24 as os.fspath
+    participant p2 as _unknown_basis
+    participant p3 as _normalize_module_observation
+    participant p4 as hash_json
+    participant p5 as ConceptObservationBasis
+    participant p6 as _validate_source_path
+    participant p7 as _inventory_language
+    participant p8 as sha256_bytes
+    participant p9 as _validate_hash
+    participant p10 as isinstance (src/llm_wiki_cli/services…malize_module_observation)
+    participant p11 as canonical_json_bytes
+    participant p12 as _validate_extractor_ref
+    participant p13 as _record_array
+    participant p14 as _validate_inventory_complete
+    participant p15 as _validate_import_record
+    participant p16 as _record_name
+    participant p17 as _validate_module_entity_record
+    participant p18 as seen_names.get
+    participant p19 as _copy_selected_fields
+    participant p20 as class_summaries.append
+    participant p21 as _validate_callable_record
+    participant p22 as function_summaries.append
+    participant p23 as _structural_copy
     p0->>p1: _validate_basis_inputs
-    p1->>p2: _validate_source_path
-    p2->>p3: require_repository_relative_path
-    p3-->>p4: isinstance (src/llm_wiki_cli/services…_repository_relative_path)
-    p3->>p5: _syntax_key
-    p5-->>p6: type
-    p5-->>p7: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    p5-->>p8: any (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    p5-->>p6: type
-    p5-->>p6: type
-    p5-->>p7: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    p3->>p9: _known_syntax
-    p9-->>p10: _PATH_SYNTAX.get
-    p9-->>p11: _PATH_SYNTAX.move_to_end (src/llm_wiki_cli/services…lidation.py:_known_syntax)
-    p3-->>p12: value.strip (src/llm_wiki_cli/services…_repository_relative_path)
-    p3-->>p13: any (src/llm_wiki_cli/services…_repository_relative_path)
-    p3-->>p14: ord (src/llm_wiki_cli/services…_repository_relative_path)
-    p3-->>p14: ord (src/llm_wiki_cli/services…_repository_relative_path)
-    p3-->>p15: value.startswith
-    p3-->>p15: value.startswith
-    p3-->>p16: _WINDOWS_DRIVE_PREFIX_RE.match
-    p3-->>p17: value.split
-    p3-->>p18: PurePosixPath (src/llm_wiki_cli/services…_repository_relative_path)
-    p3-->>p13: any (src/llm_wiki_cli/services…_repository_relative_path)
-    p3-->>p19: posixpath.normpath
-    p3->>p20: require_portable_relative_path
-    p20-->>p21: isinstance (src/llm_wiki_cli/services…re_portable_relative_path)
-    p20->>p22: _default_path_error
-    p22->>p23: SharedValidationError
-    p20-->>p24: os.fspath
+    p0->>p2: _unknown_basis
+    p0->>p3: _normalize_module_observation
+    p0->>p4: hash_json
+    p0->>p2: _unknown_basis
+    p0->>p2: _unknown_basis
+    p0->>p5: ConceptObservationBasis
+    p1->>p6: _validate_source_path
+    p2->>p5: ConceptObservationBasis
+    p3->>p7: _inventory_language
+    p4->>p8: sha256_bytes
+    p1->>p9: _validate_hash
+    p3-->>p10: isinstance (src/llm_wiki_cli/services…malize_module_observation)(file_data, Mapping)
+    p4->>p11: canonical_json_bytes
+    p1->>p12: _validate_extractor_ref
+    p3->>p13: _record_array
+    p1->>p14: _validate_inventory_complete
+    p3->>p13: _record_array
+    p3->>p13: _record_array
+    p3->>p15: _validate_import_record
+    p3->>p16: _record_name
+    p3->>p17: _validate_module_entity_record
+    p3-->>p18: seen_names.get(name, 0)
+    p3->>p19: _copy_selected_fields
+    p3-->>p20: class_summaries.append(summary)
+    p3->>p21: _validate_callable_record
+    p3-->>p22: function_summaries.append(_copy_selected_fields(...))
+    p3->>p19: _copy_selected_fields
+    p3->>p23: _structural_copy
+    p3-->>p10: isinstance (src/llm_wiki_cli/services…malize_module_observation)(module_name, str)
 ```
 
-> Call sequence diagram shows 30 of 225 interactions; 195 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 225 interactions; 195 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 2 of 60 (58 omitted); unresolved 3 of 48 (45 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:_validate_source_path` | 3 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 4 | - | external | 7 |
+| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 4 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 4 |
+| `src/llm_wiki_cli/services/validation.py:_syntax_key` | 6 | - | external | 6 |
+| `src/llm_wiki_cli/services/validation.py:_known_syntax` | 13 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 4 | - | unresolved | 5 |
+| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 27 | - | external | 4 |
+| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 27 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 13 |
+> Omission summary shows 8 of 83 groups; 75 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -126,9 +144,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_module_observation_basis | _validate_basis_inputs | 296 | `_validate_basis_inputs(source_path, source_content_hash, extractor_ref, inventory_complete)` |
-| _validate_basis_inputs | _validate_source_path | 845 | `_validate_source_path(source_path)` |
-| _validate_source_path | require_repository_relative_path | 873 | `require_repository_relative_path(source_path, text_error=ValueError(...), posix_error=ValueError(...), normalized_error=ValueError(...))` |
+| build_module_observation_basis | _validate_basis_inputs | 297 | `_validate_basis_inputs(source_path, source_content_hash, extractor_ref, inventory_complete)` |
+| _validate_basis_inputs | _validate_source_path | 846 | `_validate_source_path(source_path)` |
+| _validate_source_path | require_repository_relative_path | 874 | `require_repository_relative_path(source_path, text_error=ValueError(...), posix_error=ValueError(...), normalized_error=ValueError(...))` |
 | require_repository_relative_path | isinstance (src/llm_wiki_cli/services…_repository_relative_path) | 299 | `isinstance(value, str)` |
 | require_repository_relative_path | _syntax_key | 301 | `_syntax_key('repository', value, reject_delete_character, control_after_normalization, leading_backslash_is_absolute, normalize_posix_spelling)` |
 | _syntax_key | type | 54 | `type(value)` |

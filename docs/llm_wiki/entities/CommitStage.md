@@ -17,6 +17,7 @@ Fault-injection points reached after each successful atomic replacement.
 | `SURFACE_INDEX_WRITTEN` | `'surface-index-written'` | — |
 | `KNOWLEDGE_INDEX_WRITTEN` | `'knowledge-index-written'` | — |
 | `MANIFEST_WRITTEN` | `'manifest-written'` | — |
+| `MAINTENANCE_ADOPTION_WRITTEN` | `'maintenance-adoption-written'` | — |
 
 ## Methods
 
@@ -30,22 +31,25 @@ flowchart LR
     n0["CommitStage (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
     n1["Enum"]
     n2["str"]
-    n3["refresh_documentation_native_projection (src/llm_wiki_cli/services/documentation_native.py)"]
-    n4["_apply_write (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n3["_refresh_documentation_native_projection (src/llm_wiki_cli/services/documentation_native.py)"]
+    n4["refresh_documentation_native_projection (src/llm_wiki_cli/services/documentation_native.py)"]
+    n5["_apply_write (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
     n4 --> n0
+    n5 --> n0
     click n0 "../modules/knowledge_artifacts.md"
     click n3 "../modules/documentation_native.md"
-    click n4 "../modules/knowledge_artifacts.md"
+    click n4 "../modules/documentation_native.md"
+    click n5 "../modules/knowledge_artifacts.md"
 ```
 
 ### Summary
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [knowledge_artifacts](../modules/knowledge_artifacts.md) | 0 | `KNOWLEDGE_INDEX_WRITTEN`, `KNOWLEDGE_OBJECTS_WRITTEN`, `MANIFEST_WRITTEN`, `SURFACE_INDEX_WRITTEN` |
+| [knowledge_artifacts](../modules/knowledge_artifacts.md) | 0 | `KNOWLEDGE_INDEX_WRITTEN`, `KNOWLEDGE_OBJECTS_WRITTEN`, `MAINTENANCE_ADOPTION_WRITTEN`, `MANIFEST_WRITTEN`, `SURFACE_INDEX_WRITTEN` |
 
 ### Structure
 
@@ -58,5 +62,6 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `_refresh_documentation_native_projection` | type_reference | [documentation_native](../modules/documentation_native.md) | — |
 | `refresh_documentation_native_projection` | type_reference | [documentation_native](../modules/documentation_native.md) | — |
 | `_apply_write` | type_reference | [knowledge_artifacts](../modules/knowledge_artifacts.md) | — |

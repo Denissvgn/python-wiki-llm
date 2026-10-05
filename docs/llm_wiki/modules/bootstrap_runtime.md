@@ -20,11 +20,12 @@ artifacts only after the public Markdown surface has been written.
 | `.api_contracts` | `ApiContractError`, `attach_routes_to_entry_points`, `build_api_contracts`, `link_entry_point_flows`, `render_api_contracts_markdown`, `render_flow_api_contract_section` |
 | `.bootstrap_service` | `BootstrapContractError`, `BootstrapExtractionError`, `BootstrapRequestError`, `BootstrapRequest`, `BootstrapResult` |
 | `.contracts` | `BOOTSTRAP_SUMMARY_SCHEMA_VERSION`, `KNOWLEDGE_SCHEMA_VERSION` |
-| `.data_flow` | `analyze_data_flow`, `analyze_data_flow_detailed`, `build_data_flow_context` |
+| `.data_flow` | `_call_args`, `analyze_data_flow`, `analyze_data_flow_detailed`, `build_data_flow_context` |
 | `.dependencies` | `analyze_dependencies`, `build_dependency_observations`, `build_external_dependency_observations`, `package_dependency_graph`, `top_level_package` |
 | `.diagrams` | `GENERATED_DIAGRAM_CHAR_LIMIT`, `GENERATED_DIAGRAM_LINE_LIMIT`, `GENERATED_DIAGRAM_NODE_LIMIT`, `_DISPLAY_LABEL_LIMIT`, `_normalize_display_text`, `data_flow_diagram`, `flowchart`, `resolve_diagram_style`, `sequence_diagram` |
 | `.entrypoints` | `build_flow`, `build_flow_detailed`, `entry_points_from_detailed_observations`, `get_detailed_entry_points`, `read_console_scripts` |
 | `.extraction_service` | `InventoryResult`, `get_call_graph`, `get_docker_inventory`, `get_inventory_result`, `print_inventory_failures`, `resolve_call_observations`, `resolve_call_edges` |
+| `.flow_overview` | `FlowOverview`, `select_flow_overview`, `trim_flow_overview` |
 | `.imports` | `ModulePathResolver`, `build_module_path_resolver` |
 | `.infrastructure_inventory` | `RUNTIME_CONFIG_TYPES`, `get_yaml_infrastructure_inventory`, `infrastructure_display_label` |
 | `.infrastructure_sync` | `INFRASTRUCTURE_GENERATION_INPUT_KEY`, `INFRASTRUCTURE_SYNC_SCHEMA_VERSION`, `InfrastructureSyncError`, `build_infrastructure_page_map`, `build_infrastructure_sync_plan`, `validate_infrastructure_generation_input`, `with_infrastructure_generation_input` |
@@ -32,6 +33,7 @@ artifacts only after the public Markdown surface has been written.
 | `.knowledge_artifacts` | `ArtifactWriteState`, `KnowledgeCommitResult` |
 | `.knowledge_governance` | `GOVERNANCE_FILENAME`, `GovernanceError`, `load_governance` |
 | `.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeKnowledgeInputs`, `collect_runtime_repository_evidence`, `committed_governance_bundle_id`, `finalize_runtime_knowledge`, `persist_runtime_generation_policy`, `runtime_generation_options`, `runtime_graph_analyzer_limitations`, `runtime_source_snapshot_hash` |
+| `.maintenance_protocol` | `guard_maintenance_owner`, `maintenance_write_operation` |
 | `.markdown_sections` | `GENERATED_INDEX_ENTRY_POINT_FLOWS_HEADING`, `GENERATED_INDEX_HTTP_API_CONTRACTS_HEADING`, `GENERATED_INDEX_INTRO_WITH_GUIDES`, `GENERATED_INDEX_INTRO_WITHOUT_GUIDES`, `preserve_level_two_section_exact` |
 | `.module_maps` | `build_module_dependency_maps` |
 | `.paths` | `normalize_source_path`, `portable_source_root_label` |
@@ -79,27 +81,27 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (16) |
-| Outbound | `src` (31) |
+| Outbound | `src` (33) |
 
-> All 47 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 49 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 733 | — | — |
-| [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 1011 | — | — |
-| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3076 | — | — |
-| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4325 | — | — |
-| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4351 | — | — |
-| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4364 | — | — |
-| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4371 | — | — |
-| [_WorkflowResult](../entities/WorkflowResult.md) | 4379 | — | — |
-| [_FlowResult](../entities/FlowResult.md) | 4385 | — | — |
-| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4396 | — | — |
-| [_DependencyResult](../entities/DependencyResult.md) | 4407 | — | — |
-| [_ApiContractResult](../entities/ApiContractResult.md) | 4415 | — | — |
-| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4422 | — | — |
+| [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 735 | — | — |
+| [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 1013 | — | — |
+| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3138 | — | — |
+| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4387 | — | — |
+| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4413 | — | — |
+| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4426 | — | — |
+| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4433 | — | — |
+| [_WorkflowResult](../entities/WorkflowResult.md) | 4441 | — | — |
+| [_FlowResult](../entities/FlowResult.md) | 4447 | — | — |
+| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4458 | — | — |
+| [_DependencyResult](../entities/DependencyResult.md) | 4469 | — | — |
+| [_ApiContractResult](../entities/ApiContractResult.md) | 4477 | — | — |
+| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4484 | — | — |
 
 ## Functions
 
@@ -207,6 +209,8 @@ flowchart LR
 | `_flow_display_label` | `(label: str, *, limit: int, context: str = '') -> str` | — | Reserve the end of a callable and its disambiguator before Mermaid caps. |
 | `_flow_actors` | `(flow: dict) -> list[tuple[str, str]]` | — | Return stable participant identities and unambiguous display labels. |
 | `_flow_interactions` | `(flow: dict) -> list[dict]` | — | Convert depth-tagged flow steps into caller→callee sequence interactions. |
+| `_flow_overview_interactions` | `(flow: Mapping, interactions: list[dict]) -> list[dict]` | — | Enrich boundary messages from captured arguments; retain actor identities. |
+| `_append_overview_disclosure` | `(lines: list[str], overview: FlowOverview, page_map: Mapping) -> None` | — | — |
 | `_flow_data_display` | `(flow: dict, data_flow: Mapping) -> dict` | — | Apply the same labels to display copies without changing analysis data. |
 | `_bounded_sequence_diagram` | `(interactions: list[dict]) -> _BoundedGeneratedDiagram` | — | — |
 | `_md_cell` | `(value: object) -> str` | — | — |
@@ -320,6 +324,7 @@ flowchart LR
 | `_preflight_public_bootstrap` | `(options: _BootstrapRunOptions) -> None` | — | Reject overwrite and existing wiki content without reading source. |
 | `_preflight_bootstrap_source_selection` | `(options: _BootstrapRunOptions) -> None` | — | Protect private workspace refreshes from configured-to-broad downgrade. |
 | `_execute_bootstrap_options` | `(options: _BootstrapRunOptions, *, _workspace_refresh_authorized: bool = False) -> BootstrapResult` | — | — |
+| `_execute_bootstrap_options_locked` | `(options: _BootstrapRunOptions, *, _workspace_refresh_authorized: bool = False, write_basis = None) -> BootstrapResult` | — | — |
 | `_preflight_bootstrap_governance` | `(wiki_dir: Path) -> None` | — | Reject corrupt or missing committed governance before creating pages. |
 | `execute_bootstrap` | `(request: BootstrapRequest, *, progress_stream: TextIO \| None = None) -> BootstrapResult` | — | Execute first-use deterministic bootstrap without argparse or exits. |
 | `_execute_documentation_workspace_refresh` | `(request: BootstrapRequest, *, workspace_root: str \| Path, progress_stream: TextIO \| None = None) -> BootstrapResult` | — | Refresh an isolated documentation-workspace snapshot. |

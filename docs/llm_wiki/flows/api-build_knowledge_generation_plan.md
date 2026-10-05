@@ -2,15 +2,17 @@
 
 **Entry point:** `build_knowledge_generation_plan` (`api`)
 **Source:** [knowledge_generation](../modules/knowledge_generation.md)
-**Modules touched:** [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [filesystem_guard](../modules/filesystem_guard.md), and 25 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 33 more
 
 **Complete modules touched:**
 
+- [analysis_compatibility](../modules/analysis_compatibility.md)
 - [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [immutable](../modules/immutable.md)
+- [implementation_evidence](../modules/implementation_evidence.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -26,9 +28,15 @@
 - [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [maintenance_evidence](../modules/maintenance_evidence.md)
+- [maintenance_projection](../modules/maintenance_projection.md)
+- [maintenance_protocol](../modules/maintenance_protocol.md)
+- [maintenance_shapes](../modules/maintenance_shapes.md)
+- [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [progress](../modules/progress.md)
+- [python_implementation](../modules/python_implementation.md)
 - [section_ownership](../modules/section_ownership.md)
 - [storage_spool](../modules/storage_spool.md)
 - [sync_manifest](../modules/sync_manifest.md)
@@ -38,6 +46,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -45,52 +55,76 @@ sequenceDiagram
     participant p1 as isinstance (src/llm_wiki_cli/services…wledge_generation_plan, 1)
     participant p2 as TypeError (src/llm_wiki_cli/services…knowledge_generation_plan)
     participant p3 as _build_knowledge_generation_plan
-    participant p4 as _validated_inventory
-    participant p5 as isinstance (src/llm_wiki_cli/services…n.py:_validated_inventory)
-    participant p6 as KnowledgeGenerationError
-    participant p7 as value.items (src/llm_wiki_cli/services…n.py:_validated_inventory)
-    participant p8 as file_data.get (src/llm_wiki_cli/services…n.py:_validated_inventory)
-    participant p9 as enumerate (src/llm_wiki_cli/services…n.py:_validated_inventory)
-    participant p10 as entity.get
-    participant p11 as _validated_source_hashes
-    participant p12 as _exact_source_mapping
-    participant p13 as isinstance (src/llm_wiki_cli/services….py:_exact_source_mapping)
-    participant p14 as any (src/llm_wiki_cli/services….py:_exact_source_mapping)
-    participant p15 as set (src/llm_wiki_cli/services….py:_exact_source_mapping)
-    participant p16 as _raise_page_map_parity
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…wledge_generation_plan, 1)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…knowledge_generation_plan)
+    participant p4 as KnowledgeGenerationError
+    participant p5 as _validated_inventory
+    participant p6 as _validated_source_hashes
+    participant p7 as _validated_consumed_inputs
+    participant p8 as _validated_page_maps
+    participant p9 as _exact_source_mapping
+    participant p10 as isinstance (src/llm_wiki_cli/services…knowledge_generation_plan)
+    participant p11 as _build_evidence_baselines
+    participant p12 as _validated_evidence_page_paths
+    participant p13 as min (src/llm_wiki_cli/services…knowledge_generation_plan)
+    participant p14 as _preserve_unchanged_unknown_baselines
+    participant p15 as _mark_untrusted_evidence
+    participant p16 as previous.evidence_baselines.get (src/llm_wiki_cli/services…knowledge_generation_plan)
+    participant p17 as ManifestEvidenceBaseline.unknown
+    participant p18 as _surface_index_bytes
+    participant p19 as build_repository_record
+    participant p20 as build_evaluated_envelope
+    participant p21 as EnvelopeInputs
+    participant p22 as tuple (src/llm_wiki_cli/services…knowledge_generation_plan)
+    participant p23 as _validated_previous_producer
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…wledge_generation_plan, 1)(inputs, KnowledgeGenerationInputs)
+    p0-->>p2: TypeError (src/llm_wiki_cli/services…knowledge_generation_plan)('inputs must be a KnowledgeGenerationInputs')
     p0->>p3: _build_knowledge_generation_plan
-    p3->>p4: _validated_inventory
-    p4-->>p5: isinstance (src/llm_wiki_cli/services…n.py:_validated_inventory)
-    p4->>p6: KnowledgeGenerationError
-    p4-->>p7: value.items (src/llm_wiki_cli/services…n.py:_validated_inventory)
-    p4-->>p5: isinstance (src/llm_wiki_cli/services…n.py:_validated_inventory)
-    p4->>p6: KnowledgeGenerationError
-    p4-->>p5: isinstance (src/llm_wiki_cli/services…n.py:_validated_inventory)
-    p4->>p6: KnowledgeGenerationError
-    p4-->>p8: file_data.get (src/llm_wiki_cli/services…n.py:_validated_inventory)
-    p4-->>p5: isinstance (src/llm_wiki_cli/services…n.py:_validated_inventory)
-    p4->>p6: KnowledgeGenerationError
-    p4-->>p9: enumerate (src/llm_wiki_cli/services…n.py:_validated_inventory)
-    p4-->>p5: isinstance (src/llm_wiki_cli/services…n.py:_validated_inventory)
-    p4->>p6: KnowledgeGenerationError
-    p4-->>p10: entity.get
-    p4-->>p5: isinstance (src/llm_wiki_cli/services…n.py:_validated_inventory)
-    p4->>p6: KnowledgeGenerationError
-    p3->>p11: _validated_source_hashes
-    p11->>p12: _exact_source_mapping
-    p12-->>p13: isinstance (src/llm_wiki_cli/services….py:_exact_source_mapping)
-    p12->>p6: KnowledgeGenerationError
-    p12-->>p14: any (src/llm_wiki_cli/services….py:_exact_source_mapping)
-    p12-->>p13: isinstance (src/llm_wiki_cli/services….py:_exact_source_mapping)
-    p12->>p6: KnowledgeGenerationError
-    p12-->>p15: set (src/llm_wiki_cli/services….py:_exact_source_mapping)
-    p12-->>p15: set (src/llm_wiki_cli/services….py:_exact_source_mapping)
-    p12->>p16: _raise_page_map_parity
+    p0->>p4: KnowledgeGenerationError
+    p3->>p5: _validated_inventory
+    p3->>p6: _validated_source_hashes
+    p3->>p7: _validated_consumed_inputs
+    p3->>p8: _validated_page_maps
+    p3->>p9: _exact_source_mapping
+    p3->>p9: _exact_source_mapping
+    p3-->>p10: isinstance (src/llm_wiki_cli/services…knowledge_generation_plan)(previous, SyncManifest)
+    p3->>p4: KnowledgeGenerationError
+    p3->>p11: _build_evidence_baselines
+    p3->>p12: _validated_evidence_page_paths
+    p3->>p12: _validated_evidence_page_paths
+    p3-->>p13: min (src/llm_wiki_cli/services…knowledge_generation_plan)(overlapping_page_paths)
+    p3->>p4: KnowledgeGenerationError
+    p3->>p14: _preserve_unchanged_unknown_baselines
+    p3->>p15: _mark_untrusted_evidence
+    p3-->>p16: previous.evidence_baselines.get (src/llm_wiki_cli/services…knowledge_generation_plan)(page_path)
+    p3->>p17: ManifestEvidenceBaseline.unknown
+    p3->>p18: _surface_index_bytes
+    p3->>p19: build_repository_record
+    p3->>p20: build_evaluated_envelope
+    p3->>p21: EnvelopeInputs
+    p3-->>p22: tuple (src/llm_wiki_cli/services…knowledge_generation_plan)(inputs.generation_option_allowlist)
+    p3-->>p22: tuple (src/llm_wiki_cli/services…knowledge_generation_plan)(inputs.extractors)
+    p3-->>p22: tuple (src/llm_wiki_cli/services…knowledge_generation_plan)(inputs.plugins)
+    p3->>p23: _validated_previous_producer
+    p3-->>p10: isinstance (src/llm_wiki_cli/services…knowledge_generation_plan)(inputs.next_manifest, SyncManifest)
 ```
 
-> Call sequence diagram shows 30 of 3826 interactions; 3796 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 4517 interactions; 4487 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 8 of 1428 (1420 omitted); unresolved 1 of 1042 (1041 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/knowledge_generation.py:_validated_inventory` | 5 | - | external | 7 |
+| `src/llm_wiki_cli/services/knowledge_generation.py:_validated_inventory` | 5 | [src/llm_wiki_cli/services/knowledge_generation.py](../modules/knowledge_generation.md) | internal | 6 |
+| `src/llm_wiki_cli/services/knowledge_generation.py:_validated_inventory` | 5 | - | unresolved | 3 |
+| `src/llm_wiki_cli/services/knowledge_generation.py:_validated_source_hashes` | 22 | [src/llm_wiki_cli/services/knowledge_generation.py](../modules/knowledge_generation.md) | internal | 2 |
+| `src/llm_wiki_cli/services/knowledge_generation.py:_exact_source_mapping` | 23 | - | external | 10 |
+| `src/llm_wiki_cli/services/knowledge_generation.py:_exact_source_mapping` | 23 | [src/llm_wiki_cli/services/knowledge_generation.py](../modules/knowledge_generation.md) | internal | 4 |
+| `src/llm_wiki_cli/services/knowledge_generation.py:_raise_page_map_parity` | 31 | - | external | 2 |
+| `src/llm_wiki_cli/services/knowledge_generation.py:_raise_page_map_parity` | 31 | [src/llm_wiki_cli/services/knowledge_generation.py](../modules/knowledge_generation.md) | internal | 2 |
+> Omission summary shows 8 of 1080 groups; 1072 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -158,35 +192,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_knowledge_generation_plan | isinstance (src/llm_wiki_cli/services…wledge_generation_plan, 1) | 171 | `isinstance(inputs, KnowledgeGenerationInputs)` |
-| build_knowledge_generation_plan | TypeError (src/llm_wiki_cli/services…knowledge_generation_plan) | 172 | `TypeError('inputs must be a KnowledgeGenerationInputs')` |
-| build_knowledge_generation_plan | _build_knowledge_generation_plan | 174 | `_build_knowledge_generation_plan(inputs)` |
-| _build_knowledge_generation_plan | _validated_inventory | 191 | `_validated_inventory(inputs.inventory)` |
-| _validated_inventory | isinstance (src/llm_wiki_cli/services…n.py:_validated_inventory) | 890 | `isinstance(value, Mapping)` |
-| _validated_inventory | KnowledgeGenerationError | 891 | `KnowledgeGenerationError('inventory', 'must be an object')` |
-| _validated_inventory | value.items (src/llm_wiki_cli/services…n.py:_validated_inventory) | 893 | `value.items(data not statically known)` |
-| _validated_inventory | isinstance (src/llm_wiki_cli/services…n.py:_validated_inventory) | 894 | `isinstance(source_path, str)` |
-| _validated_inventory | KnowledgeGenerationError | 895 | `KnowledgeGenerationError('inventory', 'must use string source paths')` |
-| _validated_inventory | isinstance (src/llm_wiki_cli/services…n.py:_validated_inventory) | 899 | `isinstance(file_data, Mapping)` |
-| _validated_inventory | KnowledgeGenerationError | 900 | `KnowledgeGenerationError(..., 'must be an object')` |
+| build_knowledge_generation_plan | isinstance (src/llm_wiki_cli/services…wledge_generation_plan, 1) | 183 | `isinstance(inputs, KnowledgeGenerationInputs)` |
+| build_knowledge_generation_plan | TypeError (src/llm_wiki_cli/services…knowledge_generation_plan) | 184 | `TypeError('inputs must be a KnowledgeGenerationInputs')` |
+| build_knowledge_generation_plan | _build_knowledge_generation_plan | 186 | `_build_knowledge_generation_plan(inputs)` |
+| _build_knowledge_generation_plan | _validated_inventory | 203 | `_validated_inventory(inputs.inventory)` |
+| _validated_inventory | isinstance (src/llm_wiki_cli/services…n.py:_validated_inventory) | 954 | `isinstance(value, Mapping)` |
+| _validated_inventory | KnowledgeGenerationError | 955 | `KnowledgeGenerationError('inventory', 'must be an object')` |
+| _validated_inventory | value.items (src/llm_wiki_cli/services…n.py:_validated_inventory) | 957 | `value.items(data not statically known)` |
+| _validated_inventory | isinstance (src/llm_wiki_cli/services…n.py:_validated_inventory) | 958 | `isinstance(source_path, str)` |
+| _validated_inventory | KnowledgeGenerationError | 959 | `KnowledgeGenerationError('inventory', 'must use string source paths')` |
+| _validated_inventory | isinstance (src/llm_wiki_cli/services…n.py:_validated_inventory) | 963 | `isinstance(file_data, Mapping)` |
+| _validated_inventory | KnowledgeGenerationError | 964 | `KnowledgeGenerationError(..., 'must be an object')` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `generation_inputs.pop` | `_build_knowledge_generation_plan` | 378 |
-| mutation | `knowledge_extensions.pop` | `_build_knowledge_generation_plan` | 382 |
+| mutation | `generation_inputs.pop` | `_build_knowledge_generation_plan` | 390 |
+| mutation | `knowledge_extensions.pop` | `_build_knowledge_generation_plan` | 394 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_knowledge_generation_plan` | `isinstance` | 171 |
-| external_call | `build_knowledge_generation_plan` | `TypeError` | 172 |
-| external_call | `_validated_inventory` | `isinstance` | 890 |
-| unresolved_call | `_validated_inventory` | `value.items` | 893 |
-| external_call | `_validated_inventory` | `isinstance` | 894 |
-| external_call | `_validated_inventory` | `isinstance` | 899 |
+| external_call | `build_knowledge_generation_plan` | `isinstance` | 183 |
+| external_call | `build_knowledge_generation_plan` | `TypeError` | 184 |
+| external_call | `_validated_inventory` | `isinstance` | 954 |
+| unresolved_call | `_validated_inventory` | `value.items` | 957 |
+| external_call | `_validated_inventory` | `isinstance` | 958 |
+| external_call | `_validated_inventory` | `isinstance` | 963 |
 | step_limit | `build_knowledge_generation_plan` | `first 12 steps` | 0 |
 | truncated_flow | `build_knowledge_generation_plan` | `depth limit` | 0 |
 

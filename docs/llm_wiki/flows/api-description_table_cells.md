@@ -6,66 +6,81 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as description_table_cells
     participant p1 as normalize_markdown(…).splitlines
     participant p2 as normalize_markdown
-    participant p3 as text.replace(…).replace
-    participant p4 as text.replace
-    participant p5 as enumerate
-    participant p6 as split_table_row
-    participant p7 as line.strip
-    participant p8 as stripped.startswith
-    participant p9 as stripped.endswith
-    participant p10 as len (src/llm_wiki_cli/services…ections.py:split_table_row)
-    participant p11 as current.extend
-    participant p12 as current.append
-    participant p13 as cells.append (src/llm_wiki_cli/services…ections.py:split_table_row)
-    participant p14 as (…).join(…).strip
-    participant p15 as ''.join
-    participant p16 as headers.index
-    participant p17 as len (src/llm_wiki_cli/services…py:description_table_cells)
-    participant p18 as is_table_separator
-    participant p19 as all
-    participant p20 as re.fullmatch
-    participant p21 as cell.replace
-    participant p22 as defaultdict
-    participant p23 as range
+    participant p3 as enumerate
+    participant p4 as split_table_row
+    participant p5 as headers.index
+    participant p6 as len (src/llm_wiki_cli/services…py:description_table_cells)
+    participant p7 as is_table_separator
+    participant p8 as defaultdict
+    participant p9 as range
+    participant p10 as semantic_table_key
+    participant p11 as cells.append (src/llm_wiki_cli/services…py:description_table_cells)
+    participant p12 as TableDescriptionCell
+    participant p13 as row[…].strip
+    participant p14 as tuple
+    participant p15 as text.replace(…).replace
+    participant p16 as line.strip
+    participant p17 as all
+    participant p18 as re.sub
+    participant p19 as text.replace
+    participant p20 as stripped.startswith
+    participant p21 as re.fullmatch
+    participant p22 as key.replace(…).replace(…).replace
+    participant p23 as stripped.endswith
+    participant p24 as cell.replace
+    participant p25 as key.replace(…).replace
     p0-->>p1: normalize_markdown(…).splitlines
     p0->>p2: normalize_markdown
-    p2-->>p3: text.replace(…).replace
-    p2-->>p4: text.replace
-    p0-->>p5: enumerate
-    p0->>p6: split_table_row
-    p6-->>p7: line.strip
-    p6-->>p8: stripped.startswith
-    p6-->>p9: stripped.endswith
-    p6-->>p10: len (src/llm_wiki_cli/services…ections.py:split_table_row)
-    p6-->>p10: len (src/llm_wiki_cli/services…ections.py:split_table_row)
-    p6-->>p11: current.extend
-    p6-->>p10: len (src/llm_wiki_cli/services…ections.py:split_table_row)
-    p6-->>p12: current.append
-    p6-->>p13: cells.append (src/llm_wiki_cli/services…ections.py:split_table_row)
-    p6-->>p14: (…).join(…).strip
-    p6-->>p15: ''.join
-    p6-->>p12: current.append
-    p6-->>p13: cells.append (src/llm_wiki_cli/services…ections.py:split_table_row)
-    p6-->>p14: (…).join(…).strip
-    p6-->>p15: ''.join
-    p0-->>p16: headers.index
-    p0-->>p17: len (src/llm_wiki_cli/services…py:description_table_cells)
-    p0->>p18: is_table_separator
-    p18-->>p19: all
-    p18-->>p20: re.fullmatch
-    p18-->>p21: cell.replace
-    p0->>p6: split_table_row
-    p0-->>p22: defaultdict
-    p0-->>p23: range
+    p0-->>p3: enumerate(lines)
+    p0->>p4: split_table_row
+    p0-->>p5: headers.index('Description')
+    p0-->>p6: len (src/llm_wiki_cli/services…py:description_table_cells)(lines)
+    p0->>p7: is_table_separator
+    p0->>p4: split_table_row
+    p0-->>p8: defaultdict(int)
+    p0-->>p9: range(row_start, len(...))
+    p0-->>p6: len (src/llm_wiki_cli/services…py:description_table_cells)(lines)
+    p0->>p4: split_table_row
+    p0-->>p6: len (src/llm_wiki_cli/services…py:description_table_cells)(row)
+    p0->>p10: semantic_table_key
+    p0-->>p11: cells.append (src/llm_wiki_cli/services…py:description_table_cells)(TableDescriptionCell(...))
+    p0->>p12: TableDescriptionCell
+    p0-->>p13: row[…].strip
+    p0-->>p14: tuple(row)
+    p0-->>p14: tuple(cells)
+    p2-->>p15: text.replace(…).replace('\r', '\n')
+    p4-->>p16: line.strip
+    p7-->>p17: all(...)
+    p10-->>p18: re.sub('\\[([^\\]]+)\\]\\([^)]+\\)', '\\1', cell)
+    p2-->>p19: text.replace('\r\n', '\n')
+    p4-->>p20: stripped.startswith('|')
+    p7-->>p21: re.fullmatch(':?-{3,}:?', cell.replace(...))
+    p10-->>p22: key.replace(…).replace(…).replace('\\|', '|')
+    p4-->>p23: stripped.endswith('|')
+    p7-->>p24: cell.replace(' ', '')
+    p10-->>p25: key.replace(…).replace('*', '')
 ```
 
-> Call sequence diagram shows 30 of 44 interactions; 14 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 44 interactions; 14 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 11 of 14 (3 omitted); unresolved 12 of 23 (11 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/markdown_sections.py:split_table_row` | 7 | - | external | 3 |
+| `src/llm_wiki_cli/services/markdown_sections.py:split_table_row` | 7 | - | unresolved | 9 |
+| `src/llm_wiki_cli/services/markdown_sections.py:semantic_table_key` | 35 | - | unresolved | 2 |
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

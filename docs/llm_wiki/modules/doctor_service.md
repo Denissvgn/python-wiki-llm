@@ -18,6 +18,7 @@ verification-receipt evaluation already produced by strict lint.
 | `..config` | `DEFAULT_WIKI_DIR`, `validate_path`, `validate_source_root` |
 | `.contracts` | `DOCTOR_SCHEMA_VERSION`, `DOCTOR_V3_SCHEMA_VERSION` |
 | `.extraction_jobs` | `ExtractionJobRequest` |
+| `.freshness_wording` | `SOURCE_CHANGED_STRUCTURE_UNCHANGED` |
 | `.health_contract` | `validate_health_details` |
 | `.health_details` | `CapturedHealthDetails` |
 | `.health_policy` | `DoctorStatus`, `DOCTOR_EXIT_CODES`, `classify_health_sections` |
@@ -57,9 +58,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (4) |
-| Outbound | `src` (17) |
+| Outbound | `src` (18) |
 
-> All 21 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 22 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
