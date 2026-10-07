@@ -164,6 +164,45 @@ def _target_names(node: ast.AST) -> set[str]:
     return set()
 
 
+def _definition_expressions(node):
+    expressions = list(getattr(node, "decorator_list", ()))
+    if isinstance(node, ast.ClassDef):
+        return [
+            *expressions,
+            *node.bases,
+            *(keyword.value for keyword in node.keywords),
+        ]
+    args = node.args
+    expressions.extend(args.defaults)
+    expressions.extend(value for value in args.kw_defaults if value is not None)
+    expressions.extend(
+        arg.annotation
+        for arg in (
+            *args.posonlyargs,
+            *args.args,
+            *args.kwonlyargs,
+            args.vararg,
+            args.kwarg,
+        )
+        if arg is not None and arg.annotation is not None
+    )
+    if getattr(node, "returns", None) is not None:
+        expressions.append(node.returns)
+    return expressions
+
+
+def _walrus_names(node: ast.AST) -> set[str]:
+    """Find containing-scope writes without entering deferred callable bodies."""
+    if isinstance(node, (*FUNCTIONS, ast.ClassDef, ast.Lambda)):
+        return set().union(
+            *(_walrus_names(value) for value in _definition_expressions(node))
+        )
+    names = _target_names(node.target) if isinstance(node, ast.NamedExpr) else set()
+    for child in ast.iter_child_nodes(node):
+        names.update(_walrus_names(child))
+    return names
+
+
 class _ScopeNames(ast.NodeVisitor):
     def __init__(self):
         self.bound: set[str] = set()
@@ -174,17 +213,22 @@ class _ScopeNames(ast.NodeVisitor):
         if isinstance(node.ctx, (ast.Store, ast.Del)):
             self.bound.add(node.id)
 
-    def visit_FunctionDef(self, node):
+    def visit_FunctionDef(
+        self, node: ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef
+    ):
         self.bound.add(node.name)
+        for value in _definition_expressions(node):
+            self.visit(value)
 
     def visit_AsyncFunctionDef(self, node):
-        self.bound.add(node.name)
+        self.visit_FunctionDef(node)
 
     def visit_ClassDef(self, node):
-        self.bound.add(node.name)
+        self.visit_FunctionDef(node)
 
     def visit_Lambda(self, node):
-        pass
+        for value in _definition_expressions(node):
+            self.visit(value)
 
     def visit_Import(self, node):
         self.bound.update(
@@ -222,9 +266,7 @@ class _ScopeNames(ast.NodeVisitor):
     def _comprehension(self, node: ast.AST):
         # Iteration targets belong to the comprehension; walrus targets bind
         # in its containing scope. No inspected expression is evaluated.
-        for child in ast.walk(node):
-            if isinstance(child, ast.NamedExpr):
-                self.bound.update(_target_names(child.target))
+        self.bound.update(_walrus_names(node))
 
     def visit_ListComp(self, node):
         self._comprehension(node)
@@ -491,6 +533,47 @@ class _BindingAnalyzer:
         if (
             isinstance(node, ast.Attribute)
             and node.attr in {"__setattr__", "__delattr__"}
+            and isinstance(node.value, ast.Name)
+        ):
+            target = _lookup(env, node.value.id)
+            if target.get("kind") in {"constructed-instance", "receiver"}:
+                return {
+                    "kind": "attribute-mutator",
+                    "qualified": True,
+                    "target": target,
+                }
+        if isinstance(node, ast.Call):
+            target = None
+            member = None
+            if (
+                self.helper_path(node.func, env) == ["getattr"]
+                and len(node.args) >= 2
+                and isinstance(node.args[0], ast.Name)
+            ):
+                target = _lookup(env, node.args[0].id)
+                member = node.args[1]
+            elif (
+                isinstance(node.func, ast.Attribute)
+                and node.func.attr == "__getattribute__"
+                and isinstance(node.func.value, ast.Name)
+                and node.args
+            ):
+                target = _lookup(env, node.func.value.id)
+                member = node.args[0]
+            if (
+                target is not None
+                and target.get("kind") in {"constructed-instance", "receiver"}
+                and isinstance(member, ast.Constant)
+                and member.value in {"__setattr__", "__delattr__"}
+            ):
+                return {
+                    "kind": "attribute-mutator",
+                    "qualified": True,
+                    "target": target,
+                }
+        if (
+            isinstance(node, ast.Attribute)
+            and node.attr in {"__setattr__", "__delattr__"}
             or isinstance(node, ast.Name)
             and node.id in {"setattr", "delattr"}
         ):
@@ -515,6 +598,25 @@ class _BindingAnalyzer:
                         "kind": "unresolved",
                         "reason": "receiver-member-replaced",
                     }
+
+    def invalidate_names(self, names, env):
+        if "*" in names:
+            names = set(env) | names
+        for name in names:
+            binding = env.get(name, {})
+            if binding.get("kind") in {"attribute-mutator", "receiver-namespace"}:
+                target = binding.get("target")
+                if target is not None:
+                    # Losing an alias cannot erase the receiver it may mutate.
+                    self.invalidate_target(target, env)
+            elif binding.get("kind") == "module-namespace":
+                self.module_namespace_invalidations.add("*")
+        env.update(
+            {
+                name: {"kind": "unresolved", "reason": "receiver-path-conflict"}
+                for name in names
+            }
+        )
 
     def invalidate_members(self, node, env):
         for child in ast.walk(node):
@@ -583,11 +685,7 @@ class _BindingAnalyzer:
                         and _lookup(env, path[0]).get("kind") == "import"
                     ):
                         self.invalidate_target(_lookup(env, path[0]), env)
-            if (
-                isinstance(child, ast.Call)
-                and child.args
-                and isinstance(child.args[0], ast.Name)
-            ):
+            if isinstance(child, ast.Call):
                 mutator = (
                     _lookup(env, child.func.id)
                     if isinstance(child.func, ast.Name)
@@ -596,43 +694,62 @@ class _BindingAnalyzer:
                 if not mutator or mutator.get("kind") != "attribute-mutator":
                     mutator = self.mutator_value(child.func, env)
                 if mutator:
+                    offset = 0 if "target" in mutator else 1
+                    target = mutator.get("target")
+                    if (
+                        target is None
+                        and child.args
+                        and isinstance(child.args[0], ast.Name)
+                    ):
+                        target = _lookup(env, child.args[0].id)
+                    if target is None:
+                        continue
+                    argument = child.args[offset] if len(child.args) > offset else None
                     member = (
-                        child.args[1].value
+                        argument.value
                         if mutator["qualified"]
-                        and len(child.args) >= 2
-                        and isinstance(child.args[1], ast.Constant)
-                        and isinstance(child.args[1].value, str)
-                        and child.args[1].value.isidentifier()
+                        and isinstance(argument, ast.Constant)
+                        and isinstance(argument.value, str)
+                        and argument.value.isidentifier()
                         else "*"
                     )
-                    self.invalidate_target(_lookup(env, child.args[0].id), env, member)
+                    self.invalidate_target(target, env, member)
 
-    def expression(self, node, env: dict, closure: set[str]):
+    def expression(self, node, env: dict, closure: set[str], *, capture=True):
         if isinstance(node, ast.Lambda):
+            for value in _definition_expressions(node):
+                self.expression(value, env, closure, capture=capture)
             nested = dict(env)
             nested.update({name: UNKNOWN for name in closure | _parameters(node.args)})
-            self.expression(node.body, nested, closure | _parameters(node.args))
+            self.expression(
+                node.body, nested, closure | _parameters(node.args), capture=capture
+            )
             return
         if isinstance(node, COMPREHENSIONS):
+            # Iterations may write an enclosing binding; zero iterations and
+            # deferred generators also prevent a definite post-expression value.
+            writes = _walrus_names(node)
+            self.invalidate_names(writes, env)
             nested = dict(env)
             bound = set(closure)
             for generator in node.generators:
-                self.expression(generator.iter, nested, bound)
+                self.expression(generator.iter, nested, bound, capture=capture)
                 names = _target_names(generator.target)
                 bound.update(names)
                 nested.update({name: UNKNOWN for name in names})
                 for condition in generator.ifs:
-                    self.expression(condition, nested, bound)
+                    self.expression(condition, nested, bound, capture=capture)
             for value in (
                 [node.key, node.value] if isinstance(node, ast.DictComp) else [node.elt]
             ):
-                self.expression(value, nested, bound)
+                self.expression(value, nested, bound, capture=capture)
             return
         if isinstance(node, ast.Call):
-            self.calls[id(node)] = self.call_binding(node, env)
+            if capture:
+                self.calls[id(node)] = self.call_binding(node, env)
             self.invalidate_members(node, env)
         if isinstance(node, ast.NamedExpr):
-            self.expression(node.value, env, closure)
+            self.expression(node.value, env, closure, capture=capture)
             for name in _target_names(node.target):
                 env[name] = (
                     _lookup(env, node.value.id)
@@ -641,7 +758,7 @@ class _BindingAnalyzer:
                 )
             return
         for child in ast.iter_child_nodes(node):
-            self.expression(child, env, closure)
+            self.expression(child, env, closure, capture=capture)
 
     def block(
         self, body, env: dict, closure: set[str], *, capture: bool, module: bool = False
@@ -650,12 +767,25 @@ class _BindingAnalyzer:
         self.module_scope = module
         for statement in body:
             if isinstance(statement, FUNCTIONS):
+                for value in _definition_expressions(statement):
+                    self.expression(value, env, closure, capture=capture)
                 if capture:
                     self.function(statement, set() if module else closure)
                 env[statement.name] = (
                     {"kind": "local", "symbol": statement.name} if module else UNKNOWN
                 )
             elif isinstance(statement, ast.ClassDef):
+                for value in _definition_expressions(statement):
+                    self.expression(value, env, closure, capture=capture)
+                self.invalidate_members(statement, env)
+                class_scope = _scope_names(statement.body)
+                outer_writes = class_scope.bound & (
+                    class_scope.globals | class_scope.nonlocals
+                )
+                self.invalidate_names(outer_writes, env)
+                self.module_namespace_invalidations.update(
+                    class_scope.bound & class_scope.globals
+                )
                 if capture:
                     for child in statement.body:
                         if isinstance(child, FUNCTIONS):
@@ -681,8 +811,8 @@ class _BindingAnalyzer:
                     env[name] = binding
             elif isinstance(statement, (ast.Assign, ast.AnnAssign, ast.AugAssign)):
                 value = statement.value
-                if capture and value is not None:
-                    self.expression(value, env, closure)
+                if value is not None:
+                    self.expression(value, env, closure, capture=capture)
                 targets = (
                     statement.targets
                     if isinstance(statement, ast.Assign)
@@ -717,8 +847,7 @@ class _BindingAnalyzer:
                 for name in _target_names(statement.name):
                     env[name] = {"kind": "unresolved", "reason": "receiver-rebound"}
             elif isinstance(statement, ast.Delete):
-                if capture:
-                    self.expression(statement, env, closure)
+                self.expression(statement, env, closure, capture=capture)
                 for target in statement.targets:
                     env.update(
                         {
@@ -738,21 +867,63 @@ class _BindingAnalyzer:
                     getattr(ast, "TryStar", ast.Try),
                 ),
             ):
-                if capture:
-                    for field in ("test", "iter"):
-                        value = getattr(statement, field, None)
-                        if value is not None:
-                            self.expression(value, env, closure)
+                names = _scope_names([statement]).bound
+                loop = isinstance(statement, (ast.For, ast.AsyncFor, ast.While))
+                branch_base = dict(env)
+                if loop:
+                    self.invalidate_names(names, branch_base)
+                    if isinstance(statement, ast.While):
+                        self.invalidate_members(statement.test, branch_base)
+                    # A body mutation also affects calls on later iterations.
+                    # An uncaptured pass propagates member/alias mutations before
+                    # recording any loop call, without executing the source.
+                    if capture:
+                        self.block(
+                            statement.body,
+                            dict(branch_base),
+                            closure,
+                            capture=False,
+                            module=module,
+                        )
+                for field in ("test", "iter"):
+                    value = getattr(statement, field, None)
+                    if value is not None:
+                        self.expression(
+                            value,
+                            branch_base if isinstance(statement, ast.While) else env,
+                            closure,
+                            capture=capture,
+                        )
                 branches = [(statement.body, None), (statement.orelse, None)]
+                handler_types = {}
                 if isinstance(statement, (ast.Try, getattr(ast, "TryStar", ast.Try))):
+                    handler_types = {
+                        id(handler.body): handler.type
+                        for handler in getattr(statement, "handlers", ())
+                    }
                     branches.extend(
-                        (handler.body, handler.name) for handler in statement.handlers
+                        (handler.body, handler.name)
+                        for handler in getattr(statement, "handlers", ())
                     )
-                    branches.append((statement.finalbody, None))
+                    branches.append((getattr(statement, "finalbody", []), None))
                 for branch, exception_name in branches:
-                    branch_env = dict(env)
+                    branch_env = dict(branch_base if loop else env)
+                    if (
+                        isinstance(
+                            statement, (ast.Try, getattr(ast, "TryStar", ast.Try))
+                        )
+                        and branch is not statement.body
+                    ):
+                        # Handlers can follow any executed prefix; else/finally
+                        # follow body writes rather than the pre-try bindings.
+                        self.invalidate_names(names, branch_env)
                     if exception_name:
                         branch_env[exception_name] = UNKNOWN
+                    handler_type = handler_types.get(id(branch))
+                    if handler_type is not None:
+                        self.expression(
+                            handler_type, branch_env, closure, capture=capture
+                        )
                     if isinstance(statement, (ast.For, ast.AsyncFor)):
                         branch_env.update(
                             {name: UNKNOWN for name in _target_names(statement.target)}
@@ -760,32 +931,26 @@ class _BindingAnalyzer:
                     self.block(
                         branch, branch_env, closure, capture=capture, module=module
                     )
-                names = _scope_names([statement]).bound
-                if "*" in names:
-                    env.update({name: UNKNOWN for name in env})
-                env.update(
-                    {
-                        name: {"kind": "unresolved", "reason": "receiver-path-conflict"}
-                        for name in names
-                    }
-                )
+                    self.invalidate_names(names, branch_env)
+                self.invalidate_names(names, env)
             elif isinstance(statement, getattr(ast, "Match", ())):
-                if capture:
-                    self.expression(statement.subject, env, closure)
+                self.expression(statement.subject, env, closure, capture=capture)
                 for case in statement.cases:
                     names = _ScopeNames()
                     names.visit(case.pattern)
                     branch_env = {**env, **{name: UNKNOWN for name in names.bound}}
-                    if capture and case.guard is not None:
-                        self.expression(case.guard, branch_env, closure)
+                    if case.guard is not None:
+                        self.expression(
+                            case.guard, branch_env, closure, capture=capture
+                        )
                     self.block(
                         case.body, branch_env, closure, capture=capture, module=module
                     )
-                env.update({name: UNKNOWN for name in _scope_names([statement]).bound})
+                    self.invalidate_names(_scope_names(case.body).bound, branch_env)
+                self.invalidate_names(_scope_names([statement]).bound, env)
             elif isinstance(statement, (ast.With, ast.AsyncWith)):
                 for item in statement.items:
-                    if capture:
-                        self.expression(item.context_expr, env, closure)
+                    self.expression(item.context_expr, env, closure, capture=capture)
                     if item.optional_vars:
                         env.update(
                             {
@@ -796,6 +961,8 @@ class _BindingAnalyzer:
                 self.block(statement.body, env, closure, capture=capture, module=module)
             elif capture:
                 self.expression(statement, env, closure)
+            else:
+                self.expression(statement, env, closure, capture=False)
 
         self.module_scope = prior_scope
 
@@ -964,7 +1131,11 @@ def valid_python_constructor_facts(inventory, *, require_capability=True):
                 and isinstance(call.get("name"), str)
                 and type(call.get("line")) is int
                 and call["line"] > 0
-                and ("column" not in call or type(call["column"]) is int and call["column"] >= 0)
+                and (
+                    "column" not in call
+                    or type(call["column"]) is int
+                    and call["column"] >= 0
+                )
                 and (
                     fact["kind"] != "constructed-receiver"
                     or fact["member"] == call["name"]
