@@ -503,6 +503,134 @@ def test_legacy_committed_model_read_never_adopts_or_claims_executable_unchanged
     assert (_tree("src"), _tree("wiki")) == before
 
 
+@pytest.mark.parametrize("storage", [None, "packed-v4-deflate"])
+def test_conditional_receiver_edit_keeps_review_pending_through_restart_and_ack(
+    tmp_path, monkeypatch, capsys, storage
+):
+    monkeypatch.chdir(tmp_path)
+    Path("src").mkdir()
+    guard = '\nraise RuntimeError("owned source must only be parsed")\n'
+    Path("src/policy.py").write_text(POLICY_SOURCE + OTHER + guard)
+    Path("src/client.py").write_text(CLIENT + guard)
+    api.bootstrap_wiki("src", "wiki")
+    capsys.readouterr()
+    api.adopt_maintenance("src", "wiki", recovery_dir="adoption-recovery")
+    if storage:
+        _cli(
+            monkeypatch,
+            capsys,
+            "knowledge",
+            "migrate",
+            "--wiki-dir",
+            "wiki",
+            "--to",
+            storage,
+            "--recovery-dir",
+            "storage-recovery",
+        )
+    baseline = api.get_maintenance_status("src", "wiki")
+    row = _client_record(baseline)
+    _ack(baseline, row)
+    baseline = api.get_maintenance_status("src", "wiki")
+    row = _client_record(baseline)
+    assert ("client.py", "assigned_values") in _pairs(
+        _caller_routes("policy.py:Batch.cap", monkeypatch, capsys)[0]
+    )
+    prose = Path("wiki/modules/client.md").read_bytes()
+    Path("src/client.py").write_text(
+        CLIENT.replace(
+            "batch = Batch()", "batch = Batch()\n    values and (batch := OtherBatch())"
+        )
+        + guard
+    )
+    before = _tree("src"), _tree("wiki")
+    mcp = McpWikiService("src", "wiki")
+    selector = "client.py:assigned_values"
+    python = api.callees(selector, src_dir="src", wiki_dir="wiki", limit=100)
+    assert python == mcp.query_graph(
+        {"type": "callees", "value": selector, "limit": 100}
+    )
+    method = next(edge for edge in python["callees"] if edge["symbol"] == "cap")
+    assert method["kind"] == "unresolved" and method["file"] is None
+    assert method["reason"] and method["location"]["source_path"] == "client.py"
+    for target in ("Batch.cap", "OtherBatch.cap"):
+        for result in _caller_routes("policy.py:" + target, monkeypatch, capsys):
+            assert ("client.py", "assigned_values") not in _pairs(result)
+    live = api.inspect_concept(
+        "llm-wiki://modules/client", src_dir="src", wiki_dir="wiki", live=True
+    )
+    assert live == mcp.inspect_concept("llm-wiki://modules/client", live=True)
+    concept = live["concept"]["concept"]
+    assert concept is not None
+    assert concept["implementation"]["state"] == "changed"
+    assert (
+        "dependencies-and-runtime-behavior-not-evaluated"
+        in concept["implementation"]["limitations"]
+    )
+    assert concept["freshness"]["state"] == "nonsemantic-source-change"
+    pending = _status_routes(monkeypatch, capsys, row["record_id"])
+    assert pending[0] == pending[1] == pending[2]
+    assert pending[0]["records"][0]["effective_status"] == "pending"
+    with pytest.raises(api.WorkspaceStateError):
+        _ack(baseline, row)
+    assert (_tree("src"), _tree("wiki")) == before
+    _sync(monkeypatch, capsys)
+    assert Path("wiki/modules/client.md").read_bytes() == prose
+    durable = canonical_bytes(SyncManifest.load(Path("wiki")).maintenance_state)
+    repo = Path(__file__).resolve().parents[1]
+    environment = dict(os.environ)
+    environment["PYTHONPATH"] = (
+        str(repo / "src") + os.pathsep + environment.get("PYTHONPATH", "")
+    )
+
+    def restart_status():
+        result = subprocess.run(
+            [
+                str(repo / ".venv/bin/python"),
+                "-m",
+                "llm_wiki_cli.cli",
+                "maintenance",
+                "status",
+                "--src-dir",
+                "src",
+                "--wiki-dir",
+                "wiki",
+                "--record-id",
+                row["record_id"],
+                "--format",
+                "json",
+            ],
+            cwd=tmp_path,
+            env=environment,
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=60,
+        )
+        return json.loads(result.stdout)
+
+    read_basis = _tree("src"), _tree("wiki")
+    restarted = restart_status()
+    assert restarted["records"][0]["recorded_status"] == "pending"
+    assert (_tree("src"), _tree("wiki")) == read_basis
+    _sync(monkeypatch, capsys)
+    assert canonical_bytes(SyncManifest.load(Path("wiki")).maintenance_state) == durable
+    ready = api.get_maintenance_status("src", "wiki", record_id=row["record_id"])
+    success = _ack(ready, ready["records"][0])
+    assert success["changed"] and success["actor"]["kind"] == "agent"
+    assert success["governance_effect"] == "none"
+    acknowledged = restart_status()
+    assert acknowledged["records"][0]["effective_status"] == "acknowledged"
+    assert (
+        acknowledged["records"][0]["acknowledgment_history"][-1]["actor"]["kind"]
+        == "agent"
+    )
+    _sync(monkeypatch, capsys)
+    assert restart_status()["records"][0]["effective_status"] == "acknowledged"
+    assert Path("wiki/modules/client.md").read_bytes() == prose
+    assert not Path("wiki/.llm-wiki-governance.json").exists()
+
+
 def test_selected_source_caller_and_indexed_header_do_not_borrow_uncaptured_class_authority(
     tmp_path, monkeypatch, capsys
 ):

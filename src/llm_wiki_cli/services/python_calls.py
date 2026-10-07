@@ -366,7 +366,9 @@ def resolve_python_call_decision(
     expression = call.get("attr") or name
     parts = expression.split(".")
     if not all(part.isidentifier() for part in parts):
-        reason = binding.get("reason") if binding is not None else None
+        reason = (
+            binding.get("reason") if binding is not None else "call-binding-unavailable"
+        )
         return PythonCallDecision(
             None,
             name,
@@ -389,6 +391,8 @@ def resolve_python_call_decision(
         context.resolver, name
     ).binding(binding, parts[1:], filepath)
     reason = binding.get("reason") if binding.get("kind") == "unresolved" else None
+    if reason is None and facts is None and kind == "unresolved":
+        reason = "call-binding-unavailable"
     return PythonCallDecision(
         target,
         symbol,
