@@ -3,6 +3,7 @@
 ## Contents
 
 - [Establish the starting state](#establish-the-starting-state)
+- [Optional ordinary review tracking](#optional-ordinary-review-tracking)
 - [Complete owning loop](#complete-owning-loop)
 - [Mutation and identity boundaries](#mutation-and-identity-boundaries)
 - [Failure and recovery](#failure-and-recovery)
@@ -48,6 +49,55 @@ For a trusted source root outside the working directory, pass the same external
 `--src-dir` with `--allow-external-src` to `sync`, `lint`, and `ci-check`.
 Apply the same pair to `team check` when that policy is configured. The wiki
 directory remains inside the current project write boundary.
+
+## Optional ordinary review tracking
+
+Ordinary durable review is explicit adoption, independent of storage migration
+and human governance. Start with a coherent generated wiki and retain an empty
+recovery directory outside source/wiki:
+
+```bash
+llm-wiki maintenance adopt --src-dir src --wiki-dir wiki --recovery-dir maintenance-recovery
+llm-wiki maintenance status --src-dir src --wiki-dir wiki
+llm-wiki queue --src-dir src --wiki-dir wiki
+```
+
+Use the actual configured roots and source selection. Adoption starts tracked
+prose as unreviewed. Sync preserves pending records across refresh and restart;
+read-only status, context and queues do not acknowledge them. The queue remains
+advisory. Python executable syntax changes are scoped observations, separate
+from source-byte and structural freshness; unchanged syntax proves neither
+unchanged dependencies nor runtime behavior. Unsupported evidence stays
+unavailable. Unadopted wikis retain their existing format and review limits.
+
+Review an exact record's source and semantic section, then run the final owning
+sync after any prose edit. Capture its current basis before acknowledgment:
+
+```bash
+llm-wiki maintenance status --src-dir src --wiki-dir wiki --record-id RECORD_UUID --format json
+```
+
+Save the returned JSON to `review.json` outside source/wiki. Substitute the
+actual record ID. If `expected_basis` is null or status requires sync, resolve
+the reported gap and recapture; do not acknowledge. Save that exact record's
+`expected_basis` object as `basis.json`, also outside source/wiki, then use the
+returned `state_hash`:
+
+```bash
+llm-wiki maintenance acknowledge --src-dir src --wiki-dir wiki --record-id RECORD_UUID --expected-state-hash STATE_HASH --basis-file basis.json --actor-kind agent --actor-id documentation-agent
+```
+
+Changed source, prose or state rejects a stale basis. Later relevant edits
+reopen review, and an acknowledgment of one section does not cover its siblings.
+Deleted or ambiguously moved targets retain pending identity rather than guessing
+a new owner. Snapshot status reports historical review without live currentness.
+
+An explicit `agent` identity records operational review of that exact basis. It
+does not create human approval, satisfy governance policy or reactivate an
+expired human review. Keep stricter existing review requirements separate.
+Maintain the immutable adoption marker, owner, projections and recovery bundle
+together; the recovery route below preserves history instead of reinitializing
+it from current prose.
 
 ## Complete owning loop
 
@@ -136,7 +186,10 @@ infrastructure-observation, or source-revision change.
    workflow-page or other semantic conflicts remain a manual, evidence-backed
    decision. Never leave the wiki in a state where lint reports errors.
 
-7. Report expired human-section reviews and stale machine-verification
+7. Inspect ordinary pending review separately when adopted. A semantic review
+   may acknowledge an exact current basis with an explicit agent identity using
+   the route above; sync alone never acknowledges prose. Report expired
+   human-section reviews and stale machine-verification
    receipts with their existing reasons. Do not fabricate replacement human
    reviews or receipts. Then repeat the repository-policy check and follow
    [Repository handoff](repository-handoff.md).

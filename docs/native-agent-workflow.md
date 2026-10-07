@@ -9,6 +9,10 @@ For large native snapshots, [knowledge storage](knowledge-storage.md) describes
 explicit sharded or packed storage adoption and task request v2 with selected validation.
 Task request v1 retains its existing full-validation behavior.
 
+Prefer task request v2 for compatible integrations. Canonical delivery stays
+the default; compact views, sessions and source-augmented discovery are explicit
+choices with their own limits and costs.
+
 An explicit task request gathers qualified source and wiki evidence. The provider
 reads and reports; your coding host decides what to include, edit, execute and
 publish. Existing context calls retain their defaults.
@@ -233,6 +237,22 @@ Requirements declare `id`, `facet`, `selector` and optionally `criterion`
 Static observations cannot establish complete runtime behavior or prove the
 absence of callers. Coverage concerns emitted evidence; it does not mean the task
 is solved or that prose is correct.
+
+Python method callers can resolve through uniquely justified local constructors,
+assigned constructor instances and explicit imported class aliases. Factories,
+shadowed/conflicting bindings, receiver mutations and uncertain loop or exception
+paths stay located unresolved evidence. Inspect exact source before relying on
+a candidate; neither a missing edge nor a non-truncated response proves runtime
+completeness.
+
+Source bytes, recorded declaration structure and captured Python executable
+syntax are separate observations. A body or default edit can change executable
+syntax while an unrelated declaration remains unchanged. Matching syntax does
+not prove behavior, dependency stability or authored prose correctness. Other
+languages and legacy artifacts may lack executable comparison evidence. The
+legacy `nonsemantic-source-change` value means “Source changed; recorded
+structure unchanged; behavior not evaluated.” Review tracking requires its own
+explicit adoption; an untracked review state does not mean approval.
 
 Results preserve a captured basis, citations, qualifiers and every requirement's
 gap. Follow-ups contain bounded selectors and reasons for the host to consider.

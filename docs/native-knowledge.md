@@ -85,9 +85,12 @@ unchanged. The first contract uses conservative file-level implementation inputs
 
 Use `--comparison-policy exact-v1` to require exact producer versions, or
 `--comparison-policy analysis-v1` to require the new analysis metadata. The default
-`auto` uses conservative comparison for legacy knowledge. A normal sync migrates
-legacy knowledge; read-only commands never migrate it. Artifact hashes, verification
-receipts and human review retain their existing binding rules.
+`auto` uses conservative comparison for legacy knowledge. An owning sync
+refreshes legacy analysis metadata and observations while preserving the
+supported storage format. Sharded, packed or indexed storage and ordinary
+review tracking require explicit adoption; human governance remains separate.
+Read-only commands never migrate. Artifact hashes, verification receipts and
+human review retain their existing binding rules.
 
 Doctor and CI reports automatically select v4 for migrated knowledge. Applications
 that pin an older report format can select `exact-v1` explicitly. Python read APIs

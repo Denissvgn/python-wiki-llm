@@ -51,6 +51,7 @@ The returned `state_hash` commits the captured authority. The selected record's
 producer and exact prose/target. If it is null or status says `requires_sync`,
 acknowledgment is unavailable. Resolve the stated gap and capture status again.
 
+Keep captured status and basis files outside both actual source and wiki roots.
 Save that exact basis object to `basis.json`, then acknowledge it with an
 explicit actor:
 

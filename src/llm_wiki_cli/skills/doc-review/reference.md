@@ -6,6 +6,7 @@
 - [Triage statuses](#triage-statuses)
 - [Managed versus external mutation contract](#managed-versus-external-mutation-contract)
 - [Native human-review handoff](#native-human-review-handoff)
+- [Ordinary maintenance review](#ordinary-maintenance-review)
 - [Native lint finding map](#native-lint-finding-map)
 - [Published user-docs finding classes](#published-user-docs-finding-classes)
 - [Safe edit rules](#safe-edit-rules)
@@ -69,6 +70,24 @@ cannot convert an agent result, lint pass, machine receipt, source truth, or
 trusted intake into `reviewer-kind human`. Generated-only churn that leaves the
 semantic hash and evidence basis unchanged keeps a valid review; do not create
 noise by requesting a replacement event.
+
+## Ordinary maintenance review
+
+When ordinary maintenance is explicitly adopted, read the exact record's
+effective status, pending reasons and current basis. Source bytes, structural
+freshness and scoped Python executable syntax observations are separate;
+unchanged syntax does not prove runtime behavior or unchanged dependencies.
+Missing or unsupported evidence remains unavailable. Review the actual source
+and authored section rather than closing a record because sync or lint passed.
+
+After the last semantic edit, the owning sync re-anchors the snapshot. A managed
+review may then acknowledge the exact current basis through explicit local
+CLI/Python maintenance operations, with `actor-kind agent` and its real agent
+identity. Follow the installed `wiki-reference/references/maintenance.md` route
+for status capture, stale-basis refusal and recovery. Agent acknowledgment is
+operational review, not human approval or governance approval; it cannot revive
+an expired human review. External report-only review does not acknowledge or
+adopt maintenance. Read-only MCP/status/queue calls do not mutate review state.
 
 ## Native lint finding map
 

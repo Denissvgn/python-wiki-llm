@@ -4,6 +4,7 @@
 
 - [Choose the least costly truthful route](#choose-the-least-costly-truthful-route)
 - [Explicit task adoption routes](#explicit-task-adoption-routes)
+- [Qualified discovery before exact inspection](#qualified-discovery-before-exact-inspection)
 - [Broad context and qualified packets](#broad-context-and-qualified-packets)
 - [When context fails because a helper is unavailable](#when-context-fails-because-a-helper-is-unavailable)
 - [Knowledge mode is not freshness preference](#knowledge-mode-is-not-freshness-preference)
@@ -37,8 +38,16 @@ cost opt-in.
 
 ## Explicit task adoption routes
 
-For source-only evidence, save this as `source-task.json` outside the selected
-source tree, replacing the coordinate with a real declaration relative to it:
+Prefer `llm-wiki-task-request/v2` with canonical delivery for compatible task
+integrations. Task request v1 retains its full native-validation behavior;
+legacy context calls retain their own response contracts. A task result and a
+broad context packet are different envelopes. Read coverage and gaps before
+treating either as sufficient for the declared task.
+
+Use the source-only route only when no requirement needs native concepts,
+semantic sections or relationships. Save this as `source-task.json` outside the
+selected source tree, replacing the coordinate with a real declaration relative
+to it:
 
 ```json
 {
@@ -78,6 +87,17 @@ corrupt, unsupported or bounded native evidence remains a gap or failure. Never
 rewrite the requirements or switch native mode off to claim success. All readers
 and writers must support the chosen format. A read never migrates or syncs.
 
+Apply retains the prior storage snapshot; dry-run does not. For an interrupted
+or failed migration, preview and use its retained matching complete snapshot:
+
+```bash
+llm-wiki knowledge recover-storage --wiki-dir wiki --recovery-dir storage-recovery --dry-run
+llm-wiki knowledge recover-storage --wiki-dir wiki --recovery-dir storage-recovery
+```
+
+Recovery refuses unrelated root edits, changed Markdown authority and newer
+committed work. A refused snapshot is not authority to force replacement.
+
 Storage adoption and ordinary maintenance adoption are separate. An existing
 `.llm-wiki-maintenance-adoption.json` marker with missing/corrupt owner requires
 complete authority recovery through the [maintenance route](maintenance.md),
@@ -102,6 +122,53 @@ returns exact retained canonical evidence separately. Missing/closed/expired
 custody requires a fresh read. Historical receipt identity is not currentness;
 current lookup revalidates. Include one representation deliberately, count
 metadata/framing/follow-ups separately, and do not assume the host hides metadata.
+
+Sessions are an explicit host choice, with cold task reads available for the
+same evidence features. Reuse requires request-time validation of source bytes,
+selection, wiki authority and producer configuration; events only invalidate
+state. Save or defer unsaved buffers. Change of workspace, closure or lost
+receipt custody requires a fresh read. No continuous freshness or general
+speedup is established by opening a session.
+
+## Qualified discovery before exact inspection
+
+Ranked search keeps exact page and declaration identities ahead of approximate
+matches and reports reasons and corpus bounds. `--mode ranked-v1` retains the
+earlier policy; `--mode substring` keeps literal matching. Search results remain
+candidates, including relaxed matches and source snippets.
+
+Choose source augmentation explicitly when source text is needed for discovery:
+
+```bash
+llm-wiki search "retry failure" --src-dir src --wiki-dir wiki --mode ranked-v2 --include-source
+```
+
+It requires a valid committed manifest and indexes only mapped module sources
+inside the captured selection. Source capture, hashing and rechecks add work;
+snippets do not prove runtime behavior. A bounded read cannot widen selection
+automatically or install helpers to satisfy a query.
+
+Choose owner/section qualification explicitly:
+
+```bash
+llm-wiki search "retry failure" --src-dir src --wiki-dir wiki --discovery qualified-v1
+```
+
+The additional `discovery` groups only returned candidates by validated owner
+and retains distinct narrative sections, omissions and bounds. Recorded source
+and review state does not establish live freshness or current approval. Missing
+native storage or a valid unsupported layout captured within bounds leaves an
+unavailable qualification; inconsistent authority or exceeded capture/output
+bounds fails the read. Neither outcome authorizes adoption.
+
+Select a returned exact `path`, then call
+`api.inspect_concept(path, src_dir="src", wiki_dir="wiki", live=False)`.
+Continue with its locator only when it resolves one concept. Preserve missing,
+ambiguous and unavailable outcomes; do not substitute another fuzzy hit.
+When review status is decisive, read the exact record with
+`api.get_maintenance_status(..., record_id=record_id, live=False)` and request a
+live comparison separately when needed. Selected task context carries its own
+maintenance scope and can report current review unavailable.
 
 ## Broad context and qualified packets
 
@@ -342,6 +409,15 @@ edge list. `typed_graph.coverage` describes upstream analyzer materialization;
 per-edge coverage describes observations and evidence-sample omission;
 `bounds.edges` describes post-filter response limiting. A non-truncated query
 does not prove analyzer completeness.
+
+Python caller resolution can identify uniquely resolved local constructors,
+assigned instances and explicit imported class aliases. Factories, dynamic
+dispatch, shadowed names and conflicting bindings remain uncertain. Possible
+loop-carried rebinding, member mutation and effects in eager definition
+expressions can also make a receiver unresolved. Located uncertainty must not
+be promoted to a resolved caller, nor does a missing edge prove no runtime call.
+Static flow overviews preserve source links and explicit omissions; their
+interaction order does not prove execution order.
 
 ## Reuse one Python service for related queries
 
