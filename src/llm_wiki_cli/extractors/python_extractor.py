@@ -1527,8 +1527,18 @@ def _scan_python_files(
         # invent an empty module and, worse, shadow the real one when a symbol
         # is resolved through the alias path.
         is_module_alias = bool(module_alias_target(tree)) and not declares_symbols
+        has_import_bindings = bool(
+            python_bindings
+            and any(
+                value.get("kind") == "import"
+                and value.get("name") not in {None, "", "*"}
+                for value in python_bindings.module.values()
+            )
+        )
         has_content = (
-            declares_symbols or (module_calls and not is_module_alias) or include_empty
+            declares_symbols
+            or ((module_calls or has_import_bindings) and not is_module_alias)
+            or include_empty
         )
         if has_content:
             file_entry: dict[str, object] = {

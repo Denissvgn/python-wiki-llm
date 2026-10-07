@@ -899,3 +899,315 @@ def test_review_import_namespace_mutation_also_blocks_later_from_alias_construct
     data = inventory(tmp_path, source)
     assert data["functions"][0]["call_bindings"][0]["kind"] == "unresolved"
     assert valid_python_constructor_facts(data)
+
+
+_NAMESPACE_CONTROLS = json.loads(
+    (Path(__file__).parent / "fixtures/python_constructor_namespace.json").read_text()
+)
+
+
+@pytest.mark.parametrize("case", _NAMESPACE_CONTROLS, ids=lambda case: case["id"])
+def test_namespace_effects_preserve_exact_call_authority(tmp_path, case):
+    import sys
+    from llm_wiki_cli.services.extraction_service import (
+        resolve_call_edges,
+        resolve_call_observations,
+    )
+
+    minimum = tuple(int(part) for part in case["minimum_python"].split("."))
+    if sys.version_info[:2] < minimum:
+        pytest.skip("Owned syntax requires Python " + case["minimum_python"])
+    for name, source in case["sources"].items():
+        (tmp_path / name).write_text(source)
+    captured = PythonExtractor().extract(
+        str(tmp_path), deep=True, source_files=list(case["sources"])
+    )
+    assert all(valid_python_constructor_facts(data) for data in captured.values())
+    assert '"kind": "class-namespace"' not in json.dumps(captured)
+    for observations in (
+        resolve_call_edges(captured),
+        resolve_call_observations(captured)["observations"],
+    ):
+        for probe in case["probes"]:
+            matches = [
+                edge
+                for edge in observations
+                if edge["from"] == {"file": probe["file"], "symbol": probe["caller"]}
+                and edge.get("location", {}).get("line") == probe["line"]
+                and edge.get("location", {}).get("column") == probe["column"]
+                and edge["name"].rsplit(".", 1)[-1] == probe["member"]
+            ]
+            assert len(matches) == 1
+            edge = matches[0]
+            assert edge["location"]["source_path"] == probe["file"]
+            if edge["kind"] == "internal":
+                target = edge["to"]["file"] + ":" + edge["to"]["symbol"]
+                assert target in probe["allowed"]
+                if probe["required"]:
+                    assert target in probe["required"]
+            else:
+                assert not probe["required"]
+                assert edge["kind"] in {"unresolved", "ambiguous"}
+                assert edge.get("reason")
+            real = {
+                (item["target"], item["line"])
+                for item in probe["candidate_declarations"]
+            }
+            for candidate in edge.get("candidates", []):
+                assert (
+                    candidate["file"] + ":" + candidate["symbol"],
+                    candidate["line"],
+                ) in real
+
+
+@pytest.mark.parametrize(
+    "extra",
+    [
+        "locals().update({'cap': lambda self: 'replacement'})",
+        "namespace = locals()\n    namespace['cap'] = lambda self: 'replacement'",
+        "if flag:\n        get = locals\n    else:\n        get = lambda: {}\n    get().update({'cap': lambda self: 'replacement'})",
+    ],
+)
+def test_class_mapping_effect_does_not_invalidate_an_unrelated_class(tmp_path, extra):
+    from llm_wiki_cli.services.extraction_service import resolve_call_observations
+
+    source = (
+        "flag = True\nclass Batch:\n    def cap(self): return 'original'\n    "
+        + extra
+        + "\nclass Other:\n    def cap(self): return 'other'\n"
+        + "def run(): return Other().cap()\n"
+    )
+    data = inventory(tmp_path, source)
+    other = next(cls for cls in data["classes"] if cls["name"] == "Other")
+    assert other["python_constructor_dispatch"]["eligible"] is True
+    edges = resolve_call_observations({"app.py": data})["observations"]
+    assert any(
+        edge["to"] == {"file": "app.py", "symbol": "Other.cap"} for edge in edges
+    )
+    batch = next(cls for cls in data["classes"] if cls["name"] == "Batch")
+    dispatch = batch["python_constructor_dispatch"]
+    assert not dispatch["eligible"] or "cap" in dispatch["blocked_members"]
+
+
+def test_nested_class_nonlocal_write_invalidates_the_enclosing_receiver(tmp_path):
+    from llm_wiki_cli.services.extraction_service import resolve_call_observations
+
+    source = (
+        "class Batch:\n    def cap(self): return 'original'\n"
+        "class Other:\n    def cap(self): return 'other'\n"
+        "def run():\n    batch = Batch()\n    class Outer:\n"
+        "        class Inner:\n            nonlocal batch\n            batch = Other()\n"
+        "    return batch.cap()\n"
+    )
+    data = inventory(tmp_path, source)
+    edges = resolve_call_observations({"app.py": data})["observations"]
+    method = next(edge for edge in edges if edge["name"] == "batch.cap")
+    assert method["kind"] == "unresolved" and method["reason"]
+    assert method["location"]["line"] == 11
+
+
+def test_deferred_class_helper_exec_is_not_an_eager_namespace_write(tmp_path):
+    source = (
+        "class Batch:\n    def cap(self): return 'original'\n"
+        "    def helper(self):\n        exec('cap = None')\n"
+        "def run(): return Batch().cap()\n"
+    )
+    dispatch = inventory(tmp_path, source)["classes"][0]["python_constructor_dispatch"]
+    assert dispatch["eligible"] and "cap" not in dispatch["blocked_members"]
+
+
+def test_class_globals_mapping_write_is_not_a_class_member_store(tmp_path):
+    source = (
+        "class Batch:\n    def cap(self): return 'original'\n"
+        "    globals()['cap'] = None\n"
+        "def run(): return Batch().cap()\n"
+    )
+    dispatch = inventory(tmp_path, source)["classes"][0]["python_constructor_dispatch"]
+    assert dispatch["eligible"] and "cap" not in dispatch["blocked_members"]
+
+
+def test_private_binding_state_snapshot_preserves_aliases_without_branch_leaks():
+    from llm_wiki_cli.extractors.python_bindings import _BindingState
+
+    receiver = {"kind": "constructed-instance", "blocked_members": []}
+    state = _BindingState(
+        env={
+            "batch": receiver,
+            "alias": receiver,
+            "patch": {"kind": "attribute-mutator", "target": receiver},
+        },
+        possible_targets={"maybe": [receiver]},
+    )
+    branch = state.snapshot()
+    assert branch.env["batch"] is branch.env["alias"]
+    assert branch.env["patch"]["target"] is branch.env["batch"]
+    assert branch.possible_targets["maybe"][0] is branch.env["batch"]
+    branch.env["alias"]["blocked_members"].append("cap")
+    branch.export_invalidations.add("Alias")
+    assert not state.env["batch"]["blocked_members"]
+    assert not state.export_invalidations
+
+
+@pytest.mark.parametrize(
+    "extra",
+    [
+        "locals()['extra'] = 1",
+        "ns = locals()\n    ns['not-an-identifier'] = 1",
+        "locals().update({'extra': 1})",
+    ],
+)
+def test_known_unrelated_class_mapping_keys_preserve_valid_method_authority(
+    tmp_path, extra
+):
+    from llm_wiki_cli.services.extraction_service import resolve_call_observations
+
+    data = inventory(
+        tmp_path,
+        "class Batch:\n    def cap(self): return 'original'\n    "
+        + extra
+        + "\ndef run(): return Batch().cap()\n",
+    )
+    assert valid_python_constructor_facts(data)
+    dispatch = data["classes"][0]["python_constructor_dispatch"]
+    assert dispatch["eligible"] and "cap" not in dispatch["blocked_members"]
+    edges = resolve_call_observations({"app.py": data})["observations"]
+    assert any(
+        edge["to"] == {"file": "app.py", "symbol": "Batch.cap"} for edge in edges
+    )
+
+
+@pytest.mark.parametrize(
+    "effect",
+    [
+        "if flag:\n        get = locals\n    else:\n        get = lambda: {}\n    alias = get\n    alias().update({'cap': None})",
+        "if flag:\n        get = vars\n    else:\n        get = globals\n    get().update({'cap': None})",
+    ],
+)
+def test_conditional_class_namespace_factory_aliases_never_restore_member_authority(
+    tmp_path, effect
+):
+    source = (
+        "flag = True\nclass Batch:\n    def cap(self): return 'original'\n    "
+        + effect
+        + "\n"
+    )
+    dispatch = inventory(tmp_path, source)["classes"][0]["python_constructor_dispatch"]
+    assert not dispatch["eligible"] or "cap" in dispatch["blocked_members"]
+
+
+def test_rebound_class_namespace_alias_retains_module_write_authority(tmp_path):
+    from llm_wiki_cli.services.extraction_service import resolve_call_observations
+
+    source = (
+        "class Other:\n    def cap(self): return 'other'\n"
+        "class Batch:\n    def cap(self): return 'original'\n"
+        "    ns = locals()\n    ns = globals()\n    ns['Other'] = None\n"
+        "def run(): return Other().cap()\n"
+    )
+    data = inventory(tmp_path, source)
+    observations = resolve_call_observations({"app.py": data})["observations"]
+    method = next(row for row in observations if row["name"] == "Other().cap")
+    assert method["kind"] == "unresolved" and method["reason"]
+
+
+def test_deleted_class_helper_alias_falls_back_to_captured_module_binding(tmp_path):
+    from llm_wiki_cli.services.extraction_service import resolve_call_observations
+
+    source = (
+        "get = globals\nclass Other:\n    def cap(self): return 'other'\n"
+        "class Batch:\n    def cap(self): return 'original'\n"
+        "    get = locals\n    del get\n    get()['Other'] = None\n"
+        "def run(): return Other().cap()\n"
+    )
+    data = inventory(tmp_path, source)
+    observations = resolve_call_observations({"app.py": data})["observations"]
+    method = next(row for row in observations if row["name"] == "Other().cap")
+    assert method["kind"] == "unresolved" and method["reason"]
+
+
+def test_namespace_dispatch_is_identical_cold_warm_and_after_producer_cache_invalidation(
+    tmp_path, monkeypatch
+):
+    from llm_wiki_cli.services import inventory_cache
+    from llm_wiki_cli.services.extraction_service import resolve_call_observations
+
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "app.py").write_text(
+        "class Batch:\n    def cap(self): return 'original'\n"
+        "    for cap in [lambda self: 'replacement']:\n        pass\n"
+        "def run(): return Batch().cap()\n"
+    )
+    original_fingerprint = inventory_cache._implementation_fingerprint
+    monkeypatch.setattr(
+        inventory_cache,
+        "_implementation_fingerprint",
+        lambda: "earlier-owned-fingerprint",
+    )
+    options = InventoryCacheOptions(enabled=True, cache_dir=str(tmp_path / "cache"))
+    cold = get_inventory_result(str(source), deep=True, cache_options=options)
+    warm = get_inventory_result(str(source), deep=True, cache_options=options)
+    assert cold.inventory == warm.inventory
+    assert warm.cache_stats is not None and warm.cache_stats.hits == 1
+    monkeypatch.setattr(
+        inventory_cache, "_implementation_fingerprint", original_fingerprint
+    )
+    refreshed = get_inventory_result(str(source), deep=True, cache_options=options)
+    uncached = get_inventory_result(str(source), deep=True)
+    assert refreshed.inventory == uncached.inventory == cold.inventory
+    assert refreshed.cache_stats is not None
+    assert refreshed.cache_stats.status == "invalid" and refreshed.cache_stats.hits == 0
+    for result in (cold, warm, refreshed, uncached):
+        observations = resolve_call_observations(result.inventory)["observations"]
+        method = next(row for row in observations if row["name"] == "Batch().cap")
+        assert method["kind"] == "unresolved" and method["reason"]
+
+
+def test_namespace_repair_owners_change_real_analysis_and_inventory_fingerprints(
+    tmp_path, monkeypatch
+):
+    from llm_wiki_cli.services import analysis_capture, inventory_cache
+
+    package_root = Path(python_extractor.__file__).parent.parent
+    rules = analysis_capture.registry()
+    inputs = rules["providers"]["python"]
+    reference = analysis_capture.implementation_hash(package_root, inputs)
+    owner = "extractors/python_bindings.py"
+    path = tmp_path / owner
+    path.parent.mkdir()
+    path.write_bytes(
+        (package_root / owner).read_bytes() + b"\n# Owned inert hash witness.\n"
+    )
+    read_bytes = Path.read_bytes
+
+    def changed_bytes(candidate):
+        return (
+            read_bytes(path)
+            if candidate == package_root / owner
+            else read_bytes(candidate)
+        )
+
+    legacy = inventory_cache._implementation_fingerprint()
+    monkeypatch.setattr(Path, "read_bytes", changed_bytes)
+    assert analysis_capture.implementation_hash(package_root, inputs) != reference
+    assert inventory_cache._implementation_fingerprint() != legacy
+
+
+@pytest.mark.parametrize(
+    "effect",
+    [
+        "get = locals if flag else globals\n    get().update({'cap': None})",
+        "get = globals\n    try:\n        get = locals\n    except ValueError:\n        get = globals\n    get().update({'cap': None})",
+        "get = globals\n    match flag:\n        case True:\n            get = locals\n        case False:\n            get = globals\n    get().update({'cap': None})",
+    ],
+)
+def test_class_namespace_factory_paths_cannot_be_taken_as_unconditional(
+    tmp_path, effect
+):
+    source = (
+        "flag = True\nclass Batch:\n    def cap(self): return 'original'\n    "
+        + effect
+        + "\n"
+    )
+    dispatch = inventory(tmp_path, source)["classes"][0]["python_constructor_dispatch"]
+    assert not dispatch["eligible"] or "cap" in dispatch["blocked_members"]

@@ -590,3 +590,25 @@ def test_empty_supplied_inventory_with_native_view_is_not_snapshot_origin(
         )
     with pytest.raises(ValueError):
         DocumentationGraphQueryService({}, snapshot_call_inventory=cast(Any, "yes"))
+
+
+def test_imported_member_mutation_preserves_unrelated_class_and_member(tmp_path):
+    inventory = collect(
+        tmp_path,
+        {
+            "models.py": "class Batch:\n    def cap(self): return 'original'\nclass Other:\n    def cap(self): return 'other'\n",
+            "app.py": "import models\nfrom models import Other as Alias\ndef run():\n    setattr(models.Batch, 'cap', lambda self: 'replacement')\n    return Alias().cap()\n",
+        },
+    )
+    assert decision(inventory).symbol == "Other.cap"
+
+
+def test_unrelated_imported_member_write_preserves_the_required_method(tmp_path):
+    inventory = collect(
+        tmp_path,
+        {
+            "models.py": "class Batch:\n    def cap(self): return 'original'\n",
+            "app.py": "from models import Batch as Alias\ndef run():\n    setattr(Alias, 'extra', 1)\n    return Alias().cap()\n",
+        },
+    )
+    assert decision(inventory).symbol == "Batch.cap"

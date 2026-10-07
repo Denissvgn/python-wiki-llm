@@ -1,0 +1,3186 @@
+[
+  {
+    "id": "CLS-001",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    (cap := lambda self: 'replacement')\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 4,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-001-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-002",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    for cap in [lambda self: 'replacement']:\n        pass\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 5,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-002-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-003",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    for first, *cap in [(1, 2, 3)]:\n        pass\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 5,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-003-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-004",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    from contextlib import nullcontext\n    with nullcontext(lambda self: 'replacement') as cap:\n        pass\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 6,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-004-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-005",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    from contextlib import nullcontext\n    with nullcontext((0, lambda self: 'replacement')) as (first, cap):\n        pass\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 6,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-005-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-006",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    try:\n        raise ValueError()\n    except ValueError as cap:\n        pass\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 7,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 7
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-006-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-007",
+    "minimum_python": "3.11",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    try:\n        raise ExceptionGroup('owned', [ValueError()])\n    except* ValueError as cap:\n        pass\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 7,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 7
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-007-M",
+    "minimum_python": "3.11",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-008",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    import math as cap\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 4,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-008-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-009",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def math(self): return 'original'\n    import math\ndef run(): return Batch().math()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 4,
+        "column": 18,
+        "member": "math",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.math",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-009-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def math(self): return 'original'\ndef run(): return Batch().math()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "math",
+        "required": [
+          "app.py:Batch.math"
+        ],
+        "allowed": [
+          "app.py:Batch.math"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.math",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-010",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    from builtins import abs as cap\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 4,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-010-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-011",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def len(self): return 'original'\n    from builtins import len\ndef run(): return Batch().len()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 4,
+        "column": 18,
+        "member": "len",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.len",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-011-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def len(self): return 'original'\ndef run(): return Batch().len()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "len",
+        "required": [
+          "app.py:Batch.len"
+        ],
+        "allowed": [
+          "app.py:Batch.len"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.len",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-012",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    match (lambda self: 'replacement'):\n        case cap:\n            pass\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 6,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-012-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-013",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    match [1, 2]:\n        case [*cap]:\n            pass\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 6,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-013-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-014",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    match {'a': 1}:\n        case {**cap}:\n            pass\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 6,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-014-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-015",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    match 1:\n        case value if (cap := lambda self: 'replacement'):\n            pass\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 6,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-015-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-016",
+    "minimum_python": "3.12",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    type cap = int\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 4,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-016-M",
+    "minimum_python": "3.12",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-017",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    def helper(value=(cap := lambda self: 'replacement')):\n        return value\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 5,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Batch.helper",
+            "line": 3
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-017-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-018",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    @((cap := lambda self: 'replacement'), lambda fn: fn)[1]\n    def helper():\n        pass\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 6,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Batch.helper",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-018-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-019",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    class Nested(((cap := lambda self: 'replacement'), object)[1]):\n        pass\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 5,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-019-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-020",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    cap = lambda self: 'replacement'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 4,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-020-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-021",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    cap: object = lambda self: 'replacement'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 4,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-021-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-022",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    del cap\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 4,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-022-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-023",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    def cap(self): return 'replacement'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 4,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Batch.cap",
+            "line": 3
+          },
+          {
+            "target": "app.py:run",
+            "line": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-023-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-024",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    class cap:\n        pass\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 5,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Batch.cap",
+            "line": 3
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-024-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-025",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    async def cap(self): return 'replacement'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 4,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Batch.cap",
+            "line": 3
+          },
+          {
+            "target": "app.py:run",
+            "line": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-025-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-026",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    def helper(self):\n        cap = None\n        return cap\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 6,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Batch.helper",
+            "line": 3
+          },
+          {
+            "target": "app.py:run",
+            "line": 6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-026-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    def helper(self):\n        cap = None\n        return cap\n    cap = lambda self: 'replacement'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 7,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Batch.helper",
+            "line": 3
+          },
+          {
+            "target": "app.py:run",
+            "line": 7
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-027",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    helper = lambda: (cap := None)\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 4,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-027-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    helper = lambda: (cap := None)\n    cap = lambda self: 'replacement'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 5,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-028",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    class Nested:\n        cap = None\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 5,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-028-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    class Nested:\n        cap = None\n    cap = lambda self: 'replacement'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 6,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-029",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    values = [cap for cap in (1, 2)]\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 4,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-029-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    values = [cap for cap in (1, 2)]\n    cap = lambda self: 'replacement'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 5,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-030",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    cap: object\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 4,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-030-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    cap: object\n    cap = lambda self: 'replacement'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 5,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-031",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    if False:\n        cap = None\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 5,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-031-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    if False:\n        cap = None\n    cap = lambda self: 'replacement'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 6,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-032",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "cap = None\nclass Batch:\n    global cap\n    def cap(self): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 5,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-032-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "cap = None\nclass Batch:\n    def cap(self): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 4,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 3
+          },
+          {
+            "target": "app.py:run",
+            "line": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-033",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    locals()['cap'] = lambda self: 'replacement'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 4,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-033-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-034",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    locals().update({'cap': lambda self: 'replacement'})\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 4,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-034-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-035",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    (__getattribute__ := lambda self, name: (lambda: 'replacement'))\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 4,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-035-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-036",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    (extra := 1)\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 4,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CLS-036-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\n    (extra := 1)\n    cap = lambda self: 'replacement'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 5,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "HIST-001",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self): return 'original'\n    (cap := lambda self: 'replacement')\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 4,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "HIST-001-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "HIST-002",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self): return 'original'\n    for cap in [lambda self: 'replacement']:\n        pass\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 5,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "HIST-002-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "HIST-003",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self): return 'original'\n    try:\n        raise ValueError()\n    except ValueError as cap:\n        pass\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 7,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 7
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "HIST-003-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-001",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 3,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-001-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\n    cap = lambda self: 'replacement'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 4,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-002",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\ndef run():\n    batch = Batch()\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 5,
+        "column": 11,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-002-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\ndef run():\n    batch = Batch()\n    setattr(batch, 'cap', lambda: 'replacement')\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 6,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-003",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "from models import Batch as Alias\ndef run(): return Alias().cap()\n",
+      "models.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 2,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "models.py:Batch.cap"
+        ],
+        "allowed": [
+          "models.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:run",
+            "line": 2
+          },
+          {
+            "target": "models.py:Batch.cap",
+            "line": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-003-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "from models import Batch as Alias\ndef run():\n    setattr(Alias, 'cap', lambda self: 'replacement')\n    return Alias().cap()\n",
+      "models.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 4,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:run",
+            "line": 2
+          },
+          {
+            "target": "models.py:Batch.cap",
+            "line": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-004",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "import models as m\ndef run(): return m.Batch().cap()\n",
+      "models.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 2,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "models.py:Batch.cap"
+        ],
+        "allowed": [
+          "models.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:run",
+            "line": 2
+          },
+          {
+            "target": "models.py:Batch.cap",
+            "line": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-004-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "import models as m\ndef run():\n    setattr(m.Batch, 'cap', lambda self: 'replacement')\n    return m.Batch().cap()\n",
+      "models.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 4,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:run",
+            "line": 2
+          },
+          {
+            "target": "models.py:Batch.cap",
+            "line": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-005",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "from facade import B as Alias\ndef run(): return Alias().cap()\n",
+      "facade.py": "from models import Batch as B\n",
+      "models.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 2,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "models.py:Batch.cap"
+        ],
+        "allowed": [
+          "models.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:run",
+            "line": 2
+          },
+          {
+            "target": "models.py:Batch.cap",
+            "line": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-005-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "from facade import B as Alias\ndef run(): return Alias().cap()\n",
+      "facade.py": "from models import Batch as B\n",
+      "models.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\n    cap = lambda self: 'replacement'\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 2,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:run",
+            "line": 2
+          },
+          {
+            "target": "models.py:Batch.cap",
+            "line": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-006",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "def make():\n    cap = None\n    class Batch:\n        nonlocal cap\n        def cap(self): return 'original'\n    return Batch\nBatch = make()\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 8,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:make",
+            "line": 1
+          },
+          {
+            "target": "app.py:make.Batch.cap",
+            "line": 5
+          },
+          {
+            "target": "app.py:run",
+            "line": 8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-006-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "def make():\n    cap = None\n    class Batch:\n        def cap(self): return 'original'\n    return Batch\nBatch = make()\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 7,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [
+          "app.py:make.Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:make",
+            "line": 1
+          },
+          {
+            "target": "app.py:make.Batch.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 7
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-007",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Other:\n    def cap(self, *args, **kwargs): return 'other'\nclass Batch:\n    def cap(self, *args, **kwargs): return 'original'\n    def __new__(cls): return Other()\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 6,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Other.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Batch.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:Batch.__new__",
+            "line": 5
+          },
+          {
+            "target": "app.py:run",
+            "line": 6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-007-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Other:\n    def cap(self, *args, **kwargs): return 'other'\nclass Batch:\n    def cap(self, *args, **kwargs): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 5,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Other.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Batch.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-008",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Other:\n    def cap(self, *args, **kwargs): return 'other'\nclass Batch:\n    def cap(self, *args, **kwargs): return 'original'\n    (__new__ := staticmethod(lambda cls: Other()))\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 6,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Other.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Batch.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-008-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Other:\n    def cap(self, *args, **kwargs): return 'other'\nclass Batch:\n    def cap(self, *args, **kwargs): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 5,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Other.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Batch.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-009",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\n    for __getattribute__ in [lambda self, name: lambda: 'replacement']:\n        pass\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 5,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-009-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\n    for extra in [lambda self, name: lambda: 'replacement']:\n        pass\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 5,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-010",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "def decorate(cls): return cls\n@decorate\nclass Batch:\n    def cap(self, *args, **kwargs): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 5,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:decorate",
+            "line": 1
+          },
+          {
+            "target": "app.py:Batch.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-010-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "def decorate(cls): return cls\nclass Batch:\n    def cap(self, *args, **kwargs): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 4,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:decorate",
+            "line": 1
+          },
+          {
+            "target": "app.py:Batch.cap",
+            "line": 3
+          },
+          {
+            "target": "app.py:run",
+            "line": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-019",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\n    namespace = locals()\n    namespace['cap'] = lambda self: 'replacement'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 5,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-019-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\n    namespace = locals()\n    namespace['extra'] = lambda self: 'replacement'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 5,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-020",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\n    global extra\n    extra = None\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 5,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-020-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "cap = None\nclass Batch:\n    global cap\n    def cap(self): return 'original'\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 5,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-021",
+    "minimum_python": "3.12",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\n    type extra = 1 / 0\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 4,
+        "column": 18,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-021-M",
+    "minimum_python": "3.12",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\n    type cap = 1 / 0\ndef run(): return Batch().cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 4,
+        "column": 18,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 4
+          }
+        ]
+      }
+    ]
+  }
+]

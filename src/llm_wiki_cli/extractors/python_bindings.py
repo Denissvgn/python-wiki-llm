@@ -6,7 +6,8 @@ import ast
 import builtins
 from collections import Counter
 from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import dataclass, field as dataclass_field
+import sys
 
 UNKNOWN = {"kind": "unresolved"}
 BUILTIN_NAMES = frozenset(dir(builtins))
@@ -14,6 +15,19 @@ FUNCTIONS = (ast.FunctionDef, ast.AsyncFunctionDef)
 COMPREHENSIONS = (ast.ListComp, ast.SetComp, ast.DictComp, ast.GeneratorExp)
 CONSTRUCTOR_FACTS_VERSION = 1
 CONSTRUCTOR_DISPATCH_VERSION = "llm-wiki-python-constructor-dispatch/v1"
+_DISPATCH_SLOTS = frozenset(
+    {
+        "__new__",
+        "__init__",
+        "__class__",
+        "__dict__",
+        "__bases__",
+        "__getattribute__",
+        "__getattr__",
+        "__setattr__",
+        "__delattr__",
+    }
+)
 
 
 def _unresolved(node, reason):
@@ -53,12 +67,550 @@ def _module_classes(tree):
     ]
 
 
-def _namespace_statements(body):
-    """Walk namespace statements without interpreting nested callable bodies."""
-    for node in body:
-        yield node
-        if not isinstance(node, (ast.ClassDef, *FUNCTIONS, ast.Lambda)):
-            yield from _namespace_statements(list(ast.iter_child_nodes(node)))
+class _ClassNamespaceEffects(ast.NodeVisitor):
+    """Collect executed namespace effects, retaining explicit scope boundaries."""
+
+    def __init__(self, node, module, *, annotations_eager, side_effects=None):
+        scope = _scope_names(node.body)
+        self.redirected = scope.globals | scope.nonlocals
+        self.global_names = scope.globals
+        self.writes: set[str] = set()
+        self.missing: set[str] = set()
+        self.global_writes: set[str] = set()
+        self.outer_writes: set[str] = set()
+        self.dynamic = False
+        self.direct_mapping_writes: set[str] = set()
+        self.env = dict(module)
+        self.module = module
+        self.side_effects = side_effects
+        self.namespace_aliases: set[str] = set()
+        self.namespace_factories: set[str] = set()
+        self.binding_history: dict[str, list[dict]] = {}
+        self.annotations_eager = annotations_eager
+        self.conditional = False
+        for statement in node.body:
+            self.visit(statement)
+
+    def _store(self, name, binding=None):
+        if name in self.redirected:
+            self.outer_writes.add(name)
+            if name in self.global_names:
+                self.global_writes.add(name)
+        else:
+            self.writes.add(name)
+        if binding and binding.get("kind") == "class-namespace":
+            self.namespace_aliases.add(name)
+        if binding == {"kind": "builtin", "symbol": "locals"}:
+            self.namespace_factories.add(name)
+        self.env[name] = binding if binding is not None else UNKNOWN
+        self.binding_history.setdefault(name, []).append(self.env[name])
+
+    def _helper(self, node):
+        path = _callee_path(node)
+        if path is None:
+            return None
+        root, members = path
+        binding = _lookup(self.env, root)
+        if binding.get("kind") == "builtin":
+            return [binding["symbol"], *members]
+        if binding.get("kind") == "import" and binding.get("module") == "builtins":
+            return ([binding["name"]] if binding.get("name") else []) + members
+        return None
+
+    def _namespace(self, node):
+        if isinstance(node, ast.Name):
+            value = _lookup(self.env, node.id)
+            return (
+                value
+                if value.get("kind")
+                in {"class-namespace", "module-namespace", "uncertain-namespace"}
+                else None
+            )
+        if isinstance(node, ast.Call) and not node.args and not node.keywords:
+            if isinstance(node.func, ast.Name):
+                binding = _lookup(self.env, node.func.id)
+                if binding.get("kind") == "namespace-factory":
+                    return {
+                        "kind": "uncertain-namespace",
+                        "qualified": binding.get("qualified", False),
+                        "scopes": binding["scopes"],
+                    }
+            if self._helper(node.func) == ["globals"]:
+                return {"kind": "module-namespace", "qualified": True}
+            if self._helper(node.func) in (["locals"], ["vars"]):
+                return {"kind": "class-namespace", "qualified": True}
+            path = _callee_path(node.func)
+            if path and (
+                path[0] in self.namespace_factories
+                or path[0] == "locals"
+                or path[1][-1:] == ["locals"]
+            ):
+                return {"kind": "class-namespace", "qualified": False}
+        return None
+
+    def _value(self, node):
+        namespace = self._namespace(node)
+        if namespace is not None:
+            return namespace
+        if isinstance(node, ast.Name):
+            return _lookup(self.env, node.id)
+        if isinstance(node, (ast.IfExp, ast.BoolOp)):
+            # Conditional expression transfer is handled by the next binding
+            # stage. Namespace factories here must not gain unique authority.
+            return {
+                "kind": "namespace-factory",
+                "scopes": ["class", "module"],
+                "qualified": False,
+            }
+        if (
+            isinstance(node, ast.Lambda)
+            and isinstance(node.body, ast.Dict)
+            and not node.body.keys
+        ):
+            return {"kind": "non-namespace-factory"}
+        if isinstance(node, ast.Dict) and not node.keys:
+            return {"kind": "non-namespace"}
+        helper = self._helper(node)
+        return (
+            {"kind": "builtin", "symbol": helper[0]}
+            if helper and len(helper) == 1
+            else UNKNOWN
+        )
+
+    def _target(self, node, binding=None):
+        if isinstance(node, ast.Name):
+            self._store(node.id, binding)
+        elif isinstance(node, (ast.Tuple, ast.List)):
+            for child in node.elts:
+                self._target(child)
+        elif isinstance(node, ast.Starred):
+            self._target(node.value)
+        elif isinstance(node, ast.Subscript):
+            namespace = self._namespace(node.value)
+            if namespace and namespace["kind"] == "uncertain-namespace":
+                if (
+                    namespace["qualified"]
+                    and isinstance(node.slice, ast.Constant)
+                    and isinstance(node.slice.value, str)
+                ):
+                    if "class" in namespace["scopes"]:
+                        self.writes.add(node.slice.value)
+                        self.direct_mapping_writes.add(node.slice.value)
+                    if "module" in namespace["scopes"]:
+                        self.global_writes.add(node.slice.value)
+                else:
+                    self.dynamic |= "class" in namespace["scopes"]
+                    if "module" in namespace["scopes"]:
+                        self.global_writes.add("*")
+                self.visit(node.value)
+                self.visit(node.slice)
+                return
+            if namespace is None and self.side_effects:
+                self.side_effects(node, self.env)
+            if namespace and namespace["kind"] == "module-namespace":
+                if (
+                    namespace["qualified"]
+                    and isinstance(node.slice, ast.Constant)
+                    and isinstance(node.slice.value, str)
+                ):
+                    self.global_writes.add(node.slice.value)
+                else:
+                    self.global_writes.add("*")
+                self.visit(node.value)
+                self.visit(node.slice)
+                return
+            if (
+                namespace
+                and namespace["qualified"]
+                and isinstance(node.slice, ast.Constant)
+                and isinstance(node.slice.value, str)
+            ):
+                self.writes.add(node.slice.value)
+                if isinstance(node.value, ast.Call):
+                    self.direct_mapping_writes.add(node.slice.value)
+            else:
+                self.dynamic = True
+            self.visit(node.value)
+            self.visit(node.slice)
+        else:
+            path = _callee_path(node)
+            if path and _lookup(self.env, path[0]).get("kind") in {
+                "local",
+                "import",
+                "builtin",
+                "receiver",
+                "constructed-instance",
+            }:
+                if self.side_effects:
+                    self.side_effects(node, self.env)
+            else:
+                self.dynamic = True
+            self.visit(node)
+
+    def visit_Assign(self, node):
+        self.visit(node.value)
+        value = self._value(node.value)
+        for target in node.targets:
+            self._target(target, value)
+
+    def visit_AnnAssign(self, node):
+        if node.value is not None:
+            self.visit(node.value)
+            self._target(node.target, self._value(node.value))
+        if self.annotations_eager:
+            self.visit(node.annotation)
+
+    def visit_AugAssign(self, node):
+        self.visit(node.value)
+        self._target(node.target)
+
+    def visit_Delete(self, node):
+        for target in node.targets:
+            self._target(target)
+            for name in _target_names(target):
+                if name in self.redirected:
+                    self.env.pop(name, None)
+                else:
+                    self.env[name] = _lookup(self.module, name)
+
+    def visit_NamedExpr(self, node):
+        self.visit(node.value)
+        self._target(node.target, self._value(node.value))
+
+    def _header(self, node):
+        for value in node.decorator_list:
+            self.visit(value)
+        if isinstance(node, ast.ClassDef):
+            for value in [*node.bases, *(keyword.value for keyword in node.keywords)]:
+                self.visit(value)
+        else:
+            for value in [
+                *node.args.defaults,
+                *(value for value in node.args.kw_defaults if value is not None),
+            ]:
+                self.visit(value)
+            if self.annotations_eager:
+                for value in _definition_expressions(node)[
+                    len(node.decorator_list)
+                    + len(node.args.defaults)
+                    + sum(value is not None for value in node.args.kw_defaults) :
+                ]:
+                    self.visit(value)
+
+    def visit_FunctionDef(self, node: ast.FunctionDef | ast.AsyncFunctionDef):
+        self._header(node)
+        if node.name in self.redirected:
+            self.missing.add(node.name)
+            self._store(node.name)
+        else:
+            if self.conditional:
+                self.writes.add(node.name)
+            self.env[node.name] = UNKNOWN
+
+    def visit_AsyncFunctionDef(self, node):
+        self.visit_FunctionDef(node)
+
+    def visit_ClassDef(self, node):
+        self._header(node)
+        self._store(node.name)
+        inner = _ClassNamespaceEffects(
+            node,
+            self.module,
+            annotations_eager=self.annotations_eager,
+            side_effects=self.side_effects,
+        )
+        # Inner local stores do not leak; explicit global writes do execute.
+        self.global_writes.update(inner.global_writes)
+        self.outer_writes.update(inner.outer_writes)
+
+    def visit_Lambda(self, node):
+        for value in [
+            *node.args.defaults,
+            *(value for value in node.args.kw_defaults if value is not None),
+        ]:
+            self.visit(value)
+
+    def visit_Import(self, node: ast.Import | ast.ImportFrom):
+        for name, binding in import_bindings(node).items():
+            self._store(name, binding)
+
+    def visit_ImportFrom(self, node):
+        self.visit_Import(node)
+
+    def visit_For(self, node: ast.For | ast.AsyncFor):
+        self.visit(node.iter)
+        self._target(node.target)
+        self._branches([node.body, node.orelse])
+
+    def visit_AsyncFor(self, node):
+        self.visit_For(node)
+
+    def visit_With(self, node: ast.With | ast.AsyncWith):
+        for item in node.items:
+            self.visit(item.context_expr)
+            if item.optional_vars:
+                self._target(item.optional_vars)
+        for statement in node.body:
+            self.visit(statement)
+
+    def visit_AsyncWith(self, node):
+        self.visit_With(node)
+
+    def visit_ExceptHandler(self, node):
+        if node.type:
+            self.visit(node.type)
+        if node.name:
+            self._store(node.name)
+        self._branches([node.body])
+        if node.name:
+            self._store(node.name)  # Python implicitly deletes the alias.
+            if node.name in self.redirected:
+                self.env.pop(node.name, None)
+            else:
+                self.env[node.name] = _lookup(self.module, node.name)
+
+    def visit_MatchAs(self, node):
+        if node.name:
+            self._store(node.name)
+        if node.pattern:
+            self.visit(node.pattern)
+
+    def visit_MatchStar(self, node):
+        if node.name:
+            self._store(node.name)
+
+    def visit_MatchMapping(self, node):
+        if node.rest:
+            self._store(node.rest)
+        self.generic_visit(node)
+
+    def _branches(self, branches):
+        previous = self.conditional
+        base = dict(self.env)
+        exits = []
+        self.conditional = True
+        for body in branches:
+            self.env = dict(base)
+            for statement in body:
+                self.visit(statement)
+            exits.append(dict(self.env))
+        self.env = dict(base)
+        for name in set().union(*(set(exit) for exit in exits)):
+            values = [_lookup(exit, name) for exit in exits]
+            self.env[name] = self._join_binding(values)
+        self.conditional = previous
+
+    @staticmethod
+    def _join_binding(values):
+        if all(value == values[0] for value in values):
+            return values[0]
+        factories = set()
+        namespaces = set()
+        helpers = set()
+        for value in values:
+            kind = value.get("kind")
+            helper = (
+                value.get("symbol")
+                if kind == "builtin"
+                else value.get("name")
+                if kind == "import" and value.get("module") == "builtins"
+                else None
+            )
+            if helper:
+                helpers.add(helper)
+            helpers.update(value.get("possible_helpers", []))
+            if helper in {"locals", "vars", "globals"}:
+                factories.add("module" if helper == "globals" else "class")
+            if kind == "namespace-factory":
+                factories.update(value["scopes"])
+            if kind in {"class-namespace", "module-namespace"}:
+                namespaces.add("class" if kind == "class-namespace" else "module")
+            if kind == "uncertain-namespace":
+                namespaces.update(value["scopes"])
+        if factories:
+            qualified = all(
+                (
+                    value.get("kind") == "builtin"
+                    and value.get("symbol") in {"locals", "vars", "globals"}
+                )
+                or (
+                    value.get("kind") == "import"
+                    and value.get("module") == "builtins"
+                    and value.get("name") in {"locals", "vars", "globals"}
+                )
+                or (
+                    value.get("kind") == "namespace-factory"
+                    and value.get("qualified", False)
+                )
+                for value in values
+            )
+            if any(
+                value.get("kind")
+                not in {"builtin", "namespace-factory", "non-namespace-factory"}
+                and not (
+                    value.get("kind") == "import" and value.get("module") == "builtins"
+                )
+                for value in values
+            ):
+                factories.update({"class", "module"})
+            return {
+                "kind": "namespace-factory",
+                "scopes": sorted(factories),
+                "qualified": qualified,
+            }
+        if namespaces:
+            return {
+                "kind": "uncertain-namespace",
+                "qualified": False,
+                "scopes": sorted(namespaces),
+            }
+        if helpers & {"setattr", "delattr"}:
+            return {"kind": "attribute-mutator", "qualified": False}
+        return {"kind": "unresolved", "possible_helpers": sorted(helpers)}
+
+    def visit_If(self, node: ast.If | ast.While):
+        self.visit(node.test)
+        self._branches([node.body, node.orelse])
+
+    def visit_While(self, node):
+        self.visit_If(node)
+
+    def visit_Try(self, node):
+        base = dict(self.env)
+        start = {name: len(values) for name, values in self.binding_history.items()}
+        self._branches([node.body, node.orelse, node.finalbody])
+        self._retain_prefix_bindings(base, start)
+        handler_base = dict(self.env)
+        exits = [dict(self.env)]
+        for handler in node.handlers:
+            self.env = dict(handler_base)
+            self.visit(handler)
+            exits.append(dict(self.env))
+        self.env = {
+            name: self._join_binding([_lookup(exit, name) for exit in exits])
+            for name in set().union(*(set(exit) for exit in exits))
+        }
+
+    def _retain_prefix_bindings(self, base, start):
+        for name, values in self.binding_history.items():
+            changed = values[start.get(name, 0) :]
+            if changed:
+                self.env[name] = self._join_binding(
+                    [_lookup(base, name), _lookup(self.env, name), *changed]
+                )
+
+    visit_TryStar = visit_Try
+
+    def visit_Match(self, node):
+        self.visit(node.subject)
+        base = dict(self.env)
+        exits = [dict(base)]
+        for case in node.cases:
+            self.env = dict(base)
+            self.visit(case.pattern)
+            if case.guard:
+                self.visit(case.guard)
+            self._branches([case.body])
+            exits.append(dict(self.env))
+        self.env = {
+            name: self._join_binding([_lookup(exit, name) for exit in exits])
+            for name in set().union(*(set(exit) for exit in exits))
+        }
+
+    def visit_TypeAlias(self, node):
+        self._target(node.name)  # The RHS/annotation scope is lazy.
+
+    def _comprehension(self, node):
+        # Class comprehension walruses are compiler-invalid; iteration targets
+        # and deferred bodies never store into this class namespace.
+        if node.generators:
+            self.visit(node.generators[0].iter)
+
+    visit_ListComp = _comprehension
+    visit_SetComp = _comprehension
+    visit_DictComp = _comprehension
+    visit_GeneratorExp = _comprehension
+
+    def visit_Call(self, node):
+        helper = self._helper(node.func)
+        path = _callee_path(node.func)
+        if helper in (["exec"], ["eval"]) or path and path[0] in {"exec", "eval"}:
+            self.dynamic = True
+        if isinstance(node.func, ast.Name) and set(
+            _lookup(self.env, node.func.id).get("possible_helpers", [])
+        ) & {"exec", "eval"}:
+            self.dynamic = True
+        namespace = (
+            self._namespace(node.func.value)
+            if isinstance(node.func, ast.Attribute)
+            else None
+        )
+        if namespace is None and self.side_effects:
+            self.side_effects(node, self.env)
+        if isinstance(node.func, ast.Attribute):
+            if namespace and node.func.attr in {
+                "update",
+                "clear",
+                "pop",
+                "popitem",
+                "setdefault",
+                "__setitem__",
+                "__delitem__",
+                "__ior__",
+            }:
+                names: set[str] | None = None
+                if namespace["qualified"]:
+                    if (
+                        node.func.attr
+                        in {"pop", "setdefault", "__setitem__", "__delitem__"}
+                        and node.args
+                        and isinstance(node.args[0], ast.Constant)
+                        and isinstance(node.args[0].value, str)
+                    ):
+                        names = {node.args[0].value}
+                    elif node.func.attr == "update" and len(node.args) <= 1:
+                        if not node.args:
+                            names = set()
+                        elif isinstance(node.args[0], ast.Dict) and all(
+                            isinstance(key, ast.Constant) and isinstance(key.value, str)
+                            for key in node.args[0].keys
+                        ):
+                            names = {
+                                key.value
+                                for key in node.args[0].keys
+                                if isinstance(key, ast.Constant)
+                                and isinstance(key.value, str)
+                            }
+                        if names is not None and all(
+                            keyword.arg is not None for keyword in node.keywords
+                        ):
+                            names.update(
+                                keyword.arg
+                                for keyword in node.keywords
+                                if keyword.arg is not None
+                            )
+                        else:
+                            names = None
+                if names is None:
+                    if namespace["kind"] == "module-namespace":
+                        self.global_writes.add("*")
+                    elif namespace["kind"] == "uncertain-namespace":
+                        self.dynamic |= "class" in namespace["scopes"]
+                        if "module" in namespace["scopes"]:
+                            self.global_writes.add("*")
+                    else:
+                        self.dynamic = True
+                else:
+                    if namespace["kind"] == "module-namespace":
+                        self.global_writes.update(names)
+                    elif namespace["kind"] == "uncertain-namespace":
+                        if "module" in namespace["scopes"]:
+                            self.global_writes.update(names)
+                        if "class" in namespace["scopes"]:
+                            self.writes.update(names)
+                    else:
+                        self.writes.update(names)
+        self.generic_visit(node)
 
 
 def _dispatch_facts(tree, module):
@@ -66,6 +618,12 @@ def _dispatch_facts(tree, module):
     classes = _module_classes(tree)
     counts = Counter(node.name for node in _module_declarations(tree))
     facts = {}
+    annotations_eager = sys.version_info < (3, 14) and not any(
+        isinstance(statement, ast.ImportFrom)
+        and statement.module == "__future__"
+        and any(alias.name == "annotations" for alias in statement.names)
+        for statement in tree.body
+    )
     for node in classes:
         reasons = set()
         blocked = set()
@@ -82,17 +640,33 @@ def _dispatch_facts(tree, module):
             ):
                 reasons.add("unsupported-inheritance")
         namespace = ast.Module(body=node.body, type_ignores=[])
+        effects = _ClassNamespaceEffects(
+            node, module, annotations_eager=annotations_eager
+        )
+        blocked.update(
+            name for name in effects.writes | effects.missing if name.isidentifier()
+        )
+        if effects.dynamic:
+            reasons.add("dynamic-class-namespace")
         methods = [
             child
             for child in _module_declarations(namespace)
             if isinstance(child, FUNCTIONS)
         ]
+        if effects.direct_mapping_writes & (
+            {method.name for method in methods} | _DISPATCH_SLOTS
+        ):
+            # Preserve existing qualification for direct mapping replacement of
+            # declaration/dispatch authority, without blocking unrelated keys.
+            reasons.add("dynamic-class-namespace")
         for name, count in Counter(
             child.name for child in _module_declarations(namespace)
         ).items():
             if count > 1:
                 blocked.add(name)
         for method in methods:
+            if method.name in effects.redirected:
+                continue
             if method.name in {
                 "__new__",
                 "__getattribute__",
@@ -105,38 +679,8 @@ def _dispatch_facts(tree, module):
                 blocked.add(method.name)
                 if method.name == "__init__":
                     reasons.add("decorated-constructor")
-        for child in _namespace_statements(node.body):
-            if isinstance(
-                child, (ast.Assign, ast.AnnAssign, ast.AugAssign, ast.Delete)
-            ):
-                targets = (
-                    child.targets
-                    if isinstance(child, (ast.Assign, ast.Delete))
-                    else [child.target]
-                )
-                for target in targets:
-                    blocked.update(_target_names(target))
-                    if not isinstance(target, (ast.Name, ast.Tuple, ast.List)):
-                        reasons.add("dynamic-class-namespace")
-        if blocked & {
-            "__new__",
-            "__init__",
-            "__class__",
-            "__dict__",
-            "__bases__",
-            "__getattribute__",
-            "__getattr__",
-            "__setattr__",
-            "__delattr__",
-        }:
+        if effects.writes & _DISPATCH_SLOTS:
             reasons.add("custom-construction-or-dispatch")
-        if any(
-            isinstance(child, ast.Call)
-            and isinstance(child.func, ast.Name)
-            and child.func.id in {"exec", "eval"}
-            for child in ast.walk(node)
-        ):
-            reasons.add("dynamic-class-namespace")
         facts[id(node)] = {
             "schema_version": CONSTRUCTOR_DISPATCH_VERSION,
             "eligible": not reasons,
@@ -316,6 +860,35 @@ def import_bindings(node: ast.Import | ast.ImportFrom) -> dict[str, dict]:
     }
 
 
+def _import_path(binding, members=()):
+    parts = [binding["module"]]
+    if binding.get("name"):
+        parts.append(binding["name"])
+    parts.extend(binding.get("target_members", members))
+    return ".".join(parts)
+
+
+def _import_contains(prefix, owner):
+    return owner == prefix or owner.startswith(prefix + ".")
+
+
+def _import_mutation_affects(constructor, member, mutation):
+    if constructor["root_binding"].get("kind") != "import":
+        return False
+    owner = _import_path(constructor["root_binding"], constructor["members"])
+    target = _import_path(mutation)
+    changed = mutation.get("blocked_member", "*")
+    if owner == target:
+        return changed in {"*", member, *_DISPATCH_SLOTS}
+    if owner.startswith(target + "."):
+        return (
+            changed == "*"
+            or owner == target + "." + changed
+            or owner.startswith(target + "." + changed + ".")
+        )
+    return False
+
+
 @dataclass(frozen=True)
 class PythonBindings:
     module: dict[str, dict]
@@ -323,16 +896,67 @@ class PythonBindings:
     classes: dict[int, dict]
 
 
+@dataclass
+class _BindingState:
+    """Private related graph; one deepcopy preserves receiver/mutator aliases."""
+
+    module: dict[str, dict] = dataclass_field(default_factory=dict)
+    env: dict[str, dict] = dataclass_field(default_factory=dict)
+    class_mutations: dict[str, set[str]] = dataclass_field(default_factory=dict)
+    import_mutations: list[dict] = dataclass_field(default_factory=list)
+    constructor_barriers: set[str] = dataclass_field(default_factory=set)
+    module_namespace_invalidations: set[str] = dataclass_field(default_factory=set)
+    possible_targets: dict[str, list[dict]] = dataclass_field(default_factory=dict)
+    export_invalidations: set[str] = dataclass_field(default_factory=set)
+    module_scope: bool = False
+
+    def snapshot(self):
+        return deepcopy(self)
+
+
 class _BindingAnalyzer:
     def __init__(self, tree):
+        self.state = _BindingState()
         self.calls: dict[int, dict] = {}
-        self.module: dict[str, dict] = {}
         self.class_names = {node.name for node in _module_classes(tree)}
-        self.class_mutations: dict[str, set[str]] = {}
-        self.import_mutations: list[dict] = []
-        self.constructor_barriers: set[str] = set()
-        self.module_namespace_invalidations: set[str] = set()
-        self.module_scope = False
+        self.annotations_eager = sys.version_info < (3, 14) and not any(
+            isinstance(statement, ast.ImportFrom)
+            and statement.module == "__future__"
+            and any(alias.name == "annotations" for alias in statement.names)
+            for statement in tree.body
+        )
+
+    @property
+    def module(self):
+        return self.state.module
+
+    @property
+    def class_mutations(self):
+        return self.state.class_mutations
+
+    @property
+    def import_mutations(self):
+        return self.state.import_mutations
+
+    @property
+    def constructor_barriers(self):
+        return self.state.constructor_barriers
+
+    @constructor_barriers.setter
+    def constructor_barriers(self, value):
+        self.state.constructor_barriers = value
+
+    @property
+    def module_namespace_invalidations(self):
+        return self.state.module_namespace_invalidations
+
+    @property
+    def module_scope(self):
+        return self.state.module_scope
+
+    @module_scope.setter
+    def module_scope(self, value):
+        self.state.module_scope = value
 
     def function(self, node, closure: set[str], class_name: str | None = None):
         scope = _scope_names(node.body)
@@ -476,6 +1100,25 @@ class _BindingAnalyzer:
             return ([binding["name"]] if binding.get("name") else []) + members
         return None
 
+    def imported_target(self, node, env):
+        path = _callee_path(node)
+        if path is None:
+            return None
+        root, members = path
+        binding = _lookup(env, root)
+        if binding.get("kind") != "import":
+            return None
+        if not members:
+            return binding
+        # Qualify an attribute of a captured imported namespace without loading
+        # or executing the referenced module. These descriptors stay private.
+        return {
+            "kind": "import",
+            "module": binding["module"],
+            "name": binding.get("name", ""),
+            "target_members": members,
+        }
+
     def namespace_value(self, node, env):
         if isinstance(node, ast.Call) and not node.args and not node.keywords:
             helper = self.helper_path(node.func, env)
@@ -591,13 +1234,14 @@ class _BindingAnalyzer:
         ):
             self.class_mutations.setdefault(binding["symbol"], set()).add(member)
         elif binding.get("kind") == "import":
-            self.import_mutations.append(dict(binding))
-            for name, value in list(env.items()):
-                if value == binding:
-                    env[name] = {
-                        "kind": "unresolved",
-                        "reason": "receiver-member-replaced",
-                    }
+            self.import_mutations.append({**binding, "blocked_member": member})
+            if self.module_scope:
+                owner = _import_path(binding)
+                for name, value in self.module.items():
+                    if value.get("kind") == "import" and _import_contains(
+                        _import_path(value), owner
+                    ):
+                        self.state.export_invalidations.add(name)
 
     def invalidate_names(self, names, env):
         if "*" in names:
@@ -607,6 +1251,9 @@ class _BindingAnalyzer:
             if binding.get("kind") in {"attribute-mutator", "receiver-namespace"}:
                 target = binding.get("target")
                 if target is not None:
+                    targets = self.state.possible_targets.setdefault(name, [])
+                    if not any(value is target for value in targets):
+                        targets.append(target)
                     # Losing an alias cannot erase the receiver it may mutate.
                     self.invalidate_target(target, env)
             elif binding.get("kind") == "module-namespace":
@@ -619,7 +1266,19 @@ class _BindingAnalyzer:
         )
 
     def invalidate_members(self, node, env):
-        for child in ast.walk(node):
+        def eager(current):
+            yield current
+            if isinstance(current, (*FUNCTIONS, ast.ClassDef, ast.Lambda)):
+                for value in _definition_expressions(current):
+                    yield from eager(value)
+            elif isinstance(current, ast.GeneratorExp):
+                if current.generators:
+                    yield from eager(current.generators[0].iter)
+            else:
+                for child in ast.iter_child_nodes(current):
+                    yield from eager(child)
+
+        for child in eager(node):
             if (
                 isinstance(child, ast.Call)
                 and isinstance(child.func, ast.Attribute)
@@ -696,12 +1355,12 @@ class _BindingAnalyzer:
                 if mutator:
                     offset = 0 if "target" in mutator else 1
                     target = mutator.get("target")
-                    if (
-                        target is None
-                        and child.args
-                        and isinstance(child.args[0], ast.Name)
-                    ):
-                        target = _lookup(env, child.args[0].id)
+                    if target is None and child.args:
+                        target = (
+                            _lookup(env, child.args[0].id)
+                            if isinstance(child.args[0], ast.Name)
+                            else self.imported_target(child.args[0], env)
+                        )
                     if target is None:
                         continue
                     argument = child.args[offset] if len(child.args) > offset else None
@@ -764,6 +1423,8 @@ class _BindingAnalyzer:
         self, body, env: dict, closure: set[str], *, capture: bool, module: bool = False
     ):
         prior_scope = self.module_scope
+        prior_env = self.state.env
+        self.state.env = env
         self.module_scope = module
         for statement in body:
             if isinstance(statement, FUNCTIONS):
@@ -777,7 +1438,6 @@ class _BindingAnalyzer:
             elif isinstance(statement, ast.ClassDef):
                 for value in _definition_expressions(statement):
                     self.expression(value, env, closure, capture=capture)
-                self.invalidate_members(statement, env)
                 class_scope = _scope_names(statement.body)
                 outer_writes = class_scope.bound & (
                     class_scope.globals | class_scope.nonlocals
@@ -786,6 +1446,29 @@ class _BindingAnalyzer:
                 self.module_namespace_invalidations.update(
                     class_scope.bound & class_scope.globals
                 )
+
+                def class_effect(node, class_env):
+                    previous_scope = self.module_scope
+                    self.module_scope = False
+                    before = len(self.import_mutations)
+                    self.invalidate_members(node, class_env)
+                    self.module_scope = previous_scope
+                    if previous_scope:
+                        for mutation in self.import_mutations[before:]:
+                            for name, binding in self.module.items():
+                                if binding.get("kind") == "import" and _import_contains(
+                                    _import_path(binding), _import_path(mutation)
+                                ):
+                                    self.state.export_invalidations.add(name)
+
+                effects = _ClassNamespaceEffects(
+                    statement,
+                    env,
+                    annotations_eager=self.annotations_eager,
+                    side_effects=class_effect,
+                )
+                self.module_namespace_invalidations.update(effects.global_writes)
+                self.invalidate_names(effects.outer_writes, env)
                 if capture:
                     for child in statement.body:
                         if isinstance(child, FUNCTIONS):
@@ -965,6 +1648,7 @@ class _BindingAnalyzer:
                 self.expression(statement, env, closure, capture=False)
 
         self.module_scope = prior_scope
+        self.state.env = prior_env
 
 
 def analyze_python_bindings(tree: ast.Module) -> PythonBindings:
@@ -1003,14 +1687,16 @@ def analyze_python_bindings(tree: ast.Module) -> PythonBindings:
                         node, "constructor-binding-rebound"
                     )
                 elif any(
-                    constructor["root_binding"].get("module") == mutation.get("module")
+                    _import_mutation_affects(constructor, fact["member"], mutation)
                     for mutation in analyzer.import_mutations
                 ):
                     analyzer.calls[id(node)] = _unresolved(
                         node, "constructor-member-replaced"
                     )
     module = {
-        name: dict(value)
+        name: dict(UNKNOWN)
+        if name in analyzer.state.export_invalidations
+        else dict(value)
         if value.get("kind")
         not in {
             "constructed-instance",
