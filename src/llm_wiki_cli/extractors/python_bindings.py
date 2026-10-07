@@ -8,6 +8,7 @@ from collections import Counter
 from copy import deepcopy
 from dataclasses import dataclass, field as dataclass_field
 import sys
+from typing import Any
 
 UNKNOWN = {"kind": "unresolved"}
 BUILTIN_NAMES = frozenset(dir(builtins))
@@ -708,7 +709,7 @@ def _target_names(node: ast.AST) -> set[str]:
     return set()
 
 
-def _definition_expressions(node):
+def _definition_expressions(node, *, annotations_eager=True):
     expressions = list(getattr(node, "decorator_list", ()))
     if isinstance(node, ast.ClassDef):
         return [
@@ -719,19 +720,20 @@ def _definition_expressions(node):
     args = node.args
     expressions.extend(args.defaults)
     expressions.extend(value for value in args.kw_defaults if value is not None)
-    expressions.extend(
-        arg.annotation
-        for arg in (
-            *args.posonlyargs,
-            *args.args,
-            *args.kwonlyargs,
-            args.vararg,
-            args.kwarg,
+    if annotations_eager:
+        expressions.extend(
+            arg.annotation
+            for arg in (
+                *args.posonlyargs,
+                *args.args,
+                *args.kwonlyargs,
+                args.vararg,
+                args.kwarg,
+            )
+            if arg is not None and arg.annotation is not None
         )
-        if arg is not None and arg.annotation is not None
-    )
-    if getattr(node, "returns", None) is not None:
-        expressions.append(node.returns)
+        if getattr(node, "returns", None) is not None:
+            expressions.append(node.returns)
     return expressions
 
 
@@ -918,6 +920,10 @@ class _BindingAnalyzer:
     def __init__(self, tree):
         self.state = _BindingState()
         self.calls: dict[int, dict] = {}
+        self.allocation = 0
+        self.call_scopes: dict[int, int | None] = {}
+        self.current_scope: int | None = None
+        self.deferred_effects: dict[int, _BindingState] = {}
         self.class_names = {node.name for node in _module_classes(tree)}
         self.annotations_eager = sys.version_info < (3, 14) and not any(
             isinstance(statement, ast.ImportFrom)
@@ -959,6 +965,11 @@ class _BindingAnalyzer:
         self.state.module_scope = value
 
     def function(self, node, closure: set[str], class_name: str | None = None):
+        parent = self.state
+        parent_scope = self.current_scope
+        self.current_scope = id(node)
+        self.state = parent.snapshot()
+        self.state.possible_targets = {}
         scope = _scope_names(node.body)
         local = (scope.bound | _parameters(node.args)) - scope.globals
         env = dict(self.module)
@@ -985,6 +996,22 @@ class _BindingAnalyzer:
         self.constructor_barriers = scope.globals | scope.nonlocals
         self.block(node.body, env, closure | local, capture=True)
         self.constructor_barriers = prior_barriers
+        self.deferred_effects[id(node)] = self.state.snapshot()
+        has_constructor_calls = any(
+            self.call_scopes.get(key) == id(node)
+            and value.get("kind") == "constructed-receiver"
+            for key, value in self.calls.items()
+        )
+        if class_name and node.name == "__init__" or not has_constructor_calls:
+            # Constructor effects qualify future instances. Other deferred
+            # bodies are analyzed for their own calls, not executed here.
+            for name, members in self.class_mutations.items():
+                parent.class_mutations.setdefault(name, set()).update(members)
+            for mutation in self.import_mutations:
+                if mutation not in parent.import_mutations:
+                    parent.import_mutations.append(deepcopy(mutation))
+        self.state = parent
+        self.current_scope = parent_scope
 
     def static_method(self, node) -> bool:
         for decorator in node.decorator_list:
@@ -1027,8 +1054,10 @@ class _BindingAnalyzer:
             members or binding["symbol"] not in self.class_names
         ):
             return _unresolved(node, "constructor-not-class")
+        self.allocation += 1
         return {
             "kind": "constructed-instance",
+            "_allocation": self.allocation,
             "constructor": {
                 "root_binding": dict(binding),
                 "members": members,
@@ -1038,7 +1067,7 @@ class _BindingAnalyzer:
             "blocked_members": [],
         }
 
-    def call_binding(self, node, env):
+    def call_binding(self, node, env, receiver=None):
         func = node.func
         path = _callee_path(func)
         if (
@@ -1049,20 +1078,43 @@ class _BindingAnalyzer:
             return _unresolved(node, "receiver-outside-lexical-scope")
         if isinstance(func, ast.Attribute):
             if isinstance(func.value, ast.Call):
-                instance = self.constructor(func.value, env)
+                instance = (
+                    receiver
+                    if receiver is not None
+                    else self.constructor(func.value, env)
+                )
                 origin = "direct-construction"
             elif isinstance(func.value, ast.Name):
-                instance = _lookup(env, func.value.id)
+                instance = (
+                    receiver if receiver is not None else _lookup(env, func.value.id)
+                )
                 origin = "assigned-construction"
             else:
                 instance = {}
                 origin = "assigned-construction"
             if instance.get("kind") == "constructed-instance":
+                constructor = instance["constructor"]
+                root = constructor["root_binding"]
+                local_mutations = (
+                    self.class_mutations.get(root.get("symbol"), set())
+                    if root.get("kind") == "local"
+                    else set()
+                )
                 if (
                     func.attr in instance["blocked_members"]
                     or "*" in instance["blocked_members"]
                 ):
                     return _unresolved(node, "receiver-member-replaced")
+                if (
+                    "*" in local_mutations
+                    or func.attr in local_mutations
+                    or local_mutations & _DISPATCH_SLOTS
+                    or any(
+                        _import_mutation_affects(constructor, func.attr, mutation)
+                        for mutation in self.import_mutations
+                    )
+                ):
+                    return _unresolved(node, "constructor-member-replaced")
                 return {
                     "kind": "constructed-receiver",
                     "constructor": deepcopy(instance["constructor"]),
@@ -1086,7 +1138,138 @@ class _BindingAnalyzer:
             return _unresolved(
                 node, binding.get("reason", "receiver-binding-unresolved")
             )
-        return dict(binding)
+        return {key: value for key, value in binding.items() if not key.startswith("_")}
+
+    @staticmethod
+    def _targets(binding):
+        if (
+            binding.get("kind") == "import"
+            and binding.get("module") == "builtins"
+            and binding.get("name") in {"setattr", "delattr"}
+        ):
+            return [{"kind": "attribute-mutator", "qualified": False}]
+        if binding.get("kind") in {
+            "constructed-instance",
+            "receiver",
+            "local",
+            "import",
+        }:
+            return [binding]
+        if binding.get("kind") in {"attribute-mutator", "receiver-namespace"}:
+            return [binding]
+        if binding.get("kind") == "builtin" and binding.get("symbol") in {
+            "setattr",
+            "delattr",
+        }:
+            return [{"kind": "attribute-mutator", "qualified": False}]
+        return binding.get("_possible_targets", [])
+
+    def bind_value(self, name, value, env, source=None):
+        candidates = value.get("_possible_targets", [])
+        if source is not None and isinstance(source, ast.Name):
+            candidates = [*candidates, *self.state.possible_targets.get(source.id, [])]
+        if candidates:
+            self.state.possible_targets[name] = candidates
+        else:
+            self.state.possible_targets.pop(name, None)
+        env[name] = (
+            {key: item for key, item in value.items() if not key.startswith("_")}
+            if value.get("kind") == "unresolved"
+            else value
+        )
+
+    def join_states(self, states, env, values=()):
+        """Join a whole related graph without erasing aliases or possible owners."""
+        objects = {}
+
+        def collect(value):
+            if isinstance(value, dict):
+                if "_allocation" in value:
+                    token = value["_allocation"]
+                    if token not in objects:
+                        objects[token] = deepcopy(value)
+                    else:
+                        objects[token]["blocked_members"] = sorted(
+                            set(objects[token]["blocked_members"])
+                            | set(value["blocked_members"])
+                        )
+                for item in value.values():
+                    collect(item)
+            elif isinstance(value, (list, tuple)):
+                for item in value:
+                    collect(item)
+
+        for state in states:
+            collect(vars(state))
+        for value in values:
+            collect(value)
+        memo = {}
+
+        def canonical(value: Any) -> Any:
+            if isinstance(value, dict):
+                if "_allocation" in value:
+                    return objects[value["_allocation"]]
+                if id(value) not in memo:
+                    memo[id(value)] = {
+                        key: canonical(item) for key, item in value.items()
+                    }
+                return memo[id(value)]
+            if isinstance(value, list):
+                return [canonical(item) for item in value]
+            return deepcopy(value)
+
+        merged = _BindingState(**canonical(vars(states[0])))
+        canonical_envs = [canonical(state.env) for state in states]
+        merged.possible_targets = {}
+        for state in states:
+            for name, targets in state.possible_targets.items():
+                merged.possible_targets.setdefault(name, []).extend(canonical(targets))
+        result = {}
+        for name in set().union(*(set(values) for values in canonical_envs)):
+            bindings = [_lookup(values, name) for values in canonical_envs]
+            if all(binding == bindings[0] for binding in bindings):
+                result[name] = bindings[0]
+            else:
+                result[name] = {
+                    "kind": "unresolved",
+                    "reason": "receiver-path-conflict",
+                }
+                merged.possible_targets.setdefault(name, []).extend(
+                    target for binding in bindings for target in self._targets(binding)
+                )
+        merged.class_mutations = {}
+        merged.import_mutations = []
+        for state in states:
+            for name, members in state.class_mutations.items():
+                merged.class_mutations.setdefault(name, set()).update(members)
+            for mutation in state.import_mutations:
+                if mutation not in merged.import_mutations:
+                    merged.import_mutations.append(deepcopy(mutation))
+        merged.constructor_barriers = set().union(
+            *(state.constructor_barriers for state in states)
+        )
+        merged.module_namespace_invalidations = set().union(
+            *(state.module_namespace_invalidations for state in states)
+        )
+        merged.export_invalidations = set().union(
+            *(state.export_invalidations for state in states)
+        )
+        env.clear()
+        env.update(result)
+        merged.env = env
+        if states[0].module is states[0].env:
+            merged.module = env
+        self.state = merged
+        returns = [canonical(value) for value in values]
+        if returns and all(value == returns[0] for value in returns):
+            return returns[0]
+        return {
+            "kind": "unresolved",
+            "reason": "receiver-path-conflict",
+            "_possible_targets": [
+                target for value in returns for target in self._targets(value)
+            ],
+        }
 
     def helper_path(self, node, env):
         path = _callee_path(node)
@@ -1224,7 +1407,33 @@ class _BindingAnalyzer:
         return None
 
     def invalidate_target(self, binding, env, member="*"):
+        if binding.get("kind") == "unresolved":
+            for possible in binding.get("_possible_targets", []):
+                self.invalidate_target(possible.get("target", possible), env, member)
+            return
         if binding.get("kind") == "constructed-instance":
+            token = binding.get("_allocation")
+
+            def live(value):
+                if isinstance(value, dict):
+                    if token is not None and value.get("_allocation") == token:
+                        return value
+                    for key in ("target",):
+                        found = live(value.get(key))
+                        if found is not None:
+                            return found
+                elif isinstance(value, list):
+                    for item in value:
+                        found = live(item)
+                        if found is not None:
+                            return found
+                return None
+
+            for value in [*env.values(), *self.state.possible_targets.values()]:
+                current = live(value)
+                if current is not None:
+                    binding = current
+                    break
             binding["blocked_members"].append(member)
             if member in {"__class__", "__dict__"}:
                 binding["blocked_members"].append("*")
@@ -1248,6 +1457,8 @@ class _BindingAnalyzer:
             names = set(env) | names
         for name in names:
             binding = env.get(name, {})
+            if binding.get("kind") == "constructed-instance":
+                self.state.possible_targets.setdefault(name, []).append(binding)
             if binding.get("kind") in {"attribute-mutator", "receiver-namespace"}:
                 target = binding.get("target")
                 if target is not None:
@@ -1265,11 +1476,15 @@ class _BindingAnalyzer:
             }
         )
 
-    def invalidate_members(self, node, env):
+    def invalidate_members(
+        self, node, env, *, recursive=True, mutator=None, arguments=None
+    ):
         def eager(current):
             yield current
             if isinstance(current, (*FUNCTIONS, ast.ClassDef, ast.Lambda)):
-                for value in _definition_expressions(current):
+                for value in _definition_expressions(
+                    current, annotations_eager=self.annotations_eager
+                ):
                     yield from eager(value)
             elif isinstance(current, ast.GeneratorExp):
                 if current.generators:
@@ -1278,7 +1493,7 @@ class _BindingAnalyzer:
                 for child in ast.iter_child_nodes(current):
                     yield from eager(child)
 
-        for child in eager(node):
+        for child in eager(node) if recursive else [node]:
             if (
                 isinstance(child, ast.Call)
                 and isinstance(child.func, ast.Attribute)
@@ -1299,10 +1514,22 @@ class _BindingAnalyzer:
                     if isinstance(child.func.value, ast.Name)
                     else self.namespace_value(child.func.value, env)
                 )
+                if (
+                    child is node
+                    and mutator
+                    and mutator.get("kind") == "namespace-mutator"
+                ):
+                    namespace = mutator["namespace"]
                 if namespace and namespace.get("kind") == "receiver-namespace":
                     self.invalidate_target(namespace["target"], env)
                 elif namespace and namespace.get("kind") == "module-namespace":
                     self.module_namespace_invalidations.add("*")
+                elif isinstance(child.func.value, ast.Name):
+                    for possible in self.state.possible_targets.get(
+                        child.func.value.id, []
+                    ):
+                        if possible.get("kind") == "receiver-namespace":
+                            self.invalidate_target(possible["target"], env)
             if isinstance(child, ast.Subscript) and isinstance(
                 child.ctx, (ast.Store, ast.Del)
             ):
@@ -1330,6 +1557,18 @@ class _BindingAnalyzer:
                         else "*"
                     )
                     self.module_namespace_invalidations.add(member)
+                elif isinstance(child.value, ast.Name):
+                    for possible in self.state.possible_targets.get(child.value.id, []):
+                        target = possible.get("target", possible)
+                        member = (
+                            child.slice.value
+                            if possible.get("qualified")
+                            and isinstance(child.slice, ast.Constant)
+                            and isinstance(child.slice.value, str)
+                            and child.slice.value.isidentifier()
+                            else "*"
+                        )
+                        self.invalidate_target(target, env, member)
             if isinstance(child, ast.Attribute) and isinstance(
                 child.ctx, (ast.Store, ast.Del)
             ):
@@ -1337,6 +1576,10 @@ class _BindingAnalyzer:
                     self.invalidate_target(
                         _lookup(env, child.value.id), env, child.attr
                     )
+                    for possible in self.state.possible_targets.get(child.value.id, []):
+                        self.invalidate_target(
+                            possible.get("target", possible), env, child.attr
+                        )
                 else:
                     path = _callee_path(child)
                     if (
@@ -1345,16 +1588,41 @@ class _BindingAnalyzer:
                     ):
                         self.invalidate_target(_lookup(env, path[0]), env)
             if isinstance(child, ast.Call):
-                mutator = (
-                    _lookup(env, child.func.id)
-                    if isinstance(child.func, ast.Name)
-                    else None
+                frozen = child is node and mutator is not None
+                effect = (
+                    mutator
+                    if frozen
+                    else (
+                        _lookup(env, child.func.id)
+                        if isinstance(child.func, ast.Name)
+                        else None
+                    )
                 )
-                if not mutator or mutator.get("kind") != "attribute-mutator":
-                    mutator = self.mutator_value(child.func, env)
-                if mutator:
-                    offset = 0 if "target" in mutator else 1
-                    target = mutator.get("target")
+                if not frozen and (
+                    not effect or effect.get("kind") != "attribute-mutator"
+                ):
+                    effect = self.mutator_value(child.func, env)
+                effects = (
+                    [effect]
+                    if effect and effect.get("kind") == "attribute-mutator"
+                    else []
+                )
+                if isinstance(child.func, ast.Name):
+                    effects.extend(
+                        value
+                        for value in self.state.possible_targets.get(child.func.id, [])
+                        if value.get("kind") == "attribute-mutator"
+                    )
+                for effect in effects:
+                    offset = 0 if "target" in effect else 1
+                    target = effect.get("target")
+                    if (
+                        target is None
+                        and arguments is not None
+                        and child is node
+                        and arguments
+                    ):
+                        target = arguments[0].get("_effect_target", arguments[0])
                     if target is None and child.args:
                         target = (
                             _lookup(env, child.args[0].id)
@@ -1366,7 +1634,7 @@ class _BindingAnalyzer:
                     argument = child.args[offset] if len(child.args) > offset else None
                     member = (
                         argument.value
-                        if mutator["qualified"]
+                        if effect["qualified"]
                         and isinstance(argument, ast.Constant)
                         and isinstance(argument.value, str)
                         and argument.value.isidentifier()
@@ -1375,24 +1643,78 @@ class _BindingAnalyzer:
                     self.invalidate_target(target, env, member)
 
     def expression(self, node, env: dict, closure: set[str], *, capture=True):
+        self.state.env = env
+        if isinstance(node, ast.Name):
+            value = _lookup(env, node.id)
+            if (
+                value.get("kind") == "unresolved"
+                and node.id in self.state.possible_targets
+            ):
+                return {
+                    **value,
+                    "_possible_targets": self.state.possible_targets[node.id],
+                }
+            return value
+        if isinstance(node, ast.NamedExpr):
+            value = self.expression(node.value, env, closure, capture=capture)
+            for name in _target_names(node.target):
+                self.bind_value(name, value, env, node.value)
+            return value
+        if isinstance(node, ast.BoolOp):
+            value = self.expression(node.values[0], env, closure, capture=capture)
+            states, values = [self.state.snapshot()], [value]
+            for operand in node.values[1:]:
+                self.state = self.state.snapshot()
+                value = self.expression(
+                    operand, self.state.env, closure, capture=capture
+                )
+                states.append(self.state.snapshot())
+                values.append(value)
+            return self.join_states(states, env, values)
+        if isinstance(node, ast.IfExp):
+            self.expression(node.test, env, closure, capture=capture)
+            base = self.state.snapshot()
+            states, values = [], []
+            for branch in (node.body, node.orelse):
+                self.state = base.snapshot()
+                value = self.expression(
+                    branch, self.state.env, closure, capture=capture
+                )
+                states.append(self.state.snapshot())
+                values.append(value)
+            return self.join_states(states, env, values)
+        if isinstance(node, ast.Compare):
+            self.expression(node.left, env, closure, capture=capture)
+            self.expression(node.comparators[0], env, closure, capture=capture)
+            states = [self.state.snapshot()]
+            for comparator in node.comparators[1:]:
+                self.state = self.state.snapshot()
+                self.expression(comparator, self.state.env, closure, capture=capture)
+                states.append(self.state.snapshot())
+            self.join_states(states, env)
+            return UNKNOWN
         if isinstance(node, ast.Lambda):
             for value in _definition_expressions(node):
                 self.expression(value, env, closure, capture=capture)
-            nested = dict(env)
-            nested.update({name: UNKNOWN for name in closure | _parameters(node.args)})
-            self.expression(
-                node.body, nested, closure | _parameters(node.args), capture=capture
-            )
-            return
+            parent = self.state
+            self.state = parent.snapshot()
+            local = _parameters(node.args) | _walrus_names(node.body)
+            nested = self.state.env
+            nested.update({name: UNKNOWN for name in closure | local})
+            self.expression(node.body, nested, closure | local, capture=capture)
+            self.state = parent
+            return UNKNOWN
         if isinstance(node, COMPREHENSIONS):
-            # Iterations may write an enclosing binding; zero iterations and
-            # deferred generators also prevent a definite post-expression value.
+            self.expression(node.generators[0].iter, env, closure, capture=capture)
             writes = _walrus_names(node)
             self.invalidate_names(writes, env)
-            nested = dict(env)
+            skipped = self.state.snapshot()
+            self.state = skipped.snapshot()
+            nested = self.state.env
             bound = set(closure)
-            for generator in node.generators:
-                self.expression(generator.iter, nested, bound, capture=capture)
+            for index, generator in enumerate(node.generators):
+                if index:
+                    self.expression(generator.iter, nested, bound, capture=capture)
                 names = _target_names(generator.target)
                 bound.update(names)
                 nested.update({name: UNKNOWN for name in names})
@@ -1402,22 +1724,120 @@ class _BindingAnalyzer:
                 [node.key, node.value] if isinstance(node, ast.DictComp) else [node.elt]
             ):
                 self.expression(value, nested, bound, capture=capture)
-            return
+            if isinstance(node, ast.GeneratorExp):
+                self.join_states([skipped], env)
+            else:
+                executed = self.state.snapshot()
+                for name in bound - set(closure):
+                    executed.env.pop(name, None)
+                self.join_states([skipped, executed], env)
+            return UNKNOWN
         if isinstance(node, ast.Call):
-            if capture:
-                self.calls[id(node)] = self.call_binding(node, env)
-            self.invalidate_members(node, env)
-        if isinstance(node, ast.NamedExpr):
-            self.expression(node.value, env, closure, capture=capture)
-            for name in _target_names(node.target):
-                env[name] = (
-                    _lookup(env, node.value.id)
-                    if isinstance(node.value, ast.Name)
-                    else UNKNOWN
+            receiver = None
+            if isinstance(node.func, ast.Attribute):
+                receiver = self.expression(
+                    node.func.value, env, closure, capture=capture
                 )
-            return
+            else:
+                self.expression(node.func, env, closure, capture=capture)
+            binding = deepcopy(self.call_binding(node, env, receiver))
+            instance = self.constructor(node, env)
+            helper = self.helper_path(node.func, env)
+            effect = (
+                _lookup(env, node.func.id) if isinstance(node.func, ast.Name) else None
+            )
+            if not effect or effect.get("kind") != "attribute-mutator":
+                effect = self.mutator_value(node.func, env)
+            if (
+                isinstance(node.func, ast.Attribute)
+                and node.func.attr
+                in {
+                    "update",
+                    "clear",
+                    "pop",
+                    "popitem",
+                    "setdefault",
+                    "__setitem__",
+                    "__delitem__",
+                    "__ior__",
+                }
+                and receiver
+                and receiver.get("kind") in {"receiver-namespace", "module-namespace"}
+            ):
+                effect = {"kind": "namespace-mutator", "namespace": receiver}
+            arguments = [
+                self.expression(argument, env, closure, capture=capture)
+                for argument in node.args
+            ]
+            for keyword in node.keywords:
+                self.expression(keyword.value, env, closure, capture=capture)
+            self.invalidate_members(
+                node,
+                env,
+                recursive=False,
+                mutator=effect or {"kind": "no-mutator"},
+                arguments=arguments,
+            )
+            if capture:
+                self.calls[id(node)] = binding
+                self.call_scopes[id(node)] = self.current_scope
+            namespace = self.namespace_value(node, env)
+            private = self.mutator_value(node, env)
+            if helper == ["vars"] and len(arguments) == 1:
+                namespace = {
+                    "kind": "receiver-namespace",
+                    "target": arguments[0],
+                    "qualified": True,
+                }
+            if (
+                helper == ["getattr"]
+                and len(arguments) >= 2
+                and isinstance(node.args[1], ast.Constant)
+                and node.args[1].value in {"__setattr__", "__delattr__"}
+            ):
+                private = {
+                    "kind": "attribute-mutator",
+                    "target": arguments[0],
+                    "qualified": True,
+                }
+            if (
+                namespace
+                and namespace.get("kind") == "receiver-namespace"
+                and arguments
+            ):
+                namespace["target"] = arguments[0]
+            if (
+                private
+                and private.get("target") is not None
+                and arguments
+                and self.helper_path(node.func, env) == ["getattr"]
+            ):
+                private["target"] = arguments[0]
+            return namespace or private or instance
+        if isinstance(node, ast.Dict):
+            for key, value in zip(node.keys, node.values):
+                if key is not None:
+                    self.expression(key, env, closure, capture=capture)
+                self.expression(value, env, closure, capture=capture)
+            return UNKNOWN
+        if isinstance(node, ast.Attribute):
+            self.expression(node.value, env, closure, capture=capture)
+            if isinstance(node.ctx, (ast.Store, ast.Del)):
+                self.invalidate_members(node, env, recursive=False)
+            private = self.namespace_value(node, env) or self.mutator_value(node, env)
+            if private:
+                return private
+            imported = self.imported_target(node, env)
+            return {**UNKNOWN, "_effect_target": imported} if imported else UNKNOWN
+        if isinstance(node, ast.Subscript):
+            self.expression(node.value, env, closure, capture=capture)
+            self.expression(node.slice, env, closure, capture=capture)
+            if isinstance(node.ctx, (ast.Store, ast.Del)):
+                self.invalidate_members(node, env, recursive=False)
+            return UNKNOWN
         for child in ast.iter_child_nodes(node):
             self.expression(child, env, closure, capture=capture)
+        return UNKNOWN
 
     def block(
         self, body, env: dict, closure: set[str], *, capture: bool, module: bool = False
@@ -1428,7 +1848,9 @@ class _BindingAnalyzer:
         self.module_scope = module
         for statement in body:
             if isinstance(statement, FUNCTIONS):
-                for value in _definition_expressions(statement):
+                for value in _definition_expressions(
+                    statement, annotations_eager=self.annotations_eager
+                ):
                     self.expression(value, env, closure, capture=capture)
                 if capture:
                     self.function(statement, set() if module else closure)
@@ -1494,37 +1916,29 @@ class _BindingAnalyzer:
                     env[name] = binding
             elif isinstance(statement, (ast.Assign, ast.AnnAssign, ast.AugAssign)):
                 value = statement.value
-                if value is not None:
+                evaluated = (
                     self.expression(value, env, closure, capture=capture)
+                    if value is not None
+                    else UNKNOWN
+                )
                 targets = (
                     statement.targets
                     if isinstance(statement, ast.Assign)
                     else [statement.target]
                 )
-                binding = (
-                    _lookup(env, value.id) if isinstance(value, ast.Name) else UNKNOWN
-                )
-                if isinstance(value, ast.Call) and not isinstance(
-                    statement, ast.AugAssign
-                ):
-                    binding = self.constructor(value, env)
-                if not isinstance(statement, ast.AugAssign):
-                    private = self.namespace_value(value, env)
-                    if private is None and not (
-                        isinstance(value, ast.Name)
-                        and binding.get("kind") in {"builtin", "import"}
-                    ):
-                        private = self.mutator_value(value, env)
-                    if private is not None:
-                        binding = private
+                binding = evaluated
                 if isinstance(statement, ast.AugAssign):
                     binding = {"kind": "unresolved", "reason": "receiver-rebound"}
-                self.invalidate_members(statement, env)
                 for target in targets:
+                    if not isinstance(target, ast.Name):
+                        self.expression(target, env, closure, capture=capture)
                     for name in _target_names(target):
                         if value is not None or not module:
-                            env[name] = (
-                                binding if isinstance(target, ast.Name) else UNKNOWN
+                            self.bind_value(
+                                name,
+                                binding if isinstance(target, ast.Name) else UNKNOWN,
+                                env,
+                                value,
                             )
             elif isinstance(statement, getattr(ast, "TypeAlias", ())):
                 for name in _target_names(statement.name):
@@ -1693,6 +2107,31 @@ def analyze_python_bindings(tree: ast.Module) -> PythonBindings:
                     analyzer.calls[id(node)] = _unresolved(
                         node, "constructor-member-replaced"
                     )
+                else:
+                    root = constructor["root_binding"]
+                    for scope, effects in analyzer.deferred_effects.items():
+                        if scope == analyzer.call_scopes.get(id(node)):
+                            continue
+                        members = (
+                            effects.class_mutations.get(root.get("symbol"), set())
+                            if root.get("kind") == "local"
+                            else set()
+                        )
+                        if (
+                            "*" in members
+                            or fact["member"] in members
+                            or members & _DISPATCH_SLOTS
+                            or any(
+                                _import_mutation_affects(
+                                    constructor, fact["member"], mutation
+                                )
+                                for mutation in effects.import_mutations
+                            )
+                        ):
+                            analyzer.calls[id(node)] = _unresolved(
+                                node, "constructor-member-replaced"
+                            )
+                            break
     module = {
         name: dict(UNKNOWN)
         if name in analyzer.state.export_invalidations
