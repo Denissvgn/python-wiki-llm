@@ -1,6 +1,6 @@
 # SearchResult
 
-**Location:** `src/llm_wiki_cli/api_types.py:77`
+**Location:** `src/llm_wiki_cli/api_types.py:81`
 **Kind:** Class
 **Bases:** `_SearchMetadata`
 **Module:** [api_types](../modules/api_types.md)
@@ -14,7 +14,7 @@ A bounded lexical discovery response. Ranked results include reasons and corpus 
 | Name | Type | Presence | Description |
 |------|------|----------|-------------|
 | `query` | `str` | *required* | — |
-| `mode` | `Literal['ranked', 'substring']` | *required* | — |
+| `mode` | `Literal['ranked', 'ranked-v1', 'ranked-v2', 'substring']` | *required* | — |
 | `total` | `int` | *required* | — |
 | `returned` | `int` | *required* | — |
 | `count` | `int` | *required* | — |

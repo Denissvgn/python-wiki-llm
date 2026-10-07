@@ -1,6 +1,6 @@
 # ContextKnowledgeSelection
 
-**Location:** `src/llm_wiki_cli/api_types.py:211`
+**Location:** `src/llm_wiki_cli/api_types.py:215`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

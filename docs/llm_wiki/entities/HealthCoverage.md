@@ -1,6 +1,6 @@
 # HealthCoverage
 
-**Location:** `src/llm_wiki_cli/api_types.py:620`
+**Location:** `src/llm_wiki_cli/api_types.py:624`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

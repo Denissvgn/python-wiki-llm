@@ -6,9 +6,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 654 | [Open section](#entities) |
-| Modules | 230 | [Open section](#modules) |
-| Workflows | 192 | [Open section](#workflows) |
+| Entities | 659 | [Open section](#entities) |
+| Modules | 234 | [Open section](#modules) |
+| Workflows | 194 | [Open section](#workflows) |
 | Guides | 10 | [Open section](#guides) |
 | Entry-point flows | 464 | [Open section](#entry-point-flows) |
 | Infrastructure | 0 | No pages |
@@ -117,6 +117,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [DiagnosticCoverage](entities/DiagnosticCoverage.md)
 - [DigestSession](entities/DigestSession.md)
 - [DiscoveredInboundRoute](entities/DiscoveredInboundRoute.md)
+- [DiscoveryCapture](entities/DiscoveryCapture.md)
+- [DiscoveryError](entities/DiscoveryError.md)
 - [DoctorAvailability](entities/DoctorAvailability.md)
 - [DoctorDrift](entities/DoctorDrift.md)
 - [DoctorFreshness](entities/DoctorFreshness.md)
@@ -265,6 +267,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [ImplementationComparison](entities/ImplementationComparison.md)
 - [ImplementationReport](entities/ImplementationReport.md)
 - [InboundRouteKind](entities/InboundRouteKind.md)
+- [IndexValidationOperation](entities/IndexValidationOperation.md)
+- [IndexValidationProof](entities/IndexValidationProof.md)
 - [InfrastructureResult](entities/InfrastructureResult.md)
 - [InfrastructureSyncError](entities/InfrastructureSyncError.md)
 - [InfrastructureSyncPlan](entities/InfrastructureSyncPlan.md)
@@ -620,6 +624,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [UnclassifiedPacketField](entities/UnclassifiedPacketField.md)
 - [UnknownVerificationCheckerError](entities/UnknownVerificationCheckerError.md)
 - [UnsafeUninstallPathError](entities/UnsafeUninstallPathError.md)
+- [ValidatedIndexReceipt](entities/ValidatedIndexReceipt.md)
 - [ValidatedKnowledgeArtifacts](entities/ValidatedKnowledgeArtifacts.md)
 - [ValidatedLiveEvaluation](entities/ValidatedLiveEvaluation.md)
 - [ValidatedManifestHeader](entities/ValidatedManifestHeader.md)
@@ -851,8 +856,12 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [runtime_output](modules/runtime_output.md) - Best-effort implicit output and preflighted operator-selected destinations.
 - [rust_extractor](modules/rust_extractor.md) - Rust AST extractor for agent-wiki-cli.
 - [search_cmd](modules/search_cmd.md) - CLI access to the same read-only search service used by MCP.
+- [search_discovery](modules/search_discovery.md) - Pure bounded discovery presentation over captured exact page observations.
+- [search_discovery_capture](modules/search_discovery_capture.md) - Guarded snapshot inputs for opt-in discovery; no extraction or writes.
+- [search_lexical](modules/search_lexical.md) - Pure informative lexical discovery; matches never establish source truth.
 - [search_rank](modules/search_rank.md) - Offline lexical retrieval with exact identity precedence and visible reasons.
 - [search_service](modules/search_service.md) - Shared read-only wiki search, independent of transport and optional SDKs.
+- [search_source](modules/search_source.md) - Explicit bounded static-source text indexing for canonical module candidates.
 - [section_ownership](modules/section_ownership.md) - Conservative section ownership, scoped hashes, and semantic merge policy.
 - [secure_file](modules/secure_file.md) - Helpers for writing local runtime files with best-effort privacy.
 - [services_contracts](modules/services_contracts.md) - Stable machine-readable contracts exposed by source-adapter commands.
@@ -960,6 +969,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [build_task_read](workflows/build_task_read.md) - entry: `task_context.build_task_read`
 - [capture_committed_knowledge](workflows/capture_committed_knowledge.md) - entry: `knowledge_orchestration.capture_committed_knowledge`
 - [capture_context_read](workflows/capture_context_read.md) - entry: `context_packet.capture_context_read`
+- [capture_discovery](workflows/capture_discovery.md) - entry: `search_discovery_capture.capture_discovery`
 - [capture_health_details](workflows/capture_health_details.md) - entry: `health_details.capture_health_details`
 - [capture_maintenance_observations](workflows/capture_maintenance_observations.md) - entry: `maintenance_service.capture_maintenance_observations`
 - [capture_protocol_enrichment_session](workflows/capture_protocol_enrichment_session.md) - entry: `context_service._capture_protocol_enrichment_session`
@@ -989,6 +999,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [expand_storage_receipt](workflows/expand_storage_receipt.md) - entry: `storage_receipts.expand_storage_receipt`
 - [export_knowledge_v1](workflows/export_knowledge_v1.md) - entry: `knowledge_storage_lifecycle.export_knowledge_v1`
 - [extract_bootstrap_inventory](workflows/extract_bootstrap_inventory.md) - entry: `bootstrap_runtime._extract_bootstrap_inventory`
+- [fields](workflows/fields.md) - entry: `search_lexical._fields`
 - [finalize_bootstrap_artifacts](workflows/finalize_bootstrap_artifacts.md) - entry: `bootstrap_runtime._finalize_bootstrap_artifacts`
 - [fresh_inventory_source_files](workflows/fresh_inventory_source_files.md) - entry: `extraction_service._fresh_inventory_source_files`
 - [generate_bootstrap_content](workflows/generate_bootstrap_content.md) - entry: `bootstrap_runtime._generate_bootstrap_content`
@@ -1071,7 +1082,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [runtime_flow_entries](workflows/runtime_flow_entries.md) - entry: `documentation_native._runtime_flow_entries`
 - [save_recovery_snapshot](workflows/save_recovery_snapshot.md) - entry: `maintenance_protocol.save_recovery_snapshot`
 - [scan_python_files](workflows/scan_python_files.md) - entry: `python_extractor._scan_python_files`
-- [search_wiki](workflows/search_wiki.md) - entry: `search_service.search_wiki`
+- [search_prevalidated_roots](workflows/search_prevalidated_roots.md) - entry: `search_service.search_prevalidated_roots`
 - [section_locator](workflows/section_locator.md) - entry: `knowledge_governance._section_locator`
 - [source_capture](workflows/source_capture.md) - entry: `task_context_v2._source_capture`
 - [status_cmd_flow](workflows/status_cmd_flow.md) - entry: `status_cmd.run`

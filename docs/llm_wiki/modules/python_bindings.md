@@ -49,9 +49,9 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_ScopeNames](../entities/ScopeNames.md) | 167 | `ast.NodeVisitor` | — |
-| [PythonBindings](../entities/PythonBindings.md) | 278 | — | — |
-| [_BindingAnalyzer](../entities/BindingAnalyzer.md) | 284 | — | — |
+| [_ScopeNames](../entities/ScopeNames.md) | 206 | `ast.NodeVisitor` | — |
+| [PythonBindings](../entities/PythonBindings.md) | 320 | — | — |
+| [_BindingAnalyzer](../entities/BindingAnalyzer.md) | 326 | — | — |
 
 ## Functions
 
@@ -65,6 +65,8 @@ flowchart LR
 | `_dispatch_facts` | `(tree, module)` | — | Qualify only allocation/dispatch syntax actually present in this AST. |
 | `_lookup` | `(env: dict, name: str) -> dict` | — | — |
 | `_target_names` | `(node: ast.AST) -> set[str]` | — | — |
+| `_definition_expressions` | `(node)` | — | — |
+| `_walrus_names` | `(node: ast.AST) -> set[str]` | — | Find containing-scope writes without entering deferred callable bodies. |
 | `_scope_names` | `(body: list[ast.stmt]) -> _ScopeNames` | — | — |
 | `_parameters` | `(args: ast.arguments) -> set[str]` | — | — |
 | `import_bindings` | `(node: ast.Import \| ast.ImportFrom) -> dict[str, dict]` | — | — |

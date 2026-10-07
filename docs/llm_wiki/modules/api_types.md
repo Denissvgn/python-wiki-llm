@@ -60,73 +60,73 @@ flowchart LR
 | [_SearchMatchRanking](../entities/SearchMatchRanking.md) | Class | 55 | `TypedDict` | — |
 | [SearchMatch](../entities/SearchMatch.md) | Class | 61 | `_SearchMatchRanking` | — |
 | [_SearchMetadata](../entities/SearchMetadata.md) | Class | 70 | `TypedDict` | — |
-| [SearchResult](../entities/SearchResult.md) | Class | 77 | `_SearchMetadata` | — |
-| [MaintenanceQueueResult](../entities/MaintenanceQueueResult.md) | Class | 88 | `TypedDict` | — |
-| [MaintenanceRecordResult](../entities/MaintenanceRecordResult.md) | Class | 102 | `TypedDict` | — |
-| [MaintenanceStatusResult](../entities/MaintenanceStatusResult.md) | Class | 121 | `TypedDict` | — |
-| [_MaintenanceAdoptionOptions](../entities/MaintenanceAdoptionOptions.md) | Class | 136 | `TypedDict` | — |
-| [MaintenanceAdoptionResult](../entities/MaintenanceAdoptionResult.md) | Class | 144 | `_MaintenanceAdoptionOptions` | — |
-| [MaintenanceAcknowledgmentResult](../entities/MaintenanceAcknowledgmentResult.md) | Class | 149 | `TypedDict` | — |
-| [MaintenanceRecoveryResult](../entities/MaintenanceRecoveryResult.md) | Class | 159 | `TypedDict` | — |
-| [KnowledgeCoverageCounts](../entities/KnowledgeCoverageCounts.md) | Class | 167 | `TypedDict` | — |
-| [KnowledgeCoverageResult](../entities/KnowledgeCoverageResult.md) | Class | 175 | `TypedDict` | Versioned aggregate diagnostics without identities or raw evidence. |
-| [ResultBounds](../entities/ResultBounds.md) | Class | 188 | `TypedDict` | Exact size disclosure for one bounded result collection. |
-| [ByteResultBounds](../entities/ByteResultBounds.md) | Class | 196 | `ResultBounds` | Serialized-byte bound with its independent hard limit. |
-| [KnowledgeStatus](../entities/KnowledgeStatus.md) | Class | 202 | `TypedDict` | Compact availability and freshness status shared by query adapters. |
-| [ContextKnowledgeSelection](../entities/ContextKnowledgeSelection.md) | Class | 211 | `TypedDict` | Bounded inert content selected by explicit knowledge mode. |
-| [_ContextKnowledgeRequired](../entities/ContextKnowledgeRequired.md) | Class | 220 | `TypedDict` | — |
-| [ContextKnowledgeResult](../entities/ContextKnowledgeResult.md) | Class | 231 | `_ContextKnowledgeRequired` | Canonical explicit-mode knowledge outcome. |
-| [RankingPolicy](../entities/RankingPolicy.md) | Class | 237 | `TypedDict` | Disclosure for optional current-first budget ranking. |
-| [RequiredKnowledgeErrorDetails](../entities/RequiredKnowledgeErrorDetails.md) | Class | 248 | `TypedDict` | Stable details attached to required-mode interface failures. |
-| [_ExtractSourceRequired](../entities/ExtractSourceRequired.md) | Class | 261 | `TypedDict` | — |
-| [ExtractSourceResult](../entities/ExtractSourceResult.md) | Class | 267 | `_ExtractSourceRequired` | Top-level ``extract_source`` payload. |
-| [_ContextRequired](../entities/ContextRequired.md) | Class | 279 | `TypedDict` | — |
-| [ContextPayload](../entities/ContextPayload.md) | Class | 289 | `_ContextRequired` | Top-level JSON context payload. |
-| [MarkdownContextResult](../entities/MarkdownContextResult.md) | Class | 300 | `TypedDict` | Markdown rendering plus its source context payload. |
-| [WikiPage](../entities/api_types_WikiPage.md) | Class | 308 | `TypedDict` | One registry-backed wiki page. |
-| [WikiPageCounts](../entities/WikiPageCounts.md) | Class | 320 | `TypedDict` | Counts returned with a wiki-page listing. |
-| [WikiPagesResult](../entities/WikiPagesResult.md) | Class | 328 | `TypedDict` | Top-level ``list_wiki_pages`` payload. |
-| [_BoundedQueryResult](../entities/BoundedQueryResult.md) | Class | 336 | `TypedDict` | Fields shared by bounded documentation graph queries. |
-| [FlowForEntrypointResult](../entities/FlowForEntrypointResult.md) | Class | 347 | `_BoundedQueryResult` | — |
-| [DataFlowForEntrypointResult](../entities/DataFlowForEntrypointResult.md) | Class | 351 | `_BoundedQueryResult` | — |
-| [_StaticCallQueryOptions](../entities/StaticCallQueryOptions.md) | Class | 355 | `TypedDict` | Additive captured-source coverage for static call queries. |
-| [CallersResult](../entities/CallersResult.md) | Class | 361 | `_BoundedQueryResult`, `_StaticCallQueryOptions` | — |
-| [CalleesResult](../entities/CalleesResult.md) | Class | 366 | `_BoundedQueryResult`, `_StaticCallQueryOptions` | — |
-| [DependencyNeighborhoodResult](../entities/DependencyNeighborhoodResult.md) | Class | 371 | `_BoundedQueryResult` | — |
-| [PagesForSymbolResult](../entities/PagesForSymbolResult.md) | Class | 381 | `_BoundedQueryResult` | — |
-| [ConceptResult](../entities/ConceptResult.md) | Class | 386 | `_BoundedQueryResult` | — |
-| [ConceptSectionsResult](../entities/ConceptSectionsResult.md) | Class | 393 | `ConceptResult` | — |
-| [RelatedConceptsResult](../entities/RelatedConceptsResult.md) | Class | 399 | `ConceptResult` | — |
-| [TypedGraphTraversalResult](../entities/TypedGraphTraversalResult.md) | Class | 408 | `ConceptResult` | — |
-| [EvidenceExplanationResult](../entities/EvidenceExplanationResult.md) | Class | 418 | `ConceptResult` | — |
-| [QueryCostDisclosure](../entities/QueryCostDisclosure.md) | Class | 422 | `TypedDict` | Deterministic disclosure of work selected for a query. |
-| [_DocumentationQueryRequired](../entities/DocumentationQueryRequired.md) | Class | 434 | `TypedDict` | — |
-| [DocumentationQueryResult](../entities/DocumentationQueryResult.md) | Class | 446 | `_DocumentationQueryRequired` | Common envelope returned by the shared bounded query dispatcher. |
-| [DocumentationExportResult](../entities/DocumentationExportResult.md) | Class | 483 | `TypedDict` | Top-level documentation export and verification report. |
-| [DoctorAvailability](../entities/DoctorAvailability.md) | Class | 507 | `TypedDict` | — |
-| [DoctorFreshness](../entities/DoctorFreshness.md) | Class | 513 | `TypedDict` | — |
-| [DoctorSnapshotParity](../entities/DoctorSnapshotParity.md) | Class | 520 | `TypedDict` | — |
-| [DoctorGovernance](../entities/DoctorGovernance.md) | Class | 526 | `TypedDict` | — |
-| [DoctorDrift](../entities/DoctorDrift.md) | Class | 535 | `TypedDict` | — |
-| [DoctorVerificationReceipt](../entities/DoctorVerificationReceipt.md) | Class | 545 | `TypedDict` | — |
-| [DoctorResult](../entities/DoctorResult.md) | Class | 552 | `TypedDict` | Stable ``llm-wiki-doctor/v1`` Python API payload. |
-| [HealthSelection](../entities/HealthSelection.md) | Class | 571 | `TypedDict` | — |
-| [HealthScope](../entities/HealthScope.md) | Class | 577 | `TypedDict` | — |
-| [HealthEvaluation](../entities/HealthEvaluation.md) | Class | 583 | `TypedDict` | — |
-| [HealthSnapshot](../entities/HealthSnapshot.md) | Class | 588 | `TypedDict` | — |
-| [HealthComponent](../entities/HealthComponent.md) | Class | 598 | `TypedDict` | — |
-| [HealthProducer](../entities/HealthProducer.md) | Class | 605 | `TypedDict` | — |
-| [HealthComparisonBasis](../entities/HealthComparisonBasis.md) | Class | 613 | `TypedDict` | — |
-| [HealthCoverage](../entities/HealthCoverage.md) | Class | 620 | `TypedDict` | — |
-| [HealthReason](../entities/HealthReason.md) | Class | 630 | `TypedDict` | — |
-| [HealthDetails](../entities/HealthDetails.md) | Class | 637 | `TypedDict` | — |
-| [DoctorV3Result](../entities/DoctorV3Result.md) | Class | 647 | `DoctorResult` | Opt-in health report with captured coverage and comparison evidence. |
-| [ComparisonPolicy](../entities/ComparisonPolicy.md) | Type alias | 652 | `Literal['auto', 'exact-v1', 'analysis-v1']` | — |
-| [AnalysisCompatibilityRecord](../entities/AnalysisCompatibilityRecord.md) | Class | 655 | `TypedDict` | — |
-| [AnalysisComparisonContract](../entities/AnalysisComparisonContract.md) | Class | 666 | `TypedDict` | — |
-| [AnalysisComparisonDecision](../entities/AnalysisComparisonDecision.md) | Class | 672 | `TypedDict` | — |
-| [HealthComparisonBasisV2](../entities/HealthComparisonBasisV2.md) | Class | 678 | `TypedDict` | — |
-| [HealthDetailsV2](../entities/HealthDetailsV2.md) | Class | 686 | `TypedDict` | — |
-| [DoctorV4Result](../entities/DoctorV4Result.md) | Class | 696 | `DoctorResult` | Compatibility-aware health with versioned captured comparison evidence. |
-| [_NativeInspectionMaintenance](../entities/NativeInspectionMaintenance.md) | Class | 701 | `TypedDict` | — |
-| [NativeInspectionResult](../entities/NativeInspectionResult.md) | Class | 705 | `_NativeInspectionMaintenance` | Bounded component results sharing one source/wiki read scope. |
+| [SearchResult](../entities/SearchResult.md) | Class | 81 | `_SearchMetadata` | — |
+| [MaintenanceQueueResult](../entities/MaintenanceQueueResult.md) | Class | 92 | `TypedDict` | — |
+| [MaintenanceRecordResult](../entities/MaintenanceRecordResult.md) | Class | 106 | `TypedDict` | — |
+| [MaintenanceStatusResult](../entities/MaintenanceStatusResult.md) | Class | 125 | `TypedDict` | — |
+| [_MaintenanceAdoptionOptions](../entities/MaintenanceAdoptionOptions.md) | Class | 140 | `TypedDict` | — |
+| [MaintenanceAdoptionResult](../entities/MaintenanceAdoptionResult.md) | Class | 148 | `_MaintenanceAdoptionOptions` | — |
+| [MaintenanceAcknowledgmentResult](../entities/MaintenanceAcknowledgmentResult.md) | Class | 153 | `TypedDict` | — |
+| [MaintenanceRecoveryResult](../entities/MaintenanceRecoveryResult.md) | Class | 163 | `TypedDict` | — |
+| [KnowledgeCoverageCounts](../entities/KnowledgeCoverageCounts.md) | Class | 171 | `TypedDict` | — |
+| [KnowledgeCoverageResult](../entities/KnowledgeCoverageResult.md) | Class | 179 | `TypedDict` | Versioned aggregate diagnostics without identities or raw evidence. |
+| [ResultBounds](../entities/ResultBounds.md) | Class | 192 | `TypedDict` | Exact size disclosure for one bounded result collection. |
+| [ByteResultBounds](../entities/ByteResultBounds.md) | Class | 200 | `ResultBounds` | Serialized-byte bound with its independent hard limit. |
+| [KnowledgeStatus](../entities/KnowledgeStatus.md) | Class | 206 | `TypedDict` | Compact availability and freshness status shared by query adapters. |
+| [ContextKnowledgeSelection](../entities/ContextKnowledgeSelection.md) | Class | 215 | `TypedDict` | Bounded inert content selected by explicit knowledge mode. |
+| [_ContextKnowledgeRequired](../entities/ContextKnowledgeRequired.md) | Class | 224 | `TypedDict` | — |
+| [ContextKnowledgeResult](../entities/ContextKnowledgeResult.md) | Class | 235 | `_ContextKnowledgeRequired` | Canonical explicit-mode knowledge outcome. |
+| [RankingPolicy](../entities/RankingPolicy.md) | Class | 241 | `TypedDict` | Disclosure for optional current-first budget ranking. |
+| [RequiredKnowledgeErrorDetails](../entities/RequiredKnowledgeErrorDetails.md) | Class | 252 | `TypedDict` | Stable details attached to required-mode interface failures. |
+| [_ExtractSourceRequired](../entities/ExtractSourceRequired.md) | Class | 265 | `TypedDict` | — |
+| [ExtractSourceResult](../entities/ExtractSourceResult.md) | Class | 271 | `_ExtractSourceRequired` | Top-level ``extract_source`` payload. |
+| [_ContextRequired](../entities/ContextRequired.md) | Class | 283 | `TypedDict` | — |
+| [ContextPayload](../entities/ContextPayload.md) | Class | 293 | `_ContextRequired` | Top-level JSON context payload. |
+| [MarkdownContextResult](../entities/MarkdownContextResult.md) | Class | 304 | `TypedDict` | Markdown rendering plus its source context payload. |
+| [WikiPage](../entities/api_types_WikiPage.md) | Class | 312 | `TypedDict` | One registry-backed wiki page. |
+| [WikiPageCounts](../entities/WikiPageCounts.md) | Class | 324 | `TypedDict` | Counts returned with a wiki-page listing. |
+| [WikiPagesResult](../entities/WikiPagesResult.md) | Class | 332 | `TypedDict` | Top-level ``list_wiki_pages`` payload. |
+| [_BoundedQueryResult](../entities/BoundedQueryResult.md) | Class | 340 | `TypedDict` | Fields shared by bounded documentation graph queries. |
+| [FlowForEntrypointResult](../entities/FlowForEntrypointResult.md) | Class | 351 | `_BoundedQueryResult` | — |
+| [DataFlowForEntrypointResult](../entities/DataFlowForEntrypointResult.md) | Class | 355 | `_BoundedQueryResult` | — |
+| [_StaticCallQueryOptions](../entities/StaticCallQueryOptions.md) | Class | 359 | `TypedDict` | Additive captured-source coverage for static call queries. |
+| [CallersResult](../entities/CallersResult.md) | Class | 365 | `_BoundedQueryResult`, `_StaticCallQueryOptions` | — |
+| [CalleesResult](../entities/CalleesResult.md) | Class | 370 | `_BoundedQueryResult`, `_StaticCallQueryOptions` | — |
+| [DependencyNeighborhoodResult](../entities/DependencyNeighborhoodResult.md) | Class | 375 | `_BoundedQueryResult` | — |
+| [PagesForSymbolResult](../entities/PagesForSymbolResult.md) | Class | 385 | `_BoundedQueryResult` | — |
+| [ConceptResult](../entities/ConceptResult.md) | Class | 390 | `_BoundedQueryResult` | — |
+| [ConceptSectionsResult](../entities/ConceptSectionsResult.md) | Class | 397 | `ConceptResult` | — |
+| [RelatedConceptsResult](../entities/RelatedConceptsResult.md) | Class | 403 | `ConceptResult` | — |
+| [TypedGraphTraversalResult](../entities/TypedGraphTraversalResult.md) | Class | 412 | `ConceptResult` | — |
+| [EvidenceExplanationResult](../entities/EvidenceExplanationResult.md) | Class | 422 | `ConceptResult` | — |
+| [QueryCostDisclosure](../entities/QueryCostDisclosure.md) | Class | 426 | `TypedDict` | Deterministic disclosure of work selected for a query. |
+| [_DocumentationQueryRequired](../entities/DocumentationQueryRequired.md) | Class | 438 | `TypedDict` | — |
+| [DocumentationQueryResult](../entities/DocumentationQueryResult.md) | Class | 450 | `_DocumentationQueryRequired` | Common envelope returned by the shared bounded query dispatcher. |
+| [DocumentationExportResult](../entities/DocumentationExportResult.md) | Class | 487 | `TypedDict` | Top-level documentation export and verification report. |
+| [DoctorAvailability](../entities/DoctorAvailability.md) | Class | 511 | `TypedDict` | — |
+| [DoctorFreshness](../entities/DoctorFreshness.md) | Class | 517 | `TypedDict` | — |
+| [DoctorSnapshotParity](../entities/DoctorSnapshotParity.md) | Class | 524 | `TypedDict` | — |
+| [DoctorGovernance](../entities/DoctorGovernance.md) | Class | 530 | `TypedDict` | — |
+| [DoctorDrift](../entities/DoctorDrift.md) | Class | 539 | `TypedDict` | — |
+| [DoctorVerificationReceipt](../entities/DoctorVerificationReceipt.md) | Class | 549 | `TypedDict` | — |
+| [DoctorResult](../entities/DoctorResult.md) | Class | 556 | `TypedDict` | Stable ``llm-wiki-doctor/v1`` Python API payload. |
+| [HealthSelection](../entities/HealthSelection.md) | Class | 575 | `TypedDict` | — |
+| [HealthScope](../entities/HealthScope.md) | Class | 581 | `TypedDict` | — |
+| [HealthEvaluation](../entities/HealthEvaluation.md) | Class | 587 | `TypedDict` | — |
+| [HealthSnapshot](../entities/HealthSnapshot.md) | Class | 592 | `TypedDict` | — |
+| [HealthComponent](../entities/HealthComponent.md) | Class | 602 | `TypedDict` | — |
+| [HealthProducer](../entities/HealthProducer.md) | Class | 609 | `TypedDict` | — |
+| [HealthComparisonBasis](../entities/HealthComparisonBasis.md) | Class | 617 | `TypedDict` | — |
+| [HealthCoverage](../entities/HealthCoverage.md) | Class | 624 | `TypedDict` | — |
+| [HealthReason](../entities/HealthReason.md) | Class | 634 | `TypedDict` | — |
+| [HealthDetails](../entities/HealthDetails.md) | Class | 641 | `TypedDict` | — |
+| [DoctorV3Result](../entities/DoctorV3Result.md) | Class | 651 | `DoctorResult` | Opt-in health report with captured coverage and comparison evidence. |
+| [ComparisonPolicy](../entities/ComparisonPolicy.md) | Type alias | 656 | `Literal['auto', 'exact-v1', 'analysis-v1']` | — |
+| [AnalysisCompatibilityRecord](../entities/AnalysisCompatibilityRecord.md) | Class | 659 | `TypedDict` | — |
+| [AnalysisComparisonContract](../entities/AnalysisComparisonContract.md) | Class | 670 | `TypedDict` | — |
+| [AnalysisComparisonDecision](../entities/AnalysisComparisonDecision.md) | Class | 676 | `TypedDict` | — |
+| [HealthComparisonBasisV2](../entities/HealthComparisonBasisV2.md) | Class | 682 | `TypedDict` | — |
+| [HealthDetailsV2](../entities/HealthDetailsV2.md) | Class | 690 | `TypedDict` | — |
+| [DoctorV4Result](../entities/DoctorV4Result.md) | Class | 700 | `DoctorResult` | Compatibility-aware health with versioned captured comparison evidence. |
+| [_NativeInspectionMaintenance](../entities/NativeInspectionMaintenance.md) | Class | 705 | `TypedDict` | — |
+| [NativeInspectionResult](../entities/NativeInspectionResult.md) | Class | 709 | `_NativeInspectionMaintenance` | Bounded component results sharing one source/wiki read scope. |

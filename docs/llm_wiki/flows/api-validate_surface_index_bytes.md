@@ -146,16 +146,16 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | validate_surface_index_bytes | _decode_json_object | 257 | `_decode_json_object(surface_index_bytes, 'surface_index_bytes')` |
-| _decode_json_object | isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object) | 870 | `isinstance(content, bytes)` |
-| _decode_json_object | KnowledgeArtifactError | 871 | `KnowledgeArtifactError(field, 'must be bytes')` |
-| _decode_json_object | content.decode | 873 | `content.decode('utf-8')` |
-| _decode_json_object | KnowledgeArtifactError | 875 | `KnowledgeArtifactError(field, 'must be valid UTF-8')` |
-| _decode_json_object | json.loads | 877 | `json.loads(text, object_pairs_hook=..., parse_constant=...)` |
-| _decode_json_object | _unique_json_object | 879 | `_unique_json_object(pairs, field)` |
-| _unique_json_object | KnowledgeArtifactError | 898 | `KnowledgeArtifactError(field, ...)` |
-| _decode_json_object | _reject_json_constant | 880 | `_reject_json_constant(value, field)` |
-| _reject_json_constant | KnowledgeArtifactError | 904 | `KnowledgeArtifactError(field, ...)` |
-| _decode_json_object | isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object) | 883 | `isinstance(exc, KnowledgeArtifactError)` |
+| _decode_json_object | isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object) | 896 | `isinstance(content, bytes)` |
+| _decode_json_object | KnowledgeArtifactError | 897 | `KnowledgeArtifactError(field, 'must be bytes')` |
+| _decode_json_object | content.decode | 899 | `content.decode('utf-8')` |
+| _decode_json_object | KnowledgeArtifactError | 901 | `KnowledgeArtifactError(field, 'must be valid UTF-8')` |
+| _decode_json_object | json.loads | 903 | `json.loads(text, object_pairs_hook=..., parse_constant=...)` |
+| _decode_json_object | _unique_json_object | 905 | `_unique_json_object(pairs, field)` |
+| _unique_json_object | KnowledgeArtifactError | 924 | `KnowledgeArtifactError(field, ...)` |
+| _decode_json_object | _reject_json_constant | 906 | `_reject_json_constant(value, field)` |
+| _reject_json_constant | KnowledgeArtifactError | 930 | `KnowledgeArtifactError(field, ...)` |
+| _decode_json_object | isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object) | 909 | `isinstance(exc, KnowledgeArtifactError)` |
 
 ### Boundary effects
 
@@ -165,10 +165,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_decode_json_object` | `isinstance` | 870 |
-| unresolved_call | `_decode_json_object` | `content.decode` | 873 |
-| external_call | `_decode_json_object` | `json.loads` | 877 |
-| external_call | `_decode_json_object` | `isinstance` | 883 |
+| external_call | `_decode_json_object` | `isinstance` | 896 |
+| unresolved_call | `_decode_json_object` | `content.decode` | 899 |
+| external_call | `_decode_json_object` | `json.loads` | 903 |
+| external_call | `_decode_json_object` | `isinstance` | 909 |
 | step_limit | `validate_surface_index_bytes` | `first 12 steps` | 0 |
 | truncated_flow | `validate_surface_index_bytes` | `depth limit` | 0 |
 

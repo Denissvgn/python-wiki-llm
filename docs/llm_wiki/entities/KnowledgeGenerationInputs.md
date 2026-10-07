@@ -1,6 +1,6 @@
 # KnowledgeGenerationInputs
 
-**Location:** `src/llm_wiki_cli/services/knowledge_generation.py:100`
+**Location:** `src/llm_wiki_cli/services/knowledge_generation.py:101`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_generation](../modules/knowledge_generation.md)

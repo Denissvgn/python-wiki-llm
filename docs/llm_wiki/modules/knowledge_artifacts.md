@@ -20,7 +20,7 @@ Validates native projections and plans a manifest-last artifact commit. Indexed 
 | `.knowledge_evidence` | `formatted_json_bytes`, `is_valid_sha256`, `sha256_bytes` |
 | `.knowledge_governance` | `governance_hash_from_knowledge` |
 | `.knowledge_graph` | `KnowledgeGraphError`, `typed_graph_from_knowledge_extensions` |
-| `.knowledge_index` | `_validated_index_serialization`, `validate_knowledge_index`, `_model_to_payload` |
+| `.knowledge_index` | `_validated_index_serialization`, `validate_knowledge_index`, `_model_to_payload`, `_require_validation_receipt`, `_require_validation_receipt`, `_has_validation_operation`, `_validated_index_receipt` |
 | `.knowledge_model` | `ConceptKind`, `EvidenceBasis`, `EvidenceState`, `KnowledgeIndex`, `Origin` |
 | `.knowledge_packs` | `PACKED_SCHEMAS`, `PACKED_FORMATS`, `build_storage`, `open_knowledge_store`, `physical_objects`, `packed_format`, `parse_packed_root` |
 | `.knowledge_reuse` | `validate_reuse_artifact_parity` |
@@ -65,10 +65,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (25) |
+| Inbound | `src` (27) |
 | Outbound | `src` (27) |
 
-> All 49 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 51 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -90,7 +90,7 @@ flowchart LR
 | `require_validated_artifacts` | `(value: object) -> ValidatedKnowledgeArtifacts` | — | Require the immutable values issued by the complete artifact validator. |
 | `validated_artifact_bytes` | `(value: ValidatedKnowledgeArtifacts) -> tuple[bytes, bytes]` | — | Read captured canonical bytes without serializing or reparsing models. |
 | `validate_surface_index_bytes` | `(surface_index_bytes: bytes) -> Mapping[str, Any]` | — | Parse and strictly validate canonical surface-index v1 bytes. |
-| `validate_knowledge_artifacts` | `(*, surface_index_bytes: bytes, knowledge_index_bytes: bytes, manifest: SyncManifest, object_reader: Callable[[str, int], bytes] \| None = None, wiki_dir: str \| Path \| None = None) -> ValidatedKnowledgeArtifacts` | `@observed_phase('knowledge_validation')` | Validate canonical projections, cross-artifact parity, and manifest basis. |
+| `validate_knowledge_artifacts` | `(*, surface_index_bytes: bytes, knowledge_index_bytes: bytes, manifest: SyncManifest, object_reader: Callable[[str, int], bytes] \| None = None, wiki_dir: str \| Path \| None = None, _validation_receipt: object \| None = None, _receipt_wiki_root: Path \| None = None) -> ValidatedKnowledgeArtifacts` | `@observed_phase('knowledge_validation')` | Validate canonical projections, cross-artifact parity, and manifest basis. |
 | `build_knowledge_commit_plan` | `(wiki_dir: str \| Path, *, surface_index_bytes: bytes, knowledge_index_bytes: bytes \| None = None, manifest: SyncManifest, knowledge_format: str \| None = None, knowledge_index: KnowledgeIndex \| None = None, manifest_format: str \| None = None, prior: ValidatedKnowledgeArtifacts \| None = None, spool = None, maintenance_adoption: Mapping[str, Any] \| None = None) -> KnowledgeCommitPlan` | — | Validate and plan one manifest-last knowledge artifact commit. |
 | `commit_knowledge_artifacts` | `(plan: KnowledgeCommitPlan, *, dry_run: bool = False, fault_injector: FaultInjector \| None = None) -> KnowledgeCommitResult` | `@observed_phase('artifact_commit')` | Apply *plan* in projection/projection/manifest order. |
 | `_commit_flat` | `(plan, fault_injector)` | — | — |

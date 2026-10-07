@@ -141,7 +141,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| runtime_generation_options_hash | prepare_runtime_generation_options | 1194 | `prepare_runtime_generation_options(generation_options, generation_option_defaults=RUNTIME_GENERATION_OPTION_DEFAULTS, generation_option_allowlist=tuple(...), inventory_complete=inventory_complete)` |
+| runtime_generation_options_hash | prepare_runtime_generation_options | 1208 | `prepare_runtime_generation_options(generation_options, generation_option_defaults=RUNTIME_GENERATION_OPTION_DEFAULTS, generation_option_allowlist=tuple(...), inventory_complete=inventory_complete)` |
 | prepare_runtime_generation_options | isinstance (src/llm_wiki_cli/services…runtime_generation_options) | 339 | `isinstance(inventory_complete, bool)` |
 | prepare_runtime_generation_options | TypeError | 340 | `TypeError('inventory_complete must be a boolean')` |
 | prepare_runtime_generation_options | dict | 341 | `dict(generation_options)` |
@@ -149,8 +149,8 @@ flowchart LR
 | prepare_runtime_generation_options | tuple (src/llm_wiki_cli/services…runtime_generation_options) | 345 | `tuple(dict.fromkeys(...))` |
 | prepare_runtime_generation_options | dict.fromkeys | 346 | `dict.fromkeys((...))` |
 | prepare_runtime_generation_options | PreparedRuntimeGenerationOptions | 348 | `PreparedRuntimeGenerationOptions(values=values, defaults=defaults, allowlist=allowlist)` |
-| runtime_generation_options_hash | tuple (src/llm_wiki_cli/services…me_generation_options_hash) | 1197 | `tuple(RUNTIME_GENERATION_OPTION_DEFAULTS)` |
-| runtime_generation_options_hash | hash_generation_options | 1200 | `hash_generation_options(prepared.values, defaults=prepared.defaults, allowlist=prepared.allowlist)` |
+| runtime_generation_options_hash | tuple (src/llm_wiki_cli/services…me_generation_options_hash) | 1211 | `tuple(RUNTIME_GENERATION_OPTION_DEFAULTS)` |
+| runtime_generation_options_hash | hash_generation_options | 1214 | `hash_generation_options(prepared.values, defaults=prepared.defaults, allowlist=prepared.allowlist)` |
 | hash_generation_options | isinstance (src/llm_wiki_cli/services…py:hash_generation_options) | 827 | `isinstance(values, Mapping)` |
 
 ### Boundary effects

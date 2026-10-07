@@ -172,8 +172,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| knowledge_index_to_payload | _model_to_payload | 278 | `_model_to_payload(validate_knowledge_index(...))` |
-| _model_to_payload | _knowledge_index_to_payload_unchecked | 284 | `_knowledge_index_to_payload_unchecked(model)` |
+| knowledge_index_to_payload | _model_to_payload | 281 | `_model_to_payload(validate_knowledge_index(...))` |
+| _model_to_payload | _knowledge_index_to_payload_unchecked | 287 | `_knowledge_index_to_payload_unchecked(model)` |
 | _knowledge_index_to_payload_unchecked | _bundle_to_payload | 2224 | `_bundle_to_payload(model.bundle)` |
 | _bundle_to_payload | _emit_extensions | 2043 | `_emit_extensions({...}, bundle.repository.extensions, 'bundle.repository.extensions')` |
 | _emit_extensions | isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions) | 2003 | `isinstance(extensions, FrozenDict)` |

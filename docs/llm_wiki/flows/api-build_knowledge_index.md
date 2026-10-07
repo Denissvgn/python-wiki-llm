@@ -173,13 +173,13 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_knowledge_index | _validate_and_join_inputs | 219 | `_validate_and_join_inputs(inputs)` |
-| _validate_and_join_inputs | isinstance (src/llm_wiki_cli/services…_validate_and_join_inputs) | 322 | `isinstance(inputs, KnowledgeIndexInputs)` |
-| _validate_and_join_inputs | TypeError (src/llm_wiki_cli/services…_validate_and_join_inputs) | 323 | `TypeError('inputs must be a KnowledgeIndexInputs')` |
-| _validate_and_join_inputs | _validated_bundle | 324 | `_validated_bundle(inputs.envelope)` |
-| _validated_bundle | isinstance (src/llm_wiki_cli/services…ndex.py:_validated_bundle) | 423 | `isinstance(envelope, EvaluatedEnvelope)` |
-| _validated_bundle | KnowledgeIndexBuildError | 424 | `KnowledgeIndexBuildError('envelope', 'must be an already evaluated envelope')` |
-| _validated_bundle | evaluated_envelope_to_payload | 429 | `evaluated_envelope_to_payload(envelope)` |
+| build_knowledge_index | _validate_and_join_inputs | 222 | `_validate_and_join_inputs(inputs)` |
+| _validate_and_join_inputs | isinstance (src/llm_wiki_cli/services…_validate_and_join_inputs) | 437 | `isinstance(inputs, KnowledgeIndexInputs)` |
+| _validate_and_join_inputs | TypeError (src/llm_wiki_cli/services…_validate_and_join_inputs) | 438 | `TypeError('inputs must be a KnowledgeIndexInputs')` |
+| _validate_and_join_inputs | _validated_bundle | 439 | `_validated_bundle(inputs.envelope)` |
+| _validated_bundle | isinstance (src/llm_wiki_cli/services…ndex.py:_validated_bundle) | 538 | `isinstance(envelope, EvaluatedEnvelope)` |
+| _validated_bundle | KnowledgeIndexBuildError | 539 | `KnowledgeIndexBuildError('envelope', 'must be an already evaluated envelope')` |
+| _validated_bundle | evaluated_envelope_to_payload | 544 | `evaluated_envelope_to_payload(envelope)` |
 | evaluated_envelope_to_payload | isinstance (src/llm_wiki_cli/services…uated_envelope_to_payload) | 1141 | `isinstance(envelope, EvaluatedEnvelope)` |
 | evaluated_envelope_to_payload | TypeError (src/llm_wiki_cli/services…uated_envelope_to_payload) | 1142 | `TypeError('envelope must be an EvaluatedEnvelope')` |
 | evaluated_envelope_to_payload | KnowledgeEnvelopeError | 1144 | `KnowledgeEnvelopeError('schema_version', ...)` |
@@ -189,18 +189,18 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `relationships.extend` | `build_knowledge_index` | 226 |
-| mutation | `joined.append` | `_validate_and_join_inputs` | 381 |
-| mutation | `joined.sort` | `_validate_and_join_inputs` | 402 |
+| mutation | `relationships.extend` | `build_knowledge_index` | 229 |
+| mutation | `joined.append` | `_validate_and_join_inputs` | 496 |
+| mutation | `joined.sort` | `_validate_and_join_inputs` | 517 |
 | mutation | `snapshot_extensions.pop` | `_validated_bundle_payload` | 1947 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_validate_and_join_inputs` | `isinstance` | 322 |
-| external_call | `_validate_and_join_inputs` | `TypeError` | 323 |
-| external_call | `_validated_bundle` | `isinstance` | 423 |
+| external_call | `_validate_and_join_inputs` | `isinstance` | 437 |
+| external_call | `_validate_and_join_inputs` | `TypeError` | 438 |
+| external_call | `_validated_bundle` | `isinstance` | 538 |
 | external_call | `evaluated_envelope_to_payload` | `isinstance` | 1141 |
 | external_call | `evaluated_envelope_to_payload` | `TypeError` | 1142 |
 | step_limit | `build_knowledge_index` | `first 12 steps` | 0 |

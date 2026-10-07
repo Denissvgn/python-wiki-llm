@@ -106,9 +106,9 @@ sequenceDiagram
     p18->>p24: sha256_bytes
 ```
 
-> Call sequence diagram shows 30 of 1162 interactions; 1132 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1182 interactions; 1152 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 3 of 421 (418 omitted); unresolved 5 of 233 (228 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 3 of 429 (426 omitted); unresolved 5 of 236 (231 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -122,7 +122,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_evidence.py:canonical_json_text` | 14 | - | external | 1 |
 | `src/llm_wiki_cli/services/context_packet.py:_assert_wiki_integrity` | 18 | - | external | 3 |
 | `src/llm_wiki_cli/services/context_packet.py:_assert_wiki_integrity` | 18 | [src/llm_wiki_cli/services/source_snapshot.py](../modules/source_snapshot.md) | internal | 1 |
-> Omission summary shows 8 of 251 groups; 243 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 254 groups; 246 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

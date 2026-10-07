@@ -17,6 +17,10 @@ Optional corpus identity, scan counts and resource limits for ranked search. Rep
 | `corpus_id` | `str` | *optional* | — |
 | `scanned` | `dict[str, int]` | *optional* | — |
 | `resource_limits` | `dict[str, int]` | *optional* | — |
+| `experimental` | `bool` | *optional* | — |
+| `definitive_answer` | `bool` | *optional* | — |
+| `source_indexing` | `dict[str, Any]` | *optional* | — |
+| `discovery` | `dict[str, Any]` | *optional* | — |
 
 ## Methods
 
@@ -40,7 +44,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [api_types](../modules/api_types.md) | 0 | `corpus_id`, `ranking`, `resource_limits`, `scanned` |
+| [api_types](../modules/api_types.md) | 0 | `corpus_id`, `definitive_answer`, `discovery`, `experimental`, `ranking`, `resource_limits`, `scanned`, `source_indexing` |
 
 ### Structure
 

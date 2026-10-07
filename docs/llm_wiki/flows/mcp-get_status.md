@@ -43,7 +43,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| get_status | service.get_status | 1552 | `service.get_status(data not statically known)` |
+| get_status | service.get_status | 1565 | `service.get_status(data not statically known)` |
 
 ### Boundary effects
 
@@ -53,7 +53,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `get_status` | `service.get_status` | 1552 |
+| unresolved_call | `get_status` | `service.get_status` | 1565 |
 
 ## Behavior
 

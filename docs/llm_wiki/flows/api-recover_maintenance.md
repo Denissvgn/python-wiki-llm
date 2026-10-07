@@ -103,9 +103,9 @@ sequenceDiagram
     p5-->>p23: set (src/llm_wiki_cli/services…ver_maintenance_authority)(intent)
 ```
 
-> Call sequence diagram shows 30 of 1762 interactions; 1732 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1782 interactions; 1752 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 9 of 589 (580 omitted); unresolved 0 of 392 (392 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 9 of 597 (588 omitted); unresolved 0 of 395 (395 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -119,7 +119,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 13 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 13 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/maintenance_service.py:load_recovery_snapshot` | 49 | [src/llm_wiki_cli/services/maintenance_service.py](../modules/maintenance_service.md) | internal | 1 |
-> Omission summary shows 8 of 417 groups; 409 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 420 groups; 412 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -181,17 +181,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| recover_maintenance | type (src/llm_wiki_cli/api.py:recover_maintenance) | 1650 | `type(allow_prepared_adoption)` |
-| recover_maintenance | type (src/llm_wiki_cli/api.py:recover_maintenance) | 1650 | `type(allow_captured_preimage)` |
-| recover_maintenance | ValueError (src/llm_wiki_cli/api.py:recover_maintenance) | 1651 | `ValueError('Maintenance recovery modes must be booleans')` |
-| recover_maintenance | _identity (src/llm_wiki_cli/services/maintenance_state.py) | 1652 | `_identity(expected_adoption_id)` |
+| recover_maintenance | type (src/llm_wiki_cli/api.py:recover_maintenance) | 1659 | `type(allow_prepared_adoption)` |
+| recover_maintenance | type (src/llm_wiki_cli/api.py:recover_maintenance) | 1659 | `type(allow_captured_preimage)` |
+| recover_maintenance | ValueError (src/llm_wiki_cli/api.py:recover_maintenance) | 1660 | `ValueError('Maintenance recovery modes must be booleans')` |
+| recover_maintenance | _identity (src/llm_wiki_cli/services/maintenance_state.py) | 1661 | `_identity(expected_adoption_id)` |
 | _identity (src/llm_wiki_cli/services/maintenance_state.py) | UUID | 56 | `UUID(value)` |
 | _identity (src/llm_wiki_cli/services/maintenance_state.py) | MaintenanceError | 58 | `MaintenanceError('identity-invalid', 'identity must be canonical UUIDv4')` |
 | _identity (src/llm_wiki_cli/services/maintenance_state.py) | require | 61 | `require(..., 'identity-invalid', 'identity must be canonical UUIDv4')` |
 | require | MaintenanceError | 27 | `MaintenanceError(code, message)` |
 | _identity (src/llm_wiki_cli/services/maintenance_state.py) | str (src/llm_wiki_cli/services…enance_state.py:_identity) | 62 | `str(parsed)` |
-| recover_maintenance | cast (src/llm_wiki_cli/api.py:recover_maintenance) | 1653 | `cast(MaintenanceRecoveryResult, recover_maintenance_authority(...))` |
-| recover_maintenance | recover_maintenance_authority | 1653 | `recover_maintenance_authority(_validate_wiki_dir(...), recovery_dir=recovery_dir, expected_adoption_id=expected_adoption_id, src_dir=src_dir, allow_prepared_adoption=allow_prepared_adoption, allow_captured_preimage=allow_captured_preimage)` |
+| recover_maintenance | cast (src/llm_wiki_cli/api.py:recover_maintenance) | 1662 | `cast(MaintenanceRecoveryResult, recover_maintenance_authority(...))` |
+| recover_maintenance | recover_maintenance_authority | 1662 | `recover_maintenance_authority(_validate_wiki_dir(...), recovery_dir=recovery_dir, expected_adoption_id=expected_adoption_id, src_dir=src_dir, allow_prepared_adoption=allow_prepared_adoption, allow_captured_preimage=allow_captured_preimage)` |
 
 ### Boundary effects
 
@@ -201,10 +201,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `recover_maintenance` | `type` | 1650 |
-| external_call | `recover_maintenance` | `ValueError` | 1651 |
+| external_call | `recover_maintenance` | `type` | 1659 |
+| external_call | `recover_maintenance` | `ValueError` | 1660 |
 | external_call | `_identity` | `UUID` | 56 |
-| external_call | `recover_maintenance` | `cast` | 1653 |
+| external_call | `recover_maintenance` | `cast` | 1662 |
 | step_limit | `recover_maintenance` | `first 12 steps` | 0 |
 | truncated_flow | `recover_maintenance` | `depth limit` | 0 |
 

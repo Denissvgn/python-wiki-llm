@@ -172,12 +172,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| serialize_knowledge_index | _serialize_payload | 318 | `_serialize_payload(knowledge_index_to_payload(...))` |
-| _serialize_payload | json.dumps | 303 | `json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False, allow_nan=False)` |
-| _serialize_payload | KnowledgeModelError | 309 | `KnowledgeModelError('model', 'cannot be serialized as finite JSON')` |
-| serialize_knowledge_index | knowledge_index_to_payload | 318 | `knowledge_index_to_payload(value)` |
-| knowledge_index_to_payload | _model_to_payload | 278 | `_model_to_payload(validate_knowledge_index(...))` |
-| _model_to_payload | _knowledge_index_to_payload_unchecked | 284 | `_knowledge_index_to_payload_unchecked(model)` |
+| serialize_knowledge_index | _serialize_payload | 433 | `_serialize_payload(knowledge_index_to_payload(...))` |
+| _serialize_payload | json.dumps | 418 | `json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False, allow_nan=False)` |
+| _serialize_payload | KnowledgeModelError | 424 | `KnowledgeModelError('model', 'cannot be serialized as finite JSON')` |
+| serialize_knowledge_index | knowledge_index_to_payload | 433 | `knowledge_index_to_payload(value)` |
+| knowledge_index_to_payload | _model_to_payload | 281 | `_model_to_payload(validate_knowledge_index(...))` |
+| _model_to_payload | _knowledge_index_to_payload_unchecked | 287 | `_knowledge_index_to_payload_unchecked(model)` |
 | _knowledge_index_to_payload_unchecked | _bundle_to_payload | 2224 | `_bundle_to_payload(model.bundle)` |
 | _bundle_to_payload | _emit_extensions | 2043 | `_emit_extensions({...}, bundle.repository.extensions, 'bundle.repository.extensions')` |
 | _emit_extensions | isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions) | 2003 | `isinstance(extensions, FrozenDict)` |
@@ -192,7 +192,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_serialize_payload` | `json.dumps` | 303 |
+| external_call | `_serialize_payload` | `json.dumps` | 418 |
 | external_call | `_emit_extensions` | `isinstance` | 2003 |
 | step_limit | `serialize_knowledge_index` | `first 12 steps` | 0 |
 | truncated_flow | `serialize_knowledge_index` | `depth limit` | 0 |

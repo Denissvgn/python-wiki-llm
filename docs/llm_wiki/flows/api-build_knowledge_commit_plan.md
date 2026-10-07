@@ -2,7 +2,7 @@
 
 **Entry point:** `build_knowledge_commit_plan` (`api`)
 **Source:** [knowledge_artifacts](../modules/knowledge_artifacts.md)
-**Modules touched:** [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [filesystem_guard](../modules/filesystem_guard.md), and 29 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [filesystem_guard](../modules/filesystem_guard.md), and 28 more
 
 **Complete modules touched:**
 
@@ -26,7 +26,6 @@
 - [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
-- [maintenance_evidence](../modules/maintenance_evidence.md)
 - [maintenance_projection](../modules/maintenance_projection.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
 - [maintenance_shapes](../modules/maintenance_shapes.md)
@@ -60,13 +59,14 @@ sequenceDiagram
     participant p10 as (…).exists (src/llm_wiki_cli/services…ild_knowledge_commit_plan)
     participant p11 as (…).is_symlink
     participant p12 as current_knowledge_format
-    participant p13 as build_storage
-    participant p14 as _model_to_payload
-    participant p15 as str (src/llm_wiki_cli/services…ild_knowledge_commit_plan)
-    participant p16 as _validated_index_serialization
-    participant p17 as validate_knowledge_artifacts
-    participant p18 as sha256_bytes
-    participant p19 as tuple (src/llm_wiki_cli/services…ild_knowledge_commit_plan)
+    participant p13 as root.absolute
+    participant p14 as build_storage
+    participant p15 as _model_to_payload
+    participant p16 as str (src/llm_wiki_cli/services…ild_knowledge_commit_plan)
+    participant p17 as _has_validation_operation
+    participant p18 as _validated_index_receipt
+    participant p19 as _validated_index_serialization
+    participant p20 as validate_knowledge_artifacts
     p0-->>p1: Path (src/llm_wiki_cli/services…ild_knowledge_commit_plan)(wiki_dir)
     p0->>p2: KnowledgeArtifactError
     p0->>p3: current_manifest_format
@@ -87,21 +87,21 @@ sequenceDiagram
     p0->>p2: KnowledgeArtifactError
     p0->>p12: current_knowledge_format
     p0->>p2: KnowledgeArtifactError
-    p0->>p13: build_storage
-    p0->>p14: _model_to_payload
+    p0-->>p13: root.absolute
+    p0->>p14: build_storage
+    p0->>p15: _model_to_payload
     p0->>p2: KnowledgeArtifactError
-    p0-->>p15: str (src/llm_wiki_cli/services…ild_knowledge_commit_plan)(exc)
-    p0->>p16: _validated_index_serialization
-    p0->>p17: validate_knowledge_artifacts
-    p0->>p13: build_storage
-    p0->>p14: _model_to_payload
-    p0->>p18: sha256_bytes
-    p0-->>p19: tuple (src/llm_wiki_cli/services…ild_knowledge_commit_plan)(...)
+    p0-->>p16: str (src/llm_wiki_cli/services…ild_knowledge_commit_plan)(exc)
+    p0->>p17: _has_validation_operation
+    p0->>p18: _validated_index_receipt
+    p0->>p19: _validated_index_serialization
+    p0->>p20: validate_knowledge_artifacts
+    p0->>p14: build_storage
 ```
 
-> Call sequence diagram shows 30 of 2836 interactions; 2806 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2231 interactions; 2201 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 4 of 869 (865 omitted); unresolved 2 of 505 (503 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 3 of 718 (715 omitted); unresolved 3 of 388 (385 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -115,7 +115,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_validate_range` | 15 | - | external | 4 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_validate_range` | 15 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 2 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 22 | - | external | 4 |
-> Omission summary shows 8 of 626 groups; 618 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 518 groups; 510 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -176,9 +176,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_knowledge_commit_plan | Path (src/llm_wiki_cli/services…ild_knowledge_commit_plan) | 506 | `Path(wiki_dir)` |
-| build_knowledge_commit_plan | KnowledgeArtifactError | 509 | `KnowledgeArtifactError('manifest_format', 'must be v5, indexed-v6, v7 or indexed-v8')` |
-| build_knowledge_commit_plan | current_manifest_format | 510 | `current_manifest_format(root)` |
+| build_knowledge_commit_plan | Path (src/llm_wiki_cli/services…ild_knowledge_commit_plan) | 523 | `Path(wiki_dir)` |
+| build_knowledge_commit_plan | KnowledgeArtifactError | 526 | `KnowledgeArtifactError('manifest_format', 'must be v5, indexed-v6, v7 or indexed-v8')` |
+| build_knowledge_commit_plan | current_manifest_format | 527 | `current_manifest_format(root)` |
 | current_manifest_format | Path (src/llm_wiki_cli/services…y:current_manifest_format) | 287 | `Path(wiki_dir)` |
 | current_manifest_format | adoption.exists | 289 | `adoption.exists(data not statically known)` |
 | current_manifest_format | adoption.is_symlink | 289 | `adoption.is_symlink(data not statically known)` |

@@ -15,58 +15,57 @@ sequenceDiagram
     participant p1 as validate_source_root
     participant p2 as validate_path
     participant p3 as search_wiki
-    participant p4 as print
-    participant p5 as json.dumps
-    participant p6 as Path(…).expanduser
-    participant p7 as Path (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p8 as candidate.is_absolute
-    participant p9 as Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p10 as candidate.resolve
-    participant p11 as PathValidationError
-    participant p12 as resolved.is_dir
-    participant p13 as os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p14 as windows_current_user_sid
-    participant p15 as isinstance
-    participant p16 as getattr (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p17 as callable (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p18 as get_effective_uid
-    participant p19 as set
-    participant p20 as first_unsafe_path_component
+    participant p4 as getattr (src/llm_wiki_cli/commands/search_cmd.py:run)
+    participant p5 as print
+    participant p6 as json.dumps
+    participant p7 as Path(…).expanduser
+    participant p8 as Path (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p9 as candidate.is_absolute
+    participant p10 as Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p11 as candidate.resolve
+    participant p12 as PathValidationError
+    participant p13 as resolved.is_dir
+    participant p14 as os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p15 as windows_current_user_sid
+    participant p16 as isinstance
+    participant p17 as getattr (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p18 as callable (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p19 as get_effective_uid
     p0->>p1: validate_source_root
     p0->>p2: validate_path
     p0-->>p3: search_wiki(…)
-    p0-->>p4: print(json.dumps(...))
-    p0-->>p5: json.dumps(result, ensure_ascii=False, sort_keys=True, indent=2)
-    p0-->>p4: print(...)
-    p0-->>p4: print(...)
-    p0-->>p4: print(...)
+    p0-->>p4: getattr (src/llm_wiki_cli/commands/search_cmd.py:run)(args, 'include_source', False)
+    p0-->>p4: getattr (src/llm_wiki_cli/commands/search_cmd.py:run)(args, 'discovery', None)
+    p0-->>p5: print(json.dumps(...))
+    p0-->>p6: json.dumps(result, ensure_ascii=False, sort_keys=True, indent=2)
+    p0-->>p5: print(...)
+    p0-->>p5: print(...)
+    p0-->>p5: print(...)
+    p0-->>p5: print(json.dumps(...))
+    p0-->>p6: json.dumps(result[...], ensure_ascii=False, sort_keys=True, indent=2)
     p1->>p2: validate_path
-    p1-->>p6: Path(…).expanduser
-    p1-->>p7: Path (src/llm_wiki_cli/config.py:validate_source_root)(path)
-    p1-->>p8: candidate.is_absolute
-    p1-->>p9: Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
-    p1-->>p10: candidate.resolve(strict=True)
-    p1->>p11: PathValidationError
-    p1-->>p12: resolved.is_dir
-    p1->>p11: PathValidationError
-    p1-->>p7: Path (src/llm_wiki_cli/config.py:validate_source_root)(os.path.abspath(...))
-    p1-->>p13: os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)(candidate)
-    p1->>p14: windows_current_user_sid
-    p1-->>p15: isinstance(current_sid, str)
-    p1-->>p16: getattr (src/llm_wiki_cli/config.py:validate_source_root)(os, 'geteuid', None)
-    p1-->>p17: callable (src/llm_wiki_cli/config.py:validate_source_root)(get_effective_uid)
-    p1-->>p18: get_effective_uid
-    p1-->>p15: isinstance(derived_uid, int)
-    p1-->>p15: isinstance(derived_uid, bool)
-    p1-->>p19: set
-    p1->>p20: first_unsafe_path_component
-    p1->>p11: PathValidationError
-    p1->>p11: PathValidationError
+    p1-->>p7: Path(…).expanduser
+    p1-->>p8: Path (src/llm_wiki_cli/config.py:validate_source_root)(path)
+    p1-->>p9: candidate.is_absolute
+    p1-->>p10: Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
+    p1-->>p11: candidate.resolve(strict=True)
+    p1->>p12: PathValidationError
+    p1-->>p13: resolved.is_dir
+    p1->>p12: PathValidationError
+    p1-->>p8: Path (src/llm_wiki_cli/config.py:validate_source_root)(os.path.abspath(...))
+    p1-->>p14: os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)(candidate)
+    p1->>p15: windows_current_user_sid
+    p1-->>p16: isinstance(current_sid, str)
+    p1-->>p17: getattr (src/llm_wiki_cli/config.py:validate_source_root)(os, 'geteuid', None)
+    p1-->>p18: callable (src/llm_wiki_cli/config.py:validate_source_root)(get_effective_uid)
+    p1-->>p19: get_effective_uid
+    p1-->>p16: isinstance(derived_uid, int)
+    p1-->>p16: isinstance(derived_uid, bool)
 ```
 
-> Call sequence diagram shows 30 of 110 interactions; 80 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 114 interactions; 84 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 15 of 67 (52 omitted); unresolved 6 of 21 (15 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 18 of 71 (53 omitted); unresolved 6 of 21 (15 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -80,7 +79,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/filesystem_guard.py:_current_windows_user_sid` | 23 | - | unresolved | 4 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:_current_windows_user_sid` | 23 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 5 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:_windows_sid_string` | 49 | - | external | 8 |
-> Omission summary shows 8 of 16 groups; 8 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 17 groups; 9 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
@@ -119,6 +118,8 @@ flowchart LR
     s1 -. "output print" .-> b2
     b3["output print"]
     s1 -. "output print" .-> b3
+    b4["output print"]
+    s1 -. "output print" .-> b4
     click s1 "../modules/search_cmd.md"
     click s2 "../modules/config.md"
     click s3 "../modules/config.md"
@@ -129,6 +130,7 @@ flowchart LR
     class b1 boundary
     class b2 boundary
     class b3 boundary
+    class b4 boundary
 ```
 
 ### Step data
@@ -168,10 +170,11 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 22 |
-| output | `print` | `run` | 25 |
-| output | `print` | `run` | 26 |
+| output | `print` | `run` | 24 |
 | output | `print` | `run` | 27 |
+| output | `print` | `run` | 28 |
+| output | `print` | `run` | 29 |
+| output | `print` | `run` | 31 |
 
 ### Static analysis gaps
 

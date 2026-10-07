@@ -95,4 +95,4 @@ flowchart LR
 | `WikiWriteBasis.after_write` | call | [maintenance_protocol](../modules/maintenance_protocol.md) | 2 |
 | `WikiWriteBasis.assert_current` | call | [maintenance_protocol](../modules/maintenance_protocol.md) | 1 |
 
-> References: showing 12 of 23 logical references; 11 omitted by the 12-row generated summary limit.
+> References: showing 12 of 24 logical references; 12 omitted by the 12-row generated summary limit.

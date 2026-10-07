@@ -172,8 +172,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_knowledge_index | isinstance (src/llm_wiki_cli/services…:validate_knowledge_index) | 255 | `isinstance(value, KnowledgeIndex)` |
-| validate_knowledge_index | parse_knowledge_index | 257 | `parse_knowledge_index(_model_to_payload(...))` |
+| validate_knowledge_index | isinstance (src/llm_wiki_cli/services…:validate_knowledge_index) | 258 | `isinstance(value, KnowledgeIndex)` |
+| validate_knowledge_index | parse_knowledge_index | 260 | `parse_knowledge_index(_model_to_payload(...))` |
 | parse_knowledge_index | _record | 526 | `_record(payload, '', {...}, required={...})` |
 | _record | _object (src/llm_wiki_cli/services/knowledge_model.py) | 1608 | `_object(value, ...)` |
 | _object (src/llm_wiki_cli/services/knowledge_model.py) | dict (src/llm_wiki_cli/services…nowledge_model.py:_object) | 1694 | `dict(require_mapping(...))` |
@@ -192,7 +192,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `validate_knowledge_index` | `isinstance` | 255 |
+| external_call | `validate_knowledge_index` | `isinstance` | 258 |
 | external_call | `require_mapping` | `isinstance` | 765 |
 | external_call | `require_mapping` | `isinstance` | 769 |
 | unresolved_call | `require_mapping` | `key.encode` | 774 |

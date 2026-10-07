@@ -1,6 +1,6 @@
 # _BindingAnalyzer
 
-**Location:** `src/llm_wiki_cli/extractors/python_bindings.py:284`
+**Location:** `src/llm_wiki_cli/extractors/python_bindings.py:326`
 **Kind:** Class
 **Bases:** —
 **Module:** [python_bindings](../modules/python_bindings.md)
@@ -26,8 +26,9 @@ _Auto-generated from `_BindingAnalyzer` in `src/llm_wiki_cli/extractors/python_b
 | `namespace_value` | `(node, env)` | — | — |
 | `mutator_value` | `(node, env)` | — | — |
 | `invalidate_target` | `(binding, env, member = '*')` | — | — |
+| `invalidate_names` | `(names, env)` | — | — |
 | `invalidate_members` | `(node, env)` | — | — |
-| `expression` | `(node, env: dict, closure: set[str])` | — | — |
+| `expression` | `(node, env: dict, closure: set[str], *, capture = True)` | — | — |
 | `block` | `(body, env: dict, closure: set[str], *, capture: bool, module: bool = False)` | — | — |
 
 ## Relationships
@@ -46,7 +47,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [python_bindings](../modules/python_bindings.md) | 12 | — |
+| [python_bindings](../modules/python_bindings.md) | 13 | — |
 
 ### References
 

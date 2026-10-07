@@ -69,12 +69,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| query_documentation | _native_tool_call | 1395 | `_native_tool_call(service.query_documentation, request)` |
-| _native_tool_call | callback | 1344 | `callback(..., **=kwargs)` |
-| _native_tool_call | str | 1352 | `str(exc)` |
-| _native_tool_call | CallToolResult | 1356 | `CallToolResult(isError=True, content=[...], structuredContent=failure)` |
-| _native_tool_call | TextContent | 1358 | `TextContent(type='text', text=json.dumps(...))` |
-| _native_tool_call | json.dumps | 1358 | `json.dumps(failure, sort_keys=True)` |
+| query_documentation | _native_tool_call | 1405 | `_native_tool_call(service.query_documentation, request)` |
+| _native_tool_call | callback | 1354 | `callback(..., **=kwargs)` |
+| _native_tool_call | str | 1362 | `str(exc)` |
+| _native_tool_call | CallToolResult | 1366 | `CallToolResult(isError=True, content=[...], structuredContent=failure)` |
+| _native_tool_call | TextContent | 1368 | `TextContent(type='text', text=json.dumps(...))` |
+| _native_tool_call | json.dumps | 1368 | `json.dumps(failure, sort_keys=True)` |
 
 ### Boundary effects
 
@@ -84,10 +84,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_native_tool_call` | `callback` | 1344 |
-| external_call | `_native_tool_call` | `CallToolResult` | 1356 |
-| external_call | `_native_tool_call` | `TextContent` | 1358 |
-| external_call | `_native_tool_call` | `json.dumps` | 1358 |
+| unresolved_call | `_native_tool_call` | `callback` | 1354 |
+| external_call | `_native_tool_call` | `CallToolResult` | 1366 |
+| external_call | `_native_tool_call` | `TextContent` | 1368 |
+| external_call | `_native_tool_call` | `json.dumps` | 1368 |
 
 ## Behavior
 

@@ -1,6 +1,6 @@
 # MaintenanceRecoveryResult
 
-**Location:** `src/llm_wiki_cli/api_types.py:159`
+**Location:** `src/llm_wiki_cli/api_types.py:163`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

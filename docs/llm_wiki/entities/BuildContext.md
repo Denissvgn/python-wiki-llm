@@ -1,6 +1,6 @@
 # _BuildContext
 
-**Location:** `src/llm_wiki_cli/services/knowledge_index.py:197`
+**Location:** `src/llm_wiki_cli/services/knowledge_index.py:200`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_index](../modules/knowledge_index.md)

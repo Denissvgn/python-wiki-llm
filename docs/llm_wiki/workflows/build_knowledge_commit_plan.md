@@ -25,14 +25,16 @@ its normal output-memory cost.
 5. `knowledge_storage.digest`
 6. `knowledge_packs.build_storage`
 7. `knowledge_index._model_to_payload`
-8. `knowledge_index._validated_index_serialization`
-9. `knowledge_packs.build_storage`
-10. `knowledge_index._model_to_payload`
-11. `knowledge_evidence.sha256_bytes`
-12. `knowledge_storage.KnowledgeStorageError`
-13. `manifest_storage.build_manifest_store`
+8. `knowledge_index._has_validation_operation`
+9. `knowledge_index._validated_index_receipt`
+10. `knowledge_index._validated_index_serialization`
+11. `knowledge_packs.build_storage`
+12. `knowledge_index._model_to_payload`
+13. `knowledge_evidence.sha256_bytes`
 14. `knowledge_storage.KnowledgeStorageError`
-15. `knowledge_evidence.formatted_json_bytes`
+15. `manifest_storage.build_manifest_store`
+16. `knowledge_storage.KnowledgeStorageError`
+17. `knowledge_evidence.formatted_json_bytes`
 
 ## Touches
 

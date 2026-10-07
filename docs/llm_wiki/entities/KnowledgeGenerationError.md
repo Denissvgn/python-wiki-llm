@@ -1,6 +1,6 @@
 # KnowledgeGenerationError
 
-**Location:** `src/llm_wiki_cli/services/knowledge_generation.py:90`
+**Location:** `src/llm_wiki_cli/services/knowledge_generation.py:91`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [knowledge_generation](../modules/knowledge_generation.md)
@@ -95,4 +95,4 @@ flowchart LR
 | `_validated_page_maps` | call | [knowledge_generation](../modules/knowledge_generation.md) | 6 |
 | `_validated_previous_producer` | call | [knowledge_generation](../modules/knowledge_generation.md) | 1 |
 
-> References: showing 12 of 20 logical references; 8 omitted by the 12-row generated summary limit.
+> References: showing 12 of 21 logical references; 9 omitted by the 12-row generated summary limit.

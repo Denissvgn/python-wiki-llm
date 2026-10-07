@@ -105,9 +105,9 @@ sequenceDiagram
     p0->>p10: build_runtime_knowledge_plan
 ```
 
-> Call sequence diagram shows 30 of 3095 interactions; 3065 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3390 interactions; 3360 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 8 of 1020 (1012 omitted); unresolved 6 of 657 (651 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 8 of 1094 (1086 omitted); unresolved 6 of 756 (750 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -121,7 +121,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 8 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 11 | - | external | 20 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 11 | - | unresolved | 5 |
-> Omission summary shows 8 of 717 groups; 709 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 786 groups; 778 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -135,7 +135,7 @@ flowchart LR
     s2["2. isinstance (src/llm_wiki_cli/services…inalize_runtime_knowledge)"]
     s3["3. TypeError (src/llm_wiki_cli/services…inalize_runtime_knowledge)"]
     s4["4. capture_committed_knowledge"]
-    s5["5. Path(…).resolve"]
+    s5["5. Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge)"]
     s6["6. Path (src/llm_wiki_cli/services…pture_committed_knowledge)"]
     s7["7. guard_maintenance_owner"]
     s8["8. _absolute_path"]
@@ -146,7 +146,7 @@ flowchart LR
     s1 -. "isinstance (src/llm_wiki_cli/services…inalize_runtime_knowledge)(inputs, RuntimeKnowledgeInputs)" .-> s2
     s1 -. "TypeError (src/llm_wiki_cli/services…inalize_runtime_knowledge)('inputs must be a RuntimeKnowledgeInputs')" .-> s3
     s1 -->|"capture_committed_knowledge(inputs.target_wiki_dir, inputs.previous_manifest)"| s4
-    s4 -. "Path(…).resolve(data not statically known)" .-> s5
+    s4 -. "Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge)(data not statically known)" .-> s5
     s4 -. "Path (src/llm_wiki_cli/services…pture_committed_knowledge)(wiki_dir)" .-> s6
     s4 -->|"guard_maintenance_owner(root, manifest)"| s7
     s7 -->|"_absolute_path(Path(...))"| s8
@@ -176,7 +176,7 @@ flowchart LR
 | `isinstance (src/llm_wiki_cli/services…inalize_runtime_knowledge)` | - | - | - | - |
 | `TypeError (src/llm_wiki_cli/services…inalize_runtime_knowledge)` | - | - | - | - |
 | `capture_committed_knowledge` | `wiki_dir: str \| Path`, `manifest: SyncManifest \| None` | `SURFACE_INDEX_FILENAME`, `KNOWLEDGE_INDEX_FILENAME`, `MANIFEST_FILENAME`, `MANIFEST_FILENAME`, `SURFACE_INDEX_FILENAME`, `KNOWLEDGE_INDEX_FILENAME`, `KnowledgeArtifactError`, `KnowledgeArtifactError` | `captured[...]`, `captured[...]` | `state` |
-| `Path(…).resolve` | - | - | - | - |
+| `Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge)` | - | - | - | - |
 | `Path (src/llm_wiki_cli/services…pture_committed_knowledge)` | - | - | - | - |
 | `guard_maintenance_owner` | `wiki_dir: str \| Path`, `manifest` | - | - | `None`, `None`, `marker` |
 | `_absolute_path` | `path: Path` | - | - | `path` |
@@ -189,10 +189,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| finalize_runtime_knowledge | isinstance (src/llm_wiki_cli/services…inalize_runtime_knowledge) | 837 | `isinstance(inputs, RuntimeKnowledgeInputs)` |
-| finalize_runtime_knowledge | TypeError (src/llm_wiki_cli/services…inalize_runtime_knowledge) | 838 | `TypeError('inputs must be a RuntimeKnowledgeInputs')` |
-| finalize_runtime_knowledge | capture_committed_knowledge | 841 | `capture_committed_knowledge(inputs.target_wiki_dir, inputs.previous_manifest)` |
-| capture_committed_knowledge | Path(…).resolve | 235 | `Path(wiki_dir).resolve(data not statically known)` |
+| finalize_runtime_knowledge | isinstance (src/llm_wiki_cli/services…inalize_runtime_knowledge) | 851 | `isinstance(inputs, RuntimeKnowledgeInputs)` |
+| finalize_runtime_knowledge | TypeError (src/llm_wiki_cli/services…inalize_runtime_knowledge) | 852 | `TypeError('inputs must be a RuntimeKnowledgeInputs')` |
+| finalize_runtime_knowledge | capture_committed_knowledge | 855 | `capture_committed_knowledge(inputs.target_wiki_dir, inputs.previous_manifest)` |
+| capture_committed_knowledge | Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge) | 235 | `Path(wiki_dir).resolve(data not statically known)` |
 | capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 235 | `Path(wiki_dir)` |
 | capture_committed_knowledge | guard_maintenance_owner | 238 | `guard_maintenance_owner(root, manifest)` |
 | guard_maintenance_owner | _absolute_path | 104 | `_absolute_path(Path(...))` |
@@ -212,8 +212,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `finalize_runtime_knowledge` | `isinstance` | 837 |
-| external_call | `finalize_runtime_knowledge` | `TypeError` | 838 |
+| external_call | `finalize_runtime_knowledge` | `isinstance` | 851 |
+| external_call | `finalize_runtime_knowledge` | `TypeError` | 852 |
 | unresolved_call | `capture_committed_knowledge` | `Path(wiki_dir).resolve` | 235 |
 | external_call | `_absolute_path` | `os.path.abspath` | 49 |
 | step_limit | `finalize_runtime_knowledge` | `first 12 steps` | 0 |

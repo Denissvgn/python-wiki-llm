@@ -98,9 +98,9 @@ sequenceDiagram
     p0->>p23: knowledge_freshness_disclosure
 ```
 
-> Call sequence diagram shows 30 of 1995 interactions; 1965 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2017 interactions; 1987 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 11 of 550 (539 omitted); unresolved 4 of 365 (361 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 11 of 560 (549 omitted); unresolved 4 of 368 (364 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -114,7 +114,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_projection.py:_validated_source` | 10 | - | external | 5 |
 | `src/llm_wiki_cli/services/knowledge_projection.py:_validated_source` | 10 | [src/llm_wiki_cli/services/knowledge_projection.py](../modules/knowledge_projection.md) | internal | 6 |
 | `src/llm_wiki_cli/services/knowledge_projection.py:_validated_source` | 10 | [src/llm_wiki_cli/services/knowledge_artifacts.py](../modules/knowledge_artifacts.md) | internal | 2 |
-> Omission summary shows 8 of 458 groups; 450 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 462 groups; 454 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

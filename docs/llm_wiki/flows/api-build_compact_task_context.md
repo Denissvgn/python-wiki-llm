@@ -55,7 +55,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_compact_task_context (src/llm_wiki_cli/api.py) | build_compact_task_context (src/llm_wiki_cli/services/task_compact_delivery.py) | 1427 | `build(request, view_options=view_options, src_dir=src_dir, wiki_dir=wiki_dir, profile=profile, policy=policy, counter=counter, allow_external_src=allow_external_src, source_selection=source_selection, helper_cache_dir=helper_cache_dir, cancelled=cancelled)` |
+| build_compact_task_context (src/llm_wiki_cli/api.py) | build_compact_task_context (src/llm_wiki_cli/services/task_compact_delivery.py) | 1436 | `build(request, view_options=view_options, src_dir=src_dir, wiki_dir=wiki_dir, profile=profile, policy=policy, counter=counter, allow_external_src=allow_external_src, source_selection=source_selection, helper_cache_dir=helper_cache_dir, cancelled=cancelled)` |
 | build_compact_task_context (src/llm_wiki_cli/services/task_compact_delivery.py) | ContextSession | 18 | `ContextSession(src_dir=src_dir, wiki_dir=wiki_dir, profile=profile, policy=policy, counter=counter, allow_external_src=allow_external_src, source_selection=source_selection, helper_cache_dir=helper_cache_dir, max_entries=0, max_bytes=0)` |
 | build_compact_task_context (src/llm_wiki_cli/services/task_compact_delivery.py) | session.read_compact | 22 | `session.read_compact(request, view_options=view_options, reuse=False, cancelled=cancelled)` |
 

@@ -2,7 +2,7 @@
 
 **Entry point:** `acknowledge_maintenance` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 57 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 56 more
 
 **Complete modules touched:**
 
@@ -52,7 +52,6 @@
 - [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [plugins](../modules/plugins.md)
-- [progress](../modules/progress.md)
 - [python_calls](../modules/python_calls.md)
 - [python_implementation](../modules/python_implementation.md)
 - [python_imports](../modules/python_imports.md)
@@ -133,9 +132,9 @@ sequenceDiagram
     p9-->>p24: Path (src/llm_wiki_cli/services…dge_maintenance_authority)(src_dir)
 ```
 
-> Call sequence diagram shows 30 of 2816 interactions; 2786 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2819 interactions; 2789 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 10 of 945 (935 omitted); unresolved 4 of 665 (661 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 10 of 938 (928 omitted); unresolved 4 of 678 (674 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -149,7 +148,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 30 | - | external | 4 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 30 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 33 | - | external | 20 |
-> Omission summary shows 8 of 668 groups; 660 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 660 groups; 652 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -212,16 +211,16 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| acknowledge_maintenance | type (src/llm_wiki_cli/api.py:acknowledge_maintenance) | 1620 | `type(allow_external_src)` |
-| acknowledge_maintenance | ValueError (src/llm_wiki_cli/api.py:acknowledge_maintenance) | 1621 | `ValueError('allow_external_src must be a boolean')` |
-| acknowledge_maintenance | _detached | 1622 | `_detached(expected_basis)` |
+| acknowledge_maintenance | type (src/llm_wiki_cli/api.py:acknowledge_maintenance) | 1629 | `type(allow_external_src)` |
+| acknowledge_maintenance | ValueError (src/llm_wiki_cli/api.py:acknowledge_maintenance) | 1630 | `ValueError('allow_external_src must be a boolean')` |
+| acknowledge_maintenance | _detached | 1631 | `_detached(expected_basis)` |
 | _detached | deepcopy (src/llm_wiki_cli/services…enance_state.py:_detached) | 952 | `deepcopy(value)` |
 | _detached | MaintenanceError | 954 | `MaintenanceError('schema-invalid', 'maintenance owner must contain strict JSON')` |
 | _detached | require | 957 | `require(..., 'schema-invalid', 'maintenance owner must be an object')` |
 | require | MaintenanceError | 27 | `MaintenanceError(code, message)` |
 | _detached | type (src/llm_wiki_cli/services…enance_state.py:_detached) | 958 | `type(result)` |
 | _detached | isinstance (src/llm_wiki_cli/services…enance_state.py:_detached) | 960 | `isinstance(result, dict)` |
-| acknowledge_maintenance | maintenance_core | 1623 | `maintenance_core(data not statically known)` |
+| acknowledge_maintenance | maintenance_core | 1632 | `maintenance_core(data not statically known)` |
 | maintenance_core | MaintenanceCore | 946 | `MaintenanceCore(validate_implementation_evidence)` |
 
 ### Boundary effects
@@ -232,8 +231,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `acknowledge_maintenance` | `type` | 1620 |
-| external_call | `acknowledge_maintenance` | `ValueError` | 1621 |
+| external_call | `acknowledge_maintenance` | `type` | 1629 |
+| external_call | `acknowledge_maintenance` | `ValueError` | 1630 |
 | external_call | `_detached` | `deepcopy` | 952 |
 | external_call | `_detached` | `type` | 958 |
 | external_call | `_detached` | `isinstance` | 960 |

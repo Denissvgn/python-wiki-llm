@@ -1,6 +1,6 @@
 # HealthEvaluation
 
-**Location:** `src/llm_wiki_cli/api_types.py:583`
+**Location:** `src/llm_wiki_cli/api_types.py:587`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

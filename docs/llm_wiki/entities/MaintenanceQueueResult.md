@@ -1,6 +1,6 @@
 # MaintenanceQueueResult
 
-**Location:** `src/llm_wiki_cli/api_types.py:88`
+**Location:** `src/llm_wiki_cli/api_types.py:92`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

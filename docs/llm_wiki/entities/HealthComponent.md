@@ -1,6 +1,6 @@
 # HealthComponent
 
-**Location:** `src/llm_wiki_cli/api_types.py:598`
+**Location:** `src/llm_wiki_cli/api_types.py:602`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

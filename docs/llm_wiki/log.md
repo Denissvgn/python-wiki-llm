@@ -1536,3 +1536,26 @@ Added task paths for orientation, source changes, symptom investigation and docu
 - Workflow pages created: 1
 - Dependency pages initialized: 0
 - Surface policy updated: no
+
+## 2026-10-07
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.3.2`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:b56dc17241fbcbc76f7db425092b8f0c07a9f9a3d474f3d5dbf963d4a57b21b3`
+- Pages created: 12
+- Pages updated: 237
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1315
+- Pages deprecated: 1
+- Semantic fields preserved: 16
+- Moved entities: none
+- Flow pages initialized: 0 (none)
+- Workflow pages created: 3
+- Dependency pages initialized: 0
+- Surface policy updated: no
+- Generated surface pages retired: 1
+
+Kept scoped task evidence, conservative caller resolution and explicit storage/review choices aligned with the maintained source; authored explanations remain separate from generated structure.

@@ -44,6 +44,7 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `.services.maintenance_service` | `adopt_maintenance_authority`, `get_maintenance_status_authority`, `acknowledge_maintenance_authority`, `recover_maintenance_authority` |
 | `.services.maintenance_state` | `_detached`, `maintenance_core`, `_identity` |
 | `.services.native_inspection` | `NATIVE_INSPECTION_SCHEMA_VERSION`, `inspect_native_concept` |
+| `.services.search_discovery` | `DiscoveryError`, `MAX_DISCOVERY_BYTES` |
 | `.services.search_service` | `search_wiki` |
 | `.services.source_selection` | `SourceSelectionError` |
 | `.services.source_snapshot` | `SourceSnapshotError` |
@@ -87,9 +88,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (6) |
-| Outbound | `src` (46) |
+| Outbound | `src` (47) |
 
-> All 52 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 53 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -100,7 +101,7 @@ flowchart LR
 | [InvalidRequestError](../entities/InvalidRequestError.md) | 369 | `LlmWikiApiError` | Raised when arguments or a submitted request contract are invalid. |
 | [WorkspaceStateError](../entities/WorkspaceStateError.md) | 373 | `LlmWikiApiError` | Raised when workspace state or an operational dependency is unusable. |
 | [ArtifactIntegrityError](../entities/ArtifactIntegrityError.md) | 377 | `LlmWikiApiError` | Raised when persisted or supplied artifact integrity cannot be trusted. |
-| [ContextSession](../entities/api_ContextSession.md) | 1489 | `_ContextSession` | Explicit disposable reuse, with the public API error contract. |
+| [ContextSession](../entities/api_ContextSession.md) | 1498 | `_ContextSession` | Explicit disposable reuse, with the public API error contract. |
 
 ## Functions
 
@@ -134,7 +135,7 @@ flowchart LR
 | `build_context` | `(src_dir: str = '.', *, budget: int = 32000, format: str, focus: str \| list[str] = 'changed', filters: dict[str, Any] \| None = None, wiki_dir: str = DEFAULT_WIKI_DIR, prefer_fresh: bool = False, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None, knowledge_mode: KnowledgeMode \| None = None, comparison_policy: str \| None = None) -> ContextPayload \| MarkdownContextResult` | `@overload` | — |
 | `build_context` | `(src_dir: str = '.', *, budget: int = 32000, format: str = 'json', focus: str \| list[str] = 'changed', filters: dict[str, Any] \| None = None, wiki_dir: str = DEFAULT_WIKI_DIR, prefer_fresh: bool = False, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None, knowledge_mode: KnowledgeMode \| None = None, comparison_policy: str \| None = None) -> ContextPayload \| MarkdownContextResult` | `@_api_boundary`, `@ac.comparison_entrypoint` | Return a supported context payload without depending on CLI internals. |
 | `build_budgeted_context` | `(src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, request: Mapping[str, Any] \| None = None, *, counter: TokenCounter \| None = None, allow_external_src: bool = False, source_selection: str \| Path \| None = None, comparison_policy: str \| None = None) -> BudgetedContext` | `@_api_boundary`, `@ac.comparison_entrypoint` | Render opt-in v3 context with a trusted complete-output token counter. |
-| `search_wiki` | `(query: str, *, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, kinds: list[str] \| None = None, limit: int = 20, mode: Literal['ranked', 'substring'] = 'ranked', source_selection: str \| Path \| None = None, allow_external_src: bool = False) -> SearchResult` | `@_api_boundary` | Search canonical wiki pages with bounded, deterministic lexical ranking. |
+| `search_wiki` | `(query: str, *, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, kinds: list[str] \| None = None, limit: int = 20, mode: Literal['ranked', 'ranked-v1', 'ranked-v2', 'substring'] = 'ranked', source_selection: str \| Path \| None = None, allow_external_src: bool = False, include_source: bool = False, discovery: Literal['qualified-v1'] \| None = None) -> SearchResult` | `@_api_boundary` | Search canonical wiki pages with bounded, deterministic lexical ranking. |
 | `validate_budgeted_context` | `(rendered: str, request: Mapping[str, Any], *, counter: TokenCounter) -> dict[str, Any]` | `@_api_boundary` | Validate a v3 canonical response and its declared accounting boundary. |
 | `load_workflow_profile` | `(path: str \| Path, *, policy: WorkflowPolicy \| None = None) -> WorkflowProfile` | `@_api_boundary` | Load an explicitly selected profile within trusted host ceilings. |
 | `build_task_context` | `(request: Mapping[str, Any], *, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, profile: WorkflowProfile \| Mapping[str, Any] \| None = None, policy: WorkflowPolicy \| None = None, counter: TokenCounter \| None = None, allow_external_src: bool = False, source_selection: str \| Path \| None = None, helper_cache_dir: str \| None = None, cancelled: Callable[[], bool] \| None = None, comparison_policy: str \| None = None) -> TaskContext` | `@_api_boundary`, `@ac.comparison_entrypoint` | Compose bounded qualified evidence; coverage does not mean task correctness. |

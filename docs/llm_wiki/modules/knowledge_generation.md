@@ -25,7 +25,7 @@ filesystem reads are the target-state comparisons performed by
 | `.knowledge_evidence` | `ConceptObservationBasis`, `build_entity_observation_basis`, `build_module_observation_basis`, `is_valid_sha256` |
 | `.knowledge_governance` | `GovernanceLedger`, `apply_governance_projection` |
 | `.knowledge_graph` | `DEFAULT_EVIDENCE_LIMIT`, `GraphConcept`, `KnowledgeGraphError`, `KnowledgeGraphInputs`, `materialize_typed_graph` |
-| `.knowledge_index` | `KnowledgeIndexBuildError`, `KnowledgeIndexInputs`, `build_knowledge_index` |
+| `.knowledge_index` | `KnowledgeIndexBuildError`, `KnowledgeIndexInputs`, `build_knowledge_index`, `_knowledge_validation_operation` |
 | `.knowledge_links` | `KnowledgeLinkError`, `collect_link_observations` |
 | `.knowledge_model` | `ProducerRecord`, `concept_kind_for_page_kind` |
 | `.knowledge_reuse` | `REUSE_EXTENSION_KEY`, `REUSE_INPUT_KEY`, `bind_reuse_commitment` |
@@ -70,8 +70,8 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [KnowledgeGenerationError](../entities/KnowledgeGenerationError.md) | 90 | `ValueError` | Field-specific failure at the shared generation-planning boundary. |
-| [KnowledgeGenerationInputs](../entities/KnowledgeGenerationInputs.md) | 100 | — | Complete already-evaluated inputs for one generated artifact set. |
+| [KnowledgeGenerationError](../entities/KnowledgeGenerationError.md) | 91 | `ValueError` | Field-specific failure at the shared generation-planning boundary. |
+| [KnowledgeGenerationInputs](../entities/KnowledgeGenerationInputs.md) | 101 | — | Complete already-evaluated inputs for one generated artifact set. |
 
 ## Functions
 

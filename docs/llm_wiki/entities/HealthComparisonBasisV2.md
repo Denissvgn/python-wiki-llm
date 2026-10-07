@@ -1,6 +1,6 @@
 # HealthComparisonBasisV2
 
-**Location:** `src/llm_wiki_cli/api_types.py:678`
+**Location:** `src/llm_wiki_cli/api_types.py:682`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

@@ -1,6 +1,6 @@
 # ComparisonPolicy
 
-**Location:** `src/llm_wiki_cli/api_types.py:652`
+**Location:** `src/llm_wiki_cli/api_types.py:656`
 **Kind:** Type alias
 **Bases:** —
 **Module:** [api_types](../modules/api_types.md)

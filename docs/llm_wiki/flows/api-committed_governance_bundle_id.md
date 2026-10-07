@@ -49,7 +49,7 @@ sequenceDiagram
     participant p4 as validate_governance_projection
     participant p5 as state.require_for
     participant p6 as isinstance (src/llm_wiki_cli/services…_bundle_id_from_knowledge)
-    participant p7 as Path(…).resolve
+    participant p7 as Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge)
     participant p8 as Path (src/llm_wiki_cli/services…pture_committed_knowledge)
     participant p9 as guard_maintenance_owner
     participant p10 as (…).read_bytes
@@ -76,7 +76,7 @@ sequenceDiagram
     p2->>p4: validate_governance_projection
     p1-->>p5: state.require_for(wiki_dir)
     p2-->>p6: isinstance (src/llm_wiki_cli/services…_bundle_id_from_knowledge)(value, str)
-    p3-->>p7: Path(…).resolve
+    p3-->>p7: Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge)
     p3-->>p8: Path (src/llm_wiki_cli/services…pture_committed_knowledge)(wiki_dir)
     p3->>p9: guard_maintenance_owner
     p3-->>p10: (…).read_bytes
@@ -102,9 +102,9 @@ sequenceDiagram
     p9-->>p27: Path (src/llm_wiki_cli/services…y:guard_maintenance_owner)(wiki_dir)
 ```
 
-> Call sequence diagram shows 30 of 838 interactions; 808 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 862 interactions; 832 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 6 of 274 (268 omitted); unresolved 8 of 156 (148 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 6 of 284 (278 omitted); unresolved 8 of 159 (151 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -118,7 +118,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 7 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/maintenance_protocol.py:guard_maintenance_owner` | 6 | [src/llm_wiki_cli/services/maintenance_protocol.py](../modules/maintenance_protocol.md) | internal | 8 |
 | `src/llm_wiki_cli/services/maintenance_protocol.py:load_adoption_marker` | 43 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 2 |
-> Omission summary shows 8 of 170 groups; 162 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 175 groups; 167 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -131,7 +131,7 @@ flowchart LR
     s1["1. committed_governance_bundle_id"]
     s2["2. _previous_committed_artifacts"]
     s3["3. capture_committed_knowledge"]
-    s4["4. Path(…).resolve"]
+    s4["4. Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge)"]
     s5["5. Path (src/llm_wiki_cli/services…pture_committed_knowledge)"]
     s6["6. guard_maintenance_owner"]
     s7["7. _absolute_path"]
@@ -142,7 +142,7 @@ flowchart LR
     s12["12. os.fspath"]
     s1 -->|"_previous_committed_artifacts(wiki_dir, manifest, committed_state=committed_state)"| s2
     s2 -->|"capture_committed_knowledge(wiki_dir, manifest)"| s3
-    s3 -. "Path(…).resolve(data not statically known)" .-> s4
+    s3 -. "Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge)(data not statically known)" .-> s4
     s3 -. "Path (src/llm_wiki_cli/services…pture_committed_knowledge)(wiki_dir)" .-> s5
     s3 -->|"guard_maintenance_owner(root, manifest)"| s6
     s6 -->|"_absolute_path(Path(...))"| s7
@@ -173,7 +173,7 @@ flowchart LR
 | `committed_governance_bundle_id` | `wiki_dir: str \| Path`, `manifest: SyncManifest \| None`, `committed_state: CommittedKnowledgeState \| None` | - | - | `None`, `governance_bundle_id_from_knowledge(...)` |
 | `_previous_committed_artifacts` | `wiki_dir: str \| Path`, `manifest: SyncManifest \| None`, `committed_state: CommittedKnowledgeState \| None` | - | - | `state.artifacts` |
 | `capture_committed_knowledge` | `wiki_dir: str \| Path`, `manifest: SyncManifest \| None` | `SURFACE_INDEX_FILENAME`, `KNOWLEDGE_INDEX_FILENAME`, `MANIFEST_FILENAME`, `MANIFEST_FILENAME`, `SURFACE_INDEX_FILENAME`, `KNOWLEDGE_INDEX_FILENAME`, `KnowledgeArtifactError`, `KnowledgeArtifactError` | `captured[...]`, `captured[...]` | `state` |
-| `Path(…).resolve` | - | - | - | - |
+| `Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge)` | - | - | - | - |
 | `Path (src/llm_wiki_cli/services…pture_committed_knowledge)` | - | - | - | - |
 | `guard_maintenance_owner` | `wiki_dir: str \| Path`, `manifest` | - | - | `None`, `None`, `marker` |
 | `_absolute_path` | `path: Path` | - | - | `path` |
@@ -189,7 +189,7 @@ flowchart LR
 |---|---|---:|---|
 | committed_governance_bundle_id | _previous_committed_artifacts | 769 | `_previous_committed_artifacts(wiki_dir, manifest, committed_state=committed_state)` |
 | _previous_committed_artifacts | capture_committed_knowledge | 756 | `capture_committed_knowledge(wiki_dir, manifest)` |
-| capture_committed_knowledge | Path(…).resolve | 235 | `Path(wiki_dir).resolve(data not statically known)` |
+| capture_committed_knowledge | Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge) | 235 | `Path(wiki_dir).resolve(data not statically known)` |
 | capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 235 | `Path(wiki_dir)` |
 | capture_committed_knowledge | guard_maintenance_owner | 238 | `guard_maintenance_owner(root, manifest)` |
 | guard_maintenance_owner | _absolute_path | 104 | `_absolute_path(Path(...))` |

@@ -36,7 +36,7 @@ extraction of its own.
 | `.progress` | `observed_phase` |
 | `.python_implementation` | `analysis_identity` |
 | `.source_selection` | `SourceSelectionError`, `selection_may_contain_path`, `with_source_selection_generation_input` |
-| `.source_snapshot` | `SourceSnapshot`, `confirmed_missing_source_paths` |
+| `.source_snapshot` | `SourceSnapshot`, `source_snapshot_matches_current_files`, `confirmed_missing_source_paths` |
 | `.sync_manifest` | `EVIDENCE_NOT_RECORDED`, `MANIFEST_FILENAME`, `SyncManifest` |
 | `.sync_transitions` | `PageTransitionPlan` |
 | `.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION`, `SurfaceIndexEvaluation` |
@@ -100,6 +100,7 @@ flowchart LR
 | `committed_runtime_provenance` | `(wiki_dir: str \| Path, manifest: SyncManifest \| None, *, committed_state: CommittedKnowledgeState \| None = None) -> CommittedRuntimeProvenance \| None` | — | Return source and generator identity from an intact committed projection. |
 | `_previous_committed_producer` | `(wiki_dir: str \| Path, manifest: SyncManifest \| None, *, committed_state: CommittedKnowledgeState \| None = None) -> ProducerRecord \| None` | — | Return producer evidence only from the prior committed artifact set. |
 | `_commit_runtime_knowledge` | `(inputs: RuntimeKnowledgeInputs, plan: KnowledgeCommitPlan, *, dry_run: bool, fault_injector: FaultInjector \| None) -> KnowledgeCommitResult` | — | — |
+| `_require_runtime_source_current` | `(snapshot: SourceSnapshot) -> None` | — | — |
 | `finalize_runtime_knowledge` | `(inputs: RuntimeKnowledgeInputs, *, dry_run: bool = False, fault_injector: FaultInjector \| None = None) -> KnowledgeCommitResult` | — | Plan and commit one generated artifact set through the shared protocol. |
 | `_prepared_runtime_governance` | `(inputs: RuntimeKnowledgeInputs) -> GovernanceLedger \| None` | — | Load/reconcile governance without writing or inventing recovery state. |
 | `collect_runtime_repository_evidence` | `(source_root: str \| Path, target_wiki_dir: str \| Path, *, source_snapshot: SourceSnapshot \| None = None) -> RepositoryEvidence` | — | Collect Git evidence for the evaluated source-selection boundary. |
