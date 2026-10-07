@@ -64,7 +64,11 @@ def test_source_only_budget_gap_keeps_actual_missing_evidence(prepared):
     coverage = {row["requirement_id"]: row for row in before["payload"]["coverage"]}
     assert coverage["contract"]["satisfied"] is True
     assert coverage["behavior"]["state"] == "unsupported" and not coverage["behavior"]["satisfied"]
-    assert coverage["callers"]["satisfied"] is False
+    assert coverage["callers"]["satisfied"] is True
+    callers = next(fact for fact in before["payload"]["facts"] if fact["facet"] == "callers")
+    assert callers["qualification"]["behavior"] == "not-evaluated"
+    assert {(row["file"], row["symbol"]) for row in callers["observation"]["callers"]} == {("policy.py", "public_values")}
+    assert callers["observation"]["coverage"]["runtime_completeness"] is False
 
 
 def test_resumed_context_invalidates_source_and_agrees_with_cold_read(prepared):
