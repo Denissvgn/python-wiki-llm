@@ -2018,6 +2018,348 @@
     },
     {
       "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_actual_usage_requires_pinned_receipt_bytes_and_retains_partial_coverage",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_artifact_bytes_and_content_estimates_are_not_actual_model_usage",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_broker_serializes_concurrent_append_requests_without_lost_records",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_clock_reversal_or_discontinuity_prevents_complete_time_claim[monotonic-backwards]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_clock_reversal_or_discontinuity_prevents_complete_time_claim[wall-backwards]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_clock_reversal_or_discontinuity_prevents_complete_time_claim[wall-jump]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_contained_other_worker_interval_cannot_shorten_elapsed_union",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_controller_terminal_cannot_silently_close_an_open_child",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_corrupt_ledger_cannot_be_reopened_or_credited_complete[drop]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_corrupt_ledger_cannot_be_reopened_or_credited_complete[duplicate]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_corrupt_ledger_cannot_be_reopened_or_credited_complete[edit]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_corrupt_ledger_cannot_be_reopened_or_credited_complete[reorder]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_corrupt_ledger_cannot_be_reopened_or_credited_complete[truncate]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_declared_sparse_phase_costs_keep_preparation_and_update_separate",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_estimates_untrusted_or_unattributable_usage_never_enter_actual_totals[estimate]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_estimates_untrusted_or_unattributable_usage_never_enter_actual_totals[money-no-currency]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_estimates_untrusted_or_unattributable_usage_never_enter_actual_totals[mutated-after-pin]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_estimates_untrusted_or_unattributable_usage_never_enter_actual_totals[negative-tokens]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_estimates_untrusted_or_unattributable_usage_never_enter_actual_totals[untrusted]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_estimates_untrusted_or_unattributable_usage_never_enter_actual_totals[wrong-attempt]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_estimates_untrusted_or_unattributable_usage_never_enter_actual_totals[wrong-run]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_explicit_controller_scope_observes_setup_and_closure_latency_without_backfill",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_export_roundtrip_preserves_authenticated_events_and_never_overwrites",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_failures_timeouts_and_pauses_remain_in_elapsed_and_outcomes",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_fresh_process_broker_resume_keeps_durable_history_and_segment_boundary",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_fully_observed_failed_delivery_has_complete_accounting",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_invalid_lifecycle_cannot_append_plausible_terminal_records[double-run-end]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_invalid_lifecycle_cannot_append_plausible_terminal_records[double-span-end]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_invalid_lifecycle_cannot_append_plausible_terminal_records[duplicate-attempt]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_invalid_lifecycle_cannot_append_plausible_terminal_records[duplicate-span]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_invalid_lifecycle_cannot_append_plausible_terminal_records[unknown-attempt]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_invalid_lifecycle_cannot_append_plausible_terminal_records[unknown-parent]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_monotonic_restart_cannot_be_used_as_one_continuous_interval",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_nested_and_same_worker_overlap_count_once_but_raw_tools_keep_consumption",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_nested_pause_subtracts_only_its_actors_active_window[False]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_nested_pause_subtracts_only_its_actors_active_window[True]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_parallel_workers_are_union_wall_time_and_separate_consumption",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_partial_controller_scope_cannot_leave_a_started_run[controller_attempt_id]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_partial_controller_scope_cannot_leave_a_started_run[controller_category]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_partial_controller_scope_cannot_leave_a_started_run[controller_phase]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_partial_controller_scope_cannot_leave_a_started_run[controller_span_id]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_phase_category_denominator_preserves_unperformed_work",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_real_tool_wrapper_records_boundaries_failure_hashes_and_redaction[failed]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_real_tool_wrapper_records_boundaries_failure_hashes_and_redaction[timed-out]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_receipted_attempts_do_not_prove_complete_model_request_or_money_coverage",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_restart_retains_interrupted_attempt_without_inventing_span_end",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_reusing_same_usage_receipt_does_not_double_bill",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_same_host_request_cannot_be_rebilled_by_changing_run_and_receipt_bytes",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_single_writer_lock_prevents_a_second_controller_segment",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_timed_out_tool_cannot_leave_its_owned_grandchild_running",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_unobserved_or_unfinished_intervals_never_receive_complete_credit[explicit-gap]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_unobserved_or_unfinished_intervals_never_receive_complete_credit[missing-run-end]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_unobserved_or_unfinished_intervals_never_receive_complete_credit[open-span]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_unobserved_or_unfinished_intervals_never_receive_complete_credit[uncovered-interval]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_unparented_overlapping_phase_category_attribution_is_incomplete",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_work_cannot_contradict_a_zero_work_denominator_exclusion",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_cost_recorder.py::test_zero_work_category_needs_an_explicit_retained_reason",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Local cost recorder requires native POSIX locking, Unix sockets and process groups"
+    },
+    {
+      "lane": "core-windows-3.13",
       "node_id": "tests/test_documentation_calibration_controller.py::test_posix_control_json_read_does_not_reopen_by_path",
       "owner_lane": "product-ubuntu-24.04",
       "reason": "POSIX descriptor-relative traversal is unavailable"
