@@ -162,14 +162,172 @@ def test_queue_limit_metadata_and_counts(count, limit):
     assert compose_queue([], [], {}, {}, {})["limit"] == 30
 
 
-def test_unknown_freshness_alone_is_informational_queue_evidence():
+def test_unknown_freshness_is_preserved_as_qualification_without_inventing_work():
     page = {"canonical_path": "modules/unknown.md", "kind": "modules", "role": "mixed"}
     result = compose_queue([page], [], {}, {}, {})
-    assert result["total"] == result["returned"] == 1
-    item = result["items"][0]
-    assert item["freshness"]["state"] == "unknown"
-    assert item["classification"] == "informational"
-    assert [reason["code"] for reason in item["reasons"]] == ["freshness:unknown"]
+    assert result["total"] == result["returned"] == 0
+    assert result["items"] == []
+    assert result["qualification"]["freshness_states"] == {"unknown": 1}
+    assert result["advisory"]
+
+
+def test_text_queue_preserves_unknown_and_generic_authoring_qualification():
+    page = {"canonical_path": "modules/unknown.md", "kind": "modules", "role": "mixed"}
+    work = SimpleNamespace(
+        canonical_path=page["canonical_path"],
+        signals=("placeholder_semantic_prose",),
+        status="open",
+    )
+    result = compose_queue([page], [work], {}, {}, {})
+    rendered = maintenance_queue.render_queue(result)
+    assert result["items"] == []
+    assert "Advisory page queue: 0 of 0 (0 omitted)" in rendered
+    assert "Captured page freshness: unknown: 1" in rendered
+    assert "Generic authoring hint pages: 1" in rendered
+    assert result["qualification"]["scope"] in rendered
+    assert all(value in rendered for value in result["qualification"]["limitations"])
+
+
+@pytest.mark.parametrize(
+    "signal",
+    [
+        "generic_landing_context",
+        "missing_or_placeholder_architecture_notes",
+        "missing_or_placeholder_flow_behavior",
+        "placeholder_semantic_prose",
+        "copied_docstring_only_prose",
+    ],
+)
+def test_generic_authoring_hint_does_not_request_repeated_maintenance(signal):
+    page = {"canonical_path": "modules/policy.md", "kind": "modules", "role": "mixed"}
+    work = SimpleNamespace(
+        canonical_path=page["canonical_path"],
+        title="Explain role",
+        signals=(signal,),
+        status="open",
+    )
+    result = compose_queue([page], [work], {}, {}, {})
+    assert not result["items"] and result["qualification"]["authoring_hint_pages"] == 1
+    assert result["qualification"]["freshness_states"] == {"unknown": 1}
+
+
+def test_verified_defect_retains_unknown_qualification_and_all_returned_rows():
+    pages = [
+        {"canonical_path": f"modules/{n}.md", "kind": "modules", "role": "mixed"}
+        for n in range(3)
+    ]
+    issues = {
+        p["canonical_path"]: [
+            LintIssue("broken-link", "The retained local link is missing", "error")
+        ]
+        for p in pages
+    }
+    result = compose_queue(pages, [], {}, issues, {}, limit=100)
+    assert (
+        result["total"] == result["returned"] == len(result["items"]) == 3
+        and result["omitted"] == 0
+    )
+    assert all(
+        i["freshness"]["state"] == "unknown" and i["classification"] == "actionable"
+        for i in result["items"]
+    )
+    assert all(
+        {r["code"] for r in i["reasons"]} == {"lint:broken-link", "freshness:unknown"}
+        for i in result["items"]
+    )
+
+
+def test_concrete_worklist_evidence_is_not_lost_with_generic_hints():
+    page = {"canonical_path": "modules/policy.md", "kind": "modules", "role": "mixed"}
+    work = SimpleNamespace(
+        canonical_path=page["canonical_path"],
+        title="Repair owner",
+        signals=("copied_docstring_only_prose", "verified_ownership_conflict"),
+        status="open",
+    )
+    result = compose_queue([page], [work], {}, {}, {})
+    assert (
+        result["returned"] == 1 and result["items"][0]["classification"] == "actionable"
+    )
+    assert result["items"][0]["placeholder_signals"] == list(work.signals)
+
+
+@pytest.mark.parametrize(
+    "priority,evidence,expected", [("P0", True, 1), ("P2", True, 0), ("P0", False, 0)]
+)
+def test_boundary_flow_requires_real_source_entry_evidence_not_priority_alone(
+    priority, evidence, expected
+):
+    page = {
+        "canonical_path": "flows/http-api.md",
+        "kind": "flows",
+        "role": "mixed",
+        "source_path": "server.py",
+    }
+    work = SimpleNamespace(
+        canonical_path=page["canonical_path"],
+        category="flow_behavior",
+        priority=priority,
+        source_path="server.py",
+        title="Explain the HTTP request boundary",
+        signals=("missing_or_placeholder_flow_behavior",),
+        suggested_context=("source:server.py", "evidence:entrypoint:http-api")
+        if evidence
+        else (),
+        status="open",
+    )
+    result = compose_queue([page], [work], {}, {}, {}, limit=100)
+    assert result["total"] == result["returned"] == expected
+    if expected:
+        assert result["items"][0]["classification"] == "actionable"
+        assert result["items"][0]["freshness"]["state"] == "unknown"
+
+
+def test_unresolved_source_specific_review_hint_remains_a_full_queue_item(
+    tmp_path, monkeypatch, capsys
+):
+    from llm_wiki_cli import api
+    from llm_wiki_cli.services import analysis_capture
+    from tests.developer_value.fixtures import POLICY_SOURCE
+
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "src").mkdir()
+    (tmp_path / "src/policy.py").write_text(POLICY_SOURCE)
+    api.bootstrap_wiki("src", "wiki")
+    api.adopt_maintenance("src", "wiki", recovery_dir="recovery")
+    capsys.readouterr()
+    before = {
+        p.relative_to(tmp_path).as_posix(): p.read_bytes()
+        for p in tmp_path.rglob("*")
+        if p.is_file()
+    }
+    original = analysis_capture.implementation_hash
+
+    def incompatible(root, paths):
+        from hashlib import sha256
+
+        return (
+            "sha256:"
+            + sha256(("changed:" + original(root, paths)).encode()).hexdigest()
+        )
+
+    monkeypatch.setattr(analysis_capture, "implementation_hash", incompatible)
+    result = build_maintenance_queue("src", "wiki", limit=100)
+    item = next(row for row in result["items"] if row["path"] == "entities/Batch.md")
+    assert item["record_ids"] and item["maintenance"]["pending"] >= 1
+    assert any(
+        r["code"]
+        in {
+            "maintenance:producer-incompatible",
+            "maintenance:current-basis-unavailable",
+        }
+        for r in item["reasons"]
+    )
+    assert before == {
+        p.relative_to(tmp_path).as_posix(): p.read_bytes()
+        for p in tmp_path.rglob("*")
+        if p.is_file()
+    }
 
 
 def test_queue_identity_binds_limit_even_when_items_match(
