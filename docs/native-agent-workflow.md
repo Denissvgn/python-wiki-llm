@@ -30,11 +30,18 @@ publish. Existing context calls retain their defaults.
 
 Search discovery preserves ranking reasons and corpus bounds. Exact queries use
 the existing [native query contract](native-knowledge-provider.md). A maintenance
-queue is advisory and never applies recommendations.
+queue is advisory and never applies recommendations. Read its
+`qualification.ordinary_review_custody` availability, owner and live-evaluation
+fields before relying on ordinary-review history. Partial, unadopted or
+unavailable custody remains a gap. Even a ready status or an empty queue does
+not establish source/prose correctness or review completion; inspect the exact
+source and prose and follow [ordinary review tracking](maintenance.md) when needed.
 
 Ranked search weights informative terms and semantic sections, keeps exact page
 and declaration matches before fuzzy candidates, and labels relaxed matches for
-longer queries. `--mode ranked-v1` retains the earlier ranking policy;
+longer queries. The default `ranked` mode and explicit `ranked-v2` mode use
+`ranking_version: "llm-wiki-search/lexical-v2"`. `--mode ranked-v1` retains
+the earlier ranking policy;
 `--mode substring` performs literal text matching. All results remain discovery
 candidates and require exact inspection before a coding decision.
 
@@ -241,7 +248,10 @@ is solved or that prose is correct.
 Python method callers can resolve through uniquely justified local constructors,
 assigned constructor instances and explicit imported class aliases. Factories,
 shadowed/conflicting bindings, receiver mutations and uncertain loop or exception
-paths stay located unresolved evidence. Inspect exact source before relying on
+paths stay located unresolved evidence. Captured module, class and receiver
+namespace mutations can invalidate a target. Resolution uses lexical scope and
+captured evaluation order, including conditional and short-circuit expressions.
+Inspect exact source before relying on
 a candidate; neither a missing edge nor a non-truncated response proves runtime
 completeness.
 

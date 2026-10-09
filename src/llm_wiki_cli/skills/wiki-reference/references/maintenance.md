@@ -65,7 +65,12 @@ llm-wiki queue --src-dir src --wiki-dir wiki
 Use the actual configured roots and source selection. Adoption starts tracked
 prose as unreviewed. Sync preserves pending records across refresh and restart;
 read-only status, context and queues do not acknowledge them. The queue remains
-advisory. Python executable syntax changes are scoped observations, separate
+advisory. Read its JSON `qualification.ordinary_review_custody` availability,
+`durable_owner_available` and `live_evaluation_performed` fields. Partial,
+unadopted or unavailable custody remains a gap; even a ready status or an empty
+queue establishes neither source/prose correctness nor ordinary-review completion.
+Inspect exact source and semantic prose before using the status/acknowledgment
+route below. Python executable syntax changes are scoped observations, separate
 from source-byte and structural freshness; unchanged syntax proves neither
 unchanged dependencies nor runtime behavior. Unsupported evidence stays
 unavailable. Unadopted wikis retain their existing format and review limits.

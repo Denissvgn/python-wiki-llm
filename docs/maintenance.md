@@ -23,6 +23,13 @@ llm-wiki maintenance status --src-dir src --wiki-dir docs/llm_wiki
 llm-wiki queue --src-dir src --wiki-dir docs/llm_wiki
 ```
 
+The queue is advisory. Its JSON `qualification.ordinary_review_custody` reports
+`availability`, `durable_owner_available` and `live_evaluation_performed`.
+Partial, unadopted or unavailable custody does not establish completed review.
+Even a ready status or an empty queue proves neither source/prose correctness nor
+ordinary-review completion. Inspect the affected source and prose, then use the
+exact status and acknowledgment route below for adopted records.
+
 Adoption starts existing tracked prose as unreviewed. It preserves generated
 Markdown and existing human governance. The immutable
 `.llm-wiki-maintenance-adoption.json` marker and the manifest's typed maintenance

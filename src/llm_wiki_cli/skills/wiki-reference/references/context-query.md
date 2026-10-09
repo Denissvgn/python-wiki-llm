@@ -133,8 +133,9 @@ speedup is established by opening a session.
 ## Qualified discovery before exact inspection
 
 Ranked search keeps exact page and declaration identities ahead of approximate
-matches and reports reasons and corpus bounds. `--mode ranked-v1` retains the
-earlier policy; `--mode substring` keeps literal matching. Search results remain
+matches and reports reasons and corpus bounds. The default `ranked` mode and
+explicit `ranked-v2` mode use `ranking_version: "llm-wiki-search/lexical-v2"`.
+`--mode ranked-v1` retains the earlier policy; `--mode substring` keeps literal matching. Search results remain
 candidates, including relaxed matches and source snippets.
 
 Choose source augmentation explicitly when source text is needed for discovery:

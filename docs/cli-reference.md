@@ -400,7 +400,10 @@ local declarations, aliases, and imports resolve only when their targets are
 justified. Uniquely resolved local constructors, assigned constructor instances
 and explicit imported class aliases can identify method callers. Factories,
 shadowed or conflicting bindings, receiver/member mutations and uncertain
-control-flow paths remain located unresolved observations. An absent edge never
+control-flow paths remain located unresolved observations. Captured module, class
+and receiver namespace mutations can invalidate a target. Resolution uses lexical
+scope and captured evaluation order, including conditional and short-circuit
+expressions; it does not establish runtime execution. An absent edge never
 proves that no runtime caller exists. Uncertain closures do not link to unrelated
 same-named functions. Optional `call_bindings` entries parallel a
 callable's `calls` list, `python_bindings` describes module bindings, and
@@ -1905,8 +1908,9 @@ llm-wiki search "exact phrase" --mode substring
 
 Ranked mode keeps exact page IDs, paths and defined symbols ahead of fuzzy
 candidates, then weights informative lexical terms, section roles, titles,
-paths and bounded inbound-link relevance. `ranked` selects the current
-`ranked-v2` policy; `--mode ranked-v1` explicitly retains the earlier policy. Results include scores, reasons,
+paths and bounded inbound-link relevance. The default `ranked` mode and explicit
+`ranked-v2` mode use `ranking_version: "llm-wiki-search/lexical-v2"`;
+`--mode ranked-v1` explicitly retains the earlier policy. Results include scores, reasons,
 snippets, content hashes, a corpus identity, and the ranking version. Stable
 path ordering resolves ties. `--mode substring` retains the earlier
 case-insensitive substring behavior and page ordering; MCP accepts the same
@@ -1973,6 +1977,17 @@ and limits give the same identity, while different limits give different
 identities even if every item fits. Reports from versions without this field
 have different identities. A valid advisory queue exits `0`, including when
 there is no recommended work.
+
+The JSON report's `qualification.ordinary_review_custody` describes captured
+ordinary-review authority. Its `availability` is `ready`, `partial`,
+`unadopted` or `unavailable`; `durable_owner_available` identifies whether
+an ordinary-review owner was captured, and `live_evaluation_performed` reports
+whether its status was evaluated against live inputs. Partial, unadopted or
+unavailable custody does not establish completed review. Even a ready status or
+an empty queue leaves `source_prose_correctness` as `not-established`.
+Inspect the affected source and semantic prose; use explicit
+[ordinary review tracking](maintenance.md) when durable review is needed.
+An empty queue does not establish ordinary-review completion.
 
 ## `maintenance`
 

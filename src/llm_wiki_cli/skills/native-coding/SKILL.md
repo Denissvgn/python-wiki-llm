@@ -38,7 +38,10 @@ Use that installed route for the shared context and query contract.
    buffers. Close sessions on task/workspace changes or cancellation.
 6. Preserve the durable reason for the change in an appropriate authored section.
    Use the installed `wiki-reference` maintenance route for an authorized refresh,
-   semantic review and re-anchor. `get_maintenance_queue` is advisory.
+   semantic review and re-anchor. `get_maintenance_queue` is advisory. Read
+   `qualification.ordinary_review_custody` availability and live-evaluation
+   fields; partial, unadopted or unavailable custody remains a gap. Even a ready
+   status or an empty queue proves neither prose correctness nor review completion.
 7. Hand off the explicit request, canonical context identity, known gaps and a
    concise explanation. On resume, validate the retained envelope and rebuild or
    reconcile its on-disk basis before treating it as current.
