@@ -97,6 +97,7 @@ class MaintenanceQueueResult(TypedDict):
     returned: int
     omitted: int
     items: list[dict[str, Any]]
+    qualification: dict[str, Any]
     limitations: list[str]
     diagnostics: list[dict[str, Any]]
     basis: dict[str, Any]

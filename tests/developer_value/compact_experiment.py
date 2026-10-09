@@ -6,7 +6,7 @@ place here. Text estimates are not model tokens, money, or workflow savings.
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import asdict, dataclass, fields
+from dataclasses import asdict, dataclass, field as dataclass_field, fields
 import hashlib
 import json
 from typing import Any, Protocol
@@ -104,9 +104,13 @@ class Measurement:
     minimum_success: TextMeasurement | None
     checks: Mapping[str, bool]
     wall_ns: int | None
+    # Immutable replay foundation, not another caller-authored size summary.
+    capture_json: str | None = dataclass_field(default=None, repr=False)
 
     def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        result = asdict(self)
+        result.pop("capture_json")
+        return result
 
 
 @dataclass(frozen=True)
@@ -123,7 +127,10 @@ class GateDecision:
     measurement: Measurement | None = None
 
     def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        result = asdict(self)
+        if self.measurement is not None:
+            result["measurement"] = self.measurement.to_dict()
+        return result
 
 
 def _positive(value: Any, name: str) -> int:
@@ -261,14 +268,48 @@ def inspect_measurement(canonical_text: str, view_text: str,
     for name in ("workflow_budget_tokens", "total_budget_tokens", "receipt_budget_tokens"):
         if name in metadata:
             _positive(metadata[name], name)
+    capture_json = json.dumps(record, sort_keys=True, separators=(",", ":"),
+                              ensure_ascii=False, allow_nan=False)
     return Measurement(expected, status, canonical, compact, canonical_wire, wire,
-                       followup_measurements, minimum, checks, wall_ns)
+                       followup_measurements, minimum, checks, wall_ns, capture_json)
+
+
+class _FrozenEstimator:
+    identity = ESTIMATOR_ID
+    exact = False
+
+    def count(self, text: str) -> int:
+        return (len(text.encode("utf-8")) + 3) // 4
+
+
+def _measurement_custody(measurement: Measurement) -> bool:
+    """Recompute every derived field from the independently pinned capture."""
+    try:
+        if not isinstance(measurement.capture_json, str):
+            return False
+        record = json.loads(measurement.capture_json)
+        replay = inspect_measurement(record["canonical_text"], record["view_text"],
+                                     record["metadata"], expected=measurement.binding,
+                                     counter=_FrozenEstimator())
+        # JSON comparison preserves bool/int distinctions that dataclass
+        # equality alone would accept, including altered custody checks.
+        return (record_sha256(record) == measurement.binding.record_sha256
+                and record_sha256(replay.to_dict()) == record_sha256(measurement.to_dict()))
+    except (ValueError, TypeError, KeyError, AttributeError):
+        return False
 
 
 def size_gate(measurement: Measurement) -> GateDecision:
     """Frozen primary full-body rule using integer comparisons only."""
-    _validate_pins(measurement.binding)
+    try:
+        _validate_pins(measurement.binding)
+    except (ValueError, TypeError, AttributeError):
+        return GateDecision(False, False, {"external_pins": False}, ("external_pins",))
+    if not isinstance(measurement.checks, Mapping):
+        return GateDecision(False, False, {"derived_measurement_custody": False},
+                            ("derived_measurement_custody",))
     checks = dict(measurement.checks)
+    checks["derived_measurement_custody"] = _measurement_custody(measurement)
     required = (*REQUIRED_CAPTURE_CHECKS, *REQUIRED_CONTROLS)
     if measurement.status == "cannot-fit":
         required = (*required, *REQUIRED_MINIMUM_CHECKS)
@@ -276,9 +317,16 @@ def size_gate(measurement: Measurement) -> GateDecision:
         checks[name] = measurement.checks.get(name) is True
     checks["frozen_primary_case"] = measurement.binding.case_id == PRIMARY_CASE
     checks["successful_projection"] = measurement.status == "success"
-    checks["within_requested_budget"] = measurement.compact_body.estimated_tokens <= measurement.binding.budget_tokens
-    checks["at_most_1000_estimated_tokens"] = measurement.compact_body.estimated_tokens <= MAX_BODY_TOKENS
-    checks["at_least_half_smaller"] = 2 * measurement.compact_body.estimated_tokens <= measurement.canonical_body.estimated_tokens
+    compact_tokens = getattr(measurement.compact_body, "estimated_tokens", None)
+    canonical_tokens = getattr(measurement.canonical_body, "estimated_tokens", None)
+    if (type(compact_tokens) is int and compact_tokens > 0
+            and type(canonical_tokens) is int and canonical_tokens > 0):
+        checks["within_requested_budget"] = compact_tokens <= measurement.binding.budget_tokens
+        checks["at_most_1000_estimated_tokens"] = compact_tokens <= MAX_BODY_TOKENS
+        checks["at_least_half_smaller"] = 2 * compact_tokens <= canonical_tokens
+    else:
+        for name in ("within_requested_budget", "at_most_1000_estimated_tokens", "at_least_half_smaller"):
+            checks[name] = False
     eligible = all(checks.values())
     # Physical size numbers remain visible for diagnostics, but a mixed or
     # uncontrolled capture cannot establish a paired body-size win.

@@ -315,10 +315,29 @@ def test_absent_required_owner_and_truncated_queue_cannot_be_complete_reconcilia
 
 
 def test_unadopted_pending_gap_keeps_the_obligation_and_earns_no_coverage():
-    response = {"items": [], "total": 0, "returned": 0, "omitted": 0, "advisory": True}
+    from llm_wiki_cli.services.maintenance_queue import compose_queue
+    response = compose_queue([], [], {}, {}, {})
     result = reconcile_queue(response, "pending-after-sync", sources={**SOURCES, "policy.py": source_after(), "client.py": client_after()},
         prose=BEFORE_PROSE, durable_owner_available=False)
     assert result["required_owner_surfaced"] is False
     assert result["covered_owner_actions"] == []
     assert result["missing_owner_actions"] == [{"owner": "entities/Harbor.md:Harbor", "operation": "revise-claim"}]
     assert result["unavailable_unsolved"] and result["not_an_acceptance_score"]
+
+
+@pytest.mark.parametrize("field,value", [("availability", "ready"), ("durable_owner_available", True),
+    ("source_prose_correctness", "correct"), ("review_route", {}), ("limitation", "")])
+def test_unadopted_pending_gap_requires_task_facing_negative_capability(field, value):
+    from llm_wiki_cli.services.maintenance_queue import compose_queue
+    response = compose_queue([], [], {}, {}, {})
+    response["qualification"]["ordinary_review_custody"][field] = value
+    with pytest.raises(AssertionError):
+        reconcile_queue(response, "pending-after-sync", sources={**SOURCES, "policy.py": source_after(), "client.py": client_after()},
+            prose=BEFORE_PROSE, durable_owner_available=False)
+
+
+def test_unadopted_pending_gap_rejects_invisible_qualification():
+    response = {"items": [], "total": 0, "returned": 0, "omitted": 0, "advisory": True}
+    with pytest.raises(AssertionError, match="task-facing"):
+        reconcile_queue(response, "pending-after-sync", sources={**SOURCES, "policy.py": source_after(), "client.py": client_after()},
+            prose=BEFORE_PROSE, durable_owner_available=False)

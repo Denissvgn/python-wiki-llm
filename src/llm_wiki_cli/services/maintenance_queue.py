@@ -65,6 +65,43 @@ def validate_queue_limit(limit: object) -> int:
     return limit
 
 
+def _ordinary_review_custody(maintenance_report, manifest_basis):
+    """Qualify existing captured authority without another read or adoption."""
+    if maintenance_report is not None:
+        payload = maintenance_report.payload
+        availability = payload["availability"]
+        coverage = payload["coverage"]
+        partial = bool(
+            payload["requires_sync"]
+            or not payload["live_evaluation_performed"]
+            or coverage.get("issues")
+            or coverage.get("untracked_semantic_total", 0)
+            or any(not row["basis_available"] for row in maintenance_report.by_record.values())
+        )
+        if availability == "ready" and partial:
+            availability = "partial"
+        evidence = "captured-maintenance-status"
+        owner = payload["adoption_id"] is not None
+        live = payload["live_evaluation_performed"]
+    else:
+        owner = bool(manifest_basis is not None and manifest_basis.maintenance_state is not None)
+        availability = "partial" if owner else "unadopted" if manifest_basis is not None else "unavailable"
+        evidence = "validated-native-manifest" if manifest_basis is not None else "no-validated-native-manifest"
+        live = False
+    return {
+        "availability": availability,
+        "durable_owner_available": owner,
+        "evidence": evidence,
+        "live_evaluation_performed": live,
+        "source_prose_correctness": "not-established",
+        "review_route": {
+            "interface": "inspect_concept",
+            "instruction": "Inspect the affected target and compare its semantic prose with source; explicit review is required",
+        },
+        "limitation": "An empty queue does not establish source/prose correctness or completion of ordinary review",
+    }
+
+
 def compose_queue(
     pages,
     work_items,
@@ -74,6 +111,7 @@ def compose_queue(
     *,
     limit=DEFAULT_QUEUE_LIMIT,
     maintenance_report=None,
+    manifest_basis=None,
 ):
     """Rank captured evidence; unknown provenance never becomes confirmed drift."""
     limit = validate_queue_limit(limit)
@@ -411,6 +449,7 @@ def compose_queue(
         "omitted": max(0, len(items) - limit),
         "items": items[:limit],
         "qualification": {
+            "ordinary_review_custody": _ordinary_review_custody(maintenance_report, manifest_basis),
             "freshness_states": dict(sorted(qualification_states.items())),
             "authoring_hint_pages": authoring_hint_pages,
             "scope": "captured page property counts; inspect existing knowledge/status interfaces for individual evidence",
@@ -504,6 +543,7 @@ def build_maintenance_queue(
         captured.dependency_analysis.get("metrics", {}).get("metrics", {}),
         limit=limit,
         maintenance_report=getattr(captured.knowledge_view, "maintenance_report", None),
+        manifest_basis=captured.knowledge_view.manifest_basis,
     )
     if captured.basis_incompatible:
         result["limitations"].append(
@@ -546,6 +586,12 @@ def render_queue(queue):
         lines.append("  " + item["ownership"]["instruction"])
     qualification = queue.get("qualification")
     if qualification:
+        custody = qualification.get("ordinary_review_custody")
+        if custody:
+            lines.append("Ordinary durable review custody: " + custody["availability"])
+            lines.append("  Source/prose correctness is not established")
+            lines.append("  " + custody["review_route"]["instruction"])
+            lines.append("  " + custody["limitation"])
         states = ", ".join(
             f"{state}: {count}"
             for state, count in sorted(qualification["freshness_states"].items())

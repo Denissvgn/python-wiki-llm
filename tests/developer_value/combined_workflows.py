@@ -176,6 +176,15 @@ def reconcile_queue(response: Mapping[str, Any], stage: str, *, sources: dict[st
                      "justification": "frozen source/prose mismatch" if operation else "requires separate row source review"})
     assert type(durable_owner_available) is bool
     assert durable_owner_available or stage == "pending-after-sync", "Only the unsolved unadopted pending stage may lack durable custody"
+    if not durable_owner_available:
+        custody = response.get("qualification", {}).get("ordinary_review_custody")
+        assert isinstance(custody, Mapping), "Missing task-facing unavailable-custody qualification"
+        assert custody.get("availability") in {"unadopted", "unavailable"}, "Unavailable custody must be explicit"
+        assert custody.get("durable_owner_available") is False
+        assert custody.get("source_prose_correctness") == "not-established"
+        route = custody.get("review_route", {})
+        assert route.get("interface") == "inspect_concept" and route.get("instruction"), "Explicit target review route required"
+        assert custody.get("limitation"), "Missing empty-queue limitation"
     required = stage in {"after-source-edit", "pending-after-sync"}
     surfaced = any(row["operation"] == "revise-claim" for row in rows)
     if required and durable_owner_available:

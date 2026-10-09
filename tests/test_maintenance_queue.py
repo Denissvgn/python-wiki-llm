@@ -2,6 +2,7 @@
 
 import json
 from types import SimpleNamespace
+from typing import Any
 
 import pytest
 
@@ -381,3 +382,133 @@ def test_stale_selection_basis_keeps_queue_freshness_unknown(tmp_path, monkeypat
     assert before == {
         str(p): p.read_bytes() for p in tree["root"].rglob("*") if p.is_file()
     }
+
+
+@pytest.mark.parametrize("variant,availability", [("legacy", "unadopted"), ("adopted-flat", "ready"), ("native-absent", "unavailable")])
+def test_actual_queue_custody_reaches_api_cli_and_local_mcp_without_writes(tmp_path, monkeypatch, capsys, variant, availability):
+    from llm_wiki_cli import api
+    from llm_wiki_cli.services import mcp_server
+    from tests.test_mcp import RecordingMcpServer
+    from tests.developer_value.combined_workflows import prepare_combined, source_after, client_after, BEFORE_PROSE
+    from tests.developer_value.workflow_fixtures import sync_workflow, write_description
+
+    monkeypatch.chdir(tmp_path)
+    project = prepare_combined(tmp_path, variant)
+    capsys.readouterr()
+    service = mcp_server.McpWikiService(**project.options)
+    server = RecordingMcpServer()
+    mcp_server._register_mcp_tools(server, service)
+
+    def readonly(operation):
+        before = {path: (raw, (project.root / path).stat().st_mtime_ns) for path, raw in project.tree().items()}
+        value = operation()
+        assert before == {path: (raw, (project.root / path).stat().st_mtime_ns) for path, raw in project.tree().items()}
+        assert not (tmp_path / "source-execution-tripwire").exists()
+        return value
+
+    def check(stage):
+        response: dict[str, Any] = dict(readonly(lambda: api.build_maintenance_queue(**project.options)))
+        custody = response["qualification"]["ordinary_review_custody"]
+        assert custody["availability"] == availability
+        assert custody["durable_owner_available"] is (variant == "adopted-flat")
+        assert custody["source_prose_correctness"] == "not-established"
+        assert custody["review_route"]["interface"] == "inspect_concept"
+        assert response["advisory"] and "exit_code" not in response
+        assert readonly(lambda: server.tool_functions["get_maintenance_queue"]()) == response
+        monkeypatch.setattr("sys.argv", ["llm-wiki", "queue", "--src-dir", str(project.source), "--wiki-dir", str(project.wiki), "--format", "json"])
+        readonly(cli.main)
+        cli_response = json.loads(capsys.readouterr().out)
+        assert cli_response["qualification"]["ordinary_review_custody"] == custody
+        assert cli_response["advisory"] and "exit_code" not in cli_response
+        assert cli_response["returned"] == len(cli_response["items"])
+        monkeypatch.setattr("sys.argv", ["llm-wiki", "queue", "--src-dir", str(project.source), "--wiki-dir", str(project.wiki)])
+        readonly(cli.main)
+        text = capsys.readouterr().out
+        assert "Ordinary durable review custody: " + availability in text
+        assert "Source/prose correctness is not established" in text
+        assert custody["review_route"]["instruction"] in text and custody["limitation"] in text
+        if variant == "legacy" and stage in {"clean", "synced"}:
+            assert response["total"] == 0
+            assert BEFORE_PROSE in (project.wiki / "entities/Harbor.md").read_text()
+        return response
+
+    check("clean")
+    if variant == "legacy":
+        (project.source / "policy.py").write_text(source_after())
+        (project.source / "client.py").write_text(client_after())
+        assert check("edited")["total"] > 0
+        sync_workflow(project)
+        capsys.readouterr()
+        check("synced")
+    elif variant == "adopted-flat":
+        write_description(project, BEFORE_PROSE + " Requires renewed explicit review.", "entities/Harbor.md")
+        availability = "partial"
+        check("prose-edited")
+
+
+def test_captured_queue_qualification_discloses_partial_basis_and_truncation():
+    from llm_wiki_cli.services.maintenance_status import MaintenanceStatusReport
+
+    payload = {"availability": "ready", "adoption_id": "owned", "live_evaluation_performed": True,
+               "requires_sync": False, "coverage": {"issues": [], "untracked_semantic_total": 0}}
+    report = MaintenanceStatusReport(payload, {}, {})
+    full = compose_queue([], [], {}, {}, {}, maintenance_report=report)
+    assert full["qualification"]["ordinary_review_custody"]["availability"] == "ready"
+    for field, value in [("requires_sync", True), ("live_evaluation_performed", False),
+                         ("coverage", {"issues": [{"reason": "capture-unavailable"}], "untracked_semantic_total": 1})]:
+        partial = MaintenanceStatusReport({**payload, field: value}, {}, {})
+        queue = compose_queue([], [], {}, {}, {}, maintenance_report=partial)
+        assert queue["qualification"]["ordinary_review_custody"]["availability"] == "partial"
+        assert queue["qualification"]["ordinary_review_custody"]["durable_owner_available"]
+        assert queue["qualification"]["ordinary_review_custody"]["source_prose_correctness"] == "not-established"
+    pages = [{"canonical_path": f"modules/{i}.md", "kind": "modules", "role": "mixed"} for i in range(3)]
+    issues = {page["canonical_path"]: [LintIssue("broken-link", "Missing target", "error")] for page in pages}
+    bounded = compose_queue(pages, [], {}, issues, {}, maintenance_report=report, limit=1)
+    assert bounded["returned"] == 1 and bounded["total"] == 3 and bounded["omitted"] == 2
+    assert bounded["qualification"]["ordinary_review_custody"] == full["qualification"]["ordinary_review_custody"]
+    assert "1 of 3 (2 omitted)" in maintenance_queue.render_queue(bounded)
+
+
+def test_queue_reuses_exactly_one_capture_for_custody_qualification(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    wiki = _write_wiki(tmp_path)
+    original = maintenance_queue.capture_context_read
+    captures = []
+
+    def capture(*args, **kwargs):
+        value = original(*args, **kwargs)
+        captures.append(value)
+        return value
+
+    monkeypatch.setattr(maintenance_queue, "capture_context_read", capture)
+    result = build_maintenance_queue(".", str(wiki))
+    assert len(captures) == 1
+    assert result["qualification"]["ordinary_review_custody"]["availability"] == "unavailable"
+
+
+def test_validated_adopted_manifest_without_captured_status_is_partial(tmp_path, monkeypatch, capsys):
+    from dataclasses import replace
+    from tests.developer_value.combined_workflows import prepare_combined
+
+    monkeypatch.chdir(tmp_path)
+    project = prepare_combined(tmp_path, "adopted-flat")
+    capsys.readouterr()
+    original = maintenance_queue.capture_context_read
+    captures = []
+
+    def no_report(*args, **kwargs):
+        captured = original(*args, **kwargs)
+        assert captured.knowledge_view.manifest_basis is not None
+        assert captured.knowledge_view.manifest_basis.maintenance_state is not None
+        captures.append(captured)
+        return replace(captured, knowledge_view=replace(captured.knowledge_view, maintenance_report=None))
+
+    monkeypatch.setattr(maintenance_queue, "capture_context_read", no_report)
+    before = {path: (raw, (project.root / path).stat().st_mtime_ns) for path, raw in project.tree().items()}
+    result = build_maintenance_queue(**project.options)
+    custody = result["qualification"]["ordinary_review_custody"]
+    assert custody["availability"] == "partial" and custody["durable_owner_available"]
+    assert custody["evidence"] == "validated-native-manifest" and not custody["live_evaluation_performed"]
+    assert custody["source_prose_correctness"] == "not-established"
+    assert len(captures) == 1
+    assert before == {path: (raw, (project.root / path).stat().st_mtime_ns) for path, raw in project.tree().items()}

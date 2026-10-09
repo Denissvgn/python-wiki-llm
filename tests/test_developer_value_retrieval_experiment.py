@@ -316,24 +316,71 @@ def test_limits_truncation_and_resource_metadata_remain_visible() -> None:
 
 def gate_pair():
     spec = corpus()
-    baseline = score(spec, capture(spec, "confirmation"))
-    candidate = score(spec, capture(spec, "confirmation", capture_id="candidate-capture"))
-    baseline = replace(baseline, owner_recall=Ratio(7, 10), owner_precision=Ratio(4, 5),
-                       emitted_recall=Ratio(7, 10), emitted_precision=Ratio(4, 5))
-    candidate = replace(candidate, owner_recall=Ratio(4, 5), owner_precision=Ratio(3, 4),
-                        emitted_recall=Ratio(7, 10), emitted_precision=Ratio(3, 4))
+    # Twenty predeclared owner targets, with captured hits of 14 and 16.
+    # Threshold cases must come from actual rows rather than edited summaries.
+    for query in spec["queries"]:
+        if query["split"] == "confirmation" and query["category"] == "symptom":
+            query["expected_owners"].append("b.py")
+            query["expected_sections"].append({"owner": "b.py", "heading": "Behavior",
+                                               "quote": "accepts only current input"})
+    baseline_capture = capture(spec, "confirmation")
+    candidate_capture = capture(spec, "confirmation", capture_id="candidate-capture")
+    for observations in (baseline_capture, candidate_capture):
+        for row in observations["rows"][4:8]:
+            row["results"].append({"path": "entities/c.md"})
+    for row in baseline_capture["rows"][12:14]:
+        row["results"] = [{"path": "entities/c.md"}]
+    baseline = score(spec, baseline_capture)
+    candidate = score(spec, candidate_capture)
     controls = {"correctness": True, "selection": True, "exact_development": True}
     return baseline, candidate, controls
 
 
 def test_fraction_thresholds_accept_exact_boundary_without_float_rounding() -> None:
     baseline, candidate, controls = gate_pair()
-    assert Fraction(4, 5) - Fraction(7, 10) == Fraction(1, 10)
+    assert baseline.owner_recall == Ratio(14, 20)
+    assert candidate.owner_recall == Ratio(16, 20)
+    baseline_recall, candidate_recall = baseline.owner_recall.value, candidate.owner_recall.value
+    assert baseline_recall is not None and candidate_recall is not None
+    assert candidate_recall - baseline_recall == Fraction(1, 10)
     assert adoption_gate(baseline, candidate, controls=controls).eligible
-    assert not adoption_gate(baseline, replace(candidate, owner_recall=Ratio(799, 1000)), controls=controls).eligible
-    assert not adoption_gate(baseline, replace(candidate, owner_precision=Ratio(749, 1000)), controls=controls).eligible
-    assert not adoption_gate(baseline, replace(candidate, emitted_recall=Ratio(699, 1000)), controls=controls).eligible
-    assert not adoption_gate(baseline, replace(candidate, emitted_precision=Ratio(749, 1000)), controls=controls).eligible
+    assert isinstance(candidate.corpus_json, str) and isinstance(candidate.capture_json, str)
+    spec = json.loads(candidate.corpus_json)
+    observations = json.loads(candidate.capture_json)
+    observations["rows"][14]["results"] = [{"path": "entities/c.md"}]
+    below = score(spec, observations)
+    rejected = adoption_gate(baseline, below, controls=controls)
+    assert not rejected.eligible and "owner_recall_gain" in rejected.reasons
+    assert rejected.checks["candidate_score_custody"]
+
+
+def test_authentic_precision_noninferiority_boundary_and_below_threshold() -> None:
+    spec = corpus()
+    selected = [query for query in spec["queries"] if query["split"] == "confirmation"]
+    for query in selected[:14]:
+        query["expected_owners"].append("b.py")
+        query["expected_sections"].append({"owner": "b.py", "heading": "Behavior",
+                                           "quote": "accepts only current input"})
+    baseline_capture = capture(spec, "confirmation")
+    candidate_capture = capture(spec, "confirmation", capture_id="candidate-capture")
+    for row in baseline_capture["rows"][12:15]:
+        row["results"] = [{"path": "entities/c.md"}]
+    baseline_capture["rows"][15]["results"] = []
+    candidate_capture["rows"][15]["results"] = [{"path": "entities/c.md"}]
+    for row in candidate_capture["rows"][4:8]:
+        row["results"].append({"path": "entities/c.md"})
+    baseline, candidate = score(spec, baseline_capture), score(spec, candidate_capture)
+    assert baseline.owner_recall == Ratio(12, 30) and candidate.owner_recall == Ratio(15, 30)
+    assert baseline.owner_precision == baseline.emitted_precision == Ratio(12, 15)
+    assert candidate.owner_precision == candidate.emitted_precision == Ratio(15, 20)
+    controls = {"correctness": True, "selection": True, "exact_development": True}
+    assert adoption_gate(baseline, candidate, controls=controls).eligible
+    candidate_capture["rows"][8]["results"].append({"path": "entities/c.md"})
+    below = score(spec, candidate_capture)
+    rejected = adoption_gate(baseline, below, controls=controls)
+    assert not rejected.eligible
+    assert {"owner_precision_noninferiority", "emitted_precision_noninferiority"} <= set(rejected.reasons)
+    assert rejected.checks["candidate_score_custody"]
 
 
 @pytest.mark.parametrize("control", ["correctness", "selection", "exact_development"])
@@ -354,9 +401,17 @@ def test_every_exact_case_and_all_unknown_unanswerable_claims_are_gate_failures(
 
 def test_zero_baseline_precision_is_valid_but_null_is_not() -> None:
     baseline, candidate, controls = gate_pair()
-    zero = replace(baseline, owner_precision=Ratio(0, 16), emitted_precision=Ratio(0, 16))
+    assert isinstance(baseline.corpus_json, str) and isinstance(baseline.capture_json, str)
+    spec = json.loads(baseline.corpus_json)
+    observations = json.loads(baseline.capture_json)
+    for row in observations["rows"][:16]:
+        row["results"] = [{"path": "entities/c.md"}]
+    zero = score(spec, observations)
+    assert zero.owner_precision == zero.emitted_precision == Ratio(0, 16)
     assert adoption_gate(zero, candidate, controls=controls).eligible
-    null = replace(baseline, owner_precision=Ratio(0, 0))
+    for row in observations["rows"][:16]:
+        row["results"] = []
+    null = score(spec, observations)
     assert "owner_precision_noninferiority" in adoption_gate(null, candidate, controls=controls).reasons
 
 
@@ -390,3 +445,80 @@ def test_relabeling_identical_pages_cannot_establish_retrieval_improvement() -> 
     assert not decision.eligible
     assert decision.reasons == ("same_aliases",)
     assert decision.checks["same_aliases"] is False
+
+
+@pytest.mark.parametrize("field", ["owner_recall", "owner_precision", "emitted_recall", "emitted_precision"])
+@pytest.mark.parametrize("mutation", ["within-range", "impossible", "denominator", "noninteger"])
+def test_gate_rejects_aggregate_forgery_with_unchanged_pinned_query_rows(field: str, mutation: str) -> None:
+    baseline, candidate, controls = gate_pair()
+    assert adoption_gate(baseline, candidate, controls=controls).eligible
+    original = getattr(candidate, field)
+    edited = {"within-range": Ratio(original.numerator - 1, original.denominator),
+              "impossible": Ratio(original.denominator + 1, original.denominator),
+              "denominator": Ratio(original.numerator, original.denominator + 1),
+              "noninteger": Ratio(True, original.denominator)}[mutation]
+    forged = replace(candidate, **{field: edited})
+    assert forged.binding == candidate.binding and forged.queries == candidate.queries
+    result = adoption_gate(baseline, forged, controls=controls)
+    assert not result.eligible and "candidate_score_custody" in result.reasons
+
+
+@pytest.mark.parametrize("field", ["exact_correct", "exact_total", "unanswerable_total",
+                                   "unanswerable_claims_observed", "unanswerable_definitive_claims",
+                                   "unanswerable_candidates", "unanswerable_candidate_pages", "missing", "errors"])
+def test_gate_rederives_every_aggregate_from_original_capture(field: str) -> None:
+    baseline, candidate, controls = gate_pair()
+    original = getattr(candidate, field)
+    forged = replace(candidate, **{field: original + 1})
+    assert not adoption_gate(baseline, forged, controls=controls).eligible
+    assert "candidate_score_custody" in adoption_gate(baseline, forged, controls=controls).reasons
+
+
+@pytest.mark.parametrize("field", ["expected_owners", "owner_top5", "owner_hits", "emitted_top5",
+                                   "all_pages", "metadata_json", "query_ids", "capture_json", "corpus_json", "aliases_json"])
+def test_gate_authenticates_query_and_source_alias_foundations(field: str) -> None:
+    baseline, candidate, controls = gate_pair()
+    first = candidate.queries[0]
+    if field in ("query_ids", "capture_json", "corpus_json", "aliases_json"):
+        if field == "query_ids":
+            changed: Any = tuple(reversed(candidate.query_ids))
+        else:
+            raw = json.loads(getattr(candidate, field))
+            if field == "capture_json":
+                raw["rows"][0]["results"][0]["snippet"] = "substituted capture"
+            elif field == "corpus_json":
+                raw["queries"][0]["relevancecite"] = "substituted relevance"
+            else:
+                raw["fixture-0"]["entities/a.md"] = "b.py"
+            changed = json.dumps(raw)
+        forged = replace(candidate, **{field: changed})
+    else:
+        changes: dict[str, Any] = {"expected_owners": ("b.py",), "owner_top5": ("b.py",),
+                                  "owner_hits": 0, "emitted_top5": (), "all_pages": (),
+                                  "metadata_json": "{}"}
+        forged = replace(candidate, queries=(replace(first, **{field: changes[field]}), *candidate.queries[1:]))
+    assert forged.binding == candidate.binding
+    assert not adoption_gate(baseline, forged, controls=controls).eligible
+
+
+def test_legacy_summary_without_raw_custody_cannot_earn_adoption() -> None:
+    baseline, candidate, controls = gate_pair()
+    naked = replace(candidate, corpus_json=None, capture_json=None, aliases_json=None)
+    assert not adoption_gate(baseline, naked, controls=controls).eligible
+    assert "capture_json" not in candidate.to_dict()
+    assert "corpus_json" not in candidate.to_dict()
+    assert "aliases_json" not in candidate.to_dict()
+
+
+def test_capture_snapshot_remains_independent_of_later_mutable_input_edits() -> None:
+    spec = corpus()
+    observations = capture(spec)
+    mapping = aliases()
+    original = score(spec, observations, mapping)
+    observations["rows"][0]["results"].clear()
+    spec["queries"][0]["expected_owners"].clear()
+    mapping["fixture-0"].clear()
+    # The replay foundation still contains the initially pinned owner and page.
+    assert isinstance(original.capture_json, str)
+    assert json.loads(original.capture_json)["rows"][0]["results"][0]["path"] == "entities/a.md"
+    assert original.queries[0].owner_hits == 1

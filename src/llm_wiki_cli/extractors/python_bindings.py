@@ -14,6 +14,18 @@ UNKNOWN = {"kind": "unresolved"}
 BUILTIN_NAMES = frozenset(dir(builtins))
 FUNCTIONS = (ast.FunctionDef, ast.AsyncFunctionDef)
 COMPREHENSIONS = (ast.ListComp, ast.SetComp, ast.DictComp, ast.GeneratorExp)
+_NAMESPACE_MUTATORS = frozenset(
+    {
+        "update",
+        "clear",
+        "pop",
+        "popitem",
+        "setdefault",
+        "__setitem__",
+        "__delitem__",
+        "__ior__",
+    }
+)
 CONSTRUCTOR_FACTS_VERSION = 1
 CONSTRUCTOR_DISPATCH_VERSION = "llm-wiki-python-constructor-dispatch/v1"
 _DISPATCH_SLOTS = frozenset(
@@ -68,6 +80,147 @@ def _module_classes(tree):
     ]
 
 
+def _builtin_getter(binding):
+    return (
+        binding.get("kind") == "builtin"
+        and binding.get("symbol") == "getattr"
+        or binding.get("kind") == "import"
+        and binding.get("module") == "builtins"
+        and binding.get("name") == "getattr"
+    )
+
+
+def _builtin_dict(binding):
+    return (
+        binding.get("kind") == "builtin"
+        and binding.get("symbol") == "dict"
+        or binding.get("kind") == "import"
+        and binding.get("module") == "builtins"
+        and binding.get("name") == "dict"
+    )
+
+
+def _builtin_namespace_factory(binding):
+    symbol = (
+        binding.get("symbol")
+        if binding.get("kind") == "builtin"
+        else binding.get("name")
+        if binding.get("kind") == "import" and binding.get("module") == "builtins"
+        else None
+    )
+    return symbol if symbol in {"vars", "locals", "globals"} else None
+
+
+def _builtin_attribute_mutator(binding):
+    symbol = (
+        binding.get("symbol")
+        if binding.get("kind") == "builtin"
+        else binding.get("name")
+        if binding.get("kind") == "import" and binding.get("module") == "builtins"
+        else None
+    )
+    return (
+        {"kind": "attribute-mutator", "qualified": True}
+        if symbol in {"setattr", "delattr"}
+        else None
+    )
+
+
+def _known_callable(binding):
+    if binding.get("kind") in {
+        "namespace-mutator",
+        "attribute-mutator",
+        "namespace-factory",
+        "namespace-getter",
+        "non-namespace-factory",
+    }:
+        return True
+    if (
+        _builtin_getter(binding)
+        or _builtin_namespace_factory(binding)
+        or _builtin_attribute_mutator(binding)
+    ):
+        return True
+    return any(
+        _known_callable(value)
+        for value in binding.get("_possible_targets", [])
+        + binding.get("possible_namespace_mutators", [])
+        + binding.get("possible_namespace_getters", [])
+    )
+
+
+def _dict_namespace(target, *, qualified=True):
+    if target.get("kind") in {
+        "constructed-instance",
+        "receiver",
+        "import",
+        "local",
+    } or target.get("_possible_targets"):
+        return {"kind": "receiver-namespace", "target": target, "qualified": qualified}
+    return None
+
+
+def _namespace_lookup(target, member):
+    if isinstance(member, ast.Constant):
+        return _dict_namespace(target) if member.value == "__dict__" else None
+    return _dict_namespace(target, qualified=False)
+
+
+def _getter_method(node):
+    # Unknown namespace attributes may be mutators. Retrieval is harmless;
+    # only invoking the captured result applies this possible-owner effect.
+    if isinstance(node, ast.Constant) and isinstance(node.value, str):
+        if node.value in _NAMESPACE_MUTATORS:
+            return node.value
+        if node.value in {
+            "get",
+            "copy",
+            "keys",
+            "values",
+            "items",
+            "__getitem__",
+            "__len__",
+            "__iter__",
+            "__contains__",
+            "__reversed__",
+        }:
+            return None
+    return "*"
+
+
+def _namespace_mutated_names(method, args, keywords, qualified):
+    names: set[str] | None = None
+    if qualified:
+        if (
+            method in {"pop", "setdefault", "__setitem__", "__delitem__"}
+            and args
+            and isinstance(args[0], ast.Constant)
+            and isinstance(args[0].value, str)
+        ):
+            names = {args[0].value}
+        elif method == "update" and len(args) <= 1:
+            if not args:
+                names = set()
+            elif isinstance(args[0], ast.Dict) and all(
+                isinstance(key, ast.Constant) and isinstance(key.value, str)
+                for key in args[0].keys
+            ):
+                names = {
+                    key.value
+                    for key in args[0].keys
+                    if isinstance(key, ast.Constant) and isinstance(key.value, str)
+                }
+            if names is not None and all(
+                keyword.arg is not None for keyword in keywords
+            ):
+                names.update(
+                    keyword.arg for keyword in keywords if keyword.arg is not None
+                )
+            else:
+                names = None
+    return names
+
+
 class _ClassNamespaceEffects(ast.NodeVisitor):
     """Collect executed namespace effects, retaining explicit scope boundaries."""
 
@@ -89,6 +242,7 @@ class _ClassNamespaceEffects(ast.NodeVisitor):
         self.binding_history: dict[str, list[dict]] = {}
         self.annotations_eager = annotations_eager
         self.conditional = False
+        self.in_comprehension = False
         for statement in node.body:
             self.visit(statement)
 
@@ -124,7 +278,13 @@ class _ClassNamespaceEffects(ast.NodeVisitor):
             return (
                 value
                 if value.get("kind")
-                in {"class-namespace", "module-namespace", "uncertain-namespace"}
+                in {
+                    "class-namespace",
+                    "module-namespace",
+                    "uncertain-namespace",
+                    "comprehension-namespace",
+                    "receiver-namespace",
+                }
                 else None
             )
         if isinstance(node, ast.Call) and not node.args and not node.keywords:
@@ -139,7 +299,12 @@ class _ClassNamespaceEffects(ast.NodeVisitor):
             if self._helper(node.func) == ["globals"]:
                 return {"kind": "module-namespace", "qualified": True}
             if self._helper(node.func) in (["locals"], ["vars"]):
-                return {"kind": "class-namespace", "qualified": True}
+                return {
+                    "kind": "comprehension-namespace"
+                    if self.in_comprehension
+                    else "class-namespace",
+                    "qualified": True,
+                }
             path = _callee_path(node.func)
             if path and (
                 path[0] in self.namespace_factories
@@ -155,7 +320,32 @@ class _ClassNamespaceEffects(ast.NodeVisitor):
             return namespace
         if isinstance(node, ast.Name):
             return _lookup(self.env, node.id)
+        if isinstance(node, ast.Attribute) and node.attr in _NAMESPACE_MUTATORS:
+            owner = self._namespace(node.value)
+            if owner is not None:
+                return {
+                    "kind": "namespace-mutator",
+                    "namespace": owner,
+                    "method": node.attr,
+                }
         if isinstance(node, (ast.IfExp, ast.BoolOp)):
+            values = [
+                self._value(value)
+                for value in (
+                    [node.body, node.orelse]
+                    if isinstance(node, ast.IfExp)
+                    else node.values
+                )
+            ]
+            if any(
+                value.get("kind") in {"namespace-mutator", "namespace-getter"}
+                or value.get("possible_namespace_mutators")
+                or value.get("possible_namespace_getters")
+                or _builtin_getter(value)
+                or "getattr" in value.get("possible_helpers", [])
+                for value in values
+            ):
+                return self._join_binding(values)
             # Conditional expression transfer is handled by the next binding
             # stage. Namespace factories here must not gain unique authority.
             return {
@@ -172,13 +362,26 @@ class _ClassNamespaceEffects(ast.NodeVisitor):
         if isinstance(node, ast.Dict) and not node.keys:
             return {"kind": "non-namespace"}
         helper = self._helper(node)
+        if helper == ["object", "__getattribute__"]:
+            return {"kind": "namespace-getter"}
+        if isinstance(node, ast.Attribute) and node.attr == "__getattribute__":
+            target = self._value(node.value)
+            if _dict_namespace(target):
+                return {"kind": "namespace-getter", "target": target}
+        if (
+            helper
+            and len(helper) == 2
+            and helper[0] == "dict"
+            and helper[1] in _NAMESPACE_MUTATORS
+        ):
+            return {"kind": "namespace-mutator", "method": helper[1]}
         return (
             {"kind": "builtin", "symbol": helper[0]}
             if helper and len(helper) == 1
             else UNKNOWN
         )
 
-    def _target(self, node, binding=None):
+    def _target(self, node, binding=None, *, captured_namespace=None, evaluated=False):
         if isinstance(node, ast.Name):
             self._store(node.id, binding)
         elif isinstance(node, (ast.Tuple, ast.List)):
@@ -187,7 +390,23 @@ class _ClassNamespaceEffects(ast.NodeVisitor):
         elif isinstance(node, ast.Starred):
             self._target(node.value)
         elif isinstance(node, ast.Subscript):
-            namespace = self._namespace(node.value)
+            namespace = (
+                captured_namespace[0]
+                if captured_namespace is not None
+                else self._namespace(node.value)
+            )
+            if namespace and namespace["kind"] == "receiver-namespace":
+                if not evaluated:
+                    self.visit(node.value)
+                    self.visit(node.slice)
+                if self.side_effects:
+                    self.side_effects(node, self.env, store_owner=namespace)
+                return
+            if namespace and namespace["kind"] == "comprehension-namespace":
+                if not evaluated:
+                    self.visit(node.value)
+                    self.visit(node.slice)
+                return
             if namespace and namespace["kind"] == "uncertain-namespace":
                 if (
                     namespace["qualified"]
@@ -203,8 +422,9 @@ class _ClassNamespaceEffects(ast.NodeVisitor):
                     self.dynamic |= "class" in namespace["scopes"]
                     if "module" in namespace["scopes"]:
                         self.global_writes.add("*")
-                self.visit(node.value)
-                self.visit(node.slice)
+                if not evaluated:
+                    self.visit(node.value)
+                    self.visit(node.slice)
                 return
             if namespace is None and self.side_effects:
                 self.side_effects(node, self.env)
@@ -217,8 +437,9 @@ class _ClassNamespaceEffects(ast.NodeVisitor):
                     self.global_writes.add(node.slice.value)
                 else:
                     self.global_writes.add("*")
-                self.visit(node.value)
-                self.visit(node.slice)
+                if not evaluated:
+                    self.visit(node.value)
+                    self.visit(node.slice)
                 return
             if (
                 namespace
@@ -231,8 +452,9 @@ class _ClassNamespaceEffects(ast.NodeVisitor):
                     self.direct_mapping_writes.add(node.slice.value)
             else:
                 self.dynamic = True
-            self.visit(node.value)
-            self.visit(node.slice)
+            if not evaluated:
+                self.visit(node.value)
+                self.visit(node.slice)
         else:
             path = _callee_path(node)
             if path and _lookup(self.env, path[0]).get("kind") in {
@@ -249,21 +471,31 @@ class _ClassNamespaceEffects(ast.NodeVisitor):
             self.visit(node)
 
     def visit_Assign(self, node):
-        self.visit(node.value)
-        value = self._value(node.value)
+        evaluated = self.visit(node.value)
+        value = evaluated if isinstance(evaluated, dict) else self._value(node.value)
         for target in node.targets:
             self._target(target, value)
 
     def visit_AnnAssign(self, node):
         if node.value is not None:
-            self.visit(node.value)
-            self._target(node.target, self._value(node.value))
+            evaluated = self.visit(node.value)
+            self._target(
+                node.target,
+                evaluated if isinstance(evaluated, dict) else self._value(node.value),
+            )
         if self.annotations_eager:
             self.visit(node.annotation)
 
     def visit_AugAssign(self, node):
-        self.visit(node.value)
-        self._target(node.target)
+        if isinstance(node.target, ast.Subscript):
+            self.visit(node.target.value)
+            captured = (self._namespace(node.target.value),)
+            self.visit(node.target.slice)
+            self.visit(node.value)
+            self._target(node.target, captured_namespace=captured, evaluated=True)
+        else:
+            self.visit(node.value)
+            self._target(node.target)
 
     def visit_Delete(self, node):
         for target in node.targets:
@@ -275,8 +507,10 @@ class _ClassNamespaceEffects(ast.NodeVisitor):
                     self.env[name] = _lookup(self.module, name)
 
     def visit_NamedExpr(self, node):
-        self.visit(node.value)
-        self._target(node.target, self._value(node.value))
+        evaluated = self.visit(node.value)
+        value = evaluated if isinstance(evaluated, dict) else self._value(node.value)
+        self._target(node.target, value)
+        return value
 
     def _header(self, node):
         for value in node.decorator_list:
@@ -405,6 +639,40 @@ class _ClassNamespaceEffects(ast.NodeVisitor):
     def _join_binding(values):
         if all(value == values[0] for value in values):
             return values[0]
+        receivers = [
+            value for value in values if value.get("kind") == "receiver-namespace"
+        ]
+        if receivers:
+            return {
+                "kind": "receiver-namespace",
+                "target": {
+                    "kind": "unresolved",
+                    "_possible_targets": [value["target"] for value in receivers],
+                },
+                "qualified": all(value.get("qualified", False) for value in receivers),
+            }
+        getters = [
+            effect
+            for value in values
+            for effect in (
+                [value]
+                if value.get("kind") == "namespace-getter"
+                else value.get("possible_namespace_getters", [])
+            )
+        ]
+        if getters:
+            return {"kind": "unresolved", "possible_namespace_getters": getters}
+        mutators = [
+            effect
+            for value in values
+            for effect in (
+                [value]
+                if value.get("kind") == "namespace-mutator"
+                else value.get("possible_namespace_mutators", [])
+            )
+        ]
+        if mutators:
+            return {"kind": "unresolved", "possible_namespace_mutators": mutators}
         factories = set()
         namespaces = set()
         helpers = set()
@@ -522,96 +790,201 @@ class _ClassNamespaceEffects(ast.NodeVisitor):
         self._target(node.name)  # The RHS/annotation scope is lazy.
 
     def _comprehension(self, node):
-        # Class comprehension walruses are compiler-invalid; iteration targets
-        # and deferred bodies never store into this class namespace.
-        if node.generators:
-            self.visit(node.generators[0].iter)
+        if not node.generators:
+            return
+        self.visit(node.generators[0].iter)
+        if isinstance(node, ast.GeneratorExp):
+            return  # Only the outer iterable executes at generator creation.
+        parent = self.env
+        previous_comprehension = self.in_comprehension
+        self.in_comprehension = True
+        # Comprehension bodies skip class lexical bindings. Explicit global
+        # aliases already stored in the class body remain visible there.
+        self.env = dict(self.module)
+        self.env.update(
+            {name: parent[name] for name in self.global_names if name in parent}
+        )
+        try:
+            for index, generator in enumerate(node.generators):
+                if index:
+                    self.visit(generator.iter)
+                self.env.update(
+                    {name: UNKNOWN for name in _target_names(generator.target)}
+                )
+                for condition in generator.ifs:
+                    self.visit(condition)
+            for value in (
+                [node.key, node.value] if isinstance(node, ast.DictComp) else [node.elt]
+            ):
+                self.visit(value)
+        finally:
+            self.env = parent
+            self.in_comprehension = previous_comprehension
 
     visit_ListComp = _comprehension
     visit_SetComp = _comprehension
     visit_DictComp = _comprehension
     visit_GeneratorExp = _comprehension
 
+    def visit_Attribute(self, node):
+        evaluated = self.visit(node.value)
+        owner = evaluated if isinstance(evaluated, dict) else self._value(node.value)
+        if node.attr == "__call__" and _known_callable(owner):
+            return owner
+        return self._value(node)
+
     def visit_Call(self, node):
         helper = self._helper(node.func)
         path = _callee_path(node.func)
+        evaluated = self.visit(node.func)
+        callee = evaluated if isinstance(evaluated, dict) else self._value(node.func)
         if helper in (["exec"], ["eval"]) or path and path[0] in {"exec", "eval"}:
             self.dynamic = True
-        if isinstance(node.func, ast.Name) and set(
-            _lookup(self.env, node.func.id).get("possible_helpers", [])
-        ) & {"exec", "eval"}:
+        if set(callee.get("possible_helpers", [])) & {"exec", "eval"}:
             self.dynamic = True
         namespace = (
             self._namespace(node.func.value)
             if isinstance(node.func, ast.Attribute)
             else None
         )
-        if namespace is None and self.side_effects:
+        attribute_effect = _builtin_attribute_mutator(callee)
+        if callee.get("kind") == "attribute-mutator":
+            attribute_effect = callee
+        if namespace is None and self.side_effects and attribute_effect is None:
             self.side_effects(node, self.env)
-        if isinstance(node.func, ast.Attribute):
-            if namespace and node.func.attr in {
-                "update",
-                "clear",
-                "pop",
-                "popitem",
-                "setdefault",
-                "__setitem__",
-                "__delitem__",
-                "__ior__",
+        method = node.func.attr if isinstance(node.func, ast.Attribute) else None
+        effects = []
+        if namespace is not None and method in _NAMESPACE_MUTATORS:
+            effects.append({"namespace": namespace, "method": method})
+        if callee.get("kind") == "namespace-mutator":
+            effects.append(callee)
+        effects.extend(callee.get("possible_namespace_mutators", []))
+        getter = (
+            helper == ["getattr"]
+            or _builtin_getter(callee)
+            or "getattr" in callee.get("possible_helpers", [])
+        )
+        arguments = []
+        for argument in node.args:
+            value = self.visit(argument)
+            arguments.append(
+                value if isinstance(value, dict) else self._value(argument)
+            )
+        for keyword in node.keywords:
+            self.visit(keyword.value)
+        if attribute_effect is not None and self.side_effects:
+            self.side_effects(node, self.env, attribute_effect, arguments)
+        for effect in effects:
+            namespace = effect.get("namespace")
+            offset = 0
+            if namespace is None and arguments:
+                namespace = arguments[0]
+                offset = 1
+            if namespace and namespace.get("kind") == "receiver-namespace":
+                if self.side_effects:
+                    self.side_effects(node, self.env, effect, arguments)
+                continue
+            if namespace and namespace.get("kind") in {
+                "class-namespace",
+                "module-namespace",
+                "uncertain-namespace",
+                "comprehension-namespace",
             }:
-                names: set[str] | None = None
-                if namespace["qualified"]:
-                    if (
-                        node.func.attr
-                        in {"pop", "setdefault", "__setitem__", "__delitem__"}
-                        and node.args
-                        and isinstance(node.args[0], ast.Constant)
-                        and isinstance(node.args[0].value, str)
-                    ):
-                        names = {node.args[0].value}
-                    elif node.func.attr == "update" and len(node.args) <= 1:
-                        if not node.args:
-                            names = set()
-                        elif isinstance(node.args[0], ast.Dict) and all(
-                            isinstance(key, ast.Constant) and isinstance(key.value, str)
-                            for key in node.args[0].keys
-                        ):
-                            names = {
-                                key.value
-                                for key in node.args[0].keys
-                                if isinstance(key, ast.Constant)
-                                and isinstance(key.value, str)
-                            }
-                        if names is not None and all(
-                            keyword.arg is not None for keyword in node.keywords
-                        ):
-                            names.update(
-                                keyword.arg
-                                for keyword in node.keywords
-                                if keyword.arg is not None
-                            )
-                        else:
-                            names = None
-                if names is None:
-                    if namespace["kind"] == "module-namespace":
-                        self.global_writes.add("*")
-                    elif namespace["kind"] == "uncertain-namespace":
-                        self.dynamic |= "class" in namespace["scopes"]
-                        if "module" in namespace["scopes"]:
-                            self.global_writes.add("*")
-                    else:
-                        self.dynamic = True
-                else:
-                    if namespace["kind"] == "module-namespace":
-                        self.global_writes.update(names)
-                    elif namespace["kind"] == "uncertain-namespace":
-                        if "module" in namespace["scopes"]:
-                            self.global_writes.update(names)
-                        if "class" in namespace["scopes"]:
-                            self.writes.update(names)
-                    else:
-                        self.writes.update(names)
-        self.generic_visit(node)
+                self._mutate_namespace(
+                    namespace, effect["method"], node.args[offset:], node.keywords
+                )
+        namespace_getters = (
+            [callee]
+            if callee.get("kind") == "namespace-getter"
+            else callee.get("possible_namespace_getters", [])
+        )
+        namespaces = []
+        for namespace_getter in namespace_getters:
+            offset = 0 if "target" in namespace_getter else 1
+            target = namespace_getter.get("target") or (
+                arguments[0] if arguments else None
+            )
+            if target is not None and len(node.args) > offset:
+                namespace = _namespace_lookup(target, node.args[offset])
+                if namespace:
+                    namespaces.append(namespace)
+        if namespaces:
+            return (
+                namespaces[0]
+                if callee.get("kind") == "namespace-getter"
+                else self._join_binding(namespaces)
+            )
+        if getter and len(arguments) >= 2:
+            namespace = arguments[0]
+            if (
+                isinstance(node.args[1], ast.Constant)
+                and node.args[1].value == "__dict__"
+            ):
+                return _dict_namespace(namespace)
+            if (
+                isinstance(node.args[1], ast.Constant)
+                and node.args[1].value == "__getattribute__"
+                and _dict_namespace(namespace)
+            ):
+                return {"kind": "namespace-getter", "target": namespace}
+            method = _getter_method(node.args[1])
+            if method is not None and _builtin_dict(namespace):
+                return {"kind": "namespace-mutator", "method": method}
+            if method is not None and namespace.get("kind") in {
+                "class-namespace",
+                "module-namespace",
+                "uncertain-namespace",
+                "comprehension-namespace",
+            }:
+                return {
+                    "kind": "namespace-mutator",
+                    "namespace": namespace,
+                    "method": method,
+                }
+        factory = _builtin_namespace_factory(callee)
+        if not arguments and not node.keywords:
+            if factory == "globals":
+                return {"kind": "module-namespace", "qualified": True}
+            if factory in {"vars", "locals"}:
+                return {
+                    "kind": "comprehension-namespace"
+                    if self.in_comprehension
+                    else "class-namespace",
+                    "qualified": True,
+                }
+            if callee.get("kind") == "namespace-factory":
+                return {
+                    "kind": "uncertain-namespace",
+                    "qualified": callee.get("qualified", False),
+                    "scopes": callee["scopes"],
+                }
+        if callee.get("kind") == "non-namespace-factory":
+            return {"kind": "non-namespace"}
+        return self._namespace(node)
+
+    def _mutate_namespace(self, namespace, method, args, keywords):
+        if namespace["kind"] == "comprehension-namespace":
+            return
+        names = _namespace_mutated_names(method, args, keywords, namespace["qualified"])
+        if names is None:
+            if namespace["kind"] == "module-namespace":
+                self.global_writes.add("*")
+            elif namespace["kind"] == "uncertain-namespace":
+                self.dynamic |= "class" in namespace["scopes"]
+                if "module" in namespace["scopes"]:
+                    self.global_writes.add("*")
+            else:
+                self.dynamic = True
+        else:
+            if namespace["kind"] == "module-namespace":
+                self.global_writes.update(names)
+            elif namespace["kind"] == "uncertain-namespace":
+                if "module" in namespace["scopes"]:
+                    self.global_writes.update(names)
+                if "class" in namespace["scopes"]:
+                    self.writes.update(names)
+            else:
+                self.writes.update(names)
 
 
 def _dispatch_facts(tree, module):
@@ -969,9 +1342,20 @@ class _BindingAnalyzer:
         parent_scope = self.current_scope
         self.current_scope = id(node)
         self.state = parent.snapshot()
-        self.state.possible_targets = {}
         scope = _scope_names(node.body)
         local = (scope.bound | _parameters(node.args)) - scope.globals
+        # Module helper/namespace provenance remains available internally;
+        # lexical local names must never inherit an outer possible owner.
+        self.state.possible_targets = {
+            name: [
+                value
+                for value in targets
+                if _known_callable(value)
+                or value.get("kind") in {"receiver-namespace", "module-namespace"}
+            ]
+            for name, targets in self.state.possible_targets.items()
+            if name in self.module and name not in closure | local | scope.nonlocals
+        }
         env = dict(self.module)
         env.update(
             {
@@ -1122,6 +1506,13 @@ class _BindingAnalyzer:
                     "receiver_origin": origin,
                 }
             if isinstance(func.value, ast.Call):
+                if instance.get("kind") in {
+                    "receiver-namespace",
+                    "module-namespace",
+                    "attribute-mutator",
+                    "namespace-mutator",
+                }:
+                    return _unresolved(node, "unsupported-instance-call")
                 return {**instance, "line": node.lineno, "column": node.col_offset}
         path = _callee_path(func)
         if path is None:
@@ -1131,6 +1522,8 @@ class _BindingAnalyzer:
             "constructed-instance",
             "receiver-namespace",
             "attribute-mutator",
+            "namespace-mutator",
+            "non-namespace-factory",
             "module-namespace",
         }:
             return _unresolved(node, "unsupported-instance-call")
@@ -1142,6 +1535,12 @@ class _BindingAnalyzer:
 
     @staticmethod
     def _targets(binding):
+        if (
+            _builtin_getter(binding)
+            or _builtin_dict(binding)
+            or _builtin_namespace_factory(binding)
+        ):
+            return [binding]
         if (
             binding.get("kind") == "import"
             and binding.get("module") == "builtins"
@@ -1155,7 +1554,12 @@ class _BindingAnalyzer:
             "import",
         }:
             return [binding]
-        if binding.get("kind") in {"attribute-mutator", "receiver-namespace"}:
+        if binding.get("kind") in {
+            "attribute-mutator",
+            "receiver-namespace",
+            "namespace-mutator",
+            "namespace-getter",
+        }:
             return [binding]
         if binding.get("kind") == "builtin" and binding.get("symbol") in {
             "setattr",
@@ -1303,6 +1707,10 @@ class _BindingAnalyzer:
         }
 
     def namespace_value(self, node, env):
+        if isinstance(node, ast.Call):
+            path = _callee_path(node.func)
+            if path and _lookup(env, path[0]).get("kind") == "non-namespace-factory":
+                return None
         if isinstance(node, ast.Call) and not node.args and not node.keywords:
             helper = self.helper_path(node.func, env)
             if helper == ["globals"] or helper == ["locals"] and self.module_scope:
@@ -1347,8 +1755,63 @@ class _BindingAnalyzer:
             }
         return None
 
+    @staticmethod
+    def namespace_mutator(receiver, method):
+        """Capture every known mapping owner before later argument effects."""
+        if not receiver or method not in _NAMESPACE_MUTATORS | {"*"}:
+            return None
+        if _builtin_dict(receiver):
+            return {"kind": "namespace-mutator", "method": method}
+        if receiver.get("kind") in {"receiver-namespace", "module-namespace"}:
+            return {
+                "kind": "namespace-mutator",
+                "namespace": receiver,
+                "method": method,
+            }
+        effects = []
+        for namespace in receiver.get("_possible_targets", []):
+            if _builtin_dict(namespace):
+                effects.append({"kind": "namespace-mutator", "method": method})
+            elif namespace.get("kind") in {"receiver-namespace", "module-namespace"}:
+                effects.append(
+                    {
+                        "kind": "namespace-mutator",
+                        "namespace": namespace,
+                        "method": method,
+                    }
+                )
+        return {"kind": "unresolved", "_possible_targets": effects} if effects else None
+
     def mutator_value(self, node, env):
+        if isinstance(node, ast.Attribute) and node.attr in _NAMESPACE_MUTATORS:
+            receiver = (
+                _lookup(env, node.value.id)
+                if isinstance(node.value, ast.Name)
+                else self.namespace_value(node.value, env)
+            )
+            effect = self.namespace_mutator(receiver, node.attr)
+            if effect:
+                return effect
         path = self.helper_path(node, env)
+        if path == ["object", "__getattribute__"]:
+            return {"kind": "namespace-getter"}
+        if isinstance(node, ast.Attribute) and node.attr == "__getattribute__":
+            target = (
+                _lookup(env, node.value.id)
+                if isinstance(node.value, ast.Name)
+                else None
+            )
+            if target is not None and _dict_namespace(target):
+                return {"kind": "namespace-getter", "target": target}
+        if path in (["getattr"], ["dict"], ["vars"], ["locals"], ["globals"]):
+            return {"kind": "builtin", "symbol": path[0]}
+        if (
+            path
+            and len(path) == 2
+            and path[0] == "dict"
+            and path[1] in _NAMESPACE_MUTATORS
+        ):
+            return {"kind": "namespace-mutator", "method": path[1]}
         if path in (
             ["setattr"],
             ["delattr"],
@@ -1407,6 +1870,9 @@ class _BindingAnalyzer:
         return None
 
     def invalidate_target(self, binding, env, member="*"):
+        if binding.get("kind") == "module-namespace":
+            self.module_namespace_invalidations.add(member)
+            return
         if binding.get("kind") == "unresolved":
             for possible in binding.get("_possible_targets", []):
                 self.invalidate_target(possible.get("target", possible), env, member)
@@ -1418,7 +1884,7 @@ class _BindingAnalyzer:
                 if isinstance(value, dict):
                     if token is not None and value.get("_allocation") == token:
                         return value
-                    for key in ("target",):
+                    for key in ("target", "namespace"):
                         found = live(value.get(key))
                         if found is not None:
                             return found
@@ -1457,9 +1923,13 @@ class _BindingAnalyzer:
             names = set(env) | names
         for name in names:
             binding = env.get(name, {})
-            if binding.get("kind") == "constructed-instance":
+            if binding.get("kind") in {"constructed-instance", "namespace-mutator"}:
                 self.state.possible_targets.setdefault(name, []).append(binding)
-            if binding.get("kind") in {"attribute-mutator", "receiver-namespace"}:
+            if binding.get("kind") in {
+                "attribute-mutator",
+                "receiver-namespace",
+                "namespace-mutator",
+            }:
                 target = binding.get("target")
                 if target is not None:
                     targets = self.state.possible_targets.setdefault(name, [])
@@ -1477,7 +1947,14 @@ class _BindingAnalyzer:
         )
 
     def invalidate_members(
-        self, node, env, *, recursive=True, mutator=None, arguments=None
+        self,
+        node,
+        env,
+        *,
+        recursive=True,
+        mutator=None,
+        arguments=None,
+        store_owner=None,
     ):
         def eager(current):
             yield current
@@ -1496,6 +1973,7 @@ class _BindingAnalyzer:
         for child in eager(node) if recursive else [node]:
             if (
                 isinstance(child, ast.Call)
+                and not (child is node and mutator is not None)
                 and isinstance(child.func, ast.Attribute)
                 and child.func.attr
                 in {
@@ -1538,6 +2016,8 @@ class _BindingAnalyzer:
                     if isinstance(child.value, ast.Name)
                     else self.namespace_value(child.value, env)
                 )
+                if child is node and store_owner is not None:
+                    namespace = store_owner
                 if namespace and namespace.get("kind") == "receiver-namespace":
                     member = (
                         child.slice.value
@@ -1557,12 +2037,21 @@ class _BindingAnalyzer:
                         else "*"
                     )
                     self.module_namespace_invalidations.add(member)
-                elif isinstance(child.value, ast.Name):
-                    for possible in self.state.possible_targets.get(child.value.id, []):
+                else:
+                    candidates = (
+                        store_owner.get("_possible_targets", [])
+                        if child is node and store_owner is not None
+                        else self.state.possible_targets.get(child.value.id, [])
+                        if isinstance(child.value, ast.Name)
+                        else []
+                    )
+                    for possible in candidates:
                         target = possible.get("target", possible)
                         member = (
                             child.slice.value
-                            if possible.get("qualified")
+                            if possible.get(
+                                "qualified", possible.get("kind") == "module-namespace"
+                            )
                             and isinstance(child.slice, ast.Constant)
                             and isinstance(child.slice.value, str)
                             and child.slice.value.isidentifier()
@@ -1572,7 +2061,11 @@ class _BindingAnalyzer:
             if isinstance(child, ast.Attribute) and isinstance(
                 child.ctx, (ast.Store, ast.Del)
             ):
-                if isinstance(child.value, ast.Name):
+                if child is node and store_owner is not None:
+                    self.invalidate_target(
+                        store_owner.get("_effect_target", store_owner), env, child.attr
+                    )
+                elif isinstance(child.value, ast.Name):
                     self.invalidate_target(
                         _lookup(env, child.value.id), env, child.attr
                     )
@@ -1588,6 +2081,75 @@ class _BindingAnalyzer:
                     ):
                         self.invalidate_target(_lookup(env, path[0]), env)
             if isinstance(child, ast.Call):
+                captured = (
+                    mutator
+                    if child is node and mutator is not None
+                    else _lookup(env, child.func.id)
+                    if isinstance(child.func, ast.Name)
+                    else self.mutator_value(child.func, env)
+                )
+                namespace_effects = (
+                    [captured]
+                    if captured and captured.get("kind") == "namespace-mutator"
+                    else [
+                        value
+                        for value in (captured or {}).get("_possible_targets", [])
+                        if value.get("kind") == "namespace-mutator"
+                    ]
+                )
+                if isinstance(child.func, ast.Name) and not (
+                    child is node and mutator is not None
+                ):
+                    namespace_effects.extend(
+                        value
+                        for value in self.state.possible_targets.get(child.func.id, [])
+                        if value.get("kind") == "namespace-mutator"
+                    )
+                for effect in namespace_effects:
+                    namespace = effect.get("namespace")
+                    offset = 0
+                    if namespace is None and child.args:
+                        offset = 1
+                        if child is node and arguments is not None and arguments:
+                            namespace = arguments[0]
+                        elif isinstance(child.args[0], ast.Name):
+                            namespace = _lookup(env, child.args[0].id)
+                            if namespace.get("kind") == "unresolved":
+                                namespace = {
+                                    **namespace,
+                                    "_possible_targets": self.state.possible_targets.get(
+                                        child.args[0].id, []
+                                    ),
+                                }
+                        else:
+                            namespace = self.namespace_value(child.args[0], env)
+                    bound = self.namespace_mutator(namespace, effect["method"])
+                    owners = (
+                        [bound]
+                        if bound and "namespace" in bound
+                        else [
+                            value
+                            for value in (bound or {}).get("_possible_targets", [])
+                            if "namespace" in value
+                        ]
+                    )
+                    for owner in owners:
+                        namespace = owner["namespace"]
+                        names = _namespace_mutated_names(
+                            effect.get("method"),
+                            child.args[offset:],
+                            child.keywords,
+                            namespace.get("qualified", True),
+                        )
+                        if namespace.get("target", {}).get("kind") == "receiver":
+                            # A constructor receiver has no captured allocation;
+                            # retain its existing class-wide dispatch qualification.
+                            names = None
+                        for member in names if names is not None else ["*"]:
+                            if namespace.get("kind") == "receiver-namespace":
+                                self.invalidate_target(namespace["target"], env, member)
+                            elif namespace.get("kind") == "module-namespace":
+                                self.module_namespace_invalidations.add(member)
                 frozen = child is node and mutator is not None
                 effect = (
                     mutator
@@ -1605,9 +2167,13 @@ class _BindingAnalyzer:
                 effects = (
                     [effect]
                     if effect and effect.get("kind") == "attribute-mutator"
-                    else []
+                    else [
+                        value
+                        for value in (effect or {}).get("_possible_targets", [])
+                        if value.get("kind") == "attribute-mutator"
+                    ]
                 )
-                if isinstance(child.func, ast.Name):
+                if isinstance(child.func, ast.Name) and not frozen:
                     effects.extend(
                         value
                         for value in self.state.possible_targets.get(child.func.id, [])
@@ -1641,6 +2207,12 @@ class _BindingAnalyzer:
                         else "*"
                     )
                     self.invalidate_target(target, env, member)
+
+    def shadow_names(self, names, env):
+        """Enter a lexical binding without borrowing its outer possible owners."""
+        for name in names:
+            env[name] = UNKNOWN
+            self.state.possible_targets.pop(name, None)
 
     def expression(self, node, env: dict, closure: set[str], *, capture=True):
         self.state.env = env
@@ -1700,10 +2272,14 @@ class _BindingAnalyzer:
             self.state = parent.snapshot()
             local = _parameters(node.args) | _walrus_names(node.body)
             nested = self.state.env
-            nested.update({name: UNKNOWN for name in closure | local})
+            self.shadow_names(closure | local, nested)
             self.expression(node.body, nested, closure | local, capture=capture)
             self.state = parent
-            return UNKNOWN
+            return (
+                {"kind": "non-namespace-factory"}
+                if isinstance(node.body, ast.Dict) and not node.body.keys
+                else UNKNOWN
+            )
         if isinstance(node, COMPREHENSIONS):
             self.expression(node.generators[0].iter, env, closure, capture=capture)
             writes = _walrus_names(node)
@@ -1712,12 +2288,14 @@ class _BindingAnalyzer:
             self.state = skipped.snapshot()
             nested = self.state.env
             bound = set(closure)
+            iteration_names = set()
             for index, generator in enumerate(node.generators):
                 if index:
                     self.expression(generator.iter, nested, bound, capture=capture)
                 names = _target_names(generator.target)
                 bound.update(names)
-                nested.update({name: UNKNOWN for name in names})
+                iteration_names.update(names)
+                self.shadow_names(names, nested)
                 for condition in generator.ifs:
                     self.expression(condition, nested, bound, capture=capture)
             for value in (
@@ -1728,43 +2306,88 @@ class _BindingAnalyzer:
                 self.join_states([skipped], env)
             else:
                 executed = self.state.snapshot()
-                for name in bound - set(closure):
-                    executed.env.pop(name, None)
+                # Iteration bindings belong only to this comprehension. Restore
+                # their outer lexical facts before joining executed mutations.
+                for name in iteration_names:
+                    if name in skipped.env:
+                        executed.env[name] = skipped.env[name]
+                    else:
+                        executed.env.pop(name, None)
+                    if name in skipped.possible_targets:
+                        executed.possible_targets[name] = skipped.possible_targets[name]
+                    else:
+                        executed.possible_targets.pop(name, None)
                 self.join_states([skipped, executed], env)
             return UNKNOWN
         if isinstance(node, ast.Call):
             receiver = None
+            callee = None
             if isinstance(node.func, ast.Attribute):
                 receiver = self.expression(
                     node.func.value, env, closure, capture=capture
                 )
             else:
-                self.expression(node.func, env, closure, capture=capture)
+                callee = self.expression(node.func, env, closure, capture=capture)
             binding = deepcopy(self.call_binding(node, env, receiver))
             instance = self.constructor(node, env)
             helper = self.helper_path(node.func, env)
-            effect = (
-                _lookup(env, node.func.id) if isinstance(node.func, ast.Name) else None
+            getter = (
+                helper == ["getattr"]
+                or _builtin_getter(callee or {})
+                or any(
+                    _builtin_getter(value)
+                    for value in (callee or {}).get("_possible_targets", [])
+                )
             )
-            if not effect or effect.get("kind") != "attribute-mutator":
-                effect = self.mutator_value(node.func, env)
+            effect = _builtin_attribute_mutator(callee or {}) or callee
             if (
                 isinstance(node.func, ast.Attribute)
-                and node.func.attr
-                in {
-                    "update",
-                    "clear",
-                    "pop",
-                    "popitem",
-                    "setdefault",
-                    "__setitem__",
-                    "__delitem__",
-                    "__ior__",
-                }
-                and receiver
-                and receiver.get("kind") in {"receiver-namespace", "module-namespace"}
+                and node.func.attr == "__call__"
+                and _known_callable(receiver or {})
             ):
-                effect = {"kind": "namespace-mutator", "namespace": receiver}
+                callee = receiver
+                effect = _builtin_attribute_mutator(callee or {}) or callee
+                getter = _builtin_getter(callee or {}) or any(
+                    _builtin_getter(value)
+                    for value in (callee or {}).get("_possible_targets", [])
+                )
+            factories = {
+                value
+                for value in [
+                    _builtin_namespace_factory(callee or {}),
+                    *(
+                        _builtin_namespace_factory(value)
+                        for value in (callee or {}).get("_possible_targets", [])
+                    ),
+                ]
+                if value is not None
+            }
+            if (
+                helper
+                and len(helper) == 1
+                and helper[0] in {"vars", "locals", "globals"}
+            ):
+                factories.add(helper[0])
+            if not effect or (
+                effect.get("kind")
+                not in {"attribute-mutator", "namespace-mutator", "namespace-getter"}
+                and not effect.get("_possible_targets")
+            ):
+                effect = self.mutator_value(node.func, env)
+            namespace_getter = (
+                effect if effect and effect.get("kind") == "namespace-getter" else None
+            )
+            if isinstance(node.func, ast.Attribute):
+                captured = self.namespace_mutator(receiver, node.func.attr)
+                if captured:
+                    effect = captured
+                if (
+                    node.func.attr == "__getattribute__"
+                    and helper != ["object", "__getattribute__"]
+                    and receiver
+                    and _dict_namespace(receiver)
+                ):
+                    namespace_getter = {"kind": "namespace-getter", "target": receiver}
             arguments = [
                 self.expression(argument, env, closure, capture=capture)
                 for argument in node.args
@@ -1782,7 +2405,80 @@ class _BindingAnalyzer:
                 self.calls[id(node)] = binding
                 self.call_scopes[id(node)] = self.current_scope
             namespace = self.namespace_value(node, env)
+            if (
+                namespace
+                and namespace.get("kind") == "receiver-namespace"
+                and arguments
+            ):
+                namespace["target"] = arguments[0]
+            namespace_getters = (
+                [namespace_getter]
+                if namespace_getter is not None
+                else [
+                    value
+                    for value in (effect or {}).get("_possible_targets", [])
+                    if value.get("kind") == "namespace-getter"
+                ]
+            )
+            retrieved_namespaces = []
+            for captured_getter in namespace_getters:
+                offset = 0 if "target" in captured_getter else 1
+                target = captured_getter.get("target") or (
+                    arguments[0] if arguments else None
+                )
+                if target is not None and len(node.args) > offset:
+                    result = _namespace_lookup(target, node.args[offset])
+                    if result:
+                        retrieved_namespaces.append(result)
+            if retrieved_namespaces:
+                namespace = (
+                    retrieved_namespaces[0]
+                    if namespace_getter is not None
+                    else {
+                        "kind": "unresolved",
+                        "_possible_targets": retrieved_namespaces,
+                    }
+                )
+            if getter and len(arguments) >= 2:
+                namespace = _namespace_lookup(arguments[0], node.args[1]) or namespace
+            if (callee or {}).get("kind") == "non-namespace-factory":
+                namespace = None
+            possible_namespaces = []
+            if "vars" in factories and len(arguments) == 1:
+                possible_namespaces.append(
+                    {
+                        "kind": "receiver-namespace",
+                        "target": arguments[0],
+                        "qualified": True,
+                    }
+                )
+            if not arguments and (
+                "globals" in factories
+                or self.module_scope
+                and factories & {"vars", "locals"}
+            ):
+                possible_namespaces.append({"kind": "module-namespace"})
+            if possible_namespaces:
+                direct_factory = _builtin_namespace_factory(callee or {})
+                namespace = (
+                    possible_namespaces[0]
+                    if direct_factory is not None
+                    else {
+                        "kind": "unresolved",
+                        "_possible_targets": possible_namespaces,
+                    }
+                )
             private = self.mutator_value(node, env)
+            if getter and len(arguments) >= 2:
+                if (
+                    isinstance(node.args[1], ast.Constant)
+                    and node.args[1].value == "__getattribute__"
+                    and _dict_namespace(arguments[0])
+                ):
+                    private = {"kind": "namespace-getter", "target": arguments[0]}
+                method = _getter_method(node.args[1])
+                if method is not None:
+                    private = self.namespace_mutator(arguments[0], method) or private
             if helper == ["vars"] and len(arguments) == 1:
                 namespace = {
                     "kind": "receiver-namespace",
@@ -1801,12 +2497,6 @@ class _BindingAnalyzer:
                     "qualified": True,
                 }
             if (
-                namespace
-                and namespace.get("kind") == "receiver-namespace"
-                and arguments
-            ):
-                namespace["target"] = arguments[0]
-            if (
                 private
                 and private.get("target") is not None
                 and arguments
@@ -1821,19 +2511,25 @@ class _BindingAnalyzer:
                 self.expression(value, env, closure, capture=capture)
             return UNKNOWN
         if isinstance(node, ast.Attribute):
-            self.expression(node.value, env, closure, capture=capture)
+            owner = self.expression(node.value, env, closure, capture=capture)
+            if node.attr == "__call__" and _known_callable(owner):
+                return owner
             if isinstance(node.ctx, (ast.Store, ast.Del)):
-                self.invalidate_members(node, env, recursive=False)
-            private = self.namespace_value(node, env) or self.mutator_value(node, env)
+                self.invalidate_members(node, env, recursive=False, store_owner=owner)
+            private = (
+                self.namespace_mutator(owner, node.attr)
+                or self.namespace_value(node, env)
+                or self.mutator_value(node, env)
+            )
             if private:
                 return private
             imported = self.imported_target(node, env)
             return {**UNKNOWN, "_effect_target": imported} if imported else UNKNOWN
         if isinstance(node, ast.Subscript):
-            self.expression(node.value, env, closure, capture=capture)
+            owner = self.expression(node.value, env, closure, capture=capture)
             self.expression(node.slice, env, closure, capture=capture)
             if isinstance(node.ctx, (ast.Store, ast.Del)):
-                self.invalidate_members(node, env, recursive=False)
+                self.invalidate_members(node, env, recursive=False, store_owner=owner)
             return UNKNOWN
         for child in ast.iter_child_nodes(node):
             self.expression(child, env, closure, capture=capture)
@@ -1869,11 +2565,20 @@ class _BindingAnalyzer:
                     class_scope.bound & class_scope.globals
                 )
 
-                def class_effect(node, class_env):
+                def class_effect(
+                    node, class_env, mutator=None, arguments=None, store_owner=None
+                ):
                     previous_scope = self.module_scope
                     self.module_scope = False
                     before = len(self.import_mutations)
-                    self.invalidate_members(node, class_env)
+                    self.invalidate_members(
+                        node,
+                        class_env,
+                        recursive=mutator is None and store_owner is None,
+                        mutator=mutator,
+                        arguments=arguments,
+                        store_owner=store_owner,
+                    )
                     self.module_scope = previous_scope
                     if previous_scope:
                         for mutation in self.import_mutations[before:]:
@@ -1916,6 +2621,17 @@ class _BindingAnalyzer:
                     env[name] = binding
             elif isinstance(statement, (ast.Assign, ast.AnnAssign, ast.AugAssign)):
                 value = statement.value
+                augmented_owner = None
+                if isinstance(statement, ast.AugAssign) and isinstance(
+                    statement.target, (ast.Attribute, ast.Subscript)
+                ):
+                    augmented_owner = self.expression(
+                        statement.target.value, env, closure, capture=capture
+                    )
+                    if isinstance(statement.target, ast.Subscript):
+                        self.expression(
+                            statement.target.slice, env, closure, capture=capture
+                        )
                 evaluated = (
                     self.expression(value, env, closure, capture=capture)
                     if value is not None
@@ -1930,10 +2646,14 @@ class _BindingAnalyzer:
                 if isinstance(statement, ast.AugAssign):
                     binding = {"kind": "unresolved", "reason": "receiver-rebound"}
                 for target in targets:
-                    if not isinstance(target, ast.Name):
+                    if augmented_owner is not None:
+                        self.invalidate_members(
+                            target, env, recursive=False, store_owner=augmented_owner
+                        )
+                    elif not isinstance(target, ast.Name):
                         self.expression(target, env, closure, capture=capture)
                     for name in _target_names(target):
-                        if value is not None or not module:
+                        if value is not None:
                             self.bind_value(
                                 name,
                                 binding if isinstance(target, ast.Name) else UNKNOWN,
@@ -2022,6 +2742,10 @@ class _BindingAnalyzer:
                             handler_type, branch_env, closure, capture=capture
                         )
                     if isinstance(statement, (ast.For, ast.AsyncFor)):
+                        if branch is statement.body:
+                            self.expression(
+                                statement.target, branch_env, closure, capture=capture
+                            )
                         branch_env.update(
                             {name: UNKNOWN for name in _target_names(statement.target)}
                         )
@@ -2049,6 +2773,9 @@ class _BindingAnalyzer:
                 for item in statement.items:
                     self.expression(item.context_expr, env, closure, capture=capture)
                     if item.optional_vars:
+                        self.expression(
+                            item.optional_vars, env, closure, capture=capture
+                        )
                         env.update(
                             {
                                 name: UNKNOWN
@@ -2063,6 +2790,44 @@ class _BindingAnalyzer:
 
         self.module_scope = prior_scope
         self.state.env = prior_env
+
+
+def _public_binding(value, *, constructed=False):
+    """Publish only existing public fact shapes; keep owner graphs private."""
+    kind = value.get("kind")
+    if kind in {"local", "builtin", "receiver"}:
+        return {"kind": kind, "symbol": value["symbol"]}
+    if kind == "import":
+        # A private target path is mutation provenance, not an import alias.
+        if "target_members" in value:
+            return dict(UNKNOWN)
+        result = {key: value[key] for key in ("kind", "module", "name")}
+        if "modules" in value:
+            result["modules"] = list(value["modules"])
+        return result
+    if kind == "unresolved":
+        return {
+            key: value[key]
+            for key in ("kind", "reason", "line", "column")
+            if key in value
+        }
+    if kind == "constructed-receiver" and constructed:
+        constructor = value["constructor"]
+        root = _public_binding(constructor["root_binding"])
+        if root["kind"] not in {"local", "import"}:
+            return dict(UNKNOWN)
+        return {
+            "kind": kind,
+            "constructor": {
+                "root_binding": root,
+                "members": list(constructor["members"]),
+                "line": constructor["line"],
+                "column": constructor["column"],
+            },
+            "member": value["member"],
+            "receiver_origin": value["receiver_origin"],
+        }
+    return dict(UNKNOWN)
 
 
 def analyze_python_bindings(tree: ast.Module) -> PythonBindings:
@@ -2135,16 +2900,12 @@ def analyze_python_bindings(tree: ast.Module) -> PythonBindings:
     module = {
         name: dict(UNKNOWN)
         if name in analyzer.state.export_invalidations
-        else dict(value)
-        if value.get("kind")
-        not in {
-            "constructed-instance",
-            "receiver-namespace",
-            "attribute-mutator",
-            "module-namespace",
-        }
-        else dict(UNKNOWN)
+        else _public_binding(value)
         for name, value in analyzer.module.items()
+    }
+    calls = {
+        key: _public_binding(value, constructed=True)
+        for key, value in analyzer.calls.items()
     }
     classes = _dispatch_facts(tree, analyzer.module)
     for node in _module_classes(tree):
@@ -2172,7 +2933,7 @@ def analyze_python_bindings(tree: ast.Module) -> PythonBindings:
             classes[id(node)]["reasons"] = sorted(
                 set(classes[id(node)]["reasons"]) | {"custom-construction-or-dispatch"}
             )
-    return PythonBindings(module, analyzer.calls, classes)
+    return PythonBindings(module, calls, classes)
 
 
 def valid_python_constructor_facts(inventory, *, require_capability=True):

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from collections import Counter
 from collections.abc import Mapping
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field as dataclass_field
 from fractions import Fraction
 import hashlib
 import json
@@ -164,7 +164,10 @@ class Ratio:
 
     @property
     def value(self) -> Fraction | None:
-        return Fraction(self.numerator, self.denominator) if self.denominator else None
+        if (type(self.numerator) is not int or type(self.denominator) is not int
+                or not 0 <= self.numerator <= self.denominator or self.denominator == 0):
+            return None
+        return Fraction(self.numerator, self.denominator)
 
     def to_dict(self) -> dict[str, Any]:
         return {"numerator": self.numerator, "denominator": self.denominator,
@@ -219,9 +222,16 @@ class SplitScore:
     unanswerable_candidate_pages: int
     missing: int
     errors: int
+    # These immutable inputs preserve capture, relevance and alias custody at
+    # the adoption boundary. Legacy summaries without them cannot earn adoption.
+    corpus_json: str | None = dataclass_field(default=None, repr=False)
+    capture_json: str | None = dataclass_field(default=None, repr=False)
+    aliases_json: str | None = dataclass_field(default=None, repr=False)
 
     def to_dict(self) -> dict[str, Any]:
         result = asdict(self)
+        for name in ("corpus_json", "capture_json", "aliases_json"):
+            result.pop(name)
         for name in ("owner_recall", "owner_precision", "emitted_recall", "emitted_precision"):
             result[name] = getattr(self, name).to_dict()
         return result
@@ -357,7 +367,23 @@ def score_split(corpus: Mapping[str, Any], observations: Mapping[str, Any],
                       Ratio(owner_hits, targets), Ratio(owner_hits, owner_slots),
                       Ratio(emitted_owner_hits, targets), Ratio(emitted_page_hits, page_slots),
                       exact_correct, exact_total, unanswered, claims_observed, claims,
-                      candidates, candidate_pages, missing, errors)
+                      candidates, candidate_pages, missing, errors,
+                      *(json.dumps(value, sort_keys=True, separators=(",", ":"),
+                                   ensure_ascii=False, allow_nan=False)
+                        for value in (corpus, observations, aliases)))
+
+
+def _score_custody(score: SplitScore) -> bool:
+    """Verify all summaries and per-query traces against their pinned inputs."""
+    try:
+        if (not isinstance(score.corpus_json, str) or not isinstance(score.capture_json, str)
+                or not isinstance(score.aliases_json, str)):
+            return False
+        replay = score_split(json.loads(score.corpus_json), json.loads(score.capture_json),
+                             json.loads(score.aliases_json), score.split, expected=score.binding)
+        return frozen_results_digest(replay.to_dict()) == frozen_results_digest(score.to_dict())
+    except (ValueError, TypeError, KeyError, AttributeError, ZeroDivisionError):
+        return False
 
 
 @dataclass(frozen=True)
@@ -380,6 +406,8 @@ def adoption_gate(baseline: SplitScore, candidate: SplitScore, *,
     runner as the mandatory ``exact_development`` control.
     """
     checks: dict[str, bool] = {}
+    checks["baseline_score_custody"] = _score_custody(baseline)
+    checks["candidate_score_custody"] = _score_custody(candidate)
     checks["confirmation_split"] = baseline.split == candidate.split == "confirmation"
     checks["same_corpus_and_schedule"] = (baseline.binding.corpus_id == candidate.binding.corpus_id
         and baseline.binding.corpus_sha256 == candidate.binding.corpus_sha256

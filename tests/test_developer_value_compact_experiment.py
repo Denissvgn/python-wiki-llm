@@ -403,3 +403,69 @@ def test_direct_cannot_fit_gate_requires_minimum_projection_custody_checks(name:
     assert name in scored.reasons and scored.checks[name] is False
     assert not scored.eligible and not scored.body_size_win
     assert scored.cases_count == 1
+
+
+@pytest.mark.parametrize("field", ["bytes", "estimated_tokens", "sha256", "counter_identity", "exact"])
+def test_gate_rederives_each_size_field_from_the_pinned_physical_body(field: str) -> None:
+    record, pins = sample(canonical_tokens=1684, compact_tokens=893, budget=3200)
+    pins = replace(pins, canonical_ceiling_tokens=3200)
+    record["metadata"]["canonical_ceiling_tokens"] = 3200
+    pins = repin_record(record, pins)
+    measured = inspect_measurement(record["canonical_text"], record["view_text"], record["metadata"],
+                                   expected=pins, counter=EstimatedCounter())
+    assert not size_gate(measured).body_size_win
+    edits = {"bytes": 3200, "estimated_tokens": 800, "sha256": text_sha256(body(800)),
+             "counter_identity": "other-counter", "exact": True}
+    forged = replace(measured, compact_body=replace(measured.compact_body, **{field: edits[field]}))
+    assert forged.binding == pins
+    assert "derived_measurement_custody" in size_gate(forged).reasons
+    assert not size_gate(forged).body_size_win
+
+
+@pytest.mark.parametrize("field", ["canonical_body", "compact_body", "canonical_wire", "compact_wire",
+                                   "receipt_followup", "minimum_success", "status", "wall_ns", "capture_json"])
+def test_even_plausible_derived_measurement_edits_do_not_preserve_custody(field: str) -> None:
+    record, pins = sample()
+    measured = inspect_measurement(record["canonical_text"], record["view_text"], record["metadata"],
+                                   expected=pins, counter=EstimatedCounter())
+    assert size_gate(measured).eligible
+    if field in ("canonical_body", "compact_body", "canonical_wire", "compact_wire"):
+        # Coordinate a plausible byte/count/hash trio, rather than only making
+        # estimator arithmetic internally inconsistent.
+        part = getattr(measured, field)
+        edited_text = body(900)
+        changed: Any = replace(part, bytes=len(edited_text.encode()), estimated_tokens=900,
+                               sha256=text_sha256(edited_text))
+    else:
+        changed = {"receipt_followup": (measured.compact_body,),
+                   "minimum_success": measured.compact_body, "status": "cannot-fit",
+                   "wall_ns": 11, "capture_json": None}[field]
+    assert not size_gate(replace(measured, **{field: changed})).eligible
+
+
+def test_gate_authenticates_checks_and_immutable_receipt_capture() -> None:
+    record, pins = sample()
+    record["metadata"]["controls"]["decisive_facts"] = False
+    pins = repin_record(record, pins)
+    measured = inspect_measurement(record["canonical_text"], record["view_text"], record["metadata"],
+                                   expected=pins, counter=EstimatedCounter())
+    assert isinstance(measured.checks, dict)
+    measured.checks["decisive_facts"] = True
+    assert not size_gate(measured).eligible
+    assert "derived_measurement_custody" in size_gate(measured).reasons
+    assert isinstance(measured.capture_json, str)
+    raw = json.loads(measured.capture_json)
+    raw["metadata"]["controls"]["decisive_facts"] = True
+    raw["metadata"]["receipt_artifact"] = "{}"
+    assert not size_gate(replace(measured, capture_json=json.dumps(raw))).eligible
+
+
+def test_inspection_keeps_no_mutable_alias_to_the_raw_controller_record() -> None:
+    record, pins = sample()
+    measured = inspect_measurement(record["canonical_text"], record["view_text"], record["metadata"],
+                                   expected=pins, counter=EstimatedCounter())
+    record["metadata"]["controls"].clear()
+    record["metadata"]["receipt_artifact"] = "{}"
+    assert size_gate(measured).eligible
+    assert "capture_json" not in measured.to_dict()
+    assert "capture_json" not in size_gate(measured).to_dict()["measurement"]
