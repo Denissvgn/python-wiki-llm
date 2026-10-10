@@ -1645,3 +1645,19 @@ Aligned search orientation, source-reading navigation and documentation review g
 - Pages deprecated: 0
 - Semantic fields preserved: 0
 - Moved entities: none
+
+## 2026-10-10
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:ea97255cb4db907579083426b33e7bf94441dfdb242b9eb214bfec4c4a8a2a14`
+- Pages created: 0
+- Pages updated: 2
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1557
+- Pages deprecated: 0
+- Semantic fields preserved: 0
+- Moved entities: none

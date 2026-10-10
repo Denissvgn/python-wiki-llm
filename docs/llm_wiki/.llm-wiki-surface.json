@@ -13260,7 +13260,7 @@
             "src/llm_wiki_cli/services/maintenance_evidence.py",
             "src/llm_wiki_cli/services/knowledge_coverage.py"
           ],
-          "step_count": 2786,
+          "step_count": 2782,
           "truncated": true
         }
       },
@@ -65899,5 +65899,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:0fac86e151abd7060385ce8ec51f88e6df49f2fc5b66562733826f34c87dcf35"
+  "source_hash": "sha256:55f4a54f03c15a10735bf8d06c099a5777a4c66cb35386dbc7a10cc6bf74f0c9"
 }

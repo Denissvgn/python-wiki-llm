@@ -18,7 +18,6 @@ One bounded concept inspection over one captured native read view.
 | `json` | `json` |
 | `pathlib` | `Path` |
 | `typing` | `Any` |
-| `urllib.parse` | `quote` |
 
 ## Local dependency map
 
