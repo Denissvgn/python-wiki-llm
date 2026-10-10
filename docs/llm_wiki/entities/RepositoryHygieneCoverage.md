@@ -1,6 +1,6 @@
 # RepositoryHygieneCoverage
 
-**Location:** `src/llm_wiki_cli/services/instruction_ownership.py:130`
+**Location:** `src/llm_wiki_cli/services/instruction_ownership.py:134`
 **Kind:** Class
 **Bases:** —
 **Module:** [instruction_ownership](../modules/instruction_ownership.md)

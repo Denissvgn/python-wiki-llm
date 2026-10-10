@@ -8,7 +8,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 |---|---:|---|
 | Entities | 661 | [Open section](#entities) |
 | Modules | 235 | [Open section](#modules) |
-| Workflows | 197 | [Open section](#workflows) |
+| Workflows | 199 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 464 | [Open section](#entry-point-flows) |
 | Infrastructure | 0 | No pages |
@@ -369,6 +369,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [MaintenanceAdoptionResult](entities/MaintenanceAdoptionResult.md)
 - [MaintenanceCapture](entities/MaintenanceCapture.md)
 - [MaintenanceCore](entities/MaintenanceCore.md)
+- [MaintenanceProjectionOptions](entities/MaintenanceProjectionOptions.md)
 - [MaintenanceProtocolError](entities/MaintenanceProtocolError.md)
 - [MaintenanceQueueResult](entities/MaintenanceQueueResult.md)
 - [MaintenanceRecordResult](entities/MaintenanceRecordResult.md)
@@ -409,7 +410,6 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [ModuleDependencyDiagram](entities/ModuleDependencyDiagram.md)
 - [ModulePathResolver](entities/ModulePathResolver.md)
 - [NativeEvidenceTransaction](entities/NativeEvidenceTransaction.md)
-- [NativeInspectionMaintenance](entities/NativeInspectionMaintenance.md)
 - [NativeInspectionResult](entities/NativeInspectionResult.md)
 - [ObservationScope](entities/ObservationScope.md)
 - [ObsidianError](entities/ObsidianError.md)
@@ -935,6 +935,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [WikiWriteBasis_before_write](workflows/WikiWriteBasis_before_write.md) - entry: `maintenance_protocol.WikiWriteBasis.before_write`
 - [acknowledge_maintenance_authority](workflows/acknowledge_maintenance_authority.md) - entry: `maintenance_service.acknowledge_maintenance_authority`
 - [adopt_maintenance_authority](workflows/adopt_maintenance_authority.md) - entry: `maintenance_service.adopt_maintenance_authority`
+- [advance_owned_ignore_snapshot](workflows/advance_owned_ignore_snapshot.md) - entry: `migrate_cmd._advance_owned_ignore_snapshot`
 - [append_log](workflows/append_log.md) - entry: `sync_cmd._append_log`
 - [apply_current_infrastructure_plan](workflows/apply_current_infrastructure_plan.md) - entry: `sync_cmd._apply_current_infrastructure_plan`
 - [apply_entity_page](workflows/apply_entity_page.md) - entry: `sync_cmd._apply_entity_page`
@@ -1001,6 +1002,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [deprecate_removed_files](workflows/deprecate_removed_files.md) - entry: `sync_cmd._deprecate_removed_files`
 - [discover_infrastructure_plan](workflows/discover_infrastructure_plan.md) - entry: `sync_cmd._discover_infrastructure_plan`
 - [doctor_cmd_flow](workflows/doctor_cmd_flow.md) - entry: `doctor_cmd.run`
+- [ensure_legacy_gitignore](workflows/ensure_legacy_gitignore.md) - entry: `migrate_cmd._ensure_legacy_gitignore`
 - [expand_storage_receipt](workflows/expand_storage_receipt.md) - entry: `storage_receipts.expand_storage_receipt`
 - [export_knowledge_v1](workflows/export_knowledge_v1.md) - entry: `knowledge_storage_lifecycle.export_knowledge_v1`
 - [extract_bootstrap_inventory](workflows/extract_bootstrap_inventory.md) - entry: `bootstrap_runtime._extract_bootstrap_inventory`

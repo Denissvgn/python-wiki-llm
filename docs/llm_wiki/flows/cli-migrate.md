@@ -108,9 +108,9 @@ sequenceDiagram
     p0-->>p7: print (src/llm_wiki_cli/commands/migrate_cmd.py:run)('\nNo pending migration changes.')
 ```
 
-> Call sequence diagram shows 30 of 3942 interactions; 3912 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3960 interactions; 3930 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 21 of 1049 (1028 omitted); unresolved 1 of 1512 (1511 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 21 of 1050 (1029 omitted); unresolved 1 of 1521 (1520 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -124,7 +124,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_source_root` | 11 | - | external | 11 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 11 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 30 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 2 |
-> Omission summary shows 8 of 974 groups; 966 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 977 groups; 969 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -208,42 +208,42 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1672 | `getattr(args, 'src_dir', '.')` |
-| run | Path (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1673 | `Path(getattr(...))` |
-| run | getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1673 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
-| run | getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1674 | `getattr(args, 'dry_run', False)` |
-| run | getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1675 | `getattr(args, 'chunk_size', None)` |
-| run | getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1676 | `getattr(args, 'chunk', None)` |
-| run | getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1677 | `getattr(args, 'plan_chunks', False)` |
-| run | bool (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1678 | `bool(getattr(...))` |
-| run | getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1678 | `getattr(args, 'allow_external_src', False)` |
-| run | validate_source_root | 1679 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external)` |
+| run | getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1733 | `getattr(args, 'src_dir', '.')` |
+| run | Path (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1734 | `Path(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1734 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
+| run | getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1735 | `getattr(args, 'dry_run', False)` |
+| run | getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1736 | `getattr(args, 'chunk_size', None)` |
+| run | getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1737 | `getattr(args, 'chunk', None)` |
+| run | getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1738 | `getattr(args, 'plan_chunks', False)` |
+| run | bool (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1739 | `bool(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run) | 1739 | `getattr(args, 'allow_external_src', False)` |
+| run | validate_source_root | 1740 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external)` |
 | validate_source_root | validate_path | 160 | `validate_path(path, label)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 1689 |
-| output | `print` | `run` | 1693 |
-| output | `print` | `run` | 1696 |
-| output | `print` | `run` | 1697 |
-| output | `print` | `run` | 1706 |
-| output | `print` | `run` | 1714 |
-| output | `print` | `run` | 1720 |
-| output | `print` | `run` | 1725 |
+| output | `print` | `run` | 1750 |
+| output | `print` | `run` | 1754 |
+| output | `print` | `run` | 1757 |
+| output | `print` | `run` | 1758 |
+| output | `print` | `run` | 1767 |
+| output | `print` | `run` | 1775 |
+| output | `print` | `run` | 1781 |
+| output | `print` | `run` | 1786 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `run` | `getattr` | 1672 |
-| external_call | `run` | `getattr` | 1673 |
-| external_call | `run` | `getattr` | 1674 |
-| external_call | `run` | `getattr` | 1675 |
-| external_call | `run` | `getattr` | 1676 |
-| external_call | `run` | `getattr` | 1677 |
-| external_call | `run` | `getattr` | 1678 |
+| external_call | `run` | `getattr` | 1733 |
+| external_call | `run` | `getattr` | 1734 |
+| external_call | `run` | `getattr` | 1735 |
+| external_call | `run` | `getattr` | 1736 |
+| external_call | `run` | `getattr` | 1737 |
+| external_call | `run` | `getattr` | 1738 |
+| external_call | `run` | `getattr` | 1739 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

@@ -1,6 +1,6 @@
 # DoctorFreshness
 
-**Location:** `src/llm_wiki_cli/api_types.py:518`
+**Location:** `src/llm_wiki_cli/api_types.py:522`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

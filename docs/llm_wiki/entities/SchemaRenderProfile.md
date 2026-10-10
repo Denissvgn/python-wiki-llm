@@ -37,9 +37,9 @@ flowchart LR
     n9["_topic_route (src/llm_wiki_cli/services/instruction_ownership.py)"]
     n10["_workflow_route (src/llm_wiki_cli/services/instruction_ownership.py)"]
     n11["correctness_destination_ready (src/llm_wiki_cli/services/instruction_ownership.py)"]
-    n12["removal_prerequisites_ready (src/llm_wiki_cli/services/instruction_ownership.py)"]
-    n13["route_exists (src/llm_wiki_cli/services/instruction_ownership.py)"]
-    n14["src/llm_wiki_cli/services/rendering_lifecycle.py"]
+    n12["CorrectnessClauseCoverage.rendered_text (src/llm_wiki_cli/services/instruction_ownership.py)"]
+    n13["removal_prerequisites_ready (src/llm_wiki_cli/services/instruction_ownership.py)"]
+    n14["route_exists (src/llm_wiki_cli/services/instruction_ownership.py)"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
@@ -66,7 +66,7 @@ flowchart LR
     click n11 "../modules/instruction_ownership.md"
     click n12 "../modules/instruction_ownership.md"
     click n13 "../modules/instruction_ownership.md"
-    click n14 "../modules/rendering_lifecycle.md"
+    click n14 "../modules/instruction_ownership.md"
 ```
 
 ### Summary
@@ -95,8 +95,8 @@ flowchart LR
 | `_topic_route` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |
 | `_workflow_route` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |
 | `correctness_destination_ready` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |
+| `CorrectnessClauseCoverage.rendered_text` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |
 | `removal_prerequisites_ready` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |
 | `route_exists` | type_reference | [instruction_ownership](../modules/instruction_ownership.md) | — |
-| `rendering_lifecycle` | import | [rendering_lifecycle](../modules/rendering_lifecycle.md) | — |
 
-> References: showing 12 of 17 logical references; 5 omitted by the 12-row generated summary limit.
+> References: showing 12 of 18 logical references; 6 omitted by the 12-row generated summary limit.

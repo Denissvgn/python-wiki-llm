@@ -32,25 +32,28 @@ Filesystem identity used for cheap between-stage mutation checks.
 ```mermaid
 flowchart LR
     n0["SourceFileIntegrity (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n1["_captured_file_integrity (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n2["_captured_snapshot_inputs (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n3["_file_integrity_from_stat (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n4["_path_bound_file_integrity (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n5["_sha256_file (src/llm_wiki_cli/services/source_snapshot.py)"]
-    n6["_source_file_integrity (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n1["_ensure_legacy_gitignore (src/llm_wiki_cli/commands/migrate_cmd.py)"]
+    n2["_captured_file_integrity (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n3["_captured_snapshot_inputs (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n4["_file_integrity_from_stat (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n5["_path_bound_file_integrity (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n6["_sha256_file (src/llm_wiki_cli/services/source_snapshot.py)"]
+    n7["_source_file_integrity (src/llm_wiki_cli/services/source_snapshot.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
     n6 --> n0
+    n7 --> n0
     click n0 "../modules/source_snapshot.md"
-    click n1 "../modules/source_snapshot.md"
+    click n1 "../modules/migrate_cmd.md"
     click n2 "../modules/source_snapshot.md"
     click n3 "../modules/source_snapshot.md"
     click n4 "../modules/source_snapshot.md"
     click n5 "../modules/source_snapshot.md"
     click n6 "../modules/source_snapshot.md"
+    click n7 "../modules/source_snapshot.md"
 ```
 
 ### Summary
@@ -63,6 +66,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `_ensure_legacy_gitignore` | call | [migrate_cmd](../modules/migrate_cmd.md) | 1 |
 | `_captured_file_integrity` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
 | `_captured_snapshot_inputs` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
 | `_file_integrity_from_stat` | call | [source_snapshot](../modules/source_snapshot.md) | 1 |

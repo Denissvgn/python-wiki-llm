@@ -18,7 +18,7 @@
     "by_kind": {
       "api-contracts": 0,
       "dependencies": 1,
-      "entities": 661,
+      "entities": 662,
       "flows": 464,
       "guides": 11,
       "index": 1,
@@ -26,10 +26,10 @@
       "load-order": 1,
       "log": 1,
       "modules": 235,
-      "workflows": 197
+      "workflows": 199
     },
     "dependency_architecture": 2,
-    "total": 1572
+    "total": 1575
   },
   "dependency_pages": {
     "count": 2,
@@ -33761,7 +33761,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 1689,
+              "line": 1750,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -33769,7 +33769,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 1693,
+              "line": 1754,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -33777,7 +33777,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 1696,
+              "line": 1757,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -33785,7 +33785,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 1697,
+              "line": 1758,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -33793,7 +33793,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 1706,
+              "line": 1767,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -33801,7 +33801,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 1714,
+              "line": 1775,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -33809,7 +33809,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 1720,
+              "line": 1781,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -33817,7 +33817,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 1725,
+              "line": 1786,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -33826,43 +33826,43 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 1672,
+              "line": 1733,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 1673,
+              "line": 1734,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 1674,
+              "line": 1735,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 1675,
+              "line": 1736,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 1676,
+              "line": 1737,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 1677,
+              "line": 1738,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 1678,
+              "line": 1739,
               "step": "run",
               "target": "getattr"
             },
@@ -33933,7 +33933,7 @@
             "src/llm_wiki_cli/services/infrastructure_sync.py",
             "src/llm_wiki_cli/services/knowledge_index.py"
           ],
-          "step_count": 3943,
+          "step_count": 3961,
           "truncated": true
         }
       },
@@ -38498,6 +38498,7 @@
         "entities/MaintenanceAdoptionResult.md",
         "entities/MaintenanceCapture.md",
         "entities/MaintenanceCore.md",
+        "entities/MaintenanceProjectionOptions.md",
         "entities/MaintenanceProtocolError.md",
         "entities/MaintenanceQueueResult.md",
         "entities/MaintenanceRecordResult.md",
@@ -38540,7 +38541,6 @@
         "entities/ModuleDependencyDiagram.md",
         "entities/ModulePathResolver.md",
         "entities/NativeEvidenceTransaction.md",
-        "entities/NativeInspectionMaintenance.md",
         "entities/NativeInspectionResult.md",
         "entities/ObservationScope.md",
         "entities/obsidian_WikiPage.md",
@@ -39518,6 +39518,7 @@
         "modules/workspace.md",
         "workflows/acknowledge_maintenance_authority.md",
         "workflows/adopt_maintenance_authority.md",
+        "workflows/advance_owned_ignore_snapshot.md",
         "workflows/append_log.md",
         "workflows/apply_current_infrastructure_plan.md",
         "workflows/apply_entity_page.md",
@@ -39587,6 +39588,7 @@
         "workflows/deprecate_removed_files.md",
         "workflows/discover_infrastructure_plan.md",
         "workflows/doctor_cmd_flow.md",
+        "workflows/ensure_legacy_gitignore.md",
         "workflows/expand_storage_receipt.md",
         "workflows/export_knowledge_v1.md",
         "workflows/extract_bootstrap_inventory.md",
@@ -44356,6 +44358,18 @@
       "title": "MaintenanceCore"
     },
     {
+      "canonical_path": "entities/MaintenanceProjectionOptions.md",
+      "id": "MaintenanceProjectionOptions",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/MaintenanceProjectionOptions",
+      "outgoing_internal_links": [
+        "modules/api_types.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/api_types.py",
+      "title": "_MaintenanceProjectionOptions"
+    },
+    {
       "canonical_path": "entities/MaintenanceProtocolError.md",
       "id": "MaintenanceProtocolError",
       "kind": "entities",
@@ -44906,7 +44920,7 @@
         "modules/api_types.md"
       ],
       "role": "semantic",
-      "source_path": "src/llm_wiki_cli/api_types.py",
+      "source_path": null,
       "title": "_NativeInspectionMaintenance"
     },
     {
@@ -46611,7 +46625,6 @@
       "outgoing_internal_links": [
         "modules/init_cmd.md",
         "modules/instruction_ownership.md",
-        "modules/rendering_lifecycle.md",
         "modules/services_schema.md",
         "modules/upgrade_cmd.md"
       ],
@@ -47004,6 +47017,7 @@
       "kind": "entities",
       "mcp_uri": "llm-wiki://entities/SourceFileIntegrity",
       "outgoing_internal_links": [
+        "modules/migrate_cmd.md",
         "modules/source_snapshot.md"
       ],
       "role": "semantic",
@@ -47127,6 +47141,7 @@
       "outgoing_internal_links": [
         "modules/context_packet.md",
         "modules/extraction_service.md",
+        "modules/migrate_cmd.md",
         "modules/source_snapshot.md"
       ],
       "role": "semantic",
@@ -48536,12 +48551,12 @@
         "entities/MaintenanceAcknowledgmentResult.md",
         "entities/MaintenanceAdoptionOptions.md",
         "entities/MaintenanceAdoptionResult.md",
+        "entities/MaintenanceProjectionOptions.md",
         "entities/MaintenanceQueueResult.md",
         "entities/MaintenanceRecordResult.md",
         "entities/MaintenanceRecoveryResult.md",
         "entities/MaintenanceStatusResult.md",
         "entities/MarkdownContextResult.md",
-        "entities/NativeInspectionMaintenance.md",
         "entities/NativeInspectionResult.md",
         "entities/PagesForSymbolResult.md",
         "entities/QueryCostDisclosure.md",
@@ -52684,6 +52699,21 @@
       "title": "adopt_maintenance_authority"
     },
     {
+      "canonical_path": "workflows/advance_owned_ignore_snapshot.md",
+      "id": "advance_owned_ignore_snapshot",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/advance_owned_ignore_snapshot",
+      "outgoing_internal_links": [
+        "modules/knowledge_evidence.md",
+        "modules/knowledge_storage_io.md",
+        "modules/migrate_cmd.md",
+        "modules/source_snapshot.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/commands/migrate_cmd.py",
+      "title": "advance_owned_ignore_snapshot"
+    },
+    {
       "canonical_path": "workflows/append_log.md",
       "id": "append_log",
       "kind": "workflows",
@@ -53835,6 +53865,22 @@
       "role": "mixed",
       "source_path": "src/llm_wiki_cli/commands/doctor_cmd.py",
       "title": "doctor_cmd_flow"
+    },
+    {
+      "canonical_path": "workflows/ensure_legacy_gitignore.md",
+      "id": "ensure_legacy_gitignore",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/ensure_legacy_gitignore",
+      "outgoing_internal_links": [
+        "modules/filesystem_guard.md",
+        "modules/knowledge_evidence.md",
+        "modules/knowledge_storage_io.md",
+        "modules/migrate_cmd.md",
+        "modules/source_snapshot.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/commands/migrate_cmd.py",
+      "title": "ensure_legacy_gitignore"
     },
     {
       "canonical_path": "workflows/expand_storage_receipt.md",
@@ -65899,5 +65945,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:55f4a54f03c15a10735bf8d06c099a5777a4c66cb35386dbc7a10cc6bf74f0c9"
+  "source_hash": "sha256:4a812326efe374e32bb772e9cb19a28b1fd57f73b0f604f69f0c67a2a28f80e2"
 }

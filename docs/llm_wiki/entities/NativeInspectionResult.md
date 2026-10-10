@@ -2,7 +2,7 @@
 
 **Location:** `src/llm_wiki_cli/api_types.py:710`
 **Kind:** Class
-**Bases:** `_NativeInspectionMaintenance`
+**Bases:** `_MaintenanceProjectionOptions`
 **Module:** [api_types](../modules/api_types.md)
 
 ## Description
@@ -33,7 +33,7 @@ Bounded component results sharing one source/wiki read scope.
 ```mermaid
 flowchart LR
     n0["NativeInspectionResult (src/llm_wiki_cli/api_types.py)"]
-    n1["_NativeInspectionMaintenance (src/llm_wiki_cli/api_types.py)"]
+    n1["_MaintenanceProjectionOptions (src/llm_wiki_cli/api_types.py)"]
     n2["inspect_concept (src/llm_wiki_cli/api.py)"]
     n0 --> n1
     n2 --> n0
@@ -52,7 +52,7 @@ flowchart LR
 
 | Kind | Entity | Module |
 |---|---|---|
-| Base | `_NativeInspectionMaintenance` | [api_types](../modules/api_types.md) |
+| Base | `_MaintenanceProjectionOptions` | [api_types](../modules/api_types.md) |
 
 ### References
 

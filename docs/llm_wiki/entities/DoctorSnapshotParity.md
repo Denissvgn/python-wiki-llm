@@ -1,6 +1,6 @@
 # DoctorSnapshotParity
 
-**Location:** `src/llm_wiki_cli/api_types.py:525`
+**Location:** `src/llm_wiki_cli/api_types.py:529`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

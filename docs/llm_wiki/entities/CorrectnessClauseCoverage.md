@@ -26,10 +26,13 @@ Current correctness rule protected by a canonical ownership decision.
 | `always_inline` | `bool` | `False` | — |
 | `profiles` | `tuple[SchemaRenderProfile, ...]` | `tuple(SchemaRenderProfile)` | — |
 | `agent_targets` | `tuple[str, ...]` | `tuple(SCHEMA_FILENAMES)` | — |
+| `compact_text` | `str \| None` | `None` | — |
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+| Method | Signature | Decorators | Description |
+|--------|-----------|------------|-------------|
+| `rendered_text` | `(profile: SchemaRenderProfile) -> str` | — | — |
 
 ## Relationships
 
@@ -47,7 +50,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [instruction_ownership](../modules/instruction_ownership.md) | 0 | `agent_targets`, `always_inline`, `destination`, `destination_text`, `name`, `origin`, `owner`, `profiles`, `route`, `source_section`, `source_text` |
+| [instruction_ownership](../modules/instruction_ownership.md) | 1 | `agent_targets`, `always_inline`, `compact_text`, `destination`, `destination_text`, `name`, `origin`, `owner`, `profiles`, `route`, `source_section`, `source_text` |
 
 ### References
 
