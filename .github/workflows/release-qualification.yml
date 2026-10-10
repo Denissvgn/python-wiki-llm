@@ -1416,6 +1416,7 @@ jobs:
           python -m pytest tests/test_mcp_sdk.py
           tests/test_workflow_interfaces.py::test_real_sdk_preserves_single_counted_representation -q
           tests/test_compact_delivery_interfaces.py::test_actual_mcp_sdk_content_carries_view_then_receipt_as_separate_transport
+          tests/test_developer_value_combined_interfaces.py::test_actual_sdk_combined_callers_compact_and_stale_custody
           -p no:cacheprovider --strict-config --strict-markers
           -W error
           -o xfail_strict=true
@@ -1426,8 +1427,8 @@ jobs:
           --junit "evidence/mcp-${{ matrix.python }}.xml"
           --lane "mcp-${{ matrix.python }}"
           --allowlist candidate/release/skip-allowlist.json
-          --minimum-collected 3
-          --minimum-passed 3
+          --minimum-collected 6
+          --minimum-passed 6
           --output "evidence/result-mcp-${{ matrix.python }}.json"
       - name: Upload gate evidence
         if: always()

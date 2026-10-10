@@ -14,6 +14,24 @@
     },
     {
       "lane": "core-macos-3.14",
+      "node_id": "tests/test_developer_value_combined_interfaces.py::test_actual_sdk_combined_callers_compact_and_stale_custody[packed]",
+      "owner_lane": "mcp-3.13",
+      "reason": "Optional MCP SDK is not installed"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_developer_value_combined_interfaces.py::test_actual_sdk_combined_callers_compact_and_stale_custody[sharded]",
+      "owner_lane": "mcp-3.13",
+      "reason": "Optional MCP SDK is not installed"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_developer_value_combined_interfaces.py::test_actual_sdk_combined_callers_compact_and_stale_custody[source-only]",
+      "owner_lane": "mcp-3.13",
+      "reason": "Optional MCP SDK is not installed"
+    },
+    {
+      "lane": "core-macos-3.14",
       "node_id": "tests/test_documentation_calibration_oci_integration.py::test_real_docker_probe_and_worker_are_isolated",
       "owner_lane": "oci",
       "reason": "Set LLM_WIKI_RUN_OCI_INTEGRATION=1 only in the dedicated OCI lane."
@@ -983,6 +1001,24 @@
       "node_id": "tests/test_compact_delivery_interfaces.py::test_actual_mcp_sdk_content_carries_view_then_receipt_as_separate_transport",
       "owner_lane": "mcp-3.13",
       "reason": "MCP SDK is not installed."
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_developer_value_combined_interfaces.py::test_actual_sdk_combined_callers_compact_and_stale_custody[packed]",
+      "owner_lane": "mcp-3.13",
+      "reason": "Optional MCP SDK is not installed"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_developer_value_combined_interfaces.py::test_actual_sdk_combined_callers_compact_and_stale_custody[sharded]",
+      "owner_lane": "mcp-3.13",
+      "reason": "Optional MCP SDK is not installed"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_developer_value_combined_interfaces.py::test_actual_sdk_combined_callers_compact_and_stale_custody[source-only]",
+      "owner_lane": "mcp-3.13",
+      "reason": "Optional MCP SDK is not installed"
     },
     {
       "lane": "core-ubuntu-3.10",
@@ -2033,6 +2069,24 @@
       "node_id": "tests/test_config.py::TestValidatePath::test_external_source_root_fails_closed_without_verifiable_uid",
       "owner_lane": "security-ubuntu-24.04",
       "reason": "This exercises the POSIX UID-unavailable branch."
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_combined_interfaces.py::test_actual_sdk_combined_callers_compact_and_stale_custody[packed]",
+      "owner_lane": "mcp-3.13",
+      "reason": "Optional MCP SDK is not installed"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_combined_interfaces.py::test_actual_sdk_combined_callers_compact_and_stale_custody[sharded]",
+      "owner_lane": "mcp-3.13",
+      "reason": "Optional MCP SDK is not installed"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_developer_value_combined_interfaces.py::test_actual_sdk_combined_callers_compact_and_stale_custody[source-only]",
+      "owner_lane": "mcp-3.13",
+      "reason": "Optional MCP SDK is not installed"
     },
     {
       "lane": "core-windows-3.13",
