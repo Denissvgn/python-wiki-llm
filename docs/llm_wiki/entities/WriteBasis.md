@@ -1,6 +1,6 @@
 # WriteBasis
 
-**Location:** `src/llm_wiki_cli/services/wiki_write_basis.py:11`
+**Location:** `src/llm_wiki_cli/services/wiki_write_basis.py:13`
 **Kind:** Class
 **Bases:** `Protocol`
 **Module:** [wiki_write_basis](../modules/wiki_write_basis.md)

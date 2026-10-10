@@ -1116,13 +1116,13 @@
             },
             {
               "kind": "unresolved_call",
-              "line": 24,
+              "line": 26,
               "step": "before_wiki_write",
               "target": "ACTIVE_WRITE_BASIS.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 26,
+              "line": 28,
               "step": "before_wiki_write",
               "target": "basis.before_write"
             },
@@ -1217,13 +1217,13 @@
             },
             {
               "kind": "unresolved_call",
-              "line": 24,
+              "line": 26,
               "step": "before_wiki_write",
               "target": "ACTIVE_WRITE_BASIS.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 26,
+              "line": 28,
               "step": "before_wiki_write",
               "target": "basis.before_write"
             },
@@ -27807,13 +27807,13 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 24,
+              "line": 26,
               "step": "before_wiki_write",
               "target": "ACTIVE_WRITE_BASIS.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 26,
+              "line": 28,
               "step": "before_wiki_write",
               "target": "basis.before_write"
             },
@@ -65899,5 +65899,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:5f61eec9bb81894843218c86aaeafcd8eadcc1a8dda9129354946b362b7fa928"
+  "source_hash": "sha256:0fac86e151abd7060385ce8ec51f88e6df49f2fc5b66562733826f34c87dcf35"
 }

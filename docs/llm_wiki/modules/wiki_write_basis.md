@@ -11,6 +11,7 @@ Operation-local compare-and-swap hooks for adopted wiki writes.
 | Source | Symbols |
 |--------|---------|
 | `.source_snapshot` | `SourceSnapshot` |
+| `__future__` | `annotations` |
 | `contextvars` | `ContextVar` |
 | `pathlib` | `Path` |
 | `typing` | `Protocol`, `TYPE_CHECKING` |
@@ -83,7 +84,7 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [WriteBasis](../entities/WriteBasis.md) | 11 | `Protocol` | — |
+| [WriteBasis](../entities/WriteBasis.md) | 13 | `Protocol` | — |
 
 ## Functions
 

@@ -154,9 +154,9 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | unlink_guarded_bytes | before_wiki_write | 1685 | `before_wiki_write(path, None)` |
-| before_wiki_write | ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 24 | `ACTIVE_WRITE_BASIS.get(data not statically known)` |
-| before_wiki_write | basis.before_write | 26 | `basis.before_write(Path(...), content)` |
-| before_wiki_write | Path (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 26 | `Path(path)` |
+| before_wiki_write | ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 26 | `ACTIVE_WRITE_BASIS.get(data not statically known)` |
+| before_wiki_write | basis.before_write | 28 | `basis.before_write(Path(...), content)` |
+| before_wiki_write | Path (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 28 | `Path(path)` |
 | unlink_guarded_bytes | _unlink_guarded_bytes | 1686 | `_unlink_guarded_bytes(path, expected=expected)` |
 | _unlink_guarded_bytes | Path (src/llm_wiki_cli/services….py:_unlink_guarded_bytes) | 1693 | `Path(path)` |
 | _unlink_guarded_bytes | target.is_absolute | 1694 | `target.is_absolute(data not statically known)` |
@@ -177,8 +177,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `before_wiki_write` | `ACTIVE_WRITE_BASIS.get` | 24 |
-| unresolved_call | `before_wiki_write` | `basis.before_write` | 26 |
+| unresolved_call | `before_wiki_write` | `ACTIVE_WRITE_BASIS.get` | 26 |
+| unresolved_call | `before_wiki_write` | `basis.before_write` | 28 |
 | unresolved_call | `_unlink_guarded_bytes` | `target.is_absolute` | 1694 |
 | external_call | `_unlink_guarded_bytes` | `OSError` | 1695 |
 | external_call | `_unlink_guarded_bytes` | `isinstance` | 1696 |
