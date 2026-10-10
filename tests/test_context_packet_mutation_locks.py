@@ -1,6 +1,9 @@
 """Operational mutation locks remain safe inputs without content reads."""
 
+from contextlib import contextmanager
+import os
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -26,6 +29,23 @@ def test_owned_mutation_locks_are_not_read_and_other_files_remain_anchored(
     page.write_bytes(b"# Guide\n")
     locks = {lock_root / "llm-wiki-storage.lock", lock_root / "llm-wiki-governance.lock"}
     original = Path.open
+    original_scan = context_packet.os.scandir
+
+    @contextmanager
+    def windows_cached_entries(directory):
+        with original_scan(directory) as scan:
+            entries = []
+            for entry in scan:
+                def cached_stat(*, follow_symlinks=True, captured=entry):
+                    values = list(captured.stat(follow_symlinks=follow_symlinks))
+                    values[1:4] = [0, 0, 0]  # Windows DirEntry identity/link fields.
+                    return os.stat_result(values)
+
+                entries.append(SimpleNamespace(
+                    name=entry.name, path=entry.path, stat=cached_stat,
+                    is_symlink=entry.is_symlink, is_dir=entry.is_dir, is_file=entry.is_file,
+                ))
+            yield entries
 
     def no_lock_read(path, mode="r", *args, **kwargs):
         if path in locks and "r" in mode:
@@ -33,6 +53,7 @@ def test_owned_mutation_locks_are_not_read_and_other_files_remain_anchored(
         return original(path, mode, *args, **kwargs)
 
     monkeypatch.setattr(Path, "open", no_lock_read)
+    monkeypatch.setattr(context_packet.os, "scandir", windows_cached_entries)
     with governance_lock(wiki), governance_lock(wiki, _lock_filename="llm-wiki-storage.lock"):
         integrity = {}
         anchor = context_packet._wiki_anchor(wiki, reject_all_symlinks=True, integrity_out=integrity)
@@ -63,6 +84,25 @@ def test_operational_lock_exemption_rejects_unsafe_entries(tmp_path, unsafe):
             pytest.skip(f"symlink creation unavailable: {error}")
     else:
         lock.hardlink_to(target)
+    with pytest.raises(context_packet.ContextPacketPathPolicyError):
+        context_packet._wiki_anchor(wiki)
+
+
+@pytest.mark.parametrize("link_count", [0, 2])
+def test_fresh_unknown_or_multiple_lock_links_are_not_trusted(tmp_path, monkeypatch, link_count):
+    wiki = tmp_path / "wiki"
+    wiki.mkdir()
+    lock = wiki / "llm-wiki-storage.lock"
+    lock.write_bytes(b"\0")
+    original = context_packet.fresh_no_follow_stat
+
+    def unsafe_metadata(path):
+        actual = original(path)
+        if Path(path) == lock:
+            return SimpleNamespace(st_mode=actual.st_mode, st_nlink=link_count)
+        return actual
+
+    monkeypatch.setattr(context_packet, "fresh_no_follow_stat", unsafe_metadata)
     with pytest.raises(context_packet.ContextPacketPathPolicyError):
         context_packet._wiki_anchor(wiki)
 

@@ -89,7 +89,7 @@ from .wiki_media import contains_uri_authority_userinfo
 from .source_snapshot import directory_identity
 from .io import first_unsafe_path_component
 from .knowledge_governance import GOVERNANCE_LOCK_FILENAME, _governance_lock_root
-from .filesystem_guard import guard_windows_directory_chain, hold_windows_readonly_file
+from .filesystem_guard import fresh_no_follow_stat, guard_windows_directory_chain, hold_windows_readonly_file
 from .knowledge_observability import knowledge_freshness_disclosure
 from .knowledge_verification import verification_summaries_for_concepts
 from .packet_field_policy import (
@@ -5099,7 +5099,8 @@ def _wiki_anchor(root: Path, *, reject_all_symlinks: bool = False, max_bytes: in
                     # Mutation locks are operational state, not wiki content.
                     # Windows byte locks prohibit reading them through another
                     # handle while adoption owns the mutation transaction.
-                    metadata = entry.stat(follow_symlinks=False)
+                    # DirEntry metadata omits Windows link counts; stat the path freshly.
+                    metadata = fresh_no_follow_stat(entry.path)
                     if (first_unsafe_path_component(Path(entry.path)) is not None
                             or not stat.S_ISREG(metadata.st_mode)
                             or metadata.st_nlink != 1):
