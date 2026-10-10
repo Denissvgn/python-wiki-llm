@@ -2,7 +2,7 @@
 
 **Location:** `src/llm_wiki_cli/api_types.py:395`
 **Kind:** Class
-**Bases:** `_BoundedQueryResult`, `_MaintenanceProjectionOptions`
+**Bases:** `_BoundedQueryResult`, `_NativeInspectionMaintenance`
 **Module:** [api_types](../modules/api_types.md)
 
 ## Description
@@ -29,7 +29,7 @@ _Auto-generated from `ConceptResult` in `src/llm_wiki_cli/api_types.py`._
 flowchart LR
     n0["ConceptResult (src/llm_wiki_cli/api_types.py)"]
     n1["_BoundedQueryResult (src/llm_wiki_cli/api_types.py)"]
-    n2["_MaintenanceProjectionOptions (src/llm_wiki_cli/api_types.py)"]
+    n2["_NativeInspectionMaintenance (src/llm_wiki_cli/api_types.py)"]
     n3["ConceptSectionsResult (src/llm_wiki_cli/api_types.py)"]
     n4["EvidenceExplanationResult (src/llm_wiki_cli/api_types.py)"]
     n5["RelatedConceptsResult (src/llm_wiki_cli/api_types.py)"]
@@ -63,7 +63,7 @@ flowchart LR
 | Kind | Entity | Module |
 |---|---|---|
 | Base | `_BoundedQueryResult` | [api_types](../modules/api_types.md) |
-| Base | `_MaintenanceProjectionOptions` | [api_types](../modules/api_types.md) |
+| Base | `_NativeInspectionMaintenance` | [api_types](../modules/api_types.md) |
 | Subclass | `ConceptSectionsResult` | [api_types](../modules/api_types.md) |
 | Subclass | `EvidenceExplanationResult` | [api_types](../modules/api_types.md) |
 | Subclass | `RelatedConceptsResult` | [api_types](../modules/api_types.md) |

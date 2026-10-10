@@ -94,8 +94,8 @@ flowchart LR
 | [CalleesResult](../entities/CalleesResult.md) | Class | 371 | `_BoundedQueryResult`, `_StaticCallQueryOptions` | — |
 | [DependencyNeighborhoodResult](../entities/DependencyNeighborhoodResult.md) | Class | 376 | `_BoundedQueryResult` | — |
 | [PagesForSymbolResult](../entities/PagesForSymbolResult.md) | Class | 386 | `_BoundedQueryResult` | — |
-| [_MaintenanceProjectionOptions](../entities/MaintenanceProjectionOptions.md) | Class | 391 | `TypedDict` | — |
-| [ConceptResult](../entities/ConceptResult.md) | Class | 395 | `_BoundedQueryResult`, `_MaintenanceProjectionOptions` | — |
+| [_NativeInspectionMaintenance](../entities/NativeInspectionMaintenance.md) | Class | 391 | `TypedDict` | — |
+| [ConceptResult](../entities/ConceptResult.md) | Class | 395 | `_BoundedQueryResult`, `_NativeInspectionMaintenance` | — |
 | [ConceptSectionsResult](../entities/ConceptSectionsResult.md) | Class | 402 | `ConceptResult` | — |
 | [RelatedConceptsResult](../entities/RelatedConceptsResult.md) | Class | 408 | `ConceptResult` | — |
 | [TypedGraphTraversalResult](../entities/TypedGraphTraversalResult.md) | Class | 417 | `ConceptResult` | — |
@@ -129,4 +129,4 @@ flowchart LR
 | [HealthComparisonBasisV2](../entities/HealthComparisonBasisV2.md) | Class | 687 | `TypedDict` | — |
 | [HealthDetailsV2](../entities/HealthDetailsV2.md) | Class | 695 | `TypedDict` | — |
 | [DoctorV4Result](../entities/DoctorV4Result.md) | Class | 705 | `DoctorResult` | Compatibility-aware health with versioned captured comparison evidence. |
-| [NativeInspectionResult](../entities/NativeInspectionResult.md) | Class | 710 | `_MaintenanceProjectionOptions` | Bounded component results sharing one source/wiki read scope. |
+| [NativeInspectionResult](../entities/NativeInspectionResult.md) | Class | 710 | `_NativeInspectionMaintenance` | Bounded component results sharing one source/wiki read scope. |

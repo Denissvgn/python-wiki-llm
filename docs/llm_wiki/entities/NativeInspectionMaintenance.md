@@ -1,6 +1,6 @@
 # _NativeInspectionMaintenance
 
-**Location:** `src/llm_wiki_cli/api_types.py:706`
+**Location:** `src/llm_wiki_cli/api_types.py:391`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)
@@ -26,11 +26,14 @@ _Auto-generated from `_NativeInspectionMaintenance` in `src/llm_wiki_cli/api_typ
 flowchart LR
     n0["_NativeInspectionMaintenance (src/llm_wiki_cli/api_types.py)"]
     n1["TypedDict"]
-    n2["NativeInspectionResult (src/llm_wiki_cli/api_types.py)"]
+    n2["ConceptResult (src/llm_wiki_cli/api_types.py)"]
+    n3["NativeInspectionResult (src/llm_wiki_cli/api_types.py)"]
     n0 --> n1
     n2 --> n0
+    n3 --> n0
     click n0 "../modules/api_types.md"
     click n2 "../modules/api_types.md"
+    click n3 "../modules/api_types.md"
 ```
 
 ### Summary
@@ -44,4 +47,5 @@ flowchart LR
 | Kind | Entity | Module |
 |---|---|---|
 | Base | `TypedDict` | — |
+| Subclass | `ConceptResult` | [api_types](../modules/api_types.md) |
 | Subclass | `NativeInspectionResult` | [api_types](../modules/api_types.md) |
