@@ -53,6 +53,8 @@ and source-backed discovery while retaining explicit adoption and uncertainty.
   durable UIDs and aliases; Python result types expose available maintenance data.
 - Legacy migration accounts for its archive ignore rule while retaining guards
   against concurrent source and control-file changes.
+- Windows maintenance adoption validates operational locks without reading their
+  locked bytes, preserving guarded capture of ordinary wiki content.
 
 ### Compatibility
 

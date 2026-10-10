@@ -403,17 +403,36 @@ def test_missing_confirmation_rejects_directory_mutation_during_absence_check(
     snapshot = build_source_snapshot(
         root, only_files=["missing.py"], coherent=True, respect_ignores=True
     )
-    real_stat = context_packet.os.stat
+    created = False
+    if context_packet.os.name == "nt":
+        from llm_wiki_cli.services import filesystem_guard
 
-    def concurrent_creation(path, *args, **kwargs):
-        if path == "missing.py" and "dir_fd" in kwargs:
-            (root / "missing.py").write_text("VALUE=1\n")
-            raise FileNotFoundError(path)
-        return real_stat(path, *args, **kwargs)
+        real_stat = filesystem_guard.fresh_no_follow_stat
 
-    monkeypatch.setattr(context_packet.os, "stat", concurrent_creation)
+        def concurrent_windows_creation(path):
+            nonlocal created
+            if path == root / "missing.py":
+                (root / "missing.py").write_text("VALUE=1\n")
+                created = True
+                raise FileNotFoundError(path)
+            return real_stat(path)
+
+        monkeypatch.setattr(filesystem_guard, "fresh_no_follow_stat", concurrent_windows_creation)
+    else:
+        real_stat = context_packet.os.stat
+
+        def concurrent_creation(path, *args, **kwargs):
+            nonlocal created
+            if path == "missing.py" and "dir_fd" in kwargs:
+                (root / "missing.py").write_text("VALUE=1\n")
+                created = True
+                raise FileNotFoundError(path)
+            return real_stat(path, *args, **kwargs)
+
+        monkeypatch.setattr(context_packet.os, "stat", concurrent_creation)
     with pytest.raises(context_packet.ContextPacketSourceMutationError):
         context_packet.confirmed_missing_source_paths(snapshot, ["missing.py"])
+    assert created and (root / "missing.py").read_text() == "VALUE=1\n"
 
 
 def test_missing_confirmation_respects_configured_selection_and_ignored_absence(

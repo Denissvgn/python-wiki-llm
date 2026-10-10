@@ -1,6 +1,8 @@
 """Qualified discovery boundaries preserve selection and recorded authority."""
 
+import errno
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -156,6 +158,7 @@ def test_effectively_selected_missing_source_is_retained_without_live_claim(sele
 def test_mutation_during_serialization_is_rejected_by_final_guards(project, monkeypatch, mutation):
     from llm_wiki_cli.services import workflow_profile
     original = workflow_profile.canonical_json
+    before = tree(project)
     changed = False
     def serialize(value):
         nonlocal changed
@@ -173,8 +176,15 @@ def test_mutation_during_serialization_is_rejected_by_final_guards(project, monk
                 Path('wiki/modules/owner.md').write_text('# Replaced\nCobalt.\n')
         return encoded
     monkeypatch.setattr(workflow_profile, 'canonical_json', serialize)
-    with pytest.raises(ValueError):
-        search()
+    if os.name == 'nt' and mutation == 'page':
+        with pytest.raises(PermissionError) as denied:
+            search()
+        assert denied.value.errno == errno.EACCES
+        assert denied.value.filename == str(Path('wiki/modules/owner.md'))
+        assert tree(project) == before
+    else:
+        with pytest.raises(ValueError):
+            search()
     assert changed
 
 
@@ -245,14 +255,28 @@ def test_empty_result_root_replacement_during_enrichment_cannot_publish(tmp_path
     Path('wiki').mkdir()
     from llm_wiki_cli.services import search_discovery
     original = search_discovery.enrich_search
+    attempted = False
     def replace_root(*args, **kwargs):
+        nonlocal attempted
         result = original(*args, **kwargs)
+        attempted = True
         Path('wiki').rename('prior-wiki')
         Path('wiki').mkdir()
         return result
     monkeypatch.setattr(search_discovery, 'enrich_search', replace_root)
-    with pytest.raises(ValueError, match='changed'):
-        search_service.search_wiki('absent', src_dir='src', wiki_dir='wiki', discovery='qualified-v1')
+    if os.name == 'nt':
+        with pytest.raises(PermissionError) as denied:
+            search_service.search_wiki('absent', src_dir='src', wiki_dir='wiki', discovery='qualified-v1')
+        assert denied.value.errno == errno.EACCES
+        assert denied.value.winerror == 32
+        assert denied.value.filename == 'wiki' and denied.value.filename2 == 'prior-wiki'
+        assert Path('wiki').is_dir() and not Path('prior-wiki').exists()
+        assert not list(Path('wiki').iterdir())
+    else:
+        with pytest.raises(ValueError, match='changed'):
+            search_service.search_wiki('absent', src_dir='src', wiki_dir='wiki', discovery='qualified-v1')
+        assert Path('prior-wiki').is_dir()
+    assert attempted
 
 
 def test_absent_captured_authority_never_reopens_an_uncaptured_manifest(tmp_path, monkeypatch):

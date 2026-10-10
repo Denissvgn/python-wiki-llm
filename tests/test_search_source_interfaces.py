@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import errno
 import hashlib
 import json
+import os
 import sys
 from typing import Any, Literal
 
@@ -262,18 +264,31 @@ def test_mutation_during_ranking_refuses_mixed_publication(owned_wiki, monkeypat
 
 
 def test_source_file_replaced_after_guarded_read_refuses(owned_wiki, monkeypatch):
-    root, _, source, *_ = owned_wiki
+    root, wiki, source, *_ = owned_wiki
+    before = _tree(root), _tree(wiki)
     original = StorageReadSession.read
+    attempted = False
 
     def race(self, relative, *args, **kwargs):
+        nonlocal attempted
         raw = original(self, relative, *args, **kwargs)
         if self.root == root and relative == "selected/owner.py":
+            attempted = True
             source.write_bytes(raw + b"\n# later source\n")
         return raw
 
     monkeypatch.setattr(StorageReadSession, "read", race)
-    with pytest.raises((ValueError, KnowledgeStorageError)):
-        _search(owned_wiki)
+    if os.name == "nt":
+        with pytest.raises(PermissionError) as denied:
+            _search(owned_wiki)
+        assert denied.value.errno == errno.EACCES
+        assert denied.value.filename == str(source)
+        assert (_tree(root), _tree(wiki)) == before
+    else:
+        with pytest.raises((ValueError, KnowledgeStorageError)):
+            _search(owned_wiki)
+        assert source.read_bytes().endswith(b"\n# later source\n")
+    assert attempted
 
 
 def test_symlinked_selected_source_never_indexes_outside_bytes(owned_wiki, tmp_path):

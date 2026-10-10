@@ -17,6 +17,7 @@ import json
 import math
 import os
 import re
+import stat
 from urllib.parse import urlsplit
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from copy import deepcopy
@@ -86,6 +87,8 @@ from .knowledge_model import (
 )
 from .wiki_media import contains_uri_authority_userinfo
 from .source_snapshot import directory_identity
+from .io import first_unsafe_path_component
+from .knowledge_governance import GOVERNANCE_LOCK_FILENAME, _governance_lock_root
 from .filesystem_guard import guard_windows_directory_chain, hold_windows_readonly_file
 from .knowledge_observability import knowledge_freshness_disclosure
 from .knowledge_verification import verification_summaries_for_concepts
@@ -5066,6 +5069,11 @@ def _wiki_anchor(root: Path, *, reject_all_symlinks: bool = False, max_bytes: in
     if not root.exists():
         return _domain_hash(_WIKI_ANCHOR_DOMAIN, {"state": "absent"})
     records: list[dict[str, str]] = []
+    lock_root = _governance_lock_root(root)
+    operational_locks = {
+        lock_root / GOVERNANCE_LOCK_FILENAME,
+        lock_root / "llm-wiki-storage.lock",
+    }
     used_bytes = 0
     inspected_entries = 0
 
@@ -5087,7 +5095,22 @@ def _wiki_anchor(root: Path, *, reject_all_symlinks: bool = False, max_bytes: in
         for entry in entries:
             rel_path = (relative / entry.name).as_posix()
             try:
-                if entry.is_symlink():
+                if Path(entry.path).absolute() in operational_locks:
+                    # Mutation locks are operational state, not wiki content.
+                    # Windows byte locks prohibit reading them through another
+                    # handle while adoption owns the mutation transaction.
+                    metadata = entry.stat(follow_symlinks=False)
+                    if (first_unsafe_path_component(Path(entry.path)) is not None
+                            or not stat.S_ISREG(metadata.st_mode)
+                            or metadata.st_nlink != 1):
+                        raise ContextPacketPathPolicyError(
+                            "wiki_dir", "wiki mutation locks must be single regular files",
+                            relative_path=rel_path,
+                        )
+                    records.append({"path": rel_path, "kind": "operational-lock"})
+                    if integrity_out is not None:
+                        integrity_out[str(Path(entry.path))] = directory_identity(Path(entry.path))
+                elif entry.is_symlink():
                     if reject_all_symlinks or _wiki_symlink_is_captured_input(rel_path):
                         raise ContextPacketPathPolicyError(
                             "wiki_dir",

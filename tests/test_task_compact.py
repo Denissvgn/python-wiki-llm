@@ -27,7 +27,7 @@ from tests.developer_value.fixtures import POLICY_SOURCE
 @pytest.fixture
 def canonical(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    (tmp_path / "policy.py").write_text(POLICY_SOURCE)
+    (tmp_path / "policy.py").write_bytes(POLICY_SOURCE.encode("utf-8"))
     request = {
         "schema_version": "llm-wiki-task-request/v2",
         "kind": "contract-change",
@@ -174,7 +174,9 @@ def test_self_rehashed_and_recounted_compact_tampering_is_rejected(canonical, fi
     elif field == "codec":
         payload["facts"]["rows"][0][4]["codec"] = "guess-v9"
     else:
-        payload["facts"]["rows"][1][4]["value"]["bounds"]["callees"]["total"] = 0
+        calls = next(row for row in payload["facts"]["rows"] if row[1] == "callees")
+        assert calls[4]["value"]["bounds"]["callees"]["total"] > 0
+        calls[4]["value"]["bounds"]["callees"]["total"] = 0
 
     def render(accounting):
         payload["accounting"] = dict(accounting)
