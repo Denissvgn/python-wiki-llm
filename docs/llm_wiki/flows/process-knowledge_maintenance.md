@@ -2,20 +2,17 @@
 
 **Entry point:** `main` (`process`)
 **Source:** [knowledge_maintenance](../modules/knowledge_maintenance.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [ci_report](../modules/ci_report.md), [common](../modules/common.md), and 35 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 31 more
 
 **Complete modules touched:**
 
 - [analysis_capture](../modules/analysis_capture.md)
 - [analysis_compatibility](../modules/analysis_compatibility.md)
-- [ci_report](../modules/ci_report.md)
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
 - [config](../modules/config.md)
 - [extractor_helpers](../modules/extractor_helpers.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
-- [health_contract](../modules/health_contract.md)
-- [health_policy](../modules/health_policy.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
 - [io](../modules/io.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
@@ -25,7 +22,6 @@
 - [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_maintenance](../modules/knowledge_maintenance.md)
 - [knowledge_model](../modules/knowledge_model.md)
-- [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [knowledge_packs](../modules/knowledge_packs.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
@@ -89,7 +85,7 @@ sequenceDiagram
     participant p11 as values.pop
     participant p12 as preflight
     participant p13 as read_guarded
-    participant p14 as strict_json
+    participant p14 as strict_json (src/llm_wiki_cli/services…ledge_maintenance.py:main)
     participant p15 as str (src/llm_wiki_cli/services…ledge_maintenance.py:main)
     p0-->>p1: argparse.ArgumentParser
     p0-->>p2: parser.add_subparsers(dest='command', required=True)
@@ -119,19 +115,19 @@ sequenceDiagram
     p0-->>p10: Path (src/llm_wiki_cli/services…ledge_maintenance.py:main)(args.report)
     p0->>p13: read_guarded
     p0-->>p10: Path (src/llm_wiki_cli/services…ledge_maintenance.py:main)(args.preflight)
-    p0->>p14: strict_json
+    p0-->>p14: strict_json (src/llm_wiki_cli/services…ledge_maintenance.py:main)(pre)
     p0-->>p15: str (src/llm_wiki_cli/services…ledge_maintenance.py:main)(Path(...))
 ```
 
-> Call sequence diagram shows 30 of 3801 interactions; 3771 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3245 interactions; 3215 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 7 of 1172 (1165 omitted); unresolved 19 of 848 (829 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 7 of 1024 (1017 omitted); unresolved 20 of 782 (762 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_maintenance.py:preflight` | 25 | - | unresolved | 20 |
+| `src/llm_wiki_cli/services/knowledge_maintenance.py:preflight` | 25 | - | unresolved | 34 |
 | `src/llm_wiki_cli/services/knowledge_maintenance.py:preflight` | 25 | - | external | 13 |
 | `src/llm_wiki_cli/services/knowledge_maintenance.py:preflight` | 25 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
 | `src/llm_wiki_cli/config.py:validate_path` | 28 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
@@ -139,7 +135,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_path` | 28 | - | external | 2 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 36 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 36 | - | unresolved | 5 |
-> Omission summary shows 8 of 826 groups; 818 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 751 groups; 743 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

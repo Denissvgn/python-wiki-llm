@@ -1,6 +1,6 @@
 # ExtractSourceResult
 
-**Location:** `src/llm_wiki_cli/api_types.py:271`
+**Location:** `src/llm_wiki_cli/api_types.py:272`
 **Kind:** Class
 **Bases:** `_ExtractSourceRequired`
 **Module:** [api_types](../modules/api_types.md)

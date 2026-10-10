@@ -1,6 +1,6 @@
 # CallersResult
 
-**Location:** `src/llm_wiki_cli/api_types.py:365`
+**Location:** `src/llm_wiki_cli/api_types.py:366`
 **Kind:** Class
 **Bases:** `_BoundedQueryResult`, `_StaticCallQueryOptions`
 **Module:** [api_types](../modules/api_types.md)

@@ -2,7 +2,68 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [maintenance_cmd](../modules/maintenance_cmd.md)
-**Modules touched:** [maintenance_cmd](../modules/maintenance_cmd.md), [request_json](../modules/request_json.md)
+**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [config](../modules/config.md), and 54 more
+
+**Complete modules touched:**
+
+- [api](../modules/api.md)
+- [canonical_json](../modules/canonical_json.md)
+- [common](../modules/common.md)
+- [config](../modules/config.md)
+- [context_packet](../modules/context_packet.md)
+- [context_service](../modules/context_service.md)
+- [data_flow](../modules/data_flow.md)
+- [documentation_queries](../modules/documentation_queries.md)
+- [documentation_query_builder](../modules/documentation_query_builder.md)
+- [entrypoints](../modules/entrypoints.md)
+- [extraction_service](../modules/extraction_service.md)
+- [filesystem_guard](../modules/filesystem_guard.md)
+- [immutable](../modules/immutable.md)
+- [implementation_evidence](../modules/implementation_evidence.md)
+- [imports](../modules/imports.md)
+- [infrastructure_inventory](../modules/infrastructure_inventory.md)
+- [infrastructure_sync](../modules/infrastructure_sync.md)
+- [io](../modules/io.md)
+- [knowledge_artifacts](../modules/knowledge_artifacts.md)
+- [knowledge_consumption](../modules/knowledge_consumption.md)
+- [knowledge_envelope](../modules/knowledge_envelope.md)
+- [knowledge_evidence](../modules/knowledge_evidence.md)
+- [knowledge_governance](../modules/knowledge_governance.md)
+- [knowledge_graph](../modules/knowledge_graph.md)
+- [knowledge_index](../modules/knowledge_index.md)
+- [knowledge_loader](../modules/knowledge_loader.md)
+- [knowledge_model](../modules/knowledge_model.md)
+- [knowledge_orchestration](../modules/knowledge_orchestration.md)
+- [knowledge_packs](../modules/knowledge_packs.md)
+- [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [knowledge_verification](../modules/knowledge_verification.md)
+- [maintenance_cmd](../modules/maintenance_cmd.md)
+- [maintenance_evidence](../modules/maintenance_evidence.md)
+- [maintenance_projection](../modules/maintenance_projection.md)
+- [maintenance_protocol](../modules/maintenance_protocol.md)
+- [maintenance_queue](../modules/maintenance_queue.md)
+- [maintenance_service](../modules/maintenance_service.md)
+- [maintenance_shapes](../modules/maintenance_shapes.md)
+- [maintenance_state](../modules/maintenance_state.md)
+- [maintenance_status](../modules/maintenance_status.md)
+- [manifest_storage](../modules/manifest_storage.md)
+- [markdown_sections](../modules/markdown_sections.md)
+- [plugins](../modules/plugins.md)
+- [python_implementation](../modules/python_implementation.md)
+- [request_json](../modules/request_json.md)
+- [section_ownership](../modules/section_ownership.md)
+- [services_dependencies](../modules/services_dependencies.md)
+- [source_selection](../modules/source_selection.md)
+- [source_snapshot](../modules/source_snapshot.md)
+- [storage_spool](../modules/storage_spool.md)
+- [sync_manifest](../modules/sync_manifest.md)
+- [validation](../modules/validation.md)
+- [wiki_media](../modules/wiki_media.md)
+- [wiki_surface](../modules/wiki_surface.md)
+- [wiki_surface_index](../modules/wiki_surface_index.md)
+- [wiki_write_basis](../modules/wiki_write_basis.md)
 
 ## Call sequence
 
@@ -12,71 +73,78 @@
 ```mermaid
 sequenceDiagram
     participant p0 as run
-    participant p1 as api.adopt_maintenance
+    participant p1 as adopt_maintenance
     participant p2 as _capture_options
-    participant p3 as api.get_maintenance_status
-    participant p4 as api.acknowledge_maintenance
+    participant p3 as get_maintenance_status
+    participant p4 as acknowledge_maintenance
     participant p5 as load_request
-    participant p6 as api.recover_maintenance
+    participant p6 as recover_maintenance
     participant p7 as print
-    participant p8 as json.dumps
-    participant p9 as str
+    participant p8 as json.dumps (src/llm_wiki_cli/commands/maintenance_cmd.py:run)
+    participant p9 as str (src/llm_wiki_cli/commands/maintenance_cmd.py:run)
     participant p10 as SystemExit
     participant p11 as _render_status
-    participant p12 as getattr
-    participant p13 as result.get
-    participant p14 as parse_request
-    participant p15 as lines.append
-    participant p16 as stream.read
-    participant p17 as Path(…).open
-    participant p18 as record.get
-    participant p19 as Path
-    p0-->>p1: api.adopt_maintenance(args.src_dir, args.wiki_dir, recovery_dir=args.recovery_dir, manifest_format=args.manifest_format, **=_capture_options(...))
+    participant p12 as type (src/llm_wiki_cli/api.py:adopt_maintenance)
+    participant p13 as type (src/llm_wiki_cli/api.py:get_maintenance_status)
+    participant p14 as type (src/llm_wiki_cli/api.py:acknowledge_maintenance)
+    participant p15 as getattr (src/llm_wiki_cli/services…uest_json.py:load_request)
+    participant p16 as type (src/llm_wiki_cli/api.py:recover_maintenance)
+    participant p17 as result.get
+    participant p18 as ValueError (src/llm_wiki_cli/api.py:adopt_maintenance)
+    participant p19 as ValueError (src/llm_wiki_cli/api.py:acknowledge_maintenance)
+    participant p20 as parse_request
+    p0->>p1: adopt_maintenance
     p0->>p2: _capture_options
-    p0-->>p3: api.get_maintenance_status(args.src_dir, args.wiki_dir, live=..., record_id=args.record_id, limit=args.limit, **=_capture_options(...))
+    p0->>p3: get_maintenance_status
     p0->>p2: _capture_options
-    p0-->>p4: api.acknowledge_maintenance(…)
+    p0->>p4: acknowledge_maintenance
     p0->>p5: load_request
     p0->>p2: _capture_options
-    p0-->>p6: api.recover_maintenance(…)
+    p0->>p6: recover_maintenance
     p0-->>p7: print(json.dumps(...))
-    p0-->>p8: json.dumps({...}, ensure_ascii=False, sort_keys=True)
-    p0-->>p9: str(exc)
+    p0-->>p8: json.dumps (src/llm_wiki_cli/commands/maintenance_cmd.py:run)({...}, ensure_ascii=False, sort_keys=True)
+    p0-->>p9: str (src/llm_wiki_cli/commands/maintenance_cmd.py:run)(exc)
     p0-->>p10: SystemExit(1)
     p0-->>p7: print(json.dumps(...))
-    p0-->>p8: json.dumps({...}, ensure_ascii=False, sort_keys=True)
-    p0-->>p9: str(exc)
+    p0-->>p8: json.dumps (src/llm_wiki_cli/commands/maintenance_cmd.py:run)({...}, ensure_ascii=False, sort_keys=True)
+    p0-->>p9: str (src/llm_wiki_cli/commands/maintenance_cmd.py:run)(exc)
     p0-->>p10: SystemExit(1)
     p0-->>p7: print(_render_status(...))
     p0->>p11: _render_status
     p0-->>p7: print(json.dumps(...))
-    p0-->>p8: json.dumps(result, ensure_ascii=False, sort_keys=True, separators=(...), allow_nan=False)
-    p5-->>p12: getattr(sys.stdin, 'buffer', sys.stdin)
-    p11-->>p13: result.get('requires_sync')
-    p5->>p14: parse_request
-    p11-->>p15: lines.append('Current prose requires sync before acknowledgment.')
-    p5-->>p16: stream.read(...)
-    p11-->>p13: result.get('records', [...])
-    p5-->>p17: Path(…).open('rb')
-    p11-->>p18: record.get('effective_status')
-    p5-->>p19: Path(path)
-    p11-->>p15: lines.append(...)
+    p0-->>p8: json.dumps (src/llm_wiki_cli/commands/maintenance_cmd.py:run)(result, ensure_ascii=False, sort_keys=True, separators=(...), allow_nan=False)
+    p1-->>p12: type (src/llm_wiki_cli/api.py:adopt_maintenance)(allow_external_src)
+    p3-->>p13: type (src/llm_wiki_cli/api.py:get_maintenance_status)(live)
+    p4-->>p14: type (src/llm_wiki_cli/api.py:acknowledge_maintenance)(allow_external_src)
+    p5-->>p15: getattr (src/llm_wiki_cli/services…uest_json.py:load_request)(sys.stdin, 'buffer', sys.stdin)
+    p6-->>p16: type (src/llm_wiki_cli/api.py:recover_maintenance)(allow_prepared_adoption)
+    p11-->>p17: result.get('requires_sync')
+    p1-->>p18: ValueError (src/llm_wiki_cli/api.py:adopt_maintenance)('Unsupported maintenance adoption options')
+    p3-->>p13: type (src/llm_wiki_cli/api.py:get_maintenance_status)(allow_external_src)
+    p4-->>p19: ValueError (src/llm_wiki_cli/api.py:acknowledge_maintenance)('allow_external_src must be a boolean')
+    p5->>p20: parse_request
 ```
 
-> Call sequence diagram shows 30 of 54 interactions; 24 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2332 interactions; 2302 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 13 of 21 (8 omitted); unresolved 11 of 26 (15 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 19 of 770 (751 omitted); unresolved 1 of 507 (506 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/request_json.py:parse_request` | 9 | - | external | 8 |
-| `src/llm_wiki_cli/services/request_json.py:parse_request` | 9 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/request_json.py:load_request` | 7 | [src/llm_wiki_cli/services/request_json.py](../modules/request_json.md) | internal | 1 |
-| `src/llm_wiki_cli/services/request_json.py:load_request` | 7 | - | unresolved | 1 |
-| `src/llm_wiki_cli/commands/maintenance_cmd.py:_render_status` | 36 | - | unresolved | 12 |
+| `src/llm_wiki_cli/api.py:adopt_maintenance` | 2 | - | external | 1 |
+| `src/llm_wiki_cli/api.py:adopt_maintenance` | 2 | [src/llm_wiki_cli/services/maintenance_service.py](../modules/maintenance_service.md) | internal | 1 |
+| `src/llm_wiki_cli/services/maintenance_service.py:adopt_maintenance_authority` | 6 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 2 |
+| `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 7 | - | external | 4 |
+| `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 7 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 10 | - | external | 20 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 10 | - | unresolved | 5 |
+| `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 7 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
+> Omission summary shows 8 of 571 groups; 563 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
+
+> Trace truncated at the depth limit; deeper calls are omitted.
 
 ## Data flow
 
@@ -84,28 +152,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ```mermaid
 flowchart LR
     s1["1. run"]
-    s2["2. api.adopt_maintenance"]
-    s3["3. _capture_options"]
-    s4["4. api.get_maintenance_status"]
-    s5["5. _capture_options"]
-    s6["6. api.acknowledge_maintenance"]
-    s7["7. load_request"]
-    s8["8. getattr"]
-    s9["9. parse_request"]
-    s10["10. len"]
-    s11["11. isinstance"]
-    s12["12. raw.encode"]
-    s1 -. "api.adopt_maintenance(args.src_dir, args.wiki_dir, recovery_dir=args.recovery_dir, manifest_format=args.manifest_format, **=_capture_options(...))" .-> s2
-    s1 -->|"_capture_options(args)"| s3
-    s1 -. "api.get_maintenance_status(args.src_dir, args.wiki_dir, live=..., record_id=args.record_id, limit=args.limit, **=_capture_options(...))" .-> s4
-    s1 -->|"_capture_options(args)"| s5
-    s1 -. "api.acknowledge_maintenance(…)" .-> s6
-    s1 -->|"load_request(args.basis_file)"| s7
-    s7 -. "getattr(sys.stdin, 'buffer', sys.stdin)" .-> s8
-    s7 -->|"parse_request(stream.read(...))"| s9
-    s9 -. "len(...)" .-> s10
-    s9 -. "isinstance(raw, bytes)" .-> s11
-    s9 -. "raw.encode('utf-8')" .-> s12
+    s2["2. adopt_maintenance"]
+    s3["3. type (src/llm_wiki_cli/api.py:adopt_maintenance)"]
+    s4["4. ValueError (src/llm_wiki_cli/api.py:adopt_maintenance)"]
+    s5["5. cast (src/llm_wiki_cli/api.py:adopt_maintenance)"]
+    s6["6. adopt_maintenance_authority"]
+    s7["7. _absolute_path"]
+    s8["8. Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path)"]
+    s9["9. os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path)"]
+    s10["10. first_unsafe_path_component"]
+    s11["11. Path (src/llm_wiki_cli/services…rst_unsafe_path_component)"]
+    s12["12. os.fspath (src/llm_wiki_cli/services…rst_unsafe_path_component)"]
+    s1 -->|"adopt_maintenance(args.src_dir, args.wiki_dir, recovery_dir=args.recovery_dir, manifest_format=args.manifest_format, **=_capture_options(...))"| s2
+    s2 -. "type (src/llm_wiki_cli/api.py:adopt_maintenance)(allow_external_src)" .-> s3
+    s2 -. "ValueError (src/llm_wiki_cli/api.py:adopt_maintenance)('Unsupported maintenance adoption options')" .-> s4
+    s2 -. "cast (src/llm_wiki_cli/api.py:adopt_maintenance)(MaintenanceAdoptionResult, adopt_maintenance_authority(...))" .-> s5
+    s2 -->|"adopt_maintenance_authority(…)"| s6
+    s6 -->|"_absolute_path(wiki_dir)"| s7
+    s7 -. "Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path)(os.path.abspath(...))" .-> s8
+    s7 -. "os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path)(path)" .-> s9
+    s7 -->|"first_unsafe_path_component(path)"| s10
+    s10 -. "Path (src/llm_wiki_cli/services…rst_unsafe_path_component)(os.fspath(...))" .-> s11
+    s10 -. "os.fspath (src/llm_wiki_cli/services…rst_unsafe_path_component)(path)" .-> s12
     b0["output print"]
     s1 -. "output print" .-> b0
     b1["output print"]
@@ -114,16 +182,25 @@ flowchart LR
     s1 -. "output print" .-> b2
     b3["output print"]
     s1 -. "output print" .-> b3
+    b4["mutation generation_inputs.pop"]
+    s6 -. "mutation generation_inputs.pop" .-> b4
+    b5["mutation extensions.pop"]
+    s6 -. "mutation extensions.pop" .-> b5
+    b6["mutation pending_parts.pop"]
+    s10 -. "mutation pending_parts.pop" .-> b6
     click s1 "../modules/maintenance_cmd.md"
-    click s3 "../modules/maintenance_cmd.md"
-    click s5 "../modules/maintenance_cmd.md"
-    click s7 "../modules/request_json.md"
-    click s9 "../modules/request_json.md"
+    click s2 "../modules/api.md"
+    click s6 "../modules/maintenance_service.md"
+    click s7 "../modules/knowledge_storage_io.md"
+    click s10 "../modules/io.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
     class b1 boundary
     class b2 boundary
     class b3 boundary
+    class b4 boundary
+    class b5 boundary
+    class b6 boundary
 ```
 
 ### Step data
@@ -131,33 +208,33 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `run` | `args` | - | - | - |
-| `api.adopt_maintenance` | - | - | - | - |
-| `_capture_options` | `args` | - | - | `{...}` |
-| `api.get_maintenance_status` | - | - | - | - |
-| `_capture_options` | `args` | - | - | `{...}` |
-| `api.acknowledge_maintenance` | - | - | - | - |
-| `load_request` | `path: str` | `sys`, `MAX_REQUEST_BYTES`, `MAX_REQUEST_BYTES` | - | `parse_request(...)`, `parse_request(...)` |
-| `getattr` | - | - | - | - |
-| `parse_request` | `raw: bytes \| str` | `MAX_REQUEST_BYTES`, `_pairs`, `_constant`, `json` | - | `value` |
-| `len` | - | - | - | - |
-| `isinstance` | - | - | - | - |
-| `raw.encode` | - | - | - | - |
+| `adopt_maintenance` | `src_dir: str`, `wiki_dir: str`, `recovery_dir: str \| Path`, `manifest_format: Literal['v7', 'indexed-v8'] \| None`, `source_selection: str \| Path \| None`, `helper_cache_dir: str \| None`, `allow_external_src: bool` | `MaintenanceAdoptionResult` | - | `cast(...)` |
+| `type (src/llm_wiki_cli/api.py:adopt_maintenance)` | - | - | - | - |
+| `ValueError (src/llm_wiki_cli/api.py:adopt_maintenance)` | - | - | - | - |
+| `cast (src/llm_wiki_cli/api.py:adopt_maintenance)` | - | - | - | - |
+| `adopt_maintenance_authority` | `src_dir`, `wiki_dir`, `recovery_dir`, `manifest_format`, `fault_injector`, `capture_options` | - | `basis.source_snapshot`, `after[...]` | `{...}`, `{...}` |
+| `_absolute_path` | `path: Path` | - | - | `path` |
+| `Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | - | - | - | - |
+| `os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | - | - | - | - |
+| `first_unsafe_path_component` | `path: str \| Path`, `trusted_symlink_uids: Set[int] \| None`, `trusted_symlink_owner: Callable[[Path], bool] \| None` | `stat`, `os` | - | `lexical`, `None`, `current`, `current`, `current`, `current`, `current`, `None` |
+| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | - | - | - | - |
+| `os.fspath (src/llm_wiki_cli/services…rst_unsafe_path_component)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | api.adopt_maintenance | 58 | `api.adopt_maintenance(args.src_dir, args.wiki_dir, recovery_dir=args.recovery_dir, manifest_format=args.manifest_format, **=_capture_options(...))` |
-| run | _capture_options | 63 | `_capture_options(args)` |
-| run | api.get_maintenance_status | 66 | `api.get_maintenance_status(args.src_dir, args.wiki_dir, live=..., record_id=args.record_id, limit=args.limit, **=_capture_options(...))` |
-| run | _capture_options | 72 | `_capture_options(args)` |
-| run | api.acknowledge_maintenance | 75 | `api.acknowledge_maintenance(args.src_dir, args.wiki_dir, record_id=args.record_id, expected_state_hash=args.expected_state_hash, expected_basis=load_request(...), actor_kind=args.actor_kind, actor_id=args.actor_id, recovery_dir=args.recovery_dir, **=_capture_options(...))` |
-| run | load_request | 80 | `load_request(args.basis_file)` |
-| load_request | getattr | 41 | `getattr(sys.stdin, 'buffer', sys.stdin)` |
-| load_request | parse_request | 42 | `parse_request(stream.read(...))` |
-| parse_request | len | 27 | `len(...)` |
-| parse_request | isinstance | 27 | `isinstance(raw, bytes)` |
-| parse_request | raw.encode | 27 | `raw.encode('utf-8')` |
+| run | adopt_maintenance | 58 | `api.adopt_maintenance(args.src_dir, args.wiki_dir, recovery_dir=args.recovery_dir, manifest_format=args.manifest_format, **=_capture_options(...))` |
+| adopt_maintenance | type (src/llm_wiki_cli/api.py:adopt_maintenance) | 1588 | `type(allow_external_src)` |
+| adopt_maintenance | ValueError (src/llm_wiki_cli/api.py:adopt_maintenance) | 1589 | `ValueError('Unsupported maintenance adoption options')` |
+| adopt_maintenance | cast (src/llm_wiki_cli/api.py:adopt_maintenance) | 1590 | `cast(MaintenanceAdoptionResult, adopt_maintenance_authority(...))` |
+| adopt_maintenance | adopt_maintenance_authority | 1590 | `adopt_maintenance_authority(src_dir, _validate_wiki_dir(...), recovery_dir=recovery_dir, manifest_format=manifest_format, source_selection=source_selection, helper_cache_dir=helper_cache_dir, allow_external_src=allow_external_src)` |
+| adopt_maintenance_authority | _absolute_path | 83 | `_absolute_path(wiki_dir)` |
+| _absolute_path | Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `Path(os.path.abspath(...))` |
+| _absolute_path | os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `os.path.abspath(path)` |
+| _absolute_path | first_unsafe_path_component | 50 | `first_unsafe_path_component(path)` |
+| first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 51 | `Path(os.fspath(...))` |
+| first_unsafe_path_component | os.fspath (src/llm_wiki_cli/services…rst_unsafe_path_component) | 51 | `os.fspath(path)` |
 
 ### Boundary effects
 
@@ -167,18 +244,21 @@ flowchart LR
 | output | `print` | `run` | 112 |
 | output | `print` | `run` | 124 |
 | output | `print` | `run` | 126 |
+| mutation | `generation_inputs.pop` | `adopt_maintenance_authority` | 107 |
+| mutation | `extensions.pop` | `adopt_maintenance_authority` | 110 |
+| mutation | `pending_parts.pop` | `first_unsafe_path_component` | 71 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `run` | `api.adopt_maintenance` | 58 |
-| unresolved_call | `run` | `api.get_maintenance_status` | 66 |
-| unresolved_call | `run` | `api.acknowledge_maintenance` | 75 |
-| external_call | `load_request` | `getattr` | 41 |
-| external_call | `parse_request` | `isinstance` | 27 |
-| unresolved_call | `parse_request` | `raw.encode` | 27 |
+| external_call | `adopt_maintenance` | `type` | 1588 |
+| external_call | `adopt_maintenance` | `ValueError` | 1589 |
+| external_call | `adopt_maintenance` | `cast` | 1590 |
+| external_call | `_absolute_path` | `os.path.abspath` | 49 |
+| external_call | `first_unsafe_path_component` | `os.fspath` | 51 |
 | step_limit | `run` | `first 12 steps` | 0 |
+| truncated_flow | `run` | `depth limit` | 0 |
 
 ## Behavior
 

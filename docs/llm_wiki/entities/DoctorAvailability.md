@@ -1,6 +1,6 @@
 # DoctorAvailability
 
-**Location:** `src/llm_wiki_cli/api_types.py:511`
+**Location:** `src/llm_wiki_cli/api_types.py:512`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

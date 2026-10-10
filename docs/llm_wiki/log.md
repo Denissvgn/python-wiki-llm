@@ -1559,3 +1559,41 @@ Added task paths for orientation, source changes, symptom investigation and docu
 - Generated surface pages retired: 1
 
 Kept scoped task evidence, conservative caller resolution and explicit storage/review choices aligned with the maintained source; authored explanations remain separate from generated structure.
+
+## 2026-10-10
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.3.2`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:d3e7b3bdb56b7345bf76e60642bea9a3e058f280c0417b3921d789bb7260f8e3`
+- Pages created: 6
+- Pages updated: 195
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1368
+- Pages deprecated: 0
+- Semantic fields preserved: 11
+- Moved entities: none
+- Flow pages initialized: 0 (none)
+- Workflow pages created: 3
+- Dependency pages initialized: 0
+- Surface policy updated: no
+
+Aligned search orientation, source-reading navigation and documentation review guidance with current source evidence; refreshed generated source contracts.
+
+## 2026-10-10
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.3.2`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:d3e7b3bdb56b7345bf76e60642bea9a3e058f280c0417b3921d789bb7260f8e3`
+- Pages created: 0
+- Pages updated: 1
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 662
+- Pages deprecated: 0
+- Semantic fields preserved: 0
+- Moved entities: none

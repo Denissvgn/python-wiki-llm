@@ -20,6 +20,7 @@ Advisory maintenance evidence with ranked reasons, ownership guidance, freshness
 | `returned` | `int` | *required* | — |
 | `omitted` | `int` | *required* | — |
 | `items` | `list[dict[str, Any]]` | *required* | — |
+| `qualification` | `dict[str, Any]` | *required* | — |
 | `limitations` | `list[str]` | *required* | — |
 | `diagnostics` | `list[dict[str, Any]]` | *required* | — |
 | `basis` | `dict[str, Any]` | *required* | — |
@@ -47,7 +48,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [api_types](../modules/api_types.md) | 0 | `advisory`, `basis`, `diagnostics`, `items`, `limit`, `limitations`, `omitted`, `queue_id`, `returned`, `schema_version`, `total` |
+| [api_types](../modules/api_types.md) | 0 | `advisory`, `basis`, `diagnostics`, `items`, `limit`, `limitations`, `omitted`, `qualification`, `queue_id`, `returned`, `schema_version`, `total` |
 
 ### Structure
 

@@ -95,25 +95,20 @@ sequenceDiagram
     participant p8 as lines.extend
     participant p9 as build_report
     participant p10 as str (src/llm_wiki_cli/services…y:build_maintenance_queue)
-    participant p11 as '\n'.join (src/llm_wiki_cli/services…nce_queue.py:render_queue)
+    participant p11 as queue.get
     participant p12 as InventoryCacheOptions
-    participant p13 as build_documentation_worklist
-    participant p14 as len (src/llm_wiki_cli/services…y:build_maintenance_queue)
-    participant p15 as Path(…).resolve().relative_to(…).as_posix
-    participant p16 as Path(…).resolve().relative_to
-    participant p17 as Path(…).resolve (src/llm_wiki_cli/services…y:build_maintenance_queue)
-    participant p18 as Path (src/llm_wiki_cli/services…y:build_maintenance_queue)
-    participant p19 as issues.setdefault(…).append
-    participant p20 as issues.setdefault
-    participant p21 as global_issues.append
-    participant p22 as asdict
-    participant p23 as compose_queue
-    participant p24 as captured.dependency_analysis.get(…).get
-    participant p25 as captured.dependency_analysis.get
-    participant p26 as getattr (src/llm_wiki_cli/services…y:build_maintenance_queue)
-    participant p27 as result[…].append
-    participant p28 as sorted (src/llm_wiki_cli/services…y:build_maintenance_queue)
-    participant p29 as _assert_source_unchanged
+    participant p13 as qualification.get
+    participant p14 as build_documentation_worklist
+    participant p15 as len (src/llm_wiki_cli/services…y:build_maintenance_queue)
+    participant p16 as Path(…).resolve().relative_to(…).as_posix
+    participant p17 as Path(…).resolve().relative_to
+    participant p18 as Path(…).resolve (src/llm_wiki_cli/services…y:build_maintenance_queue)
+    participant p19 as ', '.join (src/llm_wiki_cli/services…nce_queue.py:render_queue)
+    participant p20 as Path (src/llm_wiki_cli/services…y:build_maintenance_queue)
+    participant p21 as sorted (src/llm_wiki_cli/services…nce_queue.py:render_queue)
+    participant p22 as issues.setdefault(…).append
+    participant p23 as qualification[…].items
+    participant p24 as issues.setdefault
     p0->>p1: build_maintenance_queue
     p0-->>p2: print(..., end=...)
     p0-->>p3: json.dumps (src/llm_wiki_cli/commands/queue_cmd.py:run)(queue, ensure_ascii=False, sort_keys=True, indent=2)
@@ -125,30 +120,30 @@ sequenceDiagram
     p1->>p9: build_report
     p4-->>p6: lines.append(...)
     p1-->>p10: str (src/llm_wiki_cli/services…y:build_maintenance_queue)(captured.source_root)
-    p4-->>p11: '\n'.join (src/llm_wiki_cli/services…nce_queue.py:render_queue)(lines)
+    p4-->>p11: queue.get('qualification')
     p1->>p12: InventoryCacheOptions
-    p1->>p13: build_documentation_worklist
-    p1-->>p14: len (src/llm_wiki_cli/services…y:build_maintenance_queue)(captured.surface_evaluation.pages)
-    p1-->>p15: Path(…).resolve().relative_to(…).as_posix
-    p1-->>p16: Path(…).resolve().relative_to(captured.wiki_root)
-    p1-->>p17: Path(…).resolve (src/llm_wiki_cli/services…y:build_maintenance_queue)
-    p1-->>p18: Path (src/llm_wiki_cli/services…y:build_maintenance_queue)(issue.path)
-    p1-->>p19: issues.setdefault(…).append(issue)
-    p1-->>p20: issues.setdefault(path, [...])
-    p1-->>p21: global_issues.append(asdict(...))
-    p1-->>p22: asdict(issue)
-    p1->>p23: compose_queue
-    p1-->>p24: captured.dependency_analysis.get(…).get('metrics', {...})
-    p1-->>p25: captured.dependency_analysis.get('metrics', {...})
-    p1-->>p26: getattr (src/llm_wiki_cli/services…y:build_maintenance_queue)(captured.knowledge_view, 'maintenance_report', None)
-    p1-->>p27: result[…].append('The saved source-selection basis differs from current inputs page freshness remains unknown')
-    p1-->>p28: sorted (src/llm_wiki_cli/services…y:build_maintenance_queue)(global_issues, key=...)
-    p1->>p29: _assert_source_unchanged
+    p4-->>p13: qualification.get('ordinary_review_custody')
+    p1->>p14: build_documentation_worklist
+    p4-->>p6: lines.append(...)
+    p1-->>p15: len (src/llm_wiki_cli/services…y:build_maintenance_queue)(captured.surface_evaluation.pages)
+    p4-->>p6: lines.append(' Source/prose correctness is not established')
+    p1-->>p16: Path(…).resolve().relative_to(…).as_posix
+    p4-->>p6: lines.append(...)
+    p1-->>p17: Path(…).resolve().relative_to(captured.wiki_root)
+    p4-->>p6: lines.append(...)
+    p1-->>p18: Path(…).resolve (src/llm_wiki_cli/services…y:build_maintenance_queue)
+    p4-->>p19: ', '.join (src/llm_wiki_cli/services…nce_queue.py:render_queue)(...)
+    p1-->>p20: Path (src/llm_wiki_cli/services…y:build_maintenance_queue)(issue.path)
+    p4-->>p21: sorted (src/llm_wiki_cli/services…nce_queue.py:render_queue)(...)
+    p1-->>p22: issues.setdefault(…).append(issue)
+    p4-->>p23: qualification[…].items
+    p1-->>p24: issues.setdefault(path, [...])
+    p4-->>p6: lines.append(...)
 ```
 
-> Call sequence diagram shows 30 of 4186 interactions; 4156 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4222 interactions; 4192 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 8 of 1320 (1312 omitted); unresolved 13 of 1425 (1412 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 6 of 1341 (1335 omitted); unresolved 17 of 1439 (1422 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -162,7 +157,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_path` | 21 | - | unresolved | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 21 | - | external | 2 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 20 | - | unresolved | 5 |
-> Omission summary shows 8 of 1053 groups; 1045 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1056 groups; 1048 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -230,11 +225,11 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | run | build_maintenance_queue | 9 | `build_maintenance_queue(args.src_dir, args.wiki_dir, limit=args.limit, allow_external_src=args.allow_external_src, source_selection=args.source_selection, helper_cache_dir=args.helper_cache_dir)` |
-| build_maintenance_queue | validate_queue_limit | 263 | `validate_queue_limit(limit)` |
-| validate_queue_limit | isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 48 | `isinstance(limit, bool)` |
-| validate_queue_limit | isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 49 | `isinstance(limit, int)` |
-| validate_queue_limit | ValueError (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 52 | `ValueError(...)` |
-| build_maintenance_queue | capture_context_read | 264 | `capture_context_read(src_dir, wiki_dir, allow_external_src=allow_external_src, read_only=True, strict_wiki_symlinks=True, allow_selection_mismatch=True, source_selection=source_selection, helper_cache_dir=helper_cache_dir)` |
+| build_maintenance_queue | validate_queue_limit | 478 | `validate_queue_limit(limit)` |
+| validate_queue_limit | isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 58 | `isinstance(limit, bool)` |
+| validate_queue_limit | isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 59 | `isinstance(limit, int)` |
+| validate_queue_limit | ValueError (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 62 | `ValueError(...)` |
+| build_maintenance_queue | capture_context_read | 479 | `capture_context_read(src_dir, wiki_dir, allow_external_src=allow_external_src, read_only=True, strict_wiki_symlinks=True, allow_selection_mismatch=True, source_selection=source_selection, helper_cache_dir=helper_cache_dir)` |
 | capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 759 | `isinstance(read_only, bool)` |
 | capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 760 | `TypeError('read_only must be a boolean')` |
 | capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 761 | `isinstance(allow_external_src, bool)` |
@@ -246,15 +241,15 @@ flowchart LR
 | Kind | Target | Step | Line |
 |---|---|---|---:|
 | output | `print` | `run` | 17 |
-| mutation | `global_issues.append` | `build_maintenance_queue` | 322 |
+| mutation | `global_issues.append` | `build_maintenance_queue` | 537 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `validate_queue_limit` | `isinstance` | 48 |
-| external_call | `validate_queue_limit` | `isinstance` | 49 |
-| external_call | `validate_queue_limit` | `ValueError` | 52 |
+| external_call | `validate_queue_limit` | `isinstance` | 58 |
+| external_call | `validate_queue_limit` | `isinstance` | 59 |
+| external_call | `validate_queue_limit` | `ValueError` | 62 |
 | external_call | `capture_context_read` | `isinstance` | 759 |
 | external_call | `capture_context_read` | `TypeError` | 760 |
 | external_call | `capture_context_read` | `isinstance` | 761 |

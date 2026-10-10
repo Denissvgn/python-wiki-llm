@@ -1,6 +1,6 @@
 # _DocumentationQueryRequired
 
-**Location:** `src/llm_wiki_cli/api_types.py:438`
+**Location:** `src/llm_wiki_cli/api_types.py:439`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

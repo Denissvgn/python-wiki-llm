@@ -1,6 +1,6 @@
 # _ScopeNames
 
-**Location:** `src/llm_wiki_cli/extractors/python_bindings.py:206`
+**Location:** `src/llm_wiki_cli/extractors/python_bindings.py:1125`
 **Kind:** Class
 **Bases:** `ast.NodeVisitor`
 **Module:** [python_bindings](../modules/python_bindings.md)

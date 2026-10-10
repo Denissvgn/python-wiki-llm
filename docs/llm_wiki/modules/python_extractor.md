@@ -88,7 +88,7 @@ flowchart LR
 |-------|------|-------|-------------|
 | [_DataEffectVisitor](../entities/DataEffectVisitor.md) | 520 | `ast.NodeVisitor` | — |
 | [ComponentVisitor](../entities/ComponentVisitor.md) | 1063 | `ast.NodeVisitor` | — |
-| [PythonExtractor](../entities/PythonExtractor.md) | 1608 | — | Extractor for Python source files using the built-in :mod:`ast` module. |
+| [PythonExtractor](../entities/PythonExtractor.md) | 1618 | — | Extractor for Python source files using the built-in :mod:`ast` module. |
 
 ## Functions
 

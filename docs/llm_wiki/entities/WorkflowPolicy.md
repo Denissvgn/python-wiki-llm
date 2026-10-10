@@ -48,8 +48,8 @@ flowchart LR
     n8["render_compact_task_context (src/llm_wiki_cli/api.py)"]
     n9["validate_compact_task_context (src/llm_wiki_cli/api.py)"]
     n10["validate_task_context (src/llm_wiki_cli/api.py)"]
-    n11["McpWikiService.__init__ (src/llm_wiki_cli/services/mcp_server.py)"]
-    n12["build_task_read (src/llm_wiki_cli/services/task_context.py)"]
+    n11["run (src/llm_wiki_cli/commands/task_cmd.py)"]
+    n12["McpWikiService.__init__ (src/llm_wiki_cli/services/mcp_server.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -73,8 +73,8 @@ flowchart LR
     click n8 "../modules/api.md"
     click n9 "../modules/api.md"
     click n10 "../modules/api.md"
-    click n11 "../modules/mcp_server.md"
-    click n12 "../modules/task_context.md"
+    click n11 "../modules/task_cmd.md"
+    click n12 "../modules/mcp_server.md"
 ```
 
 ### Summary
@@ -97,7 +97,7 @@ flowchart LR
 | `render_compact_task_context` | type_reference | [api](../modules/api.md) | — |
 | `validate_compact_task_context` | type_reference | [api](../modules/api.md) | — |
 | `validate_task_context` | type_reference | [api](../modules/api.md) | — |
+| `run` | call | [task_cmd](../modules/task_cmd.md) | 1 |
 | `McpWikiService.__init__` | type_reference | [mcp_server](../modules/mcp_server.md) | — |
-| `build_task_read` | type_reference | [task_context](../modules/task_context.md) | — |
 
-> References: showing 12 of 16 logical references; 4 omitted by the 12-row generated summary limit.
+> References: showing 12 of 17 logical references; 5 omitted by the 12-row generated summary limit.

@@ -104,7 +104,7 @@ sequenceDiagram
 
 > Call sequence diagram shows 30 of 2077 interactions; 2047 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 18 of 710 (692 omitted); unresolved 1 of 526 (525 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 18 of 713 (695 omitted); unresolved 1 of 523 (522 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -118,7 +118,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/wiki_surface.py:iter_directory_kinds` | 15 | - | external | 1 |
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 12 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 18 | - | external | 20 |
-> Omission summary shows 8 of 537 groups; 529 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 536 groups; 528 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

@@ -1,6 +1,6 @@
 # HealthSelection
 
-**Location:** `src/llm_wiki_cli/api_types.py:575`
+**Location:** `src/llm_wiki_cli/api_types.py:576`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

@@ -1,6 +1,6 @@
 # MaintenanceAdoptionResult
 
-**Location:** `src/llm_wiki_cli/api_types.py:148`
+**Location:** `src/llm_wiki_cli/api_types.py:149`
 **Kind:** Class
 **Bases:** `_MaintenanceAdoptionOptions`
 **Module:** [api_types](../modules/api_types.md)

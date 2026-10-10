@@ -36,6 +36,12 @@ decisive source. Exact lookup does not fuzzy-match a symptom, title or approxima
 path. `found: false` under missing, uncertain or bounded evidence is not a
 negative fact about the project.
 
+For the search implementation, use the [search reading route](search-reading-route.md).
+It separates default lexical-v2 ranking, explicit legacy `ranked-v1`, substring
+matching and optional static source indexing, and identifies which return path
+performs guarded publication rechecks. Search results still require exact lookup
+and decisive source inspection.
+
 The [search owner](../modules/search_service.md), at
 `src/llm_wiki_cli/services/search_service.py:search_wiki`, supplies discovery.
 Exact callable matching belongs to the

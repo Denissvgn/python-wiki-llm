@@ -1,6 +1,6 @@
 # HealthSnapshot
 
-**Location:** `src/llm_wiki_cli/api_types.py:592`
+**Location:** `src/llm_wiki_cli/api_types.py:593`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

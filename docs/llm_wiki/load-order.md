@@ -227,18 +227,19 @@ Topological module load / startup order and import-time side effects.
 220. [sync_transition_execution](modules/sync_transition_execution.md)
 221. [sync_cmd](modules/sync_cmd.md)
 222. [cli](modules/cli.md)
-223. [wiki_write_basis](modules/wiki_write_basis.md)
-224. [maintenance_service](modules/maintenance_service.md)
-225. [workflow_profile](modules/workflow_profile.md)
-226. [task_contract](modules/task_contract.md)
-227. [task_evidence](modules/task_evidence.md)
-228. [task_context](modules/task_context.md)
-229. [task_compact](modules/task_compact.md)
-230. [context_session](modules/context_session.md)
-231. [api](modules/api.md)
-232. [mcp_server](modules/mcp_server.md)
-233. [task_compact_delivery](modules/task_compact_delivery.md)
-234. [task_context_v2](modules/task_context_v2.md)
+223. [commands___init__](modules/commands___init__.md)
+224. [wiki_write_basis](modules/wiki_write_basis.md)
+225. [maintenance_service](modules/maintenance_service.md)
+226. [workflow_profile](modules/workflow_profile.md)
+227. [task_contract](modules/task_contract.md)
+228. [task_evidence](modules/task_evidence.md)
+229. [task_context](modules/task_context.md)
+230. [task_compact](modules/task_compact.md)
+231. [context_session](modules/context_session.md)
+232. [api](modules/api.md)
+233. [mcp_server](modules/mcp_server.md)
+234. [task_compact_delivery](modules/task_compact_delivery.md)
+235. [task_context_v2](modules/task_context_v2.md)
 
 ## Module-level side effects
 
@@ -259,7 +260,7 @@ Topological module load / startup order and import-time side effects.
 | [config](modules/config.md) | `_CONFIG_EXPECTATION_UNSET = object`, `_RENDER_STATE_FIELDS = frozenset`, `_PENDING_CLEANUP_FIELDS = frozenset`, `_RENDER_PROFILES = frozenset`, `_RENDER_REASONS = frozenset`, `_OPAQUE_CONFIG_REASONS = frozenset` |
 | [planner](modules/planner.md) | `_CONTENT_ADDRESS_RE = re.compile`, `_CAPABILITY_RE = re.compile`, `_MISSING = object`, `_TASK_FIELDS = frozenset`, `_ORACLE_FIELDS = frozenset` |
 | [common](modules/common.md) | `_HASH_TOKEN_SPLIT_RE = re.compile`, `INCLUDE_TEST_LANGUAGES = frozenset`, `NON_IMPORT_TIME_SCOPES = frozenset`, `_BUNDLED_HELPER_IMPLEMENTATIONS = frozenset`, `_WINDOWS_BUNDLED_HELPER_IMPLEMENTATIONS = frozenset`, `BUNDLED_HELPER_IMPLEMENTATION_PATHS = frozenset` |
-| [python_bindings](modules/python_bindings.md) | `BUILTIN_NAMES = frozenset` |
+| [python_bindings](modules/python_bindings.md) | `BUILTIN_NAMES = frozenset`, `_NAMESPACE_MUTATORS = frozenset`, `_DISPATCH_SLOTS = frozenset` |
 | [python_extractor](modules/python_extractor.md) | `_TYPE_CHECKING_MODULES = frozenset` |
 | [analysis_capture](modules/analysis_capture.md) | `_ISSUER = object`, `_CAPTURE = ContextVar`, `REGISTRY_PATH = Path(__file__).with_name` |
 | [analysis_compatibility](modules/analysis_compatibility.md) | `POLICIES = frozenset`, `_ACTIVE = ContextVar`, `_HASH = re.compile`, `_FIELDS = frozenset`, `_P = ParamSpec`, `_R = TypeVar` |
@@ -323,6 +324,7 @@ Topological module load / startup order and import-time side effects.
 | [lockfile](modules/lockfile.md) | `_CONTENTION_ERRNOS = frozenset`, `_WINDOWS_CONTENTION_ERRORS = frozenset` |
 | [maintenance_projection](modules/maintenance_projection.md) | `_HASH = re.compile` |
 | [maintenance_protocol](modules/maintenance_protocol.md) | `_OWNED_STORAGE = ContextVar`, `_OWNED_GOVERNANCE = ContextVar` |
+| [maintenance_queue](modules/maintenance_queue.md) | `_AUTHORING_HINTS = frozenset` |
 | [maintenance_status](modules/maintenance_status.md) | `_HASH = re.compile`, `ANALYSIS_SCOPES = frozenset`, `SUMMARY_FIELDS = frozenset` |
 | [manifest_storage](modules/manifest_storage.md) | `OBJECT_NAME = re.compile` |
 | [markdown_sections](modules/markdown_sections.md) | `GENERATED_INDEX_INTROS = frozenset`, `_ATX_HEADING_RE = re.compile`, `_FENCE_OPEN_RE = re.compile`, `_LEGACY_HEADING_RE = re.compile`, `_AUTO_GENERATED_RE = re.compile`, `_INDEX_GENERATED_HEADINGS = frozenset` |

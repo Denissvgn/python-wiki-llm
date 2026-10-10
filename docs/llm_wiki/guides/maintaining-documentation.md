@@ -4,6 +4,15 @@ Refresh generated evidence and review affected prose as separate steps. Sync
 preserves supported authored content; it does not make that content accurate or
 approved. A queue or worklist proposes work and never applies its recommendations.
 
+Read the queue's JSON `qualification.ordinary_review_custody` availability,
+`durable_owner_available` and `live_evaluation_performed` fields. Partial,
+unadopted or unavailable custody remains a gap; even a ready status or an empty
+queue proves neither source/prose correctness nor ordinary-review completion.
+The [queue service](../modules/maintenance_queue.md), at
+`src/llm_wiki_cli/services/maintenance_queue.py:_ordinary_review_custody`,
+qualifies captured authority. Inspect affected source and semantic prose, and use
+the explicit ordinary-review route below when durable review is needed.
+
 ## Complete the owning loop
 
 Use the repository's actual roots and source-selection profile throughout. For

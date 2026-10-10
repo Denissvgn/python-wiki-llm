@@ -21,6 +21,7 @@ construction preserves the captured source/wiki basis and does not edit pages.
 | `.lint_service` | `build_report` |
 | `.maintenance_status` | `compact_maintenance_summary` |
 | `__future__` | `annotations` |
+| `collections` | `Counter` |
 | `dataclasses` | `asdict` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
@@ -88,6 +89,7 @@ flowchart LR
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
 | `validate_queue_limit` | `(limit: object) -> int` | — | Validate the shared CLI and service bound before reading queue inputs. |
-| `compose_queue` | `(pages, work_items, freshness, issues, metrics, *, limit = DEFAULT_QUEUE_LIMIT, maintenance_report = None)` | — | Rank captured evidence; unknown provenance never becomes confirmed drift. |
+| `_ordinary_review_custody` | `(maintenance_report, manifest_basis)` | — | Qualify existing captured authority without another read or adoption. |
+| `compose_queue` | `(pages, work_items, freshness, issues, metrics, *, limit = DEFAULT_QUEUE_LIMIT, maintenance_report = None, manifest_basis = None)` | — | Rank captured evidence; unknown provenance never becomes confirmed drift. |
 | `build_maintenance_queue` | `(src_dir = '.', wiki_dir = 'docs/llm_wiki', *, limit = DEFAULT_QUEUE_LIMIT, allow_external_src = False, source_selection = None, helper_cache_dir = None)` | — | — |
 | `render_queue` | `(queue)` | — | — |

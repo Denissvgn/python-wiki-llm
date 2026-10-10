@@ -75,7 +75,7 @@ sequenceDiagram
 
 > Call sequence diagram shows 30 of 385 interactions; 355 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 16 of 123 (107 omitted); unresolved 4 of 153 (149 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 16 of 125 (109 omitted); unresolved 4 of 151 (147 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -87,8 +87,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/plugins.py:resolve_plugin_ref` | 12 | - | unresolved | 9 |
 | `src/llm_wiki_cli/services/plugins.py:resolve_plugin_ref` | 12 | - | external | 5 |
 | `src/llm_wiki_cli/services/plugins.py:resolve_plugin_ref` | 12 | [src/llm_wiki_cli/services/plugins.py](../modules/plugins.md) | internal | 4 |
-| `src/llm_wiki_cli/services/plugins.py:_load_catalog` | 23 | - | unresolved | 7 |
-| `src/llm_wiki_cli/services/plugins.py:_load_catalog` | 23 | - | external | 7 |
+| `src/llm_wiki_cli/services/plugins.py:_load_catalog` | 23 | - | unresolved | 5 |
+| `src/llm_wiki_cli/services/plugins.py:_load_catalog` | 23 | - | external | 9 |
 > Omission summary shows 8 of 105 groups; 97 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

@@ -1,6 +1,6 @@
 # _PluginEntryPointDetectionResult
 
-**Location:** `src/llm_wiki_cli/services/entrypoints.py:63`
+**Location:** `src/llm_wiki_cli/services/entrypoints.py:64`
 **Kind:** Class
 **Bases:** —
 **Module:** [entrypoints](../modules/entrypoints.md)

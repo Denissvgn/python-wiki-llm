@@ -39,48 +39,51 @@ the preparation flag; it does not become a saved analysis preference.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/cli.py"]
-    n1["src/llm_wiki_cli/commands/init_cmd.py"]
-    n2["src/llm_wiki_cli/config.py"]
-    n3["src/llm_wiki_cli/services/extractor_helpers.py"]
-    n4["src/llm_wiki_cli/services/filesystem_guard.py"]
-    n5["src/llm_wiki_cli/services/helper_preparation.py"]
-    n6["src/llm_wiki_cli/services/rendering_lifecycle.py"]
-    n7["src/llm_wiki_cli/services/schema.py"]
-    n8["src/llm_wiki_cli/services/skills.py"]
-    n9["src/llm_wiki_cli/services/source_selection.py"]
-    n10["src/llm_wiki_cli/services/wiki_lifecycle.py"]
-    n0 --> n1
+    n1["src/llm_wiki_cli/commands/__init__.py"]
+    n2["src/llm_wiki_cli/commands/init_cmd.py"]
+    n3["src/llm_wiki_cli/config.py"]
+    n4["src/llm_wiki_cli/services/extractor_helpers.py"]
+    n5["src/llm_wiki_cli/services/filesystem_guard.py"]
+    n6["src/llm_wiki_cli/services/helper_preparation.py"]
+    n7["src/llm_wiki_cli/services/rendering_lifecycle.py"]
+    n8["src/llm_wiki_cli/services/schema.py"]
+    n9["src/llm_wiki_cli/services/skills.py"]
+    n10["src/llm_wiki_cli/services/source_selection.py"]
+    n11["src/llm_wiki_cli/services/wiki_lifecycle.py"]
     n0 --> n2
+    n0 --> n3
     n1 --> n2
-    n1 --> n3
-    n1 --> n4
-    n1 --> n5
-    n1 --> n6
-    n1 --> n7
-    n1 --> n8
-    n1 --> n9
-    n1 --> n10
+    n2 --> n3
     n2 --> n4
-    n5 --> n3
-    n6 --> n7
-    n6 --> n8
+    n2 --> n5
+    n2 --> n6
+    n2 --> n7
+    n2 --> n8
+    n2 --> n9
+    n2 --> n10
+    n2 --> n11
+    n3 --> n5
+    n6 --> n4
     n7 --> n8
-    n9 --> n2
-    n10 --> n2
-    n10 --> n4
-    n10 --> n6
-    n10 --> n7
+    n7 --> n9
+    n8 --> n9
+    n10 --> n3
+    n11 --> n3
+    n11 --> n5
+    n11 --> n7
+    n11 --> n8
     click n0 "../modules/cli.md"
-    click n1 "../modules/init_cmd.md"
-    click n2 "../modules/config.md"
-    click n3 "../modules/extractor_helpers.md"
-    click n4 "../modules/filesystem_guard.md"
-    click n5 "../modules/helper_preparation.md"
-    click n6 "../modules/rendering_lifecycle.md"
-    click n7 "../modules/services_schema.md"
-    click n8 "../modules/skills.md"
-    click n9 "../modules/source_selection.md"
-    click n10 "../modules/wiki_lifecycle.md"
+    click n1 "../modules/commands___init__.md"
+    click n2 "../modules/init_cmd.md"
+    click n3 "../modules/config.md"
+    click n4 "../modules/extractor_helpers.md"
+    click n5 "../modules/filesystem_guard.md"
+    click n6 "../modules/helper_preparation.md"
+    click n7 "../modules/rendering_lifecycle.md"
+    click n8 "../modules/services_schema.md"
+    click n9 "../modules/skills.md"
+    click n10 "../modules/source_selection.md"
+    click n11 "../modules/wiki_lifecycle.md"
 ```
 
 ### Internal neighbors
@@ -88,6 +91,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [cli](../modules/cli.md) |
+| Inbound | [commands___init__](../modules/commands___init__.md) |
 | Outbound | [config](../modules/config.md) |
 | Outbound | [extractor_helpers](../modules/extractor_helpers.md) |
 | Outbound | [filesystem_guard](../modules/filesystem_guard.md) |

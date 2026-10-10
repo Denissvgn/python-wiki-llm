@@ -16,40 +16,39 @@ sequenceDiagram
     participant p2 as dict
     participant p3 as entry.get
     participant p4 as str(…).rsplit (src/llm_wiki_cli/services….py:link_entry_point_flows)
-    participant p5 as str (src/llm_wiki_cli/services….py:link_entry_point_flows)
-    participant p6 as str (src/llm_wiki_cli/services…:link_entry_point_flows, 1)
-    participant p7 as linked.get
-    participant p8 as isinstance
-    participant p9 as operation.get
-    participant p10 as str(…).rsplit (src/llm_wiki_cli/services…:link_entry_point_flows, 1)
-    participant p11 as handler.get
-    participant p12 as flow_ids.get
+    participant p5 as str
+    participant p6 as linked.get
+    participant p7 as isinstance
+    participant p8 as operation.get
+    participant p9 as str(…).rsplit (src/llm_wiki_cli/services…:link_entry_point_flows, 1)
+    participant p10 as handler.get
+    participant p11 as flow_ids.get
     p0-->>p1: deepcopy(dict(...))
     p0-->>p2: dict(contracts)
     p0-->>p3: entry.get('category')
     p0-->>p3: entry.get('id')
     p0-->>p4: str(…).rsplit (src/llm_wiki_cli/services….py:link_entry_point_flows)('.', 1)
-    p0-->>p5: str (src/llm_wiki_cli/services….py:link_entry_point_flows)(...)
+    p0-->>p5: str(...)
     p0-->>p3: entry.get('symbol')
-    p0-->>p6: str (src/llm_wiki_cli/services…:link_entry_point_flows, 1)(...)
+    p0-->>p5: str(...)
     p0-->>p3: entry.get('file')
-    p0-->>p5: str (src/llm_wiki_cli/services….py:link_entry_point_flows)(entry[...])
-    p0-->>p7: linked.get('operations')
-    p0-->>p8: isinstance(operations, list)
-    p0-->>p8: isinstance(operation, dict)
-    p0-->>p9: operation.get('handler')
-    p0-->>p8: isinstance(handler, Mapping)
-    p0-->>p10: str(…).rsplit (src/llm_wiki_cli/services…:link_entry_point_flows, 1)('.', 1)
-    p0-->>p5: str (src/llm_wiki_cli/services….py:link_entry_point_flows)(...)
-    p0-->>p11: handler.get('symbol')
-    p0-->>p12: flow_ids.get((...))
-    p0-->>p5: str (src/llm_wiki_cli/services….py:link_entry_point_flows)(...)
-    p0-->>p11: handler.get('file')
+    p0-->>p5: str(entry[...])
+    p0-->>p6: linked.get('operations')
+    p0-->>p7: isinstance(operations, list)
+    p0-->>p7: isinstance(operation, dict)
+    p0-->>p8: operation.get('handler')
+    p0-->>p7: isinstance(handler, Mapping)
+    p0-->>p9: str(…).rsplit (src/llm_wiki_cli/services…:link_entry_point_flows, 1)('.', 1)
+    p0-->>p5: str(...)
+    p0-->>p10: handler.get('symbol')
+    p0-->>p11: flow_ids.get((...))
+    p0-->>p5: str(...)
+    p0-->>p10: handler.get('file')
 ```
 
 > Call sequence diagram shows 21 of 21 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 9 of 9 (0 omitted); unresolved 12 of 12 (0 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 10 of 10 (0 omitted); unresolved 11 of 11 (0 omitted). These counts cover the captured static trace.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
@@ -63,22 +62,22 @@ flowchart LR
     s4["4. entry.get"]
     s5["5. entry.get"]
     s6["6. str(…).rsplit (src/llm_wiki_cli/services….py:link_entry_point_flows)"]
-    s7["7. str (src/llm_wiki_cli/services….py:link_entry_point_flows)"]
+    s7["7. str"]
     s8["8. entry.get"]
-    s9["9. str (src/llm_wiki_cli/services…:link_entry_point_flows, 1)"]
+    s9["9. str"]
     s10["10. entry.get"]
-    s11["11. str (src/llm_wiki_cli/services….py:link_entry_point_flows)"]
+    s11["11. str"]
     s12["12. linked.get"]
     s1 -. "deepcopy(dict(...))" .-> s2
     s1 -. "dict(contracts)" .-> s3
     s1 -. "entry.get('category')" .-> s4
     s1 -. "entry.get('id')" .-> s5
     s1 -. "str(…).rsplit (src/llm_wiki_cli/services….py:link_entry_point_flows)('.', 1)" .-> s6
-    s1 -. "str (src/llm_wiki_cli/services….py:link_entry_point_flows)(...)" .-> s7
+    s1 -. "str(...)" .-> s7
     s1 -. "entry.get('symbol')" .-> s8
-    s1 -. "str (src/llm_wiki_cli/services…:link_entry_point_flows, 1)(...)" .-> s9
+    s1 -. "str(...)" .-> s9
     s1 -. "entry.get('file')" .-> s10
-    s1 -. "str (src/llm_wiki_cli/services….py:link_entry_point_flows)(entry[...])" .-> s11
+    s1 -. "str(entry[...])" .-> s11
     s1 -. "linked.get('operations')" .-> s12
     click s1 "../modules/api_contracts.md"
 ```
@@ -93,11 +92,11 @@ flowchart LR
 | `entry.get` | - | - | - | - |
 | `entry.get` | - | - | - | - |
 | `str(…).rsplit (src/llm_wiki_cli/services….py:link_entry_point_flows)` | - | - | - | - |
-| `str (src/llm_wiki_cli/services….py:link_entry_point_flows)` | - | - | - | - |
+| `str` | - | - | - | - |
 | `entry.get` | - | - | - | - |
-| `str (src/llm_wiki_cli/services…:link_entry_point_flows, 1)` | - | - | - | - |
+| `str` | - | - | - | - |
 | `entry.get` | - | - | - | - |
-| `str (src/llm_wiki_cli/services….py:link_entry_point_flows)` | - | - | - | - |
+| `str` | - | - | - | - |
 | `linked.get` | - | - | - | - |
 
 ### Call data
@@ -109,11 +108,11 @@ flowchart LR
 | link_entry_point_flows | entry.get | 1874 | `entry.get('category')` |
 | link_entry_point_flows | entry.get | 1874 | `entry.get('id')` |
 | link_entry_point_flows | str(…).rsplit (src/llm_wiki_cli/services….py:link_entry_point_flows) | 1876 | `str(entry.get('symbol') or '').rsplit('.', 1)` |
-| link_entry_point_flows | str (src/llm_wiki_cli/services….py:link_entry_point_flows) | 1876 | `str(...)` |
+| link_entry_point_flows | str | 1876 | `str(...)` |
 | link_entry_point_flows | entry.get | 1876 | `entry.get('symbol')` |
-| link_entry_point_flows | str (src/llm_wiki_cli/services…:link_entry_point_flows, 1) | 1877 | `str(...)` |
+| link_entry_point_flows | str | 1877 | `str(...)` |
 | link_entry_point_flows | entry.get | 1877 | `entry.get('file')` |
-| link_entry_point_flows | str (src/llm_wiki_cli/services….py:link_entry_point_flows) | 1877 | `str(entry[...])` |
+| link_entry_point_flows | str | 1877 | `str(entry[...])` |
 | link_entry_point_flows | linked.get | 1878 | `linked.get('operations')` |
 
 ### Boundary effects

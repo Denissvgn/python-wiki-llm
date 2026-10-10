@@ -1,6 +1,6 @@
 # ContextPayload
 
-**Location:** `src/llm_wiki_cli/api_types.py:293`
+**Location:** `src/llm_wiki_cli/api_types.py:294`
 **Kind:** Class
 **Bases:** `_ContextRequired`
 **Module:** [api_types](../modules/api_types.md)

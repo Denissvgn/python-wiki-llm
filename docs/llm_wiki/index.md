@@ -6,10 +6,10 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 659 | [Open section](#entities) |
-| Modules | 234 | [Open section](#modules) |
-| Workflows | 194 | [Open section](#workflows) |
-| Guides | 10 | [Open section](#guides) |
+| Entities | 661 | [Open section](#entities) |
+| Modules | 235 | [Open section](#modules) |
+| Workflows | 197 | [Open section](#workflows) |
+| Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 464 | [Open section](#entry-point-flows) |
 | Infrastructure | 0 | No pages |
 | HTTP API contracts | 0 | No pages |
@@ -35,6 +35,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [ArtifactWriteState](entities/ArtifactWriteState.md)
 - [AssetIndex](entities/AssetIndex.md)
 - [BindingAnalyzer](entities/BindingAnalyzer.md)
+- [BindingState](entities/BindingState.md)
 - [BootstrapContractError](entities/BootstrapContractError.md)
 - [BootstrapExtractionError](entities/BootstrapExtractionError.md)
 - [BootstrapGenerationResult](entities/BootstrapGenerationResult.md)
@@ -68,6 +69,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [CheckerContract](entities/CheckerContract.md)
 - [CiCheckReportError](entities/CiCheckReportError.md)
 - [CiWorkflowInspection](entities/CiWorkflowInspection.md)
+- [ClassNamespaceEffects](entities/ClassNamespaceEffects.md)
 - [CommitStage](entities/CommitStage.md)
 - [CommittedKnowledgeState](entities/CommittedKnowledgeState.md)
 - [CommittedRuntimeProvenance](entities/CommittedRuntimeProvenance.md)
@@ -702,6 +704,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [ci_report](modules/ci_report.md) - Versioned full-integrity CI report composition and validation.
 - [circuit_breaker](modules/circuit_breaker.md) - `src/llm_wiki_cli/services/circuit_breaker.py`
 - [cli](modules/cli.md) - `src/llm_wiki_cli/cli.py`
+- [commands___init__](modules/commands___init__.md) - `src/llm_wiki_cli/commands/__init__.py`
 - [common](modules/common.md) - Shared helpers for source-file extractor discovery and filtering.
 - [concept_identity](modules/concept_identity.md) - Pure stable-identity primitives for knowledge concepts.
 - [config](modules/config.md) - Shared constants and utilities for agent-wiki-cli.
@@ -920,6 +923,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [ContextSession___init__](workflows/ContextSession___init__.md) - entry: `context_session.ContextSession.__init__`
 - [ContextSession__canonical_receipt](workflows/ContextSession__canonical_receipt.md) - entry: `context_session.ContextSession._canonical_receipt`
 - [ContextSession__read](workflows/ContextSession__read.md) - entry: `context_session.ContextSession._read`
+- [McpWikiService_build_budgeted_context](workflows/McpWikiService_build_budgeted_context.md) - entry: `mcp_server.McpWikiService.build_budgeted_context`
+- [McpWikiService_build_task_context](workflows/McpWikiService_build_task_context.md) - entry: `mcp_server.McpWikiService.build_task_context`
 - [McpWikiService_get_status](workflows/McpWikiService_get_status.md) - entry: `mcp_server.McpWikiService.get_status`
 - [PageTransitionExecution_apply](workflows/PageTransitionExecution_apply.md) - entry: `sync_transition_execution.PageTransitionExecution.apply`
 - [PageTransitionExecution_write](workflows/PageTransitionExecution_write.md) - entry: `sync_transition_execution.PageTransitionExecution.write`
@@ -1055,6 +1060,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [prune_backup](workflows/prune_backup.md) - entry: `knowledge_storage_lifecycle._prune_backup`
 - [prune_storage](workflows/prune_storage.md) - entry: `knowledge_storage_lifecycle._prune_storage`
 - [qualify_infrastructure_page_drift](workflows/qualify_infrastructure_page_drift.md) - entry: `sync_cmd._qualify_infrastructure_page_drift`
+- [query_cmd_flow](workflows/query_cmd_flow.md) - entry: `query_cmd.run`
 - [read_manifest_header](workflows/read_manifest_header.md) - entry: `manifest_storage.read_manifest_header`
 - [read_once](workflows/read_once.md) - entry: `task_context._read_once`
 - [rebuild_surface_only_index](workflows/rebuild_surface_only_index.md) - entry: `sync_cmd._rebuild_surface_only_index`
@@ -1122,6 +1128,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [Making a change](guides/making-a-change.md)
 - [MCP Integration](guides/mcp-integration.md)
 - [Orientation](guides/orientation.md)
+- [Reading the search path](guides/search-reading-route.md)
 - [Source Selection and Configuration](guides/source-selection-and-configuration.md)
 - [Troubleshooting and Security](guides/troubleshooting-and-security.md)
 

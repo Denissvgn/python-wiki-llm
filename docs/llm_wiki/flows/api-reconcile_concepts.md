@@ -23,7 +23,7 @@ sequenceDiagram
     participant p0 as reconcile_concepts
     participant p1 as validate_governance_ledger
     participant p2 as dict (src/llm_wiki_cli/services…nce.py:reconcile_concepts)
-    participant p3 as _identity_ownership_key (src/llm_wiki_cli/services/knowledge_governance.py)
+    participant p3 as _identity_ownership_key
     participant p4 as allocations.items (src/llm_wiki_cli/services…nce.py:reconcile_concepts)
     participant p5 as _validated_references
     participant p6 as sorted (src/llm_wiki_cli/services…nce.py:reconcile_concepts)
@@ -42,17 +42,17 @@ sequenceDiagram
     p0->>p1: validate_governance_ledger
     p0-->>p2: dict (src/llm_wiki_cli/services…nce.py:reconcile_concepts)(current.concepts)
     p0-->>p2: dict (src/llm_wiki_cli/services…nce.py:reconcile_concepts)(current.aliases)
-    p0->>p3: _identity_ownership_key (src/llm_wiki_cli/services/knowledge_governance.py)
+    p0->>p3: _identity_ownership_key
     p0-->>p4: allocations.items (src/llm_wiki_cli/services…nce.py:reconcile_concepts)
     p0-->>p4: allocations.items (src/llm_wiki_cli/services…nce.py:reconcile_concepts)
     p0->>p5: _validated_references
-    p0->>p3: _identity_ownership_key (src/llm_wiki_cli/services/knowledge_governance.py)
+    p0->>p3: _identity_ownership_key
     p0-->>p6: sorted (src/llm_wiki_cli/services…nce.py:reconcile_concepts)(...)
     p0-->>p7: (…).items
     p0->>p8: _identity_value
     p0->>p8: _identity_value
-    p0->>p3: _identity_ownership_key (src/llm_wiki_cli/services/knowledge_governance.py)
-    p0->>p3: _identity_ownership_key (src/llm_wiki_cli/services/knowledge_governance.py)
+    p0->>p3: _identity_ownership_key
+    p0->>p3: _identity_ownership_key
     p0-->>p9: by_locator.get(old_coordinate)
     p0-->>p10: refs_by_locator.get(new_coordinate)
     p0->>p11: GovernanceError
@@ -61,10 +61,10 @@ sequenceDiagram
     p0->>p11: GovernanceError
     p0-->>p12: by_natural_key.get(target_reference.natural_key)
     p0->>p11: GovernanceError
-    p0->>p3: _identity_ownership_key (src/llm_wiki_cli/services/knowledge_governance.py)
+    p0->>p3: _identity_ownership_key
     p0-->>p13: tuple (src/llm_wiki_cli/services…nce.py:reconcile_concepts)(aliases.items(...))
     p0-->>p14: aliases.items (src/llm_wiki_cli/services…nce.py:reconcile_concepts)
-    p0->>p3: _identity_ownership_key (src/llm_wiki_cli/services/knowledge_governance.py)
+    p0->>p3: _identity_ownership_key
     p0-->>p15: aliases.pop(promoted_key)
     p0->>p16: GovernanceAllocation
     p0->>p17: _put_alias
@@ -73,7 +73,7 @@ sequenceDiagram
 
 > Call sequence diagram shows 30 of 406 interactions; 376 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 4 of 82 (78 omitted); unresolved 9 of 99 (90 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 4 of 82 (78 omitted); unresolved 9 of 97 (88 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

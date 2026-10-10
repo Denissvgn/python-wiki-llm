@@ -4,11 +4,12 @@
 **Source:** [cli](../modules/cli.md)
 **Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [cli](../modules/cli.md), [progress](../modules/progress.md), [resource_diagnostics](../modules/resource_diagnostics.md)
 
-**Related modules:** [analysis_compatibility](../modules/analysis_compatibility.md), [config](../modules/config.md), [extraction_jobs](../modules/extraction_jobs.md), [llm_wiki_cli___init__](../modules/llm_wiki_cli___init__.md), and 5 more
+**Related modules:** [analysis_compatibility](../modules/analysis_compatibility.md), [commands___init__](../modules/commands___init__.md), [config](../modules/config.md), [extraction_jobs](../modules/extraction_jobs.md), and 6 more
 
 **Complete related modules:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
+- [commands___init__](../modules/commands___init__.md)
 - [config](../modules/config.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [llm_wiki_cli___init__](../modules/llm_wiki_cli___init__.md)

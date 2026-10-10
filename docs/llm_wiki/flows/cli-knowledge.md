@@ -2,16 +2,30 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [knowledge_cmd](../modules/knowledge_cmd.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [concept_identity](../modules/concept_identity.md), and 42 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 67 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
+- [api](../modules/api.md)
 - [canonical_json](../modules/canonical_json.md)
+- [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
+- [config](../modules/config.md)
+- [context_packet](../modules/context_packet.md)
+- [context_service](../modules/context_service.md)
+- [data_flow](../modules/data_flow.md)
+- [dependency_versions](../modules/dependency_versions.md)
+- [documentation_queries](../modules/documentation_queries.md)
+- [documentation_query_builder](../modules/documentation_query_builder.md)
+- [entrypoints](../modules/entrypoints.md)
+- [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [immutable](../modules/immutable.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
+- [imports](../modules/imports.md)
+- [infrastructure_inventory](../modules/infrastructure_inventory.md)
+- [infrastructure_sync](../modules/infrastructure_sync.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_audit](../modules/knowledge_audit.md)
@@ -27,6 +41,7 @@
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
+- [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [knowledge_packs](../modules/knowledge_packs.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
@@ -36,20 +51,31 @@
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md)
 - [knowledge_stream_audit](../modules/knowledge_stream_audit.md)
+- [knowledge_verification](../modules/knowledge_verification.md)
 - [maintenance_evidence](../modules/maintenance_evidence.md)
 - [maintenance_projection](../modules/maintenance_projection.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
+- [maintenance_service](../modules/maintenance_service.md)
 - [maintenance_shapes](../modules/maintenance_shapes.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
+- [plugins](../modules/plugins.md)
+- [python_calls](../modules/python_calls.md)
+- [python_implementation](../modules/python_implementation.md)
+- [python_imports](../modules/python_imports.md)
 - [section_ownership](../modules/section_ownership.md)
+- [services_dependencies](../modules/services_dependencies.md)
+- [source_selection](../modules/source_selection.md)
+- [source_snapshot](../modules/source_snapshot.md)
 - [storage_sort](../modules/storage_sort.md)
 - [storage_spool](../modules/storage_spool.md)
 - [sync_manifest](../modules/sync_manifest.md)
 - [validation](../modules/validation.md)
 - [verification_contracts](../modules/verification_contracts.md)
+- [wiki_media](../modules/wiki_media.md)
 - [wiki_surface](../modules/wiki_surface.md)
+- [wiki_surface_index](../modules/wiki_surface_index.md)
 - [wiki_write_basis](../modules/wiki_write_basis.md)
 
 ## Call sequence
@@ -96,7 +122,7 @@ sequenceDiagram
     p1->>p11: _wiki_root
     p2->>p11: _wiki_root
     p3->>p8: GovernanceError
-    p4-->>p12: get_knowledge_coverage(…)
+    p4->>p12: get_knowledge_coverage
     p5->>p11: _wiki_root
     p6->>p13: _run_existing_mutation
     p7-->>p14: getattr (src/llm_wiki_cli/commands…dge_cmd.py:_run_lifecycle)(args, 'successor_uid', None)
@@ -110,9 +136,9 @@ sequenceDiagram
     p6->>p11: _wiki_root
 ```
 
-> Call sequence diagram shows 30 of 3216 interactions; 3186 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4335 interactions; 4305 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 2 of 915 (913 omitted); unresolved 2 of 707 (705 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 2 of 1291 (1289 omitted); unresolved 1 of 1035 (1034 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -126,7 +152,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/commands/knowledge_cmd.py:_wiki_root` | 3 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/knowledge_storage_lifecycle.py:migrate_knowledge_storage` | 36 | - | external | 3 |
 | `src/llm_wiki_cli/services/knowledge_storage_lifecycle.py:migrate_knowledge_storage` | 36 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 2 |
-> Omission summary shows 8 of 755 groups; 747 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1041 groups; 1033 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -146,7 +172,7 @@ flowchart LR
     s8["8. Path (src/llm_wiki_cli/services…rst_unsafe_path_component)"]
     s9["9. os.path.abspath (src/llm_wiki_cli/services…rst_unsafe_path_component)"]
     s10["10. lexical.is_absolute"]
-    s11["11. Path.cwd"]
+    s11["11. Path.cwd (src/llm_wiki_cli/services…rst_unsafe_path_component)"]
     s12["12. Path (src/llm_wiki_cli/services…rst_unsafe_path_component)"]
     s1 -->|"run (src/llm_wiki_cli/commands/knowledge_storage_cmd.py)(args)"| s2
     s2 -->|"_wiki_root(args.wiki_dir)"| s3
@@ -157,7 +183,7 @@ flowchart LR
     s5 -. "Path (src/llm_wiki_cli/services…rst_unsafe_path_component)(os.path.abspath(...))" .-> s8
     s5 -. "os.path.abspath (src/llm_wiki_cli/services…rst_unsafe_path_component)(lexical)" .-> s9
     s5 -. "lexical.is_absolute(data not statically known)" .-> s10
-    s5 -. "Path.cwd(data not statically known)" .-> s11
+    s5 -. "Path.cwd (src/llm_wiki_cli/services…rst_unsafe_path_component)(data not statically known)" .-> s11
     s5 -. "Path (src/llm_wiki_cli/services…rst_unsafe_path_component)(absolute.anchor)" .-> s12
     b0["output print"]
     s2 -. "output print" .-> b0
@@ -189,7 +215,7 @@ flowchart LR
 | `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | - | - | - | - |
 | `os.path.abspath (src/llm_wiki_cli/services…rst_unsafe_path_component)` | - | - | - | - |
 | `lexical.is_absolute` | - | - | - | - |
-| `Path.cwd` | - | - | - | - |
+| `Path.cwd (src/llm_wiki_cli/services…rst_unsafe_path_component)` | - | - | - | - |
 | `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | - | - | - | - |
 
 ### Call data
@@ -205,7 +231,7 @@ flowchart LR
 | first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 59 | `Path(os.path.abspath(...))` |
 | first_unsafe_path_component | os.path.abspath (src/llm_wiki_cli/services…rst_unsafe_path_component) | 59 | `os.path.abspath(lexical)` |
 | first_unsafe_path_component | lexical.is_absolute | 60 | `lexical.is_absolute(data not statically known)` |
-| first_unsafe_path_component | Path.cwd | 66 | `Path.cwd(data not statically known)` |
+| first_unsafe_path_component | Path.cwd (src/llm_wiki_cli/services…rst_unsafe_path_component) | 66 | `Path.cwd(data not statically known)` |
 | first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 67 | `Path(absolute.anchor)` |
 
 ### Boundary effects
