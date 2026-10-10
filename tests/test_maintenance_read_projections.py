@@ -103,6 +103,32 @@ def test_snapshot_inspection_never_claims_current_acknowledgment(owned):
     )
 
 
+@pytest.mark.parametrize("live", [False, True])
+def test_uid_and_alias_inspection_preserve_resolved_maintenance_status(owned, live):
+    from tests.test_knowledge_cmd import _run
+    from llm_wiki_cli.services.knowledge_governance import load_governance
+
+    route = "llm-wiki://entities/Batch"
+    alias = "llm-wiki://entities/FormerBatch"
+    _run(["init", "--wiki-dir", "wiki", "--bundle-id", "kb_inspection_identity"])
+    ledger = load_governance(Path("wiki")).ledger
+    uid = next(key for key, value in ledger.concepts.items() if value.locator == route)
+    _run(["alias", "--wiki-dir", "wiki", "--uid", uid,
+          "--type", "locator", "--value", alias])
+    Path("src/policy.py").write_text(
+        POLICY_SOURCE.replace("values[:limit]", "values[:limit - 1]")
+    )
+    before = files()
+    expected = api.inspect_concept(route, src_dir="src", wiki_dir="wiki", live=live)
+    for coordinate in (uid, alias):
+        result = api.inspect_concept(coordinate, src_dir="src", wiki_dir="wiki", live=live)
+        assert result["concept"]["concept"]["locator"] == route
+        assert result["maintenance"] == expected["maintenance"]
+        assert result["concept"]["maintenance"] == expected["concept"]["maintenance"]
+        assert result["maintenance"] == result["concept"]["concept"]["maintenance"]
+    assert files() == before
+
+
 def test_selected_v8_task_discloses_partial_ledger_and_no_ack_inference(owned):
     migrate_knowledge_storage(
         Path("wiki"), to="sharded-v2", recovery_dir=Path("storage-recovery")

@@ -1465,7 +1465,11 @@ class DocumentationGraphQueryService:
         report = getattr(self.knowledge_view, "maintenance_report", None)
         if report is not None:
             from urllib.parse import quote
-            paths = [path for path in report.by_path if query in {path, "llm-wiki://" + quote(path[:-3], safe="/-._~")}]
+            paths = (
+                [self.concept_by_locator[locator]["document"]["canonical_path"]]
+                if locator is not None
+                else [path for path in report.by_path if query in {path, "llm-wiki://" + quote(path[:-3], safe="/-._~")}]
+            )
             if len(paths) == 1:
                 result["maintenance"] = report.for_path(paths[0])
         return result

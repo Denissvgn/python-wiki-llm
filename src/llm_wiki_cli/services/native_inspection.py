@@ -91,12 +91,8 @@ def inspect_native_concept(
         },
         "truncated": any(item["truncated"] for item in (concept, graph, sections)),
     }
-    report = getattr(service.knowledge_view, "maintenance_report", None)
-    if report is not None:
-        from urllib.parse import quote
-        paths = [path for path in report.by_path if coordinate in {path, "llm-wiki://" + quote(path[:-3], safe="/-._~")}]
-        if len(paths) == 1:
-            result["maintenance"] = report.for_path(paths[0])
+    if "maintenance" in concept:
+        result["maintenance"] = concept["maintenance"]
     # Each component retains its original response bounds and qualifications.
     # The final cap also covers the combined envelope and aggregate diagnostics.
     if (
