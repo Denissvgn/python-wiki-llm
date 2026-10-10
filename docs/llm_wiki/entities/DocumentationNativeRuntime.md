@@ -1,6 +1,6 @@
 # _DocumentationNativeRuntime
 
-**Location:** `src/llm_wiki_cli/services/documentation_native.py:132`
+**Location:** `src/llm_wiki_cli/services/documentation_native.py:133`
 **Kind:** Class
 **Bases:** —
 **Module:** [documentation_native](../modules/documentation_native.md)

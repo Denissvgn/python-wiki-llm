@@ -68,11 +68,11 @@ flowchart LR
 | [InstructionRoute](../entities/InstructionRoute.md) | Class | 87 | — | Route that must occur in a particular rendered section. |
 | [GeneratedSectionCoverage](../entities/GeneratedSectionCoverage.md) | Class | 99 | — | Single-owner record for one current generated section. |
 | [CorrectnessClauseCoverage](../entities/CorrectnessClauseCoverage.md) | Class | 113 | — | Current correctness rule protected by a canonical ownership decision. |
-| [RepositoryHygieneCoverage](../entities/RepositoryHygieneCoverage.md) | Class | 130 | — | Always-inline ownership reservation for repository safeguards. |
-| [ManagedReferenceInboundRoute](../entities/ManagedReferenceInboundRoute.md) | Class | 142 | — | One active source route into a managed reference topic. |
-| [MarkdownLink](../entities/MarkdownLink.md) | Class | 155 | — | One parsed local Markdown link. |
-| [MarkdownHeading](../entities/MarkdownHeading.md) | Class | 164 | — | One parsed Markdown heading and its actual local anchor. |
-| [DiscoveredInboundRoute](../entities/DiscoveredInboundRoute.md) | Class | 172 | — | Source-derived route identity used to audit the declared inventory. |
+| [RepositoryHygieneCoverage](../entities/RepositoryHygieneCoverage.md) | Class | 134 | — | Always-inline ownership reservation for repository safeguards. |
+| [ManagedReferenceInboundRoute](../entities/ManagedReferenceInboundRoute.md) | Class | 146 | — | One active source route into a managed reference topic. |
+| [MarkdownLink](../entities/MarkdownLink.md) | Class | 159 | — | One parsed local Markdown link. |
+| [MarkdownHeading](../entities/MarkdownHeading.md) | Class | 168 | — | One parsed Markdown heading and its actual local anchor. |
+| [DiscoveredInboundRoute](../entities/DiscoveredInboundRoute.md) | Class | 176 | — | Source-derived route identity used to audit the declared inventory. |
 
 ## Functions
 

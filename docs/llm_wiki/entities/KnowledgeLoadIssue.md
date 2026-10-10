@@ -80,4 +80,4 @@ flowchart LR
 | `_marker_issues` | type_reference | [knowledge_loader](../modules/knowledge_loader.md) | — |
 | `_read_artifact` | call | [knowledge_loader](../modules/knowledge_loader.md) | 4 |
 
-> References: showing 12 of 18 logical references; 6 omitted by the 12-row generated summary limit.
+> References: showing 12 of 19 logical references; 7 omitted by the 12-row generated summary limit.

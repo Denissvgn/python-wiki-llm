@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -13,39 +15,44 @@ sequenceDiagram
     participant p1 as isinstance
     participant p2 as KnowledgeEnvelopeError
     participant p3 as _reject_machine_local_paths
-    participant p4 as set (src/llm_wiki_cli/services…reject_machine_local_paths)
-    participant p5 as walk (src/llm_wiki_cli/services…reject_machine_local_paths)
-    participant p6 as _hash_structured
-    participant p7 as payload.values
+    participant p4 as _hash_structured
+    participant p5 as set (src/llm_wiki_cli/services…reject_machine_local_paths)
+    participant p6 as payload.values
+    participant p7 as walk (src/llm_wiki_cli/services…reject_machine_local_paths)
     participant p8 as _validate_json_tree
-    participant p9 as set (src/llm_wiki_cli/services…ope.py:_validate_json_tree)
-    participant p10 as walk (src/llm_wiki_cli/services…ope.py:_validate_json_tree)
-    participant p11 as sha256_bytes
+    participant p9 as sha256_bytes
+    participant p10 as canonical_json_bytes
+    participant p11 as set (src/llm_wiki_cli/services…ope.py:_validate_json_tree)
     participant p12 as hashlib.sha256(…).hexdigest
-    participant p13 as hashlib.sha256
-    participant p14 as canonical_json_bytes
-    participant p15 as canonical_json_text(…).encode
+    participant p13 as canonical_json_text(…).encode
+    participant p14 as walk (src/llm_wiki_cli/services…ope.py:_validate_json_tree)
+    participant p15 as hashlib.sha256
     participant p16 as canonical_json_text
     participant p17 as json.dumps
-    p0-->>p1: isinstance
+    p0-->>p1: isinstance(configuration, Mapping)
     p0->>p2: KnowledgeEnvelopeError
     p0->>p3: _reject_machine_local_paths
-    p3-->>p4: set (src/llm_wiki_cli/services…reject_machine_local_paths)
-    p3-->>p5: walk (src/llm_wiki_cli/services…reject_machine_local_paths)
-    p0->>p6: _hash_structured
-    p6-->>p7: payload.values
-    p6->>p8: _validate_json_tree
-    p8-->>p9: set (src/llm_wiki_cli/services…ope.py:_validate_json_tree)
-    p8-->>p10: walk (src/llm_wiki_cli/services…ope.py:_validate_json_tree)
-    p6->>p11: sha256_bytes
-    p11-->>p12: hashlib.sha256(…).hexdigest
-    p11-->>p13: hashlib.sha256
-    p6->>p14: canonical_json_bytes
-    p14-->>p15: canonical_json_text(…).encode
-    p14->>p16: canonical_json_text
-    p16-->>p17: json.dumps
-    p6->>p2: KnowledgeEnvelopeError
+    p0->>p4: _hash_structured
+    p3-->>p5: set (src/llm_wiki_cli/services…reject_machine_local_paths)
+    p4-->>p6: payload.values
+    p3-->>p7: walk (src/llm_wiki_cli/services…reject_machine_local_paths)(value, field_name)
+    p4->>p8: _validate_json_tree
+    p4->>p9: sha256_bytes
+    p4->>p10: canonical_json_bytes
+    p4->>p2: KnowledgeEnvelopeError
+    p8-->>p11: set (src/llm_wiki_cli/services…ope.py:_validate_json_tree)
+    p9-->>p12: hashlib.sha256(…).hexdigest
+    p10-->>p13: canonical_json_text(…).encode('utf-8')
+    p8-->>p14: walk (src/llm_wiki_cli/services…ope.py:_validate_json_tree)(value, field_name)
+    p9-->>p15: hashlib.sha256(value)
+    p10->>p16: canonical_json_text
+    p16-->>p17: json.dumps(value, ensure_ascii=False, separators=(...), sort_keys=True, allow_nan=False)
 ```
+
+> Call sequence diagram shows 18 of 18 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 5 of 5 (0 omitted); unresolved 5 of 5 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

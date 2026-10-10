@@ -1,6 +1,6 @@
 # ScopedKnowledgeRead
 
-**Location:** `src/llm_wiki_cli/services/knowledge_storage_access.py:29`
+**Location:** `src/llm_wiki_cli/services/knowledge_storage_access.py:31`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_storage_access](../modules/knowledge_storage_access.md)
@@ -20,6 +20,8 @@ Owns a selected logical slice, its validated manifest header, consumed Markdown 
 | `markdown` | `dict[str, str]` | *required* | — |
 | `reader` | `KnowledgeStoreReader` | `field(repr=False)` | — |
 | `session` | `StorageReadSession` | `field(repr=False)` | — |
+| `maintenance_validation` | `dict[str, Any] \| None` | `field(default=None)` | — |
+| `maintenance_marker_present` | `bool` | `field(default=False, repr=False)` | — |
 
 ## Methods
 
@@ -35,21 +37,24 @@ flowchart LR
     n0["ScopedKnowledgeRead (src/llm_wiki_cli/services/knowledge_storage_access.py)"]
     n1["_capture_slice (src/llm_wiki_cli/services/knowledge_storage_access.py)"]
     n2["capture_knowledge_slice (src/llm_wiki_cli/services/knowledge_storage_access.py)"]
-    n3["_storage_receipt (src/llm_wiki_cli/services/task_context_v2.py)"]
+    n3["src/llm_wiki_cli/services/search_discovery_capture.py"]
+    n4["_storage_receipt (src/llm_wiki_cli/services/task_context_v2.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
+    n4 --> n0
     click n0 "../modules/knowledge_storage_access.md"
     click n1 "../modules/knowledge_storage_access.md"
     click n2 "../modules/knowledge_storage_access.md"
-    click n3 "../modules/task_context_v2.md"
+    click n3 "../modules/search_discovery_capture.md"
+    click n4 "../modules/task_context_v2.md"
 ```
 
 ### Summary
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [knowledge_storage_access](../modules/knowledge_storage_access.md) | 1 | `manifest`, `markdown`, `reader`, `session`, `slice` |
+| [knowledge_storage_access](../modules/knowledge_storage_access.md) | 1 | `maintenance_marker_present`, `maintenance_validation`, `manifest`, `markdown`, `reader`, `session`, `slice` |
 
 ### References
 
@@ -57,4 +62,5 @@ flowchart LR
 |---|---|---|---:|
 | `_capture_slice` | call | [knowledge_storage_access](../modules/knowledge_storage_access.md) | 1 |
 | `capture_knowledge_slice` | type_reference | [knowledge_storage_access](../modules/knowledge_storage_access.md) | — |
+| `search_discovery_capture` | import | [search_discovery_capture](../modules/search_discovery_capture.md) | — |
 | `_storage_receipt` | type_reference | [task_context_v2](../modules/task_context_v2.md) | — |

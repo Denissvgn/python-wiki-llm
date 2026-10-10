@@ -1,6 +1,6 @@
 # MachineVerificationReadView
 
-**Location:** `src/llm_wiki_cli/services/knowledge_consumption.py:112`
+**Location:** `src/llm_wiki_cli/services/knowledge_consumption.py:115`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_consumption](../modules/knowledge_consumption.md)

@@ -26,7 +26,10 @@ HARD_LIMITS = {"budget_tokens": 1_048_576, "max_files": 1000,
 
 
 class WorkflowRequestError(ValueError):
-    """A workflow request is invalid before any workspace access."""
+    """A field-specific workflow or session validation failure.
+
+    Failures can arise before access or during capture and publication checks.
+    """
 
     def __init__(self, field: str, message: str):
         self.field = field

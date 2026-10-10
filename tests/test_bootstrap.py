@@ -3085,8 +3085,10 @@ class TestGenerateFlowMd:
         before = deepcopy((inventory, edges, observations, flow, data_flow))
 
         method = next(edge for edge in edges if edge["name"] == target)
-        assert method["kind"] == "unresolved"
-        assert method["to"] == {"file": None, "symbol": "build"}
+        local_constructor = not imports and not parameters and receiver in {"Builder({args})", "Builder()"}
+        assert method["kind"] == ("internal" if local_constructor else "unresolved")
+        assert method["to"] == ({"file": "builder.py", "symbol": "Builder.build"} if local_constructor
+                                else {"file": None, "symbol": "build"})
         assert any(item["name"] == target for item in observations["observations"])
         markdown = bootstrap_cmd._generate_flow_md(
             flow, {"builder.py": "builder"}, data_flow=data_flow
@@ -3097,10 +3099,15 @@ class TestGenerateFlowMd:
         diagrams = re.findall(r"```mermaid\n(.*?)\n```", markdown, flags=re.DOTALL)
         assert len(diagrams) == 2
         for diagram in diagrams:
-            assert compact in diagram
+            assert ("Builder.build" if local_constructor else compact) in diagram
             assert "configuration_option_0" not in diagram
-        assert "p0-->>p1: " + compact in diagrams[0]
-        assert compact in next(line for line in diagrams[1].splitlines() if ' -. "' in line)
+        assert (("p0->>p1: Builder.build" if local_constructor else "p0-->>p1: " + compact)
+                in diagrams[0])
+        if local_constructor:
+            assert any('s1 -->|' in line and 'Builder.build' in line and ' s2' in line
+                       for line in diagrams[1].splitlines())
+        else:
+            assert compact in next(line for line in diagrams[1].splitlines() if ' -. "' in line)
         assert 'click s1 "../modules/builder.md"' in diagrams[1]
         _assert_generated_diagram_budgets(markdown)
 

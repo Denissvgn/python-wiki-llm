@@ -1,6 +1,6 @@
 # DocumentationWorklistError
 
-**Location:** `src/llm_wiki_cli/services/documentation_worklist.py:132`
+**Location:** `src/llm_wiki_cli/services/documentation_worklist.py:133`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [documentation_worklist](../modules/documentation_worklist.md)

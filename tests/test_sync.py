@@ -3628,7 +3628,7 @@ class TestSyncFlowRegeneration:
         page = wiki / "flows" / "api-run.md"
         markdown = page.read_text(encoding="utf-8")
         diagram = markdown.split("```mermaid", 1)[1].split("```", 1)[0]
-        assert ("_Builder(…).build" in diagram) is not legacy
+        assert ("_Builder.build" in diagram) is not legacy
         if legacy:
             page.write_text(
                 sync_cmd._replace_section_body(
@@ -3653,7 +3653,7 @@ class TestSyncFlowRegeneration:
         refreshed = page.read_text(encoding="utf-8")
         blocks = re.findall(r"```mermaid\n(.*?)\n```", refreshed, flags=re.DOTALL)
         assert len(blocks) == (1 if skip_data_flow else 2)
-        assert all("_Builder(…).build" in block for block in blocks)
+        assert all("_Builder.build" in block for block in blocks)
         if legacy:
             assert "Reviewed: builds the configured report." in refreshed
             assert before[page.name][0] != page.read_bytes()

@@ -15,6 +15,8 @@ audience value, adoption tiers, and candidate evaluation designs, see
 [Native knowledge use cases](native-knowledge-use-cases.md).
 For public imports, installation, workspace boundaries and compatibility, see
 [Integrating native knowledge](native-knowledge-provider.md).
+For durable source/prose review, explicit acknowledgment and complete recovery,
+see [Ordinary documentation review](maintenance.md).
 For a small downstream integration, follow the
 [native knowledge tutorial](../examples/native-knowledge/README.md). Its Python
 client bootstraps a separate project without installing agent instructions.
@@ -39,7 +41,7 @@ with an already-collected live source and producer basis:
 | State | Meaning |
 |---|---|
 | `current` | The complete comparable live basis matches the recorded basis. |
-| `nonsemantic-source-change` | Source bytes changed, but the concept-scoped observation did not. |
+| `nonsemantic-source-change` | Source changed; recorded structure unchanged; behavior not evaluated. |
 | `unknown` | The comparison lacks enough reliable information for a stronger result. |
 | `source-changed` | The concept-scoped observation changed. |
 | `source-missing` | A reliably mapped source is confirmed missing. |
@@ -83,9 +85,12 @@ unchanged. The first contract uses conservative file-level implementation inputs
 
 Use `--comparison-policy exact-v1` to require exact producer versions, or
 `--comparison-policy analysis-v1` to require the new analysis metadata. The default
-`auto` uses conservative comparison for legacy knowledge. A normal sync migrates
-legacy knowledge; read-only commands never migrate it. Artifact hashes, verification
-receipts and human review retain their existing binding rules.
+`auto` uses conservative comparison for legacy knowledge. An owning sync
+refreshes legacy analysis metadata and observations while preserving the
+supported storage format. Sharded, packed or indexed storage and ordinary
+review tracking require explicit adoption; human governance remains separate.
+Read-only commands never migrate. Artifact hashes, verification receipts and
+human review retain their existing binding rules.
 
 Doctor and CI reports automatically select v4 for migrated knowledge. Applications
 that pin an older report format can select `exact-v1` explicitly. Python read APIs

@@ -1407,6 +1407,7 @@ def test_query_service_builder_reuses_one_inventory_snapshot_surface_and_view(
             "allow_external_src": True,
             "read_only": True,
             "include_plugins": False,
+            "capture_implementation_observations": True,
         }
         return extract_result
 
@@ -1455,6 +1456,7 @@ def test_query_service_builder_reuses_one_inventory_snapshot_surface_and_view(
         assert kwargs["dependency_analysis"] is dependency_analysis
         assert kwargs["surface_index"] is query_surface
         assert kwargs["knowledge_view"] is knowledge_view
+        assert kwargs["inventory_result"] is retained_inventory
         assert kwargs["machine_verification"] == machine_verification
         assert kwargs["limit"] == 7
         return built_service

@@ -1,6 +1,6 @@
 # DocumentationWikiSnapshot
 
-**Location:** `src/llm_wiki_cli/services/documentation_wiki_input.py:231`
+**Location:** `src/llm_wiki_cli/services/documentation_wiki_input.py:233`
 **Kind:** Class
 **Bases:** —
 **Module:** [documentation_wiki_input](../modules/documentation_wiki_input.md)

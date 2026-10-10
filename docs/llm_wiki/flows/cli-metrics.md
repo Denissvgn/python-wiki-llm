@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [metrics_cmd](../modules/metrics_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [config](../modules/config.md), and 25 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [config](../modules/config.md), and 27 more
 
 **Complete modules touched:**
 
@@ -23,6 +23,7 @@
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [lint_service](../modules/lint_service.md)
+- [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [metrics](../modules/metrics.md)
 - [metrics_cmd](../modules/metrics_cmd.md)
@@ -30,6 +31,7 @@
 - [plugins](../modules/plugins.md)
 - [progress](../modules/progress.md)
 - [python_contracts](../modules/python_contracts.md)
+- [python_implementation](../modules/python_implementation.md)
 - [python_observations](../modules/python_observations.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
@@ -38,6 +40,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -45,56 +49,73 @@ sequenceDiagram
     participant p1 as getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)
     participant p2 as bool (src/llm_wiki_cli/commands/metrics_cmd.py:run)
     participant p3 as validate_source_root
-    participant p4 as validate_path
-    participant p5 as PathValidationError
-    participant p6 as (…).resolve
-    participant p7 as Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    participant p8 as Path.cwd().resolve
-    participant p9 as resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
-    participant p10 as Path(…).expanduser
-    participant p11 as Path (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p12 as candidate.is_absolute
-    participant p13 as Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p14 as candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p15 as resolved.is_dir
-    participant p16 as os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p17 as windows_current_user_sid
-    participant p18 as WindowsSecurityGuardError
-    participant p19 as _current_windows_user_sid
-    participant p20 as ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)
-    p0-->>p2: bool (src/llm_wiki_cli/commands/metrics_cmd.py:run)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)
+    participant p4 as str (src/llm_wiki_cli/commands/metrics_cmd.py:run)
+    participant p5 as validate_path
+    participant p6 as load_events
+    participant p7 as summarize_events
+    participant p8 as print
+    participant p9 as json.dumps
+    participant p10 as render_text
+    participant p11 as metrics_path
+    participant p12 as event.get (src/llm_wiki_cli/services…trics.py:summarize_events)
+    participant p13 as _fmt_percent
+    participant p14 as Path(…).expanduser
+    participant p15 as path.exists
+    participant p16 as Path (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p17 as parse_window
+    participant p18 as _fmt_ms
+    participant p19 as candidate.is_absolute
+    participant p20 as _utc_now
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)(args, 'src_dir', '.')
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)(args, 'last', '30d')
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)(args, 'format', 'text')
+    p0-->>p2: bool (src/llm_wiki_cli/commands/metrics_cmd.py:run)(getattr(...))
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)(args, 'allow_external_src', False)
     p0->>p3: validate_source_root
-    p3->>p4: validate_path
-    p4->>p5: PathValidationError
-    p4-->>p6: (…).resolve
-    p4-->>p7: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    p4-->>p8: Path.cwd().resolve
-    p4-->>p7: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    p4-->>p9: resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
-    p4->>p5: PathValidationError
-    p3-->>p10: Path(…).expanduser
-    p3-->>p11: Path (src/llm_wiki_cli/config.py:validate_source_root)
-    p3-->>p12: candidate.is_absolute
-    p3-->>p13: Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
-    p3-->>p14: candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
-    p3->>p5: PathValidationError
-    p3-->>p15: resolved.is_dir
-    p3->>p5: PathValidationError
-    p3-->>p11: Path (src/llm_wiki_cli/config.py:validate_source_root)
-    p3-->>p16: os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
-    p3->>p17: windows_current_user_sid
-    p17->>p18: WindowsSecurityGuardError
-    p17->>p19: _current_windows_user_sid
-    p19-->>p20: ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
-    p19-->>p20: ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
+    p0-->>p4: str (src/llm_wiki_cli/commands/metrics_cmd.py:run)(source_root)
+    p0->>p5: validate_path
+    p0->>p6: load_events
+    p0->>p7: summarize_events
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)(args, 'source_selection', None)
+    p0-->>p8: print(json.dumps(...))
+    p0-->>p9: json.dumps(summary, indent=2, sort_keys=True)
+    p0-->>p8: print(render_text(...), end='')
+    p0->>p10: render_text
+    p3->>p5: validate_path
+    p6->>p11: metrics_path
+    p7-->>p12: event.get (src/llm_wiki_cli/services…trics.py:summarize_events)('event')
+    p10->>p13: _fmt_percent
+    p3-->>p14: Path(…).expanduser
+    p6-->>p15: path.exists
+    p7-->>p12: event.get (src/llm_wiki_cli/services…trics.py:summarize_events)('strict')
+    p10->>p13: _fmt_percent
+    p3-->>p16: Path (src/llm_wiki_cli/config.py:validate_source_root)(path)
+    p6->>p17: parse_window
+    p7-->>p12: event.get (src/llm_wiki_cli/services…trics.py:summarize_events)('passed')
+    p10->>p18: _fmt_ms
+    p3-->>p19: candidate.is_absolute
+    p6->>p20: _utc_now
 ```
 
-> Call sequence diagram shows 30 of 995 interactions; 965 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1044 interactions; 1014 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 12 of 388 (376 omitted); unresolved 6 of 264 (258 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/config.py:validate_path` | 9 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
+| `src/llm_wiki_cli/config.py:validate_path` | 9 | - | unresolved | 3 |
+| `src/llm_wiki_cli/config.py:validate_path` | 9 | - | external | 2 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 8 | - | external | 10 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 8 | - | unresolved | 3 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 8 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 6 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 8 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 27 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 2 |
+> Omission summary shows 8 of 279 groups; 271 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

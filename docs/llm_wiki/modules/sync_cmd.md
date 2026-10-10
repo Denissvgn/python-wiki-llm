@@ -41,6 +41,7 @@ Workflow:
 | `..services.knowledge_governance` | `GOVERNANCE_FILENAME`, `GovernanceError`, `load_governance`, `ConceptGovernanceReference`, `natural_key_for`, `reconcile_concepts` |
 | `..services.knowledge_model` | `PAGE_KIND_TO_CONCEPT_KIND` |
 | `..services.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeKnowledgeInputs`, `CommittedKnowledgeState`, `capture_committed_knowledge`, `collect_runtime_repository_evidence`, `committed_governance_bundle_id`, `committed_runtime_provenance`, `finalize_runtime_knowledge`, `runtime_generation_options`, `runtime_graph_analyzer_limitations`, `runtime_generation_options_hash`, `runtime_source_snapshot_hash` |
+| `..services.maintenance_protocol` | `unlink_maintenance_page`, `guard_maintenance_owner`, `maintenance_write_operation`, `MaintenanceProtocolError` |
 | `..services.markdown_sections` | `format_table_row`, `is_placeholder_description`, `is_table_separator`, `normalize_markdown`, `preserve_index_custom_sections`, `preserve_level_two_section_exact`, `preserve_table_description_cells`, `replace_section_body`, `section_body`, `section_bounds`, `semantic_table_key`, `should_preserve_semantic_value`, `split_table_row`, `table_description_cells`, `trim_blank_lines` |
 | `..services.module_maps` | `build_module_dependency_maps` |
 | `..services.paths` | `is_test_source_path`, `portable_source_root_label` |
@@ -90,29 +91,29 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (1) |
-| Outbound | `src` (36) |
+| Inbound | `src` (2) |
+| Outbound | `src` (37) |
 
-> All 37 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 39 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [GeneratedSurfacePruneError](../entities/GeneratedSurfacePruneError.md) | 280 | `ValueError` | A stale generated page cannot be removed without explicit authority. |
-| [SyncRuntimeRefreshError](../entities/SyncRuntimeRefreshError.md) | 284 | `ValueError` | A runtime-basis transition cannot be applied in the requested mode. |
-| [SyncResult](../entities/SyncResult.md) | 616 | — | — |
-| [_ApplyDiffContext](../entities/ApplyDiffContext.md) | 655 | — | — |
-| [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 677 | — | — |
-| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1674 | — | — |
-| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1700 | — | — |
-| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1707 | — | — |
-| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1713 | — | — |
-| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1719 | — | — |
-| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1735 | — | — |
-| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1778 | — | — |
-| [_ReusedSync](../entities/ReusedSync.md) | 1804 | — | — |
-| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1810 | — | Prior ownership proof and generated pages that cross the live boundary. |
+| [GeneratedSurfacePruneError](../entities/GeneratedSurfacePruneError.md) | 282 | `ValueError` | A stale generated page cannot be removed without explicit authority. |
+| [SyncRuntimeRefreshError](../entities/SyncRuntimeRefreshError.md) | 286 | `ValueError` | A runtime-basis transition cannot be applied in the requested mode. |
+| [SyncResult](../entities/SyncResult.md) | 618 | — | — |
+| [_ApplyDiffContext](../entities/ApplyDiffContext.md) | 657 | — | — |
+| [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 679 | — | — |
+| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1676 | — | — |
+| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1702 | — | — |
+| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1709 | — | — |
+| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1715 | — | — |
+| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1721 | — | — |
+| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1737 | — | — |
+| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1780 | — | — |
+| [_ReusedSync](../entities/ReusedSync.md) | 1806 | — | — |
+| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1812 | — | Prior ownership proof and generated pages that cross the live boundary. |
 
 ## Functions
 
@@ -249,6 +250,7 @@ flowchart LR
 | `_execute_prepared_sync` | `(options, prepared, *, target_wiki_dir = None, dry_run = False) -> None` | — | — |
 | `_run_prepared_sync` | `(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> None` | — | — |
 | `run` | `(args) -> None` | — | — |
+| `_run_sync_options` | `(options, write_basis = None) -> None` | — | — |
 | `_preserve_index_custom_sections` | `(old_md: str, new_md: str) -> str` | — | — |
 | `_overlay_live_index_metadata` | `(existing: list[dict], live: Iterable[Mapping], *, key: str) -> list[dict]` | — | Retain existing page coverage while preferring canonical live metadata. |
 | `_sync_workflow_index_entries` | `(wiki_dir: Path, inventory: dict) -> list[dict]` | — | — |

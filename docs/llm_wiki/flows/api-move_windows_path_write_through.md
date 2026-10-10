@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -14,31 +16,36 @@ sequenceDiagram
     participant p2 as ctypes.WinDLL
     participant p3 as move_file
     participant p4 as _windows_api_path
-    participant p5 as os.path.abspath
-    participant p6 as os.fspath
-    participant p7 as value.startswith
-    participant p8 as Path
-    participant p9 as ctypes.get_last_error
-    participant p10 as FileExistsError
-    participant p11 as os.strerror
-    participant p12 as ctypes.WinError
+    participant p5 as Path
+    participant p6 as ctypes.get_last_error
+    participant p7 as FileExistsError
+    participant p8 as os.strerror
+    participant p9 as ctypes.WinError
+    participant p10 as os.path.abspath
+    participant p11 as os.fspath
+    participant p12 as value.startswith
     p0->>p1: WindowsDurabilityError
-    p0-->>p2: ctypes.WinDLL
-    p0-->>p3: move_file
+    p0-->>p2: ctypes.WinDLL('kernel32', use_last_error=True)
+    p0-->>p3: move_file(_windows_api_path(...), _windows_api_path(...), flags)
     p0->>p4: _windows_api_path
-    p4-->>p5: os.path.abspath
-    p4-->>p6: os.fspath
-    p4-->>p7: value.startswith
-    p4-->>p7: value.startswith
-    p0-->>p8: Path
+    p0-->>p5: Path(source)
     p0->>p4: _windows_api_path
-    p0-->>p8: Path
-    p0-->>p9: ctypes.get_last_error
-    p0-->>p10: FileExistsError
-    p0-->>p11: os.strerror
-    p0-->>p12: ctypes.WinError
+    p0-->>p5: Path(target)
+    p0-->>p6: ctypes.get_last_error
+    p0-->>p7: FileExistsError(error_number, os.strerror(...), target)
+    p0-->>p8: os.strerror(error_number)
+    p0-->>p9: ctypes.WinError(error_number)
     p0->>p1: WindowsDurabilityError
+    p4-->>p10: os.path.abspath(os.fspath(...))
+    p4-->>p11: os.fspath(path)
+    p4-->>p12: value.startswith('\\\\?\\')
+    p4-->>p12: value.startswith('\\\\')
 ```
+
+> Call sequence diagram shows 16 of 16 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 9 of 9 (0 omitted); unresolved 3 of 3 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

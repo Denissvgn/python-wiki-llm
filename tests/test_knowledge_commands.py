@@ -193,7 +193,7 @@ def _write_reviewed_description(path: Path, description: str) -> None:
         "Description",
         description,
     )
-    path.write_text(updated, encoding="utf-8")
+    path.write_bytes(updated.encode("utf-8"))
 
 
 def _strict_report(project: Path, wiki_dir: Path):

@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -13,10 +15,15 @@ sequenceDiagram
     participant p1 as formatted_json_text(…).encode
     participant p2 as formatted_json_text
     participant p3 as json.dumps
-    p0-->>p1: formatted_json_text(…).encode
+    p0-->>p1: formatted_json_text(…).encode('utf-8')
     p0->>p2: formatted_json_text
-    p2-->>p3: json.dumps
+    p2-->>p3: json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)
 ```
+
+> Call sequence diagram shows 3 of 3 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 1 of 1 (0 omitted); unresolved 1 of 1 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 
@@ -47,9 +54,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| formatted_json_bytes | formatted_json_text(…).encode | 192 | `formatted_json_text(value).encode('utf-8')` |
-| formatted_json_bytes | formatted_json_text | 192 | `formatted_json_text(value)` |
-| formatted_json_text | json.dumps | 178 | `json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)` |
+| formatted_json_bytes | formatted_json_text(…).encode | 193 | `formatted_json_text(value).encode('utf-8')` |
+| formatted_json_bytes | formatted_json_text | 193 | `formatted_json_text(value)` |
+| formatted_json_text | json.dumps | 179 | `json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)` |
 
 ### Boundary effects
 
@@ -59,8 +66,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `formatted_json_bytes` | `formatted_json_text(value).encode` | 192 |
-| external_call | `formatted_json_text` | `json.dumps` | 178 |
+| unresolved_call | `formatted_json_bytes` | `formatted_json_text(value).encode` | 193 |
+| external_call | `formatted_json_text` | `json.dumps` | 179 |
 
 ## Behavior
 

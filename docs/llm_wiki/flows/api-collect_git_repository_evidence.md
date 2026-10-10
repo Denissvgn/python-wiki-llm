@@ -6,64 +6,80 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as collect_git_repository_evidence
     participant p1 as Path (src/llm_wiki_cli/services…t_git_repository_evidence)
     participant p2 as _run_git
-    participant p3 as _run_git_result
-    participant p4 as os.environ.items (src/llm_wiki_cli/services…velope.py:_run_git_result)
-    participant p5 as key.startswith (src/llm_wiki_cli/services…velope.py:_run_git_result)
-    participant p6 as subprocess.run (src/llm_wiki_cli/services…velope.py:_run_git_result)
-    participant p7 as str (src/llm_wiki_cli/services…velope.py:_run_git_result)
-    participant p8 as _GitCommandResult
-    participant p9 as result.stdout.strip (src/llm_wiki_cli/services…velope.py:_run_git_result)
-    participant p10 as RepositoryEvidence
-    participant p11 as _is_full_git_oid
-    participant p12 as isinstance (src/llm_wiki_cli/services…elope.py:_is_full_git_oid)
-    participant p13 as len (src/llm_wiki_cli/services…elope.py:_is_full_git_oid)
-    participant p14 as all
-    participant p15 as _worktree_pathspecs
-    participant p16 as isinstance (src/llm_wiki_cli/services…pe.py:_worktree_pathspecs)
-    participant p17 as TypeError
-    participant p18 as tuple (src/llm_wiki_cli/services…pe.py:_worktree_pathspecs)
-    participant p19 as Path(…).resolve (src/llm_wiki_cli/services…pe.py:_worktree_pathspecs)
-    participant p20 as Path (src/llm_wiki_cli/services…pe.py:_worktree_pathspecs)
-    participant p21 as checkout.resolve
-    p0-->>p1: Path (src/llm_wiki_cli/services…t_git_repository_evidence)
+    participant p3 as RepositoryEvidence
+    participant p4 as _is_full_git_oid
+    participant p5 as _worktree_pathspecs
+    participant p6 as _effective_line_ending_overrides
+    participant p7 as _run_git_result
+    participant p8 as Path(…).resolve (src/llm_wiki_cli/services…t_git_repository_evidence)
+    participant p9 as _filtered_worktree_status_is_dirty
+    participant p10 as bool
+    participant p11 as _parse_local_remote_config
+    participant p12 as _local_config_values
+    participant p13 as len (src/llm_wiki_cli/services…t_git_repository_evidence)
+    participant p14 as isinstance (src/llm_wiki_cli/services…elope.py:_is_full_git_oid)
+    participant p15 as isinstance (src/llm_wiki_cli/services…pe.py:_worktree_pathspecs)
+    participant p16 as _run_effective_git_config
+    participant p17 as status.split
+    participant p18 as result.output.splitlines (src/llm_wiki_cli/services…parse_local_remote_config)
+    p0-->>p1: Path (src/llm_wiki_cli/services…t_git_repository_evidence)(root)
     p0->>p2: _run_git
-    p2->>p3: _run_git_result
-    p3-->>p4: os.environ.items (src/llm_wiki_cli/services…velope.py:_run_git_result)
-    p3-->>p5: key.startswith (src/llm_wiki_cli/services…velope.py:_run_git_result)
-    p3-->>p6: subprocess.run (src/llm_wiki_cli/services…velope.py:_run_git_result)
-    p3-->>p7: str (src/llm_wiki_cli/services…velope.py:_run_git_result)
-    p3->>p8: _GitCommandResult
-    p3-->>p9: result.stdout.strip (src/llm_wiki_cli/services…velope.py:_run_git_result)
-    p3->>p8: _GitCommandResult
-    p0->>p10: RepositoryEvidence
+    p0->>p3: RepositoryEvidence
     p0->>p2: _run_git
-    p0->>p11: _is_full_git_oid
-    p11-->>p12: isinstance (src/llm_wiki_cli/services…elope.py:_is_full_git_oid)
-    p11-->>p13: len (src/llm_wiki_cli/services…elope.py:_is_full_git_oid)
-    p11-->>p14: all
-    p0->>p15: _worktree_pathspecs
-    p15-->>p16: isinstance (src/llm_wiki_cli/services…pe.py:_worktree_pathspecs)
-    p15-->>p17: TypeError
-    p15-->>p16: isinstance (src/llm_wiki_cli/services…pe.py:_worktree_pathspecs)
-    p15-->>p17: TypeError
-    p15-->>p16: isinstance (src/llm_wiki_cli/services…pe.py:_worktree_pathspecs)
-    p15-->>p17: TypeError
-    p15-->>p18: tuple (src/llm_wiki_cli/services…pe.py:_worktree_pathspecs)
-    p15-->>p18: tuple (src/llm_wiki_cli/services…pe.py:_worktree_pathspecs)
-    p15-->>p18: tuple (src/llm_wiki_cli/services…pe.py:_worktree_pathspecs)
-    p15->>p2: _run_git
-    p15-->>p19: Path(…).resolve (src/llm_wiki_cli/services…pe.py:_worktree_pathspecs)
-    p15-->>p20: Path (src/llm_wiki_cli/services…pe.py:_worktree_pathspecs)
-    p15-->>p21: checkout.resolve
+    p0->>p4: _is_full_git_oid
+    p0->>p5: _worktree_pathspecs
+    p0->>p6: _effective_line_ending_overrides
+    p0->>p2: _run_git
+    p0->>p7: _run_git_result
+    p0-->>p8: Path(…).resolve (src/llm_wiki_cli/services…t_git_repository_evidence)
+    p0-->>p1: Path (src/llm_wiki_cli/services…t_git_repository_evidence)(raw_top_level)
+    p0->>p9: _filtered_worktree_status_is_dirty
+    p0->>p2: _run_git
+    p0-->>p10: bool(status)
+    p0->>p7: _run_git_result
+    p0->>p11: _parse_local_remote_config
+    p0->>p7: _run_git_result
+    p0->>p12: _local_config_values
+    p0->>p12: _local_config_values
+    p0-->>p13: len (src/llm_wiki_cli/services…t_git_repository_evidence)(branch_remotes)
+    p0-->>p13: len (src/llm_wiki_cli/services…t_git_repository_evidence)(branch_merges)
+    p0-->>p13: len (src/llm_wiki_cli/services…t_git_repository_evidence)(branch_remotes)
+    p0-->>p13: len (src/llm_wiki_cli/services…t_git_repository_evidence)(branch_merges)
+    p0->>p3: RepositoryEvidence
+    p2->>p7: _run_git_result
+    p4-->>p14: isinstance (src/llm_wiki_cli/services…elope.py:_is_full_git_oid)(value, str)
+    p5-->>p15: isinstance (src/llm_wiki_cli/services…pe.py:_worktree_pathspecs)(included_paths, (...))
+    p6->>p16: _run_effective_git_config
+    p9-->>p17: status.split('\x00')
+    p11-->>p18: result.output.splitlines (src/llm_wiki_cli/services…parse_local_remote_config)
 ```
 
-> Call sequence diagram shows 30 of 182 interactions; 152 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 182 interactions; 152 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 9 of 70 (61 omitted); unresolved 3 of 55 (52 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_run_git_result` | 4 | - | external | 3 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_run_git_result` | 4 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_run_git_result` | 4 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 2 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_is_full_git_oid` | 14 | - | external | 2 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_worktree_pathspecs` | 18 | - | external | 19 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_worktree_pathspecs` | 18 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 1 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_worktree_pathspecs` | 18 | - | unresolved | 7 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_run_effective_git_config` | 48 | - | external | 5 |
+> Omission summary shows 8 of 39 groups; 31 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

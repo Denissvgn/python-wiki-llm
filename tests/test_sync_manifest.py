@@ -909,7 +909,7 @@ def test_rebuild_and_generation_state_changes_clear_artifact_commitment(
     [
         (True, "must be an integer"),
         (0, "must be positive"),
-        (7, "unsupported future manifest version"),
+        (9, "unsupported future manifest version"),
     ],
 )
 def test_manifest_version_validation_is_field_specific(version, message):

@@ -12,11 +12,15 @@ from __future__ import annotations
 from .progress import observed_phase
 
 import re
+import json
 from collections.abc import Iterable, Mapping, Sequence
 from collections.abc import Set as AbstractSet
 from dataclasses import dataclass, field, replace
 from pathlib import Path
-from typing import Any
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .sync_transitions import PageTransitionPlan
 
 from .. import __version__
 from ..config import AGENT_WORKTREE_DIR_PATTERNS, EXCLUDED_DIRS
@@ -65,7 +69,6 @@ from .knowledge_governance import (
     GovernanceError,
     GovernanceLedger,
     governance_bundle_id_from_knowledge,
-    governance_lock,
     load_governance,
     natural_key_for,
     reconcile_concepts,
@@ -89,7 +92,7 @@ from .knowledge_model import (
     ProducerRecord,
     concept_kind_for_page_kind,
 )
-from .source_snapshot import SourceSnapshot
+from .source_snapshot import SourceSnapshot, source_snapshot_matches_current_files
 from .source_selection import (
     SourceSelectionError,
     selection_may_contain_path,
@@ -148,6 +151,9 @@ class RuntimeKnowledgeInputs:
     untrusted_evidence_page_paths: AbstractSet[str] = frozenset()
     regenerated_evidence_page_paths: AbstractSet[str] = frozenset()
     analysis_components: Mapping[str, Any] | None = None
+    maintenance_page_transitions: PageTransitionPlan | None = None
+    maintenance_previous_raw_content_by_page: Mapping[str, bytes] | None = None
+    implementation_observations: Mapping[str, Any] | None = None
     extractor_registry: Mapping[str, str] = field(default_factory=dict)
     plugin_extractor_components: Sequence[Mapping[str, Any]] = ()
     plugin_components: Sequence[Mapping[str, Any]] = ()
@@ -227,8 +233,11 @@ def capture_committed_knowledge(
     from .knowledge_storage_io import read_guarded
 
     root = Path(wiki_dir).resolve()
+    from .maintenance_protocol import guard_maintenance_owner, ADOPTION_FILENAME
+
+    maintenance_marker = guard_maintenance_owner(root, manifest)
     captured = {}
-    for name in (SURFACE_INDEX_FILENAME, KNOWLEDGE_INDEX_FILENAME, MANIFEST_FILENAME):
+    for name in (SURFACE_INDEX_FILENAME, KNOWLEDGE_INDEX_FILENAME, MANIFEST_FILENAME, ADOPTION_FILENAME):
         try:
             captured[name] = (root / name).read_bytes()
         except FileNotFoundError:
@@ -261,8 +270,13 @@ def capture_committed_knowledge(
                 and candidate.governance_hash == marker.governance_hash
             ):
                 validated = candidate
-        except (KnowledgeArtifactError, OSError, TypeError, ValueError):
-            pass
+        except (KnowledgeArtifactError, OSError, TypeError, ValueError) as exc:
+            if isinstance(exc, KnowledgeArtifactError) and "maintenance" in exc.field.split("."):
+                raise
+            if maintenance_marker is not None:
+                raise KnowledgeArtifactError("maintenance", "adopted prior projection is invalid; complete recovery is required") from None
+    if maintenance_marker is not None and validated is None:
+        raise KnowledgeArtifactError("maintenance", "adopted prior projection cannot be used as a repair seed")
     if manifest_changed:
         raise KnowledgeArtifactError(
             "manifest", "changed before the prior commit was captured"
@@ -298,6 +312,7 @@ class RuntimeLiveEvaluationInputs:
     missing_source_paths: AbstractSet[str] = frozenset()
     inventory_complete: bool = True
     analysis_components: Mapping[str, Any] | None = None
+    implementation_observations: Mapping[str, Any] | None = None
     extractor_registry: Mapping[str, str] = field(default_factory=dict)
     plugin_extractor_components: Sequence[Mapping[str, Any]] = ()
     plugin_components: Sequence[Mapping[str, Any]] = ()
@@ -424,6 +439,22 @@ def build_runtime_knowledge_plan(
         generation_option_allowlist=inputs.generation_option_allowlist,
         inventory_complete=inputs.inventory_complete,
     )
+    from .maintenance_protocol import ADOPTION_FILENAME
+    from .source_snapshot import confirmed_missing_source_paths
+
+    marker_bytes = committed_state.captured_bytes.get(ADOPTION_FILENAME)
+    marker = json.loads(marker_bytes) if marker_bytes is not None else None
+    previous_maintenance = inputs.previous_manifest.maintenance_state if inputs.previous_manifest is not None else None
+    old_observations = previous_maintenance["observations"].values() if previous_maintenance is not None else ()
+    old_paths = {row["coordinate"]["source_path"] for row in old_observations}
+    missing = confirmed_missing_source_paths(inputs.source_snapshot, old_paths) if previous_maintenance is not None else frozenset()
+    old_targets = {row["target"]["canonical_path"] for row in (previous_maintenance["observations"].values() if previous_maintenance is not None else ())}
+    target_root = Path(inputs.target_wiki_dir)
+    absent_pages = {path for path in old_targets if not (target_root / path).exists() and not (target_root / path).is_symlink()}
+    from .wiki_write_basis import ACTIVE_WRITE_BASIS
+
+    operation_basis = ACTIVE_WRITE_BASIS.get()
+    raw_content = dict(operation_basis.expected) if operation_basis is not None else None
     return _stabilize_revision_only_noop(
         inputs,
         KnowledgeGenerationInputs(
@@ -484,6 +515,15 @@ def build_runtime_knowledge_plan(
             governance=governance,
             reuse_input_basis=inputs.reuse_input_basis,
             knowledge_format=inputs.knowledge_format,
+            implementation_observations=inputs.implementation_observations,
+            maintenance_adoption=marker,
+            maintenance_page_transitions=inputs.maintenance_page_transitions,
+            maintenance_previous_raw_content_by_page=(operation_basis.preimages if operation_basis is not None else inputs.maintenance_previous_raw_content_by_page),
+            maintenance_source_hashes=inputs.source_snapshot.captured_content_hashes,
+            maintenance_captured_paths=frozenset(inputs.source_snapshot.captured_content_hashes) | missing,
+            maintenance_missing_source_paths=missing,
+            maintenance_known_absent_pages=frozenset(absent_pages),
+            maintenance_raw_content_by_page=raw_content,
         ),
     )
 
@@ -619,6 +659,8 @@ def build_runtime_live_evaluation(
         generation_option_allowlist=inputs.generation_option_allowlist,
         inventory_complete=inputs.inventory_complete,
     )
+    from .python_implementation import analysis_identity
+
     return LiveKnowledgeEvaluation(
         schema_version=KNOWLEDGE_SCHEMA_VERSION,
         producer=producer,
@@ -628,6 +670,9 @@ def build_runtime_live_evaluation(
             allowlist=prepared_generation_options.allowlist,
         ),
         source_content_hashes=source_hashes,
+        implementation_observations=inputs.implementation_observations,
+        implementation_analysis_scope=("full-inventory" if inputs.source_snapshot.only_files is None else "selected-source"),
+        implementation_analysis_compatibility_hash=analysis_identity(inputs.analysis_components),
         missing_source_paths=frozenset(inputs.missing_source_paths),
         concept_bases=_runtime_live_concept_bases(
             inputs.knowledge,
@@ -776,9 +821,23 @@ def _commit_runtime_knowledge(
 ) -> KnowledgeCommitResult:
     assert inputs.committed_state is not None
     inputs.committed_state.assert_current()
-    return commit_knowledge_artifacts(
-        plan, dry_run=dry_run, fault_injector=fault_injector
+    _require_runtime_source_current(inputs.source_snapshot)
+
+    def checked_stage(stage):
+        if fault_injector is not None:
+            fault_injector(stage)
+        _require_runtime_source_current(inputs.source_snapshot)
+
+    result = commit_knowledge_artifacts(
+        plan, dry_run=dry_run, fault_injector=checked_stage
     )
+    _require_runtime_source_current(inputs.source_snapshot)
+    return result
+
+
+def _require_runtime_source_current(snapshot: SourceSnapshot) -> None:
+    if not source_snapshot_matches_current_files(snapshot):
+        raise KnowledgeGenerationError("source_snapshot", "Source changed before native publication completed")
 
 
 def finalize_runtime_knowledge(
@@ -846,7 +905,9 @@ def finalize_runtime_knowledge(
             fault_injector=fault_injector,
         )
 
-    with governance_lock(root):
+    from .maintenance_protocol import governance_writer_lock
+
+    with governance_writer_lock(root):
         try:
             loaded = load_governance(root)
         except FileNotFoundError:

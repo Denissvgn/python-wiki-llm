@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [upgrade_cmd](../modules/upgrade_cmd.md)
-**Modules touched:** [config](../modules/config.md), [filesystem_guard](../modules/filesystem_guard.md), [io](../modules/io.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 11 more
+**Modules touched:** [config](../modules/config.md), [filesystem_guard](../modules/filesystem_guard.md), [io](../modules/io.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 12 more
 
 **Complete modules touched:**
 
@@ -21,8 +21,11 @@
 - [validation](../modules/validation.md)
 - [wiki_lifecycle](../modules/wiki_lifecycle.md)
 - [wiki_surface](../modules/wiki_surface.md)
+- [wiki_write_basis](../modules/wiki_write_basis.md)
 
 ## Call sequence
+
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -30,61 +33,69 @@ sequenceDiagram
     participant p0 as run
     participant p1 as getattr (src/llm_wiki_cli/commands/upgrade_cmd.py:run)
     participant p2 as validate_path
-    participant p3 as PathValidationError
-    participant p4 as (…).resolve
-    participant p5 as Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    participant p6 as Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)
-    participant p7 as resolved.relative_to
-    participant p8 as require_safe_wiki_scaffold
-    participant p9 as Path (src/llm_wiki_cli/services…equire_safe_wiki_scaffold)
-    participant p10 as tuple (src/llm_wiki_cli/services…equire_safe_wiki_scaffold)
-    participant p11 as iter_directory_kinds
-    participant p12 as tuple (src/llm_wiki_cli/services…e.py:iter_directory_kinds)
-    participant p13 as first_unsafe_path_component
-    participant p14 as Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p15 as os.fspath (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p16 as os.path.abspath (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p17 as lexical.is_absolute
-    participant p18 as Path.cwd (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p19 as list (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p20 as pending_parts.pop
-    participant p21 as current.lstat (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p22 as getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p23 as stat.S_ISLNK (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p24 as bool (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/upgrade_cmd.py:run)
+    participant p3 as require_safe_wiki_scaffold
+    participant p4 as require_safe_config_path
+    participant p5 as print (src/llm_wiki_cli/commands/upgrade_cmd.py:run)
+    participant p6 as SystemExit (src/llm_wiki_cli/commands/upgrade_cmd.py:run)
+    participant p7 as remove_legacy_hooks
+    participant p8 as inspect_legacy_hooks
+    participant p9 as inspect_config
+    participant p10 as get_agent_config_path
+    participant p11 as dict (src/llm_wiki_cli/commands/upgrade_cmd.py:run)
+    participant p12 as config_requires_manual_recovery
+    participant p13 as Path (src/llm_wiki_cli/commands/upgrade_cmd.py:run)
+    participant p14 as stored.get
+    participant p15 as isinstance (src/llm_wiki_cli/commands/upgrade_cmd.py:run)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
     p0->>p2: validate_path
-    p2->>p3: PathValidationError
-    p2-->>p4: (…).resolve
-    p2-->>p5: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    p2-->>p6: Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)
-    p2-->>p5: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    p2-->>p7: resolved.relative_to
-    p2->>p3: PathValidationError
-    p0->>p8: require_safe_wiki_scaffold
-    p8-->>p9: Path (src/llm_wiki_cli/services…equire_safe_wiki_scaffold)
-    p8-->>p10: tuple (src/llm_wiki_cli/services…equire_safe_wiki_scaffold)
-    p8->>p11: iter_directory_kinds
-    p11-->>p12: tuple (src/llm_wiki_cli/services…e.py:iter_directory_kinds)
-    p8-->>p10: tuple (src/llm_wiki_cli/services…equire_safe_wiki_scaffold)
-    p8->>p13: first_unsafe_path_component
-    p13-->>p14: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p13-->>p15: os.fspath (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p13-->>p14: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p13-->>p16: os.path.abspath (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p13-->>p17: lexical.is_absolute
-    p13-->>p18: Path.cwd (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p13-->>p14: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p13-->>p19: list (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p13-->>p20: pending_parts.pop
-    p13-->>p21: current.lstat (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p13-->>p22: getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p13-->>p22: getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p13-->>p23: stat.S_ISLNK (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p13-->>p24: bool (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p0->>p3: require_safe_wiki_scaffold
+    p0->>p4: require_safe_config_path
+    p0-->>p5: print (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(..., file=sys.stderr)
+    p0-->>p6: SystemExit (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(2)
+    p0-->>p5: print (src/llm_wiki_cli/commands/upgrade_cmd.py:run)('Legacy Git Hook Cleanup:')
+    p0->>p7: remove_legacy_hooks
+    p0->>p8: inspect_legacy_hooks
+    p0-->>p5: print (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(..., file=sys.stderr)
+    p0-->>p6: SystemExit (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(2)
+    p0-->>p5: print (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(...)
+    p0->>p9: inspect_config
+    p0->>p10: get_agent_config_path
+    p0-->>p5: print (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(..., file=sys.stderr)
+    p0-->>p6: SystemExit (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(2)
+    p0-->>p5: print (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(..., file=sys.stderr)
+    p0-->>p6: SystemExit (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(2)
+    p0-->>p11: dict (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(config_inspection.data)
+    p0->>p12: config_requires_manual_recovery
+    p0-->>p5: print (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(..., file=sys.stderr)
+    p0-->>p13: Path (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(wiki_dir)
+    p0-->>p6: SystemExit (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(2)
+    p0-->>p5: print (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(..., file=sys.stderr)
+    p0-->>p6: SystemExit (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(2)
+    p0-->>p5: print (src/llm_wiki_cli/commands/upgrade_cmd.py:run)('Error: local agent config path is unsafe', file=sys.stderr)
+    p0-->>p6: SystemExit (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(2)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(args, 'source_selection', None)
+    p0-->>p14: stored.get('source_selection')
+    p0-->>p15: isinstance (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(stored_selection, str)
 ```
 
-> Call sequence diagram shows 30 of 1779 interactions; 1749 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1685 interactions; 1655 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 21 of 737 (716 omitted); unresolved 1 of 357 (356 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/config.py:validate_path` | 3 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
+| `src/llm_wiki_cli/config.py:validate_path` | 3 | - | unresolved | 3 |
+| `src/llm_wiki_cli/config.py:validate_path` | 3 | - | external | 2 |
+| `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 11 | - | external | 3 |
+| `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 11 | [src/llm_wiki_cli/services/wiki_surface.py](../modules/wiki_surface.md) | internal | 1 |
+| `src/llm_wiki_cli/services/wiki_surface.py:iter_directory_kinds` | 14 | - | external | 1 |
+| `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 11 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 17 | - | external | 20 |
+> Omission summary shows 8 of 375 groups; 367 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

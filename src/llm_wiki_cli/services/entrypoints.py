@@ -14,6 +14,7 @@ LLM calls and tolerates inventories that omit optional fields.
 from __future__ import annotations
 
 import re
+from copy import deepcopy
 from collections.abc import Iterable, Mapping
 from collections import Counter
 from dataclasses import dataclass
@@ -1199,9 +1200,17 @@ def _edge_metadata(edge: dict) -> dict:
         "kind": edge.get("kind", "unknown"),
         "line": edge.get("line", 0),
     }
-    for key in ("args", "kwargs"):
+    for key in (
+        "args",
+        "kwargs",
+        "reason",
+        "location",
+        "resolution",
+        "constructor",
+        "candidates",
+    ):
         if key in edge:
-            metadata[key] = edge[key]
+            metadata[key] = deepcopy(edge[key])
     return metadata
 
 

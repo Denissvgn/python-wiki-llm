@@ -1,7 +1,7 @@
 # scan_python_files
 
 **Entry point:** `python_extractor._scan_python_files`
-**Modules involved:** [common](../modules/common.md), [config](../modules/config.md), [fastapi_contracts](../modules/fastapi_contracts.md), [imports](../modules/imports.md), [python_bindings](../modules/python_bindings.md), [python_contracts](../modules/python_contracts.md), [python_extractor](../modules/python_extractor.md)
+**Modules involved:** [common](../modules/common.md), [config](../modules/config.md), [fastapi_contracts](../modules/fastapi_contracts.md), [imports](../modules/imports.md), [python_bindings](../modules/python_bindings.md), [python_contracts](../modules/python_contracts.md), [python_extractor](../modules/python_extractor.md), [python_implementation](../modules/python_implementation.md)
 
 > Scan Python files under *src_dir* and return a raw inventory dict.
 
@@ -15,11 +15,19 @@ are responsible for stamping it.
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
 1. `config.build_gitignore_matcher`
 2. `common.discover_source_files`
-3. `python_bindings.analyze_python_bindings`
-4. `python_contracts.finalize_model_kinds`
-5. `fastapi_contracts.extract_fastapi_declarations`
-6. `imports.build_module_path_resolver`
-7. `python_contracts.finalize_inventory_model_kinds`
+3. `python_implementation.capture`
+4. `python_implementation.producer`
+5. `python_implementation.capture`
+6. `python_implementation.producer`
+7. `python_implementation.capture`
+8. `python_implementation.producer`
+9. `python_implementation.capture`
+10. `python_implementation.producer`
+11. `python_bindings.analyze_python_bindings`
+12. `python_contracts.finalize_model_kinds`
+13. `fastapi_contracts.extract_fastapi_declarations`
+14. `imports.build_module_path_resolver`
+15. `python_contracts.finalize_inventory_model_kinds`
 
 ## Touches
 
@@ -30,6 +38,7 @@ are responsible for stamping it.
 - [python_bindings](../modules/python_bindings.md)
 - [python_contracts](../modules/python_contracts.md)
 - [python_extractor](../modules/python_extractor.md)
+- [python_implementation](../modules/python_implementation.md)
 
 ## Behavior
 

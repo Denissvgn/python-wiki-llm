@@ -6,28 +6,35 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as persist_runtime_generation_policy
     participant p1 as _validate_runtime_policy
-    participant p2 as set
-    participant p3 as sorted
-    participant p4 as min
-    participant p5 as KnowledgeGenerationError
-    participant p6 as isinstance
-    participant p7 as dict
+    participant p2 as dict
+    participant p3 as set
+    participant p4 as sorted
+    participant p5 as min
+    participant p6 as KnowledgeGenerationError
+    participant p7 as isinstance
     p0->>p1: _validate_runtime_policy
-    p1-->>p2: set
-    p1-->>p3: sorted
-    p1-->>p4: min
-    p1->>p5: KnowledgeGenerationError
-    p1-->>p6: isinstance
-    p1->>p5: KnowledgeGenerationError
-    p1-->>p6: isinstance
-    p1->>p5: KnowledgeGenerationError
-    p0-->>p7: dict
+    p0-->>p2: dict(generation_inputs)
+    p1-->>p3: set(policy)
+    p1-->>p4: sorted(...)
+    p1-->>p5: min(...)
+    p1->>p6: KnowledgeGenerationError
+    p1-->>p7: isinstance(policy[...], bool)
+    p1->>p6: KnowledgeGenerationError
+    p1-->>p7: isinstance(detail, str)
+    p1->>p6: KnowledgeGenerationError
 ```
+
+> Call sequence diagram shows 10 of 10 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 6 of 6 (0 omitted); unresolved 0 of 0 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 
@@ -82,16 +89,16 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| persist_runtime_generation_policy | _validate_runtime_policy | 1174 | `_validate_runtime_policy(policy)` |
-| _validate_runtime_policy | set | 1200 | `set(policy)` |
-| _validate_runtime_policy | sorted | 1202 | `sorted(...)` |
-| _validate_runtime_policy | min | 1207 | `min(...)` |
-| _validate_runtime_policy | KnowledgeGenerationError | 1209 | `KnowledgeGenerationError(..., message)` |
-| _validate_runtime_policy | isinstance | 1214 | `isinstance(policy[...], bool)` |
-| _validate_runtime_policy | KnowledgeGenerationError | 1215 | `KnowledgeGenerationError(..., 'must be a boolean')` |
-| _validate_runtime_policy | isinstance | 1220 | `isinstance(detail, str)` |
-| _validate_runtime_policy | KnowledgeGenerationError | 1221 | `KnowledgeGenerationError(..., 'must be one of: auto, module, package')` |
-| persist_runtime_generation_policy | dict | 1175 | `dict(generation_inputs)` |
+| persist_runtime_generation_policy | _validate_runtime_policy | 1235 | `_validate_runtime_policy(policy)` |
+| _validate_runtime_policy | set | 1261 | `set(policy)` |
+| _validate_runtime_policy | sorted | 1263 | `sorted(...)` |
+| _validate_runtime_policy | min | 1268 | `min(...)` |
+| _validate_runtime_policy | KnowledgeGenerationError | 1270 | `KnowledgeGenerationError(..., message)` |
+| _validate_runtime_policy | isinstance | 1275 | `isinstance(policy[...], bool)` |
+| _validate_runtime_policy | KnowledgeGenerationError | 1276 | `KnowledgeGenerationError(..., 'must be a boolean')` |
+| _validate_runtime_policy | isinstance | 1281 | `isinstance(detail, str)` |
+| _validate_runtime_policy | KnowledgeGenerationError | 1282 | `KnowledgeGenerationError(..., 'must be one of: auto, module, package')` |
+| persist_runtime_generation_policy | dict | 1236 | `dict(generation_inputs)` |
 
 ### Boundary effects
 
@@ -101,10 +108,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_validate_runtime_policy` | `sorted` | 1202 |
-| external_call | `_validate_runtime_policy` | `min` | 1207 |
-| external_call | `_validate_runtime_policy` | `isinstance` | 1214 |
-| external_call | `_validate_runtime_policy` | `isinstance` | 1220 |
+| external_call | `_validate_runtime_policy` | `sorted` | 1263 |
+| external_call | `_validate_runtime_policy` | `min` | 1268 |
+| external_call | `_validate_runtime_policy` | `isinstance` | 1275 |
+| external_call | `_validate_runtime_policy` | `isinstance` | 1281 |
 
 ## Behavior
 

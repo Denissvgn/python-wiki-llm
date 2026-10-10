@@ -6,44 +6,51 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as require_attestation_authentication
     participant p1 as require_process_host_broker_authenticator
-    participant p2 as _HOST_BROKER_AUTHENTICATOR.get
-    participant p3 as HostBrokerAuthenticationUnavailable
-    participant p4 as isinstance (src/llm_wiki_cli/services…_host_broker_authenticator)
-    participant p5 as _require_bounded_text
-    participant p6 as require_bounded_text
-    participant p7 as isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text)
-    participant p8 as len
-    participant p9 as value.strip
-    participant p10 as contains_control_character
-    participant p11 as pattern.search
-    participant p12 as HostBrokerAuthenticationError
-    participant p13 as authenticator.authenticate_attestation
-    participant p14 as isinstance (src/llm_wiki_cli/services…attestation_authentication)
+    participant p2 as authenticator.authenticate_attestation
+    participant p3 as HostBrokerAuthenticationError
+    participant p4 as isinstance (src/llm_wiki_cli/services…attestation_authentication)
+    participant p5 as _HOST_BROKER_AUTHENTICATOR.get
+    participant p6 as HostBrokerAuthenticationUnavailable
+    participant p7 as isinstance (src/llm_wiki_cli/services…_host_broker_authenticator)
+    participant p8 as _require_bounded_text
+    participant p9 as require_bounded_text
+    participant p10 as isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text)
+    participant p11 as len
+    participant p12 as value.strip
+    participant p13 as contains_control_character
+    participant p14 as pattern.search
     p0->>p1: require_process_host_broker_authenticator
-    p1-->>p2: _HOST_BROKER_AUTHENTICATOR.get
-    p1->>p3: HostBrokerAuthenticationUnavailable
-    p1-->>p4: isinstance (src/llm_wiki_cli/services…_host_broker_authenticator)
-    p1->>p3: HostBrokerAuthenticationUnavailable
-    p1->>p5: _require_bounded_text
-    p5->>p6: require_bounded_text
-    p6-->>p7: isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text)
-    p6-->>p8: len
-    p6-->>p8: len
-    p6-->>p9: value.strip
-    p6->>p10: contains_control_character
-    p10-->>p11: pattern.search
-    p5->>p12: HostBrokerAuthenticationError
-    p0-->>p13: authenticator.authenticate_attestation
-    p0->>p12: HostBrokerAuthenticationError
-    p0-->>p14: isinstance (src/llm_wiki_cli/services…attestation_authentication)
-    p0->>p12: HostBrokerAuthenticationError
-    p0->>p12: HostBrokerAuthenticationError
+    p0-->>p2: authenticator.authenticate_attestation(…)
+    p0->>p3: HostBrokerAuthenticationError
+    p0-->>p4: isinstance (src/llm_wiki_cli/services…attestation_authentication)(proof, HostBrokerAuthenticationProof)
+    p0->>p3: HostBrokerAuthenticationError
+    p0->>p3: HostBrokerAuthenticationError
+    p1-->>p5: _HOST_BROKER_AUTHENTICATOR.get
+    p1->>p6: HostBrokerAuthenticationUnavailable
+    p1-->>p7: isinstance (src/llm_wiki_cli/services…_host_broker_authenticator)(authenticator, HostBrokerAuthenticator)
+    p1->>p6: HostBrokerAuthenticationUnavailable
+    p1->>p8: _require_bounded_text
+    p8->>p9: require_bounded_text
+    p8->>p3: HostBrokerAuthenticationError
+    p9-->>p10: isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text)(value, str)
+    p9-->>p11: len(value)
+    p9-->>p11: len(value)
+    p9-->>p12: value.strip
+    p9->>p13: contains_control_character
+    p13-->>p14: pattern.search(value)
 ```
+
+> Call sequence diagram shows 19 of 19 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 5 of 5 (0 omitted); unresolved 4 of 4 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

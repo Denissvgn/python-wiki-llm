@@ -17,6 +17,7 @@ the resulting freshness state.
 |--------|---------|
 | `.` | `analysis_compatibility` |
 | `.contracts` | `GOVERNANCE_HASH_EXTENSION_KEY`, `KNOWLEDGE_SCHEMA_VERSION` |
+| `.freshness_wording` | `SOURCE_CHANGED_STRUCTURE_UNCHANGED` |
 | `.knowledge_artifacts` | `ValidatedKnowledgeArtifacts`, `require_validated_artifacts`, `require_validated_artifacts` |
 | `.knowledge_evidence` | `UNKNOWN_ENTITY_NOT_FOUND`, `ConceptObservationBasis`, `hash_json`, `is_valid_sha256` |
 | `.knowledge_model` | `BundleRecord`, `ComputedFreshness`, `ConceptRecord`, `EvidenceBasis`, `EvidenceState`, `KnowledgeIndex`, `KnowledgeModelError`, `ObservationScope`, `ProducerComponent`, `ProducerRecord`, `SnapshotRecord`, `_knowledge_index_to_payload_unchecked`, `knowledge_index_to_payload`, `parse_knowledge_index` |
@@ -47,20 +48,20 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (9) |
-| Outbound | `src` (7) |
+| Outbound | `src` (8) |
 
-> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 17 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [KnowledgeFreshnessError](../entities/KnowledgeFreshnessError.md) | 164 | `ValueError` | Field-specific failure at the pure live-comparison boundary. |
-| [LiveKnowledgeEvaluation](../entities/LiveKnowledgeEvaluation.md) | 174 | — | Already evaluated live inputs required for freshness comparison. |
-| [ConceptFreshnessBasis](../entities/ConceptFreshnessBasis.md) | 194 | — | Normalized recorded or live concept basis returned to consumers. |
-| [ConceptFreshnessResult](../entities/ConceptFreshnessResult.md) | 207 | — | One consumer-computed freshness outcome. |
-| [KnowledgeFreshnessReport](../entities/KnowledgeFreshnessReport.md) | 220 | — | Freshness results for every recorded concept and aggregate counts. |
-| [_ValidatedLiveEvaluation](../entities/ValidatedLiveEvaluation.md) | 234 | — | — |
+| [KnowledgeFreshnessError](../entities/KnowledgeFreshnessError.md) | 165 | `ValueError` | Field-specific failure at the pure live-comparison boundary. |
+| [LiveKnowledgeEvaluation](../entities/LiveKnowledgeEvaluation.md) | 175 | — | Already evaluated live inputs required for freshness comparison. |
+| [ConceptFreshnessBasis](../entities/ConceptFreshnessBasis.md) | 197 | — | Normalized recorded or live concept basis returned to consumers. |
+| [ConceptFreshnessResult](../entities/ConceptFreshnessResult.md) | 210 | — | One consumer-computed freshness outcome. |
+| [KnowledgeFreshnessReport](../entities/KnowledgeFreshnessReport.md) | 223 | — | Freshness results for every recorded concept and aggregate counts. |
+| [_ValidatedLiveEvaluation](../entities/ValidatedLiveEvaluation.md) | 237 | — | — |
 
 ## Functions
 

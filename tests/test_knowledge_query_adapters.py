@@ -1215,7 +1215,7 @@ def test_real_representative_context_and_packet_have_attributable_budgets(
 
     assert counters == {
         "source_snapshot": 2,
-        "source_input_integrity_check": 2,
+        "source_input_integrity_check": 3,
         "source_structural_verification": 1,
         "deep_extraction": 2,
         "surface_evaluation": 2,

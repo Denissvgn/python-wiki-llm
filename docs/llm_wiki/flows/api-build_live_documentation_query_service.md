@@ -2,86 +2,114 @@
 
 **Entry point:** `build_live_documentation_query_service` (`api`)
 **Source:** [documentation_query_builder](../modules/documentation_query_builder.md)
-**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), [documentation_queries](../modules/documentation_queries.md), and 10 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 23 more
 
 **Complete modules touched:**
 
+- [analysis_compatibility](../modules/analysis_compatibility.md)
 - [common](../modules/common.md)
 - [config](../modules/config.md)
 - [context_packet](../modules/context_packet.md)
 - [documentation_queries](../modules/documentation_queries.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [implementation_evidence](../modules/implementation_evidence.md)
+- [io](../modules/io.md)
+- [knowledge_consumption](../modules/knowledge_consumption.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
+- [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [maintenance_evidence](../modules/maintenance_evidence.md)
+- [maintenance_shapes](../modules/maintenance_shapes.md)
+- [maintenance_state](../modules/maintenance_state.md)
+- [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
+- [markdown_sections](../modules/markdown_sections.md)
+- [python_implementation](../modules/python_implementation.md)
+- [section_ownership](../modules/section_ownership.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
 - [validation](../modules/validation.md)
+- [wiki_surface](../modules/wiki_surface.md)
 
 ## Call sequence
+
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as build_live_documentation_query_service
     participant p1 as normalize_supplied_paths
-    participant p2 as _portable_supplied_path
-    participant p3 as DocumentationQueryError
-    participant p4 as require_portable_relative_path
-    participant p5 as isinstance (src/llm_wiki_cli/services…re_portable_relative_path)
-    participant p6 as _default_path_error
-    participant p7 as SharedValidationError
-    participant p8 as os.fspath (src/llm_wiki_cli/services…re_portable_relative_path)
-    participant p9 as _syntax_key
-    participant p10 as type (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    participant p11 as len (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    participant p12 as any (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    participant p13 as _known_syntax
-    participant p14 as _PATH_SYNTAX.get
-    participant p15 as _PATH_SYNTAX.move_to_end (src/llm_wiki_cli/services…lidation.py:_known_syntax)
-    participant p16 as _check_path_collision
-    participant p17 as portable_path_key
-    participant p18 as unicodedata.normalize(…).casefold
-    participant p19 as unicodedata.normalize (src/llm_wiki_cli/services…tion.py:portable_path_key)
-    participant p20 as collision_seen.setdefault
-    participant p21 as collision_error
-    participant p22 as raw.encode
+    participant p2 as DocumentationQueryError
+    participant p3 as isinstance (src/llm_wiki_cli/services…cumentation_query_service)
+    participant p4 as perf_counter_ns
+    participant p5 as resolve_source_selection
+    participant p6 as str (src/llm_wiki_cli/services…cumentation_query_service)
+    participant p7 as capture_source_selection_inputs
+    participant p8 as validate_live_query_source_selection
+    participant p9 as selected_snapshot_builder
+    participant p10 as _source_anchor
+    participant p11 as _wiki_anchor
+    participant p12 as list (src/llm_wiki_cli/services…cumentation_query_service)
+    participant p13 as selected_extract_builder
+    participant p14 as result.payload.get
+    participant p15 as selected_call_edge_resolver
+    participant p16 as flow_builder
+    participant p17 as getattr (src/llm_wiki_cli/services…cumentation_query_service)
+    participant p18 as _live_source_selection_identity
     p0->>p1: normalize_supplied_paths
-    p1->>p2: _portable_supplied_path
-    p2->>p3: DocumentationQueryError
-    p2->>p4: require_portable_relative_path
-    p4-->>p5: isinstance (src/llm_wiki_cli/services…re_portable_relative_path)
-    p4->>p6: _default_path_error
-    p6->>p7: SharedValidationError
-    p4-->>p8: os.fspath (src/llm_wiki_cli/services…re_portable_relative_path)
-    p4-->>p5: isinstance (src/llm_wiki_cli/services…re_portable_relative_path)
-    p4->>p6: _default_path_error
-    p4->>p9: _syntax_key
-    p9-->>p10: type (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    p9-->>p11: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    p9-->>p12: any (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    p9-->>p10: type (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    p9-->>p10: type (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    p9-->>p11: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    p4->>p13: _known_syntax
-    p13-->>p14: _PATH_SYNTAX.get
-    p13-->>p15: _PATH_SYNTAX.move_to_end (src/llm_wiki_cli/services…lidation.py:_known_syntax)
-    p4->>p16: _check_path_collision
-    p16->>p17: portable_path_key
-    p17-->>p18: unicodedata.normalize(…).casefold
-    p17-->>p19: unicodedata.normalize (src/llm_wiki_cli/services…tion.py:portable_path_key)
-    p16-->>p20: collision_seen.setdefault
-    p16->>p7: SharedValidationError
-    p16-->>p21: collision_error
-    p4-->>p22: raw.encode
-    p4->>p6: _default_path_error
-    p4->>p6: _default_path_error
+    p0->>p2: DocumentationQueryError
+    p0-->>p3: isinstance (src/llm_wiki_cli/services…cumentation_query_service)(read_only, bool)
+    p0->>p2: DocumentationQueryError
+    p0-->>p4: perf_counter_ns
+    p0->>p5: resolve_source_selection
+    p0->>p2: DocumentationQueryError
+    p0-->>p6: str (src/llm_wiki_cli/services…cumentation_query_service)(exc)
+    p0->>p7: capture_source_selection_inputs
+    p0->>p8: validate_live_query_source_selection
+    p0-->>p4: perf_counter_ns
+    p0-->>p4: perf_counter_ns
+    p0-->>p9: selected_snapshot_builder(source_root, **=snapshot_options)
+    p0-->>p3: isinstance (src/llm_wiki_cli/services…cumentation_query_service)(source_snapshot, SourceSnapshot)
+    p0->>p10: _source_anchor
+    p0->>p11: _wiki_anchor
+    p0-->>p4: perf_counter_ns
+    p0-->>p12: list (src/llm_wiki_cli/services…cumentation_query_service)(selected_paths)
+    p0-->>p6: str (src/llm_wiki_cli/services…cumentation_query_service)(helper_cache_dir)
+    p0-->>p4: perf_counter_ns
+    p0-->>p13: selected_extract_builder(str(...), **=extract_options)
+    p0-->>p6: str (src/llm_wiki_cli/services…cumentation_query_service)(source_root)
+    p0-->>p4: perf_counter_ns
+    p0-->>p14: result.payload.get('entrypoints', [...])
+    p0-->>p4: perf_counter_ns
+    p0-->>p15: selected_call_edge_resolver(inventory)
+    p0-->>p16: flow_builder(entrypoint, call_edges)
+    p0-->>p4: perf_counter_ns
+    p0-->>p17: getattr (src/llm_wiki_cli/services…cumentation_query_service)(result, 'inventory_result', None)
+    p0->>p18: _live_source_selection_identity
 ```
 
-> Call sequence diagram shows 30 of 1033 interactions; 1003 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1894 interactions; 1864 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 15 of 648 (633 omitted); unresolved 5 of 502 (497 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/documentation_query_builder.py:normalize_supplied_paths` | 2 | [src/llm_wiki_cli/services/documentation_query_builder.py](../modules/documentation_query_builder.md) | internal | 2 |
+| `src/llm_wiki_cli/services/documentation_query_builder.py:_portable_supplied_path` | 3 | [src/llm_wiki_cli/services/documentation_queries.py](../modules/documentation_queries.md) | internal | 1 |
+| `src/llm_wiki_cli/services/documentation_query_builder.py:_portable_supplied_path` | 3 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 5 | - | external | 4 |
+| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 5 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 13 |
+| `src/llm_wiki_cli/services/validation.py:_default_path_error` | 7 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:_syntax_key` | 12 | - | external | 6 |
+| `src/llm_wiki_cli/services/validation.py:_known_syntax` | 19 | - | unresolved | 2 |
+> Omission summary shows 8 of 486 groups; 478 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -128,7 +156,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `build_live_documentation_query_service` | `source_root: Path`, `wiki_root: Path`, `limit: int`, `read_only: bool`, `helper_cache_dir: Path \| None`, `include_plugins: bool`, `source_plugins_only: bool`, `require_live_freshness: bool` | `build_source_snapshot`, `SourceSelectionError`, `SourceSnapshot`, `SourceSelectionError`, `KnowledgeReadView`, `KnowledgeReadView`, `KnowledgeReadView`, `Mapping` | `stage_ns[...]`, `snapshot_options[...]`, `stage_ns[...]`, `extract_options[...]`, `extract_options[...]`, `extract_options[...]`, `extract_options[...]`, `extract_options[...]` | `service` |
+| `build_live_documentation_query_service` | `source_root: Path`, `wiki_root: Path`, `limit: int`, `read_only: bool`, `helper_cache_dir: Path \| None`, `include_plugins: bool`, `source_plugins_only: bool`, `require_live_freshness: bool` | `build_source_snapshot`, `SourceSelectionError`, `SourceSnapshot`, `SourceSelectionError`, `KnowledgeReadView`, `KnowledgeReadView`, `SourceSnapshot`, `SourceSnapshot` | `stage_ns[...]`, `snapshot_options[...]`, `stage_ns[...]`, `extract_options[...]`, `extract_options[...]`, `extract_options[...]`, `extract_options[...]`, `extract_options[...]` | `service` |
 | `normalize_supplied_paths` | `values: object` | - | - | `tuple(...)` |
 | `_portable_supplied_path` | `value: object` | - | - | `require_portable_relative_path(...)` |
 | `DocumentationQueryError` | - | - | - | - |
@@ -145,10 +173,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_live_documentation_query_service | normalize_supplied_paths | 487 | `normalize_supplied_paths(paths)` |
-| normalize_supplied_paths | _portable_supplied_path | 135 | `_portable_supplied_path(value)` |
-| _portable_supplied_path | DocumentationQueryError | 113 | `DocumentationQueryError('paths must contain normalized portable relative source paths.')` |
-| _portable_supplied_path | require_portable_relative_path | 116 | `require_portable_relative_path(value, text_error=error, relative_error=error, escape_error=error, traversal_error=error, separator_error=error, utf8_error=error, control_error=error, non_nfc_error=error, nonportable_error=error, reserved_error=error)` |
+| build_live_documentation_query_service | normalize_supplied_paths | 505 | `normalize_supplied_paths(paths)` |
+| normalize_supplied_paths | _portable_supplied_path | 139 | `_portable_supplied_path(value)` |
+| _portable_supplied_path | DocumentationQueryError | 117 | `DocumentationQueryError('paths must contain normalized portable relative source paths.')` |
+| _portable_supplied_path | require_portable_relative_path | 120 | `require_portable_relative_path(value, text_error=error, relative_error=error, escape_error=error, traversal_error=error, separator_error=error, utf8_error=error, control_error=error, non_nfc_error=error, nonportable_error=error, reserved_error=error)` |
 | require_portable_relative_path | isinstance (src/llm_wiki_cli/services…re_portable_relative_path) | 216 | `isinstance(value, (...))` |
 | require_portable_relative_path | _default_path_error | 217 | `_default_path_error(value)` |
 | _default_path_error | SharedValidationError | 113 | `SharedValidationError(...)` |

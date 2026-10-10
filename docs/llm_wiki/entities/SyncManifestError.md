@@ -1,6 +1,6 @@
 # SyncManifestError
 
-**Location:** `src/llm_wiki_cli/services/sync_manifest.py:61`
+**Location:** `src/llm_wiki_cli/services/sync_manifest.py:62`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [sync_manifest](../modules/sync_manifest.md)
@@ -95,4 +95,4 @@ flowchart LR
 | `_captured_source_hashes` | call | [sync_manifest](../modules/sync_manifest.md) | 5 |
 | `_copy_sources` | call | [sync_manifest](../modules/sync_manifest.md) | 1 |
 
-> References: showing 12 of 34 logical references; 22 omitted by the 12-row generated summary limit.
+> References: showing 12 of 35 logical references; 23 omitted by the 12-row generated summary limit.

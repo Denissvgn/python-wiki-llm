@@ -41,6 +41,7 @@ from .contracts import (
     KNOWLEDGE_SCHEMA_VERSION,
 )
 from .data_flow import (
+    _call_args,
     analyze_data_flow,
     analyze_data_flow_detailed,
     build_data_flow_context,
@@ -70,6 +71,7 @@ from .entrypoints import (
     get_detailed_entry_points,
     read_console_scripts,
 )
+from .flow_overview import FlowOverview, select_flow_overview, trim_flow_overview
 from .imports import ModulePathResolver, build_module_path_resolver
 from .python_imports import is_python_source
 from .infrastructure_inventory import (
@@ -2669,6 +2671,64 @@ def _flow_interactions(flow: dict) -> list[dict]:
     return interactions
 
 
+def _flow_overview_interactions(flow: Mapping, interactions: list[dict]) -> list[dict]:
+    """Enrich boundary messages from captured arguments; retain actor identities."""
+    result = []
+    for step, interaction in zip((step for step in flow.get("steps", []) if step["depth"] > 0), interactions):
+        display = dict(interaction)
+        edge = step.get("edge") or {}
+        args, kwargs = edge.get("args", []), edge.get("kwargs", [])
+        if (interaction.get("dashed") and (args or kwargs)
+                and isinstance(args, (list, tuple)) and isinstance(kwargs, (list, tuple))
+                and all(isinstance(arg, Mapping) for arg in (*args, *kwargs))):
+            arguments = _call_args(edge)
+            candidate = f"{interaction['label']}({', '.join(arguments)})"
+            if len(candidate) > _DISPLAY_LABEL_LIMIT:
+                candidate = f"{interaction['label']}(…)"
+            display["label"] = _flow_display_label(candidate, limit=_DISPLAY_LABEL_LIMIT)
+        result.append(display)
+    return result
+
+
+def _append_overview_disclosure(lines: list[str], overview: FlowOverview, page_map: Mapping) -> None:
+    counts = overview.counts
+    external, unresolved = counts["boundaries"]["external"], counts["boundaries"]["unresolved"]
+    lines.extend(["", f"> Captured boundary calls: external {external['displayed']} of {external['captured']} "
+        f"({external['omitted']} omitted); unresolved {unresolved['displayed']} of {unresolved['captured']} "
+        f"({unresolved['omitted']} omitted). These counts cover the captured static trace."])
+    gaps = counts["parent_gaps"]
+    if gaps["unknown"] or gaps["conflicting"] or counts["conflicting_targets"] or counts["unknown_kinds"]:
+        lines.append(f"> Qualified display omissions: unknown parents {gaps['unknown']}; "
+            f"conflicting parents {gaps['conflicting']}; conflicting targets {counts['conflicting_targets']}; "
+            f"unknown call kinds {counts['unknown_kinds']}. No replacement caller or target is inferred.")
+    groups = overview.omission_groups
+    if groups:
+        lines.extend(["", "Omitted captured detail, grouped by actual caller occurrence and target module:", "",
+            "| Caller | Parent step | Target module | Kind | Omitted interactions |",
+            "| --- | --- | --- | --- | --- |"])
+        for group in groups[:8]:
+            caller = group["caller"]
+            owner = f"{caller.get('file') or '?'}:{caller.get('symbol') or '?'}"
+            target = group["target_module"]
+            module = _md_cell(target)
+            if target:
+                stem = page_map.get(target, _module_name_from_path(target))
+                module = f"[{_md_cell(target)}](../modules/{stem}.md)"
+            lines.append(f"| `{_md_cell(owner)}` | {_md_cell(group['parent_step_index'])} | {module} | "
+                         f"{_md_cell(group['kind'])} | {group['count']} |")
+        if len(groups) > 8:
+            lines.append(f"> Omission summary shows 8 of {len(groups)} groups; {len(groups) - 8} further groups "
+                         "are not expanded here. Counts above include all omitted interactions.")
+    if overview.upstream_coverage is not None:
+        steps = overview.upstream_coverage.get("steps", {})
+        if all(key in steps for key in ("observed", "emitted", "omitted", "depth_limit")):
+            lines.extend(["", f"> Underlying static traversal: {steps['emitted']} of {steps['observed']} steps "
+                f"emitted; {steps['omitted']} omitted under recorded bounds "
+                f"(step limit {steps.get('limit')}, depth limit {steps['depth_limit']}). "
+                "These are separate from presentation omissions."])
+    lines.append("> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.")
+
+
 def _flow_data_display(flow: dict, data_flow: Mapping) -> dict:
     """Apply the same labels to display copies without changing analysis data."""
     labels = {index: actor[1] for index, actor in enumerate(_flow_actors(flow), 1)}
@@ -2958,6 +3018,8 @@ def _generate_flow_md(
     entry = flow["entry"]
     page_map = module_page_map or {}
     interactions = _flow_interactions(flow)
+    overview = select_flow_overview(flow, _flow_overview_interactions(flow, interactions),
+                                    limit=_FLOW_SEQUENCE_INTERACTION_LIMIT)
     modules = _flow_module_refs(flow, page_map)
     related_modules = _flow_related_module_refs(flow, page_map)
 
@@ -2977,33 +3039,33 @@ def _generate_flow_md(
 
     lines.append("## Call sequence")
     lines.append("")
+    lines.append("> Static overview in presentation order, not runtime execution order. "
+                 "Arrows retain captured callers; siblings are shown before deeper helper detail.")
+    lines.append("")
     lines.append(
         "<!-- Auto-generated from static call edges. Dashed arrows are external "
         "or unresolved calls. Reviewed runtime conditions and side effects belong "
         "in Behavior. -->"
     )
     if interactions:
-        rendered_sequence = _bounded_sequence_diagram(interactions)
+        rendered_sequence = _bounded_sequence_diagram([dict(item) for item in overview.interactions])
+        overview = trim_flow_overview(overview, rendered_sequence.shown_items)
+        counts = overview.counts
         if rendered_sequence.diagram:
             lines.append(rendered_sequence.diagram)
         else:
-            lines.append(
-                f"> Call sequence diagram shows 0 of "
-                f"{rendered_sequence.total_items} interactions; "
-                f"{rendered_sequence.omitted_items} omitted because its fixed "
-                "participants exceed the generated-diagram limits."
-            )
-        if rendered_sequence.diagram and rendered_sequence.omitted_items:
-            lines.append("")
-            lines.append(
-                f"> Call sequence diagram shows {rendered_sequence.shown_items} of "
-                f"{rendered_sequence.total_items} interactions; "
-                f"{rendered_sequence.omitted_items} omitted to keep the "
-                f"visualization within the {_FLOW_SEQUENCE_INTERACTION_LIMIT}-"
-                "interaction and generated-diagram limits."
-            )
+            lines.append(f"> Call sequence diagram shows 0 of {counts['captured']} interactions; "
+                f"{counts['omitted']} omitted because coherent participants are unavailable or "
+                "exceed the generated-diagram limits.")
+        if rendered_sequence.diagram:
+            lines.extend(["", f"> Call sequence diagram shows {counts['displayed']} of "
+                f"{counts['captured']} interactions; {counts['omitted']} omitted to keep the "
+                f"visualization within the {_FLOW_SEQUENCE_INTERACTION_LIMIT}-interaction and "
+                "generated-diagram limits, with uncertain identities omitted rather than inferred."])
+        _append_overview_disclosure(lines, overview, page_map)
     else:
-        lines.append("*No outbound calls were detected by static analysis.*")
+        lines.append("*No outbound interactions are available in this bounded static trace.*" if flow.get("truncated")
+                     else "*No outbound calls were detected by static analysis.*")
     if flow.get("truncated"):
         lines.append("")
         lines.append("> Trace truncated at the depth limit; deeper calls are omitted.")
@@ -4627,6 +4689,7 @@ def _extract_bootstrap_inventory(state: _BootstrapRunState):
         include_plugins=options.trust_source_plugins,
         capture_data_effect_observations=options.deep,
         capture_import_observations=options.deep,
+        capture_implementation_observations=True,
         source_plugins_only=options.trust_source_plugins
         and (
             options.source_adapter
@@ -5875,6 +5938,7 @@ def _finalize_bootstrap_artifacts(
                 state.written_structural_page_paths
             ),
             analysis_components=inventory_result.analysis_components,
+            implementation_observations=inventory_result.implementation_observations,
             extractor_registry=inventory_result.extractor_registry,
             plugin_extractor_components=inventory_result.plugin_components,
             plugin_components=inventory_result.producer_plugin_components,
@@ -6252,9 +6316,30 @@ def _execute_bootstrap_options(
     *,
     _workspace_refresh_authorized: bool = False,
 ) -> BootstrapResult:
+    from .maintenance_protocol import guard_maintenance_owner, maintenance_write_operation
+
+    try:
+        guard_maintenance_owner(options.wiki_dir)
+    except SyncManifestError:
+        # Adopted-owner failures retain their recovery guard. A malformed
+        # legacy manifest still receives the public first-use refusal before
+        # extraction rather than leaking its parser error.
+        if not _workspace_refresh_authorized:
+            _preflight_public_bootstrap(options)
+        raise
     if not _workspace_refresh_authorized:
         _preflight_public_bootstrap(options)
     _preflight_bootstrap_source_selection(options)
+    with maintenance_write_operation(options.wiki_dir) as basis:
+        return _execute_bootstrap_options_locked(options, _workspace_refresh_authorized=_workspace_refresh_authorized, write_basis=basis)
+
+
+def _execute_bootstrap_options_locked(
+    options: _BootstrapRunOptions,
+    *,
+    _workspace_refresh_authorized: bool = False,
+    write_basis=None,
+) -> BootstrapResult:
     try:
         _preflight_bootstrap_governance(options.wiki_dir)
     except (GovernanceError, InfrastructureSyncError) as exc:
@@ -6263,6 +6348,9 @@ def _execute_bootstrap_options(
     _start_bootstrap(state)
 
     inventory_result = _extract_bootstrap_inventory(state)
+    if write_basis is not None:
+        write_basis.source_snapshot = inventory_result.source_snapshot
+        write_basis.assert_current()
     inventory = inventory_result.inventory
     if not state.options.openapi_file and _finish_if_empty_bootstrap_inventory(
         state, inventory

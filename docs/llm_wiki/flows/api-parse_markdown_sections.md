@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -15,60 +17,75 @@ sequenceDiagram
     participant p3 as TypeError
     participant p4 as ValueError (src/llm_wiki_cli/services…py:parse_markdown_document)
     participant p5 as normalize_markdown
-    participant p6 as text.replace(…).replace
-    participant p7 as text.replace
-    participant p8 as list
-    participant p9 as _iter_structural_headings
-    participant p10 as markdown.splitlines
-    participant p11 as _frontmatter_extent
-    participant p12 as _line_content(…).removeprefix(…).strip
-    participant p13 as _line_content(…).removeprefix
-    participant p14 as _line_content
-    participant p15 as line.endswith
-    participant p16 as enumerate (src/llm_wiki_cli/services…ons.py:_frontmatter_extent)
-    participant p17 as _line_content(…).strip
-    participant p18 as len (src/llm_wiki_cli/services…ons.py:_frontmatter_extent)
-    participant p19 as enumerate (src/llm_wiki_cli/services…:_iter_structural_headings)
-    participant p20 as len (src/llm_wiki_cli/services…:_iter_structural_headings)
-    participant p21 as re.fullmatch
-    participant p22 as re.escape
-    participant p23 as _FENCE_OPEN_RE.fullmatch
-    participant p24 as opening.groups
-    participant p25 as _atx_heading
-    participant p26 as _ATX_HEADING_RE.fullmatch
+    participant p6 as list
+    participant p7 as _iter_structural_headings
+    participant p8 as defaultdict
+    participant p9 as stack.pop
+    participant p10 as candidates.append
+    participant p11 as _HeadingCandidate
+    participant p12 as stack.append
+    participant p13 as len (src/llm_wiki_cli/services…py:parse_markdown_document)
+    participant p14 as utf8_prefix_lengths.append
+    participant p15 as character.encode
+    participant p16 as enumerate (src/llm_wiki_cli/services…py:parse_markdown_document)
+    participant p17 as section_locator
+    participant p18 as exact_text.encode
+    participant p19 as sections.append
+    participant p20 as MarkdownSection
+    participant p21 as sha256_bytes
+    participant p22 as children[…].append
+    participant p23 as replace
+    participant p24 as tuple (src/llm_wiki_cli/services…py:parse_markdown_document)
     p0->>p1: parse_markdown_document
-    p1-->>p2: isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)
-    p1-->>p3: TypeError
-    p1-->>p2: isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)
-    p1-->>p4: ValueError (src/llm_wiki_cli/services…py:parse_markdown_document)
+    p1-->>p2: isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)(markdown, str)
+    p1-->>p3: TypeError('markdown must be a string')
+    p1-->>p2: isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)(page_locator, str)
+    p1-->>p4: ValueError (src/llm_wiki_cli/services…py:parse_markdown_document)('page_locator must be a non-empty string')
     p1->>p5: normalize_markdown
-    p5-->>p6: text.replace(…).replace
-    p5-->>p7: text.replace
-    p1-->>p8: list
-    p1->>p9: _iter_structural_headings
-    p9-->>p10: markdown.splitlines
-    p9->>p11: _frontmatter_extent
-    p11-->>p12: _line_content(…).removeprefix(…).strip
-    p11-->>p13: _line_content(…).removeprefix
-    p11->>p14: _line_content
-    p14-->>p15: line.endswith
-    p11-->>p16: enumerate (src/llm_wiki_cli/services…ons.py:_frontmatter_extent)
-    p11-->>p17: _line_content(…).strip
-    p11->>p14: _line_content
-    p11-->>p18: len (src/llm_wiki_cli/services…ons.py:_frontmatter_extent)
-    p9-->>p19: enumerate (src/llm_wiki_cli/services…:_iter_structural_headings)
-    p9->>p14: _line_content
-    p9-->>p20: len (src/llm_wiki_cli/services…:_iter_structural_headings)
-    p9-->>p21: re.fullmatch
-    p9-->>p22: re.escape
-    p9-->>p23: _FENCE_OPEN_RE.fullmatch
-    p9-->>p24: opening.groups
-    p9-->>p20: len (src/llm_wiki_cli/services…:_iter_structural_headings)
-    p9->>p25: _atx_heading
-    p25-->>p26: _ATX_HEADING_RE.fullmatch
+    p1-->>p6: list(_iter_structural_headings(...))
+    p1->>p7: _iter_structural_headings
+    p1-->>p8: defaultdict(int)
+    p1-->>p9: stack.pop
+    p1-->>p10: candidates.append(_HeadingCandidate(...))
+    p1->>p11: _HeadingCandidate
+    p1-->>p12: stack.append(...)
+    p1-->>p13: len (src/llm_wiki_cli/services…py:parse_markdown_document)(candidates)
+    p1-->>p14: utf8_prefix_lengths.append(...)
+    p1-->>p13: len (src/llm_wiki_cli/services…py:parse_markdown_document)(character.encode(...))
+    p1-->>p15: character.encode('utf-8')
+    p1-->>p16: enumerate (src/llm_wiki_cli/services…py:parse_markdown_document)(candidates)
+    p1-->>p13: len (src/llm_wiki_cli/services…py:parse_markdown_document)(normalized)
+    p1->>p17: section_locator
+    p1->>p17: section_locator
+    p1-->>p18: exact_text.encode('utf-8')
+    p1-->>p19: sections.append(MarkdownSection(...))
+    p1->>p20: MarkdownSection
+    p1->>p21: sha256_bytes
+    p1-->>p8: defaultdict(list)
+    p1-->>p22: children[…].append(section.locator)
+    p1-->>p23: replace(section, child_locators=tuple(...))
+    p1-->>p24: tuple (src/llm_wiki_cli/services…py:parse_markdown_document)(children[...])
+    p1-->>p6: list(section.child_locators)
 ```
 
-> Call sequence diagram shows 30 of 86 interactions; 56 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 86 interactions; 56 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 14 of 43 (29 omitted); unresolved 8 of 24 (16 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/markdown_sections.py:normalize_markdown` | 7 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/markdown_sections.py:_iter_structural_headings` | 11 | - | unresolved | 3 |
+| `src/llm_wiki_cli/services/markdown_sections.py:_iter_structural_headings` | 11 | [src/llm_wiki_cli/services/markdown_sections.py](../modules/markdown_sections.md) | internal | 3 |
+| `src/llm_wiki_cli/services/markdown_sections.py:_frontmatter_extent` | 13 | - | unresolved | 3 |
+| `src/llm_wiki_cli/services/markdown_sections.py:_frontmatter_extent` | 13 | [src/llm_wiki_cli/services/markdown_sections.py](../modules/markdown_sections.md) | internal | 2 |
+| `src/llm_wiki_cli/services/markdown_sections.py:_line_content` | 16 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/markdown_sections.py:_frontmatter_extent` | 13 | - | external | 2 |
+| `src/llm_wiki_cli/services/markdown_sections.py:_iter_structural_headings` | 11 | - | external | 5 |
+> Omission summary shows 8 of 22 groups; 14 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

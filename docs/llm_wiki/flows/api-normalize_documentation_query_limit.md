@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -13,11 +15,16 @@ sequenceDiagram
     participant p1 as isinstance
     participant p2 as DocumentationQueryError
     participant p3 as min
-    p0-->>p1: isinstance
-    p0-->>p1: isinstance
+    p0-->>p1: isinstance(value, bool)
+    p0-->>p1: isinstance(value, int)
     p0->>p2: DocumentationQueryError
-    p0-->>p3: min
+    p0-->>p3: min(value, MAX_DOCUMENTATION_QUERY_LIMIT)
 ```
+
+> Call sequence diagram shows 4 of 4 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 3 of 3 (0 omitted); unresolved 0 of 0 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 
@@ -51,10 +58,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| normalize_documentation_query_limit | isinstance | 52 | `isinstance(value, bool)` |
-| normalize_documentation_query_limit | isinstance | 52 | `isinstance(value, int)` |
-| normalize_documentation_query_limit | DocumentationQueryError | 53 | `DocumentationQueryError('limit must be a positive integer.')` |
-| normalize_documentation_query_limit | min | 54 | `min(value, MAX_DOCUMENTATION_QUERY_LIMIT)` |
+| normalize_documentation_query_limit | isinstance | 56 | `isinstance(value, bool)` |
+| normalize_documentation_query_limit | isinstance | 56 | `isinstance(value, int)` |
+| normalize_documentation_query_limit | DocumentationQueryError | 57 | `DocumentationQueryError('limit must be a positive integer.')` |
+| normalize_documentation_query_limit | min | 58 | `min(value, MAX_DOCUMENTATION_QUERY_LIMIT)` |
 
 ### Boundary effects
 
@@ -64,8 +71,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `normalize_documentation_query_limit` | `isinstance` | 52 |
-| external_call | `normalize_documentation_query_limit` | `min` | 54 |
+| external_call | `normalize_documentation_query_limit` | `isinstance` | 56 |
+| external_call | `normalize_documentation_query_limit` | `min` | 58 |
 
 ## Behavior
 

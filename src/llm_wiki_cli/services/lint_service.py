@@ -876,28 +876,42 @@ def _collect_lint_inputs(
     *,
     team_policy: TeamPolicyContext | None = None,
     manifest: SyncManifest | None = None,
+    captured_inventory_result: InventoryResult | None = None,
+    captured_source_snapshot: SourceSnapshot | None = None,
 ) -> _LintInputs | None:
     normalized_include_tests = normalize_include_tests(include_tests)
     with _profile_phase(profiler, "inventory"):
-        source_snapshot = build_source_snapshot(
-            src_dir,
-            include_tests=normalized_include_tests,
-            source_selection=source_selection,
-            expected_selection_inputs=expected_selection_inputs,
-        )
-        inventory_result = get_inventory_result(
-            src_dir,
-            deep=True,
-            source_snapshot=source_snapshot,
-            cache_options=cache_options,
-            parallel_jobs=parallel_jobs,
-            helper_cache_dir=helper_cache_dir,
-            include_tests=normalized_include_tests,
-            job_request=job_request,
-            plan_reporter=plan_reporter,
-            include_plugins=include_plugins,
-            source_plugins_only=source_plugins_only,
-        )
+        if captured_inventory_result is not None or captured_source_snapshot is not None:
+            if (not isinstance(captured_inventory_result, InventoryResult) or not isinstance(captured_source_snapshot, SourceSnapshot)
+                    or captured_inventory_result.source_snapshot is not captured_source_snapshot
+                    or captured_source_snapshot.root != Path(src_dir).resolve()
+                    or captured_source_snapshot.include_tests != normalized_include_tests
+                    or captured_source_snapshot.only_files is not None
+                    or (not include_plugins and captured_inventory_result.plugin_components)):
+                raise ValueError("Supplied lint capture does not match source root, full scope, tests or plugin policy")
+            if captured_source_snapshot.source_selection_inputs != expected_selection_inputs:
+                raise ValueError("Supplied lint capture source selection differs from current lint preflight")
+            inventory_result, source_snapshot = captured_inventory_result, captured_source_snapshot
+        else:
+            source_snapshot = build_source_snapshot(
+                src_dir,
+                include_tests=normalized_include_tests,
+                source_selection=source_selection,
+                expected_selection_inputs=expected_selection_inputs,
+            )
+            inventory_result = get_inventory_result(
+                src_dir,
+                deep=True,
+                source_snapshot=source_snapshot,
+                cache_options=cache_options,
+                parallel_jobs=parallel_jobs,
+                helper_cache_dir=helper_cache_dir,
+                include_tests=normalized_include_tests,
+                job_request=job_request,
+                plan_reporter=plan_reporter,
+                include_plugins=include_plugins,
+                source_plugins_only=source_plugins_only,
+            )
         report.extraction_job_plan = inventory_result.extraction_job_plan
         if cache_options is not None and cache_options.stats_enabled:
             report.cache_stats = inventory_result.cache_stats
@@ -2048,7 +2062,7 @@ def _check_knowledge_concepts(
         message = (
             f"Knowledge freshness for {concept.locator!r} is "
             f"{freshness.state.value} [reason={freshness.reason_code}]: "
-            f"{freshness.description}."
+            f"{freshness.description.rstrip('.')}."
         )
         if freshness.state is ComputedFreshness.NONSEMANTIC_SOURCE_CHANGE:
             _record_knowledge_drift(
@@ -2364,6 +2378,7 @@ def _measure_knowledge_phase(
 def _proven_nonsemantic_source_paths(
     view: KnowledgeReadView | None,
 ) -> frozenset[str]:
+    """Collect structural observation equality; executable behavior is unevaluated."""
     if (
         view is None
         or not view.ready
@@ -2695,6 +2710,8 @@ def build_report(
     source_selection: str | Path | None = None,
     include_health_details: bool = False,
     comparison_policy: str | None = None,
+    _captured_inventory_result: InventoryResult | None = None,
+    _captured_source_snapshot: SourceSnapshot | None = None,
 ) -> LintReport:
     """Build a structured lint report without rendering or exiting."""
     if not isinstance(include_health_details, bool):
@@ -2725,6 +2742,8 @@ def build_report(
         preflight.selection_inputs,
         team_policy=preflight.team,
         manifest=preflight.manifest,
+        captured_inventory_result=_captured_inventory_result,
+        captured_source_snapshot=_captured_source_snapshot,
     )
     if inputs is None:
         return _finalize_lint_report(report, include_health_details)

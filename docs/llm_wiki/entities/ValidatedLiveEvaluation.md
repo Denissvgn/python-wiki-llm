@@ -1,6 +1,6 @@
 # _ValidatedLiveEvaluation
 
-**Location:** `src/llm_wiki_cli/services/knowledge_freshness.py:234`
+**Location:** `src/llm_wiki_cli/services/knowledge_freshness.py:237`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_freshness](../modules/knowledge_freshness.md)

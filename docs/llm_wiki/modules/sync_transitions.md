@@ -31,83 +31,23 @@ Read-only ownership and filesystem preflight for entity/module page writes.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/commands/sync_cmd.py"]
-    n1["src/llm_wiki_cli/services/bootstrap_runtime.py"]
-    n2["src/llm_wiki_cli/services/knowledge_storage.py"]
-    n3["src/llm_wiki_cli/services/knowledge_storage_io.py"]
-    n4["src/llm_wiki_cli/services/markdown_sections.py"]
-    n5["src/llm_wiki_cli/services/sync_analysis.py"]
-    n6["src/llm_wiki_cli/services/sync_manifest.py"]
-    n7["src/llm_wiki_cli/services/sync_retained_links.py"]
-    n8["src/llm_wiki_cli/services/sync_transition_execution.py"]
-    n9["src/llm_wiki_cli/services/sync_transitions.py"]
-    n10["src/llm_wiki_cli/services/validation.py"]
-    n11["src/llm_wiki_cli/services/wiki_surface.py"]
+    n0["src"]
+    n1["src/llm_wiki_cli/services/sync_transitions.py"]
     n0 --> n1
-    n0 --> n4
-    n0 --> n5
-    n0 --> n6
-    n0 --> n8
-    n0 --> n9
-    n0 --> n10
-    n0 --> n11
-    n1 --> n4
-    n1 --> n6
-    n1 --> n10
-    n1 --> n11
-    n3 --> n2
-    n3 --> n10
-    n5 --> n1
-    n5 --> n6
-    n5 --> n10
-    n6 --> n10
-    n7 --> n4
-    n7 --> n10
-    n7 --> n11
-    n8 --> n2
-    n8 --> n3
-    n8 --> n4
-    n8 --> n9
-    n8 --> n10
-    n9 --> n1
-    n9 --> n2
-    n9 --> n3
-    n9 --> n4
-    n9 --> n5
-    n9 --> n6
-    n9 --> n7
-    n9 --> n10
-    n9 --> n11
-    n11 --> n10
-    click n0 "../modules/sync_cmd.md"
-    click n1 "../modules/bootstrap_runtime.md"
-    click n2 "../modules/knowledge_storage.md"
-    click n3 "../modules/knowledge_storage_io.md"
-    click n4 "../modules/markdown_sections.md"
-    click n5 "../modules/sync_analysis.md"
-    click n6 "../modules/sync_manifest.md"
-    click n7 "../modules/sync_retained_links.md"
-    click n8 "../modules/sync_transition_execution.md"
-    click n9 "../modules/sync_transitions.md"
-    click n10 "../modules/validation.md"
-    click n11 "../modules/wiki_surface.md"
+    n1 --> n0
+    click n1 "../modules/sync_transitions.md"
 ```
+
+> Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [sync_cmd](../modules/sync_cmd.md) |
-| Inbound | [sync_transition_execution](../modules/sync_transition_execution.md) |
-| Outbound | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| Outbound | [knowledge_storage](../modules/knowledge_storage.md) |
-| Outbound | [knowledge_storage_io](../modules/knowledge_storage_io.md) |
-| Outbound | [markdown_sections](../modules/markdown_sections.md) |
-| Outbound | [sync_analysis](../modules/sync_analysis.md) |
-| Outbound | [sync_manifest](../modules/sync_manifest.md) |
-| Outbound | [sync_retained_links](../modules/sync_retained_links.md) |
-| Outbound | [validation](../modules/validation.md) |
-| Outbound | [wiki_surface](../modules/wiki_surface.md) |
+| Inbound | `src` (5) |
+| Outbound | `src` (9) |
+
+> All 14 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

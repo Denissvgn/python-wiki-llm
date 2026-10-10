@@ -1,6 +1,6 @@
 # _InputResourceBudget
 
-**Location:** `src/llm_wiki_cli/services/documentation_wiki_input.py:447`
+**Location:** `src/llm_wiki_cli/services/documentation_wiki_input.py:449`
 **Kind:** Class
 **Bases:** —
 **Module:** [documentation_wiki_input](../modules/documentation_wiki_input.md)

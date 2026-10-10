@@ -60,6 +60,7 @@ def _source_capture(root, paths, scope, settings, source_selection, helper_cache
     packets._guard_windows_inputs(root, snapshot.captured_content_hashes)
     collected = context.get_inventory(str(root), deep=True, return_result=True, include_plugins=False,
         source_selection=source_selection, source_snapshot=snapshot,
+        capture_implementation_observations=settings["knowledge_mode"] != "off",
         **({"helper_cache_dir": helper_cache_dir} if helper_cache_dir is not None else {}))
     if not isinstance(collected, InventoryResult) or collected.failed or not isinstance(collected.source_snapshot, SourceSnapshot):
         raise packets.ContextPacketUnavailableError("selected source extraction is unavailable", field="src_dir")
@@ -75,8 +76,8 @@ def _source_capture(root, paths, scope, settings, source_selection, helper_cache
     dependency_analysis = analyze_dependencies(inventory)
     service = assemble_documentation_query_service(inventory=inventory, call_edges=edges, flows=flows,
         data_flows=(), dependency_analysis=dependency_analysis, surface_index=None,
-        limit=settings["max_graph_items"], knowledge_view=None, machine_verification={})
-    return snapshot, anchor, inventory, service
+        limit=settings["max_graph_items"], knowledge_view=None, machine_verification={}, inventory_result=collected)
+    return snapshot, anchor, inventory, service, collected
 
 
 def _native_key(selector: str) -> str:
@@ -93,6 +94,8 @@ def _native_selectors(request) -> list[str]:
     for requirement in request["requirements"]:
         if requirement["facet"] in _NATIVE_FACETS:
             keys.add(_native_key(requirement["selector"]))
+        elif requirement["facet"] == "source-contract" and ":" in requirement["selector"]:
+            keys.add("source:" + requirement["selector"].partition(":")[0])
     if not keys and not request["requirements"]:
         keys.update("term:" + token for token in re.findall(r"\w+", request["text"].casefold())[:16])
     if len(keys) > 100:
@@ -155,7 +158,7 @@ def _storage_receipt(native: ScopedKnowledgeRead | None, *, status: str, reason:
     return result
 
 
-def _native_observation(native, requirement, snapshot, paths, scope, limit):
+def _native_observation(native, requirement, snapshot, paths, scope, limit, implementation_report=None):
     selector, facet = requirement["selector"], requirement["facet"]
     selected = native.slice.to_payload()
     key = _native_key(selector)
@@ -177,6 +180,19 @@ def _native_observation(native, requirement, snapshot, paths, scope, limit):
     qualified = {**concept, "canonical_path": concept["document"]["canonical_path"],
         "freshness": {"state": freshness}, "evidence": structure["evidence"],
         "verification": "not-evaluated"}
+    if implementation_report is not None:
+        comparison = implementation_report.by_locator.get(concept["locator"])
+        if comparison is not None:
+            qualified["implementation"] = comparison.to_payload()
+    if native.maintenance_validation is not None:
+        from .maintenance_status import LIMITATIONS, validate_maintenance_summary
+        record_projection = concept.get("extensions", {}).get("llm-wiki/maintenance-record", {})
+        bounds = record_projection.get("bounds", {})
+        total = bounds.get("observations_total", 0)
+        qualified["maintenance"] = validate_maintenance_summary({"availability": "partial", "analysis_scope": "selected-header",
+            "live_evaluation_performed": False, "native_prose_coherent": True, "requires_sync": False,
+            "total": total, "pending": 0, "acknowledged": 0, "unavailable": total, "ambiguous": 0, "deleted": 0,
+            "untracked": 0, "truncated": bool(bounds.get("truncated")), "limitations": list(LIMITATIONS)})
     native_qualification = {"availability": "scoped", "root_hash": selected["root_hash"],
                             "whole_store_validated": False, "validation_scope": selected["validation_scope"]}
     observation: dict[str, Any] = {"found": True, "concept": qualified, "knowledge": native_qualification}
@@ -221,8 +237,19 @@ def _native_observation(native, requirement, snapshot, paths, scope, limit):
         "native": native_qualification}
     if facet == "typed-relationships":
         qualification["graph_completeness"] = "static-observations-only"
+    page = concept["document"]["canonical_path"]
+    citation = {"path": page, "wiki_identity": selected["root_hash"]}
+    raw_hash = digest(native.session.observations[page].content)
+    page_hash = digest(native.markdown[page].encode("utf-8"))
+    if page_hash != concept["facets"]["semantics"]["page_hash"]:
+        raise WorkflowRequestError("storage", "consumed Markdown differs from its native semantics")
+    if raw_hash != page_hash:
+        # The selected reader already verified canonical text against these
+        # exact captured bytes. Preserve both identities for portable binding;
+        # receipt hashes and final rereads continue to cover raw bytes.
+        citation["page_binding"] = {"raw_content_hash": raw_hash, "canonical_page_hash": page_hash}
     fact = {"facet": facet, "selector": selector, "state": state, "observation": observation,
-            "citations": [{"path": concept["document"]["canonical_path"], "wiki_identity": selected["root_hash"]}],
+            "citations": [citation],
             "qualification": qualification}
     fact["fact_id"] = content_id("llm-wiki-task-fact/v1", fact)
     return state, fact, reason
@@ -288,10 +315,10 @@ def build_scoped_task_read(request, *, src_dir=".", wiki_dir=DEFAULT_WIKI_DIR,
     source_root = validate_source_root(src_dir, "--src-dir", allow_external=allow_external_src)
     wiki_root = validate_path(wiki_dir, "--wiki-dir")
     paths, changes, live, scope = plan_source_read(normalized, settings, source_root)
-    snapshot, source_anchor, inventory, service = None, None, {}, None
+    snapshot, source_anchor, inventory, service, collected = None, None, {}, None, None
     source_error = None
     if live:
-        snapshot, source_anchor, inventory, service = _source_capture(source_root, paths, scope, settings,
+        snapshot, source_anchor, inventory, service, collected = _source_capture(source_root, paths, scope, settings,
                                                                     source_selection, helper_cache_dir)
     _cancel(cancelled)
     native, native_reason = None, None
@@ -325,7 +352,23 @@ def build_scoped_task_read(request, *, src_dir=".", wiki_dir=DEFAULT_WIKI_DIR,
     source_capture = _source_receipt(snapshot)
     source_id = None if source_capture is None else content_id(SOURCE_RECEIPT_SCHEMA, source_capture)
     wiki_id = storage["root_hash"] or content_id("llm-wiki-unread-storage/v1", {"status": native_status})
-    source_context = SimpleNamespace(source_snapshot=snapshot, wiki_anchor=wiki_id)
+    implementation_report = None
+    if native is not None:
+        from .implementation_evidence import compare_knowledge_implementation
+        from .python_implementation import analysis_identity
+
+        missing = packets.confirmed_missing_source_paths(snapshot, paths) if snapshot is not None else frozenset()
+        implementation_report = compare_knowledge_implementation(
+            list(native.reader.consumed_concepts.values()),
+            collected.implementation_observations if collected is not None else None,
+            analysis_scope=scope,
+            captured_paths=set(snapshot.captured_content_hashes) | set(missing) if snapshot is not None else None,
+            source_content_hashes=snapshot.captured_content_hashes if snapshot is not None else None,
+            missing_source_paths=missing,
+            analysis_compatibility_hash=analysis_identity(collected.analysis_components) if collected is not None else None,
+        )
+    source_context = SimpleNamespace(source_snapshot=snapshot, wiki_anchor=wiki_id,
+        inventory_result=collected, implementation_report=implementation_report)
     records = declaration_records(inventory)
     observations, queried, plan = {}, {}, []
     anchors = [{**a, "reason": "explicit-caller-selection"} for a in normalized["anchors"]]
@@ -346,7 +389,7 @@ def build_scoped_task_read(request, *, src_dir=".", wiki_dir=DEFAULT_WIKI_DIR,
             observation = ("unavailable", None, native_reason or "native-mode-is-off")
         else:
             _cancel(cancelled)
-            observation = (_native_observation(native, requirement, snapshot, paths, scope, settings["max_graph_items"])
+            observation = (_native_observation(native, requirement, snapshot, paths, scope, settings["max_graph_items"], implementation_report)
                 if facet in _NATIVE_FACETS else observe_requirement(source_context, service, records, requirement,
                                                                   scope=scope, limit=settings["max_graph_items"]))
             queried[key] = observation
@@ -381,8 +424,12 @@ def build_scoped_task_read(request, *, src_dir=".", wiki_dir=DEFAULT_WIKI_DIR,
     selected_facts = sorted(facts.values(), key=lambda f: f["fact_id"])
     while True:
         def render(value):
+            from .task_implementation import attach_capture, attach_bindings, native_bindings
+
             body = _result_body(normalized, effective, basis, plan, anchors, work, observations, selected_facts, None, value)
             body.update(schema_version=TASK_RESULT_SCHEMA_V2, storage=storage, source_capture=source_capture)
+            attach_capture(body, collected)
+            attach_bindings(body, native_bindings(list(native.reader.consumed_concepts.values()) if native is not None else ()))
             body.pop("result_id")
             body["result_id"] = content_id(TASK_RESULT_SCHEMA_V2, body)
             return canonical_json(body).decode("utf-8")
@@ -537,9 +584,30 @@ def validate_scoped_bindings(payload, normalized, profile):
             concept = fact["observation"]["concept"]
             if _native_key(fact["selector"]) not in _concept_aliases(concept):
                 raise ValueError("native observation does not match its exact selector")
+            if "maintenance" in concept:
+                from .maintenance_status import validate_maintenance_summary
+                summary = validate_maintenance_summary(concept["maintenance"])
+                bound = concept.get("extensions", {}).get("llm-wiki/maintenance-record", {}).get("bounds", {})
+                if (summary["analysis_scope"] != "selected-header" or summary["availability"] != "partial" or summary["live_evaluation_performed"] or summary["pending"] or summary["acknowledged"] or summary["total"] != bound.get("observations_total") or summary["unavailable"] != summary["total"]):
+                    raise ValueError("selected maintenance fact widened unread ledger validation")
             path = concept["document"]["canonical_path"]
             page_inputs = [item for item in inputs if item["path"] == path]
-            if len(page_inputs) != 1 or page_inputs[0]["hash"] != concept["facets"]["semantics"]["page_hash"]:
+            if len(page_inputs) != 1:
+                raise ValueError("native observation is not bound to its consumed page")
+            page_hash = concept["facets"]["semantics"]["page_hash"]
+            bindings = [citation for citation in fact["citations"] if "page_binding" in citation]
+            if bindings:
+                if len(bindings) != 1 or bindings[0].get("path") != path or bindings[0].get("wiki_identity") != storage["root_hash"]:
+                    raise ValueError("native page binding belongs to a different consumed page")
+                binding = bindings[0]["page_binding"]
+                _result_fields(binding, {"raw_content_hash", "canonical_page_hash"}, "native page binding")
+                if (not packets.is_valid_sha256(binding["raw_content_hash"])
+                        or not packets.is_valid_sha256(binding["canonical_page_hash"])
+                        or binding["raw_content_hash"] != page_inputs[0]["hash"]
+                        or binding["canonical_page_hash"] != page_hash
+                        or binding["raw_content_hash"] == binding["canonical_page_hash"]):
+                    raise ValueError("native page binding differs from its consumed bytes or canonical semantics")
+            elif page_inputs[0]["hash"] != page_hash:
                 raise ValueError("native observation is not bound to its consumed page")
             if fact["facet"] == "typed-relationships":
                 locator = concept["locator"]

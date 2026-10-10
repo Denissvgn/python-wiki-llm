@@ -1,7 +1,7 @@
 # build_knowledge_commit_plan
 
 **Entry point:** `knowledge_artifacts.build_knowledge_commit_plan`
-**Modules involved:** [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_index](../modules/knowledge_index.md), [knowledge_packs](../modules/knowledge_packs.md), [knowledge_storage](../modules/knowledge_storage.md), [manifest_storage](../modules/manifest_storage.md)
+**Modules involved:** [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_index](../modules/knowledge_index.md), [knowledge_packs](../modules/knowledge_packs.md), [knowledge_storage](../modules/knowledge_storage.md), [maintenance_protocol](../modules/maintenance_protocol.md), [maintenance_state](../modules/maintenance_state.md), [manifest_storage](../modules/manifest_storage.md)
 
 > Validate and plan one manifest-last knowledge artifact commit.
 
@@ -19,16 +19,22 @@ its normal output-memory cost.
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
 1. `manifest_storage.current_manifest_format`
-2. `knowledge_packs.build_storage`
-3. `knowledge_index._model_to_payload`
-4. `knowledge_index._validated_index_serialization`
-5. `knowledge_packs.build_storage`
-6. `knowledge_index._model_to_payload`
-7. `knowledge_evidence.sha256_bytes`
-8. `knowledge_storage.KnowledgeStorageError`
-9. `manifest_storage.build_manifest_store`
-10. `knowledge_storage.KnowledgeStorageError`
-11. `knowledge_evidence.formatted_json_bytes`
+2. `maintenance_state.validate_maintenance_adoption`
+3. `maintenance_protocol.load_adoption_marker`
+4. `knowledge_storage.canonical_bytes`
+5. `knowledge_storage.digest`
+6. `knowledge_packs.build_storage`
+7. `knowledge_index._model_to_payload`
+8. `knowledge_index._has_validation_operation`
+9. `knowledge_index._validated_index_receipt`
+10. `knowledge_index._validated_index_serialization`
+11. `knowledge_packs.build_storage`
+12. `knowledge_index._model_to_payload`
+13. `knowledge_evidence.sha256_bytes`
+14. `knowledge_storage.KnowledgeStorageError`
+15. `manifest_storage.build_manifest_store`
+16. `knowledge_storage.KnowledgeStorageError`
+17. `knowledge_evidence.formatted_json_bytes`
 
 ## Touches
 
@@ -37,6 +43,8 @@ its normal output-memory cost.
 - [knowledge_index](../modules/knowledge_index.md)
 - [knowledge_packs](../modules/knowledge_packs.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
+- [maintenance_protocol](../modules/maintenance_protocol.md)
+- [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
 
 ## Behavior

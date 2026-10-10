@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -23,23 +25,28 @@ sequenceDiagram
     participant p11 as path.replace
     participant p12 as file_hash.encode
     participant p13 as digest.hexdigest
-    p0-->>p1: isinstance
+    p0-->>p1: isinstance(snapshot, SourceSnapshot)
     p0->>p2: DocumentationPolicyError
     p0-->>p3: snapshot.hashes_for
     p0->>p4: TreeBaseline
     p0->>p5: _hash_labeled_hashes
     p5-->>p6: hashlib.sha256
-    p5-->>p7: sorted
+    p5-->>p7: sorted(file_hashes.items(...))
     p5-->>p8: file_hashes.items
-    p5-->>p9: digest.update
-    p5-->>p10: path.replace(…).encode
-    p5-->>p11: path.replace
-    p5-->>p9: digest.update
-    p5-->>p9: digest.update
-    p5-->>p12: file_hash.encode
-    p5-->>p9: digest.update
+    p5-->>p9: digest.update(...)
+    p5-->>p10: path.replace(…).encode('utf-8')
+    p5-->>p11: path.replace('\\', '/')
+    p5-->>p9: digest.update(b'\x00')
+    p5-->>p9: digest.update(file_hash.encode(...))
+    p5-->>p12: file_hash.encode('ascii')
+    p5-->>p9: digest.update(b'\x00')
     p5-->>p13: digest.hexdigest
 ```
+
+> Call sequence diagram shows 16 of 16 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 3 of 3 (0 omitted); unresolved 10 of 10 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

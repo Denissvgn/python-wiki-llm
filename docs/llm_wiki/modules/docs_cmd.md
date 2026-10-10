@@ -28,31 +28,34 @@ Commands for deterministic standalone documentation workspaces.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/cli.py"]
-    n1["src/llm_wiki_cli/commands/docs_cmd.py"]
-    n2["src/llm_wiki_cli/config.py"]
-    n3["src/llm_wiki_cli/services/calibration/controller.py"]
-    n4["src/llm_wiki_cli/services/contracts.py"]
-    n5["src/llm_wiki_cli/services/documentation_run/__init__.py"]
-    n6["src/llm_wiki_cli/services/filesystem_guard.py"]
-    n0 --> n1
+    n1["src/llm_wiki_cli/commands/__init__.py"]
+    n2["src/llm_wiki_cli/commands/docs_cmd.py"]
+    n3["src/llm_wiki_cli/config.py"]
+    n4["src/llm_wiki_cli/services/calibration/controller.py"]
+    n5["src/llm_wiki_cli/services/contracts.py"]
+    n6["src/llm_wiki_cli/services/documentation_run/__init__.py"]
+    n7["src/llm_wiki_cli/services/filesystem_guard.py"]
     n0 --> n2
-    n0 --> n4
+    n0 --> n3
+    n0 --> n5
     n1 --> n2
-    n1 --> n3
-    n1 --> n4
-    n1 --> n5
-    n1 --> n6
+    n2 --> n3
+    n2 --> n4
+    n2 --> n5
     n2 --> n6
-    n3 --> n4
-    n3 --> n5
-    n3 --> n6
+    n2 --> n7
+    n3 --> n7
+    n4 --> n5
+    n4 --> n6
+    n4 --> n7
     click n0 "../modules/cli.md"
-    click n1 "../modules/docs_cmd.md"
-    click n2 "../modules/config.md"
-    click n3 "../modules/controller.md"
-    click n4 "../modules/services_contracts.md"
-    click n5 "../modules/documentation_run___init__.md"
-    click n6 "../modules/filesystem_guard.md"
+    click n1 "../modules/commands___init__.md"
+    click n2 "../modules/docs_cmd.md"
+    click n3 "../modules/config.md"
+    click n4 "../modules/controller.md"
+    click n5 "../modules/services_contracts.md"
+    click n6 "../modules/documentation_run___init__.md"
+    click n7 "../modules/filesystem_guard.md"
 ```
 
 ### Internal neighbors
@@ -60,6 +63,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [cli](../modules/cli.md) |
+| Inbound | [commands___init__](../modules/commands___init__.md) |
 | Outbound | [config](../modules/config.md) |
 | Outbound | [controller](../modules/controller.md) |
 | Outbound | [services_contracts](../modules/services_contracts.md) |

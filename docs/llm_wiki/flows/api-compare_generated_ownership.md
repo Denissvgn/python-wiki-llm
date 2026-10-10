@@ -6,69 +6,73 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as compare_generated_ownership
     participant p1 as capture_generated_ownership
-    participant p2 as Path(…).expanduser().resolve
-    participant p3 as Path(…).expanduser
-    participant p4 as Path
-    participant p5 as path.is_symlink
-    participant p6 as DocumentationIntegrityError
-    participant p7 as path.is_file
-    participant p8 as hash_bytes
-    participant p9 as path.read_bytes
-    participant p10 as sorted (src/llm_wiki_cli/services…apture_generated_ownership)
-    participant p11 as root.rglob
-    participant p12 as path.relative_to(…).as_posix
-    participant p13 as path.relative_to
-    participant p14 as path.read_text
-    participant p15 as _generated_sections
-    participant p16 as text.splitlines
-    participant p17 as enumerate
-    participant p18 as line.startswith
-    participant p19 as starts.append
-    participant p20 as len
-    participant p21 as ''.join
-    participant p22 as lines[…][…].strip().lower
-    participant p23 as lines[…][…].strip
-    participant p24 as re.sub(…).strip
-    participant p25 as re.sub
-    participant p26 as str
+    participant p2 as dict
+    participant p3 as sorted (src/llm_wiki_cli/services…ompare_generated_ownership)
+    participant p4 as set
+    participant p5 as Path(…).expanduser().resolve
+    participant p6 as Path(…).expanduser
+    participant p7 as Path
+    participant p8 as path.is_symlink
+    participant p9 as DocumentationIntegrityError
+    participant p10 as path.is_file
+    participant p11 as hash_bytes
+    participant p12 as path.read_bytes
+    participant p13 as sorted (src/llm_wiki_cli/services…apture_generated_ownership)
+    participant p14 as root.rglob
+    participant p15 as path.relative_to(…).as_posix
+    participant p16 as path.relative_to
+    participant p17 as path.read_text
+    participant p18 as _generated_sections
+    participant p19 as section.encode
     p0->>p1: capture_generated_ownership
-    p1-->>p2: Path(…).expanduser().resolve
-    p1-->>p3: Path(…).expanduser
-    p1-->>p4: Path
-    p1-->>p5: path.is_symlink
-    p1-->>p6: DocumentationIntegrityError
-    p1-->>p7: path.is_file
-    p1-->>p8: hash_bytes
-    p1-->>p9: path.read_bytes
-    p1-->>p10: sorted (src/llm_wiki_cli/services…apture_generated_ownership)
-    p1-->>p11: root.rglob
-    p1-->>p5: path.is_symlink
-    p1-->>p7: path.is_file
-    p1-->>p6: DocumentationIntegrityError
-    p1-->>p12: path.relative_to(…).as_posix
-    p1-->>p13: path.relative_to
-    p1-->>p14: path.read_text
-    p1->>p15: _generated_sections
-    p15-->>p16: text.splitlines
-    p15-->>p17: enumerate
-    p15-->>p18: line.startswith
-    p15-->>p19: starts.append
-    p15-->>p20: len
-    p15-->>p17: enumerate
-    p15-->>p21: ''.join
-    p15-->>p22: lines[…][…].strip().lower
-    p15-->>p23: lines[…][…].strip
-    p15-->>p24: re.sub(…).strip
-    p15-->>p25: re.sub
-    p15-->>p26: str
+    p0-->>p2: dict(baseline)
+    p0-->>p3: sorted (src/llm_wiki_cli/services…ompare_generated_ownership)(...)
+    p0-->>p4: set(current)
+    p0-->>p4: set(before)
+    p0-->>p3: sorted (src/llm_wiki_cli/services…ompare_generated_ownership)(...)
+    p0-->>p4: set(before)
+    p0-->>p4: set(current)
+    p0-->>p3: sorted (src/llm_wiki_cli/services…ompare_generated_ownership)(...)
+    p0-->>p4: set(before)
+    p0-->>p4: set(current)
+    p1-->>p5: Path(…).expanduser().resolve
+    p1-->>p6: Path(…).expanduser
+    p1-->>p7: Path(wiki_root)
+    p1-->>p8: path.is_symlink
+    p1-->>p9: DocumentationIntegrityError(...)
+    p1-->>p10: path.is_file
+    p1-->>p11: hash_bytes(path.read_bytes(...))
+    p1-->>p12: path.read_bytes
+    p1-->>p13: sorted (src/llm_wiki_cli/services…apture_generated_ownership)(root.rglob(...))
+    p1-->>p14: root.rglob('*.md')
+    p1-->>p8: path.is_symlink
+    p1-->>p10: path.is_file
+    p1-->>p9: DocumentationIntegrityError(...)
+    p1-->>p15: path.relative_to(…).as_posix
+    p1-->>p16: path.relative_to(root)
+    p1-->>p17: path.read_text(encoding='utf-8')
+    p1->>p18: _generated_sections
+    p1-->>p11: hash_bytes(section.encode(...))
+    p1-->>p19: section.encode('utf-8')
 ```
 
-> Call sequence diagram shows 30 of 43 interactions; 13 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 43 interactions; 13 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 0 of 0 (0 omitted); unresolved 28 of 41 (13 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/documentation_run/integrity.py:_generated_sections` | 19 | - | unresolved | 13 |
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

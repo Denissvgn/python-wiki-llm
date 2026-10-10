@@ -24,6 +24,50 @@ WIKI_CI_WRAPPER = ROOT / ".github" / "scripts" / "run-llm-wiki-ci-check.sh"
 REMOTE_ACTION = re.compile(r"^[^@]+@[0-9a-f]{40}$")
 
 
+def test_combined_optional_sdk_skips_require_each_exact_sdk_owner_case():
+    family = (
+        "tests/test_developer_value_combined_interfaces.py::"
+        "test_actual_sdk_combined_callers_compact_and_stale_custody"
+    )
+    entries = json.loads((ROOT / "release/skip-allowlist.json").read_text())["entries"]
+    owned = [entry for entry in entries if entry["node_id"].startswith(family)]
+    assert len(owned) == 9
+    assert {(entry["lane"], entry["node_id"], entry["owner_lane"], entry["reason"])
+            for entry in owned} == {
+        (lane, f"{family}[{variant}]", "mcp-3.13", "Optional MCP SDK is not installed")
+        for lane in ("core-macos-3.14", "core-ubuntu-3.10", "core-windows-3.13")
+        for variant in ("source-only", "sharded", "packed")
+    }
+
+
+def test_newer_parser_control_skips_require_supported_parser_owner_cases():
+    families = (
+        "tests/test_constructor_call_interfaces.py::"
+        "test_receiver_controls_share_exact_decisions_across_receiving_interfaces",
+        "tests/test_python_constructor_bindings.py::"
+        "test_namespace_effects_preserve_exact_call_authority",
+    )
+    alias = (
+        "tests/test_python_constructor_bindings.py::"
+        "test_review_type_alias_capability_validation_keeps_cold_warm_parity[type Alias = int]"
+    )
+    cases = {"ADD-021": "3.12", "CLS-007": "3.11", "CLS-016": "3.12"}
+    expected = {
+        ("core-ubuntu-3.10", f"{family}[{case}{suffix}]", "core-macos-3.14",
+         f"Owned syntax requires Python {version}")
+        for family in families for case, version in cases.items() for suffix in ("", "-M")
+    }
+    expected.add(("core-ubuntu-3.10", alias, "core-macos-3.14", "Parser lacks type alias statements"))
+    entries = json.loads((ROOT / "release/skip-allowlist.json").read_text())["entries"]
+    owned = [entry for entry in entries if entry["node_id"] == alias or any(
+        entry["node_id"].startswith(f"{family}[{case}{suffix}]")
+        for family in families for case in cases for suffix in ("", "-M")
+    )]
+    assert len(owned) == 13
+    assert {(entry["lane"], entry["node_id"], entry["owner_lane"], entry["reason"])
+            for entry in owned} == expected
+
+
 def test_maintenance_consumer_binds_identity_without_downloading_source():
     workflow = yaml.safe_load((WORKFLOWS / "release-qualification.yml").read_text())
     job = workflow["jobs"]["knowledge-maintenance"]
@@ -1419,13 +1463,22 @@ def test_routine_ci_reuses_only_instrumentation_and_expensive_packaging() -> Non
     mcp_command = _named_step(
         mcp, "Run MCP SDK registration contract"
     )["run"]
+    assert _named_step(mcp, "Run MCP SDK registration contract")["env"]["LLM_WIKI_REQUIRE_MCP_SDK"] == "1"
     assert "tests/test_mcp_sdk.py" in mcp_command
     assert "tests/test_mcp.py" not in mcp_command
     mcp_verifier = _named_step(
         mcp, "Enforce MCP SDK registration and canonical delivery"
     )["run"]
-    assert "--minimum-collected 2" in mcp_verifier
-    assert "--minimum-passed 2" in mcp_verifier
+    assert "--minimum-collected 6" in mcp_verifier
+    assert "--minimum-passed 6" in mcp_verifier
+    assert (
+        "tests/test_compact_delivery_interfaces.py::"
+        "test_actual_mcp_sdk_content_carries_view_then_receipt_as_separate_transport"
+    ) in mcp_command
+    assert (
+        "tests/test_developer_value_combined_interfaces.py::"
+        "test_actual_sdk_combined_callers_compact_and_stale_custody"
+    ) in mcp_command
 
 
 def test_bandit_parity_is_opt_in_and_uses_current_static_evidence() -> None:
@@ -1616,13 +1669,22 @@ def test_release_mcp_and_build_jobs_avoid_identical_revalidation() -> None:
     workflow = _yaml("release-qualification.yml")
     mcp = workflow["jobs"]["mcp"]
     mcp_command = _named_step(mcp, "Run MCP contract")["run"]
+    assert _named_step(mcp, "Run MCP contract")["env"]["LLM_WIKI_REQUIRE_MCP_SDK"] == "1"
     assert "tests/test_mcp_sdk.py" in mcp_command
     assert "tests/test_mcp.py" not in mcp_command
     mcp_verifier = _named_step(
         mcp, "Enforce the dedicated MCP SDK contract"
     )["run"]
-    assert "--minimum-collected 2" in mcp_verifier
-    assert "--minimum-passed 2" in mcp_verifier
+    assert "--minimum-collected 6" in mcp_verifier
+    assert "--minimum-passed 6" in mcp_verifier
+    assert (
+        "tests/test_compact_delivery_interfaces.py::"
+        "test_actual_mcp_sdk_content_carries_view_then_receipt_as_separate_transport"
+    ) in mcp_command
+    assert (
+        "tests/test_developer_value_combined_interfaces.py::"
+        "test_actual_sdk_combined_callers_compact_and_stale_custody"
+    ) in mcp_command
 
     build = workflow["jobs"]["build"]
     assert build["strategy"]["matrix"]["include"] == [

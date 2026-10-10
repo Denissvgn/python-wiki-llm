@@ -1,6 +1,6 @@
 # SyncManifest
 
-**Location:** `src/llm_wiki_cli/services/sync_manifest.py:985`
+**Location:** `src/llm_wiki_cli/services/sync_manifest.py:993`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_manifest](../modules/sync_manifest.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-Persistent v5 operational state used to generate the wiki.
+Operational state; maintenance is present only after explicit adoption.
 
 ## Attributes
 
@@ -24,6 +24,7 @@ Persistent v5 operational state used to generate the wiki.
 | `artifact_hashes` | `ManifestArtifactHashes \| None` | `None` | — |
 | `storage_version` | `int` | `field(default=5, repr=False, compare=False)` | — |
 | `storage_objects` | `dict[str, bytes]` | `field(default_factory=dict, repr=False, compare=False)` | — |
+| `maintenance_state` | `dict[str, Any] \| None` | `field(default=None, repr=False)` | — |
 
 ## Methods
 
@@ -33,11 +34,12 @@ Persistent v5 operational state used to generate the wiki.
 | `load` | `(wiki_dir: Path) -> SyncManifest` | `@classmethod` | Load a manifest; raise ``FileNotFoundError`` when it is absent. |
 | `_validate_operational_state` | `() -> None` | — | — |
 | `_validate_basis_mapping` | `(basis: ConceptObservationBasis \| None, mapping: ManifestPageSource, field_name: str) -> None` | `@staticmethod` | — |
-| `to_payload` | `() -> dict[str, object]` | — | Return the validated deterministic manifest v5 payload. |
+| `to_payload` | `() -> dict[str, object]` | — | Emit legacy v5 or explicitly adopted maintenance v7 deterministically. |
 | `to_json` | `() -> str` | — | Return deterministic UTF-8-ready JSON with one trailing newline. |
 | `save` | `(wiki_dir: Path) -> None` | — | Atomically write the manifest through the shared JSON boundary. |
-| `with_artifact_hashes` | `(*, surface_index_hash: str, knowledge_index_hash: str, evaluated_envelope_hash: str, governance_hash: str \| None = None) -> SyncManifest` | — | Return a copy carrying one complete artifact-set commitment. |
+| `with_artifact_hashes` | `(*, surface_index_hash: str, knowledge_index_hash: str, evaluated_envelope_hash: str, governance_hash: str \| None = None, maintenance_adoption_hash: str \| None = None) -> SyncManifest` | — | Return a copy carrying one complete artifact-set commitment. |
 | `without_artifact_hashes` | `() -> SyncManifest` | — | Return a copy with no artifact-set commitment. |
+| `with_maintenance_state` | `(value: Mapping[str, Any]) -> SyncManifest` | — | Replace explicit authority, invalidating projections until publication. |
 | `with_generation_state` | `(*, surfaces: Mapping[str, Mapping], generation_inputs: Mapping[str, object]) -> SyncManifest` | — | Replace generation policy while invalidating any prior commitment. |
 | `build_from_inventory` | `(inventory: dict, src_dir: str, entity_page_cache: dict[tuple[str, str], str], module_page_map: dict[str, str], *, entity_occurrence_page_cache: dict[tuple[str, str, int], str] \| None = None, surfaces: Mapping[str, Mapping] \| None = None, generation_inputs: Mapping[str, object] \| None = None, previous_manifest: SyncManifest \| None = None, evidence_baselines: Mapping[str, ConceptObservationBasis \| ManifestEvidenceBaseline] \| None = None, source_content_hashes: Mapping[str, str] \| None = None, retained_page_paths: Iterable[str] \| None = None, unknown_evidence_reason: str = EVIDENCE_NOT_RECORDED) -> SyncManifest` | `@classmethod` | Build current state and reconcile retained prior page evidence. |
 
@@ -90,7 +92,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [sync_manifest](../modules/sync_manifest.md) | 11 | `artifact_hashes`, `evidence_baselines`, `generation_inputs`, `page_source_mappings`, `sources`, `storage_objects`, `storage_version`, `surfaces`, `tombstones` |
+| [sync_manifest](../modules/sync_manifest.md) | 12 | `artifact_hashes`, `evidence_baselines`, `generation_inputs`, `maintenance_state`, `page_source_mappings`, `sources`, `storage_objects`, `storage_version`, `surfaces`, `tombstones` |
 
 ### References
 
@@ -109,4 +111,4 @@ flowchart LR
 | `_governance_moves_for_sync` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_invalid_manifest_hash_paths` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 
-> References: showing 12 of 98 logical references; 86 omitted by the 12-row generated summary limit.
+> References: showing 12 of 106 logical references; 94 omitted by the 12-row generated summary limit.

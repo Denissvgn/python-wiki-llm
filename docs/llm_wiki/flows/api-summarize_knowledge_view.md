@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -20,18 +22,23 @@ sequenceDiagram
     participant p8 as view.counts.evidence_by_state.get
     participant p9 as KnowledgeAggregateSummary
     participant p10 as selected_durations.to_payload
-    p0-->>p1: isinstance
-    p0-->>p2: TypeError
+    p0-->>p1: isinstance(view, KnowledgeReadView)
+    p0-->>p2: TypeError('view must be a KnowledgeReadView')
     p0->>p3: KnowledgePhaseDurations
-    p0-->>p4: int
+    p0-->>p4: int(count)
     p0-->>p5: view.freshness.counts.items
-    p0-->>p6: sum
+    p0-->>p6: sum(freshness_counts.values(...))
     p0-->>p7: freshness_counts.values
-    p0-->>p4: int
-    p0-->>p8: view.counts.evidence_by_state.get
+    p0-->>p4: int(view.counts.evidence_by_state.get(...))
+    p0-->>p8: view.counts.evidence_by_state.get(state, 0)
     p0->>p9: KnowledgeAggregateSummary
     p0-->>p10: selected_durations.to_payload
 ```
+
+> Call sequence diagram shows 11 of 11 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 5 of 5 (0 omitted); unresolved 4 of 4 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

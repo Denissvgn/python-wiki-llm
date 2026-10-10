@@ -17,63 +17,85 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as load_governance
     participant p1 as Path (src/llm_wiki_cli/services…rnance.py:load_governance)
     participant p2 as first_unsafe_path_component
-    participant p3 as Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p4 as os.fspath
-    participant p5 as os.path.abspath
-    participant p6 as lexical.is_absolute
-    participant p7 as Path.cwd
-    participant p8 as list
-    participant p9 as pending_parts.pop
-    participant p10 as current.lstat
-    participant p11 as getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p12 as stat.S_ISLNK (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p13 as bool (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p14 as trusted_symlink_owner
-    participant p15 as callable
-    participant p16 as os.readlink
-    participant p17 as link_target.is_absolute
-    participant p18 as GovernanceError
-    participant p19 as _read_governance_bytes
-    participant p20 as path.lstat
-    p0-->>p1: Path (src/llm_wiki_cli/services…rnance.py:load_governance)
+    participant p3 as GovernanceError
+    participant p4 as _read_governance_bytes
+    participant p5 as _decode_unique_json
+    participant p6 as parse_governance_ledger
+    participant p7 as ledger.to_bytes
+    participant p8 as GovernanceLoadResult
+    participant p9 as sha256_bytes
+    participant p10 as Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    participant p11 as path.lstat
+    participant p12 as json.loads
+    participant p13 as _object
+    participant p14 as os.fspath
+    participant p15 as content.decode
+    participant p16 as _exact_fields
+    participant p17 as getattr (src/llm_wiki_cli/services…py:_read_governance_bytes)
+    participant p18 as os.path.abspath
+    participant p19 as _bundle_id
+    participant p20 as lexical.is_absolute
+    participant p21 as stat.S_ISLNK (src/llm_wiki_cli/services…py:_read_governance_bytes)
+    participant p22 as Path.cwd
+    participant p23 as bool (src/llm_wiki_cli/services…py:_read_governance_bytes)
+    p0-->>p1: Path (src/llm_wiki_cli/services…rnance.py:load_governance)(wiki_dir)
     p0->>p2: first_unsafe_path_component
-    p2-->>p3: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p2-->>p4: os.fspath
-    p2-->>p3: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p2-->>p5: os.path.abspath
-    p2-->>p6: lexical.is_absolute
-    p2-->>p7: Path.cwd
-    p2-->>p3: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p2-->>p8: list
-    p2-->>p9: pending_parts.pop
-    p2-->>p10: current.lstat
-    p2-->>p11: getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p2-->>p11: getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p2-->>p12: stat.S_ISLNK (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p2-->>p13: bool (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p2-->>p13: bool (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p2-->>p11: getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p2-->>p14: trusted_symlink_owner
-    p2-->>p15: callable
-    p2-->>p11: getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p2-->>p3: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p2-->>p3: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p2-->>p16: os.readlink
-    p2-->>p17: link_target.is_absolute
-    p2-->>p3: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p2-->>p8: list
-    p0->>p18: GovernanceError
-    p0->>p19: _read_governance_bytes
-    p19-->>p20: path.lstat
+    p0->>p3: GovernanceError
+    p0->>p4: _read_governance_bytes
+    p0->>p5: _decode_unique_json
+    p0->>p6: parse_governance_ledger
+    p0-->>p7: ledger.to_bytes
+    p0->>p3: GovernanceError
+    p0->>p8: GovernanceLoadResult
+    p0->>p9: sha256_bytes
+    p2-->>p10: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)(os.fspath(...))
+    p4-->>p11: path.lstat
+    p5-->>p12: json.loads(content.decode(...), object_pairs_hook=unique_object, parse_constant=reject_constant)
+    p6->>p13: _object
+    p2-->>p14: os.fspath(path)
+    p4->>p3: GovernanceError
+    p5-->>p15: content.decode('utf-8')
+    p6->>p16: _exact_fields
+    p2-->>p10: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)(os.path.abspath(...))
+    p4-->>p17: getattr (src/llm_wiki_cli/services…py:_read_governance_bytes)(metadata, 'st_file_attributes', 0)
+    p5->>p3: GovernanceError
+    p6->>p3: GovernanceError
+    p2-->>p18: os.path.abspath(lexical)
+    p4-->>p17: getattr (src/llm_wiki_cli/services…py:_read_governance_bytes)(stat, 'FILE_ATTRIBUTE_REPARSE_POINT', 0)
+    p6->>p19: _bundle_id
+    p2-->>p20: lexical.is_absolute
+    p4-->>p21: stat.S_ISLNK (src/llm_wiki_cli/services…py:_read_governance_bytes)(metadata.st_mode)
+    p6->>p3: GovernanceError
+    p2-->>p22: Path.cwd
+    p4-->>p23: bool (src/llm_wiki_cli/services…py:_read_governance_bytes)(reparse_flag)
 ```
 
-> Call sequence diagram shows 30 of 503 interactions; 473 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 503 interactions; 473 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 11 of 127 (116 omitted); unresolved 4 of 106 (102 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 3 | - | external | 15 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 3 | - | unresolved | 4 |
+| `src/llm_wiki_cli/services/knowledge_governance.py:_read_governance_bytes` | 30 | - | external | 12 |
+| `src/llm_wiki_cli/services/knowledge_governance.py:_read_governance_bytes` | 30 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 6 |
+| `src/llm_wiki_cli/services/knowledge_governance.py:_read_governance_bytes` | 30 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/knowledge_governance.py:_object` | 62 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_mapping` | 63 | - | external | 2 |
+| `src/llm_wiki_cli/services/validation.py:require_mapping` | 63 | - | unresolved | 1 |
+> Omission summary shows 8 of 127 groups; 119 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

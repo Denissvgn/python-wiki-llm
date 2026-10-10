@@ -120,9 +120,26 @@ def load_knowledge_state(
         raise TypeError("rebuild_callback must be callable")
 
     root = Path(wiki_dir)
+    from .maintenance_protocol import ADOPTION_FILENAME, guard_maintenance_owner, MaintenanceProtocolError
+
+    try:
+        guard_maintenance_owner(root)
+    except MaintenanceProtocolError as exc:
+        # Adopted authority loss is never an ordinary rebuild opportunity.
+        return KnowledgeLoadResult(
+            status=KnowledgeLoadState.INVALID, surface=None, knowledge=None,
+            manifest_basis=None,
+            issues=(KnowledgeLoadIssue("maintenance-" + exc.reason, ADOPTION_FILENAME, str(exc)),),
+        )
+    except (ValueError, OSError, TypeError):
+        # Preserve the existing detailed legacy artifact diagnostics.
+        pass
     result, surface_is_current = _load_once(root, markdown_pages=markdown_pages)
     if result.status in {KnowledgeLoadState.VALID, KnowledgeLoadState.ABSENT}:
         return result
+
+    if any(issue.field is not None and "maintenance" in issue.field.split(".") for issue in result.issues):
+        return replace(result, status=KnowledgeLoadState.INVALID, surface=None, knowledge=None)
 
     if selected_policy is KnowledgeMismatchPolicy.REBUILD:
         assert rebuild_callback is not None

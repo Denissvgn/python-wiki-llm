@@ -51,6 +51,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -58,58 +60,65 @@ sequenceDiagram
     participant p1 as getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)
     participant p2 as ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)
     participant p3 as build_capability_doctor
-    participant p4 as build_capability_diagnostics
-    participant p5 as validate_source_root
-    participant p6 as validate_path
-    participant p7 as PathValidationError
-    participant p8 as (…).resolve (src/llm_wiki_cli/config.py:validate_path)
-    participant p9 as Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    participant p10 as Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)
-    participant p11 as resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
-    participant p12 as Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p13 as Path (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p14 as candidate.is_absolute
-    participant p15 as Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p16 as candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p17 as resolved.is_dir
-    participant p18 as os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p19 as windows_current_user_sid
-    participant p20 as WindowsSecurityGuardError
-    participant p21 as _current_windows_user_sid
-    participant p22 as ctypes.WinDLL
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)
-    p0-->>p2: ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)
-    p0-->>p2: ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)
+    participant p4 as extraction_job_request_from_args
+    participant p5 as print
+    participant p6 as json.dumps
+    participant p7 as render_capability_doctor
+    participant p8 as SystemExit
+    participant p9 as build_doctor_report
+    participant p10 as bool (src/llm_wiki_cli/commands/doctor_cmd.py:run)
+    participant p11 as report.to_payload (src/llm_wiki_cli/commands/doctor_cmd.py:run)
+    participant p12 as render_doctor_text
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'report_schema', 'auto')
+    p0-->>p2: ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)('--report-schema must be v1 or v3')
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'capabilities', False)
+    p0-->>p2: ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)('--capabilities and --report-schema are mutually exclusive')
     p0->>p3: build_capability_doctor
-    p3->>p4: build_capability_diagnostics
-    p4->>p5: validate_source_root
-    p5->>p6: validate_path
-    p6->>p7: PathValidationError
-    p6-->>p8: (…).resolve (src/llm_wiki_cli/config.py:validate_path)
-    p6-->>p9: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    p6-->>p10: Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)
-    p6-->>p9: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    p6-->>p11: resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
-    p6->>p7: PathValidationError
-    p5-->>p12: Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)
-    p5-->>p13: Path (src/llm_wiki_cli/config.py:validate_source_root)
-    p5-->>p14: candidate.is_absolute
-    p5-->>p15: Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
-    p5-->>p16: candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
-    p5->>p7: PathValidationError
-    p5-->>p17: resolved.is_dir
-    p5->>p7: PathValidationError
-    p5-->>p13: Path (src/llm_wiki_cli/config.py:validate_source_root)
-    p5-->>p18: os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
-    p5->>p19: windows_current_user_sid
-    p19->>p20: WindowsSecurityGuardError
-    p19->>p21: _current_windows_user_sid
-    p21-->>p22: ctypes.WinDLL
-    p21-->>p22: ctypes.WinDLL
+    p0->>p4: extraction_job_request_from_args
+    p0-->>p5: print(..., end=...)
+    p0-->>p6: json.dumps(report, indent=2, sort_keys=True)
+    p0->>p7: render_capability_doctor
+    p0-->>p8: SystemExit(report[...])
+    p0->>p9: build_doctor_report
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'src_dir', '.')
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'comparison_policy', 'auto')
+    p0-->>p10: bool (src/llm_wiki_cli/commands/doctor_cmd.py:run)(getattr(...))
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'strict', False)
+    p0-->>p10: bool (src/llm_wiki_cli/commands/doctor_cmd.py:run)(getattr(...))
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'allow_external_src', False)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'helper_cache_dir', None)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'include_tests', None)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'jobs', 1)
+    p0->>p4: extraction_job_request_from_args
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'source_selection', None)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'format', 'text')
+    p0-->>p5: print(json.dumps(...))
+    p0-->>p6: json.dumps(report.to_payload(...), indent=2, sort_keys=True)
+    p0-->>p11: report.to_payload (src/llm_wiki_cli/commands/doctor_cmd.py:run)(report_schema=report_schema)
+    p0-->>p5: print(render_doctor_text(...), end='')
+    p0->>p12: render_doctor_text
+    p0-->>p8: SystemExit(report.exit_code)
 ```
 
-> Call sequence diagram shows 30 of 1341 interactions; 1311 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1348 interactions; 1318 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 23 of 404 (381 omitted); unresolved 1 of 412 (411 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/capability_diagnostics.py:build_capability_doctor` | 6 | [src/llm_wiki_cli/services/capability_diagnostics.py](../modules/capability_diagnostics.md) | internal | 1 |
+| `src/llm_wiki_cli/services/capability_diagnostics.py:build_capability_diagnostics` | 7 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 1 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 8 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
+| `src/llm_wiki_cli/config.py:validate_path` | 9 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
+| `src/llm_wiki_cli/config.py:validate_path` | 9 | - | unresolved | 3 |
+| `src/llm_wiki_cli/config.py:validate_path` | 9 | - | external | 2 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 8 | - | unresolved | 5 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 8 | - | external | 11 |
+> Omission summary shows 8 of 369 groups; 361 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

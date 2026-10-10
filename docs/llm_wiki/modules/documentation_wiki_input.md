@@ -22,6 +22,10 @@ documentation-run service to persist ``wiki-input.json`` later.
 | `.knowledge_model` | `ComputedFreshness` |
 | `.knowledge_observability` | `knowledge_freshness_hint` |
 | `.knowledge_packs` | `PACK_NAME`, `INDEX_NAME`, `INDEX_PAGE_NAME` |
+| `.knowledge_storage` | `canonical_bytes`, `digest` |
+| `.maintenance_projection` | `validate_maintenance_projection` |
+| `.maintenance_protocol` | `ADOPTION_FILENAME` |
+| `.maintenance_state` | `validate_maintenance_adoption` |
 | `.manifest_storage` | `OBJECT_NAME` |
 | `.source_selection` | `SOURCE_SELECTION_GENERATION_INPUT_KEY`, `SOURCE_SELECTION_INPUTS_GENERATION_INPUT_KEY`, `SourceSelectionError`, `resolve_source_selection`, `source_selection_identity_from_generation_inputs`, `source_selection_inputs_from_generation_inputs` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
@@ -62,22 +66,22 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (4) |
-| Outbound | `src` (15) |
+| Outbound | `src` (19) |
 
-> All 19 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 23 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [DocumentationWikiInputError](../entities/DocumentationWikiInputError.md) | 211 | `ValueError` | Raised when a wiki cannot be adopted without weakening isolation. |
-| [DocumentationWikiSnapshot](../entities/DocumentationWikiSnapshot.md) | 231 | — | Typed provenance for an adopted, byte-preserved wiki snapshot. |
-| [_InputFile](../entities/InputFile.md) | 351 | — | — |
-| [_HashedInputFile](../entities/HashedInputFile.md) | 364 | — | — |
-| [_InputTree](../entities/InputTree.md) | 370 | — | — |
-| [_ValidatedWikiMetadata](../entities/ValidatedWikiMetadata.md) | 402 | — | One fully classified metadata form built only from guarded input bytes. |
-| [_MarkdownInspection](../entities/MarkdownInspection.md) | 438 | — | — |
-| [_InputResourceBudget](../entities/InputResourceBudget.md) | 447 | — | — |
+| [DocumentationWikiInputError](../entities/DocumentationWikiInputError.md) | 213 | `ValueError` | Raised when a wiki cannot be adopted without weakening isolation. |
+| [DocumentationWikiSnapshot](../entities/DocumentationWikiSnapshot.md) | 233 | — | Typed provenance for an adopted, byte-preserved wiki snapshot. |
+| [_InputFile](../entities/InputFile.md) | 353 | — | — |
+| [_HashedInputFile](../entities/HashedInputFile.md) | 366 | — | — |
+| [_InputTree](../entities/InputTree.md) | 372 | — | — |
+| [_ValidatedWikiMetadata](../entities/ValidatedWikiMetadata.md) | 404 | — | One fully classified metadata form built only from guarded input bytes. |
+| [_MarkdownInspection](../entities/MarkdownInspection.md) | 440 | — | — |
+| [_InputResourceBudget](../entities/InputResourceBudget.md) | 449 | — | — |
 
 ## Functions
 
@@ -125,6 +129,7 @@ flowchart LR
 | `_open_regular_file` | `(path: Path, relative_path: str)` | — | — |
 | `_tree_hash` | `(files: tuple[_InputFile, ...]) -> str` | — | — |
 | `_load_and_validate_metadata` | `(files: Mapping[str, _InputFile]) -> _ValidatedWikiMetadata` | — | — |
+| `_validate_maintenance_input_authority` | `(manifest: SyncManifest, entry: _InputFile \| None) -> dict[str, Any] \| None` | — | — |
 | `_read_json_object` | `(entry: _InputFile, label: str) -> dict[str, Any]` | — | — |
 | `_decode_json_object` | `(raw: bytes, entry: _InputFile, label: str) -> dict[str, Any]` | — | — |
 | `_read_verified_bytes` | `(entry: _InputFile) -> bytes` | — | — |

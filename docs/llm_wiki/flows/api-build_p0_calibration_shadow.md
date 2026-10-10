@@ -6,50 +6,78 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as build_p0_calibration_shadow (src/llm_wiki_cli/services…ation_run/dependencies.py)
     participant p1 as build_p0_calibration_shadow (src/llm_wiki_cli/services/calibration/contracts.py)
     participant p2 as validate_flow_evidence_census
-    participant p3 as payload.get
-    participant p4 as DocumentationCalibrationError
-    participant p5 as isinstance (src/llm_wiki_cli/services…date_flow_evidence_census)
-    participant p6 as population.get
-    participant p7 as item.get (src/llm_wiki_cli/services…date_flow_evidence_census)
+    participant p3 as worklist.get
+    participant p4 as isinstance (src/llm_wiki_cli/services…ild_p0_calibration_shadow)
+    participant p5 as DocumentationCalibrationError
+    participant p6 as item.get (src/llm_wiki_cli/services…ild_p0_calibration_shadow)
+    participant p7 as canonical_path.startswith
+    participant p8 as PurePosixPath
+    participant p9 as structural_controls.append
+    participant p10 as record.get
+    participant p11 as str
+    participant p12 as current_by_flow.get
+    participant p13 as candidates.get
+    participant p14 as shadow_items.append
+    participant p15 as current.get
+    participant p16 as list
     p0->>p1: build_p0_calibration_shadow (src/llm_wiki_cli/services/calibration/contracts.py)
     p1->>p2: validate_flow_evidence_census
-    p2-->>p3: payload.get
-    p2->>p4: DocumentationCalibrationError
-    p2-->>p3: payload.get
-    p2->>p4: DocumentationCalibrationError
-    p2-->>p3: payload.get
-    p2-->>p5: isinstance (src/llm_wiki_cli/services…date_flow_evidence_census)
-    p2-->>p5: isinstance (src/llm_wiki_cli/services…date_flow_evidence_census)
-    p2-->>p6: population.get
-    p2->>p4: DocumentationCalibrationError
-    p2-->>p6: population.get
-    p2-->>p6: population.get
-    p2->>p4: DocumentationCalibrationError
-    p2-->>p3: payload.get
-    p2-->>p3: payload.get
-    p2-->>p3: payload.get
-    p2-->>p5: isinstance (src/llm_wiki_cli/services…date_flow_evidence_census)
-    p2-->>p5: isinstance (src/llm_wiki_cli/services…date_flow_evidence_census)
-    p2->>p4: DocumentationCalibrationError
-    p2-->>p5: isinstance (src/llm_wiki_cli/services…date_flow_evidence_census)
-    p2->>p4: DocumentationCalibrationError
-    p2-->>p5: isinstance (src/llm_wiki_cli/services…date_flow_evidence_census)
-    p2->>p4: DocumentationCalibrationError
-    p2->>p4: DocumentationCalibrationError
-    p2-->>p7: item.get (src/llm_wiki_cli/services…date_flow_evidence_census)
-    p2->>p4: DocumentationCalibrationError
-    p2-->>p5: isinstance (src/llm_wiki_cli/services…date_flow_evidence_census)
-    p2-->>p7: item.get (src/llm_wiki_cli/services…date_flow_evidence_census)
-    p2-->>p7: item.get (src/llm_wiki_cli/services…date_flow_evidence_census)
+    p1-->>p3: worklist.get('items')
+    p1-->>p4: isinstance (src/llm_wiki_cli/services…ild_p0_calibration_shadow)(items, list)
+    p1->>p5: DocumentationCalibrationError
+    p1-->>p4: isinstance (src/llm_wiki_cli/services…ild_p0_calibration_shadow)(item, Mapping)
+    p1-->>p6: item.get (src/llm_wiki_cli/services…ild_p0_calibration_shadow)('canonical_path')
+    p1-->>p4: isinstance (src/llm_wiki_cli/services…ild_p0_calibration_shadow)(canonical_path, str)
+    p1-->>p7: canonical_path.startswith('flows/')
+    p1-->>p8: PurePosixPath(canonical_path)
+    p1-->>p6: item.get (src/llm_wiki_cli/services…ild_p0_calibration_shadow)('priority')
+    p1-->>p6: item.get (src/llm_wiki_cli/services…ild_p0_calibration_shadow)('category')
+    p1-->>p9: structural_controls.append({...})
+    p1-->>p6: item.get (src/llm_wiki_cli/services…ild_p0_calibration_shadow)('id')
+    p1-->>p6: item.get (src/llm_wiki_cli/services…ild_p0_calibration_shadow)('category')
+    p1-->>p4: isinstance (src/llm_wiki_cli/services…ild_p0_calibration_shadow)(record, Mapping)
+    p1->>p5: DocumentationCalibrationError
+    p1-->>p10: record.get('flow_id')
+    p1-->>p10: record.get('candidate_priority')
+    p1-->>p4: isinstance (src/llm_wiki_cli/services…ild_p0_calibration_shadow)(flow_id, str)
+    p1->>p5: DocumentationCalibrationError
+    p1->>p5: DocumentationCalibrationError
+    p1-->>p11: str(capsule[...])
+    p1-->>p12: current_by_flow.get(flow_id)
+    p1-->>p13: candidates.get(flow_id)
+    p1-->>p14: shadow_items.append({...})
+    p1-->>p15: current.get('id')
+    p1-->>p15: current.get('priority')
+    p1-->>p16: list(...)
+    p1-->>p15: current.get('signals')
 ```
 
-> Call sequence diagram shows 30 of 185 interactions; 155 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 185 interactions; 155 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 8 of 79 (71 omitted); unresolved 16 of 63 (47 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/calibration/contracts.py:validate_flow_evidence_census` | 3 | - | unresolved | 33 |
+| `src/llm_wiki_cli/services/calibration/contracts.py:validate_flow_evidence_census` | 3 | [src/llm_wiki_cli/services/calibration/contracts.py](../modules/calibration_contracts.md) | internal | 24 |
+| `src/llm_wiki_cli/services/calibration/contracts.py:validate_flow_evidence_census` | 3 | - | external | 44 |
+| `src/llm_wiki_cli/services/calibration/contracts.py:build_p0_calibration_shadow` | 2 | [src/llm_wiki_cli/services/calibration/contracts.py](../modules/calibration_contracts.md) | internal | 2 |
+| `src/llm_wiki_cli/services/calibration/contracts.py:_candidate_shadow` | 133 | - | unresolved | 7 |
+| `src/llm_wiki_cli/services/calibration/contracts.py:_candidate_shadow` | 133 | - | external | 9 |
+| `src/llm_wiki_cli/services/calibration/contracts.py:_candidate_shadow` | 133 | [src/llm_wiki_cli/services/calibration/contracts.py](../modules/calibration_contracts.md) | internal | 7 |
+| `src/llm_wiki_cli/services/calibration/contracts.py:_json_mapping` | 141 | - | external | 3 |
+> Omission summary shows 8 of 17 groups; 9 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

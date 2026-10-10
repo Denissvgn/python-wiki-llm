@@ -21,7 +21,8 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Mapping, Sequence
 
 from .io import read_md
-from .markdown_sections import GENERATED_INDEX_INTROS
+from .markdown_sections import GENERATED_INDEX_INTROS, parse_markdown_sections
+from .wiki_media import iter_markdown_link_targets, local_link_path, mask_markdown_code
 from .validation import (
     nonnegative_int_or_none,
     normalize_legacy_portable_relative_path,
@@ -628,10 +629,39 @@ def _is_placeholder_text(text: str) -> bool:
 
 
 def _index_needs_context(content: str) -> bool:
-    return (
+    generic = (
         "# LLM Wiki Index" in content
         and any(intro in content for intro in GENERATED_INDEX_INTROS)
     )
+    if not generic:
+        return False
+    # Sync carries authored introductory prose into Notes, while its own
+    # introduction remains generated. This structural signal is not approval
+    # of the prose's accuracy or source grounding.
+    sections = parse_markdown_sections(_MARKDOWN_COMMENT_RE.sub("", content), "index.md")
+    notes = [s for s in sections if s.level == 2 and s.title.casefold() == "notes"]
+    starts = [s for s in sections if s.level == 2 and s.title.casefold() == "start here"]
+    if len(notes) != 1 or len(starts) != 1:
+        return True
+    prose = " ".join(line.strip() for line in mask_markdown_code(notes[0].body).splitlines()
+                     if not line.startswith(("    ", "\t"))
+                     and not line.lstrip().startswith(("#", ">", "|", "- ", "* ", "+ ")))
+    prose = " ".join(prose.split()).casefold()
+    for stock in GENERATED_INDEX_INTROS:
+        prose = prose.replace(" ".join(stock.split()).casefold(), "")
+    words = re.findall(r"[^\W\d_]+", prose)
+    if any(phrase.casefold() in prose for phrase in _PLACEHOLDER_PHRASES) or len(words) < 20:
+        return True
+    links = iter_markdown_link_targets(mask_markdown_code(starts[0].body))
+    for link in links:
+        path = local_link_path(link.target)
+        if link.is_image or path is None:
+            continue
+        parts = path.removeprefix("./").split("/")
+        if (len(parts) == 2 and parts[0] == "guides" and parts[1].endswith(".md")
+                and is_safe_page_id(parts[1][:-3])):
+            return False
+    return True
 
 
 def _normalise_prose(text: str) -> str:

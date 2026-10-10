@@ -22,8 +22,7 @@ tombstones under `generation_inputs.infrastructure`.
 Each active generated page and source-removal tombstone projects that exact
 source/observation pair into a native `infrastructure`-scoped structural
 basis. Live consumers recompute supported observations: matching records are
-`current`, changed records are `source-changed` (or a qualified nonsemantic
-source change), and reliably absent sources are `source-missing`. Unsupported
+`current`, changed records are `source-changed` (or source-byte change with unchanged recorded structure; behavior is not evaluated), and reliably absent sources are `source-missing`. Unsupported
 YAML has no generated concept basis and must remain explicit discovery state.
 
 Only `## Notes` is semantic on an infrastructure page. Sync preserves that

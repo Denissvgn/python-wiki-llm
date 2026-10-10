@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -15,14 +17,19 @@ sequenceDiagram
     participant p3 as frozenset
     participant p4 as _state_to_stage
     participant p5 as _utc_now
-    p0-->>p1: DocumentationTransitionError
-    p0-->>p2: _ALLOWED_TRANSITIONS.get
+    p0-->>p1: DocumentationTransitionError(...)
+    p0-->>p2: _ALLOWED_TRANSITIONS.get(run.state, frozenset(...))
     p0-->>p3: frozenset
-    p0-->>p1: DocumentationTransitionError
-    p0-->>p1: DocumentationTransitionError
-    p0-->>p4: _state_to_stage
+    p0-->>p1: DocumentationTransitionError(...)
+    p0-->>p1: DocumentationTransitionError(...)
+    p0-->>p4: _state_to_stage(target_state)
     p0-->>p5: _utc_now
 ```
+
+> Call sequence diagram shows 7 of 7 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 0 of 0 (0 omitted); unresolved 7 of 7 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

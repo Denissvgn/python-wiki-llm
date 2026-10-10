@@ -1,6 +1,6 @@
 # migrate_knowledge_storage
 
-**Entry point:** `knowledge_storage_lifecycle.migrate_knowledge_storage`
+**Entry point:** `knowledge_storage_lifecycle._migrate_knowledge_storage`
 **Modules involved:** [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md)
 
 > Explicitly adopt indexed storage, retaining verified recovery bytes outside the wiki.
@@ -11,12 +11,14 @@
 1. `knowledge_storage.KnowledgeStorageError`
 2. `knowledge_storage.KnowledgeStorageError`
 3. `knowledge_storage_io._absolute_path`
-4. `knowledge_artifacts.build_knowledge_commit_plan`
-5. `knowledge_storage.digest`
-6. `knowledge_artifacts.current_knowledge_format`
+4. `knowledge_storage.KnowledgeStorageError`
+5. `knowledge_storage.KnowledgeStorageError`
+6. `knowledge_artifacts.build_knowledge_commit_plan`
 7. `knowledge_storage.digest`
-8. `knowledge_storage.KnowledgeStorageError`
-9. `knowledge_artifacts.commit_knowledge_artifacts`
+8. `knowledge_artifacts.current_knowledge_format`
+9. `knowledge_storage.digest`
+10. `knowledge_storage.KnowledgeStorageError`
+11. `knowledge_artifacts.commit_knowledge_artifacts`
 
 ## Touches
 

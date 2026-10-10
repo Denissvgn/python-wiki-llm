@@ -4,7 +4,7 @@
 
 ## Description
 
-Stores manifest v6 as a bounded commit root plus immutable catalogs under `.llm-wiki-manifest/objects/`. Artifact commitments and small generation policy remain in the root; oversized policy is referenced and charged to the caller. Full readers reconstruct and validate the complete logical v5 manifest. Selected readers receive a typed header containing only policy and artifact commitments.
+Stores indexed manifests as a bounded commit root plus immutable catalogs under `.llm-wiki-manifest/objects/`. Legacy physical v6 reconstructs logical v5; adopted physical v8 reconstructs logical v7 and carries a maintenance-state catalog plus readable adoption and state commitments. Artifact commitments and small generation policy remain in the root; oversized policy is referenced and charged to the caller. Full readers validate the complete logical manifest. Selected readers consume a typed header and required catalogs without claiming that unread operational state was validated.
 
 ## Imports
 
@@ -15,7 +15,7 @@ Stores manifest v6 as a bounded commit root plus immutable catalogs under `.llm-
 | `.knowledge_artifacts` | `_decode_json_object` |
 | `.knowledge_storage` | `MAX_EXPANDED_BYTES`, `KnowledgeStorageError`, `canonical_bytes`, `decode_bytes`, `digest`, `logical_digest`, `_hash` |
 | `.knowledge_storage_io` | `read_guarded` |
-| `.sync_manifest` | `ManifestArtifactHashes`, `SyncManifest`, `validate_manifest_policy`, `MANIFEST_FILENAME` |
+| `.sync_manifest` | `ManifestArtifactHashes`, `SyncManifest`, `SyncManifest`, `validate_manifest_policy`, `MANIFEST_FILENAME` |
 | `__future__` | `annotations` |
 | `base64` | `base64` |
 | `collections.abc` | `Callable`, `Mapping` |
@@ -43,6 +43,7 @@ flowchart LR
     n10["src/llm_wiki_cli/services/manifest_storage.py"]
     n11["src/llm_wiki_cli/services/sync_manifest.py"]
     n1 --> n3
+    n1 --> n4
     n1 --> n10
     n1 --> n11
     n3 --> n2
@@ -115,9 +116,9 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ManifestStore](../entities/ManifestStore.md) | 77 | — | — |
-| [ManifestStoreReader](../entities/ManifestStoreReader.md) | 143 | — | — |
-| [ValidatedManifestHeader](../entities/ValidatedManifestHeader.md) | 212 | — | Policy and artifact commitments only; never a complete sync manifest. |
+| [ManifestStore](../entities/ManifestStore.md) | 82 | — | — |
+| [ManifestStoreReader](../entities/ManifestStoreReader.md) | 153 | — | — |
+| [ValidatedManifestHeader](../entities/ValidatedManifestHeader.md) | 248 | — | Policy and artifact commitments only; never a complete sync manifest. |
 
 ## Functions
 

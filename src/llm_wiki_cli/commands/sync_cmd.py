@@ -14,6 +14,8 @@ Workflow:
 
 from __future__ import annotations
 
+from ..services.maintenance_protocol import unlink_maintenance_page
+
 from contextlib import nullcontext
 
 from ..services.progress import observed_phase, record_counts
@@ -1242,7 +1244,7 @@ def _remove_deselected_file_pages(
             continue
         page = ctx.wiki_dir / "entities" / f"{page_name}.md"
         if page.is_file():
-            page.unlink()
+            unlink_maintenance_page(page)
             result.deprecated += 1
             print(f"  REMOVE deselected entity: {page_name}")
 
@@ -1251,7 +1253,7 @@ def _remove_deselected_file_pages(
         return
     module_page = ctx.wiki_dir / "modules" / f"{module_name}.md"
     if module_page.is_file():
-        module_page.unlink()
+        unlink_maintenance_page(module_page)
         result.deprecated += 1
         print(f"  REMOVE deselected module: {module_name}")
 
@@ -2432,6 +2434,9 @@ def _sync_run_options_from_args(args) -> _SyncRunOptions:
 def _load_or_seed_manifest(
     options: _SyncRunOptions,
 ) -> tuple[Optional["SyncManifest"], bool]:
+    from ..services.maintenance_protocol import guard_maintenance_owner
+
+    guard_maintenance_owner(options.wiki_dir)
     state = classify_wiki_lifecycle(options.wiki_dir)
     if state is WikiLifecycleState.MANAGED:
         return SyncManifest.load(options.wiki_dir), False
@@ -2490,6 +2495,7 @@ def _extract_current_inventory(
         include_plugins=options.include_plugins,
         capture_data_effect_observations=True,
         capture_import_observations=True,
+        capture_implementation_observations=True,
     )
     if inventory_result.failed:
         print_inventory_failures(inventory_result)
@@ -2792,7 +2798,7 @@ def _apply_source_selection_prune(
                 f"refusing to remove symlinked deselected concept page: {relative}"
             )
         if path.is_file():
-            path.unlink()
+            unlink_maintenance_page(path)
             result.deprecated += 1
             print(f"  REMOVE deselected concept page: {relative}")
     for relative in prune.deselected_surface_page_paths:
@@ -2812,7 +2818,7 @@ def _apply_source_selection_prune(
                 f"refusing to remove symlinked deselected surface page: {relative}"
             )
         if path.is_file():
-            path.unlink()
+            unlink_maintenance_page(path)
             result.deprecated += 1
             print(f"  REMOVE retired generated surface page: {relative}")
 
@@ -3520,6 +3526,8 @@ def _try_sync_knowledge_reuse(
     committed_state: CommittedKnowledgeState,
     observation_inputs_hash: str | None = None,
 ) -> _ReusedSync | None:
+    if manifest.maintenance_state is not None:
+        return None  # Reconcile durable review before any source-baseline reuse.
     artifacts = committed_state.artifacts
     if artifacts is None:
         return None
@@ -4238,7 +4246,7 @@ def _apply_deselected_infrastructure_pages(
                 f"refusing to remove symlinked deselected infrastructure page: {relative}"
             )
         if path.is_file():
-            path.unlink()
+            unlink_maintenance_page(path)
             result.deprecated += 1
             print(f"  REMOVE deselected infrastructure page: {relative}")
 
@@ -4266,7 +4274,7 @@ def _apply_current_infrastructure_plan(
             semantic_source=old_page,
         )
         if old_page != new_page and old_page.is_file():
-            old_page.unlink()
+            unlink_maintenance_page(old_page)
             print(f"  MOVE infrastructure: {old_path} -> {new_path}")
     for source_path in (*plan.new_sources, *plan.changed_sources):
         prior_record = plan.prior_sources.get(source_path)
@@ -4285,7 +4293,7 @@ def _apply_current_infrastructure_plan(
             semantic_source=old_page,
         )
         if old_page is not None and old_page != new_page and old_page.is_file():
-            old_page.unlink()
+            unlink_maintenance_page(old_page)
             print(f"  RENAME infrastructure page mapping: {source_path}")
     for source_path in plan.removed_sources:
         record = plan.prior_sources[source_path]
@@ -4314,7 +4322,7 @@ def _apply_current_infrastructure_plan(
         record = tombstones[source_path]
         path = _infrastructure_page_path(options.wiki_dir, record)
         if path.is_file():
-            path.unlink()
+            unlink_maintenance_page(path)
             print(f"  REMOVE moved infrastructure page: {source_path}")
 
 
@@ -4535,6 +4543,7 @@ def _finalize_prepared_sync(
         RuntimeKnowledgeInputs(
             target_wiki_dir=target,
             knowledge_format=options.knowledge_format,
+            maintenance_page_transitions=prepared.page_transitions,
             inventory=prepared.inventory,
             surface=surface,
             source_snapshot=prepared.source_snapshot,
@@ -4562,6 +4571,7 @@ def _finalize_prepared_sync(
                 result.regenerated_evidence_page_paths
             ),
             analysis_components=prepared.inventory_result.analysis_components,
+            implementation_observations=prepared.inventory_result.implementation_observations,
             extractor_registry=prepared.inventory_result.extractor_registry,
             plugin_extractor_components=(prepared.inventory_result.plugin_components),
             plugin_components=(prepared.inventory_result.producer_plugin_components),
@@ -4859,6 +4869,17 @@ def _run_prepared_sync(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> 
 
 def run(args) -> None:
     options = _sync_run_options_from_args(args)
+    from ..services.maintenance_protocol import maintenance_write_operation, MaintenanceProtocolError
+
+    try:
+        with maintenance_write_operation(options.wiki_dir, dry_run=options.dry_run) as basis:
+            _run_sync_options(options, basis)
+    except MaintenanceProtocolError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        sys.exit(2)
+
+
+def _run_sync_options(options, write_basis=None) -> None:
     try:
         prepared = _prepare_sync_run(options)
     except (
@@ -4880,7 +4901,9 @@ def run(args) -> None:
         )
         _print_cache_stats(prepared.cache_stats, enabled=options.cache_stats_enabled)
         return
-
+    if write_basis is not None:
+        write_basis.source_snapshot = prepared.inventory_result.source_snapshot
+        write_basis.assert_current()
     _run_prepared_sync(options, prepared)
 
 

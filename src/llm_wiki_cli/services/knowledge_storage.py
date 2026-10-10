@@ -440,14 +440,17 @@ def parse_store_root(raw: bytes) -> dict[str, Any]:
     return root
 
 
-def _validate_selected_record(collection: str, row: dict[str, Any], value: Any) -> None:
+def _validate_selected_record(collection: str, row: dict[str, Any], value: Any, *, producer=None) -> None:
     """Reuse semantic record owners without issuing a whole-bundle verdict."""
     from .knowledge_model import _parse_concept, _parse_relationship, _parse_extensions
     from .knowledge_graph import _normalise_edge
     from .section_ownership import validate_section_ownership
     try:
         if collection == "concepts":
-            _parse_concept(value, "concept")
+            parsed = _parse_concept(value, "concept")
+            if producer is not None:
+                from .implementation_evidence import validate_concept_implementation
+                validate_concept_implementation(parsed, producer=producer)
             if value["locator"] != row["id"] or _owner(value) != row["owner"]:
                 _fail(collection, "concept identity or owner mismatch")
         elif collection == "relationships":
@@ -767,7 +770,7 @@ class KnowledgeStoreReader:
             ref = matched[0]
             row = self.record("concepts", _text(ref["owner"], "owner"), locator)
             value = self.expand_record(row)
-            _validate_selected_record("concepts", row, value)
+            _validate_selected_record("concepts", row, value, producer=self.root["bundle"]["producer"])
             self._validated_records["concepts"].add((row["owner"], row["id"]))
             self._concept_owners[locator] = _owner(value)
             self.consumed_concepts[locator] = value
@@ -833,7 +836,7 @@ class KnowledgeStoreReader:
         for collection, owner, rid in sorted(refs):
             row = self.record(collection, owner, rid)
             value = self.expand_record(row)
-            _validate_selected_record(collection, row, value)
+            _validate_selected_record(collection, row, value, producer=self.root["bundle"]["producer"])
             if not requested_aliases[(collection, owner, rid)] <= self._record_aliases(collection, row, value):
                 _fail("lookup", "selected record does not match the requested selector")
             self._validated_records[collection].add((owner, rid))

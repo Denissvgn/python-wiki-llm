@@ -1,6 +1,6 @@
 # _ScopeNames
 
-**Location:** `src/llm_wiki_cli/extractors/python_bindings.py:33`
+**Location:** `src/llm_wiki_cli/extractors/python_bindings.py:1125`
 **Kind:** Class
 **Bases:** `ast.NodeVisitor`
 **Module:** [python_bindings](../modules/python_bindings.md)
@@ -19,7 +19,7 @@ _Auto-generated from `_ScopeNames` in `src/llm_wiki_cli/extractors/python_bindin
 |--------|-----------|------------|-------------|
 | `__init__` | `()` | — | — |
 | `visit_Name` | `(node)` | — | — |
-| `visit_FunctionDef` | `(node)` | — | — |
+| `visit_FunctionDef` | `(node: ast.FunctionDef \| ast.AsyncFunctionDef \| ast.ClassDef)` | — | — |
 | `visit_AsyncFunctionDef` | `(node)` | — | — |
 | `visit_ClassDef` | `(node)` | — | — |
 | `visit_Lambda` | `(node)` | — | — |

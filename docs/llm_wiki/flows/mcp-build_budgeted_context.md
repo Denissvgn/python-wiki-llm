@@ -6,29 +6,36 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as build_budgeted_context
     participant p1 as _native_tool_call
-    participant p2 as callback
-    participant p3 as str
-    participant p4 as CallToolResult (src/llm_wiki_cli/services…erver.py:_native_tool_call)
-    participant p5 as TextContent (src/llm_wiki_cli/services…erver.py:_native_tool_call)
-    participant p6 as json.dumps
-    participant p7 as isinstance
-    participant p8 as CallToolResult (src/llm_wiki_cli/services….py:build_budgeted_context)
-    participant p9 as TextContent (src/llm_wiki_cli/services….py:build_budgeted_context)
+    participant p2 as isinstance
+    participant p3 as CallToolResult (src/llm_wiki_cli/services….py:build_budgeted_context)
+    participant p4 as TextContent (src/llm_wiki_cli/services….py:build_budgeted_context)
+    participant p5 as callback
+    participant p6 as str
+    participant p7 as CallToolResult (src/llm_wiki_cli/services…erver.py:_native_tool_call)
+    participant p8 as TextContent (src/llm_wiki_cli/services…erver.py:_native_tool_call)
+    participant p9 as json.dumps
     p0->>p1: _native_tool_call
-    p1-->>p2: callback
-    p1-->>p3: str
-    p1-->>p4: CallToolResult (src/llm_wiki_cli/services…erver.py:_native_tool_call)
-    p1-->>p5: TextContent (src/llm_wiki_cli/services…erver.py:_native_tool_call)
-    p1-->>p6: json.dumps
-    p0-->>p7: isinstance
-    p0-->>p8: CallToolResult (src/llm_wiki_cli/services….py:build_budgeted_context)
-    p0-->>p9: TextContent (src/llm_wiki_cli/services….py:build_budgeted_context)
+    p0-->>p2: isinstance(result, str)
+    p0-->>p3: CallToolResult (src/llm_wiki_cli/services….py:build_budgeted_context)(content=[...])
+    p0-->>p4: TextContent (src/llm_wiki_cli/services….py:build_budgeted_context)(type='text', text=result)
+    p1-->>p5: callback(..., **=kwargs)
+    p1-->>p6: str(exc)
+    p1-->>p7: CallToolResult (src/llm_wiki_cli/services…erver.py:_native_tool_call)(isError=True, content=[...], structuredContent=failure)
+    p1-->>p8: TextContent (src/llm_wiki_cli/services…erver.py:_native_tool_call)(type='text', text=json.dumps(...))
+    p1-->>p9: json.dumps(failure, sort_keys=True)
 ```
+
+> Call sequence diagram shows 9 of 9 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 7 of 7 (0 omitted); unresolved 1 of 1 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 
@@ -77,15 +84,15 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_budgeted_context | _native_tool_call | 1524 | `_native_tool_call(service.build_budgeted_context, request)` |
-| _native_tool_call | callback | 1309 | `callback(..., **=kwargs)` |
-| _native_tool_call | str | 1317 | `str(exc)` |
-| _native_tool_call | CallToolResult (src/llm_wiki_cli/services…erver.py:_native_tool_call) | 1321 | `CallToolResult(isError=True, content=[...], structuredContent=failure)` |
-| _native_tool_call | TextContent (src/llm_wiki_cli/services…erver.py:_native_tool_call) | 1323 | `TextContent(type='text', text=json.dumps(...))` |
-| _native_tool_call | json.dumps | 1323 | `json.dumps(failure, sort_keys=True)` |
-| build_budgeted_context | isinstance | 1525 | `isinstance(result, str)` |
-| build_budgeted_context | CallToolResult (src/llm_wiki_cli/services….py:build_budgeted_context) | 1526 | `CallToolResult(content=[...])` |
-| build_budgeted_context | TextContent (src/llm_wiki_cli/services….py:build_budgeted_context) | 1526 | `TextContent(type='text', text=result)` |
+| build_budgeted_context | _native_tool_call | 1572 | `_native_tool_call(service.build_budgeted_context, request)` |
+| _native_tool_call | callback | 1354 | `callback(..., **=kwargs)` |
+| _native_tool_call | str | 1362 | `str(exc)` |
+| _native_tool_call | CallToolResult (src/llm_wiki_cli/services…erver.py:_native_tool_call) | 1366 | `CallToolResult(isError=True, content=[...], structuredContent=failure)` |
+| _native_tool_call | TextContent (src/llm_wiki_cli/services…erver.py:_native_tool_call) | 1368 | `TextContent(type='text', text=json.dumps(...))` |
+| _native_tool_call | json.dumps | 1368 | `json.dumps(failure, sort_keys=True)` |
+| build_budgeted_context | isinstance | 1573 | `isinstance(result, str)` |
+| build_budgeted_context | CallToolResult (src/llm_wiki_cli/services….py:build_budgeted_context) | 1574 | `CallToolResult(content=[...])` |
+| build_budgeted_context | TextContent (src/llm_wiki_cli/services….py:build_budgeted_context) | 1574 | `TextContent(type='text', text=result)` |
 
 ### Boundary effects
 
@@ -95,13 +102,13 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_native_tool_call` | `callback` | 1309 |
-| external_call | `_native_tool_call` | `CallToolResult` | 1321 |
-| external_call | `_native_tool_call` | `TextContent` | 1323 |
-| external_call | `_native_tool_call` | `json.dumps` | 1323 |
-| external_call | `build_budgeted_context` | `isinstance` | 1525 |
-| external_call | `build_budgeted_context` | `CallToolResult` | 1526 |
-| external_call | `build_budgeted_context` | `TextContent` | 1526 |
+| unresolved_call | `_native_tool_call` | `callback` | 1354 |
+| external_call | `_native_tool_call` | `CallToolResult` | 1366 |
+| external_call | `_native_tool_call` | `TextContent` | 1368 |
+| external_call | `_native_tool_call` | `json.dumps` | 1368 |
+| external_call | `build_budgeted_context` | `isinstance` | 1573 |
+| external_call | `build_budgeted_context` | `CallToolResult` | 1574 |
+| external_call | `build_budgeted_context` | `TextContent` | 1574 |
 
 ## Behavior
 

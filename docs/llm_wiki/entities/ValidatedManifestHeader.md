@@ -1,6 +1,6 @@
 # ValidatedManifestHeader
 
-**Location:** `src/llm_wiki_cli/services/manifest_storage.py:212`
+**Location:** `src/llm_wiki_cli/services/manifest_storage.py:248`
 **Kind:** Class
 **Bases:** —
 **Module:** [manifest_storage](../modules/manifest_storage.md)
@@ -18,6 +18,9 @@ An immutable view of committed generation policy, artifact hashes and the physic
 | `generation_inputs` | `Mapping[str, Any]` | *required* | — |
 | `artifact_hashes` | `ManifestArtifactHashes \| None` | *required* | — |
 | `storage_version` | `int` | *required* | — |
+| `adoption_id` | `str \| None` | `None` | — |
+| `maintenance_state_hash` | `str \| None` | `None` | — |
+| `whole_maintenance_state_validated` | `bool` | `False` | — |
 
 ## Methods
 
@@ -42,7 +45,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [manifest_storage](../modules/manifest_storage.md) | 0 | `artifact_hashes`, `generation_inputs`, `storage_version` |
+| [manifest_storage](../modules/manifest_storage.md) | 0 | `adoption_id`, `artifact_hashes`, `generation_inputs`, `maintenance_state_hash`, `storage_version`, `whole_maintenance_state_validated` |
 
 ### References
 

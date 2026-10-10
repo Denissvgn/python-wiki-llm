@@ -16,6 +16,9 @@ import json
 import posixpath
 import re
 from collections.abc import Mapping, Sequence
+from contextlib import contextmanager
+from contextvars import ContextVar
+from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Any
 from urllib.parse import urlsplit
@@ -156,6 +159,7 @@ class KnowledgeIndexInputs:
         default_factory=dict
     )
     extensions: Mapping[str, Any] = field(default_factory=dict)
+    concept_extensions_by_page: Mapping[str, Mapping[str, Any]] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -216,7 +220,7 @@ def build_knowledge_index(inputs: KnowledgeIndexInputs) -> KnowledgeIndex:
     """Build one deterministic v1 knowledge index without performing I/O."""
 
     context = _validate_and_join_inputs(inputs)
-    concepts = tuple(_concept_for_page(joined) for joined in context.joined_pages)
+    concepts = tuple(_concept_for_page(joined, inputs.concept_extensions_by_page.get(joined.page.relative_path, {})) for joined in context.joined_pages)
     relationships = [
         relationship
         for joined in context.joined_pages
@@ -294,6 +298,118 @@ def _validated_index_serialization(value: object) -> tuple[KnowledgeIndex, bytes
     model = freeze(validate_knowledge_index(value))
     content = _serialize_payload(_model_to_payload(model))
     return model, content.encode("utf-8")
+
+
+@dataclass(frozen=True)
+class _IndexValidationOperation:
+    wiki_root: Path
+    token: object = field(default_factory=object)
+    _active: bool = field(default=True, init=False, repr=False, compare=False)
+
+
+_INDEX_VALIDATION_OPERATION: ContextVar[_IndexValidationOperation | None] = ContextVar(
+    "knowledge_index_validation_operation", default=None
+)
+
+
+@contextmanager
+def _knowledge_validation_operation(wiki_root: Path):
+    """Own a short-lived final-model handoff; perform no filesystem reads."""
+    if not isinstance(wiki_root, Path) or not wiki_root.is_absolute():
+        raise TypeError("validation operation requires an absolute wiki root")
+    operation = _IndexValidationOperation(wiki_root)
+    token = _INDEX_VALIDATION_OPERATION.set(operation)
+    try:
+        yield
+    finally:
+        object.__setattr__(operation, "_active", False)
+        _INDEX_VALIDATION_OPERATION.reset(token)
+
+
+def _has_validation_operation(wiki_root: Path) -> bool:
+    operation = _INDEX_VALIDATION_OPERATION.get()
+    return operation is not None and operation._active and operation.wiki_root == wiki_root
+
+
+def _validator_identity() -> tuple:
+    from . import contracts, knowledge_model
+
+    functions = (parse_knowledge_index, knowledge_model.parse_knowledge_index,
+                 validate_knowledge_index, _validate_builder_model, _validated_index_serialization, _serialize_payload,
+                 _model_to_payload, _knowledge_index_to_payload_unchecked)
+    return (KNOWLEDGE_SCHEMA_VERSION, contracts.KNOWLEDGE_SCHEMA_VERSION,
+            knowledge_model.KNOWLEDGE_SCHEMA_VERSION,
+            tuple((function, getattr(function, "__code__", None)) for function in functions))
+
+
+_INDEX_RECEIPT_ISSUER = object()
+
+
+@dataclass(frozen=True, init=False)
+class _IndexValidationProof:
+    model: KnowledgeIndex
+    content: bytes
+    operation: _IndexValidationOperation
+    validator_identity: tuple
+    _issuer: object = field(repr=False, compare=False)
+
+    def __init__(self, model, content, operation, *, issuer):
+        if issuer is not _INDEX_RECEIPT_ISSUER:
+            raise TypeError("validation proof must be issued by the final validator")
+        object.__setattr__(self, "model", model)
+        object.__setattr__(self, "content", content)
+        object.__setattr__(self, "operation", operation)
+        object.__setattr__(self, "validator_identity", _validator_identity())
+        object.__setattr__(self, "_issuer", issuer)
+
+    def __deepcopy__(self, memo):
+        return self
+
+
+@dataclass(frozen=True)
+class _ValidatedIndexReceipt:
+    model: KnowledgeIndex
+    content: bytes
+    wiki_root: Path
+    _proof: _IndexValidationProof | None = field(default=None, init=False, repr=False, compare=False)
+
+    def __deepcopy__(self, memo):
+        return self
+
+
+def _validated_index_receipt(value: object, wiki_root: Path) -> _ValidatedIndexReceipt:
+    operation = _INDEX_VALIDATION_OPERATION.get()
+    if operation is None or not operation._active or operation.wiki_root != wiki_root:
+        raise TypeError("final validation receipt requires its active wiki operation")
+    identity = _validator_identity()
+    model, content = _validated_index_serialization(value)
+    if identity != _validator_identity():
+        raise TypeError("knowledge validators changed during final validation")
+    receipt = _ValidatedIndexReceipt(model, content, wiki_root)
+    object.__setattr__(receipt, "_proof", _IndexValidationProof(model, content, operation, issuer=_INDEX_RECEIPT_ISSUER))
+    return receipt
+
+
+def _require_validation_receipt(value: object, wiki_root: Path, content: bytes) -> KnowledgeIndex:
+    if (not isinstance(value, _ValidatedIndexReceipt)
+            or not isinstance(value._proof, _IndexValidationProof)
+            or value._proof._issuer is not _INDEX_RECEIPT_ISSUER):
+        raise TypeError("final knowledge receipt was not issued by its validator")
+    proof = value._proof
+    operation = _INDEX_VALIDATION_OPERATION.get()
+    if (operation is None or not operation._active or proof.operation is not operation
+            or operation.wiki_root != wiki_root or value.wiki_root != wiki_root
+            or proof.model is not value.model or proof.content is not value.content
+            or type(content) is not bytes or content != proof.content
+            or proof.validator_identity != _validator_identity()):
+        raise TypeError("final knowledge receipt differs from its operation, root, bytes or validators")
+    # Frozen containers prevent ordinary mutation; exact emission also detects
+    # illicit dataclass/container mutation without repeating semantic parsing.
+    if _serialize_payload(_model_to_payload(value.model)).encode("utf-8") != proof.content:
+        raise TypeError("final knowledge model differs from its validated canonical bytes")
+    if proof.validator_identity != _validator_identity():
+        raise TypeError("knowledge validators changed during receipt verification")
+    return value.model
 
 
 def _serialize_payload(payload: dict[str, Any]) -> str:
@@ -1294,7 +1410,7 @@ def _observation_contains_authority_userinfo(
     )
 
 
-def _concept_for_page(joined: _JoinedPage) -> ConceptRecord:
+def _concept_for_page(joined: _JoinedPage, extensions: Mapping[str, Any]) -> ConceptRecord:
     concept_kind = concept_kind_for_page_kind(joined.page.kind)
     return ConceptRecord(
         locator=joined.page.mcp_uri,
@@ -1316,6 +1432,7 @@ def _concept_for_page(joined: _JoinedPage) -> ConceptRecord:
             ),
         ),
         lifecycle=Lifecycle.UNKNOWN,
+        extensions=extensions,
     )
 
 

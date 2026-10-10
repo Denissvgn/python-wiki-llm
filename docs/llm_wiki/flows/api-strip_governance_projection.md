@@ -15,6 +15,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -29,50 +31,64 @@ sequenceDiagram
     participant p8 as graph_payload.get
     participant p9 as edge.get
     participant p10 as validate_typed_graph
-    participant p11 as _parse_typed_graph
-    participant p12 as _object
-    participant p13 as require_mapping
-    participant p14 as isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    participant p15 as key.encode
+    participant p11 as snapshot_extensions.pop
+    participant p12 as tuple (src/llm_wiki_cli/services…rip_governance_projection)
+    participant p13 as _parse_typed_graph
+    participant p14 as _object
+    participant p15 as _only_fields
     participant p16 as KnowledgeGraphError
-    participant p17 as dict (src/llm_wiki_cli/services…nowledge_graph.py:_object)
-    participant p18 as _only_fields
-    participant p19 as require_exact_fields
-    participant p20 as isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p21 as str (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…rip_governance_projection)
-    p0-->>p2: TypeError
-    p0-->>p3: dict (src/llm_wiki_cli/services…rip_governance_projection)
-    p0-->>p4: extensions.pop
-    p0-->>p5: concepts.append
-    p0-->>p6: replace
-    p0-->>p3: dict (src/llm_wiki_cli/services…rip_governance_projection)
-    p0-->>p4: extensions.pop
-    p0-->>p7: extensions.get
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…rip_governance_projection)
-    p0-->>p3: dict (src/llm_wiki_cli/services…rip_governance_projection)
-    p0-->>p8: graph_payload.get
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…rip_governance_projection)
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…rip_governance_projection)
-    p0-->>p9: edge.get
-    p0-->>p9: edge.get
+    participant p17 as _normalise_input_hashes
+    participant p18 as _array
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…rip_governance_projection)(knowledge, KnowledgeIndex)
+    p0-->>p2: TypeError('knowledge must be a KnowledgeIndex')
+    p0-->>p3: dict (src/llm_wiki_cli/services…rip_governance_projection)(concept.extensions)
+    p0-->>p4: extensions.pop(GOVERNANCE_EXTENSION_KEY, None)
+    p0-->>p5: concepts.append(replace(...))
+    p0-->>p6: replace(concept, lifecycle=Lifecycle.UNKNOWN, extensions=extensions)
+    p0-->>p3: dict (src/llm_wiki_cli/services…rip_governance_projection)(knowledge.extensions)
+    p0-->>p4: extensions.pop(GOVERNANCE_EXTENSION_KEY, None)
+    p0-->>p7: extensions.get('llm-wiki/typed-graph-v1')
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…rip_governance_projection)(graph, Mapping)
+    p0-->>p3: dict (src/llm_wiki_cli/services…rip_governance_projection)(graph)
+    p0-->>p8: graph_payload.get('edges')
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…rip_governance_projection)(edges, list)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…rip_governance_projection)(edge, Mapping)
+    p0-->>p9: edge.get('kind')
+    p0-->>p9: edge.get('origin')
     p0->>p10: validate_typed_graph
-    p10->>p11: _parse_typed_graph
-    p11->>p12: _object
-    p12->>p13: require_mapping
-    p13-->>p14: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    p13-->>p14: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    p13-->>p15: key.encode
-    p12->>p16: KnowledgeGraphError
-    p12->>p16: KnowledgeGraphError
-    p12-->>p17: dict (src/llm_wiki_cli/services…nowledge_graph.py:_object)
-    p11->>p18: _only_fields
-    p18->>p19: require_exact_fields
-    p19-->>p20: isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p19-->>p21: str (src/llm_wiki_cli/services…n.py:require_exact_fields)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…rip_governance_projection)(concept.concept_kind, ConceptKind)
+    p0-->>p3: dict (src/llm_wiki_cli/services…rip_governance_projection)(knowledge.bundle.snapshot.extensions)
+    p0-->>p11: snapshot_extensions.pop(GOVERNANCE_HASH_EXTENSION_KEY, None)
+    p0-->>p6: replace(knowledge.bundle, snapshot=replace(...))
+    p0-->>p6: replace(knowledge.bundle.snapshot, extensions=snapshot_extensions)
+    p0-->>p6: replace(knowledge, bundle=bundle, concepts=tuple(...), extensions=extensions)
+    p0-->>p12: tuple (src/llm_wiki_cli/services…rip_governance_projection)(concepts)
+    p10->>p13: _parse_typed_graph
+    p13->>p14: _object
+    p13->>p15: _only_fields
+    p13->>p16: KnowledgeGraphError
+    p13->>p17: _normalise_input_hashes
+    p13->>p18: _array
 ```
 
-> Call sequence diagram shows 30 of 357 interactions; 327 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 357 interactions; 327 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 15 of 87 (72 omitted); unresolved 8 of 58 (50 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/knowledge_graph.py:_object` | 20 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_mapping` | 21 | - | external | 2 |
+| `src/llm_wiki_cli/services/validation.py:require_mapping` | 21 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/knowledge_graph.py:_object` | 20 | [src/llm_wiki_cli/services/knowledge_graph.py](../modules/knowledge_graph.md) | internal | 2 |
+| `src/llm_wiki_cli/services/knowledge_graph.py:_object` | 20 | - | external | 1 |
+| `src/llm_wiki_cli/services/knowledge_graph.py:_only_fields` | 28 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 29 | - | external | 9 |
+| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 29 | - | unresolved | 2 |
+> Omission summary shows 8 of 105 groups; 97 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

@@ -44,13 +44,16 @@ And updates the reference links at the bottom of the file.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/cli.py"]
-    n1["src/llm_wiki_cli/commands/release_cmd.py"]
-    n2["src/llm_wiki_cli/services/versioning.py"]
-    n0 --> n1
+    n1["src/llm_wiki_cli/commands/__init__.py"]
+    n2["src/llm_wiki_cli/commands/release_cmd.py"]
+    n3["src/llm_wiki_cli/services/versioning.py"]
+    n0 --> n2
     n1 --> n2
+    n2 --> n3
     click n0 "../modules/cli.md"
-    click n1 "../modules/release_cmd.md"
-    click n2 "../modules/versioning.md"
+    click n1 "../modules/commands___init__.md"
+    click n2 "../modules/release_cmd.md"
+    click n3 "../modules/versioning.md"
 ```
 
 ### Internal neighbors
@@ -58,6 +61,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [cli](../modules/cli.md) |
+| Inbound | [commands___init__](../modules/commands___init__.md) |
 | Outbound | [versioning](../modules/versioning.md) |
 
 ## Functions

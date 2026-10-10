@@ -25,57 +25,83 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as main
     participant p1 as _arguments
-    participant p2 as argparse.ArgumentParser
-    participant p3 as parser.add_subparsers
-    participant p4 as commands.add_parser
-    participant p5 as validate.add_argument
-    participant p6 as summary.add_argument
-    participant p7 as parser.parse_args
-    participant p8 as load_ci_check_payload
-    participant p9 as Path (src/llm_wiki_cli/services….py:load_ci_check_payload)
-    participant p10 as report_path.is_symlink
-    participant p11 as report_path.is_file
-    participant p12 as CiCheckReportError
-    participant p13 as report_path.read_text
-    participant p14 as json.loads
+    participant p2 as load_ci_check_payload
+    participant p3 as CiCheckReportError
+    participant p4 as Path (src/llm_wiki_cli/services/ci_report.py:main)
+    participant p5 as status_path.is_symlink
+    participant p6 as status_path.is_file
+    participant p7 as status_path.read_bytes().splitlines
+    participant p8 as status_path.read_bytes
+    participant p9 as render_ci_summary
+    participant p10 as output.is_symlink
+    participant p11 as output.parent.is_dir
+    participant p12 as output.write_bytes
+    participant p13 as SystemExit
+    participant p14 as argparse.ArgumentParser
+    participant p15 as Path (src/llm_wiki_cli/services….py:load_ci_check_payload)
+    participant p16 as parser.add_subparsers
+    participant p17 as report_path.is_symlink
+    participant p18 as isinstance (src/llm_wiki_cli/services…port.py:render_ci_summary)
+    participant p19 as commands.add_parser
+    participant p20 as report_path.is_file
+    participant p21 as validate.add_argument
     p0->>p1: _arguments
-    p1-->>p2: argparse.ArgumentParser
-    p1-->>p3: parser.add_subparsers
-    p1-->>p4: commands.add_parser
-    p1-->>p5: validate.add_argument
-    p1-->>p5: validate.add_argument
-    p1-->>p5: validate.add_argument
-    p1-->>p4: commands.add_parser
-    p1-->>p6: summary.add_argument
-    p1-->>p6: summary.add_argument
-    p1-->>p6: summary.add_argument
-    p1-->>p6: summary.add_argument
-    p1-->>p6: summary.add_argument
-    p1-->>p6: summary.add_argument
-    p1-->>p6: summary.add_argument
-    p1-->>p6: summary.add_argument
-    p1-->>p6: summary.add_argument
-    p1-->>p6: summary.add_argument
-    p1-->>p6: summary.add_argument
-    p1-->>p6: summary.add_argument
-    p1-->>p6: summary.add_argument
-    p1-->>p7: parser.parse_args
-    p0->>p8: load_ci_check_payload
-    p8-->>p9: Path (src/llm_wiki_cli/services….py:load_ci_check_payload)
-    p8-->>p10: report_path.is_symlink
-    p8-->>p11: report_path.is_file
-    p8->>p12: CiCheckReportError
-    p8-->>p13: report_path.read_text
-    p8-->>p14: json.loads
-    p8->>p12: CiCheckReportError
+    p0->>p2: load_ci_check_payload
+    p0->>p3: CiCheckReportError
+    p0->>p2: load_ci_check_payload
+    p0-->>p4: Path (src/llm_wiki_cli/services/ci_report.py:main)(args.status_path)
+    p0-->>p5: status_path.is_symlink
+    p0-->>p6: status_path.is_file
+    p0->>p3: CiCheckReportError
+    p0-->>p7: status_path.read_bytes().splitlines
+    p0-->>p8: status_path.read_bytes
+    p0->>p9: render_ci_summary
+    p0-->>p4: Path (src/llm_wiki_cli/services/ci_report.py:main)(args.report)
+    p0-->>p4: Path (src/llm_wiki_cli/services/ci_report.py:main)(args.output)
+    p0-->>p10: output.is_symlink
+    p0-->>p11: output.parent.is_dir
+    p0->>p3: CiCheckReportError
+    p0-->>p12: output.write_bytes(payload)
+    p0-->>p13: SystemExit(...)
+    p1-->>p14: argparse.ArgumentParser
+    p2-->>p15: Path (src/llm_wiki_cli/services….py:load_ci_check_payload)(path)
+    p9->>p3: CiCheckReportError
+    p1-->>p16: parser.add_subparsers(dest='action', required=True)
+    p2-->>p17: report_path.is_symlink
+    p9-->>p18: isinstance (src/llm_wiki_cli/services…port.py:render_ci_summary)(value, bool)
+    p1-->>p19: commands.add_parser('validate')
+    p2-->>p20: report_path.is_file
+    p9-->>p18: isinstance (src/llm_wiki_cli/services…port.py:render_ci_summary)(value, int)
+    p1-->>p21: validate.add_argument('--report', required=True)
+    p2->>p3: CiCheckReportError
+    p9->>p3: CiCheckReportError
 ```
 
-> Call sequence diagram shows 30 of 559 interactions; 529 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 559 interactions; 529 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 8 of 128 (120 omitted); unresolved 12 of 107 (95 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/ci_report.py:_arguments` | 2 | - | unresolved | 17 |
+| `src/llm_wiki_cli/services/ci_report.py:load_ci_check_payload` | 24 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/ci_report.py:load_ci_check_payload` | 24 | - | external | 1 |
+| `src/llm_wiki_cli/services/ci_report.py:load_ci_check_payload` | 24 | [src/llm_wiki_cli/services/ci_report.py](../modules/ci_report.md) | internal | 2 |
+| `src/llm_wiki_cli/services/ci_report.py:validate_ci_check_payload` | 32 | - | external | 9 |
+| `src/llm_wiki_cli/services/ci_report.py:validate_ci_check_payload` | 32 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/ci_report.py:validate_ci_check_payload` | 32 | [src/llm_wiki_cli/services/ci_report.py](../modules/ci_report.md) | internal | 31 |
+| `src/llm_wiki_cli/services/ci_report.py:_validate_ci_v3` | 35 | [src/llm_wiki_cli/services/ci_report.py](../modules/ci_report.md) | internal | 4 |
+> Omission summary shows 8 of 72 groups; 64 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

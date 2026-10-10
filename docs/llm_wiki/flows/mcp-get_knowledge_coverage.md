@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -17,12 +19,17 @@ sequenceDiagram
     participant p5 as TextContent
     participant p6 as json.dumps
     p0->>p1: _native_tool_call
-    p1-->>p2: callback
-    p1-->>p3: str
-    p1-->>p4: CallToolResult
-    p1-->>p5: TextContent
-    p1-->>p6: json.dumps
+    p1-->>p2: callback(..., **=kwargs)
+    p1-->>p3: str(exc)
+    p1-->>p4: CallToolResult(isError=True, content=[...], structuredContent=failure)
+    p1-->>p5: TextContent(type='text', text=json.dumps(...))
+    p1-->>p6: json.dumps(failure, sort_keys=True)
 ```
+
+> Call sequence diagram shows 6 of 6 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 4 of 4 (0 omitted); unresolved 1 of 1 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 
@@ -62,12 +69,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| get_knowledge_coverage | _native_tool_call | 1430 | `_native_tool_call(service.get_knowledge_coverage, live=live)` |
-| _native_tool_call | callback | 1309 | `callback(..., **=kwargs)` |
-| _native_tool_call | str | 1317 | `str(exc)` |
-| _native_tool_call | CallToolResult | 1321 | `CallToolResult(isError=True, content=[...], structuredContent=failure)` |
-| _native_tool_call | TextContent | 1323 | `TextContent(type='text', text=json.dumps(...))` |
-| _native_tool_call | json.dumps | 1323 | `json.dumps(failure, sort_keys=True)` |
+| get_knowledge_coverage | _native_tool_call | 1475 | `_native_tool_call(service.get_knowledge_coverage, live=live)` |
+| _native_tool_call | callback | 1354 | `callback(..., **=kwargs)` |
+| _native_tool_call | str | 1362 | `str(exc)` |
+| _native_tool_call | CallToolResult | 1366 | `CallToolResult(isError=True, content=[...], structuredContent=failure)` |
+| _native_tool_call | TextContent | 1368 | `TextContent(type='text', text=json.dumps(...))` |
+| _native_tool_call | json.dumps | 1368 | `json.dumps(failure, sort_keys=True)` |
 
 ### Boundary effects
 
@@ -77,10 +84,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_native_tool_call` | `callback` | 1309 |
-| external_call | `_native_tool_call` | `CallToolResult` | 1321 |
-| external_call | `_native_tool_call` | `TextContent` | 1323 |
-| external_call | `_native_tool_call` | `json.dumps` | 1323 |
+| unresolved_call | `_native_tool_call` | `callback` | 1354 |
+| external_call | `_native_tool_call` | `CallToolResult` | 1366 |
+| external_call | `_native_tool_call` | `TextContent` | 1368 |
+| external_call | `_native_tool_call` | `json.dumps` | 1368 |
 
 ## Behavior
 

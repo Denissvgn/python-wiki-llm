@@ -188,7 +188,7 @@ authority boundaries.
 
 ## Use cases
 
-| ID | Use case | Primary actor | User value | Current availability | Adoption tier |
+| ID | Use case | Primary actor | Potential user value | Current availability | Adoption tier |
 |---|---|---|---|---|---|
 | NK-UC-001 | Concept-level documentation drift diagnostics | Maintainer / reviewer | Surface stale repository documentation for review or external policy | Implemented as opt-in, nonblocking diagnostics | Core |
 | NK-UC-002 | Evidence-qualified context for coding agents | Agent / IDE integrator | Reduce confident use of stale or unsupported context | Implemented | Core |
@@ -255,7 +255,7 @@ inputs, governance state, or canonical Markdown.
 - low-cardinality aggregate summary suitable for CI;
 - no raw evidence or private repository metadata in the ordinary report.
 
-### Real value
+### Potential value
 
 This creates a documentation-specific review signal that is more precise than
 “docs changed with code” and more conservative than an LLM judging prose from
@@ -312,8 +312,10 @@ of related concepts.
    also branch on `status`, `selected`, and `fallback.used`.
 3. Use exact locators, canonical paths, durable UIDs, or persisted aliases for
    identity. Do not fuzzy-resolve concept identity.
-4. For ordinary work, prefer compact results and typed traversal without raw
-   evidence samples.
+4. For compatible task integrations, prefer task request v2 and validated
+   canonical delivery. Choose a compact view explicitly when useful; retain its
+   full receipt and every decisive gap. Typed traversal can omit raw evidence
+   samples when those samples are not needed.
 5. Request `explain_evidence` or `include_evidence=true` only for diagnostics
    that need repository-sensitive details.
 6. Preserve totals, truncation, analyzer coverage, unresolved targets, and
@@ -323,6 +325,12 @@ of related concepts.
 8. Use `prefer_fresh` only when current-first ordering within the same
    relevance tier is useful under budget pressure. It is not a filter or a
    validity threshold.
+
+For a source-only requirement, v2 `knowledge_mode: "off"` can run without a
+wiki. Keep native requirements native when they fail; bounded native task reads
+need explicit supported storage adoption. Source augmentation, qualified search
+grouping and context sessions are opt-in read choices, not evidence of measured
+model productivity. See [task recipes](native-agent-workflow.md).
 
 ### Delivery options
 
@@ -355,13 +363,13 @@ full-inventory opt-in. Supplied paths and unified diffs never establish a
 global live-freshness claim.
 
 `auto` preserves a successful read-only route through validated surface,
-Markdown, and targeted source/runtime evidence when native knowledge is
+Markdown, and targeted source evidence when native knowledge is
 unavailable. `required` returns `knowledge-required-unavailable` instead. A
 ready snapshot-only projection can satisfy `required`, but remains explicitly
 not live-qualified. See [Native knowledge reads](native-knowledge.md) for the
 exact status, reason, fallback, and bound fields.
 
-### Real value
+### Potential value
 
 The layer helps the agent decide how much confidence and follow-up inspection a
 piece of context deserves. It also avoids repeatedly scanning the repository
@@ -423,12 +431,13 @@ durable UID.
 6. Map impacted concepts to canonical wiki pages and semantic sections.
 7. Produce a code-impact summary plus a documentation-update checklist.
 
-### Real value
+### Potential value
 
 Legacy call and dependency queries answer useful topology questions. Native
 knowledge adds durable identity, typed origins, evidence, resolution, and
-coverage. Together they produce a more defensible impact report than either
-alone.
+coverage. Together they can support an impact report whose observations and
+limits are easier to inspect. Improved accuracy or review time needs evidence
+from the actual adopting workflow.
 
 ### Success measures
 
@@ -484,11 +493,12 @@ The user asks “where does this request enter?”, “what owns this behavior?�
 6. Record documentation gaps discovered during the investigation for the
    normal sync/review workflow.
 
-### Real value
+### Potential value
 
-The layer reduces navigation and confidence-checking time. It does not replace
-good narrative guides; it makes their linked structural claims easier to
-qualify and revisit.
+Qualified links can help readers choose what to inspect and which observations
+need corroboration. Navigation or review-time savings are not established for
+every workflow. Narrative guides remain the learning surface; their linked
+structural claims retain separate qualifications.
 
 ### Success measures
 
@@ -533,7 +543,7 @@ deprecated, or superseded.
 6. Record lifecycle changes explicitly; do not infer them from source removal.
 7. Resolve governance conflicts manually and regenerate projections.
 
-### Real value
+### Potential value
 
 This is useful where external agent memory, review history, or portal links must
 survive repository reorganization. It is unnecessary overhead for short-lived
@@ -578,7 +588,9 @@ receipt.
 
 ### Workflow
 
-1. Initialize governance if durable review is required.
+1. Initialize governance only when stable governance identity and explicit
+   human review are required. Ordinary durable prose-review tracking instead
+   uses optional `maintenance adopt`, without requiring governance.
 2. Identify the exact semantic section locator and concept UID.
 3. Record a human review with reviewer, method, version, and authored time.
 4. On later reads, compute whether the section, evidence basis, or concept
@@ -587,7 +599,7 @@ receipt.
 6. Treat human review, structural freshness, authorship, and machine results as
    independent dimensions.
 
-### Real value
+### Potential value
 
 Page-level approval is too broad and becomes noisy when generated blocks churn.
 Section-level review preserves useful human assurance while invalidating it
@@ -641,7 +653,7 @@ A maintained, governed wiki is exported to a static site or an Obsidian vault.
    mapping, and hub collisions.
 7. Rebuild disposable output rather than hand-editing metadata.
 
-### Real value
+### Potential value
 
 The projection makes identity, lifecycle, review state, and typed relationships
 useful outside the native JSON while retaining a clear privacy and authority
@@ -689,7 +701,7 @@ metadata.
    visibly retain stale/unknown results.
 5. The answer cites both the content and its qualification state.
 
-### Real value
+### Potential value
 
 This addresses a common RAG weakness: relevance alone does not indicate whether
 retrieved repository context still compares to source or retains valid review.
@@ -728,7 +740,7 @@ concept relationships and coverage to prioritize source inspection.
 - map findings back to stable concept/page identities;
 - inspect raw source and runtime evidence for decisive conclusions.
 
-### Real value
+### Potential value
 
 The native layer can reduce navigation work and make static-analysis limitations
 more visible. It is a feeder, not a vulnerability, exploitability, or runtime
@@ -753,6 +765,14 @@ bootstrap/sync
     -> targeted code or semantic-doc change
     -> sync and review
 ```
+
+For ordinary prose maintenance, explicitly adopt review tracking, inspect
+pending records, review the exact source/section, run the owning sync after the
+last semantic edit, and acknowledge the captured current basis with an explicit
+actor. Pending work survives synchronization and restarts. An agent or ordinary
+human acknowledgment does not grant human governance approval or reactivate an
+expired event. Keep a complete recovery bundle; reads never adopt or acknowledge.
+See [ordinary review](maintenance.md).
 
 Optional governance and distribution extend the loop:
 
@@ -780,6 +800,8 @@ diagnostic, but the native finding itself remains nonblocking.
 | 3 — Durable governance | UIDs, aliases, lifecycle, scoped review, verification receipts | Version-controlled governance ledger and maintainers | High-churn, long-lived repositories |
 | 4 — Derived distribution | Redacted Site/Obsidian summaries | Explicit projection profile and validation | Portals, public docs, PKM users |
 
+Ordinary review tracking is an independent optional choice at generated or
+qualified consumption levels; it does not require the durable-governance level.
 Users should be allowed to stop at any level. Governance and enriched
 projections should not be made mandatory for the core diagnostic/context value.
 

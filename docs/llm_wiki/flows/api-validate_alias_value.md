@@ -6,66 +6,82 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as validate_alias_value
     participant p1 as validate_alias_type
-    participant p2 as isinstance (src/llm_wiki_cli/services…ty.py:validate_alias_type)
-    participant p3 as AliasType
-    participant p4 as ConceptIdentityError
-    participant p5 as validate_locator
-    participant p6 as _machine_text
-    participant p7 as isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p8 as len (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p9 as value.strip (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p10 as any (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p11 as character.isspace (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p12 as unicodedata.normalize (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p13 as unicodedata.category(…).startswith (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p14 as unicodedata.category (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p15 as _contains_uri_userinfo
-    participant p16 as urlsplit
-    participant p17 as _looks_absolute_path
-    participant p18 as value.startswith
-    participant p19 as _WINDOWS_ABSOLUTE_RE.match
-    participant p20 as validate_exact_page_coordinate
-    participant p21 as isinstance (src/llm_wiki_cli/services…ate_exact_page_coordinate)
-    participant p22 as value.strip (src/llm_wiki_cli/services…ate_exact_page_coordinate)
-    participant p23 as WikiSurfaceError
+    participant p2 as validate_locator
+    participant p3 as validate_natural_key
+    participant p4 as isinstance (src/llm_wiki_cli/services…ty.py:validate_alias_type)
+    participant p5 as _machine_text
+    participant p6 as AliasType
+    participant p7 as _contains_uri_userinfo
+    participant p8 as text.partition
+    participant p9 as ConceptIdentityError
+    participant p10 as _looks_absolute_path
+    participant p11 as _NATURAL_KEY_PREFIX_RE.fullmatch
+    participant p12 as _NATURAL_KEY_PAYLOAD_RE.fullmatch
+    participant p13 as validate_exact_page_coordinate
+    participant p14 as _INVALID_PERCENT_RE.search
+    participant p15 as _PERCENT_ESCAPE_RE.finditer
+    participant p16 as match.group
+    participant p17 as match.group(…).upper
+    participant p18 as unquote (src/llm_wiki_cli/services…y.py:validate_natural_key)
+    participant p19 as _safe_decoded_coordinate
+    participant p20 as quote (src/llm_wiki_cli/services…y.py:validate_natural_key)
     p0->>p1: validate_alias_type
-    p1-->>p2: isinstance (src/llm_wiki_cli/services…ty.py:validate_alias_type)
-    p1->>p3: AliasType
-    p1->>p4: ConceptIdentityError
-    p0->>p5: validate_locator
-    p5->>p6: _machine_text
-    p6-->>p7: isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p6->>p4: ConceptIdentityError
-    p6-->>p8: len (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p6->>p4: ConceptIdentityError
-    p6-->>p9: value.strip (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p6-->>p10: any (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p6-->>p11: character.isspace (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p6->>p4: ConceptIdentityError
-    p6-->>p12: unicodedata.normalize (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p6->>p4: ConceptIdentityError
-    p6-->>p10: any (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p6-->>p13: unicodedata.category(…).startswith (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p6-->>p14: unicodedata.category (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p6->>p4: ConceptIdentityError
-    p5->>p15: _contains_uri_userinfo
-    p15-->>p16: urlsplit
-    p5->>p17: _looks_absolute_path
-    p17-->>p18: value.startswith
-    p17-->>p19: _WINDOWS_ABSOLUTE_RE.match
-    p5->>p4: ConceptIdentityError
-    p5->>p20: validate_exact_page_coordinate
-    p20-->>p21: isinstance (src/llm_wiki_cli/services…ate_exact_page_coordinate)
-    p20-->>p22: value.strip (src/llm_wiki_cli/services…ate_exact_page_coordinate)
-    p20->>p23: WikiSurfaceError
+    p0->>p2: validate_locator
+    p0->>p3: validate_natural_key
+    p1-->>p4: isinstance (src/llm_wiki_cli/services…ty.py:validate_alias_type)(value, AliasType)
+    p2->>p5: _machine_text
+    p3->>p5: _machine_text
+    p1->>p6: AliasType
+    p2->>p7: _contains_uri_userinfo
+    p3-->>p8: text.partition(':')
+    p1->>p9: ConceptIdentityError
+    p2->>p10: _looks_absolute_path
+    p3-->>p11: _NATURAL_KEY_PREFIX_RE.fullmatch(prefix)
+    p2->>p9: ConceptIdentityError
+    p3-->>p12: _NATURAL_KEY_PAYLOAD_RE.fullmatch(payload)
+    p2->>p13: validate_exact_page_coordinate
+    p3->>p9: ConceptIdentityError
+    p2->>p9: ConceptIdentityError
+    p3-->>p14: _INVALID_PERCENT_RE.search(payload)
+    p2->>p9: ConceptIdentityError
+    p3->>p9: ConceptIdentityError
+    p3-->>p15: _PERCENT_ESCAPE_RE.finditer(payload)
+    p3-->>p16: match.group(1)
+    p3-->>p17: match.group(…).upper
+    p3-->>p16: match.group(1)
+    p3->>p9: ConceptIdentityError
+    p3-->>p18: unquote (src/llm_wiki_cli/services…y.py:validate_natural_key)(payload, encoding='utf-8', errors='strict')
+    p3->>p9: ConceptIdentityError
+    p3->>p19: _safe_decoded_coordinate
+    p3-->>p20: quote (src/llm_wiki_cli/services…y.py:validate_natural_key)(decoded, safe=_NATURAL_KEY_QUOTE_SAFE)
+    p3->>p9: ConceptIdentityError
 ```
 
-> Call sequence diagram shows 30 of 121 interactions; 91 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 121 interactions; 91 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 3 of 31 (28 omitted); unresolved 8 of 30 (22 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 7 | - | external | 6 |
+| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 7 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 5 |
+| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 7 | - | unresolved | 3 |
+| `src/llm_wiki_cli/services/concept_identity.py:_contains_uri_userinfo` | 22 | - | external | 1 |
+| `src/llm_wiki_cli/services/concept_identity.py:_looks_absolute_path` | 24 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 28 | - | external | 4 |
+| `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 28 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 28 | [src/llm_wiki_cli/services/wiki_surface.py](../modules/wiki_surface.md) | internal | 7 |
+> Omission summary shows 8 of 33 groups; 25 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

@@ -84,7 +84,7 @@ flowchart LR
 | `load_knowledge_read_view` | call | [knowledge_consumption](../modules/knowledge_consumption.md) | 1 |
 | `_load_once` | call | [knowledge_loader](../modules/knowledge_loader.md) | 13 |
 | `_load_once` | type_reference | [knowledge_loader](../modules/knowledge_loader.md) | — |
-| `load_knowledge_state` | call | [knowledge_loader](../modules/knowledge_loader.md) | 1 |
+| `load_knowledge_state` | call | [knowledge_loader](../modules/knowledge_loader.md) | 2 |
 | `load_knowledge_state` | type_reference | [knowledge_loader](../modules/knowledge_loader.md) | — |
 | `_degraded_snapshot_view` | call | [knowledge_observability](../modules/knowledge_observability.md) | 1 |
 | `_snapshot_error_view` | call | [knowledge_observability](../modules/knowledge_observability.md) | 2 |

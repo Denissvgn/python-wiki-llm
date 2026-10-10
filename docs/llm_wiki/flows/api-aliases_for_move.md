@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -14,55 +16,72 @@ sequenceDiagram
     participant p2 as TypeError (src/llm_wiki_cli/services…ntity.py:aliases_for_move)
     participant p3 as ConceptIdentityError
     participant p4 as _typed_tuple
-    participant p5 as isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)
-    participant p6 as TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)
-    participant p7 as tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple)
-    participant p8 as enumerate
-    participant p9 as identity_coordinate_key
+    participant p5 as identity_coordinate_key
+    participant p6 as result.append
+    participant p7 as IdentityAlias
+    participant p8 as _deduplicated_aliases
+    participant p9 as isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)
     participant p10 as validate_alias_type
-    participant p11 as isinstance (src/llm_wiki_cli/services…ty.py:validate_alias_type)
-    participant p12 as AliasType
+    participant p11 as cast (src/llm_wiki_cli/services….py:_deduplicated_aliases)
+    participant p12 as TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)
     participant p13 as validate_alias_value
-    participant p14 as validate_locator
-    participant p15 as _machine_text
-    participant p16 as isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p17 as len (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p18 as value.strip (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p19 as any (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p20 as character.isspace (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…ntity.py:aliases_for_move)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…ntity.py:aliases_for_move)
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…ntity.py:aliases_for_move)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…ntity.py:aliases_for_move)
+    participant p14 as tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple)
+    participant p15 as normalized.startswith
+    participant p16 as iter_page_kinds
+    participant p17 as _sorted_aliases
+    participant p18 as enumerate
+    participant p19 as canonical_path
+    participant p20 as by_key.values
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…ntity.py:aliases_for_move)(allocation, ConceptAllocation)
+    p0-->>p2: TypeError (src/llm_wiki_cli/services…ntity.py:aliases_for_move)('allocation must be a ConceptAllocation')
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…ntity.py:aliases_for_move)(new_reference, ConceptReference)
+    p0-->>p2: TypeError (src/llm_wiki_cli/services…ntity.py:aliases_for_move)('new_reference must be a ConceptReference')
     p0->>p3: ConceptIdentityError
     p0->>p4: _typed_tuple
-    p4-->>p5: isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)
-    p4-->>p6: TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)
-    p4-->>p7: tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple)
-    p4-->>p6: TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)
-    p4-->>p8: enumerate
-    p4-->>p5: isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)
-    p4-->>p6: TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)
-    p0->>p9: identity_coordinate_key
-    p9->>p10: validate_alias_type
-    p10-->>p11: isinstance (src/llm_wiki_cli/services…ty.py:validate_alias_type)
-    p10->>p12: AliasType
-    p10->>p3: ConceptIdentityError
-    p9->>p13: validate_alias_value
-    p13->>p10: validate_alias_type
-    p13->>p14: validate_locator
-    p14->>p15: _machine_text
-    p15-->>p16: isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p15->>p3: ConceptIdentityError
-    p15-->>p17: len (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p15->>p3: ConceptIdentityError
-    p15-->>p18: value.strip (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p15-->>p19: any (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p15-->>p20: character.isspace (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p15->>p3: ConceptIdentityError
+    p0->>p5: identity_coordinate_key
+    p0->>p5: identity_coordinate_key
+    p0-->>p6: result.append(IdentityAlias(...))
+    p0->>p7: IdentityAlias
+    p0->>p5: identity_coordinate_key
+    p0->>p5: identity_coordinate_key
+    p0-->>p6: result.append(IdentityAlias(...))
+    p0->>p7: IdentityAlias
+    p0->>p8: _deduplicated_aliases
+    p4-->>p9: isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)(values, (...))
+    p5->>p10: validate_alias_type
+    p8-->>p11: cast (src/llm_wiki_cli/services….py:_deduplicated_aliases)(AliasType, item.alias_type)
+    p4-->>p12: TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)(...)
+    p5->>p13: validate_alias_value
+    p8->>p5: identity_coordinate_key
+    p4-->>p14: tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple)(values)
+    p5-->>p15: normalized.startswith('llm-wiki://')
+    p8-->>p11: cast (src/llm_wiki_cli/services….py:_deduplicated_aliases)(AliasType, item.alias_type)
+    p4-->>p12: TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)(...)
+    p5->>p16: iter_page_kinds
+    p8->>p17: _sorted_aliases
+    p4-->>p18: enumerate(result)
+    p5->>p19: canonical_path
+    p8-->>p20: by_key.values
 ```
 
-> Call sequence diagram shows 30 of 141 interactions; 111 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 141 interactions; 111 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 11 of 45 (34 omitted); unresolved 4 of 33 (29 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/concept_identity.py:_typed_tuple` | 7 | - | external | 2 |
+| `src/llm_wiki_cli/services/concept_identity.py:validate_alias_type` | 16 | - | external | 1 |
+| `src/llm_wiki_cli/services/concept_identity.py:validate_alias_type` | 16 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 2 |
+| `src/llm_wiki_cli/services/concept_identity.py:validate_alias_value` | 20 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 3 |
+| `src/llm_wiki_cli/services/concept_identity.py:validate_locator` | 22 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 6 |
+| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 23 | - | external | 6 |
+| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 23 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 5 |
+| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 23 | - | unresolved | 3 |
+> Omission summary shows 8 of 32 groups; 24 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

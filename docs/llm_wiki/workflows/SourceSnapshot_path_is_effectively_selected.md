@@ -17,6 +17,7 @@ globally excluded, agent-worktree, or bundled-helper paths.
 2. `config.is_agent_worktree_path`
 3. `common.is_bundled_helper_implementation_path`
 4. `config.GitIgnoreMatcher`
+5. `config.GitIgnoreMatcher.is_ignored`
 
 ## Touches
 

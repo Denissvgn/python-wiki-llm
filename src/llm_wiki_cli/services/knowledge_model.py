@@ -556,6 +556,18 @@ def parse_knowledge_index(payload: object) -> KnowledgeIndex:
         relationships=relationships,
         extensions=extensions,
     )
+    from .implementation_evidence import validate_implementation_collection
+
+    try:
+        validate_implementation_collection(concepts, producer=bundle.producer)
+    except (ValueError, TypeError, KeyError) as exc:
+        raise KnowledgeModelError("concepts.extensions", str(exc)) from exc
+    from .maintenance_projection import validate_maintenance_projection
+
+    try:
+        validate_maintenance_projection(model)
+    except (ValueError, TypeError, KeyError) as exc:
+        raise KnowledgeModelError("maintenance", str(exc)) from exc
     # Governance is an independently versioned projection whose authority is
     # the separate ledger.  Validate its core lifecycle/UID/alias/event parity
     # only after the enclosing model and the other reserved extensions exist.
@@ -982,6 +994,13 @@ def _parse_concept(value: object, path: str) -> ConceptRecord:
             "unknown/not-applicable evidence, and no structural basis",
         )
 
+    from .implementation_evidence import validate_concept_implementation
+
+    try:
+        reserved = validate_concept_implementation({"locator": locator, "document": {"page_kind": document.page_kind.value, "canonical_path": document.canonical_path}, "extensions": extensions})
+    except (ValueError, TypeError, KeyError) as exc:
+        raise KnowledgeModelError(_child(path, "extensions"), str(exc)) from exc
+    extensions = {**extensions, **reserved}
     return ConceptRecord(
         locator=locator,
         concept_kind=concept_kind,

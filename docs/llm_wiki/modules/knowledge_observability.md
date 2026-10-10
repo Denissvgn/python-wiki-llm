@@ -16,6 +16,7 @@ timestamps.
 
 | Source | Symbols |
 |--------|---------|
+| `.freshness_wording` | `SOURCE_CHANGED_STRUCTURE_UNCHANGED` |
 | `.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME` |
 | `.knowledge_consumption` | `KnowledgeAvailability`, `KnowledgeReadReason`, `KnowledgeReadView`, `build_knowledge_read_view` |
 | `.knowledge_freshness` | `REASON_EXTRACTOR_CONFIGURATION_CHANGED`, `REASON_EXTRACTOR_CONFIGURATION_UNKNOWN`, `REASON_EXTRACTOR_LIMITATIONS_CHANGED`, `REASON_EXTRACTOR_SELECTION_CHANGED`, `REASON_EXTRACTOR_VERSION_CHANGED`, `REASON_GENERATION_OPTIONS_CHANGED`, `REASON_IDENTICAL_SOURCE_OBSERVATION_MISMATCH`, `REASON_LIVE_EXTRACTOR_UNAVAILABLE`, `REASON_OBSERVATION_SCOPE_CHANGED`, `REASON_PLUGIN_CONFIGURATION_CHANGED`, `REASON_PLUGIN_CONFIGURATION_UNKNOWN`, `REASON_PLUGIN_LIMITATIONS_CHANGED`, `REASON_PLUGIN_SET_CHANGED`, `REASON_PLUGIN_VERSION_CHANGED`, `REASON_SCHEMA_VERSION_CHANGED`, `REASON_SOURCE_MAPPING_CHANGED`, `REASON_TOOL_CONFIGURATION_CHANGED`, `REASON_TOOL_CONFIGURATION_UNKNOWN`, `REASON_TOOL_ID_CHANGED`, `REASON_TOOL_LIMITATIONS_CHANGED`, `REASON_TOOL_VERSION_CHANGED`, `REASON_VERSION_UNKNOWN` |
@@ -52,9 +53,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (14) |
-| Outbound | `src` (9) |
+| Outbound | `src` (10) |
 
-> All 23 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 24 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -72,7 +73,7 @@ flowchart LR
 | `_validated_phase_durations` | `(value: Mapping[str, int \| None]) -> Mapping[str, int \| None]` | — | — |
 | `summarize_knowledge_view` | `(view: KnowledgeReadView, *, durations: KnowledgePhaseDurations \| None = None) -> KnowledgeAggregateSummary` | — | Project one read view into a fixed, evidence-free aggregate summary. |
 | `knowledge_freshness_disclosure` | `(view: KnowledgeReadView) -> str` | — | Describe whether the read produced one freshness result per concept. |
-| `knowledge_freshness_hint` | `(state: ComputedFreshness \| str \| None, reason_code: object) -> str \| None` | — | Return static recovery guidance for one incompatible freshness basis. |
+| `knowledge_freshness_hint` | `(state: ComputedFreshness \| str \| None, reason_code: object) -> str \| None` | — | Return a shared interpretation or recovery guidance for freshness. |
 | `_freshness_disclosure` | `(*, evaluated: bool, concepts_evaluated: int) -> str` | — | — |
 | `knowledge_status_payload` | `(view: KnowledgeReadView \| None) -> dict[str, object]` | — | Return the stable compact status envelope used by MCP and CLI status. |
 | `load_snapshot_knowledge_observability` | `(wiki_dir: str \| Path, *, src_dir: str \| Path \| None = None, source_selection: str \| Path \| None = None) -> SnapshotKnowledgeObservability` | — | Load status without extraction while checking current selection identity. |

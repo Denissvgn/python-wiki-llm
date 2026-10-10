@@ -1,6 +1,6 @@
 # TargetPage
 
-**Location:** `src/llm_wiki_cli/commands/migrate_cmd.py:129`
+**Location:** `src/llm_wiki_cli/commands/migrate_cmd.py:136`
 **Kind:** Class
 **Bases:** —
 **Module:** [migrate_cmd](../modules/migrate_cmd.md)

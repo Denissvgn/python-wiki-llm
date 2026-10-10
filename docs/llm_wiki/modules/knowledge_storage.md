@@ -18,6 +18,7 @@ from diagnostics.
 | `.canonical_json` | `canonical_chunks`, `scalar_size` |
 | `.concept_identity` | `ConceptIdentityError`, `natural_key_for`, `validate_locator` |
 | `.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY`, `GOVERNANCE_EXTENSION_KEY` |
+| `.implementation_evidence` | `validate_concept_implementation` |
 | `.knowledge_envelope` | `INVENTORY_HASH_EXTENSION` |
 | `.knowledge_graph` | `validate_typed_graph_slice`, `_normalise_edge` |
 | `.knowledge_model` | `_parse_bundle`, `_parse_concept`, `_parse_relationship`, `_parse_extensions` |
@@ -49,10 +50,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (18) |
-| Outbound | `src` (7) |
+| Inbound | `src` (33) |
+| Outbound | `src` (8) |
 
-> All 25 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 41 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -62,8 +63,8 @@ flowchart LR
 | [KnowledgeStorePlan](../entities/KnowledgeStorePlan.md) | 195 | — | — |
 | [_Encoder](../entities/Encoder.md) | 202 | — | — |
 | [_TreeBuilder](../entities/TreeBuilder.md) | 228 | — | — |
-| [KnowledgeSlice](../entities/KnowledgeSlice.md) | 472 | — | Detached scoped data; deliberately not ValidatedKnowledgeArtifacts. |
-| [KnowledgeStoreReader](../entities/KnowledgeStoreReader.md) | 481 | — | Read committed objects through a caller-owned bounded I/O boundary. |
+| [KnowledgeSlice](../entities/KnowledgeSlice.md) | 475 | — | Detached scoped data; deliberately not ValidatedKnowledgeArtifacts. |
+| [KnowledgeStoreReader](../entities/KnowledgeStoreReader.md) | 484 | — | Read committed objects through a caller-owned bounded I/O boundary. |
 
 ## Functions
 
@@ -87,4 +88,4 @@ flowchart LR
 | `_concept_aliases` | `(concept: Mapping[str, Any]) -> set[str]` | — | — |
 | `build_knowledge_store` | `(payload: Mapping[str, Any], *, target_bytes: int = TARGET_OBJECT_BYTES, objects = None) -> KnowledgeStorePlan` | — | Encode a canonical logical v1 payload after its semantic validation. |
 | `parse_store_root` | `(raw: bytes) -> dict[str, Any]` | — | — |
-| `_validate_selected_record` | `(collection: str, row: dict[str, Any], value: Any) -> None` | — | Reuse semantic record owners without issuing a whole-bundle verdict. |
+| `_validate_selected_record` | `(collection: str, row: dict[str, Any], value: Any, *, producer = None) -> None` | — | Reuse semantic record owners without issuing a whole-bundle verdict. |

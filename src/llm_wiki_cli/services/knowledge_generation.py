@@ -17,7 +17,10 @@ from collections.abc import Mapping, Sequence
 from collections.abc import Set as AbstractSet
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .sync_transitions import PageTransitionPlan
 
 from .knowledge_artifacts import (
     KnowledgeArtifactError,
@@ -45,6 +48,7 @@ from .knowledge_index import (
     KnowledgeIndexBuildError,
     KnowledgeIndexInputs,
     build_knowledge_index,
+    _knowledge_validation_operation,
 )
 from .knowledge_graph import (
     DEFAULT_EVIDENCE_LIMIT,
@@ -155,6 +159,15 @@ class KnowledgeGenerationInputs:
     governance: GovernanceLedger | None = None
     reuse_input_basis: Mapping[str, object] | None = None
     knowledge_format: str | None = None
+    maintenance_page_transitions: PageTransitionPlan | None = None
+    maintenance_previous_raw_content_by_page: Mapping[str, bytes] | None = None
+    implementation_observations: Mapping[str, Any] | None = None
+    maintenance_adoption: Mapping[str, Any] | None = None
+    maintenance_source_hashes: Mapping[str, str] | None = None
+    maintenance_captured_paths: AbstractSet[str] | None = None
+    maintenance_missing_source_paths: AbstractSet[str] = frozenset()
+    maintenance_known_absent_pages: AbstractSet[str] = frozenset()
+    maintenance_raw_content_by_page: Mapping[str, bytes] | None = None
 
 
 def build_knowledge_generation_plan(
@@ -171,7 +184,8 @@ def build_knowledge_generation_plan(
     if not isinstance(inputs, KnowledgeGenerationInputs):
         raise TypeError("inputs must be a KnowledgeGenerationInputs")
     try:
-        return _build_knowledge_generation_plan(inputs)
+        with _knowledge_validation_operation(Path(inputs.wiki_dir).absolute()):
+            return _build_knowledge_generation_plan(inputs)
     except KnowledgeGenerationError:
         raise
     except (
@@ -380,7 +394,7 @@ def _build_knowledge_generation_plan(
         surfaces=manifest.surfaces, generation_inputs=generation_inputs
     )
     knowledge_extensions.pop(REUSE_EXTENSION_KEY, None)
-    if (inputs.reuse_input_basis is not None and not inputs.force_unknown_evidence
+    if (inputs.reuse_input_basis is not None and manifest.maintenance_state is None and not inputs.force_unknown_evidence
             and all(baseline.is_known for baseline in manifest.evidence_baselines.values())
             and all(tombstone.last_valid_basis is not None for tombstone in manifest.tombstones.values())):
         commitment = bind_reuse_commitment(inputs.reuse_input_basis, manifest)
@@ -398,6 +412,15 @@ def _build_knowledge_generation_plan(
             "manifest_generation_inputs.infrastructure",
             str(exc),
         ) from exc
+    from .implementation_evidence import project_concept_implementations
+
+    concept_implementations = project_concept_implementations(
+        inputs.implementation_observations,
+        {path: mapping for path, mapping in manifest.page_source_mappings.items()
+         if mapping.source_path in source_hashes
+         and manifest.sources.get(mapping.source_path, {}).get("hash") == source_hashes[mapping.source_path]},
+        producer=envelope.bundle.producer, source_content_hashes=source_hashes,
+    )
     knowledge = build_knowledge_index(
         KnowledgeIndexInputs(
             envelope=envelope,
@@ -410,6 +433,7 @@ def _build_knowledge_generation_plan(
             link_observations=observations,
             infrastructure_bases=infrastructure_bases,
             extensions=knowledge_extensions,
+            concept_extensions_by_page=concept_implementations,
         )
     )
     if inputs.governance is not None:
@@ -417,6 +441,38 @@ def _build_knowledge_generation_plan(
             knowledge,
             inputs.governance,
         )
+    if manifest.maintenance_state is not None:
+        from .maintenance_evidence import captured_observations_from_knowledge, reconcile_pending_maintenance
+        from .maintenance_projection import project_maintenance_knowledge
+        from .implementation_evidence import analysis_hash_from_producer
+
+        if inputs.maintenance_adoption is None:
+            raise KnowledgeGenerationError("maintenance", "captured immutable adoption marker is required")
+        capture = captured_observations_from_knowledge(
+            knowledge, content_by_page=inputs.content_by_page,
+            page_source_mappings=manifest.page_source_mappings,
+            captures=inputs.implementation_observations,
+            source_content_hashes=inputs.maintenance_source_hashes if inputs.maintenance_source_hashes is not None else source_hashes,
+            captured_paths=inputs.maintenance_captured_paths,
+            missing_source_paths=inputs.maintenance_missing_source_paths,
+            analysis_compatibility_hash=analysis_hash_from_producer(knowledge.bundle.producer),
+            previous_state=manifest.maintenance_state,
+            known_absent_pages=inputs.maintenance_known_absent_pages,
+            raw_content_by_page=inputs.maintenance_raw_content_by_page,
+        )
+        from .maintenance_evidence import maintenance_transfers_from_page_plan
+
+        transfers = maintenance_transfers_from_page_plan(
+            manifest.maintenance_state, capture, inputs.maintenance_page_transitions,
+            previous_raw_content_by_page=inputs.maintenance_previous_raw_content_by_page,
+        )
+        if transfers.issues:
+            reasons = sorted({issue["reason"] for issue in transfers.issues})
+            raise KnowledgeGenerationError("maintenance.moves", "Unresolved maintenance transfer prevents publication: " + ", ".join(reasons))
+        state = reconcile_pending_maintenance(manifest.maintenance_state, inputs.maintenance_adoption, capture,
+            confirmed_transfers=transfers.confirmed, ambiguous_transfers=transfers.ambiguous)
+        manifest = manifest.with_maintenance_state(state)
+        knowledge = project_maintenance_knowledge(knowledge, state, inputs.maintenance_adoption)
     return build_knowledge_commit_plan(
         inputs.wiki_dir,
         prior=inputs.prior_artifacts,
@@ -424,6 +480,7 @@ def _build_knowledge_generation_plan(
         knowledge_index=knowledge,
         manifest=manifest,
         knowledge_format=inputs.knowledge_format,
+        maintenance_adoption=inputs.maintenance_adoption,
     )
 
 
@@ -687,6 +744,9 @@ def _defer_sources_for_regeneration(
         evidence_baselines=baselines,
         tombstones=tombstones,
         artifact_hashes=None,
+        maintenance_state=manifest.maintenance_state,
+        storage_version=manifest.storage_version,
+        storage_objects=manifest.storage_objects,
     )
 
 
@@ -781,6 +841,9 @@ def _reconcile_active_structural_evidence(
         evidence_baselines=baselines,
         tombstones=tombstones,
         artifact_hashes=None,
+        maintenance_state=manifest.maintenance_state,
+        storage_version=manifest.storage_version,
+        storage_objects=manifest.storage_objects,
     )
 
 
@@ -862,6 +925,9 @@ def _downgrade_incompatible_tombstones(
         evidence_baselines=manifest.evidence_baselines,
         tombstones=tombstones,
         artifact_hashes=None,
+        maintenance_state=manifest.maintenance_state,
+        storage_version=manifest.storage_version,
+        storage_objects=manifest.storage_objects,
     )
 
 

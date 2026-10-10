@@ -1,6 +1,6 @@
 # KnowledgeAvailability
 
-**Location:** `src/llm_wiki_cli/services/knowledge_consumption.py:42`
+**Location:** `src/llm_wiki_cli/services/knowledge_consumption.py:45`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_consumption](../modules/knowledge_consumption.md)

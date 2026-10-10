@@ -12,11 +12,11 @@ from __future__ import annotations
 import re
 from collections import Counter
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from .knowledge_freshness import (
     KnowledgeFreshnessReport,
@@ -37,6 +37,9 @@ from .knowledge_model import (
     KnowledgeLoadState,
 )
 from .sync_manifest import SyncManifest
+
+if TYPE_CHECKING:
+    from .implementation_evidence import ImplementationReport
 
 
 class KnowledgeAvailability(str, Enum):
@@ -303,6 +306,10 @@ class KnowledgeReadView:
         default_factory=MachineVerificationReadView
     )
     validated_artifacts: Any = field(default=None, repr=False, compare=False)
+    maintenance_report: Any = field(default=None, repr=False, compare=False)
+    implementation_report: ImplementationReport | None = field(
+        default=None, repr=False, compare=False
+    )
 
     def __post_init__(self) -> None:
         if not isinstance(
@@ -312,6 +319,11 @@ class KnowledgeReadView:
             raise TypeError(
                 "machine_verification must be a MachineVerificationReadView"
             )
+        if self.implementation_report is not None:
+            from .implementation_evidence import ImplementationReport
+
+            if not isinstance(self.implementation_report, ImplementationReport):
+                raise TypeError("implementation_report must be an ImplementationReport")
 
     @property
     def reason_code(self) -> str:
@@ -607,6 +619,13 @@ def build_knowledge_read_view(
             load_state=load_result.status,
             underlying_load_state=load_result.underlying_status,
             validated_artifacts=load_result.validated_artifacts,
+            maintenance_report=_snapshot_maintenance_report(load_result),
+            implementation_report=_implementation_report(
+                load_result.knowledge,
+                None
+                if selected_mode is KnowledgeReadMode.SNAPSHOT_ONLY
+                else live_evaluation,
+            ),
         )
 
     if effective_state is KnowledgeLoadState.ABSENT:
@@ -745,6 +764,90 @@ def _loaded_freshness(load_result, live_evaluation):
     if artifacts is not None and artifacts.knowledge is load_result.knowledge:
         return evaluate_knowledge_freshness(artifacts, live_evaluation)
     return evaluate_knowledge_freshness(load_result.knowledge, live_evaluation)
+
+
+
+def _snapshot_maintenance_report(load_result):
+    from .maintenance_status import build_maintenance_status, marker_from_validated_state
+    manifest = load_result.manifest_basis
+    state = manifest.maintenance_state if manifest is not None else None
+    return None if state is None else build_maintenance_status(state, marker_from_validated_state(state))
+
+def _implementation_report(knowledge, live_evaluation):
+    """Compare captured syntax independently of structural freshness."""
+    from .implementation_evidence import (
+        DECLARATIONS_KEY,
+        IMPLEMENTATION_KEY,
+        compare_knowledge_implementation,
+    )
+
+    recorded = any(
+        IMPLEMENTATION_KEY in concept.extensions
+        or DECLARATIONS_KEY in concept.extensions
+        for concept in knowledge.concepts
+    )
+    if not recorded and (
+        live_evaluation is None
+        or live_evaluation.implementation_observations is None
+    ):
+        return None
+
+    if live_evaluation is None:
+        return compare_knowledge_implementation(knowledge, None, analysis_scope="snapshot")
+    return compare_knowledge_implementation(
+        knowledge,
+        live_evaluation.implementation_observations,
+        analysis_scope=live_evaluation.implementation_analysis_scope,
+        captured_paths=frozenset(live_evaluation.source_content_hashes)
+        | frozenset(live_evaluation.missing_source_paths),
+        source_content_hashes=live_evaluation.source_content_hashes,
+        analysis_compatibility_hash=(
+            live_evaluation.implementation_analysis_compatibility_hash
+        ),
+        missing_source_paths=live_evaluation.missing_source_paths,
+    )
+
+
+def attach_implementation_read_view(
+    view: KnowledgeReadView,
+    *,
+    implementation_observations: Mapping | None,
+    analysis_scope: str,
+    captured_paths: Sequence[str] | frozenset[str] | None = None,
+    source_content_hashes: Mapping[str, str] | None = None,
+    analysis_compatibility_hash: str | None = None,
+    missing_source_paths: Sequence[str] | frozenset[str] = (),
+) -> KnowledgeReadView:
+    """Attach a selected-source comparison without upgrading global freshness.
+
+    The caller supplies only already captured observations and commitments.
+    A snapshot-native view keeps its mode, structural freshness and validation
+    scope. This helper performs no extraction, filesystem work or publication.
+    """
+    from .implementation_evidence import compare_knowledge_implementation
+
+    if not isinstance(view, KnowledgeReadView):
+        raise TypeError("implementation attachment requires a KnowledgeReadView")
+    if not view.ready or view.knowledge is None:
+        return view
+    if implementation_observations is None and not any(
+        key in concept.extensions
+        for concept in view.knowledge.concepts
+        for key in ("llm-wiki/implementation", "llm-wiki/implementation-declarations")
+    ):
+        return replace(view, implementation_report=None)
+    return replace(
+        view,
+        implementation_report=compare_knowledge_implementation(
+            view.knowledge,
+            implementation_observations,
+            analysis_scope=analysis_scope,
+            captured_paths=captured_paths,
+            source_content_hashes=source_content_hashes,
+            analysis_compatibility_hash=analysis_compatibility_hash,
+            missing_source_paths=missing_source_paths,
+        ),
+    )
 
 
 def _validate_load_result(result: KnowledgeLoadResult) -> None:

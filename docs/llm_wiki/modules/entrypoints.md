@@ -27,6 +27,7 @@ LLM calls and tolerates inventories that omit optional fields.
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
 | `collections.abc` | `Iterable`, `Mapping` |
+| `copy` | `deepcopy` |
 | `dataclasses` | `dataclass` |
 | `pathlib` | `Path`, `PurePosixPath` |
 | `re` | `re` |
@@ -59,8 +60,8 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [EntryPointDetectionResult](../entities/EntryPointDetectionResult.md) | 57 | — | — |
-| [_PluginEntryPointDetectionResult](../entities/PluginEntryPointDetectionResult.md) | 63 | — | — |
+| [EntryPointDetectionResult](../entities/EntryPointDetectionResult.md) | 58 | — | — |
+| [_PluginEntryPointDetectionResult](../entities/PluginEntryPointDetectionResult.md) | 64 | — | — |
 
 ## Functions
 

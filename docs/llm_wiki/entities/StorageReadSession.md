@@ -38,13 +38,14 @@ flowchart LR
     n2["preflight (src/llm_wiki_cli/services/knowledge_maintenance.py)"]
     n3["capture_knowledge_slice (src/llm_wiki_cli/services/knowledge_storage_access.py)"]
     n4["_committed_inputs (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
-    n5["recover_knowledge_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
+    n5["_recover_knowledge_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
     n6["restore_pruned_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
-    n7["SyncManifest.load (src/llm_wiki_cli/services/sync_manifest.py)"]
-    n8["PageTransitionExecution.__init__ (src/llm_wiki_cli/services/sync_transition_execution.py)"]
-    n9["PageTransitionExecution.apply (src/llm_wiki_cli/services/sync_transition_execution.py)"]
-    n10["_retained_page_repairs (src/llm_wiki_cli/services/sync_transitions.py)"]
-    n11["ScopedTaskState.revalidate (src/llm_wiki_cli/services/task_context_v2.py)"]
+    n7["capture_discovery (src/llm_wiki_cli/services/search_discovery_capture.py)"]
+    n8["search_prevalidated_roots (src/llm_wiki_cli/services/search_service.py)"]
+    n9["capture_source_index (src/llm_wiki_cli/services/search_source.py)"]
+    n10["captured_manifest (src/llm_wiki_cli/services/search_source.py)"]
+    n11["SyncManifest.load (src/llm_wiki_cli/services/sync_manifest.py)"]
+    n12["PageTransitionExecution.__init__ (src/llm_wiki_cli/services/sync_transition_execution.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -56,6 +57,7 @@ flowchart LR
     n9 --> n0
     n10 --> n0
     n11 --> n0
+    n12 --> n0
     click n0 "../modules/knowledge_storage_io.md"
     click n1 "../modules/knowledge_artifacts.md"
     click n2 "../modules/knowledge_maintenance.md"
@@ -63,11 +65,12 @@ flowchart LR
     click n4 "../modules/knowledge_storage_lifecycle.md"
     click n5 "../modules/knowledge_storage_lifecycle.md"
     click n6 "../modules/knowledge_storage_lifecycle.md"
-    click n7 "../modules/sync_manifest.md"
-    click n8 "../modules/sync_transition_execution.md"
-    click n9 "../modules/sync_transition_execution.md"
-    click n10 "../modules/sync_transitions.md"
-    click n11 "../modules/task_context_v2.md"
+    click n7 "../modules/search_discovery_capture.md"
+    click n8 "../modules/search_service.md"
+    click n9 "../modules/search_source.md"
+    click n10 "../modules/search_source.md"
+    click n11 "../modules/sync_manifest.md"
+    click n12 "../modules/sync_transition_execution.md"
 ```
 
 ### Summary
@@ -84,10 +87,13 @@ flowchart LR
 | `preflight` | call | [knowledge_maintenance](../modules/knowledge_maintenance.md) | 1 |
 | `capture_knowledge_slice` | call | [knowledge_storage_access](../modules/knowledge_storage_access.md) | 1 |
 | `_committed_inputs` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |
-| `recover_knowledge_storage` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |
+| `_recover_knowledge_storage` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |
 | `restore_pruned_storage` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |
+| `capture_discovery` | type_reference | [search_discovery_capture](../modules/search_discovery_capture.md) | — |
+| `search_prevalidated_roots` | call | [search_service](../modules/search_service.md) | 2 |
+| `capture_source_index` | type_reference | [search_source](../modules/search_source.md) | — |
+| `captured_manifest` | type_reference | [search_source](../modules/search_source.md) | — |
 | `SyncManifest.load` | call | [sync_manifest](../modules/sync_manifest.md) | 1 |
 | `PageTransitionExecution.__init__` | call | [sync_transition_execution](../modules/sync_transition_execution.md) | 1 |
-| `PageTransitionExecution.apply` | call | [sync_transition_execution](../modules/sync_transition_execution.md) | 1 |
-| `_retained_page_repairs` | call | [sync_transitions](../modules/sync_transitions.md) | 1 |
-| `ScopedTaskState.revalidate` | call | [task_context_v2](../modules/task_context_v2.md) | 1 |
+
+> References: showing 12 of 15 logical references; 3 omitted by the 12-row generated summary limit.

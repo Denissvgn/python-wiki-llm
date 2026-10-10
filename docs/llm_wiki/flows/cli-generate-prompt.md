@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [generate_prompt_cmd](../modules/generate_prompt_cmd.md)
-**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [documentation_queries](../modules/documentation_queries.md), [documentation_query_builder](../modules/documentation_query_builder.md), and 19 more
+**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [documentation_queries](../modules/documentation_queries.md), [documentation_query_builder](../modules/documentation_query_builder.md), and 20 more
 
 **Complete modules touched:**
 
@@ -17,6 +17,7 @@
 - [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [metrics](../modules/metrics.md)
 - [paths](../modules/paths.md)
@@ -32,64 +33,81 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as run
     participant p1 as getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)
     participant p2 as validate_path
-    participant p3 as PathValidationError
-    participant p4 as (…).resolve
-    participant p5 as Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    participant p6 as Path.cwd().resolve
-    participant p7 as resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
-    participant p8 as bool (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)
-    participant p9 as validate_source_root
-    participant p10 as Path(…).expanduser
-    participant p11 as Path (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p12 as candidate.is_absolute (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p13 as Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p14 as candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p15 as resolved.is_dir
-    participant p16 as os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p17 as windows_current_user_sid
-    participant p18 as WindowsSecurityGuardError
-    participant p19 as _current_windows_user_sid
-    participant p20 as ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
-    participant p21 as ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)
+    participant p3 as bool (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)
+    participant p4 as validate_source_root
+    participant p5 as str (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)
+    participant p6 as team_prompt_template_default
+    participant p7 as print
+    participant p8 as SystemExit
+    participant p9 as classify_wiki_git_policy
+    participant p10 as Path.cwd (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)
+    participant p11 as _validated_prompt_snapshot
+    participant p12 as _prompt_git_diff
+    participant p13 as _build_prompt
+    participant p14 as _redact_prompt_artifact
+    participant p15 as _selected_prompt_diff
+    participant p16 as resolve_change_type
+    participant p17 as resolve_agent
+    participant p18 as record_event
+    participant p19 as write_private_text
+    p0-->>p1: getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)(args, 'src_dir', '.')
     p0->>p2: validate_path
-    p2->>p3: PathValidationError
-    p2-->>p4: (…).resolve
-    p2-->>p5: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    p2-->>p6: Path.cwd().resolve
-    p2-->>p5: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    p2-->>p7: resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
-    p2->>p3: PathValidationError
-    p0-->>p8: bool (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)
-    p0->>p9: validate_source_root
-    p9->>p2: validate_path
-    p9-->>p10: Path(…).expanduser
-    p9-->>p11: Path (src/llm_wiki_cli/config.py:validate_source_root)
-    p9-->>p12: candidate.is_absolute (src/llm_wiki_cli/config.py:validate_source_root)
-    p9-->>p13: Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
-    p9-->>p14: candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
-    p9->>p3: PathValidationError
-    p9-->>p15: resolved.is_dir
-    p9->>p3: PathValidationError
-    p9-->>p11: Path (src/llm_wiki_cli/config.py:validate_source_root)
-    p9-->>p16: os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
-    p9->>p17: windows_current_user_sid
-    p17->>p18: WindowsSecurityGuardError
-    p17->>p19: _current_windows_user_sid
-    p19-->>p20: ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
-    p19-->>p20: ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
-    p19-->>p21: ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)
+    p0-->>p3: bool (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)(getattr(...))
+    p0-->>p1: getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)(args, 'allow_external_src', False)
+    p0->>p4: validate_source_root
+    p0-->>p5: str (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)(source_root)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)(args, 'output', _DEFAULT_PROMPT_FILE)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)(args, 'print_prompt', False)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)(args, 'change_type', 'auto')
+    p0-->>p1: getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)(args, 'template', None)
+    p0->>p6: team_prompt_template_default
+    p0-->>p7: print(..., file=sys.stderr)
+    p0-->>p8: SystemExit(1)
+    p0->>p9: classify_wiki_git_policy
+    p0-->>p10: Path.cwd (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)(args, 'source_selection', None)
+    p0->>p11: _validated_prompt_snapshot
+    p0->>p12: _prompt_git_diff
+    p0->>p13: _build_prompt
+    p0-->>p7: print(..., file=sys.stderr)
+    p0-->>p8: SystemExit(1)
+    p0->>p14: _redact_prompt_artifact
+    p0->>p15: _selected_prompt_diff
+    p0->>p16: resolve_change_type
+    p0->>p17: resolve_agent
+    p0-->>p7: print(prompt)
+    p0->>p18: record_event
+    p0->>p19: write_private_text
+    p0->>p18: record_event
 ```
 
-> Call sequence diagram shows 30 of 1322 interactions; 1292 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1377 interactions; 1347 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 16 of 424 (408 omitted); unresolved 0 of 388 (388 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/config.py:validate_path` | 4 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
+| `src/llm_wiki_cli/config.py:validate_path` | 4 | - | unresolved | 3 |
+| `src/llm_wiki_cli/config.py:validate_path` | 4 | - | external | 2 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 14 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 14 | - | unresolved | 5 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 14 | - | external | 11 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 14 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 26 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 2 |
+> Omission summary shows 8 of 395 groups; 387 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

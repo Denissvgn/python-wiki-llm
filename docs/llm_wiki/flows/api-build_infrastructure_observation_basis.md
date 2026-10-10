@@ -6,66 +6,86 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as build_infrastructure_observation_basis
     participant p1 as _validate_source_path
-    participant p2 as require_repository_relative_path
-    participant p3 as isinstance (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p4 as _syntax_key
-    participant p5 as type
-    participant p6 as len (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    participant p7 as any (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    participant p8 as _known_syntax
-    participant p9 as _PATH_SYNTAX.get
-    participant p10 as _PATH_SYNTAX.move_to_end (src/llm_wiki_cli/services…lidation.py:_known_syntax)
-    participant p11 as value.strip (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p12 as any (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p13 as ord (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p14 as value.startswith
-    participant p15 as _WINDOWS_DRIVE_PREFIX_RE.match
-    participant p16 as value.split
-    participant p17 as PurePosixPath (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p18 as posixpath.normpath
-    participant p19 as require_portable_relative_path
-    participant p20 as isinstance (src/llm_wiki_cli/services…re_portable_relative_path)
-    participant p21 as _default_path_error
-    participant p22 as SharedValidationError
-    participant p23 as os.fspath
+    participant p2 as _validate_hash
+    participant p3 as _validate_extractor_ref
+    participant p4 as ConceptObservationBasis
+    participant p5 as require_repository_relative_path
+    participant p6 as require_sha256
+    participant p7 as require_string
+    participant p8 as ValueError (src/llm_wiki_cli/services….py:_validate_source_path)
+    participant p9 as ValueError (src/llm_wiki_cli/services…vidence.py:_validate_hash)
+    participant p10 as ValueError (src/llm_wiki_cli/services…y:_validate_extractor_ref)
+    participant p11 as _COMPONENT_ID_RE.fullmatch
+    participant p12 as isinstance (src/llm_wiki_cli/services…_repository_relative_path)
+    participant p13 as isinstance (src/llm_wiki_cli/services…idation.py:require_sha256)
+    participant p14 as isinstance (src/llm_wiki_cli/services…idation.py:require_string)
+    participant p15 as _syntax_key
+    participant p16 as require_trimmed_text
+    participant p17 as value.encode
+    participant p18 as _known_syntax
+    participant p19 as _SHA256_RE.fullmatch
+    participant p20 as value.strip (src/llm_wiki_cli/services…_repository_relative_path)
+    participant p21 as any (src/llm_wiki_cli/services…_repository_relative_path)
+    participant p22 as ord (src/llm_wiki_cli/services…_repository_relative_path)
+    participant p23 as value.startswith
+    participant p24 as _WINDOWS_DRIVE_PREFIX_RE.match
     p0->>p1: _validate_source_path
-    p1->>p2: require_repository_relative_path
-    p2-->>p3: isinstance (src/llm_wiki_cli/services…_repository_relative_path)
-    p2->>p4: _syntax_key
-    p4-->>p5: type
-    p4-->>p6: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    p4-->>p7: any (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    p4-->>p5: type
-    p4-->>p5: type
-    p4-->>p6: len (src/llm_wiki_cli/services/validation.py:_syntax_key)
-    p2->>p8: _known_syntax
-    p8-->>p9: _PATH_SYNTAX.get
-    p8-->>p10: _PATH_SYNTAX.move_to_end (src/llm_wiki_cli/services…lidation.py:_known_syntax)
-    p2-->>p11: value.strip (src/llm_wiki_cli/services…_repository_relative_path)
-    p2-->>p12: any (src/llm_wiki_cli/services…_repository_relative_path)
-    p2-->>p13: ord (src/llm_wiki_cli/services…_repository_relative_path)
-    p2-->>p13: ord (src/llm_wiki_cli/services…_repository_relative_path)
-    p2-->>p14: value.startswith
-    p2-->>p14: value.startswith
-    p2-->>p15: _WINDOWS_DRIVE_PREFIX_RE.match
-    p2-->>p16: value.split
-    p2-->>p17: PurePosixPath (src/llm_wiki_cli/services…_repository_relative_path)
-    p2-->>p12: any (src/llm_wiki_cli/services…_repository_relative_path)
-    p2-->>p18: posixpath.normpath
-    p2->>p19: require_portable_relative_path
-    p19-->>p20: isinstance (src/llm_wiki_cli/services…re_portable_relative_path)
-    p19->>p21: _default_path_error
-    p21->>p22: SharedValidationError
-    p19-->>p23: os.fspath
-    p19-->>p20: isinstance (src/llm_wiki_cli/services…re_portable_relative_path)
+    p0->>p2: _validate_hash
+    p0->>p2: _validate_hash
+    p0->>p3: _validate_extractor_ref
+    p0->>p4: ConceptObservationBasis
+    p1->>p5: require_repository_relative_path
+    p2->>p6: require_sha256
+    p3->>p7: require_string
+    p1-->>p8: ValueError (src/llm_wiki_cli/services….py:_validate_source_path)('source_path must be a non-empty repository-relative path')
+    p2-->>p9: ValueError (src/llm_wiki_cli/services…vidence.py:_validate_hash)(...)
+    p3-->>p10: ValueError (src/llm_wiki_cli/services…y:_validate_extractor_ref)('extractor_ref must be a normalized producer component ID')
+    p1-->>p8: ValueError (src/llm_wiki_cli/services….py:_validate_source_path)('source_path must be a repository-relative POSIX path')
+    p3-->>p11: _COMPONENT_ID_RE.fullmatch(parsed)
+    p1-->>p8: ValueError (src/llm_wiki_cli/services….py:_validate_source_path)('source_path must be a normalized repository-relative path')
+    p3-->>p10: ValueError (src/llm_wiki_cli/services…y:_validate_extractor_ref)('extractor_ref must be a normalized producer component ID')
+    p5-->>p12: isinstance (src/llm_wiki_cli/services…_repository_relative_path)(value, str)
+    p6-->>p13: isinstance (src/llm_wiki_cli/services…idation.py:require_sha256)(value, str)
+    p7-->>p14: isinstance (src/llm_wiki_cli/services…idation.py:require_string)(value, str)
+    p5->>p15: _syntax_key
+    p6->>p16: require_trimmed_text
+    p7-->>p17: value.encode('utf-8')
+    p5->>p18: _known_syntax
+    p6-->>p19: _SHA256_RE.fullmatch(parsed)
+    p5-->>p20: value.strip (src/llm_wiki_cli/services…_repository_relative_path)
+    p5-->>p21: any (src/llm_wiki_cli/services…_repository_relative_path)(...)
+    p5-->>p22: ord (src/llm_wiki_cli/services…_repository_relative_path)(character)
+    p5-->>p22: ord (src/llm_wiki_cli/services…_repository_relative_path)(character)
+    p5-->>p23: value.startswith('/')
+    p5-->>p23: value.startswith('\\')
+    p5-->>p24: _WINDOWS_DRIVE_PREFIX_RE.match(value)
 ```
 
-> Call sequence diagram shows 30 of 99 interactions; 69 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 99 interactions; 69 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 12 of 33 (21 omitted); unresolved 7 of 30 (23 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/validation.py:_syntax_key` | 5 | - | external | 6 |
+| `src/llm_wiki_cli/services/validation.py:_known_syntax` | 12 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 3 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 3 | - | external | 3 |
+| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 3 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 2 |
+| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 26 | - | external | 4 |
+| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 26 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 13 |
+| `src/llm_wiki_cli/services/validation.py:_default_path_error` | 28 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+> Omission summary shows 8 of 23 groups; 15 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 
@@ -123,8 +143,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_infrastructure_observation_basis | _validate_source_path | 410 | `_validate_source_path(source_path)` |
-| _validate_source_path | require_repository_relative_path | 873 | `require_repository_relative_path(source_path, text_error=ValueError(...), posix_error=ValueError(...), normalized_error=ValueError(...))` |
+| build_infrastructure_observation_basis | _validate_source_path | 411 | `_validate_source_path(source_path)` |
+| _validate_source_path | require_repository_relative_path | 874 | `require_repository_relative_path(source_path, text_error=ValueError(...), posix_error=ValueError(...), normalized_error=ValueError(...))` |
 | require_repository_relative_path | isinstance (src/llm_wiki_cli/services…_repository_relative_path) | 299 | `isinstance(value, str)` |
 | require_repository_relative_path | _syntax_key | 301 | `_syntax_key('repository', value, reject_delete_character, control_after_normalization, leading_backslash_is_absolute, normalize_posix_spelling)` |
 | _syntax_key | type | 54 | `type(value)` |

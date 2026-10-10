@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [ci_check_cmd](../modules/ci_check_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 62 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 68 more
 
 **Complete modules touched:**
 
@@ -26,6 +26,7 @@
 - [health_details](../modules/health_details.md)
 - [health_policy](../modules/health_policy.md)
 - [immutable](../modules/immutable.md)
+- [implementation_evidence](../modules/implementation_evidence.md)
 - [imports](../modules/imports.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
@@ -50,6 +51,9 @@
 - [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [lint_service](../modules/lint_service.md)
+- [maintenance_protocol](../modules/maintenance_protocol.md)
+- [maintenance_state](../modules/maintenance_state.md)
+- [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [metrics](../modules/metrics.md)
 - [packages](../modules/packages.md)
@@ -57,6 +61,7 @@
 - [progress](../modules/progress.md)
 - [python_calls](../modules/python_calls.md)
 - [python_contracts](../modules/python_contracts.md)
+- [python_implementation](../modules/python_implementation.md)
 - [python_imports](../modules/python_imports.md)
 - [python_observations](../modules/python_observations.md)
 - [runtime_output](../modules/runtime_output.md)
@@ -71,8 +76,11 @@
 - [wiki_lifecycle](../modules/wiki_lifecycle.md)
 - [wiki_media](../modules/wiki_media.md)
 - [wiki_surface](../modules/wiki_surface.md)
+- [wiki_write_basis](../modules/wiki_write_basis.md)
 
 ## Call sequence
+
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -82,51 +90,65 @@ sequenceDiagram
     participant p2 as RuntimeOutputError
     participant p3 as bool (src/llm_wiki_cli/commands/ci_check_cmd.py:run)
     participant p4 as validate_source_root
-    participant p5 as validate_path
-    participant p6 as PathValidationError
-    participant p7 as (…).resolve (src/llm_wiki_cli/config.py:validate_path)
-    participant p8 as Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    participant p9 as Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)
-    participant p10 as resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
-    participant p11 as Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p12 as Path (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p13 as candidate.is_absolute
-    participant p14 as Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p15 as candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p16 as resolved.is_dir
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)
+    participant p5 as str (src/llm_wiki_cli/commands/ci_check_cmd.py:run)
+    participant p6 as validate_path
+    participant p7 as cache_options_from_args
+    participant p8 as _report_destination
+    participant p9 as prepare_cache_options
+    participant p10 as replace (src/llm_wiki_cli/commands/ci_check_cmd.py:run)
+    participant p11 as time.monotonic
+    participant p12 as extraction_job_request_from_args
+    participant p13 as build_report
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'storage_git_base', None)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'storage_git_head', None)
     p0->>p2: RuntimeOutputError
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'src_dir', '.')
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'format', 'text')
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'report_schema', 'auto')
     p0->>p2: RuntimeOutputError
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)
-    p0-->>p3: bool (src/llm_wiki_cli/commands/ci_check_cmd.py:run)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'helper_cache_dir', None)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'include_tests', None)
+    p0-->>p3: bool (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(getattr(...))
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'allow_external_src', False)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'source_selection', None)
     p0->>p4: validate_source_root
-    p4->>p5: validate_path
-    p5->>p6: PathValidationError
-    p5-->>p7: (…).resolve (src/llm_wiki_cli/config.py:validate_path)
-    p5-->>p8: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    p5-->>p9: Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)
-    p5-->>p8: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    p5-->>p10: resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
-    p5->>p6: PathValidationError
-    p4-->>p11: Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)
-    p4-->>p12: Path (src/llm_wiki_cli/config.py:validate_source_root)
-    p4-->>p13: candidate.is_absolute
-    p4-->>p14: Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
-    p4-->>p15: candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
-    p4->>p6: PathValidationError
-    p4-->>p16: resolved.is_dir
-    p4->>p6: PathValidationError
+    p0-->>p5: str (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(src_root)
+    p0->>p6: validate_path
+    p0->>p7: cache_options_from_args
+    p0->>p8: _report_destination
+    p0->>p9: prepare_cache_options
+    p0-->>p10: replace (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(cache_options, stats_enabled=True)
+    p0-->>p11: time.monotonic
+    p0->>p12: extraction_job_request_from_args
+    p0->>p13: build_report
+    p0-->>p3: bool (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(getattr(...))
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'knowledge_drift_report', False)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'jobs', 1)
+    p0-->>p3: bool (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(getattr(...))
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'no_plugins', False)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'comparison_policy', 'auto')
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'storage_check', False)
 ```
 
-> Call sequence diagram shows 30 of 4222 interactions; 4192 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 4321 interactions; 4291 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 21 of 1328 (1307 omitted); unresolved 0 of 1299 (1299 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 15 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
+| `src/llm_wiki_cli/config.py:validate_path` | 16 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
+| `src/llm_wiki_cli/config.py:validate_path` | 16 | - | unresolved | 3 |
+| `src/llm_wiki_cli/config.py:validate_path` | 16 | - | external | 2 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 15 | - | unresolved | 5 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 15 | - | external | 11 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 15 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 34 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 2 |
+> Omission summary shows 8 of 1106 groups; 1098 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -243,8 +265,4 @@ flowchart LR
 
 ## Behavior
 
-Runs the lint report builder with strict validation unconditionally. It writes
-a Markdown report to the requested artifact path, emits text, Markdown, or JSON
-to the console, and records best-effort local metrics. The report is written
-even when issues are found, then the command exits nonzero if the strict result
-does not pass.
+Runs strict validation unconditionally and emits text, Markdown or JSON to the console. By default it attempts a Markdown report, or uses an explicit `--report` destination; `--no-report` suppresses that artifact without disabling checks. A selected report is attempted even when validation finds issues. Blocking check findings or a required explicit report-write failure cause a nonzero exit; local metrics remain best effort.

@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -16,33 +18,38 @@ sequenceDiagram
     participant p4 as _hash_structured
     participant p5 as payload.values
     participant p6 as _validate_json_tree
-    participant p7 as set
-    participant p8 as walk
-    participant p9 as sha256_bytes
+    participant p7 as sha256_bytes
+    participant p8 as canonical_json_bytes
+    participant p9 as set
     participant p10 as hashlib.sha256(…).hexdigest
-    participant p11 as hashlib.sha256
-    participant p12 as canonical_json_bytes
-    participant p13 as canonical_json_text(…).encode
+    participant p11 as canonical_json_text(…).encode
+    participant p12 as walk
+    participant p13 as hashlib.sha256
     participant p14 as canonical_json_text
     participant p15 as json.dumps
-    p0-->>p1: isinstance
+    p0-->>p1: isinstance(inputs, (...))
     p0->>p2: KnowledgeEnvelopeError
-    p0-->>p3: list
+    p0-->>p3: list(inputs)
     p0->>p2: KnowledgeEnvelopeError
     p0->>p4: _hash_structured
     p4-->>p5: payload.values
     p4->>p6: _validate_json_tree
-    p6-->>p7: set
-    p6-->>p8: walk
-    p4->>p9: sha256_bytes
-    p9-->>p10: hashlib.sha256(…).hexdigest
-    p9-->>p11: hashlib.sha256
-    p4->>p12: canonical_json_bytes
-    p12-->>p13: canonical_json_text(…).encode
-    p12->>p14: canonical_json_text
-    p14-->>p15: json.dumps
+    p4->>p7: sha256_bytes
+    p4->>p8: canonical_json_bytes
     p4->>p2: KnowledgeEnvelopeError
+    p6-->>p9: set
+    p7-->>p10: hashlib.sha256(…).hexdigest
+    p8-->>p11: canonical_json_text(…).encode('utf-8')
+    p6-->>p12: walk(value, field_name)
+    p7-->>p13: hashlib.sha256(value)
+    p8->>p14: canonical_json_text
+    p14-->>p15: json.dumps(value, ensure_ascii=False, separators=(...), sort_keys=True, allow_nan=False)
 ```
+
+> Call sequence diagram shows 17 of 17 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 5 of 5 (0 omitted); unresolved 4 of 4 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 
@@ -111,7 +118,7 @@ flowchart LR
 | _validate_json_tree | set | 1630 | `set(data not statically known)` |
 | _validate_json_tree | walk | 1671 | `walk(value, field_name)` |
 | _hash_structured | sha256_bytes | 1610 | `sha256_bytes(canonical_json_bytes(...))` |
-| sha256_bytes | hashlib.sha256(…).hexdigest | 198 | `hashlib.sha256(value).hexdigest(data not statically known)` |
+| sha256_bytes | hashlib.sha256(…).hexdigest | 199 | `hashlib.sha256(value).hexdigest(data not statically known)` |
 
 ### Boundary effects
 
@@ -124,7 +131,7 @@ flowchart LR
 | external_call | `hash_aggregate_inputs` | `isinstance` | 872 |
 | unresolved_call | `_hash_structured` | `payload.values` | 1608 |
 | unresolved_call | `_validate_json_tree` | `walk` | 1671 |
-| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 198 |
+| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 199 |
 | step_limit | `hash_aggregate_inputs` | `first 12 steps` | 0 |
 
 ## Behavior

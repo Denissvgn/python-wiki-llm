@@ -35,13 +35,16 @@ Pure read/check operations exposed through MCP tools and resources.
 | `explain_evidence` | `(locator_or_exact_route: str, limit: int = 20) -> dict` | `@ac.bound_comparison` | Return bounded evidence for one exact concept identity. |
 | `inspect_concept` | `(locator_or_exact_route: str, *, live: bool = False, limit: int = 20, include_evidence: bool = False) -> dict` | `@ac.bound_comparison` | Inspect one native target from a shared snapshot or explicit live read. |
 | `get_knowledge_coverage` | `(live: bool = False) -> dict` | `@ac.bound_comparison` | Explain eligible observations without treating unmodeled content as drift. |
-| `search_wiki` | `(query: str, kinds: list[str] \| None = None, limit: int = 20, mode: str = 'ranked') -> dict` | `@ac.bound_comparison` | — |
+| `search_wiki` | `(query: str, kinds: list[str] \| None = None, limit: int = 20, mode: str = 'ranked', include_source: bool = False, discovery: str \| None = None) -> dict` | `@ac.bound_comparison` | — |
 | `build_budgeted_context` | `(request: Mapping[str, Any]) -> str` | `@ac.bound_comparison` | Return precisely the canonical v3 text counted by the host counter. |
 | `get_maintenance_queue` | `(limit: int = 30) -> dict` | `@ac.bound_comparison` | — |
+| `get_maintenance_status` | `(record_id: str \| None = None, limit: int = 30, live: bool = True) -> dict` | `@ac.bound_comparison` | Read ordinary review state; mutations remain outside this MCP surface. |
 | `build_task_context` | `(request: Mapping[str, Any]) -> str` | `@ac.bound_comparison` | — |
 | `open_context_session` | `() -> dict` | `@ac.bound_comparison` | — |
 | `_session` | `(session_id)` | — | — |
 | `read_context_session` | `(session_id, request, *, if_result_id = None, delta = False)` | `@ac.bound_comparison` | — |
+| `read_compact_context_session` | `(session_id, request, view_options, *, if_result_id = None, if_view_id = None, delta = False)` | `@ac.bound_comparison` | — |
+| `get_task_context_receipt` | `(session_id, request_id, result_id, *, current = False)` | `@ac.bound_comparison` | — |
 | `hint_context_session` | `(session_id, *, unsaved_buffers = False)` | `@ac.bound_comparison` | — |
 | `close_context_session` | `(session_id)` | `@ac.bound_comparison` | — |
 | `close_sessions` | `()` | `@ac.bound_comparison` | — |
@@ -86,7 +89,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [mcp_server](../modules/mcp_server.md) | 40 | — |
+| [mcp_server](../modules/mcp_server.md) | 43 | — |
 
 ### References
 

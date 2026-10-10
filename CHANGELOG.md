@@ -7,6 +7,70 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-10-10
+
+This release adds durable ordinary documentation review, compact task views,
+and source-backed discovery while retaining explicit adoption and uncertainty.
+
+### Added
+
+- Ordinary maintenance adoption, status, acknowledgment and recovery through
+  Python, CLI and MCP. Pending review survives synchronization and restarts;
+  acknowledgment binds the exact source, prose and recorded review basis.
+- Scoped Python executable syntax evidence, distinguishing implementation
+  changes from declaration changes without claiming runtime equivalence.
+- Opt-in `compact-v1` task views and session delivery with canonical receipts,
+  explicit evidence gaps and guarded reuse, deltas and expansion.
+- Bounded source-inclusive search and qualified discovery connecting results
+  to exact inspection, task evidence and recorded review qualifications.
+- Conservative Python constructor and receiver bindings shared by caller,
+  callee, entrypoint and flow queries, with explicit unresolved reasons.
+- Bounded static flow overviews with sibling-prioritized detail and exact
+  omitted-node accounting, plus source-reading and maintenance guides.
+
+### Changed
+
+- Ranked search now uses lexical-v2 across Python, CLI and MCP, with richer
+  identifier matching and deterministic ranking. Use `ranked-v1` to retain
+  the previous ranking implementation; result ordering and scores may change.
+- Maintenance queue observations include concrete evidence and available
+  review custody. An empty queue or unavailable custody does not establish
+  completed documentation review.
+- Knowledge generation reuses compatible final validation and batches
+  immutable reads while preserving concurrent-input and publication checks.
+
+### Fixed
+
+- Python caller inference preserves uncertainty through control flow,
+  class-namespace mutation and expression evaluation order, including aliased
+  namespace getters. Competing bindings remain unresolved instead of
+  producing an unsupported unique caller.
+- Repeated bindings and shared candidate graphs no longer cause duplicate
+  target growth or excessive traversal during Python extraction.
+- Synchronization and read projections preserve durable maintenance authority,
+  canonical evidence and explicit gaps across current and legacy snapshots.
+- Concept inspection preserves maintenance status through canonical routes,
+  durable UIDs and aliases; Python result types expose available maintenance data.
+- Legacy migration accounts for its archive ignore rule while retaining guards
+  against concurrent source and control-file changes.
+- Windows maintenance adoption validates operational locks without reading their
+  locked bytes, preserving guarded capture of ordinary wiki content.
+- Scoped task contexts bind native Markdown across supported line endings and
+  encodings while retaining exact consumed-byte receipts.
+
+### Compatibility
+
+- Python 3.10+ and existing required runtime dependencies remain supported.
+  Existing public API arguments and canonical task-context defaults are retained.
+- Ordinary review tracking is optional and requires explicit adoption. Adopted
+  owners use flat manifest v7 or indexed manifest v8; use compatible readers
+  and writers after adoption. Unadopted wikis retain their existing formats.
+- Existing knowledge storage formats remain supported. Compact views, source
+  inclusion and qualified discovery are opt-in; canonical receipts remain
+  authoritative. Agent acknowledgment grants no human governance approval.
+- Caller and implementation observations describe supported static syntax.
+  Dynamic dispatch, dependencies and runtime behavior may remain unknown.
+
 ## [2.3.2] - 2026-10-02
 
 ### Added
@@ -1210,7 +1274,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.3.2...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.4.0...HEAD
+[2.4.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.3.2...v2.4.0
 [2.3.2]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.3.1...v2.3.2
 [2.3.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.2.0...v2.3.0

@@ -38,8 +38,21 @@ from llm_wiki_cli.services.sync_manifest import (
     ManifestArtifactHashes,
     SyncManifest,
 )
+from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 from llm_wiki_cli.services.wiki_surface import PageKind, mcp_uri
 from tests.test_knowledge_generation import _runtime_input_case
+
+
+def _publishing_runtime_case(tmp_path):
+    runtime, _snapshot, fixture = _runtime_input_case(tmp_path, inventory_complete=True)
+    for relative, text in fixture.source_files.items():
+        path = tmp_path / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+    snapshot = build_source_snapshot(
+        tmp_path, only_files=tuple(fixture.source_files), respect_ignores=False
+    )
+    return replace(runtime, source_snapshot=snapshot)
 
 
 def test_sync_carries_supported_entity_and_module_renames() -> None:
@@ -517,10 +530,7 @@ def test_sync_and_bootstrap_preflight_missing_committed_ledger(
 def test_governed_runtime_dry_run_does_not_touch_lock_or_tree(
     tmp_path: Path,
 ) -> None:
-    runtime, _snapshot, _fixture = _runtime_input_case(
-        tmp_path,
-        inventory_complete=True,
-    )
+    runtime = _publishing_runtime_case(tmp_path)
     committed = finalize_runtime_knowledge(
         replace(
             runtime,
@@ -554,10 +564,7 @@ def test_governed_runtime_dry_run_does_not_touch_lock_or_tree(
 def test_committed_bundle_identity_rejects_live_ledger_namespace_change(
     tmp_path: Path,
 ) -> None:
-    runtime, _snapshot, _fixture = _runtime_input_case(
-        tmp_path,
-        inventory_complete=True,
-    )
+    runtime = _publishing_runtime_case(tmp_path)
     committed = finalize_runtime_knowledge(
         replace(
             runtime,

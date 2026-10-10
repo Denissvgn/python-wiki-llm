@@ -6,25 +6,32 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as windows_object_identity
     participant p1 as windows_object_identity_from_values
-    participant p2 as WindowsIdentityUnavailableError
-    participant p3 as WindowsObjectIdentity
-    participant p4 as int (src/llm_wiki_cli/services…bject_identity_from_values)
-    participant p5 as int (src/llm_wiki_cli/services…py:windows_object_identity)
-    participant p6 as getattr
+    participant p2 as int (src/llm_wiki_cli/services…py:windows_object_identity)
+    participant p3 as getattr
+    participant p4 as WindowsIdentityUnavailableError
+    participant p5 as WindowsObjectIdentity
+    participant p6 as int (src/llm_wiki_cli/services…bject_identity_from_values)
     p0->>p1: windows_object_identity_from_values
-    p1->>p2: WindowsIdentityUnavailableError
-    p1->>p3: WindowsObjectIdentity
-    p1-->>p4: int (src/llm_wiki_cli/services…bject_identity_from_values)
-    p0-->>p5: int (src/llm_wiki_cli/services…py:windows_object_identity)
-    p0-->>p6: getattr
-    p0-->>p5: int (src/llm_wiki_cli/services…py:windows_object_identity)
-    p0-->>p6: getattr
+    p0-->>p2: int (src/llm_wiki_cli/services…py:windows_object_identity)(getattr(...))
+    p0-->>p3: getattr(result, 'st_dev', 0)
+    p0-->>p2: int (src/llm_wiki_cli/services…py:windows_object_identity)(getattr(...))
+    p0-->>p3: getattr(result, 'st_ino', 0)
+    p1->>p4: WindowsIdentityUnavailableError
+    p1->>p5: WindowsObjectIdentity
+    p1-->>p6: int (src/llm_wiki_cli/services…bject_identity_from_values)(device)
 ```
+
+> Call sequence diagram shows 8 of 8 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 5 of 5 (0 omitted); unresolved 0 of 0 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

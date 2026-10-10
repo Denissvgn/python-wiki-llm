@@ -1,0 +1,1083 @@
+{
+  "$id": "urn:llm-wiki:maintenance-event-v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "observe"
+          }
+        }
+      },
+      "then": {
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "actor"
+              ]
+            },
+            {
+              "required": [
+                "basis"
+              ]
+            },
+            {
+              "required": [
+                "confirmation"
+              ]
+            },
+            {
+              "required": [
+                "candidates"
+              ]
+            }
+          ]
+        },
+        "required": [
+          "observation"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "sync"
+          }
+        }
+      },
+      "then": {
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "observation"
+              ]
+            },
+            {
+              "required": [
+                "actor"
+              ]
+            },
+            {
+              "required": [
+                "basis"
+              ]
+            },
+            {
+              "required": [
+                "confirmation"
+              ]
+            },
+            {
+              "required": [
+                "candidates"
+              ]
+            }
+          ]
+        },
+        "required": []
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "acknowledge"
+          }
+        }
+      },
+      "then": {
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "observation"
+              ]
+            },
+            {
+              "required": [
+                "confirmation"
+              ]
+            },
+            {
+              "required": [
+                "candidates"
+              ]
+            }
+          ]
+        },
+        "required": [
+          "actor",
+          "basis"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "delete"
+          }
+        }
+      },
+      "then": {
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "actor"
+              ]
+            },
+            {
+              "required": [
+                "basis"
+              ]
+            },
+            {
+              "required": [
+                "confirmation"
+              ]
+            },
+            {
+              "required": [
+                "candidates"
+              ]
+            }
+          ]
+        },
+        "required": [
+          "observation"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "confirm-move"
+          }
+        }
+      },
+      "then": {
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "actor"
+              ]
+            },
+            {
+              "required": [
+                "basis"
+              ]
+            },
+            {
+              "required": [
+                "candidates"
+              ]
+            }
+          ]
+        },
+        "required": [
+          "observation",
+          "confirmation"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "ambiguous-move"
+          }
+        }
+      },
+      "then": {
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "actor"
+              ]
+            },
+            {
+              "required": [
+                "basis"
+              ]
+            },
+            {
+              "required": [
+                "confirmation"
+              ]
+            }
+          ]
+        },
+        "required": [
+          "observation",
+          "candidates"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "register"
+          }
+        }
+      },
+      "then": {
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "actor"
+              ]
+            },
+            {
+              "required": [
+                "basis"
+              ]
+            },
+            {
+              "required": [
+                "confirmation"
+              ]
+            },
+            {
+              "required": [
+                "candidates"
+              ]
+            }
+          ]
+        },
+        "required": [
+          "observation"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "delete-target"
+          }
+        }
+      },
+      "then": {
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "actor"
+              ]
+            },
+            {
+              "required": [
+                "basis"
+              ]
+            },
+            {
+              "required": [
+                "confirmation"
+              ]
+            },
+            {
+              "required": [
+                "candidates"
+              ]
+            }
+          ]
+        },
+        "required": [
+          "observation"
+        ]
+      }
+    }
+  ],
+  "properties": {
+    "actor": {
+      "additionalProperties": false,
+      "properties": {
+        "actor_id": {
+          "maxLength": 256,
+          "minLength": 1,
+          "type": "string"
+        },
+        "authority": {
+          "const": "ordinary-maintenance"
+        },
+        "kind": {
+          "enum": [
+            "agent",
+            "human"
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "actor_id",
+        "authority"
+      ],
+      "type": "object"
+    },
+    "basis": {
+      "additionalProperties": false,
+      "properties": {
+        "comparison_id": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "coordinate": {
+          "additionalProperties": false,
+          "properties": {
+            "occurrence": {
+              "maximum": 1000000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "qualified_owner": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            },
+            "source_path": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "source_path",
+            "qualified_owner",
+            "occurrence"
+          ],
+          "type": "object"
+        },
+        "documentation_hash": {
+          "anyOf": [
+            {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "executable_hash": {
+          "anyOf": [
+            {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "producer_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "prose_hash": {
+          "anyOf": [
+            {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "scope": {
+          "enum": [
+            "module",
+            "class",
+            "callable"
+          ]
+        },
+        "source_hash": {
+          "anyOf": [
+            {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "target": {
+          "additionalProperties": false,
+          "properties": {
+            "canonical_path": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            },
+            "ownership": {
+              "const": "semantic"
+            },
+            "section_locator": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "canonical_path",
+            "section_locator",
+            "ownership"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "coordinate",
+        "source_hash",
+        "executable_hash",
+        "documentation_hash",
+        "prose_hash",
+        "comparison_id",
+        "producer_hash",
+        "target",
+        "scope"
+      ],
+      "type": "object"
+    },
+    "candidates": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "coordinate": {
+            "additionalProperties": false,
+            "properties": {
+              "occurrence": {
+                "maximum": 1000000,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "qualified_owner": {
+                "maxLength": 4096,
+                "minLength": 1,
+                "type": "string"
+              },
+              "source_path": {
+                "maxLength": 4096,
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "source_path",
+              "qualified_owner",
+              "occurrence"
+            ],
+            "type": "object"
+          },
+          "target": {
+            "additionalProperties": false,
+            "properties": {
+              "canonical_path": {
+                "maxLength": 4096,
+                "minLength": 1,
+                "type": "string"
+              },
+              "ownership": {
+                "const": "semantic"
+              },
+              "section_locator": {
+                "maxLength": 4096,
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "canonical_path",
+              "section_locator",
+              "ownership"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "coordinate",
+          "target"
+        ],
+        "type": "object"
+      },
+      "maxItems": 8,
+      "minItems": 2,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "confirmation": {
+      "additionalProperties": false,
+      "properties": {
+        "actor": {
+          "additionalProperties": false,
+          "properties": {
+            "actor_id": {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            "authority": {
+              "const": "ordinary-maintenance"
+            },
+            "kind": {
+              "enum": [
+                "agent",
+                "human"
+              ]
+            }
+          },
+          "required": [
+            "kind",
+            "actor_id",
+            "authority"
+          ],
+          "type": "object"
+        },
+        "from_basis_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "from_coordinate": {
+          "additionalProperties": false,
+          "properties": {
+            "occurrence": {
+              "maximum": 1000000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "qualified_owner": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            },
+            "source_path": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "source_path",
+            "qualified_owner",
+            "occurrence"
+          ],
+          "type": "object"
+        },
+        "from_target": {
+          "additionalProperties": false,
+          "properties": {
+            "canonical_path": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            },
+            "ownership": {
+              "const": "semantic"
+            },
+            "section_locator": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "canonical_path",
+            "section_locator",
+            "ownership"
+          ],
+          "type": "object"
+        },
+        "governance_effect": {
+          "const": "none"
+        },
+        "to_basis_hash": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "to_coordinate": {
+          "additionalProperties": false,
+          "properties": {
+            "occurrence": {
+              "maximum": 1000000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "qualified_owner": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            },
+            "source_path": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "source_path",
+            "qualified_owner",
+            "occurrence"
+          ],
+          "type": "object"
+        },
+        "to_target": {
+          "additionalProperties": false,
+          "properties": {
+            "canonical_path": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            },
+            "ownership": {
+              "const": "semantic"
+            },
+            "section_locator": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "canonical_path",
+            "section_locator",
+            "ownership"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "actor",
+        "from_basis_hash",
+        "to_basis_hash",
+        "from_coordinate",
+        "to_coordinate",
+        "governance_effect",
+        "from_target",
+        "to_target"
+      ],
+      "type": "object"
+    },
+    "expected_state_hash": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "kind": {
+      "enum": [
+        "observe",
+        "sync",
+        "acknowledge",
+        "delete",
+        "confirm-move",
+        "ambiguous-move",
+        "register",
+        "delete-target"
+      ]
+    },
+    "observation": {
+      "additionalProperties": false,
+      "properties": {
+        "basis": {
+          "additionalProperties": false,
+          "properties": {
+            "comparison_id": {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "coordinate": {
+              "additionalProperties": false,
+              "properties": {
+                "occurrence": {
+                  "maximum": 1000000,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "qualified_owner": {
+                  "maxLength": 4096,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "source_path": {
+                  "maxLength": 4096,
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "source_path",
+                "qualified_owner",
+                "occurrence"
+              ],
+              "type": "object"
+            },
+            "documentation_hash": {
+              "anyOf": [
+                {
+                  "pattern": "^sha256:[0-9a-f]{64}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "executable_hash": {
+              "anyOf": [
+                {
+                  "pattern": "^sha256:[0-9a-f]{64}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "producer_hash": {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "prose_hash": {
+              "anyOf": [
+                {
+                  "pattern": "^sha256:[0-9a-f]{64}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "scope": {
+              "enum": [
+                "module",
+                "class",
+                "callable"
+              ]
+            },
+            "source_hash": {
+              "anyOf": [
+                {
+                  "pattern": "^sha256:[0-9a-f]{64}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "target": {
+              "additionalProperties": false,
+              "properties": {
+                "canonical_path": {
+                  "maxLength": 4096,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "ownership": {
+                  "const": "semantic"
+                },
+                "section_locator": {
+                  "maxLength": 4096,
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "canonical_path",
+                "section_locator",
+                "ownership"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "coordinate",
+            "source_hash",
+            "executable_hash",
+            "documentation_hash",
+            "prose_hash",
+            "comparison_id",
+            "producer_hash",
+            "target",
+            "scope"
+          ],
+          "type": "object"
+        },
+        "coordinate": {
+          "additionalProperties": false,
+          "properties": {
+            "occurrence": {
+              "maximum": 1000000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "qualified_owner": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            },
+            "source_path": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "source_path",
+            "qualified_owner",
+            "occurrence"
+          ],
+          "type": "object"
+        },
+        "implementation": {
+          "additionalProperties": false,
+          "properties": {
+            "aggregation": {
+              "additionalProperties": false,
+              "properties": {
+                "complete_scope": {
+                  "type": "boolean"
+                },
+                "observations_returned": {
+                  "maximum": 128,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "observations_total": {
+                  "maximum": 1000000000,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "truncated": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "complete_scope",
+                "observations_total",
+                "observations_returned",
+                "truncated"
+              ],
+              "type": "object"
+            },
+            "comparison_id": {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "coordinate": {
+              "additionalProperties": false,
+              "properties": {
+                "occurrence": {
+                  "maximum": 1000000,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "qualified_owner": {
+                  "maxLength": 4096,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "source_path": {
+                  "maxLength": 4096,
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "source_path",
+                "qualified_owner",
+                "occurrence"
+              ],
+              "type": "object"
+            },
+            "documentation_hash": {
+              "anyOf": [
+                {
+                  "pattern": "^sha256:[0-9a-f]{64}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "executable_hash": {
+              "anyOf": [
+                {
+                  "pattern": "^sha256:[0-9a-f]{64}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "producer": {
+              "additionalProperties": false,
+              "properties": {
+                "algorithm": {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "analysis_compatibility_hash": {
+                  "pattern": "^sha256:[0-9a-f]{64}$",
+                  "type": "string"
+                },
+                "language": {
+                  "maxLength": 32,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "parser": {
+                  "maxLength": 64,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "parser_version": {
+                  "maxLength": 64,
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "language",
+                "algorithm",
+                "parser",
+                "parser_version",
+                "analysis_compatibility_hash"
+              ],
+              "type": "object"
+            },
+            "schema_version": {
+              "const": "llm-wiki-implementation-evidence/v1"
+            },
+            "scope": {
+              "enum": [
+                "module",
+                "class",
+                "callable"
+              ]
+            },
+            "source_hash": {
+              "anyOf": [
+                {
+                  "pattern": "^sha256:[0-9a-f]{64}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "status": {
+              "enum": [
+                "available",
+                "unavailable"
+              ]
+            },
+            "unavailable_reason": {
+              "enum": [
+                null,
+                "missing-source",
+                "unsupported-language",
+                "unsupported-syntax",
+                "unsupported-producer",
+                "ambiguous-owner",
+                "legacy-evidence-absent",
+                "observation-limit",
+                "object-limit"
+              ]
+            }
+          },
+          "required": [
+            "schema_version",
+            "coordinate",
+            "scope",
+            "status",
+            "producer",
+            "comparison_id",
+            "source_hash",
+            "executable_hash",
+            "documentation_hash",
+            "aggregation",
+            "unavailable_reason"
+          ],
+          "type": "object"
+        },
+        "presence": {
+          "enum": [
+            "present",
+            "deleted",
+            "ambiguous"
+          ]
+        },
+        "target": {
+          "additionalProperties": false,
+          "properties": {
+            "canonical_path": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            },
+            "ownership": {
+              "const": "semantic"
+            },
+            "section_locator": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "canonical_path",
+            "section_locator",
+            "ownership"
+          ],
+          "type": "object"
+        },
+        "target_presence": {
+          "enum": [
+            "present",
+            "deleted"
+          ]
+        }
+      },
+      "required": [
+        "coordinate",
+        "presence",
+        "implementation",
+        "basis",
+        "target",
+        "target_presence"
+      ],
+      "type": "object"
+    },
+    "record_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "llm-wiki-maintenance-event/v1"
+    }
+  },
+  "required": [
+    "schema_version",
+    "kind",
+    "record_id",
+    "expected_state_hash"
+  ],
+  "type": "object"
+}

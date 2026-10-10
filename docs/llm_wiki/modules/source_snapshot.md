@@ -20,13 +20,14 @@ respect the same directory and ignore boundaries as other discovered inputs.
 |--------|---------|
 | `..config` | `COMPOSE_PATTERNS`, `DOCKERFILE_PATTERNS`, `EXCLUDED_DIRS`, `GitIgnoreMatcher`, `_GitignoreRule`, `_parse_gitignore_text`, `is_agent_worktree_path` |
 | `..extractors.common` | `GENERATED_JAVASCRIPT_BUNDLE_LANGUAGE`, `LANGUAGE_EXTENSIONS`, `is_bundled_helper_implementation_path`, `is_generated_javascript_bundle_path`, `normalize_include_tests` |
-| `.filesystem_guard` | `fresh_no_follow_stat`, `windows_object_identity`, `_windows_path_handle_metadata` |
+| `.filesystem_guard` | `fresh_no_follow_stat`, `windows_object_identity`, `_windows_path_handle_metadata`, `guard_windows_directory_chain`, `fresh_no_follow_stat` |
 | `.knowledge_envelope` | `ConsumedInput` |
 | `.progress` | `observed_phase` |
 | `.source_selection` | `SOURCE_SELECTION_INPUTS_SCHEMA_VERSION`, `SOURCE_SELECTION_PATH`, `SourceSelectionError`, `SourceSelectionPolicy`, `locate_exact_repository_path`, `path_is_link_or_reparse`, `path_is_selected`, `resolve_source_selection`, `selection_may_contain_path` |
 | `.validation` | `portable_path_key`, `require_repository_relative_path` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Iterable`, `Mapping` |
+| `contextlib` | `ExitStack` |
 | `dataclasses` | `dataclass`, `field` |
 | `fnmatch` | `fnmatch` |
 | `hashlib` | `hashlib` |
@@ -53,21 +54,21 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (42) |
+| Inbound | `src` (47) |
 | Outbound | `src` (7) |
 
-> All 49 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 54 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SourceSnapshotError](../entities/SourceSnapshotError.md) | 102 | `ValueError` | Field-specific failure selecting captured source snapshot state. |
-| [SourceSnapshotMutationError](../entities/SourceSnapshotMutationError.md) | 111 | `SourceSnapshotError` | Input identity changed while its content commitment was captured. |
-| [SourceFile](../entities/SourceFile.md) | 116 | — | A source-tree file discovered relative to a snapshot root. |
-| [SourceFileIntegrity](../entities/SourceFileIntegrity.md) | 128 | — | Filesystem identity used for cheap between-stage mutation checks. |
-| [SourceSnapshot](../entities/SourceSnapshot.md) | 140 | — | Filtered source-tree discovery results shared by lint/extract paths. |
-| [_SnapshotBuckets](../entities/SnapshotBuckets.md) | 451 | — | — |
+| [SourceSnapshotError](../entities/SourceSnapshotError.md) | 103 | `ValueError` | Field-specific failure selecting captured source snapshot state. |
+| [SourceSnapshotMutationError](../entities/SourceSnapshotMutationError.md) | 112 | `SourceSnapshotError` | Input identity changed while its content commitment was captured. |
+| [SourceFile](../entities/SourceFile.md) | 117 | — | A source-tree file discovered relative to a snapshot root. |
+| [SourceFileIntegrity](../entities/SourceFileIntegrity.md) | 129 | — | Filesystem identity used for cheap between-stage mutation checks. |
+| [SourceSnapshot](../entities/SourceSnapshot.md) | 141 | — | Filtered source-tree discovery results shared by lint/extract paths. |
+| [_SnapshotBuckets](../entities/SnapshotBuckets.md) | 452 | — | — |
 
 ## Functions
 
@@ -130,3 +131,6 @@ flowchart LR
 | `_hash_extra_inventory_path` | `(root: Path, path: str, *, policy: SourceSelectionPolicy \| None, selected_regular_paths: set[str]) -> str \| None` | — | Hash one extractor-owned path without admitting a newly selected path. |
 | `source_snapshot_inputs_match_current_files` | `(snapshot: SourceSnapshot) -> bool` | — | Cheaply verify that every already captured input retains its identity. |
 | `source_snapshot_matches_current_files` | `(snapshot: SourceSnapshot, *, metrics: dict[str, int] \| None = None) -> bool` | — | Return whether *snapshot* still matches the selected source tree. |
+| `_confirmed_source_path` | `(value: object) -> str` | — | — |
+| `confirmed_missing_source_paths` | `(snapshot: SourceSnapshot, requested_paths: Iterable[str]) -> frozenset[str]` | — | Confirm requested absence without converting omitted sources to deletion. |
+| `_missing_source_path_no_follow` | `(root: Path, relative: str) -> bool` | — | — |

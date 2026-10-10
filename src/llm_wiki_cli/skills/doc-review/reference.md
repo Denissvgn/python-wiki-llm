@@ -6,6 +6,7 @@
 - [Triage statuses](#triage-statuses)
 - [Managed versus external mutation contract](#managed-versus-external-mutation-contract)
 - [Native human-review handoff](#native-human-review-handoff)
+- [Ordinary maintenance review](#ordinary-maintenance-review)
 - [Native lint finding map](#native-lint-finding-map)
 - [Published user-docs finding classes](#published-user-docs-finding-classes)
 - [Safe edit rules](#safe-edit-rules)
@@ -70,12 +71,30 @@ trusted intake into `reviewer-kind human`. Generated-only churn that leaves the
 semantic hash and evidence basis unchanged keeps a valid review; do not create
 noise by requesting a replacement event.
 
+## Ordinary maintenance review
+
+When ordinary maintenance is explicitly adopted, read the exact record's
+effective status, pending reasons and current basis. Source bytes, structural
+freshness and scoped Python executable syntax observations are separate;
+unchanged syntax does not prove runtime behavior or unchanged dependencies.
+Missing or unsupported evidence remains unavailable. Review the actual source
+and authored section rather than closing a record because sync or lint passed.
+
+After the last semantic edit, the owning sync re-anchors the snapshot. A managed
+review may then acknowledge the exact current basis through explicit local
+CLI/Python maintenance operations, with `actor-kind agent` and its real agent
+identity. Follow the installed `wiki-reference/references/maintenance.md` route
+for status capture, stale-basis refusal and recovery. Agent acknowledgment is
+operational review, not human approval or governance approval; it cannot revive
+an expired human review. External report-only review does not acknowledge or
+adopt maintenance. Read-only MCP/status/queue calls do not mutate review state.
+
 ## Native lint finding map
 
 | Native category | Fact class | Review handling |
 |---|---|---|
 | `knowledge_projection`, `knowledge_schema`, `knowledge_snapshot` | Projection/schema/snapshot integrity | Treat the native model as unavailable or mixed. In managed mode preview and use the owning generator/repair path; never hand-edit generated artifacts. In external mode return the defect to the supervisor. |
-| `knowledge_evidence`, `knowledge_freshness` | Structural evidence and live-comparison qualification | Preserve the reason. `nonsemantic-source-change` remains a qualified diagnostic; `source-changed` asks for inspection or refresh and is not automatically false prose; unknown/incompatible/missing states cannot support negative facts. |
+| `knowledge_evidence`, `knowledge_freshness` | Structural evidence and live-comparison qualification | Preserve the reason. `nonsemantic-source-change` means "Source changed; recorded structure unchanged; behavior not evaluated."; `source-changed` asks for inspection or refresh and is not automatically false prose; unknown/incompatible/missing states cannot support negative facts. |
 | `knowledge_governance` | Durable identity, alias, lifecycle, or governance-ledger integrity | Route to the explicit governance owner/command. Never initialize governance or rewrite its ledger as review repair. |
 | `knowledge_review` | Native human review of an exact semantic section | Report valid versus expired state and every expiry reason. This agent review cannot create, replace, or stand in for the human event. |
 | `knowledge_verification` | Disposable machine-verification receipt/check state | Report failed, invalid, or stale receipt reasons separately. Rerun a fixed checker only under caller/supervisor authority; stored checker metadata cannot authorize execution or a replacement receipt. |

@@ -92,6 +92,31 @@ def test_installed_package_has_complete_analysis_classification():
     }
 
 
+def test_compact_presentation_is_classified_without_changing_evidence_producer_inputs():
+    rules = capture.registry()
+    name = "services/task_compact.py"
+    assert name in rules["classified_python_files"]
+    assert name not in rules["shared"]
+    assert all(name not in paths for paths in rules["providers"].values())
+
+
+def test_search_consumers_do_not_change_source_evidence_producer_inputs():
+    rules = capture.registry()
+    for name in ("services/search_lexical.py", "services/search_source.py",
+                 "services/search_discovery.py", "services/search_discovery_capture.py"):
+        assert name in rules["classified_python_files"]
+        assert name not in rules["shared"]
+        assert all(name not in paths for paths in rules["providers"].values())
+
+
+def test_flow_presentation_is_classified_without_changing_evidence_producer_inputs():
+    rules = capture.registry()
+    name = "services/flow_overview.py"
+    assert name in rules["classified_python_files"]
+    assert name not in rules["shared"]
+    assert all(name not in paths for paths in rules["providers"].values())
+
+
 def test_custom_executor_does_not_receive_builtin_identity():
     result = capture.capture_analysis({"python": "custom:Extractor"}, languages={"python"})
     assert "llm-wiki/extractor/python" not in result

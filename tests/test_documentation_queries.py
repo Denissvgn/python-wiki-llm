@@ -377,6 +377,12 @@ def test_unknown_symbol_returns_structured_empty_result():
     service = _service()
 
     assert service.callers("missing") == {
+        "coverage": {
+            "schema_version": "llm-wiki-static-call-coverage/v1",
+            "analysis_scope": "provided-inventory",
+            "runtime_completeness": False,
+            "limitations": ["static-call-resolution-does-not-claim-runtime-completeness"],
+        },
         "query": "missing",
         "found": False,
         "ambiguous": False,

@@ -1,6 +1,6 @@
 # DiscoveredInboundRoute
 
-**Location:** `src/llm_wiki_cli/services/instruction_ownership.py:172`
+**Location:** `src/llm_wiki_cli/services/instruction_ownership.py:176`
 **Kind:** Class
 **Bases:** —
 **Module:** [instruction_ownership](../modules/instruction_ownership.md)

@@ -102,7 +102,7 @@ even under an evaluated aggregate.
 | State | Meaning | Required handling |
 | --- | --- | --- |
 | `current` | Compatible producer and concept bases match. | Qualify as unchanged since observation only. |
-| `nonsemantic-source-change` | Source bytes changed while the comparable concept-scoped structural observation did not. | Preserve the byte-change diagnostic; do not call the source byte-current. |
+| `nonsemantic-source-change` | Source bytes changed while the comparable concept-scoped structural observation did not. | Render "Source changed; recorded structure unchanged; behavior not evaluated." Never call this semantically harmless or runtime-equivalent. |
 | `source-changed` | A compatible live comparison produced a different concept-scoped observation. | Inspect or refresh; do not automatically label prose false or silently use the old observation as current. |
 | `source-missing` | A reliably mapped source with a reliable recorded basis is absent. | Report the missing source and defer source-backed conclusions; lifecycle remains independent. |
 | `basis-incompatible` | A schema, producer, generation option, source selection, plugin/extractor setting, mapping, or observation basis differs. | Do not compare or rank freshness optimistically. Resolve the basis or report the limitation. |

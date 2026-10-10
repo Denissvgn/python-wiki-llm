@@ -1,0 +1,2524 @@
+[
+  {
+    "id": "EXP-001",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    condition and (batch := alias)\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-001-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    batch = alias\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-002",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    condition or (batch := alias)\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-002-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    batch = alias\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-003",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    (batch := alias) if condition else None\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-003-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    batch = alias\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-004",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    None if condition else (batch := alias)\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-004-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    batch = alias\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-005",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    condition and (batch := alias) or 0\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-005-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    batch = alias\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-006",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    condition and True and (batch := alias)\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-006-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    batch = alias\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-007",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    condition < 0 < ((batch := alias), 1)[1]\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-007-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    batch = alias\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-008",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    0 < ((batch := alias), 1)[1] < condition\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-008-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    condition < 0 < ((batch := alias), 1)[1]\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-009",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    None if ((batch := alias), condition)[1] else None\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-009-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    condition and (batch := alias)\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-010",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    (batch := alias) if condition else (batch := alias)\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-010-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    (batch := alias) if condition else None\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-011",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    condition and 1\n    condition or 1\n    1 if condition else 2\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 11,
+        "column": 11,
+        "member": "cap",
+        "required": [
+          "app.py:Other.cap"
+        ],
+        "allowed": [
+          "app.py:Other.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-011-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    condition and (batch := alias)\n    condition or 1\n    1 if condition else 2\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 11,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-012",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    batch = Batch()\n    condition and setattr(batch, 'cap', lambda: 'replacement')\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 10,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-012-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    batch = Batch()\n    condition and setattr(batch, 'extra', lambda: 'replacement')\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 10,
+        "column": 11,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-013",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    batch = Batch()\n    alias = batch\n    None if condition else setattr(alias, 'cap', lambda: 'replacement')\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 11,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-013-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    batch = Batch()\n    alias = batch\n    None if condition else setattr(alias, 'extra', lambda: 'replacement')\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 11,
+        "column": 11,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-014",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    batch = Batch()\n    setattr(batch, 'cap', lambda: 'replacement') if condition else None\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 10,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-014-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    batch = Batch()\n    setattr(batch, 'extra', lambda: 'replacement') if condition else None\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 10,
+        "column": 11,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-015",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    first = batch.cap(batch := alias)\n    return [first, batch.cap()]\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 8,
+        "column": 12,
+        "member": "cap",
+        "required": [
+          "app.py:Other.cap"
+        ],
+        "allowed": [
+          "app.py:Other.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      },
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 19,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-015-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    first = alias.cap(batch := alias)\n    return [first, batch.cap()]\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 8,
+        "column": 12,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      },
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 19,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-016",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    first, second = ((batch := alias), batch.cap())\n    return second\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 8,
+        "column": 39,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-016-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    first, second = (alias, batch.cap())\n    return second\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 8,
+        "column": 28,
+        "member": "cap",
+        "required": [
+          "app.py:Other.cap"
+        ],
+        "allowed": [
+          "app.py:Other.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-017",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    False and (batch := alias)\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [
+          "app.py:Other.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-017-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    True and (batch := alias)\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-018",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    later = lambda: (batch := alias)\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [
+          "app.py:Other.cap"
+        ],
+        "allowed": [
+          "app.py:Other.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-018-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    batch = alias\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-019",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    condition and (lambda value=(batch := alias): value)\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-019-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    batch = alias\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-020",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    return ((batch := alias), batch.cap())[1] if condition else batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 8,
+        "column": 30,
+        "member": "cap",
+        "required": [],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      },
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 8,
+        "column": 64,
+        "member": "cap",
+        "required": [],
+        "allowed": [
+          "app.py:Other.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-020-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    return ((alias := batch), batch.cap())[1] if condition else batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 8,
+        "column": 30,
+        "member": "cap",
+        "required": [
+          "app.py:Other.cap"
+        ],
+        "allowed": [
+          "app.py:Other.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      },
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 8,
+        "column": 64,
+        "member": "cap",
+        "required": [
+          "app.py:Other.cap"
+        ],
+        "allowed": [
+          "app.py:Other.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-021",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    condition and (batch := alias)\n    batch = Batch()\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 10,
+        "column": 11,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-021-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    condition and (batch := alias)\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-022",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    later = ((batch := alias) for _ in ())\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [
+          "app.py:Other.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "EXP-022-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args): return 'original'\nclass Other:\n    def cap(self, *args): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    later = (batch := alias)\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "HIST-004",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self): return 'original'\nclass Other:\n    def cap(self): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    condition and (batch := alias)\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "HIST-004-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self): return 'original'\nclass Other:\n    def cap(self): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    batch = alias\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "HIST-005",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self): return 'original'\nclass Other:\n    def cap(self): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    condition or (batch := alias)\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "HIST-005-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self): return 'original'\nclass Other:\n    def cap(self): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    batch = alias\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "HIST-006",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self): return 'original'\nclass Other:\n    def cap(self): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    (batch := alias) if condition else None\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "HIST-006-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self): return 'original'\nclass Other:\n    def cap(self): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    batch = alias\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-011",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\ndef run(condition):\n    batch = Batch()\n    patch = setattr\n    condition and patch(batch, 'cap', lambda: 'replacement')\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 7,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-011-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\ndef run(condition):\n    batch = Batch()\n    patch = setattr\n    condition and patch(batch, 'extra', lambda: 'replacement')\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 7,
+        "column": 11,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:run",
+            "line": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-012",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "import models\ndef run(condition):\n    condition and setattr(models.Batch, 'cap', lambda self: 'replacement')\n    return models.Batch().cap()\n",
+      "models.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 4,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:run",
+            "line": 2
+          },
+          {
+            "target": "models.py:Batch.cap",
+            "line": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-012-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "import models\ndef run(condition):\n    condition and setattr(models.Batch, 'extra', lambda self: 'replacement')\n    return models.Batch().cap()\n",
+      "models.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 4,
+        "column": 11,
+        "member": "cap",
+        "required": [
+          "models.py:Batch.cap"
+        ],
+        "allowed": [
+          "models.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:run",
+            "line": 2
+          },
+          {
+            "target": "models.py:Batch.cap",
+            "line": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-013",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\nclass Other:\n    def cap(self, *args, **kwargs): return 'other'\ndef run():\n    batch = Other()\n    alias = Batch()\n    first = batch.cap(*(batch := alias,))\n    return [first, batch.cap()]\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 8,
+        "column": 12,
+        "member": "cap",
+        "required": [
+          "app.py:Other.cap"
+        ],
+        "allowed": [
+          "app.py:Other.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      },
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 19,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-013-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\nclass Other:\n    def cap(self, *args, **kwargs): return 'other'\ndef run():\n    batch = Other()\n    alias = Batch()\n    batch = alias\n    first = batch.cap(*(batch := alias,))\n    return [first, batch.cap()]\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 12,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      },
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 10,
+        "column": 19,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-014",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\nclass Other:\n    def cap(self, *args, **kwargs): return 'other'\ndef run():\n    batch = Other()\n    alias = Batch()\n    first = batch.cap(value=(batch := alias))\n    return [first, batch.cap()]\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 8,
+        "column": 12,
+        "member": "cap",
+        "required": [
+          "app.py:Other.cap"
+        ],
+        "allowed": [
+          "app.py:Other.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      },
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 19,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-014-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\nclass Other:\n    def cap(self, *args, **kwargs): return 'other'\ndef run():\n    batch = Other()\n    alias = Batch()\n    batch = alias\n    first = batch.cap(value=(batch := alias))\n    return [first, batch.cap()]\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 12,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      },
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 10,
+        "column": 19,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-015",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\nclass Other:\n    def cap(self, *args, **kwargs): return 'other'\ndef run():\n    batch = Other()\n    alias = Batch()\n    values = {'old': batch.cap(), 'new': ((batch := alias), batch.cap())[1]}\n    return list(values.values())\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 8,
+        "column": 21,
+        "member": "cap",
+        "required": [
+          "app.py:Other.cap"
+        ],
+        "allowed": [
+          "app.py:Other.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      },
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 8,
+        "column": 60,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-015-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\nclass Other:\n    def cap(self, *args, **kwargs): return 'other'\ndef run():\n    batch = Other()\n    alias = Batch()\n    values = {'new': ((batch := alias), batch.cap())[1], 'old': batch.cap()}\n    return list(values.values())\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 8,
+        "column": 40,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      },
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 8,
+        "column": 64,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-016",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\nclass Other:\n    def cap(self, *args, **kwargs): return 'other'\ndef run():\n    batch = Other()\n    alias = Batch()\n    value = [0, 1][((batch := alias), 1)[1]]\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [
+          "app.py:Batch.cap"
+        ],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-016-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\nclass Other:\n    def cap(self, *args, **kwargs): return 'other'\ndef run():\n    batch = Other()\n    alias = Batch()\n    later = ((batch := alias) for _ in ())\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [
+          "app.py:Other.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-017",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\nclass Other:\n    def cap(self, *args, **kwargs): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    target = (batch := alias) if condition else batch\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-017-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\nclass Other:\n    def cap(self, *args, **kwargs): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    target = (batch := alias) if condition else (batch := alias)\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-018",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\nclass Other:\n    def cap(self, *args, **kwargs): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    batch = Batch() if condition else Batch()\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [
+          "app.py:Batch.cap"
+        ],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ADD-018-M",
+    "minimum_python": "3.10",
+    "sources": {
+      "app.py": "class Batch:\n    def cap(self, *args, **kwargs): return 'original'\nclass Other:\n    def cap(self, *args, **kwargs): return 'other'\ndef run(condition):\n    batch = Other()\n    alias = Batch()\n    batch = Batch() if condition else Other()\n    return batch.cap()\n"
+    },
+    "probes": [
+      {
+        "file": "app.py",
+        "caller": "run",
+        "line": 9,
+        "column": 11,
+        "member": "cap",
+        "required": [],
+        "allowed": [],
+        "candidate_declarations": [
+          {
+            "target": "app.py:Batch.cap",
+            "line": 2
+          },
+          {
+            "target": "app.py:Other.cap",
+            "line": 4
+          },
+          {
+            "target": "app.py:run",
+            "line": 5
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -18,11 +20,16 @@ sequenceDiagram
     participant p6 as result.stdout.strip
     p0-->>p1: Path(…).expanduser().resolve
     p0-->>p2: Path(…).expanduser
-    p0-->>p3: Path
-    p0-->>p4: subprocess.run
-    p0-->>p5: str
+    p0-->>p3: Path(source_root)
+    p0-->>p4: subprocess.run([...], capture_output=True, text=True, check=True, timeout=10)
+    p0-->>p5: str(root)
     p0-->>p6: result.stdout.strip
 ```
+
+> Call sequence diagram shows 6 of 6 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 0 of 0 (0 omitted); unresolved 6 of 6 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

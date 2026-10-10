@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -15,55 +17,64 @@ sequenceDiagram
     participant p3 as lines.extend
     participant p4 as openapi.get
     participant p5 as _md_code
-    participant p6 as str(…).replace(…).replace (src/llm_wiki_cli/services/api_contracts.py:_md_code)
-    participant p7 as str(…).replace (src/llm_wiki_cli/services/api_contracts.py:_md_code)
-    participant p8 as str (src/llm_wiki_cli/services/api_contracts.py:_md_code)
-    participant p9 as max
-    participant p10 as len (src/llm_wiki_cli/services/api_contracts.py:_md_code)
-    participant p11 as re.findall
-    participant p12 as text.startswith
-    participant p13 as text.endswith
-    participant p14 as list
-    participant p15 as application.get
-    participant p16 as ', '.join
-    participant p17 as _md_text
-    participant p18 as str(…).replace(…).replace(…).replace
-    participant p19 as str(…).replace(…).replace (src/llm_wiki_cli/services/api_contracts.py:_md_text)
-    participant p20 as str(…).replace (src/llm_wiki_cli/services/api_contracts.py:_md_text)
-    participant p21 as str (src/llm_wiki_cli/services/api_contracts.py:_md_text)
-    p0-->>p1: contracts.get
-    p0-->>p2: isinstance (src/llm_wiki_cli/services…er_api_contracts_markdown)
-    p0-->>p3: lines.extend
-    p0-->>p4: openapi.get
+    participant p6 as list
+    participant p7 as application.get
+    participant p8 as ', '.join
+    participant p9 as _md_text
+    participant p10 as sorted
+    participant p11 as config.items
+    participant p12 as lines.append
+    participant p13 as ' | '.join
+    p0-->>p1: contracts.get('openapi')
+    p0-->>p2: isinstance (src/llm_wiki_cli/services…er_api_contracts_markdown)(openapi, Mapping)
+    p0-->>p3: lines.extend([...])
+    p0-->>p4: openapi.get('version')
     p0->>p5: _md_code
-    p5-->>p6: str(…).replace(…).replace (src/llm_wiki_cli/services/api_contracts.py:_md_code)
-    p5-->>p7: str(…).replace (src/llm_wiki_cli/services/api_contracts.py:_md_code)
-    p5-->>p8: str (src/llm_wiki_cli/services/api_contracts.py:_md_code)
-    p5-->>p9: max
-    p5-->>p10: len (src/llm_wiki_cli/services/api_contracts.py:_md_code)
-    p5-->>p11: re.findall
-    p5-->>p9: max
-    p5-->>p12: text.startswith
-    p5-->>p13: text.endswith
-    p0-->>p4: openapi.get
+    p0-->>p4: openapi.get('path')
     p0->>p5: _md_code
-    p0-->>p4: openapi.get
-    p0-->>p3: lines.extend
-    p0-->>p14: list
-    p0-->>p1: contracts.get
-    p0-->>p3: lines.extend
-    p0-->>p3: lines.extend
-    p0-->>p15: application.get
-    p0-->>p2: isinstance (src/llm_wiki_cli/services…er_api_contracts_markdown)
-    p0-->>p16: ', '.join
-    p0->>p17: _md_text
-    p17-->>p18: str(…).replace(…).replace(…).replace
-    p17-->>p19: str(…).replace(…).replace (src/llm_wiki_cli/services/api_contracts.py:_md_text)
-    p17-->>p20: str(…).replace (src/llm_wiki_cli/services/api_contracts.py:_md_text)
-    p17-->>p21: str (src/llm_wiki_cli/services/api_contracts.py:_md_text)
+    p0-->>p4: openapi.get('sha256')
+    p0-->>p3: lines.extend([...])
+    p0-->>p6: list(contracts.get(...))
+    p0-->>p1: contracts.get('applications', [...])
+    p0-->>p3: lines.extend([...])
+    p0-->>p3: lines.extend([...])
+    p0-->>p7: application.get('config')
+    p0-->>p2: isinstance (src/llm_wiki_cli/services…er_api_contracts_markdown)(config, Mapping)
+    p0-->>p8: ', '.join(...)
+    p0->>p9: _md_text
+    p0-->>p10: sorted(config.items(...))
+    p0-->>p11: config.items
+    p0-->>p7: application.get('file', 'unknown')
+    p0-->>p7: application.get('line', '?')
+    p0-->>p12: lines.append(...)
+    p0-->>p13: ' | '.join([...])
+    p0->>p5: _md_code
+    p0-->>p7: application.get('binding')
+    p0->>p5: _md_code
+    p0-->>p7: application.get('scope')
+    p0->>p5: _md_code
+    p0-->>p12: lines.append('*No statically linked FastAPI application declaration.*')
+    p0-->>p7: application.get('unknowns', [...])
 ```
 
-> Call sequence diagram shows 30 of 187 interactions; 157 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 187 interactions; 157 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 4 of 28 (24 omitted); unresolved 20 of 118 (98 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/api_contracts.py:_md_code` | 6 | - | unresolved | 4 |
+| `src/llm_wiki_cli/services/api_contracts.py:_md_code` | 6 | - | external | 5 |
+| `src/llm_wiki_cli/services/api_contracts.py:_md_text` | 27 | - | unresolved | 3 |
+| `src/llm_wiki_cli/services/api_contracts.py:_md_text` | 27 | - | external | 1 |
+| `src/llm_wiki_cli/services/api_contracts.py:render_api_contracts_markdown` | 1 | - | external | 9 |
+| `src/llm_wiki_cli/services/api_contracts.py:render_api_contracts_markdown` | 1 | - | unresolved | 81 |
+| `src/llm_wiki_cli/services/api_contracts.py:render_api_contracts_markdown` | 1 | [src/llm_wiki_cli/services/api_contracts.py](../modules/api_contracts.md) | internal | 30 |
+| `src/llm_wiki_cli/services/api_contracts.py:_handler_link` | 69 | - | external | 3 |
+> Omission summary shows 8 of 15 groups; 7 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

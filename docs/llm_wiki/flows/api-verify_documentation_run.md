@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -27,39 +29,48 @@ sequenceDiagram
     participant p15 as bool
     participant p16 as readiness.get
     participant p17 as evidence_payload.get
-    p0-->>p1: _resolve_workspace_root_argument
-    p0-->>p2: load_documentation_run
-    p0-->>p3: list
-    p0-->>p4: checks.extend
-    p0-->>p5: _verify_read_only_inputs
-    p0-->>p6: checks.append
-    p0-->>p7: str
-    p0-->>p8: run.evidence.get
-    p0-->>p9: _read_json
-    p0-->>p10: _workspace_path
-    p0-->>p11: compare_generated_ownership
-    p0-->>p12: generated_payload.get
-    p0-->>p6: checks.append
-    p0-->>p13: any
+    p0-->>p1: _resolve_workspace_root_argument(workspace)
+    p0-->>p2: load_documentation_run(workspace_root)
+    p0-->>p3: list(run.verdict_limitations)
+    p0-->>p4: checks.extend(_verify_read_only_inputs(...))
+    p0-->>p5: _verify_read_only_inputs(workspace_root, run)
+    p0-->>p6: checks.append({...})
+    p0-->>p7: str(exc)
+    p0-->>p8: run.evidence.get('generated_ownership')
+    p0-->>p9: _read_json(_workspace_path(...))
+    p0-->>p10: _workspace_path(workspace_root, generated_path)
+    p0-->>p11: compare_generated_ownership(generated_payload.get(...), ...)
+    p0-->>p12: generated_payload.get('fingerprints', {...})
+    p0-->>p6: checks.append({...})
+    p0-->>p13: any(generated_diff.values(...))
     p0-->>p14: generated_diff.values
-    p0-->>p9: _read_json
-    p0-->>p10: _workspace_path
-    p0-->>p6: checks.append
-    p0-->>p15: bool
-    p0-->>p16: readiness.get
-    p0-->>p16: readiness.get
-    p0-->>p16: readiness.get
-    p0-->>p8: run.evidence.get
-    p0-->>p6: checks.append
-    p0-->>p9: _read_json
-    p0-->>p10: _workspace_path
-    p0-->>p6: checks.append
-    p0-->>p15: bool
-    p0-->>p17: evidence_payload.get
-    p0-->>p17: evidence_payload.get
+    p0-->>p9: _read_json(_workspace_path(...))
+    p0-->>p10: _workspace_path(workspace_root, run.evidence[...])
+    p0-->>p6: checks.append({...})
+    p0-->>p15: bool(readiness.get(...))
+    p0-->>p16: readiness.get('passed')
+    p0-->>p16: readiness.get('status')
+    p0-->>p16: readiness.get('missing_work_ids', [...])
+    p0-->>p8: run.evidence.get(evidence_key)
+    p0-->>p6: checks.append({...})
+    p0-->>p9: _read_json(_workspace_path(...))
+    p0-->>p10: _workspace_path(workspace_root, evidence_path)
+    p0-->>p6: checks.append({...})
+    p0-->>p15: bool(evidence_payload.get(...))
+    p0-->>p17: evidence_payload.get('ok')
+    p0-->>p17: evidence_payload.get('status')
 ```
 
-> Call sequence diagram shows 30 of 79 interactions; 49 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 79 interactions; 49 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 0 of 0 (0 omitted); unresolved 30 of 79 (49 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/documentation_run/verify.py:verify_documentation_run` | 1 | - | unresolved | 49 |
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

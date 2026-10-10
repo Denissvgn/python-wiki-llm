@@ -14,6 +14,7 @@ from .commands import (
     init_cmd,
     install_cmd,
     knowledge_cmd,
+    maintenance_cmd,
     mcp_cmd,
     metrics_cmd,
     migrate_cmd,
@@ -185,6 +186,7 @@ _COMMAND_MODULES = {
     "docs": docs_cmd,
     "doctor": doctor_cmd,
     "queue": queue_cmd,
+    "maintenance": maintenance_cmd,
     "query": query_cmd,
     "task-context": task_cmd,
 }
@@ -217,6 +219,44 @@ def _add_queue_command(subparsers):
     _add_helper_cache_argument(parser)
 
 
+def _add_maintenance_command(subparsers):
+    parser = subparsers.add_parser("maintenance", help="Adopt, inspect, acknowledge or recover ordinary prose review")
+    actions = parser.add_subparsers(dest="maintenance_action", required=True)
+    for name in ("adopt", "status", "acknowledge", "recover"):
+        action = actions.add_parser(name)
+        action.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR)
+        action.add_argument("--format", choices=("text", "json"), default="text" if name == "status" else "json")
+        if name != "recover":
+            action.add_argument("--src-dir", default=".")
+            action.add_argument("--allow-external-src", action="store_true")
+            _add_source_selection_argument(action)
+            _add_helper_cache_argument(action)
+        if name in {"adopt", "recover"}:
+            action.add_argument("--recovery-dir", required=True)
+        elif name == "acknowledge":
+            action.add_argument("--recovery-dir")
+        if name == "adopt":
+            action.add_argument("--manifest-format", choices=("v7", "indexed-v8"))
+        elif name == "status":
+            action.add_argument("--record-id")
+            action.add_argument("--limit", type=_queue_limit, default=30)
+            mode = action.add_mutually_exclusive_group()
+            mode.add_argument("--snapshot", action="store_true")
+            mode.add_argument("--live", dest="snapshot", action="store_false")
+            action.set_defaults(snapshot=False)
+        elif name == "acknowledge":
+            action.add_argument("--record-id", required=True)
+            action.add_argument("--expected-state-hash", required=True)
+            action.add_argument("--basis-file", required=True, help="Exact expected_basis JSON from current status; '-' reads stdin")
+            action.add_argument("--actor-kind", choices=("agent", "human"), required=True)
+            action.add_argument("--actor-id", required=True)
+        else:
+            action.add_argument("--src-dir")
+            action.add_argument("--expected-adoption-id", required=True)
+            action.add_argument("--allow-prepared-adoption", action="store_true")
+            action.add_argument("--allow-captured-preimage", action="store_true")
+
+
 def _build_parser():
     parser = argparse.ArgumentParser(description="LLM Wiki CLI")
     parser.add_argument(
@@ -246,7 +286,13 @@ def _add_task_context_command(subparsers):
     parser.add_argument("--tokenizer", help="Trusted local tokenizer JSON")
     parser.add_argument("--allow-external-src", action="store_true")
     parser.add_argument("--allow-full-inventory", action="store_true", help="Permit explicit requests for a full source scan")
-    parser.add_argument("--output", help="Write canonical context to this file")
+    parser.add_argument("--output", help="Write the selected context view to this file")
+    parser.add_argument("--view", choices=["canonical", "compact-v1"], default="canonical",
+                        help="Explicit presentation; canonical remains the default")
+    parser.add_argument("--view-budget-tokens", type=int,
+                        help="Separate compact text budget within the host ceiling")
+    parser.add_argument("--canonical-output",
+                        help="Required compact host receipt destination outside source and wiki trees")
     _add_source_selection_argument(parser)
     _add_helper_cache_argument(parser)
 
@@ -273,6 +319,7 @@ def _register_commands(subparsers):
     _add_uninstall_command(subparsers)
     _add_status_command(subparsers)
     _add_queue_command(subparsers)
+    _add_maintenance_command(subparsers)
     _add_query_command(subparsers)
     _add_task_context_command(subparsers)
     _add_mcp_command(subparsers)
@@ -321,7 +368,7 @@ def _add_doctor_command(subparsers):
     doctor_parser.add_argument(
         "--strict",
         action="store_true",
-        help=("Classify indeterminate or nonsemantic source drift as unhealthy"),
+        help=("Classify indeterminate or source-byte drift as unhealthy"),
     )
     _add_helper_cache_argument(doctor_parser)
     _add_include_tests_argument(doctor_parser)
@@ -763,7 +810,7 @@ def _add_knowledge_command(subparsers):
 
     storage_migrate = actions.add_parser("migrate", help="Explicitly adopt indexed sharded native knowledge storage")
     _add_knowledge_wiki_argument(storage_migrate)
-    storage_migrate.add_argument("--to", choices=["sharded-v2", "packed-v3", "packed-v3-deflate", "packed-v4", "packed-v4-deflate", "indexed-v6"], required=True)
+    storage_migrate.add_argument("--to", choices=["sharded-v2", "packed-v3", "packed-v3-deflate", "packed-v4", "packed-v4-deflate", "indexed-v6", "indexed-v8"], required=True)
     storage_migrate.add_argument("--recovery-dir", default=None,
                                  help="Recovery snapshot outside the wiki; defaults to Git metadata when available")
     _add_knowledge_dry_run(storage_migrate)
@@ -1385,7 +1432,11 @@ def _add_search_command(subparsers):
         default=20,
         help="Positive maximum results, capped at 100 (default: 20)",
     )
-    parser.add_argument("--mode", choices=["ranked", "substring"], default="ranked")
+    parser.add_argument("--mode", choices=["ranked", "ranked-v1", "ranked-v2", "substring"], default="ranked")
+    parser.add_argument("--include-source", action="store_true",
+                        help="Explicit bounded selected-source indexing with ranked-v2")
+    parser.add_argument("--discovery", choices=["qualified-v1"],
+                        help="Group candidates with captured qualifications and exact inspection routes")
     parser.add_argument("--format", choices=["json", "text"], default="json")
     _add_source_selection_argument(parser)
 

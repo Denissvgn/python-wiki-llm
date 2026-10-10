@@ -1,6 +1,6 @@
 # KnowledgeGenerationError
 
-**Location:** `src/llm_wiki_cli/services/knowledge_generation.py:87`
+**Location:** `src/llm_wiki_cli/services/knowledge_generation.py:91`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [knowledge_generation](../modules/knowledge_generation.md)
@@ -83,7 +83,7 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `_application_knowledge_extensions` | call | [knowledge_generation](../modules/knowledge_generation.md) | 2 |
-| `_build_knowledge_generation_plan` | call | [knowledge_generation](../modules/knowledge_generation.md) | 4 |
+| `_build_knowledge_generation_plan` | call | [knowledge_generation](../modules/knowledge_generation.md) | 6 |
 | `_exact_source_mapping` | call | [knowledge_generation](../modules/knowledge_generation.md) | 3 |
 | `_next_manifest_mapping` | call | [knowledge_generation](../modules/knowledge_generation.md) | 1 |
 | `_raise_page_map_parity` | call | [knowledge_generation](../modules/knowledge_generation.md) | 2 |
@@ -95,4 +95,4 @@ flowchart LR
 | `_validated_page_maps` | call | [knowledge_generation](../modules/knowledge_generation.md) | 6 |
 | `_validated_previous_producer` | call | [knowledge_generation](../modules/knowledge_generation.md) | 1 |
 
-> References: showing 12 of 20 logical references; 8 omitted by the 12-row generated summary limit.
+> References: showing 12 of 21 logical references; 9 omitted by the 12-row generated summary limit.

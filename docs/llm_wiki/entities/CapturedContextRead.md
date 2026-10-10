@@ -1,6 +1,6 @@
 # CapturedContextRead
 
-**Location:** `src/llm_wiki_cli/services/context_packet.py:383`
+**Location:** `src/llm_wiki_cli/services/context_packet.py:387`
 **Kind:** Class
 **Bases:** —
 **Module:** [context_packet](../modules/context_packet.md)
@@ -36,6 +36,8 @@ One coordinated in-memory source/wiki read used by a packet response.
 | `explicit_changes` | `bool` | `False` | — |
 | `change_selection` | `Mapping[str, Any] \| None` | `None` | — |
 | `wiki_integrity` | `Mapping[str, tuple[int, ...]] \| None` | `None` | — |
+| `raw_content_by_page` | `Mapping[str, bytes] \| None` | `None` | — |
+| `capture_implementation_requested` | `bool` | `False` | — |
 
 ## Methods
 
@@ -92,7 +94,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [context_packet](../modules/context_packet.md) | 1 | `allow_external_src`, `basis_incompatible`, `call_edges`, `change_selection`, `changed_files`, `data_flows`, `dependency_analysis`, `entrypoints`, `explicit_changes`, `flows`, `inventory`, `inventory_result` |
+| [context_packet](../modules/context_packet.md) | 1 | `allow_external_src`, `basis_incompatible`, `call_edges`, `capture_implementation_requested`, `change_selection`, `changed_files`, `data_flows`, `dependency_analysis`, `entrypoints`, `explicit_changes`, `flows`, `inventory` |
 
 ### References
 

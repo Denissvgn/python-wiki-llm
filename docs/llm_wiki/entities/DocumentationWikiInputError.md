@@ -1,6 +1,6 @@
 # DocumentationWikiInputError
 
-**Location:** `src/llm_wiki_cli/services/documentation_wiki_input.py:211`
+**Location:** `src/llm_wiki_cli/services/documentation_wiki_input.py:213`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [documentation_wiki_input](../modules/documentation_wiki_input.md)
@@ -95,4 +95,4 @@ flowchart LR
 | `_assert_stable_input_metadata` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) | 1 |
 | `_assert_windows_input_identity` | call | [documentation_wiki_input](../modules/documentation_wiki_input.md) | 2 |
 
-> References: showing 12 of 63 logical references; 51 omitted by the 12-row generated summary limit.
+> References: showing 12 of 64 logical references; 52 omitted by the 12-row generated summary limit.

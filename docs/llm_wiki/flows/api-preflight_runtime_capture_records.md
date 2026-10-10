@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -13,55 +15,76 @@ sequenceDiagram
     participant p1 as Path(…).resolve
     participant p2 as Path
     participant p3 as _normalize_capture_record
-    participant p4 as _mapping
-    participant p5 as require_mapping
-    participant p6 as isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    participant p7 as key.encode
-    participant p8 as DocumentationClaimEvidenceError
+    participant p4 as _verify_runtime_capture_record
+    participant p5 as checked.append
+    participant p6 as tuple (src/llm_wiki_cli/services…t_runtime_capture_records)
+    participant p7 as sorted (src/llm_wiki_cli/services…t_runtime_capture_records)
+    participant p8 as _mapping
     participant p9 as _exact_fields
-    participant p10 as require_exact_fields
-    participant p11 as isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p12 as str (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p13 as set (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p14 as tuple (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p15 as sorted (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p16 as invalid_error
-    participant p17 as error_factory
-    participant p18 as _capture_result
-    participant p19 as frozenset (src/llm_wiki_cli/services…idence.py:_capture_result)
+    participant p10 as isinstance (src/llm_wiki_cli/services…fy_runtime_capture_record)
+    participant p11 as DocumentationClaimEvidenceError
+    participant p12 as PurePosixPath (src/llm_wiki_cli/services…fy_runtime_capture_record)
+    participant p13 as _capture_result
+    participant p14 as path.is_symlink
+    participant p15 as _runtime_capture_path
+    participant p16 as path.resolve
+    participant p17 as is_valid_sha256
+    participant p18 as resolved.is_relative_to
+    participant p19 as _native_observation
+    participant p20 as resolved.is_file
+    participant p21 as _redaction
+    participant p22 as _environment
+    participant p23 as resolved.read_bytes
     p0-->>p1: Path(…).resolve
-    p0-->>p2: Path
+    p0-->>p2: Path(wiki_root)
     p0->>p3: _normalize_capture_record
-    p3->>p4: _mapping
-    p4->>p5: require_mapping
-    p5-->>p6: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    p5-->>p6: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    p5-->>p7: key.encode
-    p4->>p8: DocumentationClaimEvidenceError
+    p0->>p4: _verify_runtime_capture_record
+    p0-->>p5: checked.append(record)
+    p0-->>p6: tuple (src/llm_wiki_cli/services…t_runtime_capture_records)(sorted(...))
+    p0-->>p7: sorted (src/llm_wiki_cli/services…t_runtime_capture_records)(checked, key=...)
+    p3->>p8: _mapping
+    p4->>p8: _mapping
     p3->>p9: _exact_fields
-    p9->>p10: require_exact_fields
-    p10-->>p11: isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p10-->>p12: str (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p10-->>p13: set (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p10-->>p13: set (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p10-->>p13: set (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p10-->>p14: tuple (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p10-->>p15: sorted (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p10-->>p14: tuple (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p10-->>p15: sorted (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p10-->>p16: invalid_error
-    p10-->>p17: error_factory
-    p9->>p8: DocumentationClaimEvidenceError
-    p9->>p8: DocumentationClaimEvidenceError
-    p9->>p8: DocumentationClaimEvidenceError
-    p3->>p8: DocumentationClaimEvidenceError
-    p3->>p18: _capture_result
-    p18->>p4: _mapping
-    p18->>p9: _exact_fields
-    p18-->>p19: frozenset (src/llm_wiki_cli/services…idence.py:_capture_result)
+    p4-->>p10: isinstance (src/llm_wiki_cli/services…fy_runtime_capture_record)(capture_path, str)
+    p3->>p11: DocumentationClaimEvidenceError
+    p4-->>p12: PurePosixPath (src/llm_wiki_cli/services…fy_runtime_capture_record)(capture_path)
+    p3->>p13: _capture_result
+    p4-->>p14: path.is_symlink
+    p3->>p15: _runtime_capture_path
+    p4->>p11: DocumentationClaimEvidenceError
+    p3->>p11: DocumentationClaimEvidenceError
+    p4-->>p16: path.resolve(strict=True)
+    p3->>p17: is_valid_sha256
+    p4->>p11: DocumentationClaimEvidenceError
+    p3->>p11: DocumentationClaimEvidenceError
+    p4-->>p18: resolved.is_relative_to(root)
+    p3->>p19: _native_observation
+    p4-->>p20: resolved.is_file
+    p3->>p21: _redaction
+    p4->>p11: DocumentationClaimEvidenceError
+    p3->>p22: _environment
+    p4-->>p23: resolved.read_bytes
+    p3->>p11: DocumentationClaimEvidenceError
 ```
 
-> Call sequence diagram shows 30 of 246 interactions; 216 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 246 interactions; 216 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 5 of 72 (67 omitted); unresolved 7 of 53 (46 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/documentation_claim_evidence.py:_mapping` | 5 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_mapping` | 6 | - | external | 2 |
+| `src/llm_wiki_cli/services/validation.py:require_mapping` | 6 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/documentation_claim_evidence.py:_mapping` | 5 | [src/llm_wiki_cli/services/documentation_claim_evidence.py](../modules/documentation_claim_evidence.md) | internal | 1 |
+| `src/llm_wiki_cli/services/documentation_claim_evidence.py:_exact_fields` | 11 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 12 | - | external | 9 |
+| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 12 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/documentation_claim_evidence.py:_exact_fields` | 11 | [src/llm_wiki_cli/services/documentation_claim_evidence.py](../modules/documentation_claim_evidence.md) | internal | 3 |
+> Omission summary shows 8 of 73 groups; 65 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

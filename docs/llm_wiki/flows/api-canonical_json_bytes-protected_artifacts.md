@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -14,12 +16,17 @@ sequenceDiagram
     participant p2 as ProtectedArtifactIntegrityError
     participant p3 as json.dumps
     participant p4 as (…).encode
-    p0-->>p1: isinstance
+    p0-->>p1: isinstance(payload, Mapping)
     p0->>p2: ProtectedArtifactIntegrityError
-    p0-->>p3: json.dumps
+    p0-->>p3: json.dumps(payload, ensure_ascii=False, allow_nan=False, sort_keys=True, separators=(...))
     p0->>p2: ProtectedArtifactIntegrityError
-    p0-->>p4: (…).encode
+    p0-->>p4: (…).encode('utf-8')
 ```
+
+> Call sequence diagram shows 5 of 5 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 2 of 2 (0 omitted); unresolved 1 of 1 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

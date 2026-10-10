@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -15,14 +17,19 @@ sequenceDiagram
     participant p3 as DocumentationQueryError
     participant p4 as len
     participant p5 as selected.encode
-    p0-->>p1: isinstance
+    p0-->>p1: isinstance(value, str)
     p0-->>p2: value.strip
     p0->>p3: DocumentationQueryError
     p0-->>p2: value.strip
-    p0-->>p4: len
-    p0-->>p5: selected.encode
+    p0-->>p4: len(selected.encode(...))
+    p0-->>p5: selected.encode('utf-8')
     p0->>p3: DocumentationQueryError
 ```
+
+> Call sequence diagram shows 7 of 7 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 2 of 2 (0 omitted); unresolved 3 of 3 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 
@@ -66,13 +73,13 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| normalize_documentation_query_text | isinstance | 60 | `isinstance(value, str)` |
-| normalize_documentation_query_text | value.strip | 60 | `value.strip(data not statically known)` |
-| normalize_documentation_query_text | DocumentationQueryError | 61 | `DocumentationQueryError(...)` |
-| normalize_documentation_query_text | value.strip | 62 | `value.strip(data not statically known)` |
-| normalize_documentation_query_text | len | 63 | `len(selected.encode(...))` |
-| normalize_documentation_query_text | selected.encode | 63 | `selected.encode('utf-8')` |
-| normalize_documentation_query_text | DocumentationQueryError | 64 | `DocumentationQueryError(...)` |
+| normalize_documentation_query_text | isinstance | 64 | `isinstance(value, str)` |
+| normalize_documentation_query_text | value.strip | 64 | `value.strip(data not statically known)` |
+| normalize_documentation_query_text | DocumentationQueryError | 65 | `DocumentationQueryError(...)` |
+| normalize_documentation_query_text | value.strip | 66 | `value.strip(data not statically known)` |
+| normalize_documentation_query_text | len | 67 | `len(selected.encode(...))` |
+| normalize_documentation_query_text | selected.encode | 67 | `selected.encode('utf-8')` |
+| normalize_documentation_query_text | DocumentationQueryError | 68 | `DocumentationQueryError(...)` |
 
 ### Boundary effects
 
@@ -82,10 +89,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `normalize_documentation_query_text` | `isinstance` | 60 |
-| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 60 |
-| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 62 |
-| unresolved_call | `normalize_documentation_query_text` | `selected.encode` | 63 |
+| external_call | `normalize_documentation_query_text` | `isinstance` | 64 |
+| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 64 |
+| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 66 |
+| unresolved_call | `normalize_documentation_query_text` | `selected.encode` | 67 |
 
 ## Behavior
 

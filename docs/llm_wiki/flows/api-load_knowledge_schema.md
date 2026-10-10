@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -16,14 +18,19 @@ sequenceDiagram
     participant p4 as resource.read_text
     participant p5 as KnowledgeModelError
     participant p6 as isinstance
-    p0-->>p1: resources.files(…).joinpath
-    p0-->>p2: resources.files
-    p0-->>p3: json.loads
-    p0-->>p4: resource.read_text
+    p0-->>p1: resources.files(…).joinpath(KNOWLEDGE_SCHEMA_FILENAME)
+    p0-->>p2: resources.files('llm_wiki_cli.schemas')
+    p0-->>p3: json.loads(resource.read_text(...))
+    p0-->>p4: resource.read_text(encoding='utf-8')
     p0->>p5: KnowledgeModelError
-    p0-->>p6: isinstance
+    p0-->>p6: isinstance(payload, dict)
     p0->>p5: KnowledgeModelError
 ```
+
+> Call sequence diagram shows 7 of 7 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 3 of 3 (0 omitted); unresolved 2 of 2 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 
@@ -71,27 +78,27 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| load_knowledge_schema | resources.files(…).joinpath | 706 | `resources.files('llm_wiki_cli.schemas').joinpath(KNOWLEDGE_SCHEMA_FILENAME)` |
-| load_knowledge_schema | resources.files | 706 | `resources.files('llm_wiki_cli.schemas')` |
-| load_knowledge_schema | json.loads | 709 | `json.loads(resource.read_text(...))` |
-| load_knowledge_schema | resource.read_text | 709 | `resource.read_text(encoding='utf-8')` |
-| load_knowledge_schema | KnowledgeModelError | 717 | `KnowledgeModelError('schema', ...)` |
-| load_knowledge_schema | isinstance | 720 | `isinstance(payload, dict)` |
-| load_knowledge_schema | KnowledgeModelError | 721 | `KnowledgeModelError('schema', 'packaged schema must be a JSON object')` |
+| load_knowledge_schema | resources.files(…).joinpath | 718 | `resources.files('llm_wiki_cli.schemas').joinpath(KNOWLEDGE_SCHEMA_FILENAME)` |
+| load_knowledge_schema | resources.files | 718 | `resources.files('llm_wiki_cli.schemas')` |
+| load_knowledge_schema | json.loads | 721 | `json.loads(resource.read_text(...))` |
+| load_knowledge_schema | resource.read_text | 721 | `resource.read_text(encoding='utf-8')` |
+| load_knowledge_schema | KnowledgeModelError | 729 | `KnowledgeModelError('schema', ...)` |
+| load_knowledge_schema | isinstance | 732 | `isinstance(payload, dict)` |
+| load_knowledge_schema | KnowledgeModelError | 733 | `KnowledgeModelError('schema', 'packaged schema must be a JSON object')` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_read | `resource.read_text` | `load_knowledge_schema` | 709 |
+| filesystem_read | `resource.read_text` | `load_knowledge_schema` | 721 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `load_knowledge_schema` | `resources.files('llm_wiki_cli.schemas').joinpath` | 706 |
-| external_call | `load_knowledge_schema` | `resources.files` | 706 |
-| external_call | `load_knowledge_schema` | `isinstance` | 720 |
+| unresolved_call | `load_knowledge_schema` | `resources.files('llm_wiki_cli.schemas').joinpath` | 718 |
+| external_call | `load_knowledge_schema` | `resources.files` | 718 |
+| external_call | `load_knowledge_schema` | `isinstance` | 732 |
 
 ## Behavior
 

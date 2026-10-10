@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -19,52 +21,65 @@ sequenceDiagram
     participant p7 as tuple
     participant p8 as sorted
     participant p9 as _safe_name
-    participant p10 as isinstance (src/llm_wiki_cli/services…e_governance.py:_safe_name)
-    participant p11 as value.strip (src/llm_wiki_cli/services…e_governance.py:_safe_name)
-    participant p12 as len (src/llm_wiki_cli/services…e_governance.py:_safe_name)
-    participant p13 as _CONTROL_RE.search
-    participant p14 as _safe_text
-    participant p15 as require_no_control_characters
-    participant p16 as isinstance (src/llm_wiki_cli/services…uire_no_control_characters)
-    participant p17 as contains_control_character
-    participant p18 as pattern.search
-    participant p19 as _SENSITIVE_RE.search
-    participant p20 as contains_uri_authority_userinfo
-    participant p21 as value.strip (src/llm_wiki_cli/services…ins_uri_authority_userinfo)
-    participant p22 as text.startswith
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…py:current_review_evidence)
-    p0-->>p2: TypeError
+    participant p10 as _hash
+    participant p11 as isinstance (src/llm_wiki_cli/services…e_governance.py:_safe_name)
+    participant p12 as require_sha256
+    participant p13 as value.strip (src/llm_wiki_cli/services…e_governance.py:_safe_name)
+    participant p14 as len (src/llm_wiki_cli/services…e_governance.py:_safe_name)
+    participant p15 as _CONTROL_RE.search
+    participant p16 as _safe_text
+    participant p17 as require_no_control_characters
+    participant p18 as isinstance (src/llm_wiki_cli/services…lidation.py:require_sha256)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…py:current_review_evidence)(concept, ConceptRecord)
+    p0-->>p2: TypeError('concept must be a ConceptRecord')
     p0->>p3: ReviewEvidence
     p0->>p3: ReviewEvidence
     p0->>p4: _review_evidence
-    p4-->>p5: isinstance (src/llm_wiki_cli/services…rnance.py:_review_evidence)
+    p0->>p3: ReviewEvidence
+    p4-->>p5: isinstance (src/llm_wiki_cli/services…rnance.py:_review_evidence)(value, ReviewEvidence)
     p4->>p6: GovernanceError
     p4->>p6: GovernanceError
     p4->>p6: GovernanceError
     p4->>p3: ReviewEvidence
     p4->>p6: GovernanceError
-    p4-->>p7: tuple
-    p4-->>p8: sorted
+    p4-->>p7: tuple(sorted(...))
+    p4-->>p8: sorted(...)
     p4->>p9: _safe_name
-    p9-->>p10: isinstance (src/llm_wiki_cli/services…e_governance.py:_safe_name)
-    p9-->>p11: value.strip (src/llm_wiki_cli/services…e_governance.py:_safe_name)
-    p9-->>p12: len (src/llm_wiki_cli/services…e_governance.py:_safe_name)
-    p9-->>p13: _CONTROL_RE.search
+    p4-->>p7: tuple(sorted(...))
+    p4-->>p8: sorted(...)
+    p4->>p10: _hash
+    p4->>p3: ReviewEvidence
+    p9-->>p11: isinstance (src/llm_wiki_cli/services…e_governance.py:_safe_name)(value, str)
+    p10->>p12: require_sha256
+    p9-->>p13: value.strip (src/llm_wiki_cli/services…e_governance.py:_safe_name)
+    p10->>p6: GovernanceError
+    p9-->>p14: len (src/llm_wiki_cli/services…e_governance.py:_safe_name)(value)
+    p9-->>p15: _CONTROL_RE.search(value)
     p9->>p6: GovernanceError
-    p9->>p14: _safe_text
-    p14->>p15: require_no_control_characters
-    p15-->>p16: isinstance (src/llm_wiki_cli/services…uire_no_control_characters)
-    p15->>p17: contains_control_character
-    p17-->>p18: pattern.search
-    p14->>p6: GovernanceError
-    p14-->>p19: _SENSITIVE_RE.search
-    p14->>p6: GovernanceError
-    p14->>p20: contains_uri_authority_userinfo
-    p20-->>p21: value.strip (src/llm_wiki_cli/services…ins_uri_authority_userinfo)
-    p20-->>p22: text.startswith
+    p9->>p16: _safe_text
+    p16->>p17: require_no_control_characters
+    p12-->>p18: isinstance (src/llm_wiki_cli/services…lidation.py:require_sha256)(value, str)
+    p16->>p6: GovernanceError
 ```
 
-> Call sequence diagram shows 30 of 67 interactions; 37 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 67 interactions; 37 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 10 of 15 (5 omitted); unresolved 2 of 23 (21 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/validation.py:require_no_control_characters` | 22 | - | external | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_no_control_characters` | 22 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:contains_control_character` | 24 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/knowledge_governance.py:_safe_text` | 21 | - | unresolved | 3 |
+| `src/llm_wiki_cli/services/knowledge_governance.py:_safe_text` | 21 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 3 |
+| `src/llm_wiki_cli/services/knowledge_governance.py:_safe_text` | 21 | [src/llm_wiki_cli/services/wiki_media.py](../modules/wiki_media.md) | internal | 1 |
+| `src/llm_wiki_cli/services/wiki_media.py:contains_uri_authority_userinfo` | 29 | - | unresolved | 14 |
+| `src/llm_wiki_cli/services/wiki_media.py:contains_uri_authority_userinfo` | 29 | - | external | 1 |
+> Omission summary shows 8 of 17 groups; 9 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

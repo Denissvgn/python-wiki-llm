@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -24,51 +26,59 @@ sequenceDiagram
     participant p12 as path.relative_to
     participant p13 as path.read_text
     participant p14 as _generated_sections
-    participant p15 as text.splitlines
-    participant p16 as enumerate
-    participant p17 as line.startswith
-    participant p18 as starts.append
-    participant p19 as len
-    participant p20 as ''.join
-    participant p21 as lines[…][…].strip().lower
-    participant p22 as lines[…][…].strip
-    participant p23 as re.sub(…).strip
-    participant p24 as re.sub
-    participant p25 as str
-    participant p26 as sections.append
+    participant p15 as section.encode
+    participant p16 as text.splitlines
+    participant p17 as enumerate
+    participant p18 as line.startswith
+    participant p19 as starts.append
+    participant p20 as len
+    participant p21 as ''.join
+    participant p22 as lines[…][…].strip().lower
+    participant p23 as lines[…][…].strip
+    participant p24 as re.sub(…).strip
+    participant p25 as re.sub
     p0-->>p1: Path(…).expanduser().resolve
     p0-->>p2: Path(…).expanduser
-    p0-->>p3: Path
+    p0-->>p3: Path(wiki_root)
     p0-->>p4: path.is_symlink
-    p0-->>p5: DocumentationIntegrityError
+    p0-->>p5: DocumentationIntegrityError(...)
     p0-->>p6: path.is_file
-    p0-->>p7: hash_bytes
+    p0-->>p7: hash_bytes(path.read_bytes(...))
     p0-->>p8: path.read_bytes
-    p0-->>p9: sorted
-    p0-->>p10: root.rglob
+    p0-->>p9: sorted(root.rglob(...))
+    p0-->>p10: root.rglob('*.md')
     p0-->>p4: path.is_symlink
     p0-->>p6: path.is_file
-    p0-->>p5: DocumentationIntegrityError
+    p0-->>p5: DocumentationIntegrityError(...)
     p0-->>p11: path.relative_to(…).as_posix
-    p0-->>p12: path.relative_to
-    p0-->>p13: path.read_text
+    p0-->>p12: path.relative_to(root)
+    p0-->>p13: path.read_text(encoding='utf-8')
     p0->>p14: _generated_sections
-    p14-->>p15: text.splitlines
-    p14-->>p16: enumerate
-    p14-->>p17: line.startswith
-    p14-->>p18: starts.append
-    p14-->>p19: len
-    p14-->>p16: enumerate
-    p14-->>p20: ''.join
-    p14-->>p21: lines[…][…].strip().lower
-    p14-->>p22: lines[…][…].strip
-    p14-->>p23: re.sub(…).strip
-    p14-->>p24: re.sub
-    p14-->>p25: str
-    p14-->>p26: sections.append
+    p0-->>p7: hash_bytes(section.encode(...))
+    p0-->>p15: section.encode('utf-8')
+    p14-->>p16: text.splitlines(keepends=True)
+    p14-->>p17: enumerate(lines)
+    p14-->>p18: line.startswith(' ')
+    p14-->>p19: starts.append(len(...))
+    p14-->>p20: len(lines)
+    p14-->>p17: enumerate(...)
+    p14-->>p21: ''.join(...)
+    p14-->>p22: lines[…][…].strip().lower
+    p14-->>p23: lines[…][…].strip
+    p14-->>p24: re.sub(…).strip('-')
+    p14-->>p25: re.sub('[^a-z0-9]+', '-', heading)
 ```
 
-> Call sequence diagram shows 30 of 32 interactions; 2 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 32 interactions; 2 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 0 of 0 (0 omitted); unresolved 29 of 31 (2 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/documentation_run/integrity.py:_generated_sections` | 18 | - | unresolved | 2 |
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

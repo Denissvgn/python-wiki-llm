@@ -17,6 +17,14 @@ from llm_wiki_cli.services.documentation_queries import DocumentationGraphQueryS
 
 
 _PUBLIC_FUNCTION_NAMES = (
+    "build_compact_task_context",
+    "render_compact_task_context",
+    "validate_compact_task_context",
+    "expand_compact_task_context",
+    "adopt_maintenance",
+    "get_maintenance_status",
+    "acknowledge_maintenance",
+    "recover_maintenance",
     "admit_calibration_run",
     "admit_p0_calibration_run",
     "adopt_documentation_wiki_snapshot",
@@ -73,6 +81,14 @@ _PUBLIC_FUNCTION_NAMES = (
 
 _INVALID_REQUEST_FAILURES = frozenset(
     {
+        "build_compact_task_context",
+        "render_compact_task_context",
+        "validate_compact_task_context",
+        "expand_compact_task_context",
+        "adopt_maintenance",
+        "get_maintenance_status",
+        "acknowledge_maintenance",
+        "recover_maintenance",
         "build_budgeted_context",
         "build_context",
         "build_qualified_context",
@@ -230,6 +246,22 @@ def _failure_cases(tmp_path: Path):
     query_service = cast(DocumentationGraphQueryService, _FailingQueryService())
 
     return {
+        "build_compact_task_context": lambda: api.build_compact_task_context({}, view_options={}),
+        "render_compact_task_context": lambda: api.render_compact_task_context("", {}, view_options={}),
+        "validate_compact_task_context": lambda: api.validate_compact_task_context("", "", {}, view_options={}),
+        "expand_compact_task_context": lambda: api.expand_compact_task_context("", "", {}, view_options={}),
+        "adopt_maintenance": lambda: api.adopt_maintenance(
+            recovery_dir=str(tmp_path / "recovery"),
+            manifest_format=cast(Any, "invalid"),
+        ),
+        "get_maintenance_status": lambda: api.get_maintenance_status(limit=0),
+        "acknowledge_maintenance": lambda: api.acknowledge_maintenance(
+            record_id="invalid", expected_state_hash="invalid", expected_basis={},
+            actor_kind="agent", actor_id="agent-test",
+        ),
+        "recover_maintenance": lambda: api.recover_maintenance(
+            recovery_dir=str(tmp_path / "recovery"), expected_adoption_id="invalid",
+        ),
         "get_knowledge_coverage": lambda: api.get_knowledge_coverage(live=cast(Any, "invalid")),
         "inspect_concept": lambda: api.inspect_concept(""),
         "bootstrap_wiki": lambda: api.bootstrap_wiki(
@@ -589,6 +621,14 @@ def test_submitted_documentation_result_schema_is_invalid_request(
 
 def test_public_dict_return_annotations_import_and_resolve():
     expected = {
+        "build_compact_task_context": api.CompactTaskContext,
+        "render_compact_task_context": api.CompactTaskContext,
+        "validate_compact_task_context": dict[str, typing.Any],
+        "expand_compact_task_context": dict[str, typing.Any],
+        "adopt_maintenance": api_types.MaintenanceAdoptionResult,
+        "get_maintenance_status": api_types.MaintenanceStatusResult,
+        "acknowledge_maintenance": api_types.MaintenanceAcknowledgmentResult,
+        "recover_maintenance": api_types.MaintenanceRecoveryResult,
         "extract_source": api_types.ExtractSourceResult,
         "build_context": (api_types.ContextPayload | api_types.MarkdownContextResult),
         "build_qualified_context": api.QualifiedContextPacket,
@@ -717,6 +757,7 @@ def test_public_dict_return_annotations_import_and_resolve():
                 "pages",
                 "callers",
                 "callees",
+                "coverage",
                 "flow",
                 "data_flow",
                 "path",
@@ -851,11 +892,11 @@ def test_public_dict_return_annotations_import_and_resolve():
         ),
         api_types.CallersResult: (
             bounded | {"callable", "callers"},
-            set(),
+            {"coverage"},
         ),
         api_types.CalleesResult: (
             bounded | {"callable", "callees"},
-            set(),
+            {"coverage"},
         ),
         api_types.DependencyNeighborhoodResult: (
             bounded
@@ -874,7 +915,7 @@ def test_public_dict_return_annotations_import_and_resolve():
             bounded | {"symbol", "pages"},
             set(),
         ),
-        api_types.ConceptResult: (concept, set()),
+        api_types.ConceptResult: (concept, {"maintenance"}),
         api_types.ConceptSectionsResult: (
             concept
             | {
@@ -882,7 +923,7 @@ def test_public_dict_return_annotations_import_and_resolve():
                 "ownership",
                 "sections",
             },
-            set(),
+            {"maintenance"},
         ),
         api_types.RelatedConceptsResult: (
             concept
@@ -894,7 +935,7 @@ def test_public_dict_return_annotations_import_and_resolve():
                 "unresolved_targets",
                 "external_targets",
             },
-            set(),
+            {"maintenance"},
         ),
         api_types.TypedGraphTraversalResult: (
             concept
@@ -907,11 +948,11 @@ def test_public_dict_return_annotations_import_and_resolve():
                 "typed_graph",
                 "edges",
             },
-            set(),
+            {"maintenance"},
         ),
         api_types.EvidenceExplanationResult: (
             concept | {"evidence"},
-            set(),
+            {"maintenance"},
         ),
         api_types.DocumentationExportResult: (
             {
@@ -948,7 +989,7 @@ def test_public_dict_return_annotations_import_and_resolve():
     )
     expected_keys[api_types.NativeInspectionResult] = (
         {"schema_version", "read_scope", "cost", "concept", "graph", "sections",
-         "coverage", "limits", "truncated"}, set(),
+         "coverage", "limits", "truncated"}, {"maintenance"},
     )
     expected_keys.update({
         api_types.DoctorV3Result: (expected_keys[api_types.DoctorResult][0] | {"health_details"}, set()),
@@ -967,6 +1008,32 @@ def test_public_dict_return_annotations_import_and_resolve():
         api_types.DoctorV4Result: (expected_keys[api_types.DoctorResult][0] | {"health_details"}, set()),
         api_types.AnalysisCompatibilityRecord: ({"schema_version", "component", "contract", "implementation", "configuration", "runtime", "provenance", "identity"}, set()),
         api_types.HealthDetailsV2: ({"schema_version", "scope", "evaluation", "snapshot", "basis", "coverage", "reasons"}, set()),
+    })
+    expected_keys.update({
+        api_types.MaintenanceRecordResult: (
+            {"record_id", "coordinate", "target", "mapping", "recorded_status",
+             "effective_status", "reasons", "recorded_basis", "expected_basis",
+             "basis_available", "acknowledgment", "acknowledgment_history",
+             "history_bounds", "source_location", "qualification", "governance_effect"},
+            set(),
+        ),
+        api_types.MaintenanceStatusResult: (
+            {"schema_version", "availability", "adoption_id", "state_hash", "analysis_scope",
+             "live_evaluation_performed", "native_prose_coherent", "requires_sync", "coverage",
+             "bounds", "records", "limitations"}, set(),
+        ),
+        api_types.MaintenanceAdoptionResult: (
+            {"adoption_id", "changed"},
+            {"already_adopted", "records", "state_hash", "coverage", "recovery_dir"},
+        ),
+        api_types.MaintenanceAcknowledgmentResult: (
+            {"adoption_id", "record_id", "changed", "state_hash", "acknowledgment_id",
+             "actor", "governance_effect"}, set(),
+        ),
+        api_types.MaintenanceRecoveryResult: (
+            {"adoption_id", "restored", "state_hash", "requires_sync", "prose_basis_validated"},
+            set(),
+        ),
     })
     assert set(expected_keys) | {api_types.KnowledgeMode, api_types.ComparisonPolicy} == {
         getattr(api_types, name) for name in api_types.__all__

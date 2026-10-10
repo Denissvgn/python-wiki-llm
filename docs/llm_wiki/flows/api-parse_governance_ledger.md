@@ -16,63 +16,79 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as parse_governance_ledger
     participant p1 as _object
-    participant p2 as require_mapping
-    participant p3 as isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    participant p4 as key.encode
-    participant p5 as GovernanceError
-    participant p6 as dict (src/llm_wiki_cli/services…dge_governance.py:_object)
-    participant p7 as _exact_fields
-    participant p8 as require_exact_fields
-    participant p9 as isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p10 as str (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p11 as set (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p12 as tuple (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p13 as sorted (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p14 as invalid_error
-    participant p15 as error_factory
-    participant p16 as _bundle_id
-    participant p17 as validate_bundle_id
-    participant p18 as _machine_text
-    participant p19 as isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)
-    participant p20 as ConceptIdentityError
+    participant p2 as _exact_fields
+    participant p3 as GovernanceError
+    participant p4 as _bundle_id
+    participant p5 as concepts_raw.items
+    participant p6 as _concept_uid
+    participant p7 as GovernanceAllocation
+    participant p8 as _concept_kind
+    participant p9 as _identity_value
+    participant p10 as aliases_raw.items
+    participant p11 as GovernanceAlias
+    participant p12 as _alias_type
+    participant p13 as str (src/llm_wiki_cli/services…y:parse_governance_ledger)
+    participant p14 as _parse_lifecycle_event
+    participant p15 as lifecycle_raw.items
+    participant p16 as _parse_review_event
+    participant p17 as reviews_raw.items
     p0->>p1: _object
-    p1->>p2: require_mapping
-    p2-->>p3: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    p2-->>p3: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    p2-->>p4: key.encode
-    p1->>p5: GovernanceError
-    p1->>p5: GovernanceError
-    p1-->>p6: dict (src/llm_wiki_cli/services…dge_governance.py:_object)
-    p0->>p7: _exact_fields
-    p7->>p8: require_exact_fields
-    p8-->>p9: isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p8-->>p10: str (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p8-->>p11: set (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p8-->>p11: set (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p8-->>p11: set (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p8-->>p12: tuple (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p8-->>p13: sorted (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p8-->>p12: tuple (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p8-->>p13: sorted (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p8-->>p14: invalid_error
-    p8-->>p15: error_factory
-    p7->>p5: GovernanceError
-    p7->>p5: GovernanceError
-    p7->>p5: GovernanceError
-    p0->>p5: GovernanceError
-    p0->>p16: _bundle_id
-    p16->>p17: validate_bundle_id
-    p17->>p18: _machine_text
-    p18-->>p19: isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)
-    p18->>p20: ConceptIdentityError
+    p0->>p2: _exact_fields
+    p0->>p3: GovernanceError
+    p0->>p4: _bundle_id
+    p0->>p3: GovernanceError
+    p0->>p1: _object
+    p0-->>p5: concepts_raw.items
+    p0->>p6: _concept_uid
+    p0->>p1: _object
+    p0->>p2: _exact_fields
+    p0->>p7: GovernanceAllocation
+    p0->>p8: _concept_kind
+    p0->>p9: _identity_value
+    p0->>p9: _identity_value
+    p0->>p1: _object
+    p0-->>p10: aliases_raw.items
+    p0->>p1: _object
+    p0->>p2: _exact_fields
+    p0->>p11: GovernanceAlias
+    p0->>p6: _concept_uid
+    p0->>p12: _alias_type
+    p0->>p9: _identity_value
+    p0-->>p13: str (src/llm_wiki_cli/services…y:parse_governance_ledger)(record[...])
+    p0->>p3: GovernanceError
+    p0->>p1: _object
+    p0->>p14: _parse_lifecycle_event
+    p0-->>p15: lifecycle_raw.items
+    p0->>p1: _object
+    p0->>p16: _parse_review_event
+    p0-->>p17: reviews_raw.items
 ```
 
-> Call sequence diagram shows 30 of 441 interactions; 411 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 441 interactions; 411 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 1 of 93 (92 omitted); unresolved 4 of 87 (83 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/knowledge_governance.py:_object` | 2 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_mapping` | 3 | - | external | 2 |
+| `src/llm_wiki_cli/services/validation.py:require_mapping` | 3 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/knowledge_governance.py:_object` | 2 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 2 |
+| `src/llm_wiki_cli/services/knowledge_governance.py:_object` | 2 | - | external | 1 |
+| `src/llm_wiki_cli/services/knowledge_governance.py:_exact_fields` | 10 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 11 | - | external | 9 |
+| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 11 | - | unresolved | 2 |
+> Omission summary shows 8 of 125 groups; 117 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -135,15 +151,15 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | parse_governance_ledger | _object | 421 | `_object(payload, 'governance')` |
-| _object | require_mapping | 3149 | `require_mapping(value, error=GovernanceError(...), require_string_keys=True, key_error=GovernanceError(...))` |
+| _object | require_mapping | 3153 | `require_mapping(value, error=GovernanceError(...), require_string_keys=True, key_error=GovernanceError(...))` |
 | require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 765 | `isinstance(value, Mapping)` |
 | require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 769 | `isinstance(key, str)` |
 | require_mapping | key.encode | 774 | `key.encode('utf-8')` |
-| _object | GovernanceError | 3151 | `GovernanceError(path, 'must be an object')` |
-| _object | GovernanceError | 3153 | `GovernanceError(path, 'must use string keys')` |
-| _object | dict (src/llm_wiki_cli/services…dge_governance.py:_object) | 3155 | `dict(selected)` |
+| _object | GovernanceError | 3155 | `GovernanceError(path, 'must be an object')` |
+| _object | GovernanceError | 3157 | `GovernanceError(path, 'must use string keys')` |
+| _object | dict (src/llm_wiki_cli/services…dge_governance.py:_object) | 3159 | `dict(selected)` |
 | parse_governance_ledger | _exact_fields | 422 | `_exact_fields(root, 'governance', {...})` |
-| _exact_fields | require_exact_fields | 3172 | `require_shared_exact_fields(value, allowed=..., required=required, mapping_error=GovernanceError(...), missing_error=..., unknown_error=...)` |
+| _exact_fields | require_exact_fields | 3176 | `require_shared_exact_fields(value, allowed=..., required=required, mapping_error=GovernanceError(...), missing_error=..., unknown_error=...)` |
 | require_exact_fields | isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields) | 1243 | `isinstance(value, Mapping)` |
 
 ### Boundary effects

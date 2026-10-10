@@ -90,4 +90,4 @@ flowchart LR
 | `_last_directory_ignore_rule` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
 | `_prune_dirnames` | type_reference | [source_snapshot](../modules/source_snapshot.md) | — |
 
-> References: showing 12 of 15 logical references; 3 omitted by the 12-row generated summary limit.
+> References: showing 12 of 16 logical references; 4 omitted by the 12-row generated summary limit.

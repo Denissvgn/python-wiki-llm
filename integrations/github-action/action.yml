@@ -19,7 +19,7 @@ inputs:
     required: false
     default: ""
   strict:
-    description: Classify indeterminate or nonsemantic source drift as unhealthy.
+    description: Classify indeterminate or source-byte drift as unhealthy.
     required: false
     default: "true"
   fail-on:

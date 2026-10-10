@@ -17,6 +17,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -29,52 +31,65 @@ sequenceDiagram
     participant p6 as any (src/llm_wiki_cli/services…ate_governance_projection)
     participant p7 as GovernanceError
     participant p8 as _object (src/llm_wiki_cli/services/knowledge_governance.py)
-    participant p9 as require_mapping
-    participant p10 as isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    participant p11 as key.encode
-    participant p12 as dict (src/llm_wiki_cli/services…dge_governance.py:_object)
-    participant p13 as _exact_fields
-    participant p14 as require_exact_fields
-    participant p15 as isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p16 as str (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p17 as set (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p18 as tuple (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p19 as sorted (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p20 as invalid_error
-    participant p21 as error_factory
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…ate_governance_projection)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…ate_governance_projection)
-    p0-->>p3: knowledge.extensions.get (src/llm_wiki_cli/services…ate_governance_projection)
-    p0-->>p4: knowledge.bundle.snapshot.extensions.get
-    p0-->>p5: concept.extensions.get
-    p0-->>p6: any (src/llm_wiki_cli/services…ate_governance_projection)
+    participant p9 as _exact_fields
+    participant p10 as _bundle_id
+    participant p11 as validate_governance_ledger
+    participant p12 as _hash (src/llm_wiki_cli/services/knowledge_governance.py)
+    participant p13 as set (src/llm_wiki_cli/services…ate_governance_projection)
+    participant p14 as _event_limit
+    participant p15 as concepts_by_locator.items
+    participant p16 as _validate_concept_summary
+    participant p17 as _nonnegative_int (src/llm_wiki_cli/services/knowledge_governance.py)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…ate_governance_projection)(knowledge, KnowledgeIndex)
+    p0-->>p2: TypeError (src/llm_wiki_cli/services…ate_governance_projection)('knowledge must be a KnowledgeIndex')
+    p0-->>p3: knowledge.extensions.get (src/llm_wiki_cli/services…ate_governance_projection)(GOVERNANCE_EXTENSION_KEY)
+    p0-->>p4: knowledge.bundle.snapshot.extensions.get(GOVERNANCE_HASH_EXTENSION_KEY)
+    p0-->>p5: concept.extensions.get(GOVERNANCE_EXTENSION_KEY)
+    p0-->>p6: any (src/llm_wiki_cli/services…ate_governance_projection)(...)
     p0->>p7: GovernanceError
     p0->>p8: _object (src/llm_wiki_cli/services/knowledge_governance.py)
-    p8->>p9: require_mapping
-    p9-->>p10: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    p9-->>p10: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    p9-->>p11: key.encode
-    p8->>p7: GovernanceError
-    p8->>p7: GovernanceError
-    p8-->>p12: dict (src/llm_wiki_cli/services…dge_governance.py:_object)
-    p0->>p13: _exact_fields
-    p13->>p14: require_exact_fields
-    p14-->>p15: isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p14-->>p16: str (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p14-->>p17: set (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p14-->>p17: set (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p14-->>p17: set (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p14-->>p18: tuple (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p14-->>p19: sorted (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p14-->>p18: tuple (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p14-->>p19: sorted (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p14-->>p20: invalid_error
-    p14-->>p21: error_factory
-    p13->>p7: GovernanceError
-    p13->>p7: GovernanceError
+    p0->>p9: _exact_fields
+    p0->>p7: GovernanceError
+    p0->>p10: _bundle_id
+    p0->>p11: validate_governance_ledger
+    p0->>p7: GovernanceError
+    p0->>p12: _hash (src/llm_wiki_cli/services/knowledge_governance.py)
+    p0->>p7: GovernanceError
+    p0->>p8: _object (src/llm_wiki_cli/services/knowledge_governance.py)
+    p0-->>p13: set (src/llm_wiki_cli/services…ate_governance_projection)(summaries)
+    p0-->>p13: set (src/llm_wiki_cli/services…ate_governance_projection)(concepts_by_locator)
+    p0->>p7: GovernanceError
+    p0-->>p13: set (src/llm_wiki_cli/services…ate_governance_projection)
+    p0-->>p13: set (src/llm_wiki_cli/services…ate_governance_projection)
+    p0-->>p13: set (src/llm_wiki_cli/services…ate_governance_projection)
+    p0->>p14: _event_limit
+    p0-->>p15: concepts_by_locator.items
+    p0->>p16: _validate_concept_summary
+    p0->>p8: _object (src/llm_wiki_cli/services/knowledge_governance.py)
+    p0->>p8: _object (src/llm_wiki_cli/services/knowledge_governance.py)
+    p0->>p17: _nonnegative_int (src/llm_wiki_cli/services/knowledge_governance.py)
+    p0->>p17: _nonnegative_int (src/llm_wiki_cli/services/knowledge_governance.py)
+    p0->>p7: GovernanceError
 ```
 
-> Call sequence diagram shows 30 of 1262 interactions; 1232 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 1268 interactions; 1238 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 8 of 396 (388 omitted); unresolved 4 of 310 (306 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/knowledge_governance.py:_object` | 9 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_mapping` | 10 | - | external | 2 |
+| `src/llm_wiki_cli/services/validation.py:require_mapping` | 10 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/knowledge_governance.py:_object` | 9 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 2 |
+| `src/llm_wiki_cli/services/knowledge_governance.py:_object` | 9 | - | external | 1 |
+| `src/llm_wiki_cli/services/knowledge_governance.py:_exact_fields` | 17 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 18 | - | external | 9 |
+| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 18 | - | unresolved | 2 |
+> Omission summary shows 8 of 273 groups; 265 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -151,7 +166,7 @@ flowchart LR
 | validate_governance_projection | any (src/llm_wiki_cli/services…ate_governance_projection) | 1839 | `any(...)` |
 | validate_governance_projection | GovernanceError | 1842 | `GovernanceError('extensions', 'contains an incomplete governance projection', code='governance-projection-mismatch')` |
 | validate_governance_projection | _object (src/llm_wiki_cli/services/knowledge_governance.py) | 1848 | `_object(raw, 'governance_projection')` |
-| _object (src/llm_wiki_cli/services/knowledge_governance.py) | require_mapping | 3149 | `require_mapping(value, error=GovernanceError(...), require_string_keys=True, key_error=GovernanceError(...))` |
+| _object (src/llm_wiki_cli/services/knowledge_governance.py) | require_mapping | 3153 | `require_mapping(value, error=GovernanceError(...), require_string_keys=True, key_error=GovernanceError(...))` |
 | require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 765 | `isinstance(value, Mapping)` |
 | require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 769 | `isinstance(key, str)` |
 

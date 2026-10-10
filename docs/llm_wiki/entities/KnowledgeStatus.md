@@ -1,6 +1,6 @@
 # KnowledgeStatus
 
-**Location:** `src/llm_wiki_cli/api_types.py:137`
+**Location:** `src/llm_wiki_cli/api_types.py:207`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

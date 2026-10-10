@@ -1,6 +1,6 @@
 # DocumentationGraphQueryService
 
-**Location:** `src/llm_wiki_cli/services/documentation_queries.py:836`
+**Location:** `src/llm_wiki_cli/services/documentation_queries.py:852`
 **Kind:** Class
 **Bases:** —
 **Module:** [documentation_queries](../modules/documentation_queries.md)
@@ -17,8 +17,9 @@ Read-only graph query service over already-derived documentation payloads.
 
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
-| `__init__` | `(inventory: Mapping[str, Mapping[str, Any]], *, call_edges: Optional[Iterable[Mapping[str, Any]]] = None, flows: Optional[Iterable[Mapping[str, Any]]] = None, data_flows: Optional[object] = None, dependency_analysis: Optional[Mapping[str, Any]] = None, surface_index: Optional[Mapping[str, Any]] = None, limit: int = _DEFAULT_LIMIT, knowledge_view: Optional[KnowledgeReadView] = None, machine_verification: Optional[Mapping[str, Mapping[str, Any]]] = None)` | — | — |
+| `__init__` | `(inventory: Mapping[str, Mapping[str, Any]], *, call_edges: Optional[Iterable[Mapping[str, Any]]] = None, flows: Optional[Iterable[Mapping[str, Any]]] = None, data_flows: Optional[object] = None, dependency_analysis: Optional[Mapping[str, Any]] = None, surface_index: Optional[Mapping[str, Any]] = None, limit: int = _DEFAULT_LIMIT, knowledge_view: Optional[KnowledgeReadView] = None, machine_verification: Optional[Mapping[str, Mapping[str, Any]]] = None, inventory_result: object \| None = None, snapshot_call_inventory: bool = False)` | — | — |
 | `flow_for_entrypoint` | `(id_or_symbol: object) -> dict[str, Any]` | `@_bounded_query_result` | Return a bounded user-flow payload for an entry-point id or symbol. |
+| `_static_call_coverage` | `()` | — | — |
 | `callers` | `(symbol: object) -> dict[str, Any]` | `@_bounded_query_result` | Return bounded callers for exactly one callable symbol. |
 | `callees` | `(symbol: object) -> dict[str, Any]` | `@_bounded_query_result` | Return bounded callees for exactly one callable symbol. |
 | `dependency_neighborhood` | `(path: object) -> dict[str, Any]` | `@_bounded_query_result` | Return bounded inbound/outbound dependency neighbors for a source path. |
@@ -37,6 +38,8 @@ Read-only graph query service over already-derived documentation payloads.
 | `_knowledge_selection_result` | `(query: str) -> dict[str, Any]` | — | — |
 | `_compact_knowledge_concept` | `(locator: str) -> dict[str, Any]` | — | — |
 | `_compact_context_concept` | `(locator: str) -> dict[str, Any]` | — | Return a compact concept with the explicit context freshness contract. |
+| `_maintenance_payload` | `(locator: str) -> dict[str, Any] \| None` | — | — |
+| `_implementation_payload` | `(locator: str) -> dict[str, Any] \| None` | — | Project the comparison already evaluated by this read session. |
 | `_compact_section` | `(concept_locator: str, section: Mapping[str, Any]) -> dict[str, Any]` | — | Project one section without raw hashes or review authorship. |
 | `_compact_section_review` | `(concept_locator: str, section_locator: str) -> dict[str, Any]` | — | — |
 | `_compact_knowledge_freshness` | `(locator: str) -> dict[str, Any]` | — | — |
@@ -118,7 +121,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [documentation_queries](../modules/documentation_queries.md) | 51 | — |
+| [documentation_queries](../modules/documentation_queries.md) | 54 | — |
 
 ### References
 

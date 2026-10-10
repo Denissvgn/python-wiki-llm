@@ -1,6 +1,6 @@
 # SourceSnapshot
 
-**Location:** `src/llm_wiki_cli/services/source_snapshot.py:140`
+**Location:** `src/llm_wiki_cli/services/source_snapshot.py:141`
 **Kind:** Class
 **Bases:** —
 **Module:** [source_snapshot](../modules/source_snapshot.md)
@@ -67,7 +67,7 @@ flowchart LR
     n3["_selected_prompt_diff (src/llm_wiki_cli/commands/generate_prompt_cmd.py)"]
     n4["_validated_prompt_selection_and_diff (src/llm_wiki_cli/commands/generate_prompt_cmd.py)"]
     n5["_validated_prompt_snapshot (src/llm_wiki_cli/commands/generate_prompt_cmd.py)"]
-    n6["src/llm_wiki_cli/commands/migrate_cmd.py"]
+    n6["_advance_owned_ignore_snapshot (src/llm_wiki_cli/commands/migrate_cmd.py)"]
     n7["_append_log (src/llm_wiki_cli/commands/sync_cmd.py)"]
     n8["_apply_current_infrastructure_plan (src/llm_wiki_cli/commands/sync_cmd.py)"]
     n9["_apply_infrastructure_plan (src/llm_wiki_cli/commands/sync_cmd.py)"]
@@ -116,7 +116,7 @@ flowchart LR
 | `_selected_prompt_diff` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) | — |
 | `_validated_prompt_selection_and_diff` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) | — |
 | `_validated_prompt_snapshot` | type_reference | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) | — |
-| `migrate_cmd` | import | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_advance_owned_ignore_snapshot` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
 | `_append_log` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_apply_current_infrastructure_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_apply_infrastructure_plan` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
@@ -124,4 +124,4 @@ flowchart LR
 | `_apply_sync_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_build_generated_section_context` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 
-> References: showing 12 of 152 logical references; 140 omitted by the 12-row generated summary limit.
+> References: showing 12 of 161 logical references; 149 omitted by the 12-row generated summary limit.

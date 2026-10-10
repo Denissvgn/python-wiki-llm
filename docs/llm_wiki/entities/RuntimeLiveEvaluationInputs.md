@@ -1,6 +1,6 @@
 # RuntimeLiveEvaluationInputs
 
-**Location:** `src/llm_wiki_cli/services/knowledge_orchestration.py:285`
+**Location:** `src/llm_wiki_cli/services/knowledge_orchestration.py:299`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_orchestration](../modules/knowledge_orchestration.md)
@@ -26,6 +26,7 @@ Already evaluated runtime values for one live freshness comparison.
 | `missing_source_paths` | `AbstractSet[str]` | `frozenset()` | — |
 | `inventory_complete` | `bool` | `True` | — |
 | `analysis_components` | `Mapping[str, Any] \| None` | `None` | — |
+| `implementation_observations` | `Mapping[str, Any] \| None` | `None` | — |
 | `extractor_registry` | `Mapping[str, str]` | `field(default_factory=dict)` | — |
 | `plugin_extractor_components` | `Sequence[Mapping[str, Any]]` | `()` | — |
 | `plugin_components` | `Sequence[Mapping[str, Any]]` | `()` | — |
@@ -59,7 +60,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [knowledge_orchestration](../modules/knowledge_orchestration.md) | 0 | `analysis_components`, `extractor_registry`, `generation_option_allowlist`, `generation_option_defaults`, `generation_options`, `infrastructure_inventory`, `inventory`, `inventory_complete`, `knowledge`, `manifest`, `missing_source_paths`, `plugin_components` |
+| [knowledge_orchestration](../modules/knowledge_orchestration.md) | 0 | `analysis_components`, `extractor_registry`, `generation_option_allowlist`, `generation_option_defaults`, `generation_options`, `implementation_observations`, `infrastructure_inventory`, `inventory`, `inventory_complete`, `knowledge`, `manifest`, `missing_source_paths` |
 
 ### References
 

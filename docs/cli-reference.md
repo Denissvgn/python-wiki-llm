@@ -12,8 +12,8 @@ task detector with Mermaid styling.
 | Task | Commands |
 |---|---|
 | Set up a wiki | [init](#init), [prepare-extractors](#prepare-extractors), [bootstrap](#bootstrap) |
-| Maintain and diagnose | [sync](#sync), [lint / ci-check](#lint-and-ci-check), [doctor](#doctor), [queue](#queue) |
-| Read and analyze | [extract](#extract), [context](#context), [source integration](#codebase-source-integration), [search](#search), [review](#review), [api-diff](#api-diff) |
+| Maintain and diagnose | [sync](#sync), [lint / ci-check](#lint-and-ci-check), [doctor](#doctor), [queue](#queue), [maintenance](#maintenance) |
+| Read and analyze | [extract](#extract), [context](#context), [task-context](#task-context), [source integration](#codebase-source-integration), [search](#search), [review](#review), [api-diff](#api-diff) |
 | Work with agents | [generate-prompt](#generate-prompt), [MCP](#mcp), [skills](#skills), [manual triggers](automation.md#manual-agent-triggers) |
 | Author and export docs | [docs](#docs), [site](#site), [Obsidian](#obsidian) |
 | Extend and collaborate | [install / plugins](#install-and-plugins), [team](#team), [knowledge](#knowledge) |
@@ -397,8 +397,15 @@ description/example, `Annotated`, validator/config, enum-member, literal, and
 type-alias metadata without importing Pydantic or application modules.
 Python call targets follow lexical bindings. Builtins remain file-less calls;
 local declarations, aliases, and imports resolve only when their targets are
-justified. Uncertain rebinding and closures remain unresolved instead of linking
-to unrelated same-named functions. Optional `call_bindings` entries parallel a
+justified. Uniquely resolved local constructors, assigned constructor instances
+and explicit imported class aliases can identify method callers. Factories,
+shadowed or conflicting bindings, receiver/member mutations and uncertain
+control-flow paths remain located unresolved observations. Captured module, class
+and receiver namespace mutations can invalidate a target. Resolution uses lexical
+scope and captured evaluation order, including conditional and short-circuit
+expressions; it does not establish runtime execution. An absent edge never
+proves that no runtime caller exists. Uncertain closures do not link to unrelated
+same-named functions. Optional `call_bindings` entries parallel a
 callable's `calls` list, `python_bindings` describes module bindings, and
 `main_block_call_bindings` parallels guarded process-entry calls. Older
 inventories may omit these fields.
@@ -741,7 +748,7 @@ The v3 `health_details` object adds:
   and generation-option hashes. Comparison still uses exact producer versions;
   `analysis_contract: null` means no cross-version compatibility contract is available.
 - Disjoint `modeled` and `unmodeled` counts whose sum is `total`. Modeled outcomes
-  distinguish current, nonsemantic change, changed/missing source, incompatible
+  distinguish current, source-byte change with unchanged recorded structure, changed/missing source, incompatible
   basis and unknown evidence. Missing recorded evidence does not make a modeled
   concept unmodeled.
 - Separate evaluation, comparison-attempt and compatible-content counts.
@@ -766,11 +773,11 @@ resulting indeterminate drift as unhealthy.
 | Exit code | Status | Meaning |
 |---|---|---|
 | `0` | `healthy` | The committed snapshot is coherent and no health downgrade was found. |
-| `1` | `degraded` | Knowledge remains usable, but availability is degraded, freshness was not evaluated, a review expired, or drift is indeterminate/nonsemantic. |
+| `1` | `degraded` | Knowledge remains usable, but availability is degraded, freshness was not evaluated, a review expired, or drift is indeterminate or source bytes changed while recorded structure matched. |
 | `2` | `unhealthy` | A mixed snapshot, invalid governance or receipt, unsupported state, or confirmed stale concept was found. |
 | `3` | `absent` | Knowledge artifacts are absent or the wiki has not been initialized. |
 
-`--strict` promotes indeterminate and nonsemantic source drift from degraded to
+`--strict` promotes indeterminate and source-byte drift from degraded to
 unhealthy. It does not change the JSON shape. Shell automation should capture
 the JSON before applying its own threshold because codes `1` through `3` are
 health results, not serialization failures. The supported Python API exposes
@@ -982,6 +989,51 @@ tokenizer with `--tokenizer`. An optional `counter_id` must match the selected
 counter. Python callers use `llm_wiki_cli.api.build_budgeted_context(...)` with
 a trusted counter implementing `identity`, `exact`, and `count(text)`; the
 result contains the emitted `rendered` text, `accounting`, and `ok` status.
+
+## `task-context`
+
+Gather evidence for explicit task requirements. Prefer task request v2 when
+supported; task v1 and legacy `context` calls retain their existing contracts.
+Save a request outside the source tree and use source-root-relative selectors.
+For example, with `src/app.py` defining `limit`, save `source-task.json`:
+
+```json
+{
+  "schema_version": "llm-wiki-task-request/v2",
+  "kind": "contract-change",
+  "requirements": [
+    {"id": "contract", "facet": "source-contract", "selector": "app.py:limit"}
+  ],
+  "options": {"knowledge_mode": "off", "budget_tokens": 32000}
+}
+```
+
+```bash
+llm-wiki task-context --request source-task.json --src-dir src --wiki-dir wiki
+llm-wiki task-context --request source-task.json --src-dir src --wiki-dir wiki --view compact-v1 --view-budget-tokens 32000 --canonical-output receipts/source-context.json
+```
+
+Canonical text is the default. Compact delivery is opt-in and needs a separate
+host-accessible canonical receipt outside both roots. Keep the request, profile,
+selection, tokenizer and output paths distinct. `--view-budget-tokens` chooses
+its separate presentation budget; no fixed token saving or small-budget fit is
+promised. Include the selected view once in the coding host.
+
+Choose `knowledge_mode: "off"` only when no native evidence is required; this
+route works without a wiki. Native v2 requirements need explicitly adopted
+sharded or packed knowledge. Keep `required` mode and the native requirements
+when a read fails; a failure never authorizes bootstrap or migration.
+`snapshot` reads committed native evidence, while `selected` captures declared
+source scope. `--allow-full-inventory` permits an explicitly requested broader
+scan; it does not expand an empty selection automatically.
+
+Request validation errors exit 2, workspace errors exit 1, and a minimum context
+that cannot fit exits 3 without partial context. A compact budget failure can
+retain a valid canonical receipt and leaves the view destination untouched.
+Facts, citations, gaps and static coverage remain qualified; a behavior
+requirement needs host verification. Session reuse is an optional Python/MCP
+interface with current input revalidation, not a general speedup guarantee.
+See [workflow recipes and limits](native-agent-workflow.md).
 
 ## Codebase source integration
 
@@ -1854,8 +1906,11 @@ llm-wiki search "KnowledgeModelError" --kind entities
 llm-wiki search "exact phrase" --mode substring
 ```
 
-Ranked mode combines exact page IDs, paths and defined symbols with lexical,
-title, path, and inbound-link relevance. Results include scores, reasons,
+Ranked mode keeps exact page IDs, paths and defined symbols ahead of fuzzy
+candidates, then weights informative lexical terms, section roles, titles,
+paths and bounded inbound-link relevance. The default `ranked` mode and explicit
+`ranked-v2` mode use `ranking_version: "llm-wiki-search/lexical-v2"`;
+`--mode ranked-v1` explicitly retains the earlier policy. Results include scores, reasons,
 snippets, content hashes, a corpus identity, and the ranking version. Stable
 path ordering resolves ties. `--mode substring` retains the earlier
 case-insensitive substring behavior and page ordering; MCP accepts the same
@@ -1871,9 +1926,25 @@ a larger value is requested. Blank queries and invalid limits exit `2`, leave
 stdout empty, and print argument diagnostics to stderr in both output formats.
 A valid query with no matches exits `0` with empty results.
 
-JSON responses from both the CLI and MCP disclose `mode` (`ranked` or
-`substring`), `total`, `returned`, and `bounds.results`, including truncation.
+JSON responses from both the CLI and MCP disclose `mode` (`ranked`,
+`ranked-v1`, `ranked-v2` or `substring`), `total`, `returned`, and
+`bounds.results`, including truncation.
 Ranked scores and provenance remain specific to ranked mode.
+
+Source augmentation and qualification are explicit read choices:
+
+```bash
+llm-wiki search "retry failure" --src-dir src --wiki-dir wiki --mode ranked-v2 --include-source
+llm-wiki search "retry failure" --src-dir src --wiki-dir wiki --discovery qualified-v1
+```
+
+Source indexing requires a valid committed manifest and only reads mapped
+module sources inside the selected boundary. Qualified discovery groups the
+returned candidates by validated owner and preserves section, omission and
+recorded review details. It does not establish live source freshness or approve
+prose. Both choices have additional capture/revalidation costs. Select an exact
+candidate, inspect its source and qualifiers, and retain missing or contradictory
+evidence. See [qualified discovery](native-agent-workflow.md#choose-an-interface).
 
 ## `queue`
 
@@ -1906,6 +1977,63 @@ and limits give the same identity, while different limits give different
 identities even if every item fits. Reports from versions without this field
 have different identities. A valid advisory queue exits `0`, including when
 there is no recommended work.
+
+The JSON report's `qualification.ordinary_review_custody` describes captured
+ordinary-review authority. Its `availability` is `ready`, `partial`,
+`unadopted` or `unavailable`; `durable_owner_available` identifies whether
+an ordinary-review owner was captured, and `live_evaluation_performed` reports
+whether its status was evaluated against live inputs. Partial, unadopted or
+unavailable custody does not establish completed review. Even a ready status or
+an empty queue leaves `source_prose_correctness` as `not-established`.
+Inspect the affected source and semantic prose; use explicit
+[ordinary review tracking](maintenance.md) when durable review is needed.
+An empty queue does not establish ordinary-review completion.
+
+## `maintenance`
+
+Ordinary review tracking is optional and independent of human governance and
+knowledge storage format. Start from a coherent wiki, explicitly adopt, and
+retain the complete recovery snapshot outside the source and wiki roots:
+
+```bash
+llm-wiki maintenance adopt --src-dir src --wiki-dir wiki --recovery-dir maintenance-recovery
+llm-wiki maintenance status --src-dir src --wiki-dir wiki --format json
+llm-wiki maintenance status --src-dir src --wiki-dir wiki --snapshot --record-id RECORD_UUID
+```
+
+Adoption makes existing tracked prose unreviewed and preserves authored content.
+The marker, maintenance manifest owner and knowledge projections belong to one
+committed set. Flat maintenance manifests use v7; `--manifest-format indexed-v8`
+explicitly selects bounded manifest storage. Upgrade all readers and writers
+before adopting. This does not adopt sharded or packed knowledge automatically.
+
+Review the exact source and semantic section, then run the owning sync after
+the last prose edit. Capture current status for the selected record. Save its
+non-null `expected_basis` as `basis.json` outside both roots and substitute the
+actual record ID and captured state hash:
+
+```bash
+llm-wiki maintenance acknowledge --src-dir src --wiki-dir wiki --record-id RECORD_UUID --expected-state-hash STATE_HASH --basis-file basis.json --actor-kind agent --actor-id documentation-agent
+```
+
+Stale source, prose or state refuses acknowledgment. A repeated successful
+acknowledgment with the same actor/basis is idempotent. Later relevant changes
+reopen review, which survives sync and restarts. An agent or ordinary human
+actor records operational review; it neither grants human governance approval
+nor revives expired governance events. Snapshot status is historical, and
+read-only queue/context/MCP operations never acknowledge work.
+
+A missing or corrupt adopted owner needs its matching complete recovery bundle;
+sync cannot reconstruct history from projections:
+
+```bash
+llm-wiki maintenance recover --wiki-dir wiki --recovery-dir maintenance-recovery/committed --expected-adoption-id ADOPTION_UUID
+```
+
+Use the retained adoption ID. Recovery refuses unrelated edits or newer work;
+prepared-adoption and captured-preimage retries need their explicit options.
+See [ordinary review and recovery](maintenance.md) for exact eligibility and
+Python/MCP interfaces.
 
 ## `upgrade`
 

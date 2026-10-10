@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -25,31 +27,36 @@ sequenceDiagram
     participant p13 as manifest.evidence_baselines.items
     participant p14 as manifest.tombstones.items
     participant p15 as pruned._validate_operational_state
-    p0-->>p1: isinstance
+    p0-->>p1: isinstance(manifest, SyncManifest)
     p0->>p2: SyncManifestError
     p0->>p3: SourceSelectionPruneResult
     p0->>p2: SyncManifestError
-    p0-->>p4: set
-    p0-->>p5: source_paths.update
+    p0-->>p4: set(manifest.sources)
+    p0-->>p5: source_paths.update(...)
     p0-->>p6: manifest.page_source_mappings.values
-    p0-->>p7: tuple
-    p0-->>p8: sorted
-    p0-->>p9: is_selected
+    p0-->>p7: tuple(sorted(...))
+    p0-->>p8: sorted(...)
+    p0-->>p9: is_selected(path)
     p0->>p3: SourceSelectionPruneResult
-    p0-->>p4: set
+    p0-->>p4: set(deselected_sources)
     p0-->>p10: manifest.page_source_mappings.items
-    p0-->>p7: tuple
-    p0-->>p8: sorted
-    p0-->>p4: set
-    p0-->>p4: set
-    p0-->>p4: set
-    p0-->>p11: replace
+    p0-->>p7: tuple(sorted(...))
+    p0-->>p8: sorted(...)
+    p0-->>p4: set(manifest.page_source_mappings)
+    p0-->>p4: set(retained_mappings)
+    p0-->>p4: set(deselected_pages)
+    p0-->>p11: replace(manifest, sources=..., page_source_mappings=retained_mappings, evidence_baselines=..., tombstones=..., artifact_hashes=None)
     p0-->>p12: manifest.sources.items
     p0-->>p13: manifest.evidence_baselines.items
     p0-->>p14: manifest.tombstones.items
     p0-->>p15: pruned._validate_operational_state
     p0->>p3: SourceSelectionPruneResult
 ```
+
+> Call sequence diagram shows 24 of 24 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 11 of 11 (0 omitted); unresolved 8 of 8 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 
@@ -111,32 +118,32 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| prune_manifest_for_source_selection | isinstance | 1681 | `isinstance(manifest, SyncManifest)` |
-| prune_manifest_for_source_selection | SyncManifestError | 1682 | `SyncManifestError('manifest', 'must be a SyncManifest')` |
-| prune_manifest_for_source_selection | SourceSelectionPruneResult | 1684 | `SourceSelectionPruneResult(manifest, (...), (...))` |
-| prune_manifest_for_source_selection | SyncManifestError | 1693 | `SyncManifestError('source_selection', 'source snapshot must match the pruning selection policy')` |
-| prune_manifest_for_source_selection | set | 1705 | `set(manifest.sources)` |
-| prune_manifest_for_source_selection | source_paths.update | 1706 | `source_paths.update(...)` |
-| prune_manifest_for_source_selection | manifest.page_source_mappings.values | 1707 | `manifest.page_source_mappings.values(data not statically known)` |
-| prune_manifest_for_source_selection | tuple | 1709 | `tuple(sorted(...))` |
-| prune_manifest_for_source_selection | sorted | 1710 | `sorted(...)` |
-| prune_manifest_for_source_selection | is_selected | 1710 | `is_selected(path)` |
-| prune_manifest_for_source_selection | SourceSelectionPruneResult | 1713 | `SourceSelectionPruneResult(manifest, (...), (...))` |
+| prune_manifest_for_source_selection | isinstance | 1740 | `isinstance(manifest, SyncManifest)` |
+| prune_manifest_for_source_selection | SyncManifestError | 1741 | `SyncManifestError('manifest', 'must be a SyncManifest')` |
+| prune_manifest_for_source_selection | SourceSelectionPruneResult | 1743 | `SourceSelectionPruneResult(manifest, (...), (...))` |
+| prune_manifest_for_source_selection | SyncManifestError | 1752 | `SyncManifestError('source_selection', 'source snapshot must match the pruning selection policy')` |
+| prune_manifest_for_source_selection | set | 1764 | `set(manifest.sources)` |
+| prune_manifest_for_source_selection | source_paths.update | 1765 | `source_paths.update(...)` |
+| prune_manifest_for_source_selection | manifest.page_source_mappings.values | 1766 | `manifest.page_source_mappings.values(data not statically known)` |
+| prune_manifest_for_source_selection | tuple | 1768 | `tuple(sorted(...))` |
+| prune_manifest_for_source_selection | sorted | 1769 | `sorted(...)` |
+| prune_manifest_for_source_selection | is_selected | 1769 | `is_selected(path)` |
+| prune_manifest_for_source_selection | SourceSelectionPruneResult | 1772 | `SourceSelectionPruneResult(manifest, (...), (...))` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `source_paths.update` | `prune_manifest_for_source_selection` | 1706 |
+| mutation | `source_paths.update` | `prune_manifest_for_source_selection` | 1765 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `prune_manifest_for_source_selection` | `isinstance` | 1681 |
-| unresolved_call | `prune_manifest_for_source_selection` | `manifest.page_source_mappings.values` | 1707 |
-| external_call | `prune_manifest_for_source_selection` | `sorted` | 1710 |
-| unresolved_call | `prune_manifest_for_source_selection` | `is_selected` | 1710 |
+| external_call | `prune_manifest_for_source_selection` | `isinstance` | 1740 |
+| unresolved_call | `prune_manifest_for_source_selection` | `manifest.page_source_mappings.values` | 1766 |
+| external_call | `prune_manifest_for_source_selection` | `sorted` | 1769 |
+| unresolved_call | `prune_manifest_for_source_selection` | `is_selected` | 1769 |
 | step_limit | `prune_manifest_for_source_selection` | `first 12 steps` | 0 |
 
 ## Behavior

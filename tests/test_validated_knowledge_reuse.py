@@ -176,8 +176,15 @@ def test_public_serialization_still_rejects_manually_invalid_model(tmp_path):
 
 def test_revision_change_with_new_inputs_builds_only_one_candidate(tmp_path):
     from llm_wiki_cli.services.knowledge_envelope import RepositoryEvidence
+    from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 
-    runtime, _, _ = _runtime_input_case(tmp_path, inventory_complete=True)
+    runtime, _, fixture = _runtime_input_case(tmp_path, inventory_complete=True)
+    source_root = tmp_path / "source"
+    for path, text in fixture.source_files.items():
+        target = source_root / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(text.encode("utf-8"))
+    runtime = replace(runtime, source_snapshot=build_source_snapshot(source_root))
     first = replace(runtime, repository_evidence=RepositoryEvidence(evaluated_revision="a" * 40))
     knowledge_orchestration.finalize_runtime_knowledge(first)
     current = replace(

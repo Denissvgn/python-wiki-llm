@@ -2,20 +2,18 @@
 
 **Entry point:** `main` (`process`)
 **Source:** [knowledge_maintenance](../modules/knowledge_maintenance.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [ci_report](../modules/ci_report.md), [common](../modules/common.md), and 29 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 31 more
 
 **Complete modules touched:**
 
 - [analysis_capture](../modules/analysis_capture.md)
 - [analysis_compatibility](../modules/analysis_compatibility.md)
-- [ci_report](../modules/ci_report.md)
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
 - [config](../modules/config.md)
 - [extractor_helpers](../modules/extractor_helpers.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
-- [health_contract](../modules/health_contract.md)
-- [health_policy](../modules/health_policy.md)
+- [implementation_evidence](../modules/implementation_evidence.md)
 - [io](../modules/io.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
@@ -24,14 +22,18 @@
 - [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_maintenance](../modules/knowledge_maintenance.md)
 - [knowledge_model](../modules/knowledge_model.md)
-- [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [knowledge_packs](../modules/knowledge_packs.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [maintenance_evidence](../modules/maintenance_evidence.md)
+- [maintenance_projection](../modules/maintenance_projection.md)
+- [maintenance_shapes](../modules/maintenance_shapes.md)
+- [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
+- [python_implementation](../modules/python_implementation.md)
 - [section_ownership](../modules/section_ownership.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
@@ -64,6 +66,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -80,45 +84,59 @@ sequenceDiagram
     participant p10 as Path (src/llm_wiki_cli/services…ledge_maintenance.py:main)
     participant p11 as values.pop
     participant p12 as preflight
-    participant p13 as Path(…).resolve (src/llm_wiki_cli/services…_maintenance.py:preflight)
-    participant p14 as Path (src/llm_wiki_cli/services…_maintenance.py:preflight)
-    participant p15 as validate_path
-    participant p16 as PathValidationError
-    participant p17 as (…).resolve (src/llm_wiki_cli/config.py:validate_path)
-    participant p18 as Path.cwd (src/llm_wiki_cli/config.py:validate_path)
+    participant p13 as read_guarded
+    participant p14 as strict_json (src/llm_wiki_cli/services…ledge_maintenance.py:main)
+    participant p15 as str (src/llm_wiki_cli/services…ledge_maintenance.py:main)
     p0-->>p1: argparse.ArgumentParser
-    p0-->>p2: parser.add_subparsers
-    p0-->>p3: commands.add_parser
-    p0-->>p4: before.add_argument
-    p0-->>p4: before.add_argument
-    p0-->>p4: before.add_argument
-    p0-->>p4: before.add_argument
-    p0-->>p5: sorted (src/llm_wiki_cli/services…ledge_maintenance.py:main)
-    p0-->>p3: commands.add_parser
-    p0-->>p6: command.add_argument
-    p0-->>p6: command.add_argument
-    p0-->>p6: command.add_argument
-    p0-->>p6: command.add_argument
-    p0-->>p6: command.add_argument
-    p0-->>p6: command.add_argument
-    p0-->>p6: command.add_argument
-    p0-->>p6: command.add_argument
-    p0-->>p7: parser.parse_args
+    p0-->>p2: parser.add_subparsers(dest='command', required=True)
+    p0-->>p3: commands.add_parser('preflight')
+    p0-->>p4: before.add_argument(..., required=True)
+    p0-->>p4: before.add_argument(...)
+    p0-->>p4: before.add_argument('--allow-editable', action='store_true')
+    p0-->>p4: before.add_argument('--comparison-policy', choices=sorted(...), default='auto')
+    p0-->>p5: sorted (src/llm_wiki_cli/services…ledge_maintenance.py:main)(ac.POLICIES)
+    p0-->>p3: commands.add_parser(name)
+    p0-->>p6: command.add_argument('--report', required=True)
+    p0-->>p6: command.add_argument('--preflight', required=True)
+    p0-->>p6: command.add_argument('--candidate-sha', required=True)
+    p0-->>p6: command.add_argument('--candidate-tree', required=True)
+    p0-->>p6: command.add_argument('--src-dir', required=True)
+    p0-->>p6: command.add_argument('--wiki-dir', required=True)
+    p0-->>p6: command.add_argument('--receipt', required=True)
+    p0-->>p6: command.add_argument('--output', required=True)
+    p0-->>p7: parser.parse_args(argv)
     p0-->>p8: vars(…).copy
-    p0-->>p9: vars
-    p0-->>p10: Path (src/llm_wiki_cli/services…ledge_maintenance.py:main)
-    p0-->>p11: values.pop
-    p0-->>p11: values.pop
+    p0-->>p9: vars(args)
+    p0-->>p10: Path (src/llm_wiki_cli/services…ledge_maintenance.py:main)(values.pop(...))
+    p0-->>p11: values.pop('output')
+    p0-->>p11: values.pop('command')
     p0->>p12: preflight
-    p12-->>p13: Path(…).resolve (src/llm_wiki_cli/services…_maintenance.py:preflight)
-    p12-->>p14: Path (src/llm_wiki_cli/services…_maintenance.py:preflight)
-    p12->>p15: validate_path
-    p15->>p16: PathValidationError
-    p15-->>p17: (…).resolve (src/llm_wiki_cli/config.py:validate_path)
-    p15-->>p18: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
+    p0->>p13: read_guarded
+    p0-->>p10: Path (src/llm_wiki_cli/services…ledge_maintenance.py:main)(args.report)
+    p0->>p13: read_guarded
+    p0-->>p10: Path (src/llm_wiki_cli/services…ledge_maintenance.py:main)(args.preflight)
+    p0-->>p14: strict_json (src/llm_wiki_cli/services…ledge_maintenance.py:main)(pre)
+    p0-->>p15: str (src/llm_wiki_cli/services…ledge_maintenance.py:main)(Path(...))
 ```
 
-> Call sequence diagram shows 30 of 3463 interactions; 3433 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 3245 interactions; 3215 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 7 of 1024 (1017 omitted); unresolved 20 of 782 (762 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/knowledge_maintenance.py:preflight` | 25 | - | unresolved | 34 |
+| `src/llm_wiki_cli/services/knowledge_maintenance.py:preflight` | 25 | - | external | 13 |
+| `src/llm_wiki_cli/services/knowledge_maintenance.py:preflight` | 25 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
+| `src/llm_wiki_cli/config.py:validate_path` | 28 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
+| `src/llm_wiki_cli/config.py:validate_path` | 28 | - | unresolved | 3 |
+| `src/llm_wiki_cli/config.py:validate_path` | 28 | - | external | 2 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 36 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 36 | - | unresolved | 5 |
+> Omission summary shows 8 of 751 groups; 743 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

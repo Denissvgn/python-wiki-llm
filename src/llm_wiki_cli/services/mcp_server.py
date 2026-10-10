@@ -722,14 +722,24 @@ class McpWikiService:
         kinds: list[str] | None = None,
         limit: int = 20,
         mode: str = "ranked",
+        include_source: bool = False,
+        discovery: str | None = None,
     ) -> dict:
-        from .search_service import normalize_search, page_records, search_records
+        from .search_service import normalize_discovery, normalize_search, search_prevalidated_roots
+        from .search_discovery import DiscoveryError, MAX_DISCOVERY_BYTES
 
         try:
             query, requested, limit, mode = normalize_search(query, kinds, limit, mode)
-            self._assert_source_selection_current()
-            return search_records(page_records(self.wiki_dir, requested, reader=read_md),
-                                  query, limit=limit, mode=mode)
+            normalize_discovery(discovery)
+            self._assert_source_selection_pin_current()
+            return search_prevalidated_roots(query, source_root=Path(self.src_dir), wiki_root=self.wiki_dir,
+                               kinds=sorted(requested), limit=limit, mode=mode,
+                               include_source=include_source, discovery=discovery, reader=read_md,
+                               **self._source_selection_options())
+        except DiscoveryError as exc:
+            raise McpWikiError(str(exc), code=exc.code,
+                data={"reason": exc.code, "field": exc.field,
+                      "max_bytes": MAX_DISCOVERY_BYTES, "required_bytes": exc.required_bytes}) from exc
         except ValueError as exc:
             if isinstance(exc, McpWikiError):
                 raise
@@ -786,6 +796,19 @@ class McpWikiService:
                                data={"field": "limit"}) from exc
 
     @ac.bound_comparison
+    def get_maintenance_status(self, record_id: str | None = None,
+                               limit: int = 30, live: bool = True) -> dict:
+        """Read ordinary review state; mutations remain outside this MCP surface."""
+        try:
+            return dict(public_api.get_maintenance_status(
+                _posix_string(self.src_dir), _posix_string(self.wiki_dir),
+                record_id=record_id, limit=limit, live=live,
+                **self._external_source_options(), **self._source_selection_options(),
+            ))
+        except LlmWikiApiError as exc:
+            raise _api_mcp_error(exc) from exc
+
+    @ac.bound_comparison
     def build_task_context(self, request: Mapping[str, Any]) -> str:
         from .task_contract import normalize_task_request
         from .task_context import _counter
@@ -835,6 +858,28 @@ class McpWikiService:
     def read_context_session(self, session_id, request, *, if_result_id=None, delta=False):
         try:
             return self._session(session_id).read(request, if_result_id=if_result_id, delta=delta)
+        except LlmWikiApiError as exc:
+            raise _api_mcp_error(exc) from exc
+
+    @ac.bound_comparison
+    def read_compact_context_session(
+        self, session_id, request, view_options, *, if_result_id=None,
+        if_view_id=None, delta=False,
+    ):
+        try:
+            return self._session(session_id).read_compact(request,
+                view_options=view_options, if_result_id=if_result_id,
+                if_view_id=if_view_id, delta=delta)
+        except LlmWikiApiError as exc:
+            raise _api_mcp_error(exc) from exc
+
+    @ac.bound_comparison
+    def get_task_context_receipt(
+        self, session_id, request_id, result_id, *, current=False,
+    ):
+        try:
+            return self._session(session_id).canonical_receipt(
+                request_id, result_id, current=current)
         except LlmWikiApiError as exc:
             raise _api_mcp_error(exc) from exc
 
@@ -1447,10 +1492,13 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
 
     @server.tool()
     def search_wiki(
-        query: str, kinds: list[str] | None = None, limit: int = 20, mode: str = "ranked"
+        query: str, kinds: list[str] | None = None, limit: int = 20, mode: str = "ranked",
+        include_source: bool = False,
+        discovery: str | None = None,
     ) -> dict:
         """Search Markdown wiki pages and return snippets plus resource URIs."""
-        return service.search_wiki(query, kinds=kinds, limit=limit, mode=mode)
+        return service.search_wiki(query, kinds=kinds, limit=limit, mode=mode,
+                                   include_source=include_source, discovery=discovery)
 
     @server.tool()
     def get_context(
@@ -1539,6 +1587,16 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
     get_maintenance_queue.__annotations__["limit"] = strict_int
     server.tool()(get_maintenance_queue)
 
+    def get_maintenance_status(record_id: str | None = None, limit: int = 30,
+                               live: bool = True) -> dict[str, Any]:
+        """Read bounded ordinary review status; never acknowledge or adopt."""
+        return _native_tool_call(service.get_maintenance_status,
+                                 record_id=record_id, limit=limit, live=live)
+
+    get_maintenance_status.__annotations__["limit"] = strict_int
+    get_maintenance_status.__annotations__["live"] = strict_bool
+    server.tool()(get_maintenance_status)
+
     @server.tool()
     def build_task_context(request: dict):
         """Return one canonical counted task result with explicit evidence gaps."""
@@ -1575,6 +1633,48 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
 
     read_context_session.__annotations__["delta"] = strict_bool
     server.tool()(read_context_session)
+
+    def read_compact_context_session(
+        session_id: str, request: dict, view_options: dict,
+        if_result_id: str | None = None, if_view_id: str | None = None,
+        delta: bool = False,
+    ):
+        """Return an opt-in counted view; fetch its canonical receipt explicitly."""
+        from mcp.types import CallToolResult, TextContent  # type: ignore[reportMissingImports]
+        from .workflow_profile import canonical_json
+
+        result = _native_tool_call(service.read_compact_context_session,
+            session_id, request, view_options, if_result_id=if_result_id,
+            if_view_id=if_view_id, delta=delta)
+        if isinstance(result, CallToolResult):
+            return result
+        metadata = result.metadata()
+        if result.view is not None:
+            view = result.view
+            text = view.rendered if view.ok else view.diagnostic_rendered
+            return CallToolResult(content=[TextContent(type="text", text=text)],
+                                  structuredContent=metadata, isError=not view.ok)
+        return CallToolResult(content=[TextContent(type="text",
+            text=canonical_json(metadata).decode("utf-8"))], structuredContent=metadata)
+
+    read_compact_context_session.__annotations__["delta"] = strict_bool
+    server.tool()(read_compact_context_session)
+
+    def get_task_context_receipt(
+        session_id: str, request_id: str, result_id: str, current: bool = False,
+    ):
+        """Fetch full canonical transport with explicit historical/current scope."""
+        from mcp.types import CallToolResult, TextContent  # type: ignore[reportMissingImports]
+
+        result = _native_tool_call(service.get_task_context_receipt,
+            session_id, request_id, result_id, current=current)
+        if isinstance(result, CallToolResult):
+            return result
+        return CallToolResult(content=[TextContent(type="text", text=result.canonical.rendered)],
+                              structuredContent=result.metadata())
+
+    get_task_context_receipt.__annotations__["current"] = strict_bool
+    server.tool()(get_task_context_receipt)
 
     def hint_context_session(session_id: str, unsaved_buffers: bool = False) -> dict[str, Any]:
         """Record an invalidation hint; it never establishes currentness."""

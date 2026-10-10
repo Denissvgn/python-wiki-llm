@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -19,16 +21,21 @@ sequenceDiagram
     participant p7 as sum
     participant p8 as int
     participant p9 as view.freshness.counts.values
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…y:knowledge_status_payload)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…y:knowledge_status_payload)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…y:knowledge_status_payload)(view, KnowledgeReadView)
+    p0-->>p2: TypeError (src/llm_wiki_cli/services…y:knowledge_status_payload)('view must be a KnowledgeReadView or None')
     p0->>p3: knowledge_freshness_disclosure
-    p3-->>p4: isinstance (src/llm_wiki_cli/services…ledge_freshness_disclosure)
-    p3-->>p5: TypeError (src/llm_wiki_cli/services…ledge_freshness_disclosure)
+    p3-->>p4: isinstance (src/llm_wiki_cli/services…ledge_freshness_disclosure)(view, KnowledgeReadView)
+    p3-->>p5: TypeError (src/llm_wiki_cli/services…ledge_freshness_disclosure)('view must be a KnowledgeReadView')
     p3->>p6: _freshness_disclosure
-    p3-->>p7: sum
-    p3-->>p8: int
+    p3-->>p7: sum(...)
+    p3-->>p8: int(count)
     p3-->>p9: view.freshness.counts.values
 ```
+
+> Call sequence diagram shows 9 of 9 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 6 of 6 (0 omitted); unresolved 1 of 1 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 
@@ -78,9 +85,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| knowledge_status_payload | isinstance (src/llm_wiki_cli/services…y:knowledge_status_payload) | 507 | `isinstance(view, KnowledgeReadView)` |
-| knowledge_status_payload | TypeError (src/llm_wiki_cli/services…y:knowledge_status_payload) | 508 | `TypeError('view must be a KnowledgeReadView or None')` |
-| knowledge_status_payload | knowledge_freshness_disclosure | 512 | `knowledge_freshness_disclosure(view)` |
+| knowledge_status_payload | isinstance (src/llm_wiki_cli/services…y:knowledge_status_payload) | 511 | `isinstance(view, KnowledgeReadView)` |
+| knowledge_status_payload | TypeError (src/llm_wiki_cli/services…y:knowledge_status_payload) | 512 | `TypeError('view must be a KnowledgeReadView or None')` |
+| knowledge_status_payload | knowledge_freshness_disclosure | 516 | `knowledge_freshness_disclosure(view)` |
 | knowledge_freshness_disclosure | isinstance (src/llm_wiki_cli/services…ledge_freshness_disclosure) | 448 | `isinstance(view, KnowledgeReadView)` |
 | knowledge_freshness_disclosure | TypeError (src/llm_wiki_cli/services…ledge_freshness_disclosure) | 449 | `TypeError('view must be a KnowledgeReadView')` |
 | knowledge_freshness_disclosure | _freshness_disclosure | 453 | `_freshness_disclosure(evaluated=True, concepts_evaluated=sum(...))` |
@@ -96,8 +103,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `knowledge_status_payload` | `isinstance` | 507 |
-| external_call | `knowledge_status_payload` | `TypeError` | 508 |
+| external_call | `knowledge_status_payload` | `isinstance` | 511 |
+| external_call | `knowledge_status_payload` | `TypeError` | 512 |
 | external_call | `knowledge_freshness_disclosure` | `isinstance` | 448 |
 | external_call | `knowledge_freshness_disclosure` | `TypeError` | 449 |
 | external_call | `knowledge_freshness_disclosure` | `sum` | 455 |

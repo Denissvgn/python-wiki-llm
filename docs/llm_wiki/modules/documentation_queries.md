@@ -64,8 +64,8 @@ flowchart LR
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
 | [DocumentationQueryError](../entities/DocumentationQueryError.md) | 128 | `ValueError` | Raised when a documentation graph query request is invalid. |
-| [_BoundedResult](../entities/BoundedResult.md) | 346 | — | One deterministic collection plus its exact response bounds. |
-| [DocumentationGraphQueryService](../entities/DocumentationGraphQueryService.md) | 836 | — | Read-only graph query service over already-derived documentation payloads. |
+| [_BoundedResult](../entities/BoundedResult.md) | 348 | — | One deterministic collection plus its exact response bounds. |
+| [DocumentationGraphQueryService](../entities/DocumentationGraphQueryService.md) | 852 | — | Read-only graph query service over already-derived documentation payloads. |
 
 ## Functions
 

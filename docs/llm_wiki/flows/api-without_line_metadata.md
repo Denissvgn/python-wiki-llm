@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -13,13 +15,18 @@ sequenceDiagram
     participant p1 as isinstance
     participant p2 as sorted
     participant p3 as value.items
-    p0-->>p1: isinstance
+    p0-->>p1: isinstance(value, dict)
     p0->>p0: without_line_metadata
-    p0-->>p2: sorted
+    p0-->>p2: sorted(value.items(...))
     p0-->>p3: value.items
-    p0-->>p1: isinstance
+    p0-->>p1: isinstance(value, list)
     p0->>p0: without_line_metadata
 ```
+
+> Call sequence diagram shows 6 of 6 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 3 of 3 (0 omitted); unresolved 1 of 1 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 
@@ -60,12 +67,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| without_line_metadata | isinstance | 922 | `isinstance(value, dict)` |
-| without_line_metadata | without_line_metadata | 924 | `without_line_metadata(item)` |
-| without_line_metadata | sorted | 925 | `sorted(value.items(...))` |
-| without_line_metadata | value.items | 925 | `value.items(data not statically known)` |
-| without_line_metadata | isinstance | 928 | `isinstance(value, list)` |
-| without_line_metadata | without_line_metadata | 929 | `without_line_metadata(item)` |
+| without_line_metadata | isinstance | 923 | `isinstance(value, dict)` |
+| without_line_metadata | without_line_metadata | 925 | `without_line_metadata(item)` |
+| without_line_metadata | sorted | 926 | `sorted(value.items(...))` |
+| without_line_metadata | value.items | 926 | `value.items(data not statically known)` |
+| without_line_metadata | isinstance | 929 | `isinstance(value, list)` |
+| without_line_metadata | without_line_metadata | 930 | `without_line_metadata(item)` |
 
 ### Boundary effects
 
@@ -75,10 +82,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `without_line_metadata` | `isinstance` | 922 |
-| external_call | `without_line_metadata` | `sorted` | 925 |
-| unresolved_call | `without_line_metadata` | `value.items` | 925 |
-| external_call | `without_line_metadata` | `isinstance` | 928 |
+| external_call | `without_line_metadata` | `isinstance` | 923 |
+| external_call | `without_line_metadata` | `sorted` | 926 |
+| unresolved_call | `without_line_metadata` | `value.items` | 926 |
+| external_call | `without_line_metadata` | `isinstance` | 929 |
 
 ## Behavior
 

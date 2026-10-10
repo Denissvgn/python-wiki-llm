@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -16,14 +18,19 @@ sequenceDiagram
     participant p4 as tuple
     participant p5 as dict.fromkeys
     participant p6 as PreparedRuntimeGenerationOptions
-    p0-->>p1: isinstance
-    p0-->>p2: TypeError
-    p0-->>p3: dict
-    p0-->>p3: dict
-    p0-->>p4: tuple
-    p0-->>p5: dict.fromkeys
+    p0-->>p1: isinstance(inventory_complete, bool)
+    p0-->>p2: TypeError('inventory_complete must be a boolean')
+    p0-->>p3: dict(generation_options)
+    p0-->>p3: dict(generation_option_defaults)
+    p0-->>p4: tuple(dict.fromkeys(...))
+    p0-->>p5: dict.fromkeys((...))
     p0->>p6: PreparedRuntimeGenerationOptions
 ```
+
+> Call sequence diagram shows 7 of 7 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 6 of 6 (0 omitted); unresolved 0 of 0 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 
@@ -66,13 +73,13 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| prepare_runtime_generation_options | isinstance | 324 | `isinstance(inventory_complete, bool)` |
-| prepare_runtime_generation_options | TypeError | 325 | `TypeError('inventory_complete must be a boolean')` |
-| prepare_runtime_generation_options | dict | 326 | `dict(generation_options)` |
-| prepare_runtime_generation_options | dict | 328 | `dict(generation_option_defaults)` |
-| prepare_runtime_generation_options | tuple | 330 | `tuple(dict.fromkeys(...))` |
-| prepare_runtime_generation_options | dict.fromkeys | 331 | `dict.fromkeys((...))` |
-| prepare_runtime_generation_options | PreparedRuntimeGenerationOptions | 333 | `PreparedRuntimeGenerationOptions(values=values, defaults=defaults, allowlist=allowlist)` |
+| prepare_runtime_generation_options | isinstance | 339 | `isinstance(inventory_complete, bool)` |
+| prepare_runtime_generation_options | TypeError | 340 | `TypeError('inventory_complete must be a boolean')` |
+| prepare_runtime_generation_options | dict | 341 | `dict(generation_options)` |
+| prepare_runtime_generation_options | dict | 343 | `dict(generation_option_defaults)` |
+| prepare_runtime_generation_options | tuple | 345 | `tuple(dict.fromkeys(...))` |
+| prepare_runtime_generation_options | dict.fromkeys | 346 | `dict.fromkeys((...))` |
+| prepare_runtime_generation_options | PreparedRuntimeGenerationOptions | 348 | `PreparedRuntimeGenerationOptions(values=values, defaults=defaults, allowlist=allowlist)` |
 
 ### Boundary effects
 
@@ -82,9 +89,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `prepare_runtime_generation_options` | `isinstance` | 324 |
-| external_call | `prepare_runtime_generation_options` | `TypeError` | 325 |
-| external_call | `prepare_runtime_generation_options` | `dict.fromkeys` | 331 |
+| external_call | `prepare_runtime_generation_options` | `isinstance` | 339 |
+| external_call | `prepare_runtime_generation_options` | `TypeError` | 340 |
+| external_call | `prepare_runtime_generation_options` | `dict.fromkeys` | 346 |
 
 ## Behavior
 

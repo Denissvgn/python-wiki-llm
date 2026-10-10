@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -14,59 +16,76 @@ sequenceDiagram
     participant p2 as _validate_run_payload
     participant p3 as run.to_dict
     participant p4 as _write_json
-    participant p5 as _control_workspace_root
-    participant p6 as Path (src/llm_wiki_cli/services…y:_control_workspace_root)
-    participant p7 as os.path.abspath (src/llm_wiki_cli/services…y:_control_workspace_root)
-    participant p8 as os.fspath (src/llm_wiki_cli/services…y:_control_workspace_root)
-    participant p9 as enumerate
-    participant p10 as DocumentationIntegrityError (src/llm_wiki_cli/services…y:_control_workspace_root)
-    participant p11 as _write_workspace_text
-    participant p12 as Path (src/llm_wiki_cli/services….py:_write_workspace_text)
-    participant p13 as os.path.abspath (src/llm_wiki_cli/services….py:_write_workspace_text)
-    participant p14 as os.fspath (src/llm_wiki_cli/services….py:_write_workspace_text)
-    participant p15 as target.relative_to
-    participant p16 as DocumentationIntegrityError (src/llm_wiki_cli/services….py:_write_workspace_text)
-    participant p17 as _assert_existing_workspace_layout_safe
-    participant p18 as os.path.lexists (src/llm_wiki_cli/services…ing_workspace_layout_safe)
-    participant p19 as _assert_safe_workspace_directory
-    participant p20 as directory.lstat
-    participant p21 as DocumentationIntegrityError (src/llm_wiki_cli/services…_safe_workspace_directory)
-    participant p22 as bool (src/llm_wiki_cli/services…_safe_workspace_directory)
-    participant p23 as getattr (src/llm_wiki_cli/services…_safe_workspace_directory)
-    participant p24 as stat.S_ISLNK (src/llm_wiki_cli/services…_safe_workspace_directory)
+    participant p5 as documentation_run_path
+    participant p6 as _control_workspace_root
+    participant p7 as _resolve_workspace_root_argument
+    participant p8 as _write_workspace_text
+    participant p9 as json.dumps
+    participant p10 as Path (src/llm_wiki_cli/services…y:_control_workspace_root)
+    participant p11 as Path (src/llm_wiki_cli/services….py:_write_workspace_text)
+    participant p12 as Path (src/llm_wiki_cli/services…e_workspace_root_argument)
+    participant p13 as os.path.abspath (src/llm_wiki_cli/services…y:_control_workspace_root)
+    participant p14 as os.path.abspath (src/llm_wiki_cli/services….py:_write_workspace_text)
+    participant p15 as os.path.abspath (src/llm_wiki_cli/services…e_workspace_root_argument)
+    participant p16 as os.fspath (src/llm_wiki_cli/services…y:_control_workspace_root)
+    participant p17 as os.fspath (src/llm_wiki_cli/services….py:_write_workspace_text)
+    participant p18 as os.fspath (src/llm_wiki_cli/services…e_workspace_root_argument)
+    participant p19 as enumerate
+    participant p20 as Path(…).expanduser
+    participant p21 as DocumentationIntegrityError (src/llm_wiki_cli/services…y:_control_workspace_root)
+    participant p22 as os.path.lexists (src/llm_wiki_cli/services…e_workspace_root_argument)
+    participant p23 as target.relative_to
+    participant p24 as requested.lstat
     p0-->>p1: _utc_now
-    p0-->>p2: _validate_run_payload
+    p0-->>p2: _validate_run_payload(run.to_dict(...))
     p0-->>p3: run.to_dict
     p0->>p4: _write_json
-    p4->>p5: _control_workspace_root
-    p5-->>p6: Path (src/llm_wiki_cli/services…y:_control_workspace_root)
-    p5-->>p7: os.path.abspath (src/llm_wiki_cli/services…y:_control_workspace_root)
-    p5-->>p8: os.fspath (src/llm_wiki_cli/services…y:_control_workspace_root)
-    p5-->>p9: enumerate
-    p5-->>p10: DocumentationIntegrityError (src/llm_wiki_cli/services…y:_control_workspace_root)
-    p5-->>p6: Path (src/llm_wiki_cli/services…y:_control_workspace_root)
-    p4->>p11: _write_workspace_text
-    p11-->>p12: Path (src/llm_wiki_cli/services….py:_write_workspace_text)
-    p11-->>p13: os.path.abspath (src/llm_wiki_cli/services….py:_write_workspace_text)
-    p11-->>p14: os.fspath (src/llm_wiki_cli/services….py:_write_workspace_text)
-    p11-->>p12: Path (src/llm_wiki_cli/services….py:_write_workspace_text)
-    p11-->>p13: os.path.abspath (src/llm_wiki_cli/services….py:_write_workspace_text)
-    p11-->>p14: os.fspath (src/llm_wiki_cli/services….py:_write_workspace_text)
-    p11-->>p15: target.relative_to
-    p11-->>p16: DocumentationIntegrityError (src/llm_wiki_cli/services….py:_write_workspace_text)
-    p11->>p17: _assert_existing_workspace_layout_safe
-    p17-->>p18: os.path.lexists (src/llm_wiki_cli/services…ing_workspace_layout_safe)
-    p17->>p19: _assert_safe_workspace_directory
-    p19-->>p20: directory.lstat
-    p19-->>p21: DocumentationIntegrityError (src/llm_wiki_cli/services…_safe_workspace_directory)
-    p19-->>p22: bool (src/llm_wiki_cli/services…_safe_workspace_directory)
-    p19-->>p23: getattr (src/llm_wiki_cli/services…_safe_workspace_directory)
-    p19-->>p22: bool (src/llm_wiki_cli/services…_safe_workspace_directory)
-    p19-->>p23: getattr (src/llm_wiki_cli/services…_safe_workspace_directory)
-    p19-->>p24: stat.S_ISLNK (src/llm_wiki_cli/services…_safe_workspace_directory)
+    p0->>p5: documentation_run_path
+    p0-->>p3: run.to_dict
+    p4->>p6: _control_workspace_root
+    p5->>p7: _resolve_workspace_root_argument
+    p4->>p8: _write_workspace_text
+    p4-->>p9: json.dumps(payload, indent=2, sort_keys=True)
+    p6-->>p10: Path (src/llm_wiki_cli/services…y:_control_workspace_root)(os.path.abspath(...))
+    p8-->>p11: Path (src/llm_wiki_cli/services….py:_write_workspace_text)(os.path.abspath(...))
+    p7-->>p12: Path (src/llm_wiki_cli/services…e_workspace_root_argument)(os.path.abspath(...))
+    p6-->>p13: os.path.abspath (src/llm_wiki_cli/services…y:_control_workspace_root)(os.fspath(...))
+    p8-->>p14: os.path.abspath (src/llm_wiki_cli/services….py:_write_workspace_text)(os.fspath(...))
+    p7-->>p15: os.path.abspath (src/llm_wiki_cli/services…e_workspace_root_argument)(os.fspath(...))
+    p6-->>p16: os.fspath (src/llm_wiki_cli/services…y:_control_workspace_root)(path)
+    p8-->>p17: os.fspath (src/llm_wiki_cli/services….py:_write_workspace_text)(workspace_root)
+    p7-->>p18: os.fspath (src/llm_wiki_cli/services…e_workspace_root_argument)(...)
+    p6-->>p19: enumerate(absolute.parts)
+    p8-->>p11: Path (src/llm_wiki_cli/services….py:_write_workspace_text)(os.path.abspath(...))
+    p7-->>p20: Path(…).expanduser
+    p6-->>p21: DocumentationIntegrityError (src/llm_wiki_cli/services…y:_control_workspace_root)(…)
+    p8-->>p14: os.path.abspath (src/llm_wiki_cli/services….py:_write_workspace_text)(os.fspath(...))
+    p7-->>p12: Path (src/llm_wiki_cli/services…e_workspace_root_argument)(workspace)
+    p6-->>p10: Path (src/llm_wiki_cli/services…y:_control_workspace_root)(...)
+    p8-->>p17: os.fspath (src/llm_wiki_cli/services….py:_write_workspace_text)(path)
+    p7-->>p22: os.path.lexists (src/llm_wiki_cli/services…e_workspace_root_argument)(requested)
+    p8-->>p23: target.relative_to(root)
+    p7-->>p24: requested.lstat
 ```
 
-> Call sequence diagram shows 30 of 193 interactions; 163 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 193 interactions; 163 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 0 of 0 (0 omitted); unresolved 25 of 168 (143 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/documentation_run/workspace.py:_write_workspace_text` | 13 | - | unresolved | 22 |
+| `src/llm_wiki_cli/services/documentation_run/workspace.py:_write_workspace_text` | 13 | [src/llm_wiki_cli/services/documentation_run/workspace.py](../modules/workspace.md) | internal | 8 |
+| `src/llm_wiki_cli/services/documentation_run/workspace.py:_assert_existing_workspace_layout_safe` | 22 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/documentation_run/workspace.py:_assert_existing_workspace_layout_safe` | 22 | [src/llm_wiki_cli/services/documentation_run/workspace.py](../modules/workspace.md) | internal | 4 |
+| `src/llm_wiki_cli/services/documentation_run/workspace.py:_assert_safe_workspace_directory` | 24 | - | unresolved | 14 |
+| `src/llm_wiki_cli/services/documentation_run/workspace.py:_assert_workspace_control_tree_safe` | 41 | - | unresolved | 21 |
+| `src/llm_wiki_cli/services/documentation_run/workspace.py:_assert_workspace_output_tree_safe` | 63 | - | unresolved | 21 |
+| `src/llm_wiki_cli/services/documentation_run/workspace.py:_supports_descriptor_bound_workspace_writes` | 101 | - | unresolved | 2 |
+> Omission summary shows 8 of 16 groups; 8 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

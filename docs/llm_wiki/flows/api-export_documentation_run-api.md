@@ -6,15 +6,22 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as export_documentation_run
     participant p1 as cast
     participant p2 as _export_documentation_run_impl
-    p0-->>p1: cast
-    p0-->>p2: _export_documentation_run_impl
+    p0-->>p1: cast(DocumentationExportResult, _export_documentation_run_impl(...))
+    p0-->>p2: _export_documentation_run_impl(…)
 ```
+
+> Call sequence diagram shows 2 of 2 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 1 of 1 (0 omitted); unresolved 1 of 1 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 
@@ -41,8 +48,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| export_documentation_run | cast | 3096 | `cast(DocumentationExportResult, _export_documentation_run_impl(...))` |
-| export_documentation_run | _export_documentation_run_impl | 3098 | `_export_documentation_run_impl(workspace, build=build, builder_command=builder_command, knowledge_mode=knowledge_mode, knowledge_public_repository_identity=knowledge_public_repository_identity)` |
+| export_documentation_run | cast | 3316 | `cast(DocumentationExportResult, _export_documentation_run_impl(...))` |
+| export_documentation_run | _export_documentation_run_impl | 3318 | `_export_documentation_run_impl(workspace, build=build, builder_command=builder_command, knowledge_mode=knowledge_mode, knowledge_public_repository_identity=knowledge_public_repository_identity)` |
 
 ### Boundary effects
 
@@ -52,8 +59,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `export_documentation_run` | `cast` | 3096 |
-| unresolved_call | `export_documentation_run` | `_export_documentation_run_impl` | 3098 |
+| external_call | `export_documentation_run` | `cast` | 3316 |
+| unresolved_call | `export_documentation_run` | `_export_documentation_run_impl` | 3318 |
 
 ## Behavior
 

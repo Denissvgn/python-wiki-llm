@@ -1,6 +1,6 @@
 # ManifestPageSource
 
-**Location:** `src/llm_wiki_cli/services/sync_manifest.py:148`
+**Location:** `src/llm_wiki_cli/services/sync_manifest.py:149`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_manifest](../modules/sync_manifest.md)
@@ -83,7 +83,7 @@ flowchart LR
 | `ManifestPageSource.from_payload` | type_reference | [sync_manifest](../modules/sync_manifest.md) | — |
 | `SyncManifest._validate_basis_mapping` | type_reference | [sync_manifest](../modules/sync_manifest.md) | — |
 | `SyncManifest.build_from_inventory` | call | [sync_manifest](../modules/sync_manifest.md) | 2 |
-| `_current_pages` | call | [sync_transitions](../modules/sync_transitions.md) | 1 |
+| `_current_pages` | call | [sync_transitions](../modules/sync_transitions.md) | 2 |
 | `_current_pages` | type_reference | [sync_transitions](../modules/sync_transitions.md) | — |
 | `_Ownership.add` | type_reference | [sync_transitions](../modules/sync_transitions.md) | — |
 

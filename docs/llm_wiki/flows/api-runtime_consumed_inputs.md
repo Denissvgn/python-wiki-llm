@@ -13,6 +13,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -21,50 +23,58 @@ sequenceDiagram
     participant p2 as TypeError
     participant p3 as source_snapshot.to_consumed_inputs
     participant p4 as _merge_explicit_consumed_input
-    participant p5 as KnowledgeGenerationError
-    participant p6 as is_valid_sha256
-    participant p7 as isinstance (src/llm_wiki_cli/services…vidence.py:is_valid_sha256)
-    participant p8 as _SHA256_RE.fullmatch
-    participant p9 as isinstance (src/llm_wiki_cli/services…ge_explicit_consumed_input)
-    participant p10 as consumed_by_path.get
-    participant p11 as ConsumedInput
-    participant p12 as generation_inputs.get
-    participant p13 as tuple
-    participant p14 as sorted
-    participant p15 as openapi.get
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)
-    p0-->>p2: TypeError
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)
-    p0-->>p2: TypeError
+    participant p5 as generation_inputs.get
+    participant p6 as tuple
+    participant p7 as sorted
+    participant p8 as KnowledgeGenerationError
+    participant p9 as openapi.get
+    participant p10 as is_valid_sha256
+    participant p11 as isinstance (src/llm_wiki_cli/services…ge_explicit_consumed_input)
+    participant p12 as consumed_by_path.get
+    participant p13 as ConsumedInput
+    participant p14 as isinstance (src/llm_wiki_cli/services…vidence.py:is_valid_sha256)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)(source_snapshot, SourceSnapshot)
+    p0-->>p2: TypeError('source_snapshot must be a SourceSnapshot')
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)(generation_inputs, Mapping)
+    p0-->>p2: TypeError('generation_inputs must be a mapping')
     p0-->>p3: source_snapshot.to_consumed_inputs
     p0->>p4: _merge_explicit_consumed_input
-    p4->>p5: KnowledgeGenerationError
-    p4->>p5: KnowledgeGenerationError
-    p4->>p6: is_valid_sha256
-    p6-->>p7: isinstance (src/llm_wiki_cli/services…vidence.py:is_valid_sha256)
-    p6-->>p8: _SHA256_RE.fullmatch
-    p4->>p5: KnowledgeGenerationError
-    p4-->>p9: isinstance (src/llm_wiki_cli/services…ge_explicit_consumed_input)
-    p4-->>p10: consumed_by_path.get
-    p4->>p5: KnowledgeGenerationError
-    p4->>p11: ConsumedInput
-    p0-->>p12: generation_inputs.get
-    p0-->>p13: tuple
-    p0-->>p14: sorted
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)
-    p0->>p5: KnowledgeGenerationError
-    p0-->>p15: openapi.get
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)
-    p0->>p5: KnowledgeGenerationError
-    p0-->>p15: openapi.get
-    p0->>p6: is_valid_sha256
-    p0->>p5: KnowledgeGenerationError
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)
+    p0-->>p5: generation_inputs.get('openapi')
+    p0-->>p6: tuple(...)
+    p0-->>p7: sorted(consumed_by_path)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)(openapi, Mapping)
+    p0->>p8: KnowledgeGenerationError
+    p0-->>p9: openapi.get('path')
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)(path, str)
+    p0->>p8: KnowledgeGenerationError
+    p0-->>p9: openapi.get('sha256')
+    p0->>p10: is_valid_sha256
+    p0->>p8: KnowledgeGenerationError
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)(content_hash, str)
     p0->>p4: _merge_explicit_consumed_input
-    p0-->>p13: tuple
+    p0-->>p6: tuple(...)
+    p0-->>p7: sorted(consumed_by_path)
+    p4->>p8: KnowledgeGenerationError
+    p4->>p8: KnowledgeGenerationError
+    p4->>p10: is_valid_sha256
+    p4->>p8: KnowledgeGenerationError
+    p4-->>p11: isinstance (src/llm_wiki_cli/services…ge_explicit_consumed_input)(content_hash, str)
+    p4-->>p12: consumed_by_path.get(path)
+    p4->>p8: KnowledgeGenerationError
+    p4->>p13: ConsumedInput
+    p10-->>p14: isinstance (src/llm_wiki_cli/services…vidence.py:is_valid_sha256)(value, str)
 ```
 
-> Call sequence diagram shows 30 of 31 interactions; 1 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 31 interactions; 1 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 13 of 13 (0 omitted); unresolved 5 of 6 (1 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:is_valid_sha256` | 10 | - | unresolved | 1 |
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 
@@ -122,17 +132,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| runtime_consumed_inputs | isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs) | 1420 | `isinstance(source_snapshot, SourceSnapshot)` |
-| runtime_consumed_inputs | TypeError | 1421 | `TypeError('source_snapshot must be a SourceSnapshot')` |
-| runtime_consumed_inputs | isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs) | 1422 | `isinstance(generation_inputs, Mapping)` |
-| runtime_consumed_inputs | TypeError | 1423 | `TypeError('generation_inputs must be a mapping')` |
-| runtime_consumed_inputs | source_snapshot.to_consumed_inputs | 1425 | `source_snapshot.to_consumed_inputs(data not statically known)` |
-| runtime_consumed_inputs | _merge_explicit_consumed_input | 1427 | `_merge_explicit_consumed_input(consumed_by_path, path=plugin_lock_path, content_hash=plugin_lock_hash, kind=ConsumedInputKind.PLUGIN, field='plugin_lock')` |
-| _merge_explicit_consumed_input | KnowledgeGenerationError | 1493 | `KnowledgeGenerationError(field, 'path and content hash must be supplied together')` |
-| _merge_explicit_consumed_input | KnowledgeGenerationError | 1500 | `KnowledgeGenerationError(..., 'must be a non-empty repository-relative path')` |
-| _merge_explicit_consumed_input | is_valid_sha256 | 1504 | `is_valid_sha256(content_hash)` |
-| is_valid_sha256 | isinstance (src/llm_wiki_cli/services…vidence.py:is_valid_sha256) | 153 | `isinstance(value, str)` |
-| is_valid_sha256 | _SHA256_RE.fullmatch | 153 | `_SHA256_RE.fullmatch(value)` |
+| runtime_consumed_inputs | isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs) | 1481 | `isinstance(source_snapshot, SourceSnapshot)` |
+| runtime_consumed_inputs | TypeError | 1482 | `TypeError('source_snapshot must be a SourceSnapshot')` |
+| runtime_consumed_inputs | isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs) | 1483 | `isinstance(generation_inputs, Mapping)` |
+| runtime_consumed_inputs | TypeError | 1484 | `TypeError('generation_inputs must be a mapping')` |
+| runtime_consumed_inputs | source_snapshot.to_consumed_inputs | 1486 | `source_snapshot.to_consumed_inputs(data not statically known)` |
+| runtime_consumed_inputs | _merge_explicit_consumed_input | 1488 | `_merge_explicit_consumed_input(consumed_by_path, path=plugin_lock_path, content_hash=plugin_lock_hash, kind=ConsumedInputKind.PLUGIN, field='plugin_lock')` |
+| _merge_explicit_consumed_input | KnowledgeGenerationError | 1554 | `KnowledgeGenerationError(field, 'path and content hash must be supplied together')` |
+| _merge_explicit_consumed_input | KnowledgeGenerationError | 1561 | `KnowledgeGenerationError(..., 'must be a non-empty repository-relative path')` |
+| _merge_explicit_consumed_input | is_valid_sha256 | 1565 | `is_valid_sha256(content_hash)` |
+| is_valid_sha256 | isinstance (src/llm_wiki_cli/services…vidence.py:is_valid_sha256) | 154 | `isinstance(value, str)` |
+| is_valid_sha256 | _SHA256_RE.fullmatch | 154 | `_SHA256_RE.fullmatch(value)` |
 
 ### Boundary effects
 
@@ -142,13 +152,13 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `runtime_consumed_inputs` | `isinstance` | 1420 |
-| external_call | `runtime_consumed_inputs` | `TypeError` | 1421 |
-| external_call | `runtime_consumed_inputs` | `isinstance` | 1422 |
-| external_call | `runtime_consumed_inputs` | `TypeError` | 1423 |
-| unresolved_call | `runtime_consumed_inputs` | `source_snapshot.to_consumed_inputs` | 1425 |
-| external_call | `is_valid_sha256` | `isinstance` | 153 |
-| unresolved_call | `is_valid_sha256` | `_SHA256_RE.fullmatch` | 153 |
+| external_call | `runtime_consumed_inputs` | `isinstance` | 1481 |
+| external_call | `runtime_consumed_inputs` | `TypeError` | 1482 |
+| external_call | `runtime_consumed_inputs` | `isinstance` | 1483 |
+| external_call | `runtime_consumed_inputs` | `TypeError` | 1484 |
+| unresolved_call | `runtime_consumed_inputs` | `source_snapshot.to_consumed_inputs` | 1486 |
+| external_call | `is_valid_sha256` | `isinstance` | 154 |
+| unresolved_call | `is_valid_sha256` | `_SHA256_RE.fullmatch` | 154 |
 | step_limit | `runtime_consumed_inputs` | `first 12 steps` | 0 |
 
 ## Behavior

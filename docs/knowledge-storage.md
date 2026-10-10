@@ -1,7 +1,8 @@
 # Knowledge storage
 
-Indexed and packed storage require `agent-wiki-cli` 2.3.0 or newer. Use compatible
-readers and writers in every environment that accesses an adopted format.
+Use compatible readers and writers in every environment that accesses an
+adopted format. Check the installed `knowledge migrate --help` and the reported
+schema/capability output before choosing a format.
 
 Native knowledge supports the original JSON file (`v1`), indexed JSON objects
 (`sharded-v2`), or indexed ZIP packs (`packed-v3` and `packed-v4`). Existing wikis keep their
@@ -14,6 +15,29 @@ to read that snapshot.
 
 Markdown and `.llm-wiki-governance.json` remain the authority for authored content,
 stable identity and review history. Storage migration preserves them.
+
+## Choose the task read route
+
+- A task request v2 with only source requirements can use
+  `options.knowledge_mode: "off"` without a wiki. See the executable
+  [source-only recipe](native-agent-workflow.md#source-only-task-without-a-wiki).
+- A task v2 native requirement needs explicitly adopted sharded or packed
+  knowledge. Existing flat storage is valid for its supported full readers;
+  selected native task reads reject it. Review the migration dry-run, retain a
+  recovery directory outside the source/wiki trees, apply explicitly, then run
+  `storage-check --full`. See the
+  [native recipe](native-agent-workflow.md#native-task-with-explicit-storage-adoption).
+- Required native evidence stays required when missing, corrupt, unsupported or
+  over budget. Reads do not migrate, bootstrap, sync or downgrade the request.
+
+Ordinary maintenance adoption is an independent review-history choice. Its
+immutable `.llm-wiki-maintenance-adoption.json` marker requires the matching
+manifest state and projections. A missing adopted owner must be restored from a
+complete [maintenance recovery snapshot](maintenance.md#recover-complete-authority),
+before any sync; manifestless seeding is not recovery. `indexed-v8` is available
+only for an adopted maintenance owner and changes manifest storage independently
+of sharded or packed knowledge. It does not make a flat knowledge root support
+selected native task reads.
 
 Canonical page names may contain words such as `Secret`, `Password` or `ApiKey`.
 These are valid identifiers in both governed and ungoverned wikis. Paths still

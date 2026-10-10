@@ -22,17 +22,19 @@ is merely being loaded.
 | `..services.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME`, `KnowledgeCommitPlan`, `ValidatedKnowledgeArtifacts`, `build_knowledge_commit_plan`, `commit_knowledge_artifacts`, `validate_knowledge_artifacts` |
 | `..services.knowledge_consumption` | `build_knowledge_read_view` |
 | `..services.knowledge_coverage` | `render_knowledge_coverage` |
-| `..services.knowledge_governance` | `ACTOR_KINDS`, `ALIAS_LOCATOR`, `ALIAS_NATURAL_KEY`, `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_FILENAME`, `MAX_EVENT_LIMIT`, `GovernanceActor`, `GovernanceError`, `GovernanceLedger`, `GovernanceLoadResult`, `LifecycleEvent`, `ReviewEvent`, `add_alias`, `add_review_event`, `apply_governance_projection`, `concept_references_from_knowledge`, `current_review_evidence`, `evaluate_review_event`, `governance_bundle_id_from_knowledge`, `governance_lock`, `load_governance`, `move_concept`, `reconcile_concepts`, `review_scope_hash`, `save_governance`, `set_lifecycle`, `strip_governance_projection`, `validate_governance_ledger` |
+| `..services.knowledge_governance` | `ACTOR_KINDS`, `ALIAS_LOCATOR`, `ALIAS_NATURAL_KEY`, `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_FILENAME`, `MAX_EVENT_LIMIT`, `GovernanceActor`, `GovernanceError`, `GovernanceLedger`, `GovernanceLoadResult`, `LifecycleEvent`, `ReviewEvent`, `add_alias`, `add_review_event`, `apply_governance_projection`, `concept_references_from_knowledge`, `current_review_evidence`, `evaluate_review_event`, `governance_bundle_id_from_knowledge`, `load_governance`, `move_concept`, `reconcile_concepts`, `review_scope_hash`, `save_governance`, `set_lifecycle`, `strip_governance_projection`, `validate_governance_ledger` |
 | `..services.knowledge_loader` | `KnowledgeMismatchPolicy`, `KnowledgeStateLoadError`, `load_knowledge_state` |
 | `..services.knowledge_model` | `KnowledgeIndex`, `KnowledgeLoadState`, `Lifecycle` |
 | `..services.knowledge_observability` | `knowledge_freshness_disclosure` |
 | `..services.knowledge_storage_io` | `read_guarded` |
+| `..services.maintenance_protocol` | `maintenance_write_operation`, `governance_writer_lock` |
 | `..services.sync_manifest` | `MANIFEST_FILENAME`, `SyncManifest` |
 | `..services.verification_contracts` | `VerificationResult`, `build_artifact_verification_context`, `verify`, `verify_and_write_receipt` |
 | `..services.wiki_surface_index` | `SURFACE_INDEX_FILENAME` |
 | `.knowledge_storage_cmd` | `run` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Mapping` |
+| `contextlib` | `contextmanager` |
 | `dataclasses` | `dataclass` |
 | `json` | `json` |
 | `pathlib` | `Path` |
@@ -58,15 +60,15 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (2) |
-| Outbound | `src` (14) |
+| Outbound | `src` (15) |
 
-> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_ArtifactSnapshot](../entities/ArtifactSnapshot.md) | 91 | — | — |
+| [_ArtifactSnapshot](../entities/ArtifactSnapshot.md) | 92 | — | — |
 
 ## Functions
 
@@ -83,6 +85,7 @@ flowchart LR
 | `_mutation_preview_payload` | `(action: str, ledger: GovernanceLedger, *, changed: bool, dry_run: bool, projection: str = 'current') -> dict[str, object]` | — | — |
 | `_print_payload` | `(payload: Mapping[str, object]) -> None` | — | — |
 | `_prepare_existing_mutation` | `(wiki_dir: Path, mutation: LedgerMutation) -> tuple[_ArtifactSnapshot, GovernanceLoadResult, GovernanceLedger, KnowledgeCommitPlan]` | — | — |
+| `_governance_mutation_operation` | `(wiki_dir)` | `@contextmanager` | — |
 | `_run_existing_mutation` | `(wiki_dir: Path, *, action: str, dry_run: bool, mutation: LedgerMutation) -> None` | — | — |
 | `_init_ledger` | `(wiki_dir: Path, *, bundle_id: str \| None) -> tuple[_ArtifactSnapshot, GovernanceLedger, str \| None, GovernanceLedger]` | — | — |
 | `_run_init` | `(args) -> None` | — | — |

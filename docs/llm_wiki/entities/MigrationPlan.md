@@ -1,6 +1,6 @@
 # MigrationPlan
 
-**Location:** `src/llm_wiki_cli/commands/migrate_cmd.py:142`
+**Location:** `src/llm_wiki_cli/commands/migrate_cmd.py:149`
 **Kind:** Class
 **Bases:** —
 **Module:** [migrate_cmd](../modules/migrate_cmd.md)
@@ -52,11 +52,11 @@ flowchart LR
     n4["_build_migration_plan (src/llm_wiki_cli/commands/migrate_cmd.py)"]
     n5["_chunk_has_archive_work (src/llm_wiki_cli/commands/migrate_cmd.py)"]
     n6["_chunk_link_map (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n7["_finalize_migration_artifacts (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n8["_finalizers_pending (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n9["_legacy_archive_ignore_applicable (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n10["_matched_archive_count (src/llm_wiki_cli/commands/migrate_cmd.py)"]
-    n11["_migration_runtime_inputs (src/llm_wiki_cli/commands/migrate_cmd.py)"]
+    n7["_ensure_legacy_gitignore (src/llm_wiki_cli/commands/migrate_cmd.py)"]
+    n8["_finalize_migration_artifacts (src/llm_wiki_cli/commands/migrate_cmd.py)"]
+    n9["_finalizers_pending (src/llm_wiki_cli/commands/migrate_cmd.py)"]
+    n10["_legacy_archive_ignore_applicable (src/llm_wiki_cli/commands/migrate_cmd.py)"]
+    n11["_matched_archive_count (src/llm_wiki_cli/commands/migrate_cmd.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -99,10 +99,10 @@ flowchart LR
 | `_build_migration_plan` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
 | `_chunk_has_archive_work` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
 | `_chunk_link_map` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
+| `_ensure_legacy_gitignore` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
 | `_finalize_migration_artifacts` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
 | `_finalizers_pending` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
 | `_legacy_archive_ignore_applicable` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
 | `_matched_archive_count` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
-| `_migration_runtime_inputs` | type_reference | [migrate_cmd](../modules/migrate_cmd.md) | — |
 
-> References: showing 12 of 21 logical references; 9 omitted by the 12-row generated summary limit.
+> References: showing 12 of 22 logical references; 10 omitted by the 12-row generated summary limit.

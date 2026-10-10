@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -15,45 +17,50 @@ sequenceDiagram
     participant p3 as sorted (src/llm_wiki_cli/services…runtime_generation_options)
     participant p4 as str
     participant p5 as _runtime_policy_from_generation_inputs
-    participant p6 as isinstance (src/llm_wiki_cli/services…icy_from_generation_inputs)
-    participant p7 as KnowledgeGenerationError
-    participant p8 as dict
-    participant p9 as _validate_runtime_policy
-    participant p10 as set
-    participant p11 as sorted (src/llm_wiki_cli/services…y:_validate_runtime_policy)
-    participant p12 as min
-    participant p13 as isinstance (src/llm_wiki_cli/services…y:_validate_runtime_policy)
-    participant p14 as bool
-    p0-->>p1: surface_value
-    p0-->>p2: isinstance (src/llm_wiki_cli/services…runtime_generation_options)
-    p0-->>p3: sorted (src/llm_wiki_cli/services…runtime_generation_options)
-    p0-->>p4: str
+    participant p6 as bool
+    participant p7 as isinstance (src/llm_wiki_cli/services…icy_from_generation_inputs)
+    participant p8 as KnowledgeGenerationError
+    participant p9 as dict
+    participant p10 as _validate_runtime_policy
+    participant p11 as set
+    participant p12 as sorted (src/llm_wiki_cli/services…y:_validate_runtime_policy)
+    participant p13 as min
+    participant p14 as isinstance (src/llm_wiki_cli/services…y:_validate_runtime_policy)
+    p0-->>p1: surface_value('flows', 'categories', None)
+    p0-->>p2: isinstance (src/llm_wiki_cli/services…runtime_generation_options)(raw_categories, (...))
+    p0-->>p3: sorted (src/llm_wiki_cli/services…runtime_generation_options)(...)
+    p0-->>p4: str(value)
     p0->>p5: _runtime_policy_from_generation_inputs
-    p5-->>p6: isinstance (src/llm_wiki_cli/services…icy_from_generation_inputs)
-    p5->>p7: KnowledgeGenerationError
-    p5-->>p8: dict
-    p5->>p9: _validate_runtime_policy
-    p9-->>p10: set
-    p9-->>p11: sorted (src/llm_wiki_cli/services…y:_validate_runtime_policy)
-    p9-->>p12: min
-    p9->>p7: KnowledgeGenerationError
-    p9-->>p13: isinstance (src/llm_wiki_cli/services…y:_validate_runtime_policy)
-    p9->>p7: KnowledgeGenerationError
-    p9-->>p13: isinstance (src/llm_wiki_cli/services…y:_validate_runtime_policy)
-    p9->>p7: KnowledgeGenerationError
-    p0-->>p14: bool
-    p0-->>p1: surface_value
-    p0-->>p14: bool
-    p0-->>p1: surface_value
-    p0-->>p14: bool
-    p0-->>p1: surface_value
-    p0-->>p1: surface_value
-    p0-->>p14: bool
-    p0-->>p1: surface_value
-    p0-->>p3: sorted (src/llm_wiki_cli/services…runtime_generation_options)
-    p0-->>p4: str
-    p0-->>p14: bool
+    p0-->>p6: bool(surface_value(...))
+    p0-->>p1: surface_value('api_contracts', 'enabled', False)
+    p0-->>p6: bool(surface_value(...))
+    p0-->>p1: surface_value('dependencies', 'enabled', False)
+    p0-->>p6: bool(...)
+    p0-->>p1: surface_value('flows', 'exclude_tests', False)
+    p0-->>p1: surface_value('dependencies', 'exclude_tests', False)
+    p0-->>p6: bool(surface_value(...))
+    p0-->>p1: surface_value('flows', 'enabled', False)
+    p0-->>p3: sorted (src/llm_wiki_cli/services…runtime_generation_options)(...)
+    p0-->>p4: str(value)
+    p0-->>p6: bool(preserve_semantic)
+    p5-->>p7: isinstance (src/llm_wiki_cli/services…icy_from_generation_inputs)(raw_policy, Mapping)
+    p5->>p8: KnowledgeGenerationError
+    p5-->>p9: dict(raw_policy)
+    p5->>p10: _validate_runtime_policy
+    p10-->>p11: set(policy)
+    p10-->>p12: sorted (src/llm_wiki_cli/services…y:_validate_runtime_policy)(...)
+    p10-->>p13: min(...)
+    p10->>p8: KnowledgeGenerationError
+    p10-->>p14: isinstance (src/llm_wiki_cli/services…y:_validate_runtime_policy)(policy[...], bool)
+    p10->>p8: KnowledgeGenerationError
+    p10-->>p14: isinstance (src/llm_wiki_cli/services…y:_validate_runtime_policy)(detail, str)
+    p10->>p8: KnowledgeGenerationError
 ```
+
+> Call sequence diagram shows 29 of 29 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 17 of 17 (0 omitted); unresolved 6 of 6 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 
@@ -110,17 +117,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| runtime_generation_options | surface_value | 1101 | `surface_value('flows', 'categories', None)` |
-| runtime_generation_options | isinstance (src/llm_wiki_cli/services…runtime_generation_options) | 1104 | `isinstance(raw_categories, (...))` |
-| runtime_generation_options | sorted (src/llm_wiki_cli/services…runtime_generation_options) | 1103 | `sorted(...)` |
-| runtime_generation_options | str | 1103 | `str(value)` |
-| runtime_generation_options | _runtime_policy_from_generation_inputs | 1107 | `_runtime_policy_from_generation_inputs(generation_inputs)` |
-| _runtime_policy_from_generation_inputs | isinstance (src/llm_wiki_cli/services…icy_from_generation_inputs) | 1189 | `isinstance(raw_policy, Mapping)` |
-| _runtime_policy_from_generation_inputs | KnowledgeGenerationError | 1190 | `KnowledgeGenerationError(..., 'must be an object')` |
-| _runtime_policy_from_generation_inputs | dict | 1194 | `dict(raw_policy)` |
-| _runtime_policy_from_generation_inputs | _validate_runtime_policy | 1195 | `_validate_runtime_policy(policy)` |
-| _validate_runtime_policy | set | 1200 | `set(policy)` |
-| _validate_runtime_policy | sorted (src/llm_wiki_cli/services…y:_validate_runtime_policy) | 1202 | `sorted(...)` |
+| runtime_generation_options | surface_value | 1162 | `surface_value('flows', 'categories', None)` |
+| runtime_generation_options | isinstance (src/llm_wiki_cli/services…runtime_generation_options) | 1165 | `isinstance(raw_categories, (...))` |
+| runtime_generation_options | sorted (src/llm_wiki_cli/services…runtime_generation_options) | 1164 | `sorted(...)` |
+| runtime_generation_options | str | 1164 | `str(value)` |
+| runtime_generation_options | _runtime_policy_from_generation_inputs | 1168 | `_runtime_policy_from_generation_inputs(generation_inputs)` |
+| _runtime_policy_from_generation_inputs | isinstance (src/llm_wiki_cli/services…icy_from_generation_inputs) | 1250 | `isinstance(raw_policy, Mapping)` |
+| _runtime_policy_from_generation_inputs | KnowledgeGenerationError | 1251 | `KnowledgeGenerationError(..., 'must be an object')` |
+| _runtime_policy_from_generation_inputs | dict | 1255 | `dict(raw_policy)` |
+| _runtime_policy_from_generation_inputs | _validate_runtime_policy | 1256 | `_validate_runtime_policy(policy)` |
+| _validate_runtime_policy | set | 1261 | `set(policy)` |
+| _validate_runtime_policy | sorted (src/llm_wiki_cli/services…y:_validate_runtime_policy) | 1263 | `sorted(...)` |
 
 ### Boundary effects
 
@@ -130,11 +137,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `runtime_generation_options` | `surface_value` | 1101 |
-| external_call | `runtime_generation_options` | `isinstance` | 1104 |
-| external_call | `runtime_generation_options` | `sorted` | 1103 |
-| external_call | `_runtime_policy_from_generation_inputs` | `isinstance` | 1189 |
-| external_call | `_validate_runtime_policy` | `sorted` | 1202 |
+| unresolved_call | `runtime_generation_options` | `surface_value` | 1162 |
+| external_call | `runtime_generation_options` | `isinstance` | 1165 |
+| external_call | `runtime_generation_options` | `sorted` | 1164 |
+| external_call | `_runtime_policy_from_generation_inputs` | `isinstance` | 1250 |
+| external_call | `_validate_runtime_policy` | `sorted` | 1263 |
 | step_limit | `runtime_generation_options` | `first 12 steps` | 0 |
 
 ## Behavior

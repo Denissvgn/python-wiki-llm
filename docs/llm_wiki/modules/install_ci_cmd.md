@@ -21,17 +21,20 @@ CLI adapter for installing the portable LLM Wiki integrity workflow.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/cli.py"]
-    n1["src/llm_wiki_cli/commands/install_ci_cmd.py"]
-    n2["src/llm_wiki_cli/config.py"]
-    n3["src/llm_wiki_cli/services/ci_installer.py"]
-    n0 --> n1
+    n1["src/llm_wiki_cli/commands/__init__.py"]
+    n2["src/llm_wiki_cli/commands/install_ci_cmd.py"]
+    n3["src/llm_wiki_cli/config.py"]
+    n4["src/llm_wiki_cli/services/ci_installer.py"]
     n0 --> n2
+    n0 --> n3
     n1 --> n2
-    n1 --> n3
+    n2 --> n3
+    n2 --> n4
     click n0 "../modules/cli.md"
-    click n1 "../modules/install_ci_cmd.md"
-    click n2 "../modules/config.md"
-    click n3 "../modules/ci_installer.md"
+    click n1 "../modules/commands___init__.md"
+    click n2 "../modules/install_ci_cmd.md"
+    click n3 "../modules/config.md"
+    click n4 "../modules/ci_installer.md"
 ```
 
 ### Internal neighbors
@@ -39,6 +42,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [cli](../modules/cli.md) |
+| Inbound | [commands___init__](../modules/commands___init__.md) |
 | Outbound | [config](../modules/config.md) |
 | Outbound | [ci_installer](../modules/ci_installer.md) |
 

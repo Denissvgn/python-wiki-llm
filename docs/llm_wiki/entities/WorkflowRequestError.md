@@ -7,7 +7,7 @@
 
 ## Description
 
-Identifies an invalid workflow contract field before workspace reads. Public adapters translate the error through their established invalid-request representation.
+Reports a field-specific workflow or session error, including invalid inputs, cancellation and unavailable receipt authority. Public adapters preserve invalid-request classification. The exception alone does not establish that no workspace reads occurred.
 
 ## Attributes
 
@@ -31,13 +31,13 @@ flowchart LR
     n4["apply_task_delta (src/llm_wiki_cli/services/context_session.py)"]
     n5["build_delta (src/llm_wiki_cli/services/context_session.py)"]
     n6["ContextSession.__init__ (src/llm_wiki_cli/services/context_session.py)"]
-    n7["ContextSession._roots_current (src/llm_wiki_cli/services/context_session.py)"]
-    n8["ContextSession.hint (src/llm_wiki_cli/services/context_session.py)"]
-    n9["ContextSession.read (src/llm_wiki_cli/services/context_session.py)"]
-    n10["_counter (src/llm_wiki_cli/services/task_context.py)"]
-    n11["build_task_read (src/llm_wiki_cli/services/task_context.py)"]
-    n12["plan_source_read (src/llm_wiki_cli/services/task_context.py)"]
-    n13["validate_task_context (src/llm_wiki_cli/services/task_context.py)"]
+    n7["ContextSession._canonical_receipt (src/llm_wiki_cli/services/context_session.py)"]
+    n8["ContextSession._publication_cancelled (src/llm_wiki_cli/services/context_session.py)"]
+    n9["ContextSession._read (src/llm_wiki_cli/services/context_session.py)"]
+    n10["ContextSession._roots_current (src/llm_wiki_cli/services/context_session.py)"]
+    n11["ContextSession.hint (src/llm_wiki_cli/services/context_session.py)"]
+    n12["ContextSession.read_compact (src/llm_wiki_cli/services/context_session.py)"]
+    n13["_counter (src/llm_wiki_cli/services/task_context.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -60,9 +60,9 @@ flowchart LR
     click n7 "../modules/context_session.md"
     click n8 "../modules/context_session.md"
     click n9 "../modules/context_session.md"
-    click n10 "../modules/task_context.md"
-    click n11 "../modules/task_context.md"
-    click n12 "../modules/task_context.md"
+    click n10 "../modules/context_session.md"
+    click n11 "../modules/context_session.md"
+    click n12 "../modules/context_session.md"
     click n13 "../modules/task_context.md"
 ```
 
@@ -87,12 +87,12 @@ flowchart LR
 | `apply_task_delta` | call | [context_session](../modules/context_session.md) | 4 |
 | `build_delta` | call | [context_session](../modules/context_session.md) | 1 |
 | `ContextSession.__init__` | call | [context_session](../modules/context_session.md) | 1 |
+| `ContextSession._canonical_receipt` | call | [context_session](../modules/context_session.md) | 10 |
+| `ContextSession._publication_cancelled` | call | [context_session](../modules/context_session.md) | 1 |
+| `ContextSession._read` | call | [context_session](../modules/context_session.md) | 8 |
 | `ContextSession._roots_current` | call | [context_session](../modules/context_session.md) | 2 |
 | `ContextSession.hint` | call | [context_session](../modules/context_session.md) | 1 |
-| `ContextSession.read` | call | [context_session](../modules/context_session.md) | 6 |
+| `ContextSession.read_compact` | call | [context_session](../modules/context_session.md) | 1 |
 | `_counter` | call | [task_context](../modules/task_context.md) | 4 |
-| `build_task_read` | call | [task_context](../modules/task_context.md) | 1 |
-| `plan_source_read` | call | [task_context](../modules/task_context.md) | 2 |
-| `validate_task_context` | call | [task_context](../modules/task_context.md) | 1 |
 
-> References: showing 12 of 23 logical references; 11 omitted by the 12-row generated summary limit.
+> References: showing 12 of 27 logical references; 15 omitted by the 12-row generated summary limit.

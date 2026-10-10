@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -13,24 +15,29 @@ sequenceDiagram
     participant p1 as SharedValidationError
     participant p2 as require_uuid
     participant p3 as require_trimmed_text
-    participant p4 as require_nonempty_text
-    participant p5 as isinstance
-    participant p6 as value.strip
-    participant p7 as contains_control_character
-    participant p8 as pattern.search
-    participant p9 as str
-    participant p10 as uuid.UUID
+    participant p4 as str
+    participant p5 as uuid.UUID
+    participant p6 as require_nonempty_text
+    participant p7 as isinstance
+    participant p8 as value.strip
+    participant p9 as contains_control_character
+    participant p10 as pattern.search
     p0->>p1: SharedValidationError
     p0->>p2: require_uuid
     p2->>p3: require_trimmed_text
-    p3->>p4: require_nonempty_text
-    p4-->>p5: isinstance
-    p4-->>p6: value.strip
-    p4->>p7: contains_control_character
-    p7-->>p8: pattern.search
-    p2-->>p9: str
-    p2-->>p10: uuid.UUID
+    p2-->>p4: str(uuid.UUID(...))
+    p2-->>p5: uuid.UUID(parsed)
+    p3->>p6: require_nonempty_text
+    p6-->>p7: isinstance(value, str)
+    p6-->>p8: value.strip
+    p6->>p9: contains_control_character
+    p9-->>p10: pattern.search(value)
 ```
+
+> Call sequence diagram shows 10 of 10 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 3 of 3 (0 omitted); unresolved 2 of 2 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

@@ -86,4 +86,4 @@ flowchart LR
 | `_merge_explicit_consumed_input` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `runtime_consumed_inputs` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 
-> References: showing 12 of 14 logical references; 2 omitted by the 12-row generated summary limit.
+> References: showing 12 of 16 logical references; 4 omitted by the 12-row generated summary limit.

@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -20,21 +22,26 @@ sequenceDiagram
     participant p8 as (…).join(…).strip
     participant p9 as ''.join
     p0-->>p1: line.strip
-    p0-->>p2: stripped.startswith
-    p0-->>p3: stripped.endswith
-    p0-->>p4: len
-    p0-->>p4: len
-    p0-->>p5: current.extend
-    p0-->>p4: len
-    p0-->>p6: current.append
-    p0-->>p7: cells.append
+    p0-->>p2: stripped.startswith('|')
+    p0-->>p3: stripped.endswith('|')
+    p0-->>p4: len(body)
+    p0-->>p4: len(body)
+    p0-->>p5: current.extend((...))
+    p0-->>p4: len(body)
+    p0-->>p6: current.append(...)
+    p0-->>p7: cells.append(...)
     p0-->>p8: (…).join(…).strip
-    p0-->>p9: ''.join
-    p0-->>p6: current.append
-    p0-->>p7: cells.append
+    p0-->>p9: ''.join(current)
+    p0-->>p6: current.append(character)
+    p0-->>p7: cells.append(...)
     p0-->>p8: (…).join(…).strip
-    p0-->>p9: ''.join
+    p0-->>p9: ''.join(current)
 ```
+
+> Call sequence diagram shows 15 of 15 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 3 of 3 (0 omitted); unresolved 12 of 12 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

@@ -12,8 +12,11 @@
 4. `context_packet.ContextPacketSourceMutationError`
 5. `knowledge_storage_io.StorageReadSession`
 6. `knowledge_storage.KnowledgeStorageError`
-7. `knowledge_storage.KnowledgeStorageError`
+7. `knowledge_storage_io.StorageReadSession.read`
 8. `knowledge_storage.KnowledgeStorageError`
+9. `knowledge_storage_io.StorageReadSession.read_ranges`
+10. `knowledge_storage_io.StorageReadSession.read_range`
+11. `knowledge_storage.KnowledgeStorageError`
 
 ## Touches
 

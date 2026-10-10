@@ -62,7 +62,7 @@ flowchart LR
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
 | [DoctorStatus](../entities/DoctorStatus.md) | Enum | 14 | `str`, `Enum` | Closed overall health vocabulary for the doctor contract. |
-| [MaintenanceError](../entities/MaintenanceError.md) | Class | 109 | `ValueError` | Maintenance evidence is absent, inconsistent or not bound to this candidate. |
+| [MaintenanceError](../entities/health_policy_MaintenanceError.md) | Class | 109 | `ValueError` | Maintenance evidence is absent, inconsistent or not bound to this candidate. |
 
 ## Functions
 

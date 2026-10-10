@@ -14,6 +14,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -22,54 +24,74 @@ sequenceDiagram
     participant p2 as validate_typed_graph
     participant p3 as _parse_typed_graph
     participant p4 as _object
-    participant p5 as require_mapping
-    participant p6 as isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    participant p7 as key.encode
-    participant p8 as KnowledgeGraphError
-    participant p9 as dict
-    participant p10 as _only_fields
-    participant p11 as require_exact_fields
-    participant p12 as isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p13 as str (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p14 as set (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p15 as tuple
-    participant p16 as sorted (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p17 as invalid_error
-    participant p18 as error_factory
-    participant p19 as _normalise_input_hashes
-    p0-->>p1: json.dumps
+    participant p5 as _only_fields
+    participant p6 as KnowledgeGraphError
+    participant p7 as _normalise_input_hashes
+    participant p8 as _array
+    participant p9 as set (src/llm_wiki_cli/services…aph.py:_parse_typed_graph)
+    participant p10 as enumerate (src/llm_wiki_cli/services…aph.py:_parse_typed_graph)
+    participant p11 as _name
+    participant p12 as seen_analyzers.add
+    participant p13 as coverage.append
+    participant p14 as _normalise_coverage
+    participant p15 as _locator
+    participant p16 as concept_kinds.items
+    participant p17 as _normalise_edge
+    participant p18 as seen_keys.add
+    participant p19 as edges.append
+    participant p20 as edges.sort
+    participant p21 as coverage.sort
+    participant p22 as _validate_graph_bindings
+    p0-->>p1: json.dumps(validate_typed_graph(...), ensure_ascii=False, indent=2, sort_keys=True)
     p0->>p2: validate_typed_graph
     p2->>p3: _parse_typed_graph
     p3->>p4: _object
-    p4->>p5: require_mapping
-    p5-->>p6: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    p5-->>p6: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    p5-->>p7: key.encode
-    p4->>p8: KnowledgeGraphError
-    p4->>p8: KnowledgeGraphError
-    p4-->>p9: dict
-    p3->>p10: _only_fields
-    p10->>p11: require_exact_fields
-    p11-->>p12: isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p11-->>p13: str (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p11-->>p14: set (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p11-->>p14: set (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p11-->>p14: set (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p11-->>p15: tuple
-    p11-->>p16: sorted (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p11-->>p15: tuple
-    p11-->>p16: sorted (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p11-->>p17: invalid_error
-    p11-->>p18: error_factory
-    p10->>p8: KnowledgeGraphError
-    p10->>p8: KnowledgeGraphError
-    p10->>p8: KnowledgeGraphError
-    p3->>p8: KnowledgeGraphError
-    p3->>p19: _normalise_input_hashes
-    p19->>p4: _object
+    p3->>p5: _only_fields
+    p3->>p6: KnowledgeGraphError
+    p3->>p7: _normalise_input_hashes
+    p3->>p8: _array
+    p3-->>p9: set (src/llm_wiki_cli/services…aph.py:_parse_typed_graph)
+    p3-->>p10: enumerate (src/llm_wiki_cli/services…aph.py:_parse_typed_graph)(coverage_values)
+    p3->>p4: _object
+    p3->>p5: _only_fields
+    p3->>p11: _name
+    p3->>p6: KnowledgeGraphError
+    p3-->>p12: seen_analyzers.add(analyzer)
+    p3-->>p13: coverage.append({...})
+    p3->>p14: _normalise_coverage
+    p3->>p8: _array
+    p3-->>p9: set (src/llm_wiki_cli/services…aph.py:_parse_typed_graph)
+    p3->>p15: _locator
+    p3->>p11: _name
+    p3-->>p16: concept_kinds.items
+    p3-->>p10: enumerate (src/llm_wiki_cli/services…aph.py:_parse_typed_graph)(raw_edges)
+    p3->>p17: _normalise_edge
+    p3->>p6: KnowledgeGraphError
+    p3-->>p18: seen_keys.add(key)
+    p3-->>p19: edges.append(edge)
+    p3-->>p20: edges.sort(key=...)
+    p3-->>p21: coverage.sort(key=...)
+    p3->>p22: _validate_graph_bindings
 ```
 
-> Call sequence diagram shows 30 of 335 interactions; 305 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 335 interactions; 305 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 5 of 73 (68 omitted); unresolved 7 of 50 (43 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/knowledge_graph.py:_object` | 5 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_mapping` | 6 | - | external | 2 |
+| `src/llm_wiki_cli/services/validation.py:require_mapping` | 6 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/knowledge_graph.py:_object` | 5 | [src/llm_wiki_cli/services/knowledge_graph.py](../modules/knowledge_graph.md) | internal | 2 |
+| `src/llm_wiki_cli/services/knowledge_graph.py:_object` | 5 | - | external | 1 |
+| `src/llm_wiki_cli/services/knowledge_graph.py:_only_fields` | 13 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 14 | - | external | 9 |
+| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 14 | - | unresolved | 2 |
+> Omission summary shows 8 of 102 groups; 94 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -154,13 +176,13 @@ flowchart LR
 | serialize_typed_graph | validate_typed_graph | 514 | `validate_typed_graph(payload, concept_kinds=concept_kinds)` |
 | validate_typed_graph | _parse_typed_graph | 407 | `_parse_typed_graph(payload, concept_kinds=concept_kinds, complete=True)` |
 | _parse_typed_graph | _object | 421 | `_object(payload, 'typed_graph')` |
-| _object | require_mapping | 2302 | `require_mapping(value, error=KnowledgeGraphError(...), require_string_keys=True, key_error=KnowledgeGraphError(...))` |
+| _object | require_mapping | 2309 | `require_mapping(value, error=KnowledgeGraphError(...), require_string_keys=True, key_error=KnowledgeGraphError(...))` |
 | require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 765 | `isinstance(value, Mapping)` |
 | require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 769 | `isinstance(key, str)` |
 | require_mapping | key.encode | 774 | `key.encode('utf-8')` |
-| _object | KnowledgeGraphError | 2304 | `KnowledgeGraphError(path, 'must be an object')` |
-| _object | KnowledgeGraphError | 2306 | `KnowledgeGraphError(path, 'object keys must be strings')` |
-| _object | dict | 2308 | `dict(selected)` |
+| _object | KnowledgeGraphError | 2311 | `KnowledgeGraphError(path, 'must be an object')` |
+| _object | KnowledgeGraphError | 2313 | `KnowledgeGraphError(path, 'object keys must be strings')` |
+| _object | dict | 2315 | `dict(selected)` |
 
 ### Boundary effects
 

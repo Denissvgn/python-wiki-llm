@@ -1,6 +1,6 @@
 # PythonBindings
 
-**Location:** `src/llm_wiki_cli/extractors/python_bindings.py:144`
+**Location:** `src/llm_wiki_cli/extractors/python_bindings.py:1268`
 **Kind:** Class
 **Bases:** —
 **Module:** [python_bindings](../modules/python_bindings.md)
@@ -17,6 +17,7 @@ _Auto-generated from `PythonBindings` in `src/llm_wiki_cli/extractors/python_bin
 |------|------|---------|-------------|
 | `module` | `dict[str, dict]` | *required* | — |
 | `calls` | `dict[int, dict]` | *required* | — |
+| `classes` | `dict[int, dict]` | *required* | — |
 
 ## Methods
 
@@ -38,7 +39,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [python_bindings](../modules/python_bindings.md) | 0 | `calls`, `module` |
+| [python_bindings](../modules/python_bindings.md) | 0 | `calls`, `classes`, `module` |
 
 ### References
 

@@ -10,4 +10,5 @@ from . import (
     release_cmd as release_cmd,
     sync_cmd as sync_cmd,
     migrate_cmd as migrate_cmd,
+    maintenance_cmd as maintenance_cmd,
 )

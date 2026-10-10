@@ -6,66 +6,84 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as merge_semantic_markdown
     participant p1 as normalize_markdown
-    participant p2 as text.replace(…).replace
-    participant p3 as text.replace
-    participant p4 as section_body
-    participant p5 as normalize_markdown(…).splitlines (src/llm_wiki_cli/services…_sections.py:section_body)
-    participant p6 as section_bounds
-    participant p7 as heading.casefold
-    participant p8 as enumerate
-    participant p9 as _LEGACY_HEADING_RE.match
-    participant p10 as line.strip (src/llm_wiki_cli/services…ections.py:section_bounds)
-    participant p11 as len (src/llm_wiki_cli/services…ections.py:section_bounds)
-    participant p12 as match.group
-    participant p13 as match.group(…).strip().casefold
-    participant p14 as match.group(…).strip
-    participant p15 as range (src/llm_wiki_cli/services…ections.py:section_bounds)
-    participant p16 as lines[…].strip (src/llm_wiki_cli/services…ections.py:section_bounds)
-    participant p17 as next_match.group
-    participant p18 as (…).join(…).strip (src/llm_wiki_cli/services…_sections.py:section_body)
-    participant p19 as '\n'.join (src/llm_wiki_cli/services…_sections.py:section_body)
-    participant p20 as trim_blank_lines
-    participant p21 as len (src/llm_wiki_cli/services…tions.py:trim_blank_lines)
-    participant p22 as lines[…].strip (src/llm_wiki_cli/services…ns.py:trim_blank_lines, 1)
-    participant p23 as lines[…].strip (src/llm_wiki_cli/services…tions.py:trim_blank_lines)
+    participant p2 as section_body
+    participant p3 as should_preserve_semantic_value
+    participant p4 as replace_section_body
+    participant p5 as table_description_cells
+    participant p6 as preserve_table_description_cells
+    participant p7 as (…).get (src/llm_wiki_cli/services…y:merge_semantic_markdown)
+    participant p8 as SemanticMergeResult
+    participant p9 as text.replace(…).replace
+    participant p10 as normalize_markdown(…).splitlines (src/llm_wiki_cli/services…_sections.py:section_body)
+    participant p11 as is_placeholder_description
+    participant p12 as normalize_markdown(…).splitlines (src/llm_wiki_cli/services…s.py:replace_section_body)
+    participant p13 as normalize_markdown(…).splitlines (src/llm_wiki_cli/services…y:table_description_cells)
+    participant p14 as normalize_markdown(…).splitlines (src/llm_wiki_cli/services…e_table_description_cells)
+    participant p15 as text.replace
+    participant p16 as (…).strip (src/llm_wiki_cli/services…d_preserve_semantic_value)
+    participant p17 as section_bounds
+    participant p18 as (…).strip (src/llm_wiki_cli/services…reserve_semantic_value, 1)
+    participant p19 as (…).join(…).strip (src/llm_wiki_cli/services…_sections.py:section_body)
+    participant p20 as old_generated.strip
+    participant p21 as body.splitlines
+    participant p22 as range (src/llm_wiki_cli/services…y:table_description_cells)
     p0->>p1: normalize_markdown
-    p1-->>p2: text.replace(…).replace
-    p1-->>p3: text.replace
-    p0->>p4: section_body
-    p4-->>p5: normalize_markdown(…).splitlines (src/llm_wiki_cli/services…_sections.py:section_body)
+    p0->>p2: section_body
+    p0->>p2: section_body
+    p0->>p3: should_preserve_semantic_value
+    p0->>p4: replace_section_body
+    p0->>p5: table_description_cells
+    p0->>p6: preserve_table_description_cells
+    p0-->>p7: (…).get (src/llm_wiki_cli/services…y:merge_semantic_markdown)(heading)
+    p0->>p8: SemanticMergeResult
+    p1-->>p9: text.replace(…).replace('\r', '\n')
+    p2-->>p10: normalize_markdown(…).splitlines (src/llm_wiki_cli/services…_sections.py:section_body)
+    p3->>p11: is_placeholder_description
+    p4-->>p12: normalize_markdown(…).splitlines (src/llm_wiki_cli/services…s.py:replace_section_body)
+    p5-->>p13: normalize_markdown(…).splitlines (src/llm_wiki_cli/services…y:table_description_cells)
+    p6-->>p14: normalize_markdown(…).splitlines (src/llm_wiki_cli/services…e_table_description_cells)
+    p1-->>p15: text.replace('\r\n', '\n')
+    p2->>p1: normalize_markdown
+    p3-->>p16: (…).strip (src/llm_wiki_cli/services…d_preserve_semantic_value)
     p4->>p1: normalize_markdown
-    p4->>p6: section_bounds
-    p6-->>p7: heading.casefold
-    p6-->>p8: enumerate
-    p6-->>p9: _LEGACY_HEADING_RE.match
-    p6-->>p10: line.strip (src/llm_wiki_cli/services…ections.py:section_bounds)
-    p6-->>p11: len (src/llm_wiki_cli/services…ections.py:section_bounds)
-    p6-->>p12: match.group
-    p6-->>p13: match.group(…).strip().casefold
-    p6-->>p14: match.group(…).strip
-    p6-->>p12: match.group
-    p6-->>p11: len (src/llm_wiki_cli/services…ections.py:section_bounds)
-    p6-->>p15: range (src/llm_wiki_cli/services…ections.py:section_bounds)
-    p6-->>p11: len (src/llm_wiki_cli/services…ections.py:section_bounds)
-    p6-->>p9: _LEGACY_HEADING_RE.match
-    p6-->>p16: lines[…].strip (src/llm_wiki_cli/services…ections.py:section_bounds)
-    p6-->>p11: len (src/llm_wiki_cli/services…ections.py:section_bounds)
-    p6-->>p17: next_match.group
-    p4-->>p18: (…).join(…).strip (src/llm_wiki_cli/services…_sections.py:section_body)
-    p4-->>p19: '\n'.join (src/llm_wiki_cli/services…_sections.py:section_body)
-    p4->>p20: trim_blank_lines
-    p20-->>p21: len (src/llm_wiki_cli/services…tions.py:trim_blank_lines)
-    p20-->>p22: lines[…].strip (src/llm_wiki_cli/services…ns.py:trim_blank_lines, 1)
-    p20-->>p23: lines[…].strip (src/llm_wiki_cli/services…tions.py:trim_blank_lines)
-    p0->>p4: section_body
+    p5->>p1: normalize_markdown
+    p6->>p1: normalize_markdown
+    p2->>p17: section_bounds
+    p3-->>p18: (…).strip (src/llm_wiki_cli/services…reserve_semantic_value, 1)
+    p4->>p17: section_bounds
+    p5->>p17: section_bounds
+    p6->>p17: section_bounds
+    p2-->>p19: (…).join(…).strip (src/llm_wiki_cli/services…_sections.py:section_body)
+    p3-->>p20: old_generated.strip
+    p4-->>p21: body.splitlines
+    p5-->>p22: range (src/llm_wiki_cli/services…y:table_description_cells)(start, end)
 ```
 
-> Call sequence diagram shows 30 of 103 interactions; 73 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 103 interactions; 73 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 1 of 19 (18 omitted); unresolved 12 of 54 (42 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/markdown_sections.py:section_bounds` | 8 | - | unresolved | 10 |
+| `src/llm_wiki_cli/services/markdown_sections.py:section_bounds` | 8 | - | external | 6 |
+| `src/llm_wiki_cli/services/markdown_sections.py:section_body` | 5 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/markdown_sections.py:section_body` | 5 | [src/llm_wiki_cli/services/markdown_sections.py](../modules/markdown_sections.md) | internal | 1 |
+| `src/llm_wiki_cli/services/markdown_sections.py:trim_blank_lines` | 27 | - | external | 1 |
+| `src/llm_wiki_cli/services/markdown_sections.py:trim_blank_lines` | 27 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/markdown_sections.py:is_placeholder_description` | 33 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/markdown_sections.py:replace_section_body` | 39 | - | unresolved | 1 |
+> Omission summary shows 8 of 21 groups; 13 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

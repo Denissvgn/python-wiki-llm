@@ -1,6 +1,6 @@
 # KnowledgeReadView
 
-**Location:** `src/llm_wiki_cli/services/knowledge_consumption.py:288`
+**Location:** `src/llm_wiki_cli/services/knowledge_consumption.py:291`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_consumption](../modules/knowledge_consumption.md)
@@ -28,6 +28,8 @@ Validated, immutable-by-contract state for one native read operation.
 | `underlying_load_state` | `KnowledgeLoadState \| None` | `None` | — |
 | `machine_verification` | `MachineVerificationReadView` | `field(default_factory=MachineVerificationReadView)` | — |
 | `validated_artifacts` | `Any` | `field(default=None, repr=False, compare=False)` | — |
+| `maintenance_report` | `Any` | `field(default=None, repr=False, compare=False)` | — |
+| `implementation_report` | `ImplementationReport \| None` | `field(default=None, repr=False, compare=False)` | — |
 
 ## Methods
 
@@ -92,7 +94,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [knowledge_consumption](../modules/knowledge_consumption.md) | 9 | `availability`, `counts`, `freshness`, `knowledge`, `load_state`, `machine_verification`, `manifest_basis`, `mode`, `projection_findings`, `reason`, `surface`, `underlying_load_state` |
+| [knowledge_consumption](../modules/knowledge_consumption.md) | 9 | `availability`, `counts`, `freshness`, `implementation_report`, `knowledge`, `load_state`, `machine_verification`, `maintenance_report`, `manifest_basis`, `mode`, `projection_findings`, `reason` |
 
 ### References
 
@@ -111,4 +113,4 @@ flowchart LR
 | `_drift_section` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
 | `_freshness_section` | type_reference | [doctor_service](../modules/doctor_service.md) | — |
 
-> References: showing 12 of 47 logical references; 35 omitted by the 12-row generated summary limit.
+> References: showing 12 of 48 logical references; 36 omitted by the 12-row generated summary limit.

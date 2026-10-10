@@ -6,13 +6,20 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as get_module
     participant p1 as service.get_module
-    p0-->>p1: service.get_module
+    p0-->>p1: service.get_module(module_id_or_source_path)
 ```
+
+> Call sequence diagram shows 1 of 1 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 0 of 0 (0 omitted); unresolved 1 of 1 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 
@@ -36,7 +43,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| get_module | service.get_module | 1340 | `service.get_module(module_id_or_source_path)` |
+| get_module | service.get_module | 1385 | `service.get_module(module_id_or_source_path)` |
 
 ### Boundary effects
 
@@ -46,7 +53,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `get_module` | `service.get_module` | 1340 |
+| unresolved_call | `get_module` | `service.get_module` | 1385 |
 
 ## Behavior
 

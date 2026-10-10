@@ -6,22 +6,29 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as require_mapping_list
     participant p1 as require_list
-    participant p2 as isinstance (src/llm_wiki_cli/services/validation.py:require_list)
-    participant p3 as require_mapping
+    participant p2 as require_mapping
+    participant p3 as isinstance (src/llm_wiki_cli/services/validation.py:require_list)
     participant p4 as isinstance (src/llm_wiki_cli/services…idation.py:require_mapping)
     participant p5 as key.encode
     p0->>p1: require_list
-    p1-->>p2: isinstance (src/llm_wiki_cli/services/validation.py:require_list)
-    p0->>p3: require_mapping
-    p3-->>p4: isinstance (src/llm_wiki_cli/services…idation.py:require_mapping)
-    p3-->>p4: isinstance (src/llm_wiki_cli/services…idation.py:require_mapping)
-    p3-->>p5: key.encode
+    p0->>p2: require_mapping
+    p1-->>p3: isinstance (src/llm_wiki_cli/services/validation.py:require_list)(value, list)
+    p2-->>p4: isinstance (src/llm_wiki_cli/services…idation.py:require_mapping)(value, Mapping)
+    p2-->>p4: isinstance (src/llm_wiki_cli/services…idation.py:require_mapping)(key, str)
+    p2-->>p5: key.encode('utf-8')
 ```
+
+> Call sequence diagram shows 6 of 6 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 3 of 3 (0 omitted); unresolved 1 of 1 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

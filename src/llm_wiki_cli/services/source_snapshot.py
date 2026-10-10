@@ -8,6 +8,7 @@ import hashlib
 import os
 import stat
 from collections.abc import Iterable, Mapping
+from contextlib import ExitStack
 from dataclasses import dataclass, field
 from fnmatch import fnmatch
 from pathlib import Path
@@ -41,7 +42,7 @@ from .source_selection import (
     selection_may_contain_path,
 )
 from .validation import portable_path_key, require_repository_relative_path
-from .filesystem_guard import fresh_no_follow_stat, windows_object_identity, _windows_path_handle_metadata
+from .filesystem_guard import fresh_no_follow_stat, windows_object_identity, _windows_path_handle_metadata, guard_windows_directory_chain
 
 if TYPE_CHECKING:
     from .knowledge_envelope import ConsumedInput
@@ -1876,3 +1877,118 @@ def source_snapshot_matches_current_files(snapshot: SourceSnapshot, *, metrics: 
         content_hashes == snapshot.captured_content_hashes
         and input_kinds == snapshot.captured_input_kinds
     )
+
+
+def _confirmed_source_path(value: object) -> str:
+    error = SourceSnapshotError("source_path", "must be a portable relative source path")
+    return require_repository_relative_path(
+        value, text_error=error, posix_error=error, normalized_error=error,
+        absolute_error=error, separator_error=error, control_error=error,
+        reject_delete_character=True, portability_error=error,
+    )
+
+
+def confirmed_missing_source_paths(
+    snapshot: SourceSnapshot, requested_paths: Iterable[str]
+) -> frozenset[str]:
+    """Confirm requested absence without converting omitted sources to deletion.
+
+    Only selected paths are eligible. Parent directories are inspected without
+    following links, and their identities are rechecked before returning. The
+    owning captured read still performs its normal final source recheck.
+    """
+    if not isinstance(snapshot, SourceSnapshot):
+        raise TypeError("missing-source confirmation requires a SourceSnapshot")
+    if isinstance(requested_paths, (str, bytes)):
+        raise TypeError("requested_paths must be a collection of source paths")
+    ignored = GitIgnoreMatcher(list(snapshot.gitignore_rules))
+    missing = set()
+    for path in requested_paths:
+        path = _confirmed_source_path(path)
+        if path in snapshot.captured_content_hashes:
+            continue
+        if (
+            not snapshot.path_is_effectively_selected(path)
+            or not EXCLUDED_DIRS.isdisjoint(Path(path).parts)
+            or is_agent_worktree_path(path)
+            or is_bundled_helper_implementation_path(snapshot.root / path)
+            or ignored.is_ignored(path)
+        ):
+            continue
+        if _missing_source_path_no_follow(snapshot.root, path):
+            missing.add(path)
+    return frozenset(missing)
+
+
+def _missing_source_path_no_follow(root: Path, relative: str) -> bool:
+    def identity(info):
+        return (info.st_dev, info.st_ino, info.st_mode, info.st_size, info.st_mtime_ns)
+
+    if os.name == "nt":
+        from .filesystem_guard import fresh_no_follow_stat
+
+        with ExitStack() as stack:
+            stack.enter_context(guard_windows_directory_chain(root, ()))
+            parents = []
+            current = root
+            parts = Path(relative).parts
+            for index, component in enumerate(parts):
+                parents.append((current, identity(fresh_no_follow_stat(current))))
+                candidate = current / component
+                try:
+                    info = fresh_no_follow_stat(candidate)
+                except FileNotFoundError:
+                    absent = True
+                    break
+                if index == len(parts) - 1:
+                    absent = False
+                    break
+                if not stat.S_ISDIR(info.st_mode) or getattr(info, "st_file_attributes", 0) & 0x400:
+                    return False
+                stack.enter_context(guard_windows_directory_chain(root, parts[:index + 1]))
+                current = candidate
+            for parent, expected in parents:
+                if identity(fresh_no_follow_stat(parent)) != expected:
+                    raise SourceSnapshotMutationError("source", "directory changed during missing-source confirmation")
+            return absent
+
+    if not hasattr(os, "O_NOFOLLOW") or not hasattr(os, "O_DIRECTORY"):
+        return False
+    flags = os.O_RDONLY | os.O_NOFOLLOW | os.O_DIRECTORY | getattr(os, "O_CLOEXEC", 0)
+    descriptors = []
+    parents = []
+    current = Path(root.anchor)
+    try:
+        descriptor = os.open(root.anchor, flags)
+        descriptors.append(descriptor)
+        for component in root.parts[1:]:
+            descriptor = os.open(component, flags, dir_fd=descriptor)
+            descriptors.append(descriptor)
+            current /= component
+        parts = Path(relative).parts
+        for index, component in enumerate(parts):
+            parents.append((current, descriptor, identity(os.fstat(descriptor))))
+            try:
+                info = os.stat(component, dir_fd=descriptor, follow_symlinks=False)
+            except FileNotFoundError:
+                absent = True
+                break
+            if index == len(parts) - 1:
+                absent = False
+                break
+            if not stat.S_ISDIR(info.st_mode):
+                return False
+            descriptor = os.open(component, flags, dir_fd=descriptor)
+            descriptors.append(descriptor)
+            current /= component
+        for parent, descriptor, expected in parents:
+            if identity(os.fstat(descriptor)) != expected or identity(parent.lstat()) != expected:
+                raise SourceSnapshotMutationError("source", "directory changed during missing-source confirmation")
+        return absent
+    except OSError as exc:
+        raise SourceSnapshotMutationError("source", "directory changed during missing-source confirmation") from exc
+    finally:
+        for descriptor in reversed(descriptors):
+            os.close(descriptor)
+
+

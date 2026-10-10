@@ -1,7 +1,7 @@
 # read_once
 
 **Entry point:** `task_context._read_once`
-**Modules involved:** [change_selection](../modules/change_selection.md), [context_budget](../modules/context_budget.md), [context_packet](../modules/context_packet.md), [context_service](../modules/context_service.md), [documentation_query_builder](../modules/documentation_query_builder.md), [knowledge_consumption](../modules/knowledge_consumption.md), [knowledge_envelope](../modules/knowledge_envelope.md), [search_service](../modules/search_service.md), [task_context](../modules/task_context.md), [task_contract](../modules/task_contract.md), [task_evidence](../modules/task_evidence.md), [wiki_surface_index](../modules/wiki_surface_index.md), [workflow_profile](../modules/workflow_profile.md)
+**Modules involved:** [change_selection](../modules/change_selection.md), [context_budget](../modules/context_budget.md), [context_packet](../modules/context_packet.md), [context_service](../modules/context_service.md), [documentation_query_builder](../modules/documentation_query_builder.md), [knowledge_consumption](../modules/knowledge_consumption.md), [knowledge_envelope](../modules/knowledge_envelope.md), [search_service](../modules/search_service.md), [task_context](../modules/task_context.md), [task_contract](../modules/task_contract.md), [task_evidence](../modules/task_evidence.md), [task_implementation](../modules/task_implementation.md), [wiki_surface_index](../modules/wiki_surface_index.md), [workflow_profile](../modules/workflow_profile.md)
 
 ## Sequence
 
@@ -25,15 +25,16 @@
 17. `task_evidence.observe_requirement`
 18. `knowledge_envelope.hash_source_snapshot`
 19. `workflow_profile.content_id`
-20. `context_budget.validate_request`
-21. `context_packet.build_context_from_captured_read`
-22. `context_budget.fit_payload`
-23. `task_contract.TaskContext`
-24. `context_packet._assert_source_unchanged`
-25. `context_packet._assert_selection_unchanged`
-26. `change_selection.select_changes`
-27. `context_packet.ContextPacketSourceMutationError`
-28. `context_packet._assert_wiki_unchanged`
+20. `task_implementation.native_bindings`
+21. `context_budget.validate_request`
+22. `context_packet.build_context_from_captured_read`
+23. `context_budget.fit_payload`
+24. `task_contract.TaskContext`
+25. `context_packet._assert_source_unchanged`
+26. `context_packet._assert_selection_unchanged`
+27. `change_selection.select_changes`
+28. `context_packet.ContextPacketSourceMutationError`
+29. `context_packet._assert_wiki_unchanged`
 
 ## Touches
 
@@ -48,6 +49,7 @@
 - [task_context](../modules/task_context.md)
 - [task_contract](../modules/task_contract.md)
 - [task_evidence](../modules/task_evidence.md)
+- [task_implementation](../modules/task_implementation.md)
 - [wiki_surface_index](../modules/wiki_surface_index.md)
 - [workflow_profile](../modules/workflow_profile.md)
 

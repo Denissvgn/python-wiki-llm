@@ -8,6 +8,7 @@ from ..services.python_observations import (
     data_effect_sidecar,
     import_sidecar,
 )
+from ..services.python_implementation import capture as capture_implementation, envelope as implementation_envelope, producer as implementation_producer
 
 import ast
 import sys
@@ -21,7 +22,7 @@ from .common import (
     discover_source_files,
 )
 from .fastapi_contracts import extract_fastapi_declarations
-from .python_bindings import analyze_python_bindings
+from .python_bindings import CONSTRUCTOR_FACTS_VERSION, analyze_python_bindings
 from .python_contracts import (
     class_kind,
     explicit_type_alias,
@@ -170,8 +171,9 @@ def _call_arguments(node: ast.Call) -> dict:
 def _call_record(node: ast.Call, *, include_arguments: bool = False) -> dict | None:
     """Build a call record from an ``ast.Call`` node.
 
-    Returns ``None`` for call targets we cannot name simply (e.g. calls on a
-    subscript or on the result of another call). Callers still descend into the
+    Rich captures retain unnameable targets with a presentation placeholder;
+    their aligned lexical binding remains explicitly unresolved. Compact
+    module side-effect captures omit those targets and still descend into
     arguments so nested calls are not lost.
     """
     func = node.func
@@ -184,8 +186,11 @@ def _call_record(node: ast.Call, *, include_arguments: bool = False) -> dict | N
             "line": node.lineno,
         }
     else:
-        return None
+        if not include_arguments:
+            return None
+        record = {"name": "<dynamic>", "line": node.lineno}
     if include_arguments:
+        record["column"] = node.col_offset
         record.update(_call_arguments(node))
     return record
 
@@ -200,8 +205,8 @@ def _extract_calls(
 
     Walks the body but does not descend into nested function or class
     definitions, so their calls are attributed to the inner scope. Calls inside
-    comprehensions and lambdas are kept (same scope). Every nameable occurrence
-    is returned in source order so data-flow analysis can preserve call-site
+    comprehensions and lambdas are kept (same scope). Every occurrence is
+    returned in source order so data-flow analysis can preserve call-site
     argument metadata for repeated calls to the same target.
     """
     calls: list[dict] = []
@@ -1064,6 +1069,7 @@ class ComponentVisitor(ast.NodeVisitor):
         data_effect_observations: list[dict] | None = None,
         import_location_observations: list[dict] | None = None,
         call_binding_facts: dict[int, dict] | None = None,
+        constructor_dispatch: dict[int, dict] | None = None,
     ):
         self.classes = []
         self.functions = []  # top-level functions only
@@ -1075,6 +1081,7 @@ class ComponentVisitor(ast.NodeVisitor):
         self.main_block_calls = []  # deep-mode calls inside the __main__ guard
         self.main_block_call_bindings: list[dict] = []
         self._call_binding_facts = call_binding_facts
+        self._constructor_dispatch = constructor_dispatch
         self.nested_functions = []  # decorated functions defined inside other defs
         self._class_depth = 0
         self._function_depth = 0
@@ -1194,6 +1201,8 @@ class ComponentVisitor(ast.NodeVisitor):
             "attributes": attributes,
             "methods": methods,
         }
+        if self._constructor_dispatch is not None:
+            class_info["python_constructor_dispatch"] = self._constructor_dispatch[id(node)]
         if is_pydantic_model(node, self._module_import_aliases):
             class_info["model_kind"] = "pydantic"
         elif is_typed_dict(node, self._module_import_aliases):
@@ -1411,6 +1420,8 @@ def _scan_python_files(
     data_effect_observations: list[dict] | None = None,
     import_location_observations: list[dict] | None = None,
     defer_inventory_model_kinds: bool = False,
+    implementation_observations: dict[str, dict] | None = None,
+    implementation_analysis_hash: str | None = None,
 ) -> dict:
     """Scan Python files under *src_dir* and return a raw inventory dict.
 
@@ -1434,6 +1445,8 @@ def _scan_python_files(
 
     for py_file in py_files:
         rel = py_file.relative_to(src_path)
+        data = None
+        source = None
         try:
             data = py_file.read_bytes()
             try:
@@ -1442,19 +1455,28 @@ def _scan_python_files(
                 source = data.decode("cp1252")
             tree = ast.parse(source, filename=str(py_file))
         except UnicodeDecodeError:
+            if implementation_observations is not None:
+                implementation_observations[rel.as_posix()] = capture_implementation(None, data, rel.as_posix(), configured=implementation_producer(implementation_analysis_hash), reason="unsupported-syntax")
             print(
                 f"llm-wiki Python extractor: skipped undecodable file {rel.as_posix()}",
                 file=sys.stderr,
             )
             continue
         except OSError as exc:
+            if implementation_observations is not None:
+                implementation_observations[rel.as_posix()] = capture_implementation(None, None, rel.as_posix(), configured=implementation_producer(implementation_analysis_hash), reason="missing-source")
             print(
                 f"llm-wiki Python extractor: failed to read {rel.as_posix()}: {exc}",
                 file=sys.stderr,
             )
             continue
         except SyntaxError:
+            if implementation_observations is not None:
+                implementation_observations[rel.as_posix()] = capture_implementation(None, data, rel.as_posix(), configured=implementation_producer(implementation_analysis_hash), reason="unsupported-syntax")
             continue
+
+        if implementation_observations is not None:
+            implementation_observations[rel.as_posix()] = capture_implementation(tree, data, rel.as_posix(), configured=implementation_producer(implementation_analysis_hash), parsed_source=source)
 
         file_effect_observations: list[dict] | None = (
             [] if data_effect_observations is not None else None
@@ -1470,6 +1492,7 @@ def _scan_python_files(
             data_effect_observations=file_effect_observations,
             import_location_observations=file_import_observations,
             call_binding_facts=python_bindings.calls if python_bindings else None,
+            constructor_dispatch=python_bindings.classes if python_bindings else None,
         )
         visitor.visit(tree)
         if data_effect_observations is not None:
@@ -1504,8 +1527,18 @@ def _scan_python_files(
         # invent an empty module and, worse, shadow the real one when a symbol
         # is resolved through the alias path.
         is_module_alias = bool(module_alias_target(tree)) and not declares_symbols
+        has_import_bindings = bool(
+            python_bindings
+            and any(
+                value.get("kind") == "import"
+                and value.get("name") not in {None, "", "*"}
+                for value in python_bindings.module.values()
+            )
+        )
         has_content = (
-            declares_symbols or (module_calls and not is_module_alias) or include_empty
+            declares_symbols
+            or ((module_calls or has_import_bindings) and not is_module_alias)
+            or include_empty
         )
         if has_content:
             file_entry: dict[str, object] = {
@@ -1522,6 +1555,7 @@ def _scan_python_files(
                 file_entry["imports"] = visitor.imports
                 if python_bindings is not None:
                     file_entry["python_bindings"] = python_bindings.module
+                    file_entry["python_constructor_facts_version"] = CONSTRUCTOR_FACTS_VERSION
                 file_entry["module_docstring"] = ast.get_docstring(tree) or ""
                 if visitor.all_exports:
                     file_entry["all_exports"] = visitor.all_exports
@@ -1590,6 +1624,7 @@ class PythonExtractor:
     def __init__(self) -> None:
         self.last_data_effect_observations: dict | None = None
         self.last_import_observations: dict | None = None
+        self.last_implementation_observations: dict | None = None
 
     def extract(
         self,
@@ -1601,6 +1636,8 @@ class PythonExtractor:
         capture_data_effect_observations: bool = False,
         capture_import_observations: bool = False,
         defer_inventory_model_kinds: bool = False,
+        capture_implementation_observations: bool = False,
+        implementation_analysis_hash: str | None = None,
     ) -> dict:
         """Scan *src_dir* for Python files and return an inventory dict.
 
@@ -1618,6 +1655,8 @@ class PythonExtractor:
         )
         self.last_data_effect_observations = None
         self.last_import_observations = None
+        self.last_implementation_observations = None
+        implementations: dict[str, dict] | None = {} if capture_implementation_observations else None
         inventory = _scan_python_files(
             src_dir,
             deep=deep,
@@ -1627,6 +1666,8 @@ class PythonExtractor:
             data_effect_observations=observations,
             import_location_observations=import_observations,
             defer_inventory_model_kinds=defer_inventory_model_kinds,
+            implementation_observations=implementations,
+            implementation_analysis_hash=implementation_analysis_hash,
         )
         for entry in inventory.values():
             entry["language"] = "python"
@@ -1634,4 +1675,6 @@ class PythonExtractor:
             self.last_data_effect_observations = data_effect_sidecar(observations)
         if import_observations is not None:
             self.last_import_observations = import_sidecar(import_observations)
+        if implementations is not None:
+            self.last_implementation_observations = implementation_envelope(implementations)
         return inventory

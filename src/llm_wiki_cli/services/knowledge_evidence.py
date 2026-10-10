@@ -53,6 +53,7 @@ _ENTITY_NONSTRUCTURAL_KEYS = _LOCATION_ONLY_KEYS | frozenset(
     {
         "calls",
         "call_bindings",
+        "python_constructor_dispatch",
         "data_effects",
         "description",
         "docstring",

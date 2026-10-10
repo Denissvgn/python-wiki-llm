@@ -1,6 +1,6 @@
 # KnowledgeReadMode
 
-**Location:** `src/llm_wiki_cli/services/knowledge_consumption.py:51`
+**Location:** `src/llm_wiki_cli/services/knowledge_consumption.py:54`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_consumption](../modules/knowledge_consumption.md)

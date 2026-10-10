@@ -91,7 +91,7 @@ flowchart LR
 | `_normalise_source_path` | call | [documentation_queries](../modules/documentation_queries.md) | 5 |
 | `_query_identity_within_limit` | call | [documentation_queries](../modules/documentation_queries.md) | 1 |
 | `_require_query` | call | [documentation_queries](../modules/documentation_queries.md) | 1 |
-| `DocumentationGraphQueryService.__init__` | call | [documentation_queries](../modules/documentation_queries.md) | 3 |
+| `DocumentationGraphQueryService.__init__` | call | [documentation_queries](../modules/documentation_queries.md) | 4 |
 | `DocumentationGraphQueryService._build_knowledge_indexes` | call | [documentation_queries](../modules/documentation_queries.md) | 6 |
 | `DocumentationGraphQueryService._build_section_ownership_indexes` | call | [documentation_queries](../modules/documentation_queries.md) | 6 |
 

@@ -17,6 +17,8 @@ def run(args):
         wiki_dir=args.wiki_dir,
         source_selection=args.source_selection,
         allow_external_src=args.allow_external_src,
+        include_source=getattr(args, "include_source", False),
+        discovery=getattr(args, "discovery", None),
     )
     if args.format == "json":
         print(json.dumps(result, ensure_ascii=False, sort_keys=True, indent=2))
@@ -25,3 +27,5 @@ def run(args):
             print(f"{match['path']}: {match['title']}")
             print("  " + match["snippet"])
         print(f"{result['returned']} of {result['total']} matches")
+        if "discovery" in result:
+            print(json.dumps(result["discovery"], ensure_ascii=False, sort_keys=True, indent=2))

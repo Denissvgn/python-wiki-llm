@@ -13,6 +13,7 @@ import json
 import os
 import re
 import shutil
+import stat
 import sys
 import tempfile
 from contextlib import redirect_stdout
@@ -24,6 +25,9 @@ from .. import __version__
 from ..config import DEFAULT_WIKI_DIR, validate_path, validate_source_root
 from ..services.concept_identity import AliasType, identity_coordinate_key
 from ..services.io import read_md, write_json_atomic, write_md
+from ..services.filesystem_guard import atomic_write_guarded_bytes
+from ..services.knowledge_storage_io import read_guarded
+from ..services.knowledge_storage import MAX_EXPANDED_BYTES
 from ..services.knowledge_artifacts import (
     KNOWLEDGE_INDEX_FILENAME,
     ArtifactWriteState,
@@ -55,8 +59,11 @@ from ..services.source_selection import (
 )
 from ..services.source_snapshot import (
     SourceSnapshot,
+    SourceSnapshotMutationError,
+    SourceFileIntegrity,
     build_source_snapshot,
     capture_source_selection_inputs,
+    source_snapshot_matches_current_files,
 )
 from ..services.sync_manifest import (
     MANIFEST_FILENAME,
@@ -224,14 +231,49 @@ def _legacy_gitignore_needs_write(wiki_dir: Path) -> bool:
     )
 
 
-def _ensure_legacy_gitignore(wiki_dir: Path, dry_run: bool) -> bool:
+def _advance_owned_ignore_snapshot(snapshot: SourceSnapshot, path: Path, postimage: bytes) -> SourceSnapshot:
+    """Admit one exact owned control write without absorbing source changes."""
+    relative = path.relative_to(snapshot.root).as_posix()
+    candidate = build_source_snapshot(
+        snapshot.root, only_files=snapshot.only_files, include_tests=snapshot.include_tests,
+        selection_policy=snapshot.source_selection_policy,
+        max_bytes=snapshot.capture_byte_limit, respect_ignores=snapshot.respect_ignores,
+        coherent=snapshot.coherent,
+    ).with_captured_inventory_paths(snapshot.all_source_paths)
+    unchanged = (
+        "files_by_language", "unsupported_files_by_language", "dockerfile_candidates",
+        "compose_candidates", "yaml_candidates", "package_markers", "all_source_paths",
+        "source_selection_identity", "capture_scan_limit",
+        "directory_integrity", "coherent", "capture_byte_limit",
+    )
+    if any(getattr(candidate, name) != getattr(snapshot, name) for name in unchanged):
+        raise SourceSnapshotMutationError("source", "source scope changed during migration ignore update")
+    for name in ("captured_content_hashes", "captured_input_kinds", "captured_file_integrity"):
+        before = {key: value for key, value in getattr(snapshot, name).items() if key != relative}
+        after = {key: value for key, value in getattr(candidate, name).items() if key != relative}
+        if before != after:
+            raise SourceSnapshotMutationError("source", "unowned input changed during migration ignore update")
+    if (candidate.captured_gitignore_paths - {relative} != snapshot.captured_gitignore_paths - {relative}
+            or candidate.selected_regular_paths - {relative} != snapshot.selected_regular_paths - {relative}
+            or candidate.captured_content_hashes.get(relative) != sha256_bytes(postimage)
+            or read_guarded(path, MAX_EXPANDED_BYTES).content != postimage):
+        raise SourceSnapshotMutationError("gitignore", "migration ignore postimage changed")
+    return candidate
+
+
+def _ensure_legacy_gitignore(wiki_dir: Path, dry_run: bool, *, plan: MigrationPlan | None = None) -> bool:
     """Ensure migration archives are ignored by git.
 
     Returns True when a write was needed, including dry-run previews.
     """
     pattern = _legacy_gitignore_pattern(wiki_dir)
-    gitignore = Path(".gitignore")
-    content = read_md(gitignore) if gitignore.exists() else ""
+    gitignore = Path.cwd() / ".gitignore"
+    snapshot = None if plan is None else plan.source_snapshot
+    if not dry_run and snapshot is not None and not source_snapshot_matches_current_files(snapshot):
+        raise SourceSnapshotMutationError("source", "source changed before migration ignore update")
+    observation = read_guarded(gitignore, MAX_EXPANDED_BYTES) if gitignore.exists() else None
+    raw = None if observation is None else observation.content
+    content = "" if raw is None else raw.decode("utf-8")
     if _gitignore_has_pattern(content, pattern):
         return False
 
@@ -239,12 +281,31 @@ def _ensure_legacy_gitignore(wiki_dir: Path, dry_run: bool) -> bool:
     if dry_run:
         return True
 
-    addition = f"# LLM Wiki migration archives\n{pattern}\n"
+    if snapshot is not None and gitignore.is_relative_to(snapshot.root) and (
+        snapshot.capture_scan_limit is not None or snapshot.coherent
+    ):
+        raise SourceSnapshotMutationError("source", "migration ignore update cannot advance bounded or coherent captures")
+
+    addition = f"# LLM Wiki migration archives\n{pattern}\n".encode("utf-8")
     if content.strip():
-        updated = content.rstrip("\n") + "\n\n" + addition
+        assert raw is not None
+        updated = raw.rstrip(b"\r\n") + b"\n\n" + addition
     else:
         updated = addition
-    write_md(gitignore, updated)
+    if snapshot is not None and gitignore.is_relative_to(snapshot.root):
+        relative = gitignore.relative_to(snapshot.root).as_posix()
+        expected = snapshot.captured_content_hashes.get(relative)
+        if expected != (None if raw is None else sha256_bytes(raw)):
+            raise SourceSnapshotMutationError("gitignore", "migration ignore preimage changed")
+        if observation is not None:
+            identity = observation.identity
+            observed = SourceFileIntegrity(identity[0], identity[1], stat.S_IFMT(identity[2]), *identity[3:])
+            if snapshot.captured_file_integrity.get(relative) != observed:
+                raise SourceSnapshotMutationError("gitignore", "migration ignore preimage identity changed")
+    atomic_write_guarded_bytes(gitignore, updated, expected_existing=raw)
+    if snapshot is not None and gitignore.is_relative_to(snapshot.root):
+        assert plan is not None
+        plan.source_snapshot = _advance_owned_ignore_snapshot(snapshot, gitignore, updated)
     return True
 
 
@@ -1597,7 +1658,7 @@ def _apply_chunk(
     if _chunk_has_archive_work(plan, chunk) or (
         chunk.include_finalizers and _legacy_archive_ignore_applicable(wiki_dir, plan)
     ):
-        _ensure_legacy_gitignore(wiki_dir, dry_run)
+        _ensure_legacy_gitignore(wiki_dir, dry_run, plan=plan)
 
     for target in chunk.targets:
         matched_pages = plan.matches.get(target.rel, [])

@@ -20,6 +20,7 @@ content is preserved under a Legacy Notes section.
 | `..services.bootstrap_runtime` | `_build_relationships`, `_generate_docker_md`, `_generate_entity_md`, `_generate_index_md`, `_generate_module_md`, `build_entity_occurrence_page_map`, `build_module_page_map` |
 | `..services.concept_identity` | `AliasType`, `identity_coordinate_key` |
 | `..services.extraction_service` | `InventoryResult`, `_workflow_name`, `get_call_graph`, `get_docker_inventory`, `get_inventory_result`, `print_inventory_failures` |
+| `..services.filesystem_guard` | `atomic_write_guarded_bytes` |
 | `..services.io` | `read_md`, `write_json_atomic`, `write_md` |
 | `..services.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME`, `ArtifactWriteState` |
 | `..services.knowledge_envelope` | `RepositoryEvidence` |
@@ -27,9 +28,11 @@ content is preserved under a Legacy Notes section.
 | `..services.knowledge_governance` | `GOVERNANCE_FILENAME`, `GovernanceError`, `load_governance` |
 | `..services.knowledge_loader` | `KnowledgeStateLoadError`, `load_knowledge_state` |
 | `..services.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeKnowledgeInputs`, `build_runtime_knowledge_plan`, `collect_runtime_repository_evidence`, `committed_governance_bundle_id`, `finalize_runtime_knowledge`, `runtime_generation_options` |
+| `..services.knowledge_storage` | `MAX_EXPANDED_BYTES` |
+| `..services.knowledge_storage_io` | `read_guarded` |
 | `..services.paths` | `normalize_source_path` |
 | `..services.source_selection` | `resolve_source_selection`, `validate_persisted_source_selection_identity` |
-| `..services.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
+| `..services.source_snapshot` | `SourceSnapshot`, `SourceSnapshotMutationError`, `SourceFileIntegrity`, `build_source_snapshot`, `capture_source_selection_inputs`, `source_snapshot_matches_current_files` |
 | `..services.sync_manifest` | `MANIFEST_FILENAME`, `MANIFEST_STATE_UNAVAILABLE`, `SyncManifest` |
 | `..services.validation` | `path_is_in_top_level_directory` |
 | `..services.wiki_surface` | `PageKind`, `WikiSurfaceError`, `mcp_uri` |
@@ -44,6 +47,7 @@ content is preserved under a Legacy Notes section.
 | `pathlib` | `Path` |
 | `re` | `re` |
 | `shutil` | `shutil` |
+| `stat` | `stat` |
 | `sys` | `sys` |
 | `tempfile` | `tempfile` |
 
@@ -65,19 +69,19 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (1) |
-| Outbound | `src` (19) |
+| Inbound | `src` (2) |
+| Outbound | `src` (22) |
 
-> All 20 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 24 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ExistingPage](../entities/ExistingPage.md) | 113 | — | A currently active wiki page before migration. |
-| [TargetPage](../entities/TargetPage.md) | 129 | — | A canonical page generated from the current source inventory. |
-| [MigrationPlan](../entities/MigrationPlan.md) | 142 | — | Computed migration operations, shared by apply and dry-run paths. |
-| [MigrationChunk](../entities/MigrationChunk.md) | 170 | — | A bounded subset of currently pending migration work. |
+| [ExistingPage](../entities/ExistingPage.md) | 120 | — | A currently active wiki page before migration. |
+| [TargetPage](../entities/TargetPage.md) | 136 | — | A canonical page generated from the current source inventory. |
+| [MigrationPlan](../entities/MigrationPlan.md) | 149 | — | Computed migration operations, shared by apply and dry-run paths. |
+| [MigrationChunk](../entities/MigrationChunk.md) | 177 | — | A bounded subset of currently pending migration work. |
 
 ## Functions
 
@@ -88,7 +92,8 @@ flowchart LR
 | `_legacy_gitignore_pattern` | `(wiki_dir: Path) -> str` | — | Return the project-root-relative gitignore pattern for legacy archives. |
 | `_gitignore_has_pattern` | `(content: str, pattern: str) -> bool` | — | — |
 | `_legacy_gitignore_needs_write` | `(wiki_dir: Path) -> bool` | — | — |
-| `_ensure_legacy_gitignore` | `(wiki_dir: Path, dry_run: bool) -> bool` | — | Ensure migration archives are ignored by git. |
+| `_advance_owned_ignore_snapshot` | `(snapshot: SourceSnapshot, path: Path, postimage: bytes) -> SourceSnapshot` | — | Admit one exact owned control write without absorbing source changes. |
+| `_ensure_legacy_gitignore` | `(wiki_dir: Path, dry_run: bool, *, plan: MigrationPlan \| None = None) -> bool` | — | Ensure migration archives are ignored by git. |
 | `_split_location` | `(value: str) -> tuple[str, int \| None]` | — | Split a legacy Location value into path and optional line number. |
 | `_read_existing_page` | `(path: Path, wiki_dir: Path, src_dir: str, *, archived: bool = False) -> ExistingPage` | — | — |
 | `_active_managed_pages` | `(wiki_dir: Path, src_dir: str) -> list[ExistingPage]` | — | — |

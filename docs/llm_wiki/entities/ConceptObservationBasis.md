@@ -1,6 +1,6 @@
 # ConceptObservationBasis
 
-**Location:** `src/llm_wiki_cli/services/knowledge_evidence.py:84`
+**Location:** `src/llm_wiki_cli/services/knowledge_evidence.py:85`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_evidence](../modules/knowledge_evidence.md)

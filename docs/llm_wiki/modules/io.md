@@ -19,6 +19,7 @@ UTF-8 JSON staged in a unique same-directory temporary file.
 | Source | Symbols |
 |--------|---------|
 | `.knowledge_evidence` | `formatted_json_bytes` |
+| `.wiki_write_basis` | `before_wiki_write`, `after_wiki_write` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Set` |
 | `os` | `os` |
@@ -46,10 +47,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (38) |
-| Outbound | `src` (1) |
+| Inbound | `src` (43) |
+| Outbound | `src` (2) |
 
-> All 39 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 45 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 
@@ -57,6 +58,7 @@ flowchart LR
 |----------|-----------|------------|-------------|
 | `first_unsafe_path_component` | `(path: str \| Path, *, trusted_symlink_uids: Set[int] \| None = None, trusted_symlink_owner: Callable[[Path], bool] \| None = None) -> Path \| None` | — | Return the first traversal, symlink, or reparse component of a path. |
 | `read_md` | `(path: Path) -> str` | — | Read a markdown file, tolerating non-UTF-8 encodings. |
+| `decode_markdown_bytes` | `(data: bytes) -> str` | — | Decode exact captured Markdown using the established reader policy. |
 | `write_md` | `(path: Path, text: str) -> None` | — | Write *text* to *path* as UTF-8 with Unix line-endings. |
 | `_write_utf8_text` | `(path: Path, text: str) -> None` | — | Atomically write UTF-8 text with Unix line endings. |
 | `write_bytes_atomic` | `(path: str \| Path, content: bytes) -> Path` | — | Atomically replace *path* with exact bytes staged in the same directory. |

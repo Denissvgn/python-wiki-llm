@@ -1,6 +1,6 @@
 # _BootstrapRunState
 
-**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4351`
+**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4413`
 **Kind:** Class
 **Bases:** —
 **Module:** [bootstrap_runtime](../modules/bootstrap_runtime.md)
@@ -46,7 +46,7 @@ flowchart LR
     n9["_emit_bootstrap_complete (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n10["_emit_bootstrap_json_summary (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n11["_emit_bootstrap_warnings (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
-    n12["_execute_bootstrap_options (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n12["_execute_bootstrap_options_locked (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -95,6 +95,6 @@ flowchart LR
 | `_emit_bootstrap_complete` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 | `_emit_bootstrap_json_summary` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 | `_emit_bootstrap_warnings` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
-| `_execute_bootstrap_options` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |
+| `_execute_bootstrap_options_locked` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |
 
 > References: showing 12 of 31 logical references; 19 omitted by the 12-row generated summary limit.

@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:llm-wiki:maintenance-record-binding-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "adoption_id",
+    "records",
+    "bounds"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "llm-wiki-maintenance-record-binding/v1"
+    },
+    "adoption_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "records": {
+      "type": "array",
+      "maxItems": 128,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "record_id",
+          "target",
+          "target_presence"
+        ],
+        "properties": {
+          "record_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+          },
+          "target": {
+            "additionalProperties": false,
+            "properties": {
+              "canonical_path": {
+                "maxLength": 4096,
+                "minLength": 1,
+                "type": "string"
+              },
+              "ownership": {
+                "const": "semantic"
+              },
+              "section_locator": {
+                "maxLength": 4096,
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "canonical_path",
+              "section_locator",
+              "ownership"
+            ],
+            "type": "object"
+          },
+          "target_presence": {
+            "enum": [
+              "present",
+              "deleted"
+            ]
+          }
+        }
+      }
+    },
+    "bounds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observations_total",
+        "observations_returned",
+        "truncated"
+      ],
+      "properties": {
+        "observations_total": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "observations_returned": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 128
+        },
+        "truncated": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

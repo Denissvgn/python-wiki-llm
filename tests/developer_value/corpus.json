@@ -1,0 +1,2716 @@
+{
+  "cases": [
+    {
+      "disconfirming_outcomes": [
+        "The body change is described as harmless.",
+        "Changed slicing retains an unchanged implementation conclusion."
+      ],
+      "execution": "opt-in-deterministic-evaluation",
+      "expected": {
+        "after": {
+          "authored_review": "pending",
+          "behavior": "not-evaluated",
+          "implementation": "changed",
+          "owned_behavior": "cap-failed",
+          "structure": "unchanged"
+        },
+        "before": {
+          "owned_behavior": "cap-passed"
+        }
+      },
+      "id": "L01",
+      "mutation": {
+        "after": "return values[:limit - 1]",
+        "before": "return values[:limit]",
+        "kind": "source-replace",
+        "occurrences": 1,
+        "path": "policy.py"
+      },
+      "observation_steps": [
+        {
+          "api": "inspect_concept",
+          "args": [
+            "entities/Batch.md"
+          ],
+          "kwargs": {
+            "include_evidence": true,
+            "live": true
+          },
+          "stage": "before"
+        },
+        {
+          "control": "cap",
+          "oracle": "owned_behavior",
+          "stage": "before"
+        },
+        {
+          "action": "apply-declared-source-mutation",
+          "stage": "mutation"
+        },
+        {
+          "api": "inspect_concept",
+          "args": [
+            "entities/Batch.md"
+          ],
+          "kwargs": {
+            "include_evidence": true,
+            "live": true
+          },
+          "stage": "after"
+        },
+        {
+          "api": "build_maintenance_queue",
+          "kwargs": {
+            "limit": 100
+          },
+          "stage": "after"
+        },
+        {
+          "control": "cap",
+          "oracle": "owned_behavior",
+          "stage": "after"
+        }
+      ],
+      "operation": "implementation-change",
+      "oracle": "cap",
+      "oracle_visible_to_solver": false,
+      "preparation": {
+        "initial_storage": "flat-v1",
+        "refresh_before_first_read": false,
+        "semantic_edits": [],
+        "source_root": "src",
+        "wiki_root": "wiki"
+      },
+      "project": "library",
+      "selector": "policy.py:Batch.cap"
+    },
+    {
+      "disconfirming_outcomes": [
+        "The source default remains 3.",
+        "Only a prose claim changes."
+      ],
+      "execution": "opt-in-deterministic-evaluation",
+      "expected": {
+        "after": {
+          "behavior": "not-evaluated",
+          "default": "4",
+          "implementation": "changed",
+          "structure": "changed"
+        },
+        "before": {
+          "default": "3"
+        }
+      },
+      "id": "L02",
+      "mutation": {
+        "after": "limit: int = 4",
+        "before": "limit: int = 3",
+        "kind": "source-replace",
+        "occurrences": 1,
+        "path": "policy.py"
+      },
+      "observation_steps": [
+        {
+          "api": "inspect_concept",
+          "args": [
+            "entities/Batch.md"
+          ],
+          "kwargs": {
+            "include_evidence": true,
+            "live": true
+          },
+          "stage": "before"
+        },
+        {
+          "api": "build_task_context",
+          "request": {
+            "options": {
+              "knowledge_mode": "off"
+            },
+            "requirements": [
+              {
+                "facet": "source-contract",
+                "id": "contract",
+                "selector": "policy.py:Batch.cap"
+              }
+            ],
+            "schema_version": "llm-wiki-task-request/v2"
+          },
+          "stage": "before"
+        },
+        {
+          "action": "apply-declared-source-mutation",
+          "stage": "mutation"
+        },
+        {
+          "api": "inspect_concept",
+          "args": [
+            "entities/Batch.md"
+          ],
+          "kwargs": {
+            "include_evidence": true,
+            "live": true
+          },
+          "stage": "after"
+        },
+        {
+          "api": "build_maintenance_queue",
+          "kwargs": {
+            "limit": 100
+          },
+          "stage": "after"
+        },
+        {
+          "api": "build_task_context",
+          "request": {
+            "options": {
+              "knowledge_mode": "off"
+            },
+            "requirements": [
+              {
+                "facet": "source-contract",
+                "id": "contract",
+                "selector": "policy.py:Batch.cap"
+              }
+            ],
+            "schema_version": "llm-wiki-task-request/v2"
+          },
+          "stage": "after"
+        }
+      ],
+      "operation": "default-change",
+      "oracle": "declaration-default",
+      "oracle_visible_to_solver": false,
+      "preparation": {
+        "initial_storage": "flat-v1",
+        "refresh_before_first_read": false,
+        "semantic_edits": [],
+        "source_root": "src",
+        "wiki_root": "wiki"
+      },
+      "project": "library",
+      "selector": "policy.py:Batch.cap"
+    },
+    {
+      "disconfirming_outcomes": [
+        "Line shifts are reported as executable changes.",
+        "An unchanged syntax comparison claims runtime equivalence."
+      ],
+      "execution": "opt-in-deterministic-evaluation",
+      "expected": {
+        "after": {
+          "behavior": "not-evaluated",
+          "implementation": "unchanged",
+          "owned_behavior": "cap-passed",
+          "source": "changed"
+        },
+        "before": {
+          "owned_behavior": "cap-passed"
+        }
+      },
+      "id": "L03",
+      "mutation": {
+        "after": "\n        return (values[ : limit ])",
+        "before": "        return values[:limit]",
+        "kind": "source-replace",
+        "occurrences": 1,
+        "path": "policy.py"
+      },
+      "observation_steps": [
+        {
+          "api": "inspect_concept",
+          "args": [
+            "entities/Batch.md"
+          ],
+          "kwargs": {
+            "include_evidence": true,
+            "live": true
+          },
+          "stage": "before"
+        },
+        {
+          "control": "cap",
+          "oracle": "owned_behavior",
+          "stage": "before"
+        },
+        {
+          "action": "apply-declared-source-mutation",
+          "stage": "mutation"
+        },
+        {
+          "api": "inspect_concept",
+          "args": [
+            "entities/Batch.md"
+          ],
+          "kwargs": {
+            "include_evidence": true,
+            "live": true
+          },
+          "stage": "after"
+        },
+        {
+          "api": "build_maintenance_queue",
+          "kwargs": {
+            "limit": 100
+          },
+          "stage": "after"
+        },
+        {
+          "control": "cap",
+          "oracle": "owned_behavior",
+          "stage": "after"
+        }
+      ],
+      "operation": "formatting-change",
+      "oracle": "cap",
+      "oracle_visible_to_solver": false,
+      "preparation": {
+        "initial_storage": "flat-v1",
+        "refresh_before_first_read": false,
+        "semantic_edits": [],
+        "source_root": "src",
+        "wiki_root": "wiki"
+      },
+      "project": "library",
+      "selector": "policy.py:Batch.cap"
+    },
+    {
+      "disconfirming_outcomes": [
+        "The first same-file Repeated.touch occurrence changes when only the second implementation changed.",
+        "Duplicate method coordinates collide.",
+        "The wrong Repeated occurrence changes."
+      ],
+      "execution": "opt-in-deterministic-evaluation",
+      "expected": {
+        "after": {
+          "changed_declaration": {
+            "occurrence": 2,
+            "owner": "Repeated.touch",
+            "path": "scope.py"
+          },
+          "selected_implementation": "unchanged",
+          "unchanged_declaration": {
+            "occurrence": 1,
+            "owner": "Repeated.touch",
+            "path": "scope.py"
+          }
+        },
+        "before": {
+          "repeated_occurrences": [
+            1,
+            2
+          ]
+        }
+      },
+      "id": "L04",
+      "mutation": {
+        "after": "return value + 7",
+        "before": "return value + 2",
+        "kind": "source-replace",
+        "occurrences": 1,
+        "path": "scope.py"
+      },
+      "observation_steps": [
+        {
+          "api": "inspect_concept",
+          "args": [
+            "modules/scope.md"
+          ],
+          "kwargs": {
+            "include_evidence": true,
+            "live": true
+          },
+          "stage": "before"
+        },
+        {
+          "occurrence_owner": "Repeated.touch",
+          "oracle": "source_observations",
+          "source_path": "scope.py",
+          "stage": "before"
+        },
+        {
+          "api": "build_task_context",
+          "request": {
+            "options": {
+              "knowledge_mode": "off"
+            },
+            "requirements": [
+              {
+                "facet": "source-contract",
+                "id": "first",
+                "selector": "scope.py:Repeated.touch#1"
+              },
+              {
+                "facet": "source-contract",
+                "id": "second",
+                "selector": "scope.py:Repeated.touch#2"
+              }
+            ],
+            "schema_version": "llm-wiki-task-request/v2"
+          },
+          "stage": "before"
+        },
+        {
+          "action": "apply-declared-source-mutation",
+          "stage": "mutation"
+        },
+        {
+          "api": "inspect_concept",
+          "args": [
+            "modules/scope.md"
+          ],
+          "kwargs": {
+            "include_evidence": true,
+            "live": true
+          },
+          "stage": "after"
+        },
+        {
+          "occurrence_owner": "Repeated.touch",
+          "oracle": "source_observations",
+          "source_path": "scope.py",
+          "stage": "after"
+        },
+        {
+          "api": "build_task_context",
+          "request": {
+            "options": {
+              "knowledge_mode": "off"
+            },
+            "requirements": [
+              {
+                "facet": "source-contract",
+                "id": "first",
+                "selector": "scope.py:Repeated.touch#1"
+              },
+              {
+                "facet": "source-contract",
+                "id": "second",
+                "selector": "scope.py:Repeated.touch#2"
+              }
+            ],
+            "schema_version": "llm-wiki-task-request/v2"
+          },
+          "stage": "after"
+        }
+      ],
+      "operation": "sibling-isolation",
+      "oracle": "occurrence-isolation",
+      "oracle_visible_to_solver": false,
+      "preparation": {
+        "initial_storage": "flat-v1",
+        "refresh_before_first_read": false,
+        "semantic_edits": [],
+        "source_root": "src",
+        "wiki_root": "wiki"
+      },
+      "project": "library",
+      "request": {
+        "options": {
+          "knowledge_mode": "off"
+        },
+        "requirements": [
+          {
+            "facet": "source-contract",
+            "id": "first",
+            "selector": "scope.py:Repeated.touch#1"
+          },
+          {
+            "facet": "source-contract",
+            "id": "second",
+            "selector": "scope.py:Repeated.touch#2"
+          }
+        ],
+        "schema_version": "llm-wiki-task-request/v2"
+      },
+      "selector": "scope.py:Repeated.touch#1"
+    },
+    {
+      "disconfirming_outcomes": [
+        "A leading docstring is treated as executable behavior.",
+        "Source/documentation drift disappears."
+      ],
+      "execution": "opt-in-deterministic-evaluation",
+      "expected": {
+        "after": {
+          "documentation": "changed",
+          "implementation": "unchanged",
+          "owned_behavior": "cap-passed",
+          "source": "changed"
+        },
+        "before": {
+          "owned_behavior": "cap-passed"
+        }
+      },
+      "id": "L05",
+      "mutation": {
+        "after": "        \"\"\"Return a bounded prefix.\"\"\"\n        return values[:limit]",
+        "before": "        return values[:limit]",
+        "kind": "source-replace",
+        "occurrences": 1,
+        "path": "policy.py"
+      },
+      "observation_steps": [
+        {
+          "api": "inspect_concept",
+          "args": [
+            "entities/Batch.md"
+          ],
+          "kwargs": {
+            "include_evidence": true,
+            "live": true
+          },
+          "stage": "before"
+        },
+        {
+          "control": "cap",
+          "oracle": "owned_behavior",
+          "stage": "before"
+        },
+        {
+          "action": "apply-declared-source-mutation",
+          "stage": "mutation"
+        },
+        {
+          "api": "inspect_concept",
+          "args": [
+            "entities/Batch.md"
+          ],
+          "kwargs": {
+            "include_evidence": true,
+            "live": true
+          },
+          "stage": "after"
+        },
+        {
+          "api": "build_maintenance_queue",
+          "kwargs": {
+            "limit": 100
+          },
+          "stage": "after"
+        },
+        {
+          "control": "cap",
+          "oracle": "owned_behavior",
+          "stage": "after"
+        }
+      ],
+      "operation": "docstring-change",
+      "oracle": "cap",
+      "oracle_visible_to_solver": false,
+      "preparation": {
+        "initial_storage": "flat-v1",
+        "refresh_before_first_read": false,
+        "semantic_edits": [],
+        "source_root": "src",
+        "wiki_root": "wiki"
+      },
+      "project": "library",
+      "selector": "policy.py:Batch.cap"
+    },
+    {
+      "disconfirming_outcomes": [
+        "Direct construction is absent from required callers.",
+        "Static callers prove complete runtime absence."
+      ],
+      "execution": "opt-in-deterministic-evaluation",
+      "expected": {
+        "after": null,
+        "before": {
+          "required_edges": [
+            {
+              "from": "policy.py:public_values",
+              "to": "policy.py:Batch.cap"
+            }
+          ],
+          "runtime_completeness": false
+        }
+      },
+      "id": "L06",
+      "mutation": {
+        "kind": "none"
+      },
+      "observation_steps": [
+        {
+          "api": "callers",
+          "args": [
+            "policy.py:Batch.cap"
+          ],
+          "kwargs": {
+            "limit": 100,
+            "read_only": true
+          },
+          "stage": "before"
+        },
+        {
+          "oracle": "source_observations",
+          "source_paths": [
+            "policy.py",
+            "client.py"
+          ],
+          "stage": "before"
+        }
+      ],
+      "operation": "callers",
+      "oracle": "declared-call-site",
+      "oracle_visible_to_solver": false,
+      "preparation": {
+        "initial_storage": "flat-v1",
+        "refresh_before_first_read": false,
+        "semantic_edits": [],
+        "source_root": "src",
+        "wiki_root": "wiki"
+      },
+      "project": "library",
+      "selector": "policy.py:Batch.cap"
+    },
+    {
+      "disconfirming_outcomes": [
+        "Assigned instance construction is absent from required callers."
+      ],
+      "execution": "opt-in-deterministic-evaluation",
+      "expected": {
+        "after": null,
+        "before": {
+          "required_edges": [
+            {
+              "from": "client.py:assigned_values",
+              "to": "policy.py:Batch.cap"
+            }
+          ],
+          "runtime_completeness": false
+        }
+      },
+      "id": "L07",
+      "mutation": {
+        "kind": "none"
+      },
+      "observation_steps": [
+        {
+          "api": "callers",
+          "args": [
+            "policy.py:Batch.cap"
+          ],
+          "kwargs": {
+            "limit": 100,
+            "read_only": true
+          },
+          "stage": "before"
+        },
+        {
+          "oracle": "source_observations",
+          "source_paths": [
+            "policy.py",
+            "client.py"
+          ],
+          "stage": "before"
+        }
+      ],
+      "operation": "callers",
+      "oracle": "declared-call-site",
+      "oracle_visible_to_solver": false,
+      "preparation": {
+        "initial_storage": "flat-v1",
+        "refresh_before_first_read": false,
+        "semantic_edits": [],
+        "source_root": "src",
+        "wiki_root": "wiki"
+      },
+      "project": "library",
+      "selector": "policy.py:Batch.cap"
+    },
+    {
+      "disconfirming_outcomes": [
+        "A wiki is required for source-only evidence.",
+        "An insufficient budget hides decisive uncertainty while reporting success."
+      ],
+      "execution": "opt-in-deterministic-evaluation",
+      "expected": {
+        "after": {
+          "budget_tokens": 1,
+          "error": "cannot-fit",
+          "facts_absent": true,
+          "ok": false
+        },
+        "before": {
+          "contract": "present",
+          "knowledge_mode": "off",
+          "native_required": false,
+          "paths": [
+            "policy.py"
+          ]
+        }
+      },
+      "id": "L08",
+      "mutation": {
+        "kind": "none"
+      },
+      "observation_steps": [
+        {
+          "api": "build_task_context",
+          "request": {
+            "kind": "bug-diagnosis",
+            "options": {
+              "knowledge_mode": "off"
+            },
+            "requirements": [
+              {
+                "facet": "source-contract",
+                "id": "contract",
+                "selector": "policy.py:Batch.cap"
+              },
+              {
+                "facet": "callers",
+                "id": "callers",
+                "selector": "cap"
+              },
+              {
+                "facet": "behavior",
+                "id": "behavior",
+                "selector": "policy.py:Batch.cap"
+              }
+            ],
+            "schema_version": "llm-wiki-task-request/v2",
+            "text": "Inspect the cap and its callers."
+          },
+          "stage": "before"
+        },
+        {
+          "api": "build_task_context",
+          "request": {
+            "kind": "bug-diagnosis",
+            "options": {
+              "budget_tokens": 1,
+              "knowledge_mode": "off"
+            },
+            "requirements": [
+              {
+                "facet": "source-contract",
+                "id": "contract",
+                "selector": "policy.py:Batch.cap"
+              },
+              {
+                "facet": "callers",
+                "id": "callers",
+                "selector": "cap"
+              },
+              {
+                "facet": "behavior",
+                "id": "behavior",
+                "selector": "policy.py:Batch.cap"
+              }
+            ],
+            "schema_version": "llm-wiki-task-request/v2",
+            "text": "Inspect the cap and its callers."
+          },
+          "stage": "after"
+        }
+      ],
+      "operation": "source-only-context",
+      "oracle": "context-coverage",
+      "oracle_visible_to_solver": false,
+      "preparation": {
+        "initial_storage": "flat-v1",
+        "refresh_before_first_read": false,
+        "semantic_edits": [],
+        "source_root": "src",
+        "wiki_required": false,
+        "wiki_root": "wiki"
+      },
+      "project": "library",
+      "request": {
+        "kind": "bug-diagnosis",
+        "options": {
+          "knowledge_mode": "off"
+        },
+        "requirements": [
+          {
+            "facet": "source-contract",
+            "id": "contract",
+            "selector": "policy.py:Batch.cap"
+          },
+          {
+            "facet": "callers",
+            "id": "callers",
+            "selector": "cap"
+          },
+          {
+            "facet": "behavior",
+            "id": "behavior",
+            "selector": "policy.py:Batch.cap"
+          }
+        ],
+        "schema_version": "llm-wiki-task-request/v2",
+        "text": "Inspect the cap and its callers."
+      },
+      "selector": "policy.py:Batch.cap"
+    },
+    {
+      "disconfirming_outcomes": [
+        "An imported class alias is unresolved despite a unique unshadowed binding."
+      ],
+      "execution": "opt-in-deterministic-evaluation",
+      "expected": {
+        "after": null,
+        "before": {
+          "alias": "BatchPolicy",
+          "required_edges": [
+            {
+              "from": "handlers.py:list_items",
+              "to": "policy.py:Batch.cap"
+            }
+          ],
+          "runtime_completeness": false
+        }
+      },
+      "id": "S01",
+      "mutation": {
+        "kind": "none"
+      },
+      "observation_steps": [
+        {
+          "api": "callers",
+          "args": [
+            "policy.py:Batch.cap"
+          ],
+          "kwargs": {
+            "limit": 100,
+            "read_only": true
+          },
+          "stage": "before"
+        },
+        {
+          "oracle": "source_observations",
+          "source_paths": [
+            "policy.py",
+            "handlers.py",
+            "dynamic.py"
+          ],
+          "stage": "before"
+        }
+      ],
+      "operation": "callers",
+      "oracle": "declared-call-site",
+      "oracle_visible_to_solver": false,
+      "preparation": {
+        "initial_storage": "flat-v1",
+        "refresh_before_first_read": false,
+        "semantic_edits": [],
+        "source_root": "src",
+        "wiki_root": "wiki"
+      },
+      "project": "service",
+      "selector": "policy.py:Batch.cap"
+    },
+    {
+      "disconfirming_outcomes": [
+        "An unknown factory is guessed to return Batch."
+      ],
+      "execution": "opt-in-deterministic-evaluation",
+      "expected": {
+        "after": null,
+        "before": {
+          "forbidden_edges": [
+            {
+              "from": "dynamic.py:factory_values",
+              "to": "policy.py:Batch.cap"
+            }
+          ],
+          "runtime_completeness": false,
+          "uncertain_sites": [
+            "dynamic.py:factory_values"
+          ]
+        }
+      },
+      "id": "S02",
+      "mutation": {
+        "kind": "none"
+      },
+      "observation_steps": [
+        {
+          "api": "callers",
+          "args": [
+            "policy.py:Batch.cap"
+          ],
+          "kwargs": {
+            "limit": 100,
+            "read_only": true
+          },
+          "stage": "before"
+        },
+        {
+          "oracle": "source_observations",
+          "source_paths": [
+            "policy.py",
+            "handlers.py",
+            "dynamic.py"
+          ],
+          "stage": "before"
+        }
+      ],
+      "operation": "uncertain-callers",
+      "oracle": "declared-uncertainty",
+      "oracle_visible_to_solver": false,
+      "preparation": {
+        "initial_storage": "flat-v1",
+        "refresh_before_first_read": false,
+        "semantic_edits": [],
+        "source_root": "src",
+        "wiki_root": "wiki"
+      },
+      "project": "service",
+      "selector": "policy.py:Batch.cap"
+    },
+    {
+      "disconfirming_outcomes": [
+        "A shadowed imported name resolves to the imported class.",
+        "A branch conflict or reassignment creates a guessed unique receiver."
+      ],
+      "execution": "opt-in-deterministic-evaluation",
+      "expected": {
+        "after": null,
+        "before": {
+          "forbidden_edges": [
+            {
+              "from": "dynamic.py:shadowed_values",
+              "to": "policy.py:Batch.cap"
+            },
+            {
+              "from": "dynamic.py:conflicting_values",
+              "to": "policy.py:Batch.cap"
+            },
+            {
+              "from": "dynamic.py:rebound_values",
+              "to": "policy.py:Batch.cap"
+            }
+          ],
+          "uncertain_sites": [
+            "dynamic.py:shadowed_values",
+            "dynamic.py:conflicting_values",
+            "dynamic.py:rebound_values"
+          ]
+        }
+      },
+      "id": "S03",
+      "mutation": {
+        "kind": "none"
+      },
+      "observation_steps": [
+        {
+          "api": "callers",
+          "args": [
+            "policy.py:Batch.cap"
+          ],
+          "kwargs": {
+            "limit": 100,
+            "read_only": true
+          },
+          "stage": "before"
+        },
+        {
+          "oracle": "source_observations",
+          "source_paths": [
+            "policy.py",
+            "handlers.py",
+            "dynamic.py"
+          ],
+          "stage": "before"
+        }
+      ],
+      "operation": "uncertain-callers",
+      "oracle": "declared-uncertainty",
+      "oracle_visible_to_solver": false,
+      "preparation": {
+        "initial_storage": "flat-v1",
+        "refresh_before_first_read": false,
+        "semantic_edits": [],
+        "source_root": "src",
+        "wiki_root": "wiki"
+      },
+      "project": "service",
+      "selector": "policy.py:Batch.cap"
+    },
+    {
+      "disconfirming_outcomes": [
+        "The module-global edit is invisible.",
+        "Every callable receives a changed syntax fingerprint.",
+        "Unchanged method syntax is mistaken for unchanged runtime behavior."
+      ],
+      "execution": "opt-in-deterministic-evaluation",
+      "expected": {
+        "after": {
+          "behavior": "not-evaluated",
+          "module_implementation": "changed",
+          "module_review": "pending",
+          "owned_behavior": "service-failed",
+          "selected_implementation": "unchanged"
+        },
+        "before": {
+          "owned_behavior": "service-passed"
+        }
+      },
+      "id": "S04",
+      "mutation": {
+        "after": "ALLOW_WRITES = False",
+        "before": "ALLOW_WRITES = True",
+        "kind": "source-replace",
+        "occurrences": 1,
+        "path": "store.py"
+      },
+      "observation_steps": [
+        {
+          "api": "inspect_concept",
+          "args": [
+            "modules/store.md"
+          ],
+          "kwargs": {
+            "include_evidence": true,
+            "live": true
+          },
+          "stage": "before"
+        },
+        {
+          "api": "inspect_concept",
+          "args": [
+            "entities/Store.md"
+          ],
+          "kwargs": {
+            "include_evidence": true,
+            "live": true
+          },
+          "stage": "before"
+        },
+        {
+          "control": "service",
+          "oracle": "owned_behavior",
+          "stage": "before"
+        },
+        {
+          "action": "apply-declared-source-mutation",
+          "stage": "mutation"
+        },
+        {
+          "api": "inspect_concept",
+          "args": [
+            "modules/store.md"
+          ],
+          "kwargs": {
+            "include_evidence": true,
+            "live": true
+          },
+          "stage": "after"
+        },
+        {
+          "api": "inspect_concept",
+          "args": [
+            "entities/Store.md"
+          ],
+          "kwargs": {
+            "include_evidence": true,
+            "live": true
+          },
+          "stage": "after"
+        },
+        {
+          "api": "build_maintenance_queue",
+          "kwargs": {
+            "limit": 100
+          },
+          "stage": "after"
+        },
+        {
+          "control": "service",
+          "oracle": "owned_behavior",
+          "stage": "after"
+        }
+      ],
+      "operation": "module-change",
+      "oracle": "service",
+      "oracle_visible_to_solver": false,
+      "preparation": {
+        "initial_storage": "flat-v1",
+        "refresh_before_first_read": false,
+        "semantic_edits": [],
+        "source_root": "src",
+        "wiki_root": "wiki"
+      },
+      "project": "service",
+      "selector": "store.py:Store.save"
+    },
+    {
+      "actions": [
+        "edit",
+        "sync",
+        "fresh-process-read",
+        "sync"
+      ],
+      "disconfirming_outcomes": [
+        "Sync clears the pending review.",
+        "A fresh process loses the review record."
+      ],
+      "execution": "opt-in-deterministic-evaluation",
+      "expected": {
+        "after": {
+          "authored_prose_preserved": true,
+          "review_after_edit": "pending",
+          "review_after_restart": "pending",
+          "review_after_sync": "pending",
+          "second_sync": "idempotent"
+        },
+        "before": {
+          "authored_prose": true
+        }
+      },
+      "id": "S05",
+      "mutation": {
+        "after": "return values[:limit - 1]",
+        "before": "return values[:limit]",
+        "kind": "source-replace",
+        "occurrences": 1,
+        "path": "policy.py"
+      },
+      "observation_steps": [
+        {
+          "api": "build_maintenance_queue",
+          "kwargs": {
+            "limit": 100
+          },
+          "stage": "before"
+        },
+        {
+          "action": "apply-declared-source-mutation",
+          "stage": "mutation"
+        },
+        {
+          "api": "build_maintenance_queue",
+          "kwargs": {
+            "limit": 100
+          },
+          "stage": "after-edit"
+        },
+        {
+          "action": "sync",
+          "argv": [
+            "sync",
+            "--src-dir",
+            "src",
+            "--wiki-dir",
+            "wiki",
+            "--no-plugins"
+          ],
+          "stage": "after-sync"
+        },
+        {
+          "api": "build_maintenance_queue",
+          "kwargs": {
+            "limit": 100
+          },
+          "stage": "after-sync"
+        },
+        {
+          "api": "build_maintenance_queue",
+          "fresh_process": true,
+          "kwargs": {
+            "limit": 100
+          },
+          "stage": "after-restart"
+        },
+        {
+          "action": "sync",
+          "argv": [
+            "sync",
+            "--src-dir",
+            "src",
+            "--wiki-dir",
+            "wiki",
+            "--no-plugins"
+          ],
+          "stage": "second-sync"
+        },
+        {
+          "action": "compare-protected-and-authored-bytes",
+          "stage": "second-sync"
+        }
+      ],
+      "operation": "review-persistence",
+      "oracle": "artifact-transition",
+      "oracle_visible_to_solver": false,
+      "preparation": {
+        "initial_storage": "flat-v1",
+        "refresh_before_first_read": true,
+        "semantic_edits": [
+          {
+            "heading": "Description",
+            "kind": "insert-after-heading",
+            "preserve_existing_prose": true,
+            "refresh_before_first_read": true,
+            "refresh_cli": [
+              "sync",
+              "--src-dir",
+              "src",
+              "--wiki-dir",
+              "wiki",
+              "--no-plugins"
+            ],
+            "section_ownership": "semantic",
+            "text": "The permitted batch keeps every item up to its configured limit.\n",
+            "text_sha256": "8142a63789b7259afc90174fde4a1f9416c49a5e0826bfb5a6c6a1d650440c6c",
+            "wiki_path": "entities/Batch.md"
+          }
+        ],
+        "source_root": "src",
+        "wiki_root": "wiki"
+      },
+      "project": "service",
+      "selector": "policy.py:Batch.cap"
+    },
+    {
+      "baseline_missing_capability": "ordinary-wiki current-source/prose acknowledgment with a recorded agent actor; do not substitute governed human approval",
+      "disconfirming_outcomes": [
+        "An acknowledgment uses old source or prose hashes.",
+        "An agent acknowledgment becomes human approval."
+      ],
+      "execution": "opt-in-deterministic-evaluation",
+      "expected": {
+        "after": {
+          "fresh_acknowledgment": "acknowledged",
+          "human_approval": false,
+          "repeated_acknowledgment": "idempotent",
+          "stale_prose_acknowledgment": "rejected",
+          "stale_source_acknowledgment": "rejected"
+        },
+        "before": {
+          "acknowledgment_bound_to": [
+            "source",
+            "prose"
+          ],
+          "actor_kind": "agent"
+        }
+      },
+      "id": "S06",
+      "mutation": {
+        "after": "return values[:limit - 1]",
+        "before": "return values[:limit]",
+        "kind": "source-replace",
+        "occurrences": 1,
+        "path": "policy.py"
+      },
+      "observation_steps": [
+        {
+          "api": "inspect_concept",
+          "args": [
+            "entities/Batch.md"
+          ],
+          "kwargs": {
+            "live": true
+          },
+          "stage": "before"
+        },
+        {
+          "action": "capture-source-and-semantic-prose-hashes",
+          "actor": {
+            "id": "developer-value-evaluator",
+            "kind": "agent"
+          },
+          "stage": "before"
+        },
+        {
+          "action": "apply-declared-source-mutation",
+          "stage": "mutation"
+        },
+        {
+          "action": "probe-ordinary-review-acknowledgment",
+          "basis": "before-source-and-prose",
+          "missing_capability_outcome": "unavailable",
+          "stage": "after"
+        },
+        {
+          "action": "apply-declared-prose-mutation",
+          "heading": "Description",
+          "section_ownership": "semantic",
+          "stage": "prose-mutation"
+        },
+        {
+          "action": "probe-ordinary-review-acknowledgment",
+          "basis": "current-source-and-old-prose",
+          "missing_capability_outcome": "unavailable",
+          "stage": "after-prose"
+        },
+        {
+          "action": "probe-ordinary-review-acknowledgment",
+          "basis": "current-source-and-current-prose",
+          "missing_capability_outcome": "unavailable",
+          "stage": "fresh"
+        },
+        {
+          "action": "repeat-fresh-acknowledgment",
+          "missing_capability_outcome": "unavailable",
+          "stage": "repeat"
+        }
+      ],
+      "operation": "stale-acknowledgment",
+      "oracle": "artifact-transition",
+      "oracle_visible_to_solver": false,
+      "preparation": {
+        "initial_storage": "flat-v1",
+        "refresh_before_first_read": true,
+        "semantic_edits": [
+          {
+            "heading": "Description",
+            "kind": "insert-after-heading",
+            "preserve_existing_prose": true,
+            "refresh_before_first_read": true,
+            "refresh_cli": [
+              "sync",
+              "--src-dir",
+              "src",
+              "--wiki-dir",
+              "wiki",
+              "--no-plugins"
+            ],
+            "section_ownership": "semantic",
+            "text": "The permitted batch keeps every item up to its configured limit.\n",
+            "text_sha256": "8142a63789b7259afc90174fde4a1f9416c49a5e0826bfb5a6c6a1d650440c6c",
+            "wiki_path": "entities/Batch.md"
+          }
+        ],
+        "source_root": "src",
+        "wiki_root": "wiki"
+      },
+      "project": "service",
+      "prose_mutation": {
+        "after": "Additional agent review note.\n",
+        "heading": "Description",
+        "kind": "prose-append",
+        "path": "entities/Batch.md",
+        "placement": "section-end",
+        "refresh_before_read": true,
+        "section_ownership": "semantic"
+      },
+      "selector": "policy.py:Batch.cap"
+    },
+    {
+      "disconfirming_outcomes": [
+        "Corruption becomes a complete empty graph.",
+        "A read repairs or changes protected artifacts."
+      ],
+      "execution": "opt-in-deterministic-evaluation",
+      "expected": {
+        "after": {
+          "graph_absence_proven": false,
+          "read": "rejected",
+          "wiki_bytes": "unchanged-by-read"
+        },
+        "before": {
+          "native_required": true
+        }
+      },
+      "id": "S07",
+      "mutation": {
+        "after": "{broken",
+        "kind": "artifact-write",
+        "path": ".llm-wiki-knowledge.json"
+      },
+      "observation_steps": [
+        {
+          "api": "build_task_context",
+          "request": {
+            "options": {
+              "knowledge_mode": "required",
+              "read_scope": "snapshot"
+            },
+            "requirements": [
+              {
+                "facet": "concept",
+                "id": "concept",
+                "selector": "modules/store.md"
+              }
+            ],
+            "schema_version": "llm-wiki-task-request/v2"
+          },
+          "stage": "before"
+        },
+        {
+          "action": "apply-declared-artifact-mutation",
+          "stage": "mutation"
+        },
+        {
+          "api": "build_task_context",
+          "request": {
+            "options": {
+              "knowledge_mode": "required",
+              "read_scope": "snapshot"
+            },
+            "requirements": [
+              {
+                "facet": "concept",
+                "id": "concept",
+                "selector": "modules/store.md"
+              }
+            ],
+            "schema_version": "llm-wiki-task-request/v2"
+          },
+          "stage": "after"
+        },
+        {
+          "action": "compare-all-wiki-bytes-with-before-read",
+          "stage": "after"
+        }
+      ],
+      "operation": "corrupt-native",
+      "oracle": "artifact-integrity",
+      "oracle_visible_to_solver": false,
+      "preparation": {
+        "adopt_storage": "sharded-v2",
+        "initial_storage": "flat-v1",
+        "migration_explicit": true,
+        "refresh_before_first_read": false,
+        "semantic_edits": [],
+        "source_root": "src",
+        "wiki_root": "wiki"
+      },
+      "project": "service",
+      "selector": "modules/store.md"
+    },
+    {
+      "bounded_request": {
+        "options": {
+          "knowledge_mode": "off",
+          "max_files": 128,
+          "max_graph_items": 1,
+          "read_scope": "full-inventory"
+        },
+        "requirements": [
+          {
+            "criterion": "complete",
+            "facet": "callees",
+            "id": "callees",
+            "selector": "search_records"
+          }
+        ],
+        "schema_version": "llm-wiki-task-request/v2"
+      },
+      "disconfirming_outcomes": [
+        "A selected contract scans all scale modules.",
+        "Truncation is presented as complete evidence."
+      ],
+      "execution": "opt-in-deterministic-evaluation",
+      "expected": {
+        "after": {
+          "analysis_scope": "full-inventory",
+          "graph_limit": 1,
+          "runtime_completeness": false,
+          "source_files": 102,
+          "truncated_or_partial": true
+        },
+        "before": {
+          "bounded": true,
+          "native_required": false,
+          "selected_paths": [
+            "parts/part_005.py"
+          ],
+          "source_files": 1,
+          "whole_store_validated": false
+        }
+      },
+      "host_policy": {
+        "max_files": 128,
+        "read_scope": "full-inventory"
+      },
+      "id": "G01",
+      "mutation": {
+        "kind": "none"
+      },
+      "observation_steps": [
+        {
+          "api": "build_task_context",
+          "request": {
+            "options": {
+              "knowledge_mode": "off"
+            },
+            "requirements": [
+              {
+                "facet": "source-contract",
+                "id": "contract",
+                "selector": "parts/part_005.py:Record005.transform"
+              }
+            ],
+            "schema_version": "llm-wiki-task-request/v2"
+          },
+          "stage": "before"
+        },
+        {
+          "api": "build_task_context",
+          "host_policy": {
+            "max_files": 128,
+            "read_scope": "full-inventory"
+          },
+          "request": {
+            "options": {
+              "knowledge_mode": "off",
+              "max_files": 128,
+              "max_graph_items": 1,
+              "read_scope": "full-inventory"
+            },
+            "requirements": [
+              {
+                "criterion": "complete",
+                "facet": "callees",
+                "id": "callees",
+                "selector": "search_records"
+              }
+            ],
+            "schema_version": "llm-wiki-task-request/v2"
+          },
+          "stage": "after"
+        }
+      ],
+      "operation": "selected-context",
+      "oracle": "context-coverage",
+      "oracle_visible_to_solver": false,
+      "preparation": {
+        "initial_storage": "flat-v1",
+        "refresh_before_first_read": false,
+        "semantic_edits": [],
+        "source_root": "src",
+        "wiki_required": false,
+        "wiki_root": "wiki"
+      },
+      "project": "large",
+      "request": {
+        "options": {
+          "knowledge_mode": "off"
+        },
+        "requirements": [
+          {
+            "facet": "source-contract",
+            "id": "contract",
+            "selector": "parts/part_005.py:Record005.transform"
+          }
+        ],
+        "schema_version": "llm-wiki-task-request/v2"
+      },
+      "selector": "parts/part_005.py:Record005.transform"
+    },
+    {
+      "disconfirming_outcomes": [
+        "Warm reuse serves the previous source basis.",
+        "Session and cold context disagree after mutation."
+      ],
+      "execution": "opt-in-deterministic-evaluation",
+      "expected": {
+        "after": {
+          "behavior": "not-evaluated",
+          "cold_result_equivalent": true,
+          "result_id": "changed",
+          "reuse_stale_render": false
+        },
+        "before": {
+          "session_read": "full"
+        }
+      },
+      "id": "G02",
+      "mutation": {
+        "after": "return rank_records(query, selected)[:1]",
+        "before": "return rank_records(query, selected)",
+        "kind": "source-replace",
+        "occurrences": 1,
+        "path": "search.py"
+      },
+      "observation_steps": [
+        {
+          "api": "open_context_session",
+          "request": {
+            "options": {
+              "knowledge_mode": "off"
+            },
+            "requirements": [
+              {
+                "facet": "source-contract",
+                "id": "contract",
+                "selector": "search.py:search_records"
+              }
+            ],
+            "schema_version": "llm-wiki-task-request/v2"
+          },
+          "stage": "before"
+        },
+        {
+          "request": {
+            "options": {
+              "knowledge_mode": "off"
+            },
+            "requirements": [
+              {
+                "facet": "source-contract",
+                "id": "contract",
+                "selector": "search.py:search_records"
+              }
+            ],
+            "schema_version": "llm-wiki-task-request/v2"
+          },
+          "session": "read",
+          "stage": "before"
+        },
+        {
+          "action": "apply-declared-source-mutation",
+          "stage": "mutation"
+        },
+        {
+          "if_result_id": "before-result-id",
+          "request": {
+            "options": {
+              "knowledge_mode": "off"
+            },
+            "requirements": [
+              {
+                "facet": "source-contract",
+                "id": "contract",
+                "selector": "search.py:search_records"
+              }
+            ],
+            "schema_version": "llm-wiki-task-request/v2"
+          },
+          "session": "read",
+          "stage": "after"
+        },
+        {
+          "api": "build_task_context",
+          "request": {
+            "options": {
+              "knowledge_mode": "off"
+            },
+            "requirements": [
+              {
+                "facet": "source-contract",
+                "id": "contract",
+                "selector": "search.py:search_records"
+              }
+            ],
+            "schema_version": "llm-wiki-task-request/v2"
+          },
+          "stage": "after"
+        },
+        {
+          "action": "compare-session-with-cold-result",
+          "stage": "after"
+        }
+      ],
+      "operation": "resume-mutation",
+      "oracle": "session-transition",
+      "oracle_visible_to_solver": false,
+      "preparation": {
+        "initial_storage": "flat-v1",
+        "refresh_before_first_read": false,
+        "semantic_edits": [],
+        "source_root": "src",
+        "wiki_required": false,
+        "wiki_root": "wiki"
+      },
+      "project": "large",
+      "selector": "search.py:search_records"
+    },
+    {
+      "disconfirming_outcomes": [
+        "Normal owning sync loses authored prose from the supported Description section.",
+        "The mutation introduces an unknown custom heading instead of using the supported semantic owner.",
+        "Repeated unchanged sync continues rewriting committed artifacts."
+      ],
+      "execution": "opt-in-deterministic-evaluation",
+      "expected": {
+        "after": {
+          "artifact_integrity": "valid",
+          "prose_preserved": true,
+          "second_sync": "idempotent"
+        },
+        "before": {
+          "unchanged_sync": "no-authored-content-loss"
+        }
+      },
+      "id": "G03",
+      "mutation": {
+        "after": "The search command uses the explicit selected corpus.\n",
+        "heading": "Description",
+        "kind": "prose-append",
+        "path": "modules/search.md",
+        "placement": "section-end",
+        "refresh_before_read": true,
+        "section_ownership": "semantic"
+      },
+      "observation_steps": [
+        {
+          "action": "sync",
+          "argv": [
+            "sync",
+            "--src-dir",
+            "src",
+            "--wiki-dir",
+            "wiki",
+            "--no-plugins"
+          ],
+          "stage": "before"
+        },
+        {
+          "action": "apply-declared-prose-mutation",
+          "stage": "mutation"
+        },
+        {
+          "action": "sync",
+          "argv": [
+            "sync",
+            "--src-dir",
+            "src",
+            "--wiki-dir",
+            "wiki",
+            "--no-plugins"
+          ],
+          "stage": "after"
+        },
+        {
+          "action": "validate-protected-artifacts",
+          "stage": "after"
+        },
+        {
+          "action": "sync",
+          "argv": [
+            "sync",
+            "--src-dir",
+            "src",
+            "--wiki-dir",
+            "wiki",
+            "--no-plugins"
+          ],
+          "stage": "second-sync"
+        },
+        {
+          "action": "compare-protected-and-authored-bytes",
+          "stage": "second-sync"
+        }
+      ],
+      "operation": "maintenance-noop",
+      "oracle": "artifact-integrity",
+      "oracle_visible_to_solver": false,
+      "preparation": {
+        "initial_storage": "flat-v1",
+        "refresh_before_first_read": false,
+        "semantic_edits": [],
+        "source_root": "src",
+        "wiki_root": "wiki"
+      },
+      "project": "large",
+      "selector": "modules/search.md"
+    },
+    {
+      "disconfirming_outcomes": [
+        "A deep validation subtree consumes the entire overview.",
+        "The security failure boundary disappears.",
+        "Static traversal is called an executed runtime trace."
+      ],
+      "entrypoint": {
+        "file": "cli.py",
+        "kind": "cli",
+        "name": "search",
+        "symbol": "main"
+      },
+      "execution": "opt-in-deterministic-evaluation",
+      "expected": {
+        "after": null,
+        "before": {
+          "interaction_limit": 30,
+          "omitted_details_counted": true,
+          "required_stages": [
+            "validate_command",
+            "validate_catalog_access",
+            "select_records",
+            "rank_records",
+            "format_results"
+          ],
+          "runtime_order_proven": false,
+          "security_boundary": "catalog access denied",
+          "source_links": true
+        }
+      },
+      "id": "G04",
+      "mutation": {
+        "kind": "none"
+      },
+      "observation_steps": [
+        {
+          "api": "flow_for_entrypoint",
+          "args": [
+            "main"
+          ],
+          "kwargs": {
+            "limit": 100,
+            "read_only": true
+          },
+          "stage": "before"
+        },
+        {
+          "action": "inspect-generated-flow-overview",
+          "display_interaction_limit": 30,
+          "entrypoint": {
+            "file": "cli.py",
+            "kind": "cli",
+            "name": "search",
+            "symbol": "main"
+          },
+          "stage": "before"
+        },
+        {
+          "oracle": "source_observations",
+          "source_paths": [
+            "cli.py",
+            "search.py",
+            "guards.py",
+            "catalog.py",
+            "rank.py"
+          ],
+          "stage": "before"
+        }
+      ],
+      "operation": "flow-overview",
+      "oracle": "flow-stage-source",
+      "oracle_visible_to_solver": false,
+      "preparation": {
+        "initial_storage": "flat-v1",
+        "refresh_before_first_read": false,
+        "semantic_edits": [],
+        "source_root": "src",
+        "wiki_root": "wiki"
+      },
+      "project": "large",
+      "selector": "cli.py:main"
+    },
+    {
+      "disconfirming_outcomes": [
+        "Answerable symptom queries return no relevant target.",
+        "A discovery candidate is declared behaviorally verified."
+      ],
+      "execution": "opt-in-deterministic-evaluation",
+      "expected": {
+        "after": null,
+        "before": {
+          "classification": "candidate",
+          "decisive_followup": "exact-source-inspection",
+          "query_ids": [
+            "S7",
+            "P7"
+          ],
+          "targets": [
+            "source:rank.py"
+          ]
+        }
+      },
+      "id": "G05",
+      "mutation": {
+        "kind": "none"
+      },
+      "observation_steps": [
+        {
+          "api": "search_wiki",
+          "kwargs": {
+            "limit": 100,
+            "mode": "ranked"
+          },
+          "query_ids": [
+            "S7",
+            "P7"
+          ],
+          "stage": "before"
+        },
+        {
+          "distinct_cutoff": 5,
+          "oracle": "score_retrieval",
+          "stage": "before"
+        }
+      ],
+      "operation": "retrieval",
+      "oracle": "retrieval-targets",
+      "oracle_visible_to_solver": false,
+      "preparation": {
+        "initial_storage": "flat-v1",
+        "refresh_before_first_read": false,
+        "semantic_edits": [],
+        "source_root": "src",
+        "wiki_root": "wiki"
+      },
+      "project": "large",
+      "selector": "rank.py:rank_records"
+    }
+  ],
+  "content_policy": {
+    "baseline_guides": "fixtures.baseline_guides; installed explicitly by driver",
+    "content_treatment": "separate identity and authoring cost",
+    "provider_only": "identical retained authored and generated bytes"
+  },
+  "evidence_kind": "owned-synthetic-deterministic-evaluation",
+  "field_evidence_established": false,
+  "gates": {
+    "callers": {
+      "invented_negative_control_edges": 0,
+      "required_common_edges_resolved": true,
+      "runtime_completeness_claim": false
+    },
+    "compact": {
+      "all_decisive_facts_and_gaps_preserved": true,
+      "max_tiny_estimated_tokens": 1000,
+      "min_tiny_canonical_v2_reduction_fraction": 0.5,
+      "size_miss": "keep-opt-in"
+    },
+    "correctness": {
+      "hidden_read_mutations": 0,
+      "invented_relationships": 0,
+      "required_behavior_pass_fraction": 1.0,
+      "unknown_cannot_be_success": true
+    },
+    "documentation_triage": {
+      "min_actionable_fraction": 0.8,
+      "required_implementation_changes_surfaced_fraction": 1.0
+    },
+    "implementation_review": {
+      "body_edit_detected": true,
+      "review_persists": true,
+      "stale_acknowledgment_rejected": true,
+      "unrelated_declaration_unchanged": true
+    },
+    "model_productivity": {
+      "conditional_on_admitted_isolated_host": true,
+      "min_median_total_token_or_time_reduction_fraction": 0.15,
+      "no_model_run": "unmeasured",
+      "no_observed_accepted_quality_loss": true
+    },
+    "performance": {
+      "and_exceeds_seconds": 0.05,
+      "cold_repetitions": 1,
+      "disk_cache": "uncontrolled",
+      "investigate_if_median_regression_exceeds_fraction": 0.1,
+      "matched_scope_required": true,
+      "warm_repetitions": 5
+    },
+    "retrieval": {
+      "development_only_tuning": true,
+      "exact_top_one_fraction": 1.0,
+      "failure": "retain-existing-default",
+      "heldout_evaluations_per_declared_candidate": 1,
+      "max_precision_at_five_decline": 0.05,
+      "min_heldout_answerable_recall_at_five_improvement": 0.1,
+      "unanswerable_definitive_claims": 0
+    }
+  },
+  "large_modules": 96,
+  "model_execution_established": false,
+  "preparation": {
+    "bootstrap": {
+      "depth": "full",
+      "skip_data_flow": false,
+      "skip_dependencies": false,
+      "skip_flows": false,
+      "skip_workflows": false
+    },
+    "guides": "baseline_guides(project); identical retained bytes in every provider arm",
+    "read_mutation_allowed": false,
+    "source_root": "src",
+    "sync_cli": [
+      "sync",
+      "--src-dir",
+      "src",
+      "--wiki-dir",
+      "wiki",
+      "--no-plugins"
+    ],
+    "wiki_root": "wiki"
+  },
+  "projects": {
+    "large": {
+      "guides_sha256": {
+        "index.md": "6b18d489d0299b0dae0ed46380127fae4ad35563eb2148f9e36385b47ac7cd82"
+      },
+      "label": "deterministic larger owned Python fixture",
+      "origin": "owned synthetic fixture",
+      "source_bytes": 32398,
+      "source_files": 102,
+      "source_sha256": {
+        "catalog.py": "ea4104989952b1dd6b31214741e3e0363fcecd75d72aadd939d2fa5ad5e9e1c9",
+        "cli.py": "da649b7161a994b9116e39e8ba48ee7c0f97b28928f3058366655ac792fd891a",
+        "guards.py": "ade2600adbefdd171078f0228fbd1dcb74162d2519aa24fef3ea36fd2efdff98",
+        "parts/__init__.py": "c1713068eaf6c46ea2293c2e4d6782395b4a830369cbbd3547073657d24f6f80",
+        "parts/part_000.py": "9cc62a0cc6f5eabbd7463688d80b5b4ede01880e35787045ece04bc621483671",
+        "parts/part_001.py": "66f47fee0f00bbc54a5413848b463fee1ba91376878aec2e3e696f702a8d5c3c",
+        "parts/part_002.py": "5d3616b1dbcad864817e5ea412887b1c751ef43b184b5243ef50ba53e5190d04",
+        "parts/part_003.py": "2d95a95da8bc7db03edc02fd92d6c3aed645d0c3d9df8d23cf4133b7d72f3e8a",
+        "parts/part_004.py": "5dad3cdd04f28af2ff63f4c89cfeacb2b783419aaf2e3a54324029fba0d9c08e",
+        "parts/part_005.py": "81b1ba43b981e5b5a420d806a4567cfefd897f8e05dd32f8b540db236e153e1a",
+        "parts/part_006.py": "5c85fb097b9c8e7aeed58a20508cc7b15dfddd1026bc81d08e31fbc1185ed659",
+        "parts/part_007.py": "222a82e80ad8d0916375bed1dff9a80b39e6fc4a37647e7ae9381b5f54a30c85",
+        "parts/part_008.py": "6c01b95b65af5c0591a02acdae6f8e1ac557088a8947ae561684b7c8dfb6f568",
+        "parts/part_009.py": "144fc5e7430703f1b46774668a892decaf7f2bd696f82baf548cf4c00de0ca88",
+        "parts/part_010.py": "3e46a02faed9d685ec54924e868ca59bae39cae1add5aa7d279087dc4499165a",
+        "parts/part_011.py": "5511e4fbe65f1e136c1163860e6bf6577bf52f768495956250e9cd92cccb2896",
+        "parts/part_012.py": "897e637f5049dacf4156e12f52dd8137dfe90268b75f674ce747550df7548c79",
+        "parts/part_013.py": "497000cd22125e1371e497f1d21f72fb9e6ec716e03c14c44c704900f728325f",
+        "parts/part_014.py": "fc2a46fdf1e99e143e4cd13a7224272b52c0b5d6c521a71007f3191222bb9e6a",
+        "parts/part_015.py": "4c6282232a7bf6214dac3b491703eb615d3241524cfeb07ecde35dbac7fdfe67",
+        "parts/part_016.py": "565d23f973f20a40c6dbf08da55beda1342a9a8bebe1e43c5b67bf77a1f42eed",
+        "parts/part_017.py": "ea5649f88d2429a9896c3f7aac2441453de218e2cad6e70d9524e4fea5bc33f4",
+        "parts/part_018.py": "d141182a519ed9ee7cce28a429d74e8e7b88a6ba0ad5f0ce32722f031b2daa54",
+        "parts/part_019.py": "6f75000cb1dfba77154d448110213fc993c94f9bc4b15ce344801bc40283ec1c",
+        "parts/part_020.py": "8d3ae5f4695a2c04f51a30faa0b7041d3b465adda50fe383668e60edad69e8b0",
+        "parts/part_021.py": "0e5608c5b971557181af7ec74e0f67f63e8d184c9308fc0dd9573a0b76777433",
+        "parts/part_022.py": "f7b010e8d4f241abf825ba1218409338f4bc5f8f0a89ed8e541a5cd84cb4ce44",
+        "parts/part_023.py": "86ff199a3fbe3ebac4c9401f443334d92c21584cd591f8ce71f82ab33021f7df",
+        "parts/part_024.py": "2ae0788a665f6fc1be25197e9ea390bb131fe836a60f6e107b19eeb9b7233b20",
+        "parts/part_025.py": "8ff8957a08d85171b8f50577fe7325b6e8c46f616b4dc7d2eaf6a0a44e9a7d8e",
+        "parts/part_026.py": "73c00be8e3fe9e1f68c8d41055a6c1c20d24fcbbbbbd40175c85c1278184283c",
+        "parts/part_027.py": "1698c1762140d11e35d090f6f47e2e5f80837e294c113774e2cf1a3a574c4d34",
+        "parts/part_028.py": "03eedb570cf6b0514be8c4540f10f9d94e2bcf7555988270acb1db8c1ed42db7",
+        "parts/part_029.py": "d403a2935a87cb8122eca46e8eefe49890c4835dc846ecbabd956d1d79a7c957",
+        "parts/part_030.py": "7586e7b386f4f5b9049ac91933bfe15f848b1b41b62f9bf70d179448b0a926e0",
+        "parts/part_031.py": "d305ed13c71a0e3dd0a96c6877001c0ae77ae1723360a51d64dde8d0a4acc15d",
+        "parts/part_032.py": "6cfe1bb7c19950625cadad5731e38814a9c3d78fb760a7bd629999f291e966cb",
+        "parts/part_033.py": "4752002a0bcf3fd8543796505b3a3d0847eec9e055fa574065e10255a9f283d7",
+        "parts/part_034.py": "36863a4c75ec10b0b92d2a40764130f5eca05d0d5ce497c44806f531120550b9",
+        "parts/part_035.py": "cc5013160994ec235c13db672952a7397195ad574f85842792d2db26ac5483e8",
+        "parts/part_036.py": "4d9e8e7067aa4d74670e053e8ea6fadf5262a7c5cba68e2a65a48858b09fe8e1",
+        "parts/part_037.py": "87b1051a2bde97466135514dc6aa6f6bc256a81ada68d4ae3ecb2167bb3e2be4",
+        "parts/part_038.py": "009de467682eb39633d788056a9e27384c5e767ded90c58b47208be8444b3d33",
+        "parts/part_039.py": "93f080f52dcb91147a1bb72c53c83c522ce82c711b33da582f23d96d18a509bd",
+        "parts/part_040.py": "6bf7a00b67aa70e5180e4451e40e53086aa5e0527ed2c0cb65452f8b3b7790f5",
+        "parts/part_041.py": "99e291236b4b437c48cbc09436c970fbe80a75854b8df494585bb5efb15ba56c",
+        "parts/part_042.py": "08f1ffdd866d2414e52b26c07b456e4b8e21cd2484f53c4bdc1b9bfdc262a722",
+        "parts/part_043.py": "2db833b0151728565708a0ecdc80e5e39f010e5f95f8ed01fd4fae96a7a256ff",
+        "parts/part_044.py": "340e0d93f6b5c20e947d3ea7e38f91780bffcd3d0d0f56764fabe79b9b6d1018",
+        "parts/part_045.py": "f553605de61a8734340258d2a1d4be3610251572ff89060b66ef47d2587aafe5",
+        "parts/part_046.py": "198af28c1a1d98bb1bfd39aca360a0416588b95e8157000019048af3b15ff3d4",
+        "parts/part_047.py": "bab76e8dfbc93b5ac64218156888e2ed2e7d7d646fe478313c1d6c0d09124d16",
+        "parts/part_048.py": "06ea2eb6cac988c27b858abbc0847271d96d0a84118c6f02a80c599d5d0fcf27",
+        "parts/part_049.py": "01e80668f976a2dfb71dbc3fae193202a97cf4cdc8462d85365c2837db9cc5cf",
+        "parts/part_050.py": "5d163f83fe8398db8cb1112ecf98f21dfee08c5046f5b8e7b3557ec549400e8e",
+        "parts/part_051.py": "15f06a959a5cafc36b0d3d117453a86fefd2bec4afb0f2de8d2f9ca3835b1e42",
+        "parts/part_052.py": "f51c8b312fb0766188b566e2be73deec38c2c29acac972350267b71e4dbded0b",
+        "parts/part_053.py": "f2603d51c0a114112b1c75db001d251bd2503a97c2c96b282951960897f9e470",
+        "parts/part_054.py": "af3ee229248caada2e6fbb3f43e2db2f511d9dbc98eca5b0c631a430464cef36",
+        "parts/part_055.py": "d7a6e8b0f9beb0ccdad392b9dade06fc49d6d79296052bf806ad72c62f354486",
+        "parts/part_056.py": "e3d43acb6a74a07bdb6366a744a5ee6640e878b71541eac8f71514b35cb8c616",
+        "parts/part_057.py": "d34169eff31a0da2aacd54981312df97d16746024e8c818503503420755bd631",
+        "parts/part_058.py": "a927124511e9359d7553e2a854bda13b1bc20c9d27eed7fff34c119a35211c19",
+        "parts/part_059.py": "e82b50fd423d63be67e5e337fc501e9fdb3201d4d9ebf1c70abf63f3c29f7685",
+        "parts/part_060.py": "44a7427d92401a5e677338416c654e6ed3397f084596175b7fa3e02b4694f045",
+        "parts/part_061.py": "e26a6c4e1d56ae17edf533984e63fa1fa8f571db136206be9368681f2ff5e00c",
+        "parts/part_062.py": "297343d0e19ba0b5782cc0380ac9ffc682460cfd1d74caec8fbfd3498585740c",
+        "parts/part_063.py": "a043625fe407420fdde64a8ac9c04b46508b92ee4437232bacf2a2f07428c43a",
+        "parts/part_064.py": "e6cc9d97a5ee55f2d75792ab4fea39a15ba94519315fafc7de11de62000863b2",
+        "parts/part_065.py": "3e29bd0a98c3a02b4d15406b6fd826f67509344ed6e346bc9c417dbef57c8ce8",
+        "parts/part_066.py": "0cb381a7e711e7d0fc91308d9182c6a73dfeb1a8472d69ceb45db02f534b5146",
+        "parts/part_067.py": "0ca3866486b7f38829af4a4665f4b76625e95b42639efb1492a0e10794d9d918",
+        "parts/part_068.py": "8589f2b765b752a54b5ed4be54bf7bf922b7f968f1bd1ab84228e7b5bc2a62ee",
+        "parts/part_069.py": "1e8ea57e5b5acff4e7fb2ce508bee7645ebf55b2963f6353eef05e297d7a151a",
+        "parts/part_070.py": "bf8fcbcf7fa984da3583a8dd10c50654483a980cb6d7f5786e635a922c1300d8",
+        "parts/part_071.py": "025faef195282b7030951e99f7f60c7c0a61ad233023ea631b21e9f93193708d",
+        "parts/part_072.py": "18329809ed8dc415b9b3c72b236581a2b9a1b245fff6efd1d1073e1dd75cdeac",
+        "parts/part_073.py": "2f8fb810cdefcea80b8f145c36742054384140384c2db0b639abec777befbd44",
+        "parts/part_074.py": "feab34b26ce1a097e20443f8c44d0f09de1809164fae8106b3fdd94ee62a19f3",
+        "parts/part_075.py": "65e18bcaf6c0d7ee973d4f4213a0b02d37d5c0d6c765684c68aa0f3ed4adc509",
+        "parts/part_076.py": "d30808284ed6b146d8b68f39ea18cbaa90d7aa27737eec2b7592f6d1432684ba",
+        "parts/part_077.py": "3c160589f899a05c7c9dc619791779a132c4d4d3f5a98e1b67a8d1a6846c82ef",
+        "parts/part_078.py": "323b22a838025dfc8f3fa26281ce6e3b8b3d1da206cd56f4810a94642ba10bc6",
+        "parts/part_079.py": "33bbfa69f4d1f7a7adf47fdeea45e2f937d2812897327b77d3eb1451c7277458",
+        "parts/part_080.py": "499c646fce14a39280be0c6eb21437f2ab66fd73dfa5bd5f52f1404587f8e239",
+        "parts/part_081.py": "6e9d5b94c3eb283fb0bb752b40d78bae26deb772494b29075553218b477cc6f6",
+        "parts/part_082.py": "7e81f2d618c0a5c43472ba92540936adc4cdf6d758e9d60ab8661bc153ed188f",
+        "parts/part_083.py": "831c076260968e84ca0b261c05944aa7ade64c0056f1f5c452579616c67a50f9",
+        "parts/part_084.py": "a8daeb7c56d42e9e644f2b476c1cf321a3425015afda20bb364648b28cba2b1c",
+        "parts/part_085.py": "d99cb0523987978750c58b1e3dfd239d21c45f1846d35475166c867eabaf4975",
+        "parts/part_086.py": "98a47fe81f384545f0391ec3df8f3840a05e0f7349778af8cd17fc27019032d8",
+        "parts/part_087.py": "3799fa2ad0b9e466f6d8677be312036b9bbade0e0d75a7062f9c0966527fa421",
+        "parts/part_088.py": "72209d7fc765342a10ddaed381227c9353a0cb4181b7427fa47e1ac0dab615ae",
+        "parts/part_089.py": "e60ab2e83e4f1d0c376ba2fd95223230570e1d23d3c3648a80a35ce8c2abac58",
+        "parts/part_090.py": "c7b706df7efc6da5bfdfa3169b123aff1f0cae6bef483a690400639e2189ad88",
+        "parts/part_091.py": "530954889ebf9e0c7d2ac8798ea080eb8778a7350f8d76b9eb6f0f848517970b",
+        "parts/part_092.py": "61a08db4b49480101300a41c30dcc8de55903fe00f88a76b2688db4c15b59cd1",
+        "parts/part_093.py": "d09c5cb7eb8137b6f5e2f29ff6fd6f30c59130829f8315cd97cf5222b0f96269",
+        "parts/part_094.py": "344d0dd6fddcb1185b8c9403a695e6a695549f77826e46fec140a7ba3fc7c504",
+        "parts/part_095.py": "185b2271b5dea8173f446d7a4307ffb346d0ef6dc6aee8f56d4566df72064b28",
+        "rank.py": "9103bdec8190283d5c42376b1ed1cb9db2fd5ebf2ac61b8f676a27c89b5c5365",
+        "search.py": "06e436a9a5efeb9cd18e5a3e0857c6695a86bdd0b61b8504c5331393a0a52728"
+      }
+    },
+    "library": {
+      "guides_sha256": {
+        "index.md": "476a06badf5a0990f24cf53368ea22173ccf2ac1533f0270892623535b9a0fb7"
+      },
+      "label": "small owned Python library",
+      "origin": "owned synthetic fixture",
+      "source_bytes": 1539,
+      "source_files": 6,
+      "source_sha256": {
+        "client.py": "daf5a305e53fbbdf8fe4713d9a20c1c9262dbbde228c87ecdda28d4b16f0d41a",
+        "policy.py": "0daa350db1930fce8475ce096fe561c7ed5802cb70fda47660db67f5e08e57ad",
+        "retry.py": "977497cebb777db8965da9356446a42b7bf9552bed9ab88ff765599440faf67b",
+        "scope.py": "facdd891f779d3970fcd28be6c232e82283c17d276f1daa6ee6a8d36dae9c81b",
+        "text.py": "9959048106804bb29740006919b958f799e2c56a93c5e6c8590ed4f8914e77d9",
+        "validation.py": "32940d15ce296c7cd43950c8a3e4c38acfc2bc66ccd1946789732a3ea2260b4b"
+      }
+    },
+    "service": {
+      "guides_sha256": {
+        "index.md": "093f3a761be637d0472ea0723863ed114ad102fbf39821ad4ca2c08ddd129883"
+      },
+      "label": "owned multi-module Python service",
+      "origin": "owned synthetic fixture",
+      "source_bytes": 2192,
+      "source_files": 6,
+      "source_sha256": {
+        "cli.py": "0ca796f43ba383ddefa9ef4b9eaa8356eae047d012fd6db2a9aa03f680d23da9",
+        "dynamic.py": "ca4261e6f2bb2df680edf12e9e238371199d4872132e0566593c2abaee9d50ef",
+        "guards.py": "1faacb093169ee6fb02e6a0915b7f9a4f5ae7e3a68b7d4c16aabf555f0c93b6c",
+        "handlers.py": "103f98964c7ee3d5c3ea151519b38715be7cdd4efc5b55fb9d07f99cb8de9df9",
+        "policy.py": "0daa350db1930fce8475ce096fe561c7ed5802cb70fda47660db67f5e08e57ad",
+        "store.py": "e5a062f2fde586c9fa5b1eca7f3016db488a4d9e4fdcc68eebead8bee30274c5"
+      }
+    }
+  },
+  "retrieval": {
+    "cutoff": 5,
+    "development_ids": [
+      "E1",
+      "E2",
+      "E4",
+      "E6",
+      "S1",
+      "S4",
+      "S5",
+      "S7",
+      "M1",
+      "M2",
+      "M4",
+      "M7",
+      "P1",
+      "P4",
+      "P5",
+      "P7",
+      "U1",
+      "U3",
+      "U4",
+      "U6"
+    ],
+    "heldout_ids": [
+      "E3",
+      "E5",
+      "E7",
+      "E8",
+      "S2",
+      "S3",
+      "S6",
+      "S8",
+      "M3",
+      "M5",
+      "M6",
+      "M8",
+      "P2",
+      "P3",
+      "P6",
+      "P8",
+      "U2",
+      "U5",
+      "U7",
+      "U8"
+    ],
+    "queries": [
+      {
+        "category": "exact-symbol",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:policy.py"
+        ],
+        "expected_top_one": "source:policy.py",
+        "id": "E1",
+        "project": "library",
+        "query": "cap",
+        "split": "development"
+      },
+      {
+        "category": "exact-symbol",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:retry.py"
+        ],
+        "expected_top_one": "source:retry.py",
+        "id": "E2",
+        "project": "library",
+        "query": "retry",
+        "split": "development"
+      },
+      {
+        "category": "exact-symbol",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:text.py"
+        ],
+        "expected_top_one": "source:text.py",
+        "id": "E3",
+        "project": "library",
+        "query": "normalize_tag",
+        "split": "held-out"
+      },
+      {
+        "category": "exact-symbol",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:handlers.py"
+        ],
+        "expected_top_one": "source:handlers.py",
+        "id": "E4",
+        "project": "service",
+        "query": "list_items",
+        "split": "development"
+      },
+      {
+        "category": "exact-symbol",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:store.py"
+        ],
+        "expected_top_one": "source:store.py",
+        "id": "E5",
+        "project": "service",
+        "query": "Store.save",
+        "split": "held-out"
+      },
+      {
+        "category": "exact-symbol",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:search.py"
+        ],
+        "expected_top_one": "source:search.py",
+        "id": "E6",
+        "project": "large",
+        "query": "search_records",
+        "split": "development"
+      },
+      {
+        "category": "exact-symbol",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:rank.py"
+        ],
+        "expected_top_one": "source:rank.py",
+        "id": "E7",
+        "project": "large",
+        "query": "rank_records",
+        "split": "held-out"
+      },
+      {
+        "category": "exact-symbol",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:cli.py"
+        ],
+        "expected_top_one": "source:cli.py",
+        "id": "E8",
+        "project": "large",
+        "query": "dispatch",
+        "split": "held-out"
+      },
+      {
+        "category": "symptom",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:policy.py"
+        ],
+        "expected_top_one": null,
+        "id": "S1",
+        "project": "library",
+        "query": "Why is the final permitted batch item missing?",
+        "split": "development"
+      },
+      {
+        "category": "symptom",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:retry.py"
+        ],
+        "expected_top_one": null,
+        "id": "S2",
+        "project": "library",
+        "query": "A success on the last retry still raises",
+        "split": "held-out"
+      },
+      {
+        "category": "symptom",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:text.py"
+        ],
+        "expected_top_one": null,
+        "id": "S3",
+        "project": "library",
+        "query": "Tags differ only by casing or surrounding spaces",
+        "split": "held-out"
+      },
+      {
+        "category": "symptom",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:guards.py"
+        ],
+        "expected_top_one": null,
+        "id": "S4",
+        "project": "service",
+        "query": "A valid request is rejected for an unknown tenant",
+        "split": "development"
+      },
+      {
+        "category": "symptom",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:store.py"
+        ],
+        "expected_top_one": null,
+        "id": "S5",
+        "project": "service",
+        "query": "The same request saves duplicate records",
+        "split": "development"
+      },
+      {
+        "category": "symptom",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:handlers.py"
+        ],
+        "expected_top_one": null,
+        "id": "S6",
+        "project": "service",
+        "query": "Listing items ignores the requested page size",
+        "split": "held-out"
+      },
+      {
+        "category": "symptom",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:rank.py"
+        ],
+        "expected_top_one": null,
+        "id": "S7",
+        "project": "large",
+        "query": "Search returns irrelevant results for a long question",
+        "split": "development"
+      },
+      {
+        "category": "symptom",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:cli.py",
+          "source:search.py"
+        ],
+        "expected_top_one": null,
+        "id": "S8",
+        "project": "large",
+        "query": "Tracing search never reaches ranking or output",
+        "split": "held-out"
+      },
+      {
+        "category": "error-message",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:retry.py"
+        ],
+        "expected_top_one": null,
+        "id": "M1",
+        "project": "library",
+        "query": "retry budget exhausted",
+        "split": "development"
+      },
+      {
+        "category": "error-message",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:validation.py"
+        ],
+        "expected_top_one": null,
+        "id": "M2",
+        "project": "library",
+        "query": "batch limit must be positive",
+        "split": "development"
+      },
+      {
+        "category": "error-message",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:text.py"
+        ],
+        "expected_top_one": null,
+        "id": "M3",
+        "project": "library",
+        "query": "tag cannot be blank",
+        "split": "held-out"
+      },
+      {
+        "category": "error-message",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:guards.py"
+        ],
+        "expected_top_one": null,
+        "id": "M4",
+        "project": "service",
+        "query": "unknown tenant",
+        "split": "development"
+      },
+      {
+        "category": "error-message",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:store.py"
+        ],
+        "expected_top_one": null,
+        "id": "M5",
+        "project": "service",
+        "query": "write refused",
+        "split": "held-out"
+      },
+      {
+        "category": "error-message",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:handlers.py"
+        ],
+        "expected_top_one": null,
+        "id": "M6",
+        "project": "service",
+        "query": "invalid item limit",
+        "split": "held-out"
+      },
+      {
+        "category": "error-message",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:catalog.py"
+        ],
+        "expected_top_one": null,
+        "id": "M7",
+        "project": "large",
+        "query": "catalog exceeds selected byte budget",
+        "split": "development"
+      },
+      {
+        "category": "error-message",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:search.py"
+        ],
+        "expected_top_one": null,
+        "id": "M8",
+        "project": "large",
+        "query": "query cannot be blank",
+        "split": "held-out"
+      },
+      {
+        "category": "paraphrase",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:policy.py"
+        ],
+        "expected_top_one": null,
+        "id": "P1",
+        "project": "library",
+        "query": "Keep at most N records from the input",
+        "split": "development"
+      },
+      {
+        "category": "paraphrase",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:retry.py"
+        ],
+        "expected_top_one": null,
+        "id": "P2",
+        "project": "library",
+        "query": "Try the operation again after a transient failure",
+        "split": "held-out"
+      },
+      {
+        "category": "paraphrase",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:text.py"
+        ],
+        "expected_top_one": null,
+        "id": "P3",
+        "project": "library",
+        "query": "Strip spaces and normalize tag casing",
+        "split": "held-out"
+      },
+      {
+        "category": "paraphrase",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:handlers.py"
+        ],
+        "expected_top_one": null,
+        "id": "P4",
+        "project": "service",
+        "query": "Return a bounded page of available items",
+        "split": "development"
+      },
+      {
+        "category": "paraphrase",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:store.py"
+        ],
+        "expected_top_one": null,
+        "id": "P5",
+        "project": "service",
+        "query": "Prevent saving the same request twice",
+        "split": "development"
+      },
+      {
+        "category": "paraphrase",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:guards.py"
+        ],
+        "expected_top_one": null,
+        "id": "P6",
+        "project": "service",
+        "query": "Permit writes only for recognized tenants",
+        "split": "held-out"
+      },
+      {
+        "category": "paraphrase",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:rank.py"
+        ],
+        "expected_top_one": null,
+        "id": "P7",
+        "project": "large",
+        "query": "Put the most relevant matches first",
+        "split": "development"
+      },
+      {
+        "category": "paraphrase",
+        "definitive_answer_allowed": true,
+        "disconfirming_outcome": "No relevant source owner in the first five distinct targets.",
+        "expected_targets": [
+          "source:cli.py"
+        ],
+        "expected_top_one": null,
+        "id": "P8",
+        "project": "large",
+        "query": "Choose an operation from the command name",
+        "split": "held-out"
+      },
+      {
+        "category": "unanswerable",
+        "definitive_answer_allowed": false,
+        "disconfirming_outcome": "Definitive unsupported behavior claim.",
+        "expected_targets": [],
+        "expected_top_one": null,
+        "id": "U1",
+        "project": "library",
+        "query": "Does the batch cap guarantee remote writes succeed?",
+        "split": "development"
+      },
+      {
+        "category": "unanswerable",
+        "definitive_answer_allowed": false,
+        "disconfirming_outcome": "Definitive unsupported behavior claim.",
+        "expected_targets": [],
+        "expected_top_one": null,
+        "id": "U2",
+        "project": "library",
+        "query": "Which lock makes retry thread safe?",
+        "split": "held-out"
+      },
+      {
+        "category": "unanswerable",
+        "definitive_answer_allowed": false,
+        "disconfirming_outcome": "Definitive unsupported behavior claim.",
+        "expected_targets": [],
+        "expected_top_one": null,
+        "id": "U3",
+        "project": "service",
+        "query": "Where is transaction rollback implemented?",
+        "split": "development"
+      },
+      {
+        "category": "unanswerable",
+        "definitive_answer_allowed": false,
+        "disconfirming_outcome": "Definitive unsupported behavior claim.",
+        "expected_targets": [],
+        "expected_top_one": null,
+        "id": "U4",
+        "project": "service",
+        "query": "How are JWT signatures verified?",
+        "split": "development"
+      },
+      {
+        "category": "unanswerable",
+        "definitive_answer_allowed": false,
+        "disconfirming_outcome": "Definitive unsupported behavior claim.",
+        "expected_targets": [],
+        "expected_top_one": null,
+        "id": "U5",
+        "project": "service",
+        "query": "What queue retries failed writes?",
+        "split": "held-out"
+      },
+      {
+        "category": "unanswerable",
+        "definitive_answer_allowed": false,
+        "disconfirming_outcome": "Definitive unsupported behavior claim.",
+        "expected_targets": [],
+        "expected_top_one": null,
+        "id": "U6",
+        "project": "large",
+        "query": "Which vector database supplies neural similarity?",
+        "split": "development"
+      },
+      {
+        "category": "unanswerable",
+        "definitive_answer_allowed": false,
+        "disconfirming_outcome": "Definitive unsupported behavior claim.",
+        "expected_targets": [],
+        "expected_top_one": null,
+        "id": "U7",
+        "project": "large",
+        "query": "Which background watcher refreshes the search index?",
+        "split": "held-out"
+      },
+      {
+        "category": "unanswerable",
+        "definitive_answer_allowed": false,
+        "disconfirming_outcome": "Definitive unsupported behavior claim.",
+        "expected_targets": [],
+        "expected_top_one": null,
+        "id": "U8",
+        "project": "large",
+        "query": "How is the complete runtime caller graph proven?",
+        "split": "held-out"
+      }
+    ],
+    "scoring": {
+      "empty_answerable_return": "recall zero; precision null when entire denominator zero",
+      "exact": "top-one owner equality for every exact-symbol query",
+      "precision": "micro relevant returned distinct targets / returned distinct targets, answerable only",
+      "recall": "micro recovered expected targets / expected targets, answerable only",
+      "target_unit": "distinct predeclared source owner",
+      "unanswerable": "separate returned-candidate and definitive-claim counts; candidates are not answers"
+    },
+    "split_rule": "fixed recorded IDs; four development and four held-out queries per category",
+    "target_aliases": {
+      "large": {
+        "source:catalog.py": [
+          "modules/catalog.md"
+        ],
+        "source:cli.py": [
+          "modules/cli.md"
+        ],
+        "source:guards.py": [
+          "modules/guards.md"
+        ],
+        "source:rank.py": [
+          "modules/rank.md"
+        ],
+        "source:search.py": [
+          "modules/search.md"
+        ]
+      },
+      "library": {
+        "source:client.py": [
+          "modules/client.md"
+        ],
+        "source:policy.py": [
+          "modules/policy.md",
+          "entities/Batch.md"
+        ],
+        "source:retry.py": [
+          "modules/retry.md"
+        ],
+        "source:scope.py": [
+          "modules/scope.md"
+        ],
+        "source:text.py": [
+          "modules/text.md"
+        ],
+        "source:validation.py": [
+          "modules/validation.md"
+        ]
+      },
+      "service": {
+        "source:cli.py": [
+          "modules/cli.md"
+        ],
+        "source:dynamic.py": [
+          "modules/dynamic.md",
+          "entities/OtherBatch.md"
+        ],
+        "source:guards.py": [
+          "modules/guards.md"
+        ],
+        "source:handlers.py": [
+          "modules/handlers.md"
+        ],
+        "source:policy.py": [
+          "modules/policy.md",
+          "entities/Batch.md"
+        ],
+        "source:store.py": [
+          "modules/store.md",
+          "entities/Store.md"
+        ]
+      }
+    }
+  },
+  "schema_version": "developer-value-corpus/v1",
+  "seed": 261003,
+  "visibility": {
+    "solver_allow": [
+      "src/**",
+      "wiki/**",
+      "prompt.txt"
+    ],
+    "solver_deny": [
+      "corpus.json",
+      "oracles.py",
+      "expectations.json",
+      "prior-runs/**",
+      "patches/**",
+      "sessions/**"
+    ]
+  }
+}

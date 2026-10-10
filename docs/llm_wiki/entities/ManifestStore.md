@@ -1,6 +1,6 @@
 # ManifestStore
 
-**Location:** `src/llm_wiki_cli/services/manifest_storage.py:77`
+**Location:** `src/llm_wiki_cli/services/manifest_storage.py:82`
 **Kind:** Class
 **Bases:** —
 **Module:** [manifest_storage](../modules/manifest_storage.md)
@@ -9,7 +9,7 @@
 
 ## Description
 
-Carries the bounded v6 root bytes and immutable catalog bytes produced from a complete logical v5 manifest. The owning writer publishes catalog objects before replacing the single manifest commit root.
+Carries bounded indexed manifest root bytes and immutable catalog bytes. Legacy owners use physical v6 with logical v5; adopted ordinary-maintenance owners use physical v8 with logical v7. The owning writer publishes catalog objects before replacing the manifest commit root.
 
 ## Attributes
 

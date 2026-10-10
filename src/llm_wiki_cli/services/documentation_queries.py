@@ -242,6 +242,8 @@ def _minimal_oversized_query_result(
             "records_returned": 0,
         },
     }
+    if isinstance(result.get("coverage"), Mapping) and result["coverage"].get("schema_version") == "llm-wiki-static-call-coverage/v1":
+        fallback["coverage"] = dict(result["coverage"])
     for name in (
         "cost",
         "direction",
@@ -537,13 +539,27 @@ def _edge_pair(edge: object) -> Optional[tuple[str, str]]:
 
 def _call_endpoint_ref(endpoint: Mapping[str, Any], edge: Mapping[str, Any]) -> dict:
     filepath = endpoint.get("file")
-    return {
+    result = {
         "file": filepath,
         "module": _module_name(str(filepath)) if filepath else None,
         "symbol": endpoint.get("symbol"),
         "kind": edge.get("kind", "unknown"),
         "line": edge.get("line", 0),
     }
+    for field in ("reason", "location", "constructor", "candidates", "resolution"):
+        if field in edge:
+            result[field] = _jsonable(edge[field])
+    constructor = result.get("constructor")
+    if isinstance(constructor, Mapping):
+        total_bytes = len(_canonical_json(constructor).encode("utf-8"))
+        if total_bytes > 4096:
+            compact = {key: constructor[key] for key in ("source_path", "line", "column", "receiver_origin") if key in constructor}
+            compact["truncated"] = True
+            compact["bounds"] = {"total_bytes": total_bytes, "limit_bytes": 4096, "omitted": True}
+            if len(_canonical_json(compact).encode("utf-8")) > 4096:
+                compact.pop("source_path", None)
+            result["constructor"] = compact
+    return result
 
 
 def _dedupe_sorted_all(records: Iterable[Mapping[str, Any]]) -> list[dict[str, Any]]:
@@ -848,11 +864,21 @@ class DocumentationGraphQueryService:
         limit: int = _DEFAULT_LIMIT,
         knowledge_view: Optional[KnowledgeReadView] = None,
         machine_verification: Optional[Mapping[str, Mapping[str, Any]]] = None,
+        inventory_result: object | None = None,
+        snapshot_call_inventory: bool = False,
     ):
         if isinstance(limit, bool) or not isinstance(limit, int) or limit < 1:
             raise DocumentationQueryError("limit must be a positive integer.")
+        if type(snapshot_call_inventory) is not bool or snapshot_call_inventory and (
+            inventory or inventory_result is not None or not isinstance(knowledge_view, KnowledgeReadView)
+        ):
+            raise DocumentationQueryError("Snapshot call scope requires an independent native view and no source inventory receipt.")
 
         self.limit = limit
+        # Preserve private captured metadata without altering public inventory.
+        self.inventory_result = inventory_result
+        self.knowledge_view = knowledge_view
+        self.snapshot_call_inventory = snapshot_call_inventory
         self.inventory = {
             _normalise_source_path(path, field="inventory path", required=False)
             or str(path).replace("\\", "/"): dict(data or {})
@@ -920,12 +946,25 @@ class DocumentationGraphQueryService:
             self._record_bound(result, f"flow.{path}", bounded)
         return result
 
+    def _static_call_coverage(self):
+        from .source_snapshot import SourceSnapshot
+        snapshot = getattr(self.inventory_result, "source_snapshot", None)
+        if isinstance(snapshot, SourceSnapshot):
+            scope = "selected-source" if snapshot.only_files is not None or snapshot.source_selection_policy is not None else "full-inventory"
+        elif self.snapshot_call_inventory:
+            scope = "snapshot"
+        else:
+            scope = "provided-inventory"
+        return {"schema_version": "llm-wiki-static-call-coverage/v1", "analysis_scope": scope,
+                "runtime_completeness": False, "limitations": ["static-call-resolution-does-not-claim-runtime-completeness"]}
+
     @_bounded_query_result
     def callers(self, symbol: object) -> dict[str, Any]:
         """Return bounded callers for exactly one callable symbol."""
         query = _require_query(symbol, "symbol")
         matches = self._callable_matches(query)
         result = self._selection_result(query, matches, "callable", None)
+        result["coverage"] = self._static_call_coverage()
         if not result["found"]:
             result["callable"] = None
             result["callers"] = []
@@ -950,6 +989,7 @@ class DocumentationGraphQueryService:
         query = _require_query(symbol, "symbol")
         matches = self._callable_matches(query)
         result = self._selection_result(query, matches, "callable", None)
+        result["coverage"] = self._static_call_coverage()
         if not result["found"]:
             result["callable"] = None
             result["callees"] = []
@@ -1422,6 +1462,16 @@ class DocumentationGraphQueryService:
         result["concept"] = (
             None if locator is None else self._compact_knowledge_concept(locator)
         )
+        report = getattr(self.knowledge_view, "maintenance_report", None)
+        if report is not None:
+            from urllib.parse import quote
+            paths = (
+                [self.concept_by_locator[locator]["document"]["canonical_path"]]
+                if locator is not None
+                else [path for path in report.by_path if query in {path, "llm-wiki://" + quote(path[:-3], safe="/-._~")}]
+            )
+            if len(paths) == 1:
+                result["maintenance"] = report.for_path(paths[0])
         return result
 
     @_bounded_query_result
@@ -1756,6 +1806,16 @@ class DocumentationGraphQueryService:
                 "returned": bounded_observations.returned,
             }
         )
+        implementation = self._implementation_payload(locator)
+        if implementation is not None:
+            evidence = result["evidence"]
+            assert isinstance(evidence, dict)
+            evidence["implementation"] = implementation
+        maintenance = self._maintenance_payload(locator)
+        if maintenance is not None:
+            evidence = result["evidence"]
+            assert isinstance(evidence, dict)
+            evidence["maintenance"] = maintenance
         self._record_bound(
             result,
             "evidence.relationships",
@@ -2236,6 +2296,12 @@ class DocumentationGraphQueryService:
             "lifecycle": concept.get("lifecycle"),
             "freshness": self._compact_knowledge_freshness(locator),
         }
+        implementation = self._implementation_payload(locator)
+        if implementation is not None:
+            result["implementation"] = implementation
+        maintenance = self._maintenance_payload(locator)
+        if maintenance is not None:
+            result["maintenance"] = maintenance
         extensions = concept.get("extensions", {})
         governance = (
             extensions.get(GOVERNANCE_EXTENSION_KEY)
@@ -2300,6 +2366,13 @@ class DocumentationGraphQueryService:
             "uid",
         )
         result = {name: compact[name] for name in allowed if name in compact}
+        if "implementation" in compact:
+            from .implementation_evidence import compact_implementation_summary
+
+            result["implementation"] = compact_implementation_summary(compact["implementation"])
+        if "maintenance" in compact:
+            from .maintenance_status import compact_maintenance_summary
+            result["maintenance"] = compact_maintenance_summary(compact["maintenance"])
         freshness = result.get("freshness")
         if isinstance(freshness, dict) and freshness.get("state") is None:
             freshness.update(
@@ -2310,6 +2383,21 @@ class DocumentationGraphQueryService:
                 }
             )
         return result
+
+    def _maintenance_payload(self, locator: str) -> dict[str, Any] | None:
+        report = getattr(self.knowledge_view, "maintenance_report", None)
+        if report is None:
+            return None
+        concept = self.concept_by_locator[locator]
+        return report.for_path(concept["document"]["canonical_path"])
+
+    def _implementation_payload(self, locator: str) -> dict[str, Any] | None:
+        """Project the comparison already evaluated by this read session."""
+        report = getattr(self.knowledge_view, "implementation_report", None)
+        if report is None:
+            return None
+        comparison = report.by_locator.get(locator)
+        return None if comparison is None else comparison.to_payload()
 
     def _compact_section(
         self,

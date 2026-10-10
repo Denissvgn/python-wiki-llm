@@ -16,66 +16,89 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as run
     participant p1 as validate_source_root
-    participant p2 as validate_path
-    participant p3 as PathValidationError
-    participant p4 as (…).resolve
-    participant p5 as Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    participant p6 as Path.cwd().resolve
-    participant p7 as resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
-    participant p8 as Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p9 as Path (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p10 as candidate.is_absolute (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p11 as Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p12 as candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p13 as resolved.is_dir
-    participant p14 as os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p15 as windows_current_user_sid
-    participant p16 as WindowsSecurityGuardError
-    participant p17 as _current_windows_user_sid
-    participant p18 as ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
-    participant p19 as ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)
-    participant p20 as wintypes.HANDLE (src/llm_wiki_cli/services…_current_windows_user_sid)
-    participant p21 as open_process_token
-    participant p22 as get_current_process
-    participant p23 as ctypes.byref (src/llm_wiki_cli/services…_current_windows_user_sid)
+    participant p2 as compare_openapi
+    participant p3 as print
+    participant p4 as json.dumps
+    participant p5 as render_markdown
+    participant p6 as SystemExit
+    participant p7 as validate_path
+    participant p8 as compare_exports
+    participant p9 as html.escape(…).replace
+    participant p10 as Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p11 as load_openapi_document
+    participant p12 as html.escape
+    participant p13 as Path (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p14 as lines.append
+    participant p15 as candidate.is_absolute (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p16 as ApiContractError
+    participant p17 as '\n'.join
+    participant p18 as Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p19 as candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p20 as PathValidationError
+    participant p21 as resolved.is_dir
+    participant p22 as os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p23 as windows_current_user_sid
+    participant p24 as isinstance (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p25 as getattr (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p26 as callable (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p27 as get_effective_uid
     p0->>p1: validate_source_root
-    p1->>p2: validate_path
-    p2->>p3: PathValidationError
-    p2-->>p4: (…).resolve
-    p2-->>p5: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    p2-->>p6: Path.cwd().resolve
-    p2-->>p5: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    p2-->>p7: resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
-    p2->>p3: PathValidationError
-    p1-->>p8: Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)
-    p1-->>p9: Path (src/llm_wiki_cli/config.py:validate_source_root)
-    p1-->>p10: candidate.is_absolute (src/llm_wiki_cli/config.py:validate_source_root)
-    p1-->>p11: Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
-    p1-->>p12: candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
-    p1->>p3: PathValidationError
-    p1-->>p13: resolved.is_dir
-    p1->>p3: PathValidationError
-    p1-->>p9: Path (src/llm_wiki_cli/config.py:validate_source_root)
-    p1-->>p14: os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
-    p1->>p15: windows_current_user_sid
-    p15->>p16: WindowsSecurityGuardError
-    p15->>p17: _current_windows_user_sid
-    p17-->>p18: ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
-    p17-->>p18: ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
-    p17-->>p19: ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)
-    p17-->>p19: ctypes.POINTER (src/llm_wiki_cli/services…_current_windows_user_sid)
-    p17-->>p20: wintypes.HANDLE (src/llm_wiki_cli/services…_current_windows_user_sid)
-    p17-->>p21: open_process_token
-    p17-->>p22: get_current_process
-    p17-->>p23: ctypes.byref (src/llm_wiki_cli/services…_current_windows_user_sid)
+    p0->>p2: compare_openapi
+    p0-->>p3: print(..., end=...)
+    p0-->>p4: json.dumps(report, ensure_ascii=False, sort_keys=True, indent=2)
+    p0->>p5: render_markdown
+    p0-->>p6: SystemExit(1)
+    p1->>p7: validate_path
+    p2->>p8: compare_exports
+    p5-->>p9: html.escape(…).replace('\n', ' ')
+    p1-->>p10: Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)
+    p2->>p11: load_openapi_document
+    p5-->>p12: html.escape(...)
+    p1-->>p13: Path (src/llm_wiki_cli/config.py:validate_source_root)(path)
+    p2->>p11: load_openapi_document
+    p5-->>p14: lines.append(...)
+    p1-->>p15: candidate.is_absolute (src/llm_wiki_cli/config.py:validate_source_root)
+    p2->>p16: ApiContractError
+    p5-->>p17: '\n'.join(lines)
+    p1-->>p18: Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
+    p1-->>p19: candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)(strict=True)
+    p1->>p20: PathValidationError
+    p1-->>p21: resolved.is_dir
+    p1->>p20: PathValidationError
+    p1-->>p13: Path (src/llm_wiki_cli/config.py:validate_source_root)(os.path.abspath(...))
+    p1-->>p22: os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)(candidate)
+    p1->>p23: windows_current_user_sid
+    p1-->>p24: isinstance (src/llm_wiki_cli/config.py:validate_source_root)(current_sid, str)
+    p1-->>p25: getattr (src/llm_wiki_cli/config.py:validate_source_root)(os, 'geteuid', None)
+    p1-->>p26: callable (src/llm_wiki_cli/config.py:validate_source_root)(get_effective_uid)
+    p1-->>p27: get_effective_uid
 ```
 
-> Call sequence diagram shows 30 of 495 interactions; 465 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 495 interactions; 465 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 11 of 206 (195 omitted); unresolved 8 of 183 (175 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/config.py:validate_path` | 3 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
+| `src/llm_wiki_cli/config.py:validate_path` | 3 | - | unresolved | 3 |
+| `src/llm_wiki_cli/config.py:validate_path` | 3 | - | external | 2 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 21 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 2 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_current_windows_user_sid` | 23 | - | external | 19 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_current_windows_user_sid` | 23 | - | unresolved | 4 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_current_windows_user_sid` | 23 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 5 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_windows_sid_string` | 49 | - | external | 8 |
+> Omission summary shows 8 of 81 groups; 73 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

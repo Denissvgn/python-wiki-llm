@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [obsidian_cmd](../modules/obsidian_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 43 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 50 more
 
 **Complete modules touched:**
 
@@ -18,6 +18,7 @@
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [go_calls](../modules/go_calls.md)
 - [immutable](../modules/immutable.md)
+- [implementation_evidence](../modules/implementation_evidence.md)
 - [imports](../modules/imports.md)
 - [inventory_cache](../modules/inventory_cache.md)
 - [io](../modules/io.md)
@@ -38,6 +39,10 @@
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
+- [maintenance_evidence](../modules/maintenance_evidence.md)
+- [maintenance_protocol](../modules/maintenance_protocol.md)
+- [maintenance_state](../modules/maintenance_state.md)
+- [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [obsidian](../modules/obsidian.md)
 - [obsidian_cmd](../modules/obsidian_cmd.md)
@@ -45,6 +50,7 @@
 - [plugins](../modules/plugins.md)
 - [progress](../modules/progress.md)
 - [python_contracts](../modules/python_contracts.md)
+- [python_implementation](../modules/python_implementation.md)
 - [python_observations](../modules/python_observations.md)
 - [section_ownership](../modules/section_ownership.md)
 - [source_selection](../modules/source_selection.md)
@@ -53,8 +59,11 @@
 - [validation](../modules/validation.md)
 - [verification_contracts](../modules/verification_contracts.md)
 - [wiki_surface](../modules/wiki_surface.md)
+- [wiki_write_basis](../modules/wiki_write_basis.md)
 
 ## Call sequence
+
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -62,57 +71,66 @@ sequenceDiagram
     participant p0 as run
     participant p1 as getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)
     participant p2 as validate_path
-    participant p3 as PathValidationError
-    participant p4 as (…).resolve (src/llm_wiki_cli/config.py:validate_path)
-    participant p5 as Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    participant p6 as Path.cwd().resolve
-    participant p7 as resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
-    participant p8 as bool (src/llm_wiki_cli/commands/obsidian_cmd.py:run)
-    participant p9 as validate_source_root
-    participant p10 as Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p11 as Path (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p12 as candidate.is_absolute
-    participant p13 as Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p14 as candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p15 as resolved.is_dir
-    participant p16 as os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p17 as windows_current_user_sid
-    participant p18 as WindowsSecurityGuardError
-    participant p19 as _current_windows_user_sid
-    participant p20 as ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)
+    participant p3 as bool (src/llm_wiki_cli/commands/obsidian_cmd.py:run)
+    participant p4 as validate_source_root
+    participant p5 as str (src/llm_wiki_cli/commands/obsidian_cmd.py:run)
+    participant p6 as validate_obsidian_export_source_selection
+    participant p7 as _knowledge_projection
+    participant p8 as export_obsidian_vault
+    participant p9 as _print_report
+    participant p10 as check_obsidian_vault
+    participant p11 as SystemExit
+    participant p12 as install_obsidian_plugin
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'obsidian_action', None)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'format', 'text')
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'src_dir', '.')
     p0->>p2: validate_path
-    p2->>p3: PathValidationError
-    p2-->>p4: (…).resolve (src/llm_wiki_cli/config.py:validate_path)
-    p2-->>p5: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    p2-->>p6: Path.cwd().resolve
-    p2-->>p5: Path.cwd (src/llm_wiki_cli/config.py:validate_path)
-    p2-->>p7: resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)
-    p2->>p3: PathValidationError
-    p0-->>p8: bool (src/llm_wiki_cli/commands/obsidian_cmd.py:run)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)
-    p0->>p9: validate_source_root
-    p9->>p2: validate_path
-    p9-->>p10: Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)
-    p9-->>p11: Path (src/llm_wiki_cli/config.py:validate_source_root)
-    p9-->>p12: candidate.is_absolute
-    p9-->>p13: Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
-    p9-->>p14: candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
-    p9->>p3: PathValidationError
-    p9-->>p15: resolved.is_dir
-    p9->>p3: PathValidationError
-    p9-->>p11: Path (src/llm_wiki_cli/config.py:validate_source_root)
-    p9-->>p16: os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
-    p9->>p17: windows_current_user_sid
-    p17->>p18: WindowsSecurityGuardError
-    p17->>p19: _current_windows_user_sid
-    p19-->>p20: ctypes.WinDLL (src/llm_wiki_cli/services…_current_windows_user_sid)
+    p0-->>p3: bool (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(getattr(...))
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'allow_external_src', False)
+    p0->>p4: validate_source_root
+    p0-->>p5: str (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(source_root)
+    p0->>p6: validate_obsidian_export_source_selection
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'source_selection', None)
+    p0->>p7: _knowledge_projection
+    p0->>p8: export_obsidian_vault
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'vault_dir')
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'notes_dir', DEFAULT_NOTES_DIR)
+    p0-->>p3: bool (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(getattr(...))
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'dry_run', False)
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'knowledge_metadata', None)
+    p0->>p9: _print_report
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
+    p0->>p2: validate_path
+    p0->>p7: _knowledge_projection
+    p0->>p10: check_obsidian_vault
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'vault_dir')
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'knowledge_metadata', None)
+    p0->>p9: _print_report
+    p0-->>p11: SystemExit(1)
+    p0->>p12: install_obsidian_plugin
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'vault_dir')
+    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'plugin_dir', DEFAULT_PLUGIN_SOURCE)
 ```
 
-> Call sequence diagram shows 30 of 2906 interactions; 2876 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 3164 interactions; 3134 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 19 of 949 (930 omitted); unresolved 0 of 860 (860 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/config.py:validate_path` | 6 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
+| `src/llm_wiki_cli/config.py:validate_path` | 6 | - | unresolved | 3 |
+| `src/llm_wiki_cli/config.py:validate_path` | 6 | - | external | 2 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 16 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 16 | - | unresolved | 5 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 16 | - | external | 11 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 16 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 28 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 2 |
+> Omission summary shows 8 of 773 groups; 765 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

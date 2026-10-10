@@ -1,6 +1,6 @@
 # MarkdownLink
 
-**Location:** `src/llm_wiki_cli/services/instruction_ownership.py:155`
+**Location:** `src/llm_wiki_cli/services/instruction_ownership.py:159`
 **Kind:** Class
 **Bases:** —
 **Module:** [instruction_ownership](../modules/instruction_ownership.md)

@@ -17,6 +17,7 @@ import json
 import math
 import os
 import re
+import stat
 from urllib.parse import urlsplit
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from copy import deepcopy
@@ -85,8 +86,10 @@ from .knowledge_model import (
     concept_kind_for_page_kind,
 )
 from .wiki_media import contains_uri_authority_userinfo
-from .source_snapshot import SourceSnapshotMutationError, directory_identity
-from .filesystem_guard import guard_windows_directory_chain, hold_windows_readonly_file
+from .source_snapshot import directory_identity
+from .io import first_unsafe_path_component
+from .knowledge_governance import GOVERNANCE_LOCK_FILENAME, _governance_lock_root
+from .filesystem_guard import fresh_no_follow_stat, guard_windows_directory_chain, hold_windows_readonly_file
 from .knowledge_observability import knowledge_freshness_disclosure
 from .knowledge_verification import verification_summaries_for_concepts
 from .packet_field_policy import (
@@ -98,6 +101,7 @@ from .plugins import runtime_plugin_fallback_root
 from .source_snapshot import (
     SourceSnapshot,
     SourceSnapshotError,
+    SourceSnapshotMutationError,
     build_source_snapshot,
     capture_source_selection_inputs,
     source_snapshot_inputs_match_current_files,
@@ -404,6 +408,8 @@ class CapturedContextRead:
     explicit_changes: bool = False
     change_selection: Mapping[str, Any] | None = None
     wiki_integrity: Mapping[str, tuple[int, ...]] | None = None
+    raw_content_by_page: Mapping[str, bytes] | None = None
+    capture_implementation_requested: bool = False
 
     def __post_init__(self) -> None:
         if not isinstance(self.source_root, Path) or not self.source_root.is_absolute():
@@ -744,6 +750,7 @@ def capture_context_read(
     max_source_bytes: int | None = None,
     max_wiki_bytes: int | None = None,
     respect_ignores: bool = False,
+    capture_implementation_observations: bool = True,
 ) -> CapturedContextRead:
     """Capture one source inventory, wiki surface, and knowledge read view.
 
@@ -762,6 +769,8 @@ def capture_context_read(
         raise TypeError("allow_selection_mismatch must be a boolean")
     if not isinstance(strict_wiki_symlinks, bool):
         raise TypeError("strict_wiki_symlinks must be a boolean")
+    if not isinstance(capture_implementation_observations, bool):
+        raise TypeError("capture_implementation_observations must be a boolean")
 
     basis_incompatible = False
 
@@ -843,6 +852,7 @@ def capture_context_read(
         include_plugins=False,
         source_selection=source_selection,
         source_snapshot=source_snapshot,
+        capture_implementation_observations=capture_implementation_observations,
         **helper_options,
     )
     if not isinstance(collected, InventoryResult):
@@ -910,9 +920,7 @@ def capture_context_read(
                 include_plugins=False,
             )
         )
-        call_edges = tuple(
-            context_service.resolve_call_edges(inventory) if entrypoints else ()
-        )
+        call_edges = tuple(context_service.resolve_call_edges(inventory))
         flows = tuple(
             context_service.build_flow(entrypoint, list(call_edges))
             for entrypoint in entrypoints
@@ -994,7 +1002,12 @@ def capture_context_read(
                 "source_selection",
             ) from exc
         basis_incompatible = True
-    return CapturedContextRead(
+    raw_pages = None
+    if capture_implementation_observations and knowledge_view.manifest_basis is not None and knowledge_view.manifest_basis.maintenance_state is not None:
+        from .knowledge_storage_io import read_guarded
+        raw_pages = {path: read_guarded(wiki_root / path, max_wiki_bytes or 64 * 1024 * 1024).content for path in surface_evaluation.content_by_path}
+        _assert_wiki_unchanged(wiki_root, wiki_anchor_after, reject_all_symlinks=strict_wiki_symlinks)
+    captured = CapturedContextRead(
         source_root=source_root,
         wiki_root=wiki_root,
         inventory_result=collected,
@@ -1014,7 +1027,14 @@ def capture_context_read(
         strict_wiki_symlinks=strict_wiki_symlinks,
         allow_external_src=allow_external_src,
         wiki_integrity=_freeze_json(wiki_integrity) if wiki_integrity is not None else None,
+        raw_content_by_page=_freeze_json(raw_pages) if raw_pages is not None else None,
+        capture_implementation_requested=capture_implementation_observations,
     )
+    from .maintenance_status import attach_maintenance_status
+    captured = attach_maintenance_status(captured)
+    _assert_source_inputs_unchanged(source_snapshot, source_anchor)
+    _assert_wiki_unchanged(wiki_root, wiki_anchor_after, reject_all_symlinks=strict_wiki_symlinks)
+    return captured
 
 
 def build_context_from_captured_read(
@@ -1223,6 +1243,11 @@ def _build_knowledge_context_from_captured_read(
     if selection_requested and captured.basis_incompatible:
         knowledge = dict(knowledge)
         knowledge["freshness_evaluated"] = False
+    maintenance_report = captured.knowledge_view.maintenance_report
+    if selection_requested and maintenance_report is not None:
+        from .maintenance_status import compact_maintenance_summary
+        knowledge = dict(knowledge)
+        knowledge["maintenance"] = compact_maintenance_summary(maintenance_report)
     enrichment["knowledge"] = knowledge
     if normalized["prefer_fresh"]:
         enrichment["ranking_policy"] = (
@@ -1322,6 +1347,7 @@ def _captured_query_service(
             surface_index=dict(query_surface),
             limit=context_service._CONTEXT_QUERY_LIMIT,
             knowledge_view=knowledge_view,
+            inventory_result=captured.inventory_result,
             machine_verification=(
                 verification_summaries_for_concepts(knowledge_view)
                 if isinstance(knowledge_view, KnowledgeReadView)
@@ -1423,6 +1449,19 @@ def build_qualified_context(
         source_selection=source_selection,
         allow_selection_mismatch=(packet_contract is _KNOWLEDGE_PACKET_CONTRACT),
         strict_wiki_symlinks=(packet_contract is _KNOWLEDGE_PACKET_CONTRACT),
+        capture_implementation_observations=(
+            normalized.get("knowledge_mode") in {"auto", "required"}
+            or (
+                normalized.get("knowledge_mode") is None
+                and (
+                    normalized["prefer_fresh"]
+                    or bool(
+                        context_service._CONCEPT_FILTER_KEYS
+                        & set(normalized["filters"])
+                    )
+                )
+            )
+        ),
     )
     payload, warnings = build_context_from_captured_read(captured, normalized)
     response = context_service._protocol_success_payload(
@@ -1835,6 +1874,7 @@ def _build_protocol_enrichment_from_captured_read(
             surface_index=query_surface,
             limit=context_service._CONTEXT_QUERY_LIMIT,
             knowledge_view=knowledge_view,
+            inventory_result=captured.inventory_result,
             machine_verification=(
                 verification_summaries_for_concepts(knowledge_view)
                 if isinstance(knowledge_view, KnowledgeReadView)
@@ -2803,10 +2843,18 @@ def _validate_explicit_knowledge_response(
     }
     _exact_fields(
         data,
-        required | {"selection"},
+        required | {"selection", "maintenance"},
         "response.knowledge",
         required=required,
     )
+    if "maintenance" in data:
+        from .maintenance_status import validate_maintenance_summary
+        try:
+            validate_maintenance_summary(data["maintenance"])
+        except (ValueError, TypeError) as exc:
+            raise ContextPacketMalformedError("response.knowledge.maintenance", str(exc)) from exc
+        if data["mode"] == "off":
+            raise ContextPacketMalformedError("response.knowledge.maintenance", "disabled native reads cannot expose ordinary maintenance")
     mode = data["mode"]
     if mode != request["knowledge_mode"]:
         raise ContextPacketMalformedError(
@@ -3369,7 +3417,7 @@ def _validate_explicit_concept(
         "lifecycle",
         "freshness",
     }
-    _exact_fields(value, required | {"uid"}, field, required=required)
+    _exact_fields(value, required | {"uid", "implementation", "maintenance"}, field, required=required)
     for name in required - {"freshness"}:
         if not isinstance(value[name], str) or not value[name]:
             raise ContextPacketMalformedError(
@@ -3381,6 +3429,16 @@ def _validate_explicit_concept(
             f"{field}.uid",
             "must be a non-empty string",
         )
+    if "implementation" in value:
+        _validate_implementation_summary(
+            value["implementation"], f"{field}.implementation"
+        )
+    if "maintenance" in value:
+        from .maintenance_status import validate_maintenance_summary
+        try:
+            validate_maintenance_summary(value["maintenance"])
+        except (ValueError, TypeError) as exc:
+            raise ContextPacketMalformedError(f"{field}.maintenance", str(exc)) from exc
     enum_fields = {
         "concept_kind": {item.value for item in ConceptKind},
         "origin": {item.value for item in Origin},
@@ -3476,6 +3534,16 @@ def _validate_explicit_concept(
             f"{field}.freshness",
             "must use the exact snapshot-only freshness disclosure",
         )
+
+
+def _validate_implementation_summary(value: Any, field: str) -> None:
+    """Validate curated syntax evidence without admitting raw native records."""
+    from .implementation_evidence import validate_implementation_summary
+
+    try:
+        validate_implementation_summary(value)
+    except (TypeError, ValueError) as exc:
+        raise ContextPacketMalformedError(field, str(exc)) from exc
 
 
 def _validate_explicit_page(value: Mapping[str, Any], field: str) -> None:
@@ -4931,6 +4999,18 @@ def _assert_source_unchanged(snapshot: SourceSnapshot, expected_anchor: str, *, 
         raise ContextPacketSourceMutationError("source")
 
 
+def confirmed_missing_source_paths(snapshot: SourceSnapshot, requested_paths: Iterable[str]) -> frozenset[str]:
+    """Adapt the shared source owner's guarded requested-absence observation."""
+    from .source_snapshot import confirmed_missing_source_paths as confirm_missing
+
+    try:
+        return confirm_missing(snapshot, requested_paths)
+    except SourceSnapshotMutationError as exc:
+        raise ContextPacketSourceMutationError("source") from exc
+    except SourceSnapshotError as exc:
+        raise ContextPacketPathPolicyError("source_path", str(exc)) from exc
+
+
 def _assert_source_inputs_unchanged(
     snapshot: SourceSnapshot,
     expected_anchor: str,
@@ -4989,6 +5069,11 @@ def _wiki_anchor(root: Path, *, reject_all_symlinks: bool = False, max_bytes: in
     if not root.exists():
         return _domain_hash(_WIKI_ANCHOR_DOMAIN, {"state": "absent"})
     records: list[dict[str, str]] = []
+    lock_root = _governance_lock_root(root)
+    operational_locks = {
+        lock_root / GOVERNANCE_LOCK_FILENAME,
+        lock_root / "llm-wiki-storage.lock",
+    }
     used_bytes = 0
     inspected_entries = 0
 
@@ -5010,7 +5095,23 @@ def _wiki_anchor(root: Path, *, reject_all_symlinks: bool = False, max_bytes: in
         for entry in entries:
             rel_path = (relative / entry.name).as_posix()
             try:
-                if entry.is_symlink():
+                if Path(entry.path).absolute() in operational_locks:
+                    # Mutation locks are operational state, not wiki content.
+                    # Windows byte locks prohibit reading them through another
+                    # handle while adoption owns the mutation transaction.
+                    # DirEntry metadata omits Windows link counts; stat the path freshly.
+                    metadata = fresh_no_follow_stat(entry.path)
+                    if (first_unsafe_path_component(Path(entry.path)) is not None
+                            or not stat.S_ISREG(metadata.st_mode)
+                            or metadata.st_nlink != 1):
+                        raise ContextPacketPathPolicyError(
+                            "wiki_dir", "wiki mutation locks must be single regular files",
+                            relative_path=rel_path,
+                        )
+                    records.append({"path": rel_path, "kind": "operational-lock"})
+                    if integrity_out is not None:
+                        integrity_out[str(Path(entry.path))] = directory_identity(Path(entry.path))
+                elif entry.is_symlink():
                     if reject_all_symlinks or _wiki_symlink_is_captured_input(rel_path):
                         raise ContextPacketPathPolicyError(
                             "wiki_dir",
@@ -5178,6 +5279,7 @@ __all__ = [
     "build_context_from_captured_read",
     "build_qualified_context",
     "capture_context_read",
+    "confirmed_missing_source_paths",
     "compare_context_packet_basis",
     "reconcile_context_packet",
     "validate_context_packet",

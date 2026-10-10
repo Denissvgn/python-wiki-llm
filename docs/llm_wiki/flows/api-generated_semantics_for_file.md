@@ -6,39 +6,46 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as generated_semantics_for_file
     participant p1 as file_data.get
     participant p2 as _first_doc_line
-    participant p3 as info.get
-    participant p4 as docstring.split
-    participant p5 as cls.get
-    participant p6 as attr.get
-    participant p7 as Counter
-    participant p8 as duplicate_semantics.setdefault(…).append
-    participant p9 as duplicate_semantics.setdefault
-    p0-->>p1: file_data.get
+    participant p3 as cls.get
+    participant p4 as attr.get
+    participant p5 as Counter
+    participant p6 as duplicate_semantics.setdefault(…).append
+    participant p7 as duplicate_semantics.setdefault
+    participant p8 as info.get
+    participant p9 as docstring.split
+    p0-->>p1: file_data.get('module_docstring', '')
     p0->>p2: _first_doc_line
-    p2-->>p3: info.get
-    p2-->>p4: docstring.split
-    p0-->>p1: file_data.get
+    p0-->>p1: file_data.get('classes', [...])
     p0->>p2: _first_doc_line
-    p0-->>p1: file_data.get
-    p0-->>p5: cls.get
-    p0-->>p6: attr.get
-    p0-->>p5: cls.get
+    p0-->>p1: file_data.get('functions', [...])
+    p0-->>p3: cls.get('docstring', '')
+    p0-->>p4: attr.get('description')
+    p0-->>p3: cls.get('attributes', [...])
     p0->>p2: _first_doc_line
-    p0-->>p5: cls.get
-    p0-->>p1: file_data.get
-    p0-->>p7: Counter
-    p0-->>p1: file_data.get
-    p0-->>p1: file_data.get
+    p0-->>p3: cls.get('methods', [...])
+    p0-->>p1: file_data.get('classes', [...])
+    p0-->>p5: Counter(...)
+    p0-->>p1: file_data.get('classes', [...])
+    p0-->>p1: file_data.get('classes', [...])
     p0->>p0: generated_semantics_for_file
-    p0-->>p8: duplicate_semantics.setdefault(…).append
-    p0-->>p9: duplicate_semantics.setdefault
+    p0-->>p6: duplicate_semantics.setdefault(…).append(...)
+    p0-->>p7: duplicate_semantics.setdefault(name, [...])
+    p2-->>p8: info.get('docstring', '')
+    p2-->>p9: docstring.split('\n')
 ```
+
+> Call sequence diagram shows 19 of 19 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 1 of 1 (0 omitted); unresolved 14 of 14 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 
@@ -95,17 +102,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| generated_semantics_for_file | file_data.get | 675 | `file_data.get('module_docstring', '')` |
-| generated_semantics_for_file | _first_doc_line | 681 | `_first_doc_line(cls)` |
-| _first_doc_line | info.get | 521 | `info.get('docstring', '')` |
-| _first_doc_line | docstring.split | 522 | `docstring.split('\n')` |
-| generated_semantics_for_file | file_data.get | 682 | `file_data.get('classes', [...])` |
-| generated_semantics_for_file | _first_doc_line | 685 | `_first_doc_line(fn)` |
-| generated_semantics_for_file | file_data.get | 685 | `file_data.get('functions', [...])` |
-| generated_semantics_for_file | cls.get | 690 | `cls.get('docstring', '')` |
-| generated_semantics_for_file | attr.get | 693 | `attr.get('description')` |
-| generated_semantics_for_file | cls.get | 694 | `cls.get('attributes', [...])` |
-| generated_semantics_for_file | _first_doc_line | 697 | `_first_doc_line(method)` |
+| generated_semantics_for_file | file_data.get | 683 | `file_data.get('module_docstring', '')` |
+| generated_semantics_for_file | _first_doc_line | 689 | `_first_doc_line(cls)` |
+| _first_doc_line | info.get | 529 | `info.get('docstring', '')` |
+| _first_doc_line | docstring.split | 530 | `docstring.split('\n')` |
+| generated_semantics_for_file | file_data.get | 690 | `file_data.get('classes', [...])` |
+| generated_semantics_for_file | _first_doc_line | 693 | `_first_doc_line(fn)` |
+| generated_semantics_for_file | file_data.get | 693 | `file_data.get('functions', [...])` |
+| generated_semantics_for_file | cls.get | 698 | `cls.get('docstring', '')` |
+| generated_semantics_for_file | attr.get | 701 | `attr.get('description')` |
+| generated_semantics_for_file | cls.get | 702 | `cls.get('attributes', [...])` |
+| generated_semantics_for_file | _first_doc_line | 705 | `_first_doc_line(method)` |
 
 ### Boundary effects
 
@@ -115,14 +122,14 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `generated_semantics_for_file` | `file_data.get` | 675 |
-| unresolved_call | `_first_doc_line` | `info.get` | 521 |
-| unresolved_call | `_first_doc_line` | `docstring.split` | 522 |
-| unresolved_call | `generated_semantics_for_file` | `file_data.get` | 682 |
-| unresolved_call | `generated_semantics_for_file` | `file_data.get` | 685 |
-| unresolved_call | `generated_semantics_for_file` | `cls.get` | 690 |
-| unresolved_call | `generated_semantics_for_file` | `attr.get` | 693 |
-| unresolved_call | `generated_semantics_for_file` | `cls.get` | 694 |
+| unresolved_call | `generated_semantics_for_file` | `file_data.get` | 683 |
+| unresolved_call | `_first_doc_line` | `info.get` | 529 |
+| unresolved_call | `_first_doc_line` | `docstring.split` | 530 |
+| unresolved_call | `generated_semantics_for_file` | `file_data.get` | 690 |
+| unresolved_call | `generated_semantics_for_file` | `file_data.get` | 693 |
+| unresolved_call | `generated_semantics_for_file` | `cls.get` | 698 |
+| unresolved_call | `generated_semantics_for_file` | `attr.get` | 701 |
+| unresolved_call | `generated_semantics_for_file` | `cls.get` | 702 |
 | step_limit | `generated_semantics_for_file` | `first 12 steps` | 0 |
 
 ## Behavior

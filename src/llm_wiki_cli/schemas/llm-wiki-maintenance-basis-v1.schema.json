@@ -1,0 +1,128 @@
+{
+  "$id": "urn:llm-wiki:maintenance-basis-v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "comparison_id": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "coordinate": {
+      "additionalProperties": false,
+      "properties": {
+        "occurrence": {
+          "maximum": 1000000,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "qualified_owner": {
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "source_path": {
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_path",
+        "qualified_owner",
+        "occurrence"
+      ],
+      "type": "object"
+    },
+    "documentation_hash": {
+      "anyOf": [
+        {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "executable_hash": {
+      "anyOf": [
+        {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "producer_hash": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "prose_hash": {
+      "anyOf": [
+        {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "scope": {
+      "enum": [
+        "module",
+        "class",
+        "callable"
+      ]
+    },
+    "source_hash": {
+      "anyOf": [
+        {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "target": {
+      "additionalProperties": false,
+      "properties": {
+        "canonical_path": {
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        },
+        "ownership": {
+          "const": "semantic"
+        },
+        "section_locator": {
+          "maxLength": 4096,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "canonical_path",
+        "section_locator",
+        "ownership"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "coordinate",
+    "source_hash",
+    "executable_hash",
+    "documentation_hash",
+    "prose_hash",
+    "comparison_id",
+    "producer_hash",
+    "target",
+    "scope"
+  ],
+  "type": "object"
+}

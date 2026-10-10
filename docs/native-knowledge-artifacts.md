@@ -8,7 +8,7 @@ freshness verdict, or an authorization record. Canonical Markdown remains the
 human/agent editing surface, and `.llm-wiki-surface.json` remains on the
 unchanged `llm-wiki-surface-index/v1` contract.
 
-A valid projection commit consists of three generated files produced from the
+A valid projection commit includes three generated roots produced from the
 same evaluated inputs:
 
 - `.llm-wiki-surface.json`;
@@ -19,6 +19,17 @@ same evaluated inputs:
 When governance is enabled, the committed set must also include the
 authoritative `.llm-wiki-governance.json` ledger. The validated loader rejects
 a governed projection whose ledger is missing or invalid.
+
+For sharded or packed storage, commit every referenced object, pack and routing
+container alongside those roots. An adopted indexed manifest also needs its
+referenced catalogs. Existing storage formats remain compatible; bounded task
+reads select supported storage explicitly. See [knowledge storage](knowledge-storage.md).
+
+Optional ordinary review adds the immutable
+`.llm-wiki-maintenance-adoption.json` marker and matching manifest-owned
+maintenance state. Keep that complete authority and its projected bindings
+intact. An agent acknowledgment records operational review, not human governance
+approval. Review tracking and storage adoption are separate choices.
 
 Consumers must use the validated loader. A file that merely exists is not
 trusted: malformed data, stale commit markers, hash mismatches, and mixed
@@ -48,10 +59,16 @@ Deleting only `.llm-wiki-knowledge.json` or editing its manifest commitment
 creates an invalid or mixed snapshot; it is not a supported rollback.
 
 If only the generated projections are damaged while the manifest is readable
-and any required governance ledger remains valid, preserve the damaged files
+and any required governance and maintenance authority remains valid, preserve
+the damaged files
 when diagnostics are needed, then run `llm-wiki sync` to regenerate one
 evaluated snapshot. Restore a missing or invalid manifest or governance ledger
-from version control or backup before syncing. When the selected release
+from version control or backup before syncing. A missing/corrupt adopted
+maintenance owner or mismatched marker needs its verified complete
+[maintenance recovery snapshot](maintenance.md#recover-complete-authority);
+manifestless seeding and single-file knowledge export cannot recreate its
+history. Preserve newer work when recovery eligibility rejects a replacement.
+When the selected release
 requires migration, follow its `llm-wiki migrate` and release-specific
 migration guidance. Do not hand-edit hashes or copy a projection from a
 different run.

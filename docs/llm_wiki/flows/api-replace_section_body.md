@@ -6,52 +6,59 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as replace_section_body
     participant p1 as normalize_markdown(…).splitlines
     participant p2 as normalize_markdown
-    participant p3 as text.replace(…).replace
-    participant p4 as text.replace
-    participant p5 as section_bounds
-    participant p6 as heading.casefold
-    participant p7 as enumerate
-    participant p8 as _LEGACY_HEADING_RE.match
-    participant p9 as line.strip
-    participant p10 as len
-    participant p11 as match.group
-    participant p12 as match.group(…).strip().casefold
-    participant p13 as match.group(…).strip
-    participant p14 as range
-    participant p15 as lines[…].strip
-    participant p16 as next_match.group
-    participant p17 as body.splitlines
-    participant p18 as '\n'.join
+    participant p3 as section_bounds
+    participant p4 as body.splitlines
+    participant p5 as '\n'.join
+    participant p6 as text.replace(…).replace
+    participant p7 as heading.casefold
+    participant p8 as text.replace
+    participant p9 as enumerate
+    participant p10 as _LEGACY_HEADING_RE.match
+    participant p11 as line.strip
+    participant p12 as len
+    participant p13 as match.group
+    participant p14 as match.group(…).strip().casefold
+    participant p15 as match.group(…).strip
+    participant p16 as range
+    participant p17 as lines[…].strip
+    participant p18 as next_match.group
     p0-->>p1: normalize_markdown(…).splitlines
     p0->>p2: normalize_markdown
-    p2-->>p3: text.replace(…).replace
-    p2-->>p4: text.replace
-    p0->>p5: section_bounds
-    p5-->>p6: heading.casefold
-    p5-->>p7: enumerate
-    p5-->>p8: _LEGACY_HEADING_RE.match
-    p5-->>p9: line.strip
-    p5-->>p10: len
-    p5-->>p11: match.group
-    p5-->>p12: match.group(…).strip().casefold
-    p5-->>p13: match.group(…).strip
-    p5-->>p11: match.group
-    p5-->>p10: len
-    p5-->>p14: range
-    p5-->>p10: len
-    p5-->>p8: _LEGACY_HEADING_RE.match
-    p5-->>p15: lines[…].strip
-    p5-->>p10: len
-    p5-->>p16: next_match.group
-    p0-->>p17: body.splitlines
-    p0-->>p18: '\n'.join
+    p0->>p3: section_bounds
+    p0-->>p4: body.splitlines
+    p0-->>p5: '\n'.join(...)
+    p2-->>p6: text.replace(…).replace('\r', '\n')
+    p3-->>p7: heading.casefold
+    p2-->>p8: text.replace('\r\n', '\n')
+    p3-->>p9: enumerate(lines)
+    p3-->>p10: _LEGACY_HEADING_RE.match(line.strip(...))
+    p3-->>p11: line.strip
+    p3-->>p12: len(match.group(...))
+    p3-->>p13: match.group(1)
+    p3-->>p14: match.group(…).strip().casefold
+    p3-->>p15: match.group(…).strip
+    p3-->>p13: match.group(2)
+    p3-->>p12: len(lines)
+    p3-->>p16: range(..., len(...))
+    p3-->>p12: len(lines)
+    p3-->>p10: _LEGACY_HEADING_RE.match(...)
+    p3-->>p17: lines[…].strip
+    p3-->>p12: len(next_match.group(...))
+    p3-->>p18: next_match.group(1)
 ```
+
+> Call sequence diagram shows 23 of 23 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 6 of 6 (0 omitted); unresolved 15 of 15 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

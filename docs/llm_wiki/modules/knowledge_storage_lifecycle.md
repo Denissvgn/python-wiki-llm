@@ -15,18 +15,24 @@ Cleanup plans bind the generation, root and exact candidate bytes. Apply verifie
 | Source | Symbols |
 |--------|---------|
 | `.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory`, `unlink_guarded_bytes` |
+| `.io` | `decode_markdown_bytes` |
 | `.knowledge_artifacts` | `ArtifactWriteState`, `KnowledgeCommitPlan`, `PlannedArtifactWrite`, `build_knowledge_commit_plan`, `commit_knowledge_artifacts`, `current_knowledge_format`, `validate_knowledge_artifacts`, `validated_artifact_bytes`, `_commit_sharded` |
-| `.knowledge_governance` | `GOVERNANCE_FILENAME`, `governance_lock` |
+| `.knowledge_governance` | `GOVERNANCE_FILENAME` |
 | `.knowledge_index` | `serialize_knowledge_index` |
 | `.knowledge_loader` | `load_knowledge_state` |
 | `.knowledge_packs` | `PACKED_SCHEMA`, `LOCAL_PACKED_SCHEMA`, `PACKED_SCHEMAS`, `PACKED_FORMATS`, `packed_format`, `PACK_NAME`, `INDEX_NAME`, `PACK_DIRECTORY`, `PACK_INDEX_DIRECTORY`, `INDEX_PAGE_NAME`, `INDEX_PAGE_DIRECTORY`, `PackedKnowledgeStoreReader`, `inspect_pack`, `inspect_index_pages` |
 | `.knowledge_storage` | `MAX_EXPANDED_BYTES`, `MAX_OBJECT_BYTES`, `OBJECT_DIRECTORY`, `ROOT_FILENAME`, `GIT_FAILURE_BYTES`, `KnowledgeStorageError`, `KnowledgeStoreReader`, `decode_bytes`, `canonical_bytes`, `digest`, `_hash`, `decode_bytes` |
 | `.knowledge_storage_io` | `StorageReadSession`, `read_guarded`, `_absolute_path` |
+| `.maintenance_projection` | `validate_maintenance_prose`, `validate_maintenance_projection` |
+| `.maintenance_protocol` | `ADOPTION_FILENAME`, `guard_maintenance_owner`, `governance_writer_lock`, `maintenance_write_operation`, `storage_writer_lock`, `MaintenanceProtocolError`, `load_adoption_marker` |
+| `.maintenance_state` | `validate_maintenance_adoption` |
 | `.manifest_storage` | `OBJECT_NAME`, `DIRECTORY`, `validate_catalog` |
 | `.storage_spool` | `ByteSpool`, `ByteSpool` |
 | `.sync_manifest` | `MANIFEST_FILENAME`, `SyncManifest` |
+| `.wiki_surface` | `WikiSurfaceError`, `validate_exact_page_coordinate` |
 | `.wiki_surface_index` | `SURFACE_INDEX_FILENAME` |
 | `__future__` | `annotations` |
+| `contextlib` | `nullcontext` |
 | `json` | `json` |
 | `os` | `os` |
 | `pathlib` | `Path` |
@@ -53,9 +59,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (2) |
-| Outbound | `src` (12) |
+| Outbound | `src` (17) |
 
-> All 14 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 19 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 
@@ -65,10 +71,13 @@ flowchart LR
 | `_default_recovery_directory` | `(root: Path, root_hash: str) -> Path \| None` | — | — |
 | `_outside_tree` | `(directory: Path, root: Path) -> Path` | — | — |
 | `_backup` | `(directory: Path, files: dict[str, bytes], target_hash: str, target_manifest_hash: str) -> None` | — | — |
-| `migrate_knowledge_storage` | `(wiki_dir: str \| Path, *, dry_run: bool = False, recovery_dir: str \| Path \| None = None, to: str = 'sharded-v2') -> dict[str, Any]` | — | Explicitly adopt indexed storage, retaining verified recovery bytes outside the wiki. |
+| `migrate_knowledge_storage` | `(wiki_dir: str \| Path, *, dry_run: bool = False, recovery_dir: str \| Path \| None = None, to: str = 'sharded-v2') -> dict[str, Any]` | — | — |
+| `_migrate_knowledge_storage` | `(wiki_dir: str \| Path, *, dry_run: bool, recovery_dir: str \| Path \| None, to: str) -> dict[str, Any]` | — | Explicitly adopt indexed storage, retaining verified recovery bytes outside the wiki. |
 | `_read_recovery` | `(directory: Path) -> tuple[dict[str, Any], dict[str, bytes]]` | — | — |
-| `recover_knowledge_storage` | `(wiki_dir: str \| Path, recovery_dir: str \| Path, *, dry_run: bool = False) -> dict[str, Any]` | — | Restore an exact interrupted migration; refuse unrelated newer roots. |
+| `recover_knowledge_storage` | `(wiki_dir: str \| Path, recovery_dir: str \| Path, *, dry_run: bool = False) -> dict[str, Any]` | — | — |
+| `_recover_knowledge_storage` | `(wiki_dir: str \| Path, recovery_dir: str \| Path, *, dry_run: bool) -> dict[str, Any]` | — | Restore an exact interrupted migration; refuse unrelated newer roots. |
 | `export_knowledge_v1` | `(wiki_dir: str \| Path, output: str \| Path) -> dict[str, Any]` | — | — |
+| `_canonical_markdown` | `(relative: str) -> bool` | — | — |
 | `is_storage_path` | `(relative: str) -> bool` | — | — |
 | `stored_object_paths` | `(wiki_dir: str \| Path) -> tuple[list[str], list[str]]` | — | Bounded enumeration of the owned two-level object namespace, without links. |
 | `_prune_plan` | `(root, root_bytes, manifest_bytes, candidates)` | — | — |

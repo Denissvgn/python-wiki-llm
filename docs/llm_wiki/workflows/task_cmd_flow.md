@@ -10,9 +10,11 @@
 2. `workflow_profile.WorkflowPolicy`
 3. `api.load_workflow_profile`
 4. `token_counting.LocalTokenizerCounter`
-5. `api.build_task_context`
-6. `io.write_text_output`
+5. `api.build_compact_task_context`
+6. `api.build_task_context`
 7. `io.write_utf8_stdout`
+8. `io.write_text_output`
+9. `io.write_utf8_stdout`
 
 ## Touches
 

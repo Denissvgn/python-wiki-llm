@@ -6,27 +6,34 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as require_mapping_tuple
     participant p1 as require_sequence
-    participant p2 as isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)
-    participant p3 as tuple
-    participant p4 as require_mapping
+    participant p2 as tuple
+    participant p3 as require_mapping
+    participant p4 as isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)
     participant p5 as isinstance (src/llm_wiki_cli/services…idation.py:require_mapping)
     participant p6 as key.encode
     p0->>p1: require_sequence
-    p1-->>p2: isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)
-    p1-->>p2: isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)
-    p1-->>p2: isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)
-    p1-->>p2: isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)
-    p0-->>p3: tuple
-    p0->>p4: require_mapping
-    p4-->>p5: isinstance (src/llm_wiki_cli/services…idation.py:require_mapping)
-    p4-->>p5: isinstance (src/llm_wiki_cli/services…idation.py:require_mapping)
-    p4-->>p6: key.encode
+    p0-->>p2: tuple(...)
+    p0->>p3: require_mapping
+    p1-->>p4: isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)(value, (...))
+    p3-->>p5: isinstance (src/llm_wiki_cli/services…idation.py:require_mapping)(value, Mapping)
+    p1-->>p4: isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)(value, Mapping)
+    p3-->>p5: isinstance (src/llm_wiki_cli/services…idation.py:require_mapping)(key, str)
+    p1-->>p4: isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)(value, container_type)
+    p3-->>p6: key.encode('utf-8')
+    p1-->>p4: isinstance (src/llm_wiki_cli/services…dation.py:require_sequence)(value, Sequence)
 ```
+
+> Call sequence diagram shows 10 of 10 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 7 of 7 (0 omitted); unresolved 1 of 1 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

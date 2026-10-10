@@ -43,7 +43,10 @@ dependency-page presence, and internal wiki links; and the experimental
 `.llm-wiki-knowledge.json`, a deterministic evidence-aware projection of those
 canonical pages. Manifest v5 is the current writer format. All three JSON
 artifacts are CLI-owned generated state and must not be edited by hand; the
-manifest commits the surface and knowledge projections as one snapshot. The
+manifest commits the surface and knowledge projections as one snapshot. Explicit
+[ordinary review adoption](maintenance.md) adds durable pending/acknowledged
+section records and an immutable marker, using flat manifest v7 or indexed v8;
+the default unadopted writer remains v5. The
 experimental knowledge projection is evidence, not an editable authority. Its
 observation-versus-freshness model,
 availability states, strict-lint policy, context filters, API/MCP envelopes,

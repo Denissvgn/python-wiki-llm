@@ -6,37 +6,44 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as is_unmodified_managed_workflow
     participant p1 as _normalize_newlines
-    participant p2 as content.decode
-    participant p3 as text.replace(…).replace(…).encode
-    participant p4 as text.replace(…).replace
-    participant p5 as text.replace
-    participant p6 as normalized.decode
-    participant p7 as _MANAGED_HEADER_RE.match
-    participant p8 as text[…].encode
-    participant p9 as match.end
-    participant p10 as hashlib.sha256(…).hexdigest
-    participant p11 as hashlib.sha256
-    participant p12 as hmac.compare_digest
-    participant p13 as match.group
+    participant p2 as normalized.decode
+    participant p3 as _MANAGED_HEADER_RE.match
+    participant p4 as text[…].encode
+    participant p5 as match.end
+    participant p6 as hashlib.sha256(…).hexdigest
+    participant p7 as hashlib.sha256
+    participant p8 as hmac.compare_digest
+    participant p9 as match.group
+    participant p10 as content.decode
+    participant p11 as text.replace(…).replace(…).encode
+    participant p12 as text.replace(…).replace
+    participant p13 as text.replace
     p0->>p1: _normalize_newlines
-    p1-->>p2: content.decode
-    p1-->>p3: text.replace(…).replace(…).encode
-    p1-->>p4: text.replace(…).replace
-    p1-->>p5: text.replace
-    p0-->>p6: normalized.decode
-    p0-->>p7: _MANAGED_HEADER_RE.match
-    p0-->>p8: text[…].encode
-    p0-->>p9: match.end
-    p0-->>p10: hashlib.sha256(…).hexdigest
-    p0-->>p11: hashlib.sha256
-    p0-->>p12: hmac.compare_digest
-    p0-->>p13: match.group
+    p0-->>p2: normalized.decode('utf-8')
+    p0-->>p3: _MANAGED_HEADER_RE.match(text)
+    p0-->>p4: text[…].encode('utf-8')
+    p0-->>p5: match.end
+    p0-->>p6: hashlib.sha256(…).hexdigest
+    p0-->>p7: hashlib.sha256(body)
+    p0-->>p8: hmac.compare_digest(match.group(...), actual)
+    p0-->>p9: match.group(1)
+    p1-->>p10: content.decode('utf-8')
+    p1-->>p11: text.replace(…).replace(…).encode('utf-8')
+    p1-->>p12: text.replace(…).replace('\r', '\n')
+    p1-->>p13: text.replace('\r\n', '\n')
 ```
+
+> Call sequence diagram shows 13 of 13 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 2 of 2 (0 omitted); unresolved 10 of 10 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

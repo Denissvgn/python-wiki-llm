@@ -18,26 +18,30 @@ filesystem reads are the target-state comparisons performed by
 | Source | Symbols |
 |--------|---------|
 | `.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY` |
+| `.implementation_evidence` | `project_concept_implementations`, `analysis_hash_from_producer` |
 | `.infrastructure_sync` | `InfrastructureSyncError`, `infrastructure_evidence_by_page` |
 | `.knowledge_artifacts` | `KnowledgeArtifactError`, `KnowledgeCommitPlan`, `build_knowledge_commit_plan`, `ValidatedKnowledgeArtifacts`, `validate_surface_index_bytes` |
 | `.knowledge_envelope` | `ConsumedInput`, `EnvelopeInputs`, `KnowledgeEnvelopeError`, `ProducerComponentInput`, `RepositoryEvidence`, `build_evaluated_envelope`, `build_repository_record` |
 | `.knowledge_evidence` | `ConceptObservationBasis`, `build_entity_observation_basis`, `build_module_observation_basis`, `is_valid_sha256` |
 | `.knowledge_governance` | `GovernanceLedger`, `apply_governance_projection` |
 | `.knowledge_graph` | `DEFAULT_EVIDENCE_LIMIT`, `GraphConcept`, `KnowledgeGraphError`, `KnowledgeGraphInputs`, `materialize_typed_graph` |
-| `.knowledge_index` | `KnowledgeIndexBuildError`, `KnowledgeIndexInputs`, `build_knowledge_index` |
+| `.knowledge_index` | `KnowledgeIndexBuildError`, `KnowledgeIndexInputs`, `build_knowledge_index`, `_knowledge_validation_operation` |
 | `.knowledge_links` | `KnowledgeLinkError`, `collect_link_observations` |
 | `.knowledge_model` | `ProducerRecord`, `concept_kind_for_page_kind` |
 | `.knowledge_reuse` | `REUSE_EXTENSION_KEY`, `REUSE_INPUT_KEY`, `bind_reuse_commitment` |
+| `.maintenance_evidence` | `captured_observations_from_knowledge`, `reconcile_pending_maintenance`, `maintenance_transfers_from_page_plan` |
+| `.maintenance_projection` | `project_maintenance_knowledge` |
 | `.progress` | `observed_phase` |
 | `.section_ownership` | `observe_page_sections`, `section_ownership_extension` |
 | `.sync_manifest` | `EVIDENCE_NOT_RECORDED`, `MANIFEST_REPAIR_UNAVAILABLE`, `PRODUCER_BASIS_INCOMPATIBLE`, `TOMBSTONE_UNKNOWN_PROVENANCE`, `ManifestEvidenceBaseline`, `ManifestTombstone`, `SyncManifest`, `SyncManifestError` |
+| `.sync_transitions` | `PageTransitionPlan` |
 | `.wiki_surface` | `PageKind`, `WikiSurfacePage` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping`, `Sequence`, `Set` |
 | `dataclasses` | `dataclass`, `field` |
 | `json` | `json` |
 | `pathlib` | `Path` |
-| `typing` | `Any` |
+| `typing` | `Any`, `TYPE_CHECKING` |
 
 ## Local dependency map
 
@@ -58,16 +62,16 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (1) |
-| Outbound | `src` (15) |
+| Outbound | `src` (19) |
 
-> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 20 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [KnowledgeGenerationError](../entities/KnowledgeGenerationError.md) | 87 | `ValueError` | Field-specific failure at the shared generation-planning boundary. |
-| [KnowledgeGenerationInputs](../entities/KnowledgeGenerationInputs.md) | 97 | — | Complete already-evaluated inputs for one generated artifact set. |
+| [KnowledgeGenerationError](../entities/KnowledgeGenerationError.md) | 91 | `ValueError` | Field-specific failure at the shared generation-planning boundary. |
+| [KnowledgeGenerationInputs](../entities/KnowledgeGenerationInputs.md) | 101 | — | Complete already-evaluated inputs for one generated artifact set. |
 
 ## Functions
 

@@ -6,67 +6,80 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as load_openapi_document
     participant p1 as _resolve_openapi_path
-    participant p2 as Path(…).resolve
-    participant p3 as Path
-    participant p4 as Path(…).expanduser
-    participant p5 as candidate.is_absolute
-    participant p6 as Path(…).relative_to(…).as_posix
-    participant p7 as Path(…).relative_to
-    participant p8 as os.path.abspath
-    participant p9 as ApiContractError
-    participant p10 as candidate.resolve
-    participant p11 as resolved.relative_to(…).as_posix
-    participant p12 as resolved.relative_to
-    participant p13 as source_snapshot.root.resolve
-    participant p14 as path_is_selected
-    participant p15 as _selection_path
-    participant p16 as _require_selection_path
-    participant p17 as require_repository_relative_path
-    participant p18 as isinstance (src/llm_wiki_cli/services…e_repository_relative_path)
-    participant p19 as _syntax_key
-    participant p20 as _known_syntax
-    participant p21 as value.strip
-    participant p22 as any (src/llm_wiki_cli/services…e_repository_relative_path)
-    participant p23 as ord
-    participant p24 as value.startswith
+    participant p2 as resolved.suffix.lower
+    participant p3 as resolved.read_bytes
+    participant p4 as ApiContractError
+    participant p5 as len (src/llm_wiki_cli/services…s.py:load_openapi_document)
+    participant p6 as data.decode
+    participant p7 as json.loads
+    participant p8 as yaml.safe_load
+    participant p9 as isinstance (src/llm_wiki_cli/services…s.py:load_openapi_document)
+    participant p10 as str
+    participant p11 as document.get
+    participant p12 as version.startswith
+    participant p13 as dict
+    participant p14 as hashlib.sha256(…).hexdigest
+    participant p15 as hashlib.sha256
+    participant p16 as Path(…).resolve
+    participant p17 as Path
+    participant p18 as Path(…).expanduser
     p0->>p1: _resolve_openapi_path
-    p1-->>p2: Path(…).resolve
-    p1-->>p3: Path
-    p1-->>p4: Path(…).expanduser
-    p1-->>p3: Path
-    p1-->>p5: candidate.is_absolute
-    p1-->>p6: Path(…).relative_to(…).as_posix
-    p1-->>p7: Path(…).relative_to
-    p1-->>p3: Path
-    p1-->>p8: os.path.abspath
-    p1->>p9: ApiContractError
-    p1-->>p10: candidate.resolve
-    p1-->>p11: resolved.relative_to(…).as_posix
-    p1-->>p12: resolved.relative_to
-    p1->>p9: ApiContractError
-    p1-->>p13: source_snapshot.root.resolve
-    p1->>p9: ApiContractError
-    p1->>p14: path_is_selected
-    p14->>p15: _selection_path
-    p15->>p16: _require_selection_path
-    p16->>p17: require_repository_relative_path
-    p17-->>p18: isinstance (src/llm_wiki_cli/services…e_repository_relative_path)
-    p17->>p19: _syntax_key
-    p17->>p20: _known_syntax
-    p17-->>p21: value.strip
-    p17-->>p22: any (src/llm_wiki_cli/services…e_repository_relative_path)
-    p17-->>p23: ord
-    p17-->>p23: ord
-    p17-->>p24: value.startswith
-    p17-->>p24: value.startswith
+    p0-->>p2: resolved.suffix.lower
+    p0-->>p3: resolved.read_bytes
+    p0->>p4: ApiContractError
+    p0-->>p5: len (src/llm_wiki_cli/services…s.py:load_openapi_document)(data)
+    p0->>p4: ApiContractError
+    p0-->>p6: data.decode('utf-8')
+    p0->>p4: ApiContractError
+    p0-->>p7: json.loads(text)
+    p0-->>p8: yaml.safe_load(text)
+    p0-->>p7: json.loads(text)
+    p0-->>p8: yaml.safe_load(text)
+    p0->>p4: ApiContractError
+    p0-->>p9: isinstance (src/llm_wiki_cli/services…s.py:load_openapi_document)(document, Mapping)
+    p0->>p4: ApiContractError
+    p0-->>p10: str(...)
+    p0-->>p11: document.get('openapi')
+    p0-->>p12: version.startswith('3.0.')
+    p0-->>p12: version.startswith('3.1.')
+    p0->>p4: ApiContractError
+    p0-->>p9: isinstance (src/llm_wiki_cli/services…s.py:load_openapi_document)(document.get(...), Mapping)
+    p0-->>p11: document.get('paths')
+    p0->>p4: ApiContractError
+    p0-->>p13: dict(document)
+    p0-->>p14: hashlib.sha256(…).hexdigest
+    p0-->>p15: hashlib.sha256(data)
+    p1-->>p16: Path(…).resolve
+    p1-->>p17: Path(source_root)
+    p1-->>p18: Path(…).expanduser
+    p1-->>p17: Path(path)
 ```
 
-> Call sequence diagram shows 30 of 98 interactions; 68 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 98 interactions; 68 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 12 of 30 (18 omitted); unresolved 10 of 27 (17 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/api_contracts.py:_resolve_openapi_path` | 2 | - | unresolved | 8 |
+| `src/llm_wiki_cli/services/api_contracts.py:_resolve_openapi_path` | 2 | - | external | 2 |
+| `src/llm_wiki_cli/services/api_contracts.py:_resolve_openapi_path` | 2 | [src/llm_wiki_cli/services/api_contracts.py](../modules/api_contracts.md) | internal | 9 |
+| `src/llm_wiki_cli/services/api_contracts.py:_resolve_openapi_path` | 2 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 2 |
+| `src/llm_wiki_cli/services/source_selection.py:path_is_selected` | 19 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 4 |
+| `src/llm_wiki_cli/services/source_selection.py:_selection_path` | 20 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 4 |
+| `src/llm_wiki_cli/services/source_selection.py:_require_selection_path` | 21 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 22 | - | external | 7 |
+> Omission summary shows 8 of 20 groups; 12 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

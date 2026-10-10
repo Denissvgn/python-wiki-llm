@@ -3,6 +3,7 @@
 ## Contents
 
 - [Establish the starting state](#establish-the-starting-state)
+- [Optional ordinary review tracking](#optional-ordinary-review-tracking)
 - [Complete owning loop](#complete-owning-loop)
 - [Mutation and identity boundaries](#mutation-and-identity-boundaries)
 - [Failure and recovery](#failure-and-recovery)
@@ -31,7 +32,8 @@ Classify the wiki rather than guessing a repair:
 | Starting state | Maintenance route |
 | --- | --- |
 | Managed wiki with a valid manifest | Continue with the owning sync below. |
-| Established canonical wiki with `index.md` but no manifest | Let sync **seed a baseline manifest** from the current source state without modifying pages. Inspect that result, then continue with an ordinary owning sync when source changes must be applied. |
+| Ordinary-maintenance adoption marker present, but its owner/state/projections are missing or corrupt | Stop before sync, bootstrap or seeding. Restore a complete matching authority snapshot through `llm-wiki maintenance recover --wiki-dir docs/llm_wiki --recovery-dir <complete-snapshot> --expected-adoption-id <actual-id>`. Preserve the immutable marker and history; never reconstruct them from current pages. |
+| Established canonical wiki with `index.md` but no manifest and no maintenance-adoption marker | Let sync **seed a baseline manifest** from the current source state without modifying pages. Inspect that result, then continue with an ordinary owning sync when source changes must be applied. |
 | Manifest present but stored source hashes are invalid | Allow sync's bounded repair. If sync repairs only the manifest (its stored hashes were invalid, and no pages were modified), run the same sync command again before linting. |
 | Absent, empty, or exact untouched initialization scaffold | Use the installed bootstrap route; incremental maintenance cannot invent its initial semantic baseline. |
 | Other partial manifestless layout | Preview the supported migration route and resolve its diagnostics before sync. Do not overwrite it as though it were an empty wiki. |
@@ -47,6 +49,60 @@ For a trusted source root outside the working directory, pass the same external
 `--src-dir` with `--allow-external-src` to `sync`, `lint`, and `ci-check`.
 Apply the same pair to `team check` when that policy is configured. The wiki
 directory remains inside the current project write boundary.
+
+## Optional ordinary review tracking
+
+Ordinary durable review is explicit adoption, independent of storage migration
+and human governance. Start with a coherent generated wiki and retain an empty
+recovery directory outside source/wiki:
+
+```bash
+llm-wiki maintenance adopt --src-dir src --wiki-dir wiki --recovery-dir maintenance-recovery
+llm-wiki maintenance status --src-dir src --wiki-dir wiki
+llm-wiki queue --src-dir src --wiki-dir wiki
+```
+
+Use the actual configured roots and source selection. Adoption starts tracked
+prose as unreviewed. Sync preserves pending records across refresh and restart;
+read-only status, context and queues do not acknowledge them. The queue remains
+advisory. Read its JSON `qualification.ordinary_review_custody` availability,
+`durable_owner_available` and `live_evaluation_performed` fields. Partial,
+unadopted or unavailable custody remains a gap; even a ready status or an empty
+queue establishes neither source/prose correctness nor ordinary-review completion.
+Inspect exact source and semantic prose before using the status/acknowledgment
+route below. Python executable syntax changes are scoped observations, separate
+from source-byte and structural freshness; unchanged syntax proves neither
+unchanged dependencies nor runtime behavior. Unsupported evidence stays
+unavailable. Unadopted wikis retain their existing format and review limits.
+
+Review an exact record's source and semantic section, then run the final owning
+sync after any prose edit. Capture its current basis before acknowledgment:
+
+```bash
+llm-wiki maintenance status --src-dir src --wiki-dir wiki --record-id RECORD_UUID --format json
+```
+
+Save the returned JSON to `review.json` outside source/wiki. Substitute the
+actual record ID. If `expected_basis` is null or status requires sync, resolve
+the reported gap and recapture; do not acknowledge. Save that exact record's
+`expected_basis` object as `basis.json`, also outside source/wiki, then use the
+returned `state_hash`:
+
+```bash
+llm-wiki maintenance acknowledge --src-dir src --wiki-dir wiki --record-id RECORD_UUID --expected-state-hash STATE_HASH --basis-file basis.json --actor-kind agent --actor-id documentation-agent
+```
+
+Changed source, prose or state rejects a stale basis. Later relevant edits
+reopen review, and an acknowledgment of one section does not cover its siblings.
+Deleted or ambiguously moved targets retain pending identity rather than guessing
+a new owner. Snapshot status reports historical review without live currentness.
+
+An explicit `agent` identity records operational review of that exact basis. It
+does not create human approval, satisfy governance policy or reactivate an
+expired human review. Keep stricter existing review requirements separate.
+Maintain the immutable adoption marker, owner, projections and recovery bundle
+together; the recovery route below preserves history instead of reinitializing
+it from current prose.
 
 ## Complete owning loop
 
@@ -135,7 +191,10 @@ infrastructure-observation, or source-revision change.
    workflow-page or other semantic conflicts remain a manual, evidence-backed
    decision. Never leave the wiki in a state where lint reports errors.
 
-7. Report expired human-section reviews and stale machine-verification
+7. Inspect ordinary pending review separately when adopted. A semantic review
+   may acknowledge an exact current basis with an explicit agent identity using
+   the route above; sync alone never acknowledges prose. Report expired
+   human-section reviews and stale machine-verification
    receipts with their existing reasons. Do not fabricate replacement human
    reviews or receipts. Then repeat the repository-policy check and follow
    [Repository handoff](repository-handoff.md).
@@ -173,6 +232,14 @@ owner's explicit decision. Source disappearance never authors lifecycle. A
 missing ledger is restored, not regenerated or reinitialized.
 
 ## Failure and recovery
+
+Ordinary maintenance adoption stores a complete `committed` recovery snapshot
+after successful publication. Use the actual retained complete directory and
+adoption identity, not an invented path or latest projection. Recovery does not
+approve prose or establish runtime currentness. Interrupted prepared adoption
+and captured dirty-prose recovery require their explicit recovery options;
+captured-preimage recovery requires owning sync before current review. Reads
+and ordinary sync never implicitly adopt, downgrade or remove the marker.
 
 - Stop on any sync, write, strict-lint, CI, or configured team-policy failure.
   Preserve the prior canonical state and report an unfinished gate as

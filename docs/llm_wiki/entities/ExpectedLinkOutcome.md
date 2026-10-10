@@ -1,6 +1,6 @@
 # _ExpectedLinkOutcome
 
-**Location:** `src/llm_wiki_cli/services/knowledge_index.py:204`
+**Location:** `src/llm_wiki_cli/services/knowledge_index.py:208`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_index](../modules/knowledge_index.md)

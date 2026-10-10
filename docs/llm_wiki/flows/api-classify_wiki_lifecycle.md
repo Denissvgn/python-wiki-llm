@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -14,60 +16,75 @@ sequenceDiagram
     participant p2 as manifest.exists
     participant p3 as manifest.is_symlink
     participant p4 as is_pristine_wiki_target
-    participant p5 as Path (src/llm_wiki_cli/services…py:is_pristine_wiki_target)
-    participant p6 as root.is_symlink
-    participant p7 as root.exists
-    participant p8 as root.is_dir (src/llm_wiki_cli/services…py:is_pristine_wiki_target)
-    participant p9 as iter_page_kinds
-    participant p10 as sorted
-    participant p11 as root.rglob
-    participant p12 as path.is_symlink
-    participant p13 as path.relative_to(…).as_posix
-    participant p14 as path.relative_to
-    participant p15 as set
-    participant p16 as paths_by_relative.items
-    participant p17 as path.is_dir
-    participant p18 as path.is_file
-    participant p19 as path.stat
-    participant p20 as path.read_text
-    participant p21 as json.loads
-    participant p22 as isinstance
-    participant p23 as frozenset
-    participant p24 as any
-    participant p25 as type
-    p0-->>p1: Path (src/llm_wiki_cli/services…py:classify_wiki_lifecycle)
+    participant p5 as root.is_dir (src/llm_wiki_cli/services…py:classify_wiki_lifecycle)
+    participant p6 as index.is_file
+    participant p7 as index.is_symlink
+    participant p8 as Path (src/llm_wiki_cli/services…py:is_pristine_wiki_target)
+    participant p9 as root.is_symlink
+    participant p10 as root.exists
+    participant p11 as root.is_dir (src/llm_wiki_cli/services…py:is_pristine_wiki_target)
+    participant p12 as iter_page_kinds
+    participant p13 as sorted
+    participant p14 as root.rglob
+    participant p15 as path.is_symlink
+    participant p16 as path.relative_to(…).as_posix
+    participant p17 as path.relative_to
+    participant p18 as set
+    participant p19 as paths_by_relative.items
+    participant p20 as path.is_dir
+    participant p21 as path.is_file
+    participant p22 as path.stat
+    participant p23 as path.read_text
+    participant p24 as json.loads
+    participant p25 as isinstance
+    participant p26 as frozenset
+    p0-->>p1: Path (src/llm_wiki_cli/services…py:classify_wiki_lifecycle)(wiki_dir)
     p0-->>p2: manifest.exists
     p0-->>p3: manifest.is_symlink
     p0->>p4: is_pristine_wiki_target
-    p4-->>p5: Path (src/llm_wiki_cli/services…py:is_pristine_wiki_target)
-    p4-->>p6: root.is_symlink
-    p4-->>p7: root.exists
-    p4-->>p8: root.is_dir (src/llm_wiki_cli/services…py:is_pristine_wiki_target)
-    p4->>p9: iter_page_kinds
-    p4-->>p10: sorted
-    p4-->>p11: root.rglob
-    p4-->>p12: path.is_symlink
-    p4-->>p13: path.relative_to(…).as_posix
-    p4-->>p14: path.relative_to
-    p4-->>p15: set
-    p4-->>p16: paths_by_relative.items
-    p4-->>p17: path.is_dir
-    p4-->>p18: path.is_file
-    p4-->>p19: path.stat
-    p4-->>p20: path.read_text
-    p4-->>p20: path.read_text
-    p4-->>p20: path.read_text
-    p4-->>p21: json.loads
-    p4-->>p22: isinstance
-    p4-->>p23: frozenset
-    p4-->>p23: frozenset
-    p4-->>p23: frozenset
-    p4-->>p24: any
-    p4-->>p25: type
-    p4-->>p15: set
+    p0-->>p5: root.is_dir (src/llm_wiki_cli/services…py:classify_wiki_lifecycle)
+    p0-->>p6: index.is_file
+    p0-->>p7: index.is_symlink
+    p4-->>p8: Path (src/llm_wiki_cli/services…py:is_pristine_wiki_target)(wiki_dir)
+    p4-->>p9: root.is_symlink
+    p4-->>p10: root.exists
+    p4-->>p11: root.is_dir (src/llm_wiki_cli/services…py:is_pristine_wiki_target)
+    p4->>p12: iter_page_kinds
+    p4-->>p13: sorted(root.rglob(...))
+    p4-->>p14: root.rglob('*')
+    p4-->>p15: path.is_symlink
+    p4-->>p16: path.relative_to(…).as_posix
+    p4-->>p17: path.relative_to(root)
+    p4-->>p18: set(paths_by_relative)
+    p4-->>p19: paths_by_relative.items
+    p4-->>p20: path.is_dir
+    p4-->>p21: path.is_file
+    p4-->>p22: path.stat
+    p4-->>p23: path.read_text(encoding='utf-8')
+    p4-->>p23: path.read_text(encoding='utf-8')
+    p4-->>p23: path.read_text(encoding='utf-8')
+    p4-->>p24: json.loads(raw_config)
+    p4-->>p25: isinstance(config, dict)
+    p4-->>p26: frozenset(config)
+    p4-->>p26: frozenset(legacy_fields)
+    p4-->>p26: frozenset(profiled_fields)
 ```
 
-> Call sequence diagram shows 30 of 40 interactions; 10 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 40 interactions; 10 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 9 of 14 (5 omitted); unresolved 19 of 22 (3 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/wiki_lifecycle.py:is_pristine_wiki_target` | 5 | - | external | 4 |
+| `src/llm_wiki_cli/services/wiki_lifecycle.py:is_pristine_wiki_target` | 5 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/wiki_lifecycle.py:is_pristine_wiki_target` | 5 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_bytes` | 34 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_bytes` | 34 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_text` | 36 | - | external | 1 |
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

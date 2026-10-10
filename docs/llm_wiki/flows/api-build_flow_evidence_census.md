@@ -13,6 +13,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -24,57 +26,72 @@ sequenceDiagram
     participant p5 as DocumentationCalibrationError
     participant p6 as surface_path.exists
     participant p7 as _fallback_flow_records
-    participant p8 as flows_dir.is_symlink
-    participant p9 as flows_dir.is_dir
-    participant p10 as flows_dir.glob
-    participant p11 as path.is_file
-    participant p12 as path.is_symlink
-    participant p13 as is_safe_page_id
-    participant p14 as isinstance (src/llm_wiki_cli/services…urface.py:is_safe_page_id)
-    participant p15 as bool (src/llm_wiki_cli/services…urface.py:is_safe_page_id)
-    participant p16 as page_id.startswith
-    participant p17 as _PAGE_ID_RE.fullmatch
-    participant p18 as is_portable_path_component
-    participant p19 as require_portable_path_component
-    participant p20 as component.encode
-    participant p21 as SharedValidationError
-    participant p22 as unicodedata.normalize (src/llm_wiki_cli/services…e_portable_path_component)
-    participant p23 as any (src/llm_wiki_cli/services…e_portable_path_component)
-    participant p24 as ord
-    participant p25 as component.endswith
+    participant p8 as _read_json_mapping
+    participant p9 as surface.get
+    participant p10 as isinstance (src/llm_wiki_cli/services…uild_flow_evidence_census)
+    participant p11 as Path(…).expanduser().resolve
+    participant p12 as Path(…).expanduser (src/llm_wiki_cli/services…uild_flow_evidence_census)
+    participant p13 as _dependency_metric_map
+    participant p14 as set (src/llm_wiki_cli/services…uild_flow_evidence_census)
+    participant p15 as _required_flow_id
+    participant p16 as seen_flow_ids.add
+    participant p17 as capsules.append
+    participant p18 as _flow_capsule
+    participant p19 as capsules.sort
+    participant p20 as item[…].casefold (src/llm_wiki_cli/services…uild_flow_evidence_census)
+    participant p21 as defaultdict
+    participant p22 as str (src/llm_wiki_cli/services…uild_flow_evidence_census)
+    participant p23 as families_by_id[…].append
     p0->>p1: build_flow_evidence_census (src/llm_wiki_cli/services/calibration/contracts.py)
     p1-->>p2: Path(…).expanduser (src/llm_wiki_cli/services…d_flow_evidence_census, 1)
-    p1-->>p3: Path
+    p1-->>p3: Path(wiki_dir)
     p1-->>p4: wiki.is_dir
     p1->>p5: DocumentationCalibrationError
     p1-->>p6: surface_path.exists
     p1->>p7: _fallback_flow_records
-    p7-->>p8: flows_dir.is_symlink
-    p7-->>p9: flows_dir.is_dir
-    p7-->>p10: flows_dir.glob
-    p7-->>p11: path.is_file
-    p7-->>p12: path.is_symlink
-    p7->>p13: is_safe_page_id
-    p13-->>p14: isinstance (src/llm_wiki_cli/services…urface.py:is_safe_page_id)
-    p13-->>p15: bool (src/llm_wiki_cli/services…urface.py:is_safe_page_id)
-    p13-->>p16: page_id.startswith
-    p13-->>p15: bool (src/llm_wiki_cli/services…urface.py:is_safe_page_id)
-    p13-->>p17: _PAGE_ID_RE.fullmatch
-    p13->>p18: is_portable_path_component
-    p18->>p19: require_portable_path_component
-    p19-->>p20: component.encode
-    p19->>p21: SharedValidationError
-    p19-->>p22: unicodedata.normalize (src/llm_wiki_cli/services…e_portable_path_component)
-    p19->>p21: SharedValidationError
-    p19-->>p23: any (src/llm_wiki_cli/services…e_portable_path_component)
-    p19-->>p24: ord
-    p19-->>p24: ord
-    p19->>p21: SharedValidationError
-    p19-->>p25: component.endswith
-    p19-->>p23: any (src/llm_wiki_cli/services…e_portable_path_component)
+    p1->>p8: _read_json_mapping
+    p1-->>p9: surface.get('flows')
+    p1->>p7: _fallback_flow_records
+    p1-->>p10: isinstance (src/llm_wiki_cli/services…uild_flow_evidence_census)(raw_flows, list)
+    p1->>p5: DocumentationCalibrationError
+    p1-->>p11: Path(…).expanduser().resolve
+    p1-->>p12: Path(…).expanduser (src/llm_wiki_cli/services…uild_flow_evidence_census)
+    p1-->>p3: Path(source_root)
+    p1->>p13: _dependency_metric_map
+    p1-->>p14: set (src/llm_wiki_cli/services…uild_flow_evidence_census)
+    p1-->>p10: isinstance (src/llm_wiki_cli/services…uild_flow_evidence_census)(raw, Mapping)
+    p1->>p5: DocumentationCalibrationError
+    p1->>p15: _required_flow_id
+    p1->>p5: DocumentationCalibrationError
+    p1-->>p16: seen_flow_ids.add(flow_id)
+    p1-->>p17: capsules.append(_flow_capsule(...))
+    p1->>p18: _flow_capsule
+    p1-->>p19: capsules.sort(key=...)
+    p1-->>p20: item[…].casefold (src/llm_wiki_cli/services…uild_flow_evidence_census)
+    p1-->>p21: defaultdict(list)
+    p1-->>p22: str (src/llm_wiki_cli/services…uild_flow_evidence_census)(...)
+    p1-->>p23: families_by_id[…].append(str(...))
+    p1-->>p22: str (src/llm_wiki_cli/services…uild_flow_evidence_census)(capsule[...])
 ```
 
-> Call sequence diagram shows 30 of 406 interactions; 376 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 406 interactions; 376 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 8 of 137 (129 omitted); unresolved 11 of 164 (153 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/calibration/contracts.py:_fallback_flow_records` | 8 | - | unresolved | 8 |
+| `src/llm_wiki_cli/services/calibration/contracts.py:_fallback_flow_records` | 8 | [src/llm_wiki_cli/services/wiki_surface.py](../modules/wiki_surface.md) | internal | 1 |
+| `src/llm_wiki_cli/services/wiki_surface.py:is_safe_page_id` | 14 | - | external | 3 |
+| `src/llm_wiki_cli/services/wiki_surface.py:is_safe_page_id` | 14 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/wiki_surface.py:is_safe_page_id` | 14 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:is_portable_path_component` | 20 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_portable_path_component` | 21 | - | unresolved | 4 |
+| `src/llm_wiki_cli/services/validation.py:require_portable_path_component` | 21 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 5 |
+> Omission summary shows 8 of 74 groups; 66 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

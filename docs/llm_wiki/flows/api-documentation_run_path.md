@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -26,44 +28,56 @@ sequenceDiagram
     participant p14 as _assert_existing_workspace_layout_safe
     participant p15 as os.path.lexists (src/llm_wiki_cli/services…ting_workspace_layout_safe)
     participant p16 as _assert_safe_workspace_directory
-    participant p17 as directory.lstat
-    participant p18 as DocumentationIntegrityError (src/llm_wiki_cli/services…t_safe_workspace_directory)
-    participant p19 as bool (src/llm_wiki_cli/services…t_safe_workspace_directory)
-    participant p20 as getattr (src/llm_wiki_cli/services…t_safe_workspace_directory)
-    participant p21 as stat.S_ISLNK (src/llm_wiki_cli/services…t_safe_workspace_directory)
+    participant p17 as _assert_workspace_control_tree_safe
+    participant p18 as _assert_workspace_output_tree_safe
+    participant p19 as directory.lstat
+    participant p20 as os.path.lexists (src/llm_wiki_cli/services…orkspace_control_tree_safe)
+    participant p21 as os.path.lexists (src/llm_wiki_cli/services…workspace_output_tree_safe)
+    participant p22 as DocumentationIntegrityError (src/llm_wiki_cli/services…t_safe_workspace_directory)
     p0->>p1: _resolve_workspace_root_argument
-    p1-->>p2: Path (src/llm_wiki_cli/services…ve_workspace_root_argument)
-    p1-->>p3: os.path.abspath
-    p1-->>p4: os.fspath
+    p1-->>p2: Path (src/llm_wiki_cli/services…ve_workspace_root_argument)(os.path.abspath(...))
+    p1-->>p3: os.path.abspath(os.fspath(...))
+    p1-->>p4: os.fspath(...)
     p1-->>p5: Path(…).expanduser
-    p1-->>p2: Path (src/llm_wiki_cli/services…ve_workspace_root_argument)
-    p1-->>p6: os.path.lexists (src/llm_wiki_cli/services…ve_workspace_root_argument)
+    p1-->>p2: Path (src/llm_wiki_cli/services…ve_workspace_root_argument)(workspace)
+    p1-->>p6: os.path.lexists (src/llm_wiki_cli/services…ve_workspace_root_argument)(requested)
     p1-->>p7: requested.lstat
-    p1-->>p8: DocumentationIntegrityError (src/llm_wiki_cli/services…ve_workspace_root_argument)
-    p1-->>p9: bool (src/llm_wiki_cli/services…ve_workspace_root_argument)
-    p1-->>p10: getattr (src/llm_wiki_cli/services…ve_workspace_root_argument)
-    p1-->>p9: bool (src/llm_wiki_cli/services…ve_workspace_root_argument)
-    p1-->>p10: getattr (src/llm_wiki_cli/services…ve_workspace_root_argument)
-    p1-->>p11: stat.S_ISLNK (src/llm_wiki_cli/services…ve_workspace_root_argument)
-    p1-->>p8: DocumentationIntegrityError (src/llm_wiki_cli/services…ve_workspace_root_argument)
-    p1-->>p12: stat.S_ISDIR (src/llm_wiki_cli/services…ve_workspace_root_argument)
-    p1-->>p8: DocumentationIntegrityError (src/llm_wiki_cli/services…ve_workspace_root_argument)
+    p1-->>p8: DocumentationIntegrityError (src/llm_wiki_cli/services…ve_workspace_root_argument)(...)
+    p1-->>p9: bool (src/llm_wiki_cli/services…ve_workspace_root_argument)(getattr(...))
+    p1-->>p10: getattr (src/llm_wiki_cli/services…ve_workspace_root_argument)(entry_stat, 'st_reparse_tag', 0)
+    p1-->>p9: bool (src/llm_wiki_cli/services…ve_workspace_root_argument)(...)
+    p1-->>p10: getattr (src/llm_wiki_cli/services…ve_workspace_root_argument)(entry_stat, 'st_file_attributes', 0)
+    p1-->>p11: stat.S_ISLNK (src/llm_wiki_cli/services…ve_workspace_root_argument)(entry_stat.st_mode)
+    p1-->>p8: DocumentationIntegrityError (src/llm_wiki_cli/services…ve_workspace_root_argument)('Requested workspace root must not be a symlink or reparse point.')
+    p1-->>p12: stat.S_ISDIR (src/llm_wiki_cli/services…ve_workspace_root_argument)(entry_stat.st_mode)
+    p1-->>p8: DocumentationIntegrityError (src/llm_wiki_cli/services…ve_workspace_root_argument)('Requested workspace root must be a directory.')
     p1-->>p13: requested.resolve
-    p1-->>p6: os.path.lexists (src/llm_wiki_cli/services…ve_workspace_root_argument)
+    p1-->>p6: os.path.lexists (src/llm_wiki_cli/services…ve_workspace_root_argument)(resolved)
     p1->>p14: _assert_existing_workspace_layout_safe
-    p14-->>p15: os.path.lexists (src/llm_wiki_cli/services…ting_workspace_layout_safe)
+    p14-->>p15: os.path.lexists (src/llm_wiki_cli/services…ting_workspace_layout_safe)(workspace_root)
     p14->>p16: _assert_safe_workspace_directory
-    p16-->>p17: directory.lstat
-    p16-->>p18: DocumentationIntegrityError (src/llm_wiki_cli/services…t_safe_workspace_directory)
-    p16-->>p19: bool (src/llm_wiki_cli/services…t_safe_workspace_directory)
-    p16-->>p20: getattr (src/llm_wiki_cli/services…t_safe_workspace_directory)
-    p16-->>p19: bool (src/llm_wiki_cli/services…t_safe_workspace_directory)
-    p16-->>p20: getattr (src/llm_wiki_cli/services…t_safe_workspace_directory)
-    p16-->>p21: stat.S_ISLNK (src/llm_wiki_cli/services…t_safe_workspace_directory)
-    p16-->>p18: DocumentationIntegrityError (src/llm_wiki_cli/services…t_safe_workspace_directory)
+    p14-->>p15: os.path.lexists (src/llm_wiki_cli/services…ting_workspace_layout_safe)(candidate)
+    p14->>p16: _assert_safe_workspace_directory
+    p14->>p17: _assert_workspace_control_tree_safe
+    p14->>p18: _assert_workspace_output_tree_safe
+    p16-->>p19: directory.lstat
+    p17-->>p20: os.path.lexists (src/llm_wiki_cli/services…orkspace_control_tree_safe)(control)
+    p18-->>p21: os.path.lexists (src/llm_wiki_cli/services…workspace_output_tree_safe)(root)
+    p16-->>p22: DocumentationIntegrityError (src/llm_wiki_cli/services…t_safe_workspace_directory)(...)
 ```
 
-> Call sequence diagram shows 30 of 82 interactions; 52 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 82 interactions; 52 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 0 of 0 (0 omitted); unresolved 24 of 76 (52 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/documentation_run/workspace.py:_assert_safe_workspace_directory` | 23 | - | unresolved | 12 |
+| `src/llm_wiki_cli/services/documentation_run/workspace.py:_assert_workspace_control_tree_safe` | 40 | - | unresolved | 20 |
+| `src/llm_wiki_cli/services/documentation_run/workspace.py:_assert_workspace_output_tree_safe` | 62 | - | unresolved | 20 |
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

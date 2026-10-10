@@ -1,6 +1,6 @@
 # KnowledgeCommitResult
 
-**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:219`
+**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:222`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_artifacts](../modules/knowledge_artifacts.md)
@@ -23,6 +23,7 @@ Outcome of a real or dry-run commit.
 | `dry_run` | `bool` | *required* | — |
 | `storage_objects` | `tuple[PlannedArtifactWrite \| SpooledArtifactWrite, ...]` | `()` | — |
 | `storage_format` | `str` | `'v1'` | — |
+| `maintenance_adoption` | `PlannedArtifactWrite \| SpooledArtifactWrite \| None` | `None` | — |
 
 ## Methods
 
@@ -70,7 +71,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [knowledge_artifacts](../modules/knowledge_artifacts.md) | 1 | `committed_manifest`, `dry_run`, `evaluated_envelope_hash`, `knowledge_index`, `manifest`, `storage_format`, `storage_objects`, `surface_index` |
+| [knowledge_artifacts](../modules/knowledge_artifacts.md) | 1 | `committed_manifest`, `dry_run`, `evaluated_envelope_hash`, `knowledge_index`, `maintenance_adoption`, `manifest`, `storage_format`, `storage_objects`, `surface_index` |
 
 ### References
 

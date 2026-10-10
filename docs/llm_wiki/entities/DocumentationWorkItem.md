@@ -1,6 +1,6 @@
 # DocumentationWorkItem
 
-**Location:** `src/llm_wiki_cli/services/documentation_worklist.py:137`
+**Location:** `src/llm_wiki_cli/services/documentation_worklist.py:138`
 **Kind:** Class
 **Bases:** —
 **Module:** [documentation_worklist](../modules/documentation_worklist.md)

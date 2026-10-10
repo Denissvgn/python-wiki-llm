@@ -6,61 +6,83 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as open_windows_readonly_file
     participant p1 as WindowsFileGuardError
     participant p2 as _open_windows_readonly_file_handle
-    participant p3 as ctypes.WinDLL (src/llm_wiki_cli/services…dows_readonly_file_handle)
-    participant p4 as create_file
-    participant p5 as _windows_api_path
-    participant p6 as os.path.abspath
-    participant p7 as os.fspath
-    participant p8 as value.startswith
-    participant p9 as wintypes.HANDLE (src/llm_wiki_cli/services…dows_readonly_file_handle)
-    participant p10 as ctypes.WinError (src/llm_wiki_cli/services…dows_readonly_file_handle)
-    participant p11 as ctypes.get_last_error (src/llm_wiki_cli/services…dows_readonly_file_handle)
-    participant p12 as int (src/llm_wiki_cli/services…dows_readonly_file_handle)
-    participant p13 as get_file_type
-    participant p14 as _ByHandleFileInformation
-    participant p15 as get_information
-    participant p16 as ctypes.byref (src/llm_wiki_cli/services…dows_readonly_file_handle)
-    participant p17 as _verify_windows_handle_restrictive_dacl
-    participant p18 as ctypes.WinDLL (src/llm_wiki_cli/services…s_handle_restrictive_dacl)
+    participant p3 as Path
+    participant p4 as msvcrt.open_osfhandle
+    participant p5 as getattr (src/llm_wiki_cli/services…pen_windows_readonly_file)
+    participant p6 as os.fdopen
+    participant p7 as os.fstat
+    participant p8 as stream.fileno
+    participant p9 as windows_object_identity
+    participant p10 as str (src/llm_wiki_cli/services…pen_windows_readonly_file)
+    participant p11 as stream.close
+    participant p12 as os.close
+    participant p13 as _close_windows_handle
+    participant p14 as ctypes.WinDLL (src/llm_wiki_cli/services…dows_readonly_file_handle)
+    participant p15 as windows_object_identity_from_values
+    participant p16 as create_file
+    participant p17 as int (src/llm_wiki_cli/services…y:windows_object_identity)
+    participant p18 as _windows_api_path
+    participant p19 as getattr (src/llm_wiki_cli/services…y:windows_object_identity)
+    participant p20 as wintypes.HANDLE (src/llm_wiki_cli/services…dows_readonly_file_handle)
+    participant p21 as ctypes.WinError (src/llm_wiki_cli/services…dows_readonly_file_handle)
     p0->>p1: WindowsFileGuardError
     p0->>p2: _open_windows_readonly_file_handle
-    p2-->>p3: ctypes.WinDLL (src/llm_wiki_cli/services…dows_readonly_file_handle)
-    p2-->>p4: create_file
-    p2->>p5: _windows_api_path
-    p5-->>p6: os.path.abspath
-    p5-->>p7: os.fspath
-    p5-->>p8: value.startswith
-    p5-->>p8: value.startswith
-    p2-->>p9: wintypes.HANDLE (src/llm_wiki_cli/services…dows_readonly_file_handle)
-    p2-->>p10: ctypes.WinError (src/llm_wiki_cli/services…dows_readonly_file_handle)
-    p2-->>p11: ctypes.get_last_error (src/llm_wiki_cli/services…dows_readonly_file_handle)
-    p2->>p1: WindowsFileGuardError
-    p2-->>p12: int (src/llm_wiki_cli/services…dows_readonly_file_handle)
-    p2-->>p12: int (src/llm_wiki_cli/services…dows_readonly_file_handle)
-    p2-->>p13: get_file_type
-    p2->>p1: WindowsFileGuardError
-    p2-->>p14: _ByHandleFileInformation
-    p2-->>p15: get_information
-    p2-->>p16: ctypes.byref (src/llm_wiki_cli/services…dows_readonly_file_handle)
-    p2-->>p10: ctypes.WinError (src/llm_wiki_cli/services…dows_readonly_file_handle)
-    p2-->>p11: ctypes.get_last_error (src/llm_wiki_cli/services…dows_readonly_file_handle)
-    p2->>p1: WindowsFileGuardError
-    p2-->>p12: int (src/llm_wiki_cli/services…dows_readonly_file_handle)
-    p2->>p1: WindowsFileGuardError
-    p2-->>p12: int (src/llm_wiki_cli/services…dows_readonly_file_handle)
-    p2->>p1: WindowsFileGuardError
-    p2->>p17: _verify_windows_handle_restrictive_dacl
-    p17-->>p18: ctypes.WinDLL (src/llm_wiki_cli/services…s_handle_restrictive_dacl)
-    p17-->>p18: ctypes.WinDLL (src/llm_wiki_cli/services…s_handle_restrictive_dacl)
+    p0-->>p3: Path(path)
+    p0->>p2: _open_windows_readonly_file_handle
+    p0-->>p3: Path(path)
+    p0->>p2: _open_windows_readonly_file_handle
+    p0-->>p3: Path(path)
+    p0-->>p4: msvcrt.open_osfhandle(native_handle, ...)
+    p0-->>p5: getattr (src/llm_wiki_cli/services…pen_windows_readonly_file)(os, 'O_BINARY', 0)
+    p0-->>p5: getattr (src/llm_wiki_cli/services…pen_windows_readonly_file)(os, 'O_NOINHERIT', 0)
+    p0-->>p6: os.fdopen(descriptor, 'rb')
+    p0-->>p7: os.fstat(stream.fileno(...))
+    p0-->>p8: stream.fileno
+    p0->>p9: windows_object_identity
+    p0-->>p10: str (src/llm_wiki_cli/services…pen_windows_readonly_file)(path)
+    p0->>p1: WindowsFileGuardError
+    p0-->>p10: str (src/llm_wiki_cli/services…pen_windows_readonly_file)(exc)
+    p0->>p1: WindowsFileGuardError
+    p0-->>p11: stream.close
+    p0-->>p12: os.close(descriptor)
+    p0->>p13: _close_windows_handle
+    p2-->>p14: ctypes.WinDLL (src/llm_wiki_cli/services…dows_readonly_file_handle)('kernel32', use_last_error=True)
+    p9->>p15: windows_object_identity_from_values
+    p2-->>p16: create_file(_windows_api_path(...), ..., 1, None, 3, ..., None)
+    p9-->>p17: int (src/llm_wiki_cli/services…y:windows_object_identity)(getattr(...))
+    p2->>p18: _windows_api_path
+    p9-->>p19: getattr (src/llm_wiki_cli/services…y:windows_object_identity)(result, 'st_dev', 0)
+    p2-->>p20: wintypes.HANDLE (src/llm_wiki_cli/services…dows_readonly_file_handle)(...)
+    p9-->>p17: int (src/llm_wiki_cli/services…y:windows_object_identity)(getattr(...))
+    p2-->>p21: ctypes.WinError (src/llm_wiki_cli/services…dows_readonly_file_handle)(ctypes.get_last_error(...))
 ```
 
-> Call sequence diagram shows 30 of 170 interactions; 140 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 170 interactions; 140 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 17 of 109 (92 omitted); unresolved 3 of 20 (17 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_windows_api_path` | 6 | - | external | 2 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_windows_api_path` | 6 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_readonly_file_handle` | 3 | - | external | 9 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_readonly_file_handle` | 3 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 7 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_readonly_file_handle` | 3 | - | unresolved | 3 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_verify_windows_handle_restrictive_dacl` | 29 | - | external | 50 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_verify_windows_handle_restrictive_dacl` | 29 | - | unresolved | 5 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_verify_windows_handle_restrictive_dacl` | 29 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 15 |
+> Omission summary shows 8 of 19 groups; 11 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

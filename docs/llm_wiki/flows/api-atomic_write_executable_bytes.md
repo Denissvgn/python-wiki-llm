@@ -2,9 +2,11 @@
 
 **Entry point:** `atomic_write_executable_bytes` (`api`)
 **Source:** [filesystem_guard](../modules/filesystem_guard.md)
-**Modules touched:** [filesystem_guard](../modules/filesystem_guard.md)
+**Modules touched:** [filesystem_guard](../modules/filesystem_guard.md), [wiki_write_basis](../modules/wiki_write_basis.md)
 
 ## Call sequence
+
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -16,58 +18,76 @@ sequenceDiagram
     participant p4 as OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)
     participant p5 as isinstance (src/llm_wiki_cli/services…tomic_write_guarded_bytes)
     participant p6 as TypeError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)
-    participant p7 as _atomic_write_guarded_bytes_windows
-    participant p8 as uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows)
-    participant p9 as guard_windows_directory_chain
-    participant p10 as WindowsDirectoryGuardError
-    participant p11 as Path (src/llm_wiki_cli/services…d_windows_directory_chain)
-    participant p12 as os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)
-    participant p13 as os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)
-    participant p14 as handles.append
-    participant p15 as _open_windows_directory_guard
-    participant p16 as ctypes.WinDLL (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p17 as create_file (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p18 as _windows_api_path
-    participant p19 as os.path.abspath (src/llm_wiki_cli/services…uard.py:_windows_api_path)
-    participant p20 as os.fspath (src/llm_wiki_cli/services…uard.py:_windows_api_path)
-    participant p21 as value.startswith
-    participant p22 as wintypes.HANDLE (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p23 as ctypes.get_last_error (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p24 as ctypes.WinError (src/llm_wiki_cli/services…n_windows_directory_guard)
-    participant p25 as _WindowsDirectoryGuardUnavailableError
+    participant p7 as before_wiki_write
+    participant p8 as _atomic_write_guarded_bytes_windows
+    participant p9 as _atomic_write_private_bytes_posix
+    participant p10 as after_wiki_write
+    participant p11 as ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)
+    participant p12 as uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows)
+    participant p13 as getattr (src/llm_wiki_cli/services…write_private_bytes_posix)
+    participant p14 as ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…basis.py:after_wiki_write)
+    participant p15 as basis.before_write
+    participant p16 as basis.after_write
+    participant p17 as Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)
+    participant p18 as guard_windows_directory_chain
+    participant p19 as OSError (src/llm_wiki_cli/services…write_private_bytes_posix)
+    participant p20 as Path (src/llm_wiki_cli/services…basis.py:after_wiki_write)
+    participant p21 as Path (src/llm_wiki_cli/services…ite_guarded_bytes_windows)
+    participant p22 as os.path.lexists (src/llm_wiki_cli/services…ite_guarded_bytes_windows)
+    participant p23 as os.open (src/llm_wiki_cli/services…write_private_bytes_posix)
+    participant p24 as target.lstat
+    participant p25 as uuid.uuid4 (src/llm_wiki_cli/services…write_private_bytes_posix)
+    participant p26 as getattr (src/llm_wiki_cli/services…ite_guarded_bytes_windows)
     p0->>p1: atomic_write_guarded_bytes
-    p1-->>p2: Path (src/llm_wiki_cli/services…tomic_write_guarded_bytes)
+    p1-->>p2: Path (src/llm_wiki_cli/services…tomic_write_guarded_bytes)(path)
     p1-->>p3: target.is_absolute
-    p1-->>p4: OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)
-    p1-->>p4: OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)
-    p1-->>p5: isinstance (src/llm_wiki_cli/services…tomic_write_guarded_bytes)
-    p1-->>p6: TypeError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)
-    p1->>p7: _atomic_write_guarded_bytes_windows
-    p7-->>p8: uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows)
-    p7-->>p8: uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows)
-    p7->>p9: guard_windows_directory_chain
-    p9->>p10: WindowsDirectoryGuardError
-    p9-->>p11: Path (src/llm_wiki_cli/services…d_windows_directory_chain)
-    p9-->>p12: os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)
-    p9-->>p13: os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)
-    p9->>p10: WindowsDirectoryGuardError
-    p9-->>p11: Path (src/llm_wiki_cli/services…d_windows_directory_chain)
-    p9-->>p14: handles.append
-    p9->>p15: _open_windows_directory_guard
-    p15-->>p16: ctypes.WinDLL (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p15-->>p17: create_file (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p15->>p18: _windows_api_path
-    p18-->>p19: os.path.abspath (src/llm_wiki_cli/services…uard.py:_windows_api_path)
-    p18-->>p20: os.fspath (src/llm_wiki_cli/services…uard.py:_windows_api_path)
-    p18-->>p21: value.startswith
-    p18-->>p21: value.startswith
-    p15-->>p22: wintypes.HANDLE (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p15-->>p23: ctypes.get_last_error (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p15-->>p24: ctypes.WinError (src/llm_wiki_cli/services…n_windows_directory_guard)
-    p15->>p25: _WindowsDirectoryGuardUnavailableError
+    p1-->>p4: OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)(...)
+    p1-->>p4: OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)(...)
+    p1-->>p5: isinstance (src/llm_wiki_cli/services…tomic_write_guarded_bytes)(data, bytes)
+    p1-->>p6: TypeError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)('Guarded output data must be bytes.')
+    p1->>p7: before_wiki_write
+    p1->>p8: _atomic_write_guarded_bytes_windows
+    p1->>p9: _atomic_write_private_bytes_posix
+    p1->>p10: after_wiki_write
+    p7-->>p11: ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)
+    p8-->>p12: uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows)
+    p9-->>p13: getattr (src/llm_wiki_cli/services…write_private_bytes_posix)(os, 'O_NOFOLLOW', None)
+    p10-->>p14: ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…basis.py:after_wiki_write)
+    p7-->>p15: basis.before_write(Path(...), content)
+    p8-->>p12: uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows)
+    p9-->>p13: getattr (src/llm_wiki_cli/services…write_private_bytes_posix)(os, 'O_DIRECTORY', None)
+    p10-->>p16: basis.after_write(Path(...), content)
+    p7-->>p17: Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)(path)
+    p8->>p18: guard_windows_directory_chain
+    p9-->>p19: OSError (src/llm_wiki_cli/services…write_private_bytes_posix)('This POSIX platform cannot provide no-follow directory writes.')
+    p10-->>p20: Path (src/llm_wiki_cli/services…basis.py:after_wiki_write)(path)
+    p8-->>p21: Path (src/llm_wiki_cli/services…ite_guarded_bytes_windows)(parent.anchor)
+    p9-->>p13: getattr (src/llm_wiki_cli/services…write_private_bytes_posix)(os, 'O_CLOEXEC', 0)
+    p8-->>p22: os.path.lexists (src/llm_wiki_cli/services…ite_guarded_bytes_windows)(target)
+    p9-->>p23: os.open (src/llm_wiki_cli/services…write_private_bytes_posix)(target.anchor, directory_flags)
+    p8-->>p24: target.lstat
+    p9-->>p25: uuid.uuid4 (src/llm_wiki_cli/services…write_private_bytes_posix)
+    p8-->>p26: getattr (src/llm_wiki_cli/services…ite_guarded_bytes_windows)(existing, 'st_file_attributes', 0)
 ```
 
-> Call sequence diagram shows 30 of 345 interactions; 315 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 353 interactions; 323 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 18 of 219 (201 omitted); unresolved 6 of 43 (37 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 16 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 9 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 16 | - | external | 9 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 16 | - | unresolved | 4 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 24 | - | external | 14 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 24 | - | unresolved | 3 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 24 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 9 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_windows_api_path` | 27 | - | external | 2 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_windows_api_path` | 27 | - | unresolved | 2 |
+> Omission summary shows 8 of 43 groups; 35 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -84,10 +104,10 @@ flowchart LR
     s6["6. OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)"]
     s7["7. isinstance (src/llm_wiki_cli/services…tomic_write_guarded_bytes)"]
     s8["8. TypeError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)"]
-    s9["9. _atomic_write_guarded_bytes_windows"]
-    s10["10. uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows)"]
-    s11["11. uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows)"]
-    s12["12. guard_windows_directory_chain"]
+    s9["9. before_wiki_write"]
+    s10["10. ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)"]
+    s11["11. basis.before_write"]
+    s12["12. Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)"]
     s1 -->|"atomic_write_guarded_bytes(path, data, mode=448, require_single_link=False, expected_existing=expected_existing)"| s2
     s2 -. "Path (src/llm_wiki_cli/services…tomic_write_guarded_bytes)(path)" .-> s3
     s2 -. "target.is_absolute(data not statically known)" .-> s4
@@ -95,30 +115,13 @@ flowchart LR
     s2 -. "OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)(...)" .-> s6
     s2 -. "isinstance (src/llm_wiki_cli/services…tomic_write_guarded_bytes)(data, bytes)" .-> s7
     s2 -. "TypeError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)('Guarded output data must be bytes.')" .-> s8
-    s2 -->|"_atomic_write_guarded_bytes_windows(target, data, expected_existing=expected_existing, require_single_link=require_single_link)"| s9
-    s9 -. "uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows)(data not statically known)" .-> s10
-    s9 -. "uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows)(data not statically known)" .-> s11
-    s9 -->|"guard_windows_directory_chain(Path(...), relative_components)"| s12
-    b0["filesystem_write quarantine.unlink"]
-    s9 -. "filesystem_write quarantine.unlink" .-> b0
-    b1["filesystem_write temporary.unlink"]
-    s9 -. "filesystem_write temporary.unlink" .-> b1
-    b2["mutation handles.append"]
-    s12 -. "mutation handles.append" .-> b2
-    b3["mutation handles.append"]
-    s12 -. "mutation handles.append" .-> b3
-    b4["mutation handles.append"]
-    s12 -. "mutation handles.append" .-> b4
+    s2 -->|"before_wiki_write(target, data)"| s9
+    s9 -. "ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)(data not statically known)" .-> s10
+    s9 -. "basis.before_write(Path(...), content)" .-> s11
+    s9 -. "Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)(path)" .-> s12
     click s1 "../modules/filesystem_guard.md"
     click s2 "../modules/filesystem_guard.md"
-    click s9 "../modules/filesystem_guard.md"
-    click s12 "../modules/filesystem_guard.md"
-    classDef boundary stroke:#b45309,stroke-dasharray: 4 2
-    class b0 boundary
-    class b1 boundary
-    class b2 boundary
-    class b3 boundary
-    class b4 boundary
+    click s9 "../modules/wiki_write_basis.md"
 ```
 
 ### Step data
@@ -133,10 +136,10 @@ flowchart LR
 | `OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)` | - | - | - | - |
 | `isinstance (src/llm_wiki_cli/services…tomic_write_guarded_bytes)` | - | - | - | - |
 | `TypeError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)` | - | - | - | - |
-| `_atomic_write_guarded_bytes_windows` | `target: Path`, `data: bytes`, `expected_existing: bytes \| None \| object`, `require_single_link: bool` | `os`, `os`, `os`, `os`, `os`, `_EXPECTED_EXISTING_UNSET` | - | - |
-| `uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows)` | - | - | - | - |
-| `uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows)` | - | - | - | - |
-| `guard_windows_directory_chain` | `root: Path`, `relative_components: Sequence[str]`, `create_missing: bool`, `require_restrictive_dacl: bool` | `os`, `WindowsDurabilityError` | - | - |
+| `before_wiki_write` | `path: str \| Path`, `content: bytes \| None` | - | - | - |
+| `ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | - | - | - | - |
+| `basis.before_write` | - | - | - | - |
+| `Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | - | - | - | - |
 
 ### Call data
 
@@ -149,20 +152,14 @@ flowchart LR
 | atomic_write_guarded_bytes | OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes) | 1619 | `OSError(...)` |
 | atomic_write_guarded_bytes | isinstance (src/llm_wiki_cli/services…tomic_write_guarded_bytes) | 1620 | `isinstance(data, bytes)` |
 | atomic_write_guarded_bytes | TypeError (src/llm_wiki_cli/services…tomic_write_guarded_bytes) | 1621 | `TypeError('Guarded output data must be bytes.')` |
-| atomic_write_guarded_bytes | _atomic_write_guarded_bytes_windows | 1623 | `_atomic_write_guarded_bytes_windows(target, data, expected_existing=expected_existing, require_single_link=require_single_link)` |
-| _atomic_write_guarded_bytes_windows | uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows) | 2578 | `uuid.uuid4(data not statically known)` |
-| _atomic_write_guarded_bytes_windows | uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows) | 2579 | `uuid.uuid4(data not statically known)` |
-| _atomic_write_guarded_bytes_windows | guard_windows_directory_chain | 2583 | `guard_windows_directory_chain(Path(...), relative_components)` |
+| atomic_write_guarded_bytes | before_wiki_write | 1624 | `before_wiki_write(target, data)` |
+| before_wiki_write | ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 26 | `ACTIVE_WRITE_BASIS.get(data not statically known)` |
+| before_wiki_write | basis.before_write | 28 | `basis.before_write(Path(...), content)` |
+| before_wiki_write | Path (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 28 | `Path(path)` |
 
 ### Boundary effects
 
-| Kind | Target | Step | Line |
-|---|---|---|---:|
-| filesystem_write | `quarantine.unlink` | `_atomic_write_guarded_bytes_windows` | 2667 |
-| filesystem_write | `temporary.unlink` | `_atomic_write_guarded_bytes_windows` | 2672 |
-| mutation | `handles.append` | `guard_windows_directory_chain` | 182 |
-| mutation | `handles.append` | `guard_windows_directory_chain` | 189 |
-| mutation | `handles.append` | `guard_windows_directory_chain` | 216 |
+*No boundary effects detected.*
 
 ### Static analysis gaps
 
@@ -173,8 +170,8 @@ flowchart LR
 | external_call | `atomic_write_guarded_bytes` | `OSError` | 1619 |
 | external_call | `atomic_write_guarded_bytes` | `isinstance` | 1620 |
 | external_call | `atomic_write_guarded_bytes` | `TypeError` | 1621 |
-| external_call | `_atomic_write_guarded_bytes_windows` | `uuid.uuid4` | 2578 |
-| external_call | `_atomic_write_guarded_bytes_windows` | `uuid.uuid4` | 2579 |
+| unresolved_call | `before_wiki_write` | `ACTIVE_WRITE_BASIS.get` | 26 |
+| unresolved_call | `before_wiki_write` | `basis.before_write` | 28 |
 | step_limit | `atomic_write_executable_bytes` | `first 12 steps` | 0 |
 | truncated_flow | `atomic_write_executable_bytes` | `depth limit` | 0 |
 

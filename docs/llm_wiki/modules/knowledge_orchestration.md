@@ -29,20 +29,25 @@ extraction of its own.
 | `.knowledge_evidence` | `ENTITY_OBSERVATION_SCOPE`, `MODULE_OBSERVATION_SCOPE`, `ConceptObservationBasis`, `build_entity_observation_basis`, `build_module_observation_basis`, `is_valid_sha256` |
 | `.knowledge_freshness` | `LiveKnowledgeEvaluation` |
 | `.knowledge_generation` | `KnowledgeGenerationError`, `KnowledgeGenerationInputs`, `build_knowledge_generation_plan` |
-| `.knowledge_governance` | `GOVERNANCE_FILENAME`, `ConceptGovernanceReference`, `GovernanceConflictError`, `GovernanceError`, `GovernanceLedger`, `governance_bundle_id_from_knowledge`, `governance_lock`, `load_governance`, `natural_key_for`, `reconcile_concepts`, `save_governance`, `validate_governance_ledger` |
+| `.knowledge_governance` | `GOVERNANCE_FILENAME`, `ConceptGovernanceReference`, `GovernanceConflictError`, `GovernanceError`, `GovernanceLedger`, `governance_bundle_id_from_knowledge`, `load_governance`, `natural_key_for`, `reconcile_concepts`, `save_governance`, `validate_governance_ledger` |
 | `.knowledge_model` | `KnowledgeIndex`, `ObservationScope`, `ProducerRecord`, `concept_kind_for_page_kind` |
 | `.knowledge_storage_io` | `read_guarded` |
+| `.maintenance_protocol` | `guard_maintenance_owner`, `ADOPTION_FILENAME`, `ADOPTION_FILENAME`, `governance_writer_lock` |
 | `.progress` | `observed_phase` |
+| `.python_implementation` | `analysis_identity` |
 | `.source_selection` | `SourceSelectionError`, `selection_may_contain_path`, `with_source_selection_generation_input` |
-| `.source_snapshot` | `SourceSnapshot` |
+| `.source_snapshot` | `SourceSnapshot`, `source_snapshot_matches_current_files`, `confirmed_missing_source_paths` |
 | `.sync_manifest` | `EVIDENCE_NOT_RECORDED`, `MANIFEST_FILENAME`, `SyncManifest` |
+| `.sync_transitions` | `PageTransitionPlan` |
 | `.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION`, `SurfaceIndexEvaluation` |
+| `.wiki_write_basis` | `ACTIVE_WRITE_BASIS` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Iterable`, `Mapping`, `Sequence`, `Set` |
 | `dataclasses` | `dataclass`, `field`, `replace` |
+| `json` | `json` |
 | `pathlib` | `Path` |
 | `re` | `re` |
-| `typing` | `Any` |
+| `typing` | `Any`, `TYPE_CHECKING` |
 
 ## Local dependency map
 
@@ -62,20 +67,20 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (8) |
-| Outbound | `src` (21) |
+| Inbound | `src` (9) |
+| Outbound | `src` (25) |
 
-> All 29 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 34 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [RuntimeKnowledgeInputs](../entities/RuntimeKnowledgeInputs.md) | 131 | — | Evaluated command state needed to plan one three-artifact commit. |
-| [CommittedKnowledgeState](../entities/CommittedKnowledgeState.md) | 179 | — | One command's captured prior commit, including explicit absent/invalid state. |
-| [CommittedRuntimeProvenance](../entities/CommittedRuntimeProvenance.md) | 276 | — | Exact runtime provenance recovered from an intact committed projection. |
-| [RuntimeLiveEvaluationInputs](../entities/RuntimeLiveEvaluationInputs.md) | 285 | — | Already evaluated runtime values for one live freshness comparison. |
-| [PreparedRuntimeGenerationOptions](../entities/PreparedRuntimeGenerationOptions.md) | 307 | — | Canonical writer/reader inputs for the generation-options commitment. |
+| [RuntimeKnowledgeInputs](../entities/RuntimeKnowledgeInputs.md) | 134 | — | Evaluated command state needed to plan one three-artifact commit. |
+| [CommittedKnowledgeState](../entities/CommittedKnowledgeState.md) | 185 | — | One command's captured prior commit, including explicit absent/invalid state. |
+| [CommittedRuntimeProvenance](../entities/CommittedRuntimeProvenance.md) | 290 | — | Exact runtime provenance recovered from an intact committed projection. |
+| [RuntimeLiveEvaluationInputs](../entities/RuntimeLiveEvaluationInputs.md) | 299 | — | Already evaluated runtime values for one live freshness comparison. |
+| [PreparedRuntimeGenerationOptions](../entities/PreparedRuntimeGenerationOptions.md) | 322 | — | Canonical writer/reader inputs for the generation-options commitment. |
 
 ## Functions
 
@@ -95,6 +100,7 @@ flowchart LR
 | `committed_runtime_provenance` | `(wiki_dir: str \| Path, manifest: SyncManifest \| None, *, committed_state: CommittedKnowledgeState \| None = None) -> CommittedRuntimeProvenance \| None` | — | Return source and generator identity from an intact committed projection. |
 | `_previous_committed_producer` | `(wiki_dir: str \| Path, manifest: SyncManifest \| None, *, committed_state: CommittedKnowledgeState \| None = None) -> ProducerRecord \| None` | — | Return producer evidence only from the prior committed artifact set. |
 | `_commit_runtime_knowledge` | `(inputs: RuntimeKnowledgeInputs, plan: KnowledgeCommitPlan, *, dry_run: bool, fault_injector: FaultInjector \| None) -> KnowledgeCommitResult` | — | — |
+| `_require_runtime_source_current` | `(snapshot: SourceSnapshot) -> None` | — | — |
 | `finalize_runtime_knowledge` | `(inputs: RuntimeKnowledgeInputs, *, dry_run: bool = False, fault_injector: FaultInjector \| None = None) -> KnowledgeCommitResult` | — | Plan and commit one generated artifact set through the shared protocol. |
 | `_prepared_runtime_governance` | `(inputs: RuntimeKnowledgeInputs) -> GovernanceLedger \| None` | — | Load/reconcile governance without writing or inventing recovery state. |
 | `collect_runtime_repository_evidence` | `(source_root: str \| Path, target_wiki_dir: str \| Path, *, source_snapshot: SourceSnapshot \| None = None) -> RepositoryEvidence` | — | Collect Git evidence for the evaluated source-selection boundary. |

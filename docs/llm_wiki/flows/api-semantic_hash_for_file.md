@@ -6,32 +6,39 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as semantic_hash_for_file
     participant p1 as without_line_metadata
-    participant p2 as isinstance
-    participant p3 as sorted
-    participant p4 as value.items
-    participant p5 as json.dumps(…).encode
-    participant p6 as json.dumps
-    participant p7 as sha256_bytes
-    participant p8 as hashlib.sha256(…).hexdigest
-    participant p9 as hashlib.sha256
+    participant p2 as json.dumps(…).encode
+    participant p3 as json.dumps
+    participant p4 as sha256_bytes
+    participant p5 as isinstance
+    participant p6 as hashlib.sha256(…).hexdigest
+    participant p7 as hashlib.sha256
+    participant p8 as sorted
+    participant p9 as value.items
     p0->>p1: without_line_metadata
-    p1-->>p2: isinstance
+    p0-->>p2: json.dumps(…).encode('utf-8')
+    p0-->>p3: json.dumps(normalized, separators=(...), sort_keys=True)
+    p0->>p4: sha256_bytes
+    p1-->>p5: isinstance(value, dict)
+    p4-->>p6: hashlib.sha256(…).hexdigest
     p1->>p1: without_line_metadata
-    p1-->>p3: sorted
-    p1-->>p4: value.items
-    p1-->>p2: isinstance
+    p4-->>p7: hashlib.sha256(value)
+    p1-->>p8: sorted(value.items(...))
+    p1-->>p9: value.items
+    p1-->>p5: isinstance(value, list)
     p1->>p1: without_line_metadata
-    p0-->>p5: json.dumps(…).encode
-    p0-->>p6: json.dumps
-    p0->>p7: sha256_bytes
-    p7-->>p8: hashlib.sha256(…).hexdigest
-    p7-->>p9: hashlib.sha256
 ```
+
+> Call sequence diagram shows 12 of 12 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 5 of 5 (0 omitted); unresolved 3 of 3 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 
@@ -89,17 +96,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| semantic_hash_for_file | without_line_metadata | 936 | `without_line_metadata(file_data)` |
-| without_line_metadata | isinstance | 922 | `isinstance(value, dict)` |
-| without_line_metadata | without_line_metadata | 924 | `without_line_metadata(item)` |
-| without_line_metadata | sorted | 925 | `sorted(value.items(...))` |
-| without_line_metadata | value.items | 925 | `value.items(data not statically known)` |
-| without_line_metadata | isinstance | 928 | `isinstance(value, list)` |
-| without_line_metadata | without_line_metadata | 929 | `without_line_metadata(item)` |
-| semantic_hash_for_file | json.dumps(…).encode | 939 | `json.dumps(normalized, separators=(',', ':'), sort_keys=True).encode('utf-8')` |
-| semantic_hash_for_file | json.dumps | 939 | `json.dumps(normalized, separators=(...), sort_keys=True)` |
-| semantic_hash_for_file | sha256_bytes | 944 | `sha256_bytes(legacy_bytes)` |
-| sha256_bytes | hashlib.sha256(…).hexdigest | 198 | `hashlib.sha256(value).hexdigest(data not statically known)` |
+| semantic_hash_for_file | without_line_metadata | 937 | `without_line_metadata(file_data)` |
+| without_line_metadata | isinstance | 923 | `isinstance(value, dict)` |
+| without_line_metadata | without_line_metadata | 925 | `without_line_metadata(item)` |
+| without_line_metadata | sorted | 926 | `sorted(value.items(...))` |
+| without_line_metadata | value.items | 926 | `value.items(data not statically known)` |
+| without_line_metadata | isinstance | 929 | `isinstance(value, list)` |
+| without_line_metadata | without_line_metadata | 930 | `without_line_metadata(item)` |
+| semantic_hash_for_file | json.dumps(…).encode | 940 | `json.dumps(normalized, separators=(',', ':'), sort_keys=True).encode('utf-8')` |
+| semantic_hash_for_file | json.dumps | 940 | `json.dumps(normalized, separators=(...), sort_keys=True)` |
+| semantic_hash_for_file | sha256_bytes | 945 | `sha256_bytes(legacy_bytes)` |
+| sha256_bytes | hashlib.sha256(…).hexdigest | 199 | `hashlib.sha256(value).hexdigest(data not statically known)` |
 
 ### Boundary effects
 
@@ -109,13 +116,13 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `without_line_metadata` | `isinstance` | 922 |
-| external_call | `without_line_metadata` | `sorted` | 925 |
-| unresolved_call | `without_line_metadata` | `value.items` | 925 |
-| external_call | `without_line_metadata` | `isinstance` | 928 |
-| unresolved_call | `semantic_hash_for_file` | `json.dumps(normalized, separators=(',', ':'), sort_keys=True).encode` | 939 |
-| external_call | `semantic_hash_for_file` | `json.dumps` | 939 |
-| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 198 |
+| external_call | `without_line_metadata` | `isinstance` | 923 |
+| external_call | `without_line_metadata` | `sorted` | 926 |
+| unresolved_call | `without_line_metadata` | `value.items` | 926 |
+| external_call | `without_line_metadata` | `isinstance` | 929 |
+| unresolved_call | `semantic_hash_for_file` | `json.dumps(normalized, separators=(',', ':'), sort_keys=True).encode` | 940 |
+| external_call | `semantic_hash_for_file` | `json.dumps` | 940 |
+| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 199 |
 | step_limit | `semantic_hash_for_file` | `first 12 steps` | 0 |
 
 ## Behavior

@@ -6,63 +6,76 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as validate_verification_receipt
     participant p1 as isinstance (src/llm_wiki_cli/services…date_verification_receipt)
     participant p2 as _receipt_to_payload
-    participant p3 as dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload)
-    participant p4 as check.to_payload
-    participant p5 as _object
-    participant p6 as require_mapping
-    participant p7 as isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    participant p8 as key.encode
-    participant p9 as VerificationReceiptError
-    participant p10 as _exact_fields
-    participant p11 as set (src/llm_wiki_cli/services…ontracts.py:_exact_fields)
-    participant p12 as require_exact_fields
-    participant p13 as isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p14 as str (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p15 as set (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p16 as tuple (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p17 as sorted (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    participant p18 as invalid_error
-    participant p19 as error_factory
-    participant p20 as _string
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…date_verification_receipt)
+    participant p3 as _object
+    participant p4 as _exact_fields
+    participant p5 as _string
+    participant p6 as VerificationReceiptError
+    participant p7 as _receipt_hash
+    participant p8 as _scope_uid
+    participant p9 as str (src/llm_wiki_cli/services…date_verification_receipt)
+    participant p10 as _receipt_anchor_mapping
+    participant p11 as hash_json
+    participant p12 as dict (src/llm_wiki_cli/services…date_verification_receipt)
+    participant p13 as VerificationResult
+    participant p14 as len (src/llm_wiki_cli/services…date_verification_receipt)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…date_verification_receipt)(value, VerificationReceipt)
     p0->>p2: _receipt_to_payload
-    p2-->>p3: dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload)
-    p2-->>p3: dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload)
-    p2-->>p4: check.to_payload
-    p0->>p5: _object
-    p5->>p6: require_mapping
-    p6-->>p7: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    p6-->>p7: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    p6-->>p8: key.encode
-    p5->>p9: VerificationReceiptError
-    p5->>p9: VerificationReceiptError
-    p0->>p10: _exact_fields
-    p10-->>p11: set (src/llm_wiki_cli/services…ontracts.py:_exact_fields)
-    p10->>p12: require_exact_fields
-    p12-->>p13: isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p12-->>p14: str (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p12-->>p15: set (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p12-->>p15: set (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p12-->>p15: set (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p12-->>p16: tuple (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p12-->>p17: sorted (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p12-->>p16: tuple (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p12-->>p17: sorted (src/llm_wiki_cli/services…n.py:require_exact_fields)
-    p12-->>p18: invalid_error
-    p12-->>p19: error_factory
-    p10->>p9: VerificationReceiptError
-    p10->>p9: VerificationReceiptError
-    p10->>p9: VerificationReceiptError
-    p0->>p20: _string
+    p0->>p3: _object
+    p0->>p4: _exact_fields
+    p0->>p5: _string
+    p0->>p6: VerificationReceiptError
+    p0->>p7: _receipt_hash
+    p0->>p3: _object
+    p0->>p4: _exact_fields
+    p0->>p5: _string
+    p0->>p8: _scope_uid
+    p0->>p6: VerificationReceiptError
+    p0-->>p9: str (src/llm_wiki_cli/services…date_verification_receipt)(exc)
+    p0->>p7: _receipt_hash
+    p0->>p10: _receipt_anchor_mapping
+    p0->>p7: _receipt_hash
+    p0->>p11: hash_json
+    p0-->>p12: dict (src/llm_wiki_cli/services…date_verification_receipt)(evidence)
+    p0->>p6: VerificationReceiptError
+    p0->>p10: _receipt_anchor_mapping
+    p0->>p7: _receipt_hash
+    p0->>p11: hash_json
+    p0-->>p12: dict (src/llm_wiki_cli/services…date_verification_receipt)(evaluated_snapshot)
+    p0->>p6: VerificationReceiptError
+    p0->>p13: VerificationResult
+    p0->>p6: VerificationReceiptError
+    p0->>p3: _object
+    p0->>p6: VerificationReceiptError
+    p0-->>p14: len (src/llm_wiki_cli/services…date_verification_receipt)(raw_checks)
+    p0->>p6: VerificationReceiptError
 ```
 
-> Call sequence diagram shows 30 of 167 interactions; 137 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 167 interactions; 137 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 5 of 51 (46 omitted); unresolved 0 of 19 (19 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/verification_contracts.py:_receipt_to_payload` | 3 | - | external | 2 |
+| `src/llm_wiki_cli/services/verification_contracts.py:_receipt_to_payload` | 3 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/verification_contracts.py:_object` | 7 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_mapping` | 8 | - | external | 2 |
+| `src/llm_wiki_cli/services/validation.py:require_mapping` | 8 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/verification_contracts.py:_object` | 7 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 2 |
+| `src/llm_wiki_cli/services/verification_contracts.py:_exact_fields` | 14 | - | external | 1 |
+| `src/llm_wiki_cli/services/verification_contracts.py:_exact_fields` | 14 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+> Omission summary shows 8 of 62 groups; 54 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

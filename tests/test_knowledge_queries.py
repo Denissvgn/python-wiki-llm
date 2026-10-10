@@ -683,6 +683,9 @@ def test_query_projects_every_live_freshness_outcome_and_reason(tmp_path):
         }
         if expected_state == ComputedFreshness.BASIS_INCOMPATIBLE.value:
             expected["hint"] = BASIS_INCOMPATIBLE_HINTS[expected_reason]
+        if expected_state == ComputedFreshness.NONSEMANTIC_SOURCE_CHANGE.value:
+            from llm_wiki_cli.services.freshness_wording import SOURCE_CHANGED_STRUCTURE_UNCHANGED
+            expected["hint"] = SOURCE_CHANGED_STRUCTURE_UNCHANGED
         assert freshness == expected
 
     ready = build_knowledge_read_view(

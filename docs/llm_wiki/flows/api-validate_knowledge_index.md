@@ -2,12 +2,13 @@
 
 **Entry point:** `validate_knowledge_index` (`api`)
 **Source:** [knowledge_index](../modules/knowledge_index.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [concept_identity](../modules/concept_identity.md), [knowledge_envelope](../modules/knowledge_envelope.md), and 13 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [concept_identity](../modules/concept_identity.md), [implementation_evidence](../modules/implementation_evidence.md), and 20 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
 - [concept_identity](../modules/concept_identity.md)
+- [implementation_evidence](../modules/implementation_evidence.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
@@ -16,8 +17,14 @@
 - [knowledge_links](../modules/knowledge_links.md)
 - [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [maintenance_evidence](../modules/maintenance_evidence.md)
+- [maintenance_projection](../modules/maintenance_projection.md)
+- [maintenance_shapes](../modules/maintenance_shapes.md)
+- [maintenance_state](../modules/maintenance_state.md)
 - [markdown_sections](../modules/markdown_sections.md)
 - [progress](../modules/progress.md)
+- [python_implementation](../modules/python_implementation.md)
 - [section_ownership](../modules/section_ownership.md)
 - [validation](../modules/validation.md)
 - [wiki_media](../modules/wiki_media.md)
@@ -25,62 +32,85 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as validate_knowledge_index
     participant p1 as isinstance (src/llm_wiki_cli/services…:validate_knowledge_index)
     participant p2 as parse_knowledge_index
-    participant p3 as _record
-    participant p4 as _object (src/llm_wiki_cli/services/knowledge_model.py)
-    participant p5 as dict (src/llm_wiki_cli/services…nowledge_model.py:_object)
-    participant p6 as require_mapping
-    participant p7 as isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    participant p8 as key.encode
-    participant p9 as KnowledgeModelError
-    participant p10 as sorted (src/llm_wiki_cli/services…nowledge_model.py:_record)
-    participant p11 as set (src/llm_wiki_cli/services…nowledge_model.py:_record)
-    participant p12 as _child
-    participant p13 as _parse_extensions
-    participant p14 as sorted (src/llm_wiki_cli/services…odel.py:_parse_extensions)
-    participant p15 as _QUALIFIED_NAME_RE.fullmatch (src/llm_wiki_cli/services…odel.py:_parse_extensions)
-    participant p16 as _normalize_json_value
-    participant p17 as _normalize_json_value_inner
-    participant p18 as isinstance (src/llm_wiki_cli/services…ormalize_json_value_inner)
-    participant p19 as _string
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…:validate_knowledge_index)
+    participant p3 as _model_to_payload
+    participant p4 as _validate_builder_model
+    participant p5 as build_knowledge_index
+    participant p6 as canonical_json_text
+    participant p7 as _first_difference
+    participant p8 as KnowledgeIndexBuildError
+    participant p9 as _record
+    participant p10 as _knowledge_index_to_payload_unchecked
+    participant p11 as model.bundle.snapshot.extensions.get
+    participant p12 as _validate_and_join_inputs
+    participant p13 as isinstance (src/llm_wiki_cli/services…ndex.py:_first_difference)
+    participant p14 as _string
+    participant p15 as KnowledgeModelError
+    participant p16 as is_valid_sha256
+    participant p17 as tuple (src/llm_wiki_cli/services….py:build_knowledge_index)
+    participant p18 as _concept_for_page
+    participant p19 as sorted (src/llm_wiki_cli/services…ndex.py:_first_difference)
+    participant p20 as _parse_bundle
+    participant p21 as enumerate (src/llm_wiki_cli/services…y:_validate_builder_model)
+    participant p22 as inputs.concept_extensions_by_page.get
+    participant p23 as set (src/llm_wiki_cli/services…ndex.py:_first_difference)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…:validate_knowledge_index)(value, KnowledgeIndex)
     p0->>p2: parse_knowledge_index
-    p2->>p3: _record
-    p3->>p4: _object (src/llm_wiki_cli/services/knowledge_model.py)
-    p4-->>p5: dict (src/llm_wiki_cli/services…nowledge_model.py:_object)
-    p4->>p6: require_mapping
-    p6-->>p7: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    p6-->>p7: isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)
-    p6-->>p8: key.encode
-    p4->>p9: KnowledgeModelError
-    p4->>p9: KnowledgeModelError
-    p4->>p9: KnowledgeModelError
-    p3-->>p10: sorted (src/llm_wiki_cli/services…nowledge_model.py:_record)
-    p3-->>p11: set (src/llm_wiki_cli/services…nowledge_model.py:_record)
-    p3->>p9: KnowledgeModelError
-    p3->>p12: _child
-    p3-->>p10: sorted (src/llm_wiki_cli/services…nowledge_model.py:_record)
-    p3-->>p11: set (src/llm_wiki_cli/services…nowledge_model.py:_record)
-    p3->>p9: KnowledgeModelError
-    p3->>p12: _child
-    p3->>p13: _parse_extensions
-    p13->>p4: _object (src/llm_wiki_cli/services/knowledge_model.py)
-    p13-->>p14: sorted (src/llm_wiki_cli/services…odel.py:_parse_extensions)
-    p13-->>p15: _QUALIFIED_NAME_RE.fullmatch (src/llm_wiki_cli/services…odel.py:_parse_extensions)
-    p13->>p9: KnowledgeModelError
-    p13->>p12: _child
-    p13->>p16: _normalize_json_value
-    p16->>p17: _normalize_json_value_inner
-    p17-->>p18: isinstance (src/llm_wiki_cli/services…ormalize_json_value_inner)
-    p17->>p19: _string
+    p0->>p3: _model_to_payload
+    p0->>p2: parse_knowledge_index
+    p0->>p4: _validate_builder_model
+    p0->>p5: build_knowledge_index
+    p0->>p3: _model_to_payload
+    p0->>p3: _model_to_payload
+    p0->>p6: canonical_json_text
+    p0->>p6: canonical_json_text
+    p0->>p7: _first_difference
+    p0->>p8: KnowledgeIndexBuildError
+    p2->>p9: _record
+    p3->>p10: _knowledge_index_to_payload_unchecked
+    p4-->>p11: model.bundle.snapshot.extensions.get(INVENTORY_HASH_EXTENSION)
+    p5->>p12: _validate_and_join_inputs
+    p7-->>p13: isinstance (src/llm_wiki_cli/services…ndex.py:_first_difference)(actual, dict)
+    p2->>p14: _string
+    p3->>p15: KnowledgeModelError
+    p4->>p16: is_valid_sha256
+    p5-->>p17: tuple (src/llm_wiki_cli/services….py:build_knowledge_index)(...)
+    p7-->>p13: isinstance (src/llm_wiki_cli/services…ndex.py:_first_difference)(expected, dict)
+    p2->>p15: KnowledgeModelError
+    p4->>p15: KnowledgeModelError
+    p5->>p18: _concept_for_page
+    p7-->>p19: sorted (src/llm_wiki_cli/services…ndex.py:_first_difference)(...)
+    p2->>p20: _parse_bundle
+    p4-->>p21: enumerate (src/llm_wiki_cli/services…y:_validate_builder_model)(model.concepts)
+    p5-->>p22: inputs.concept_extensions_by_page.get(joined.page.relative_path, {...})
+    p7-->>p23: set (src/llm_wiki_cli/services…ndex.py:_first_difference)(actual)
 ```
 
-> Call sequence diagram shows 30 of 1980 interactions; 1950 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 2284 interactions; 2254 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 7 of 595 (588 omitted); unresolved 2 of 405 (403 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/knowledge_model.py:_record` | 4 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 7 |
+| `src/llm_wiki_cli/services/knowledge_model.py:_object` | 5 | - | external | 1 |
+| `src/llm_wiki_cli/services/knowledge_model.py:_object` | 5 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_mapping` | 7 | - | external | 2 |
+| `src/llm_wiki_cli/services/validation.py:require_mapping` | 7 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/knowledge_model.py:_object` | 5 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 3 |
+| `src/llm_wiki_cli/services/knowledge_model.py:_record` | 4 | - | external | 4 |
+| `src/llm_wiki_cli/services/knowledge_model.py:_parse_extensions` | 22 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 7 |
+> Omission summary shows 8 of 565 groups; 557 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
@@ -142,17 +172,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_knowledge_index | isinstance (src/llm_wiki_cli/services…:validate_knowledge_index) | 254 | `isinstance(value, KnowledgeIndex)` |
-| validate_knowledge_index | parse_knowledge_index | 256 | `parse_knowledge_index(_model_to_payload(...))` |
+| validate_knowledge_index | isinstance (src/llm_wiki_cli/services…:validate_knowledge_index) | 258 | `isinstance(value, KnowledgeIndex)` |
+| validate_knowledge_index | parse_knowledge_index | 260 | `parse_knowledge_index(_model_to_payload(...))` |
 | parse_knowledge_index | _record | 526 | `_record(payload, '', {...}, required={...})` |
-| _record | _object (src/llm_wiki_cli/services/knowledge_model.py) | 1589 | `_object(value, ...)` |
-| _object (src/llm_wiki_cli/services/knowledge_model.py) | dict (src/llm_wiki_cli/services…nowledge_model.py:_object) | 1675 | `dict(require_mapping(...))` |
-| _object (src/llm_wiki_cli/services/knowledge_model.py) | require_mapping | 1676 | `require_mapping(value, error=KnowledgeModelError(...), require_string_keys=True, key_error=KnowledgeModelError(...), require_utf8_keys=True, utf8_key_error=KnowledgeModelError(...))` |
+| _record | _object (src/llm_wiki_cli/services/knowledge_model.py) | 1608 | `_object(value, ...)` |
+| _object (src/llm_wiki_cli/services/knowledge_model.py) | dict (src/llm_wiki_cli/services…nowledge_model.py:_object) | 1694 | `dict(require_mapping(...))` |
+| _object (src/llm_wiki_cli/services/knowledge_model.py) | require_mapping | 1695 | `require_mapping(value, error=KnowledgeModelError(...), require_string_keys=True, key_error=KnowledgeModelError(...), require_utf8_keys=True, utf8_key_error=KnowledgeModelError(...))` |
 | require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 765 | `isinstance(value, Mapping)` |
 | require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 769 | `isinstance(key, str)` |
 | require_mapping | key.encode | 774 | `key.encode('utf-8')` |
-| _object (src/llm_wiki_cli/services/knowledge_model.py) | KnowledgeModelError | 1678 | `KnowledgeModelError(path, 'must be an object')` |
-| _object (src/llm_wiki_cli/services/knowledge_model.py) | KnowledgeModelError | 1680 | `KnowledgeModelError(path, 'object keys must be strings')` |
+| _object (src/llm_wiki_cli/services/knowledge_model.py) | KnowledgeModelError | 1697 | `KnowledgeModelError(path, 'must be an object')` |
+| _object (src/llm_wiki_cli/services/knowledge_model.py) | KnowledgeModelError | 1699 | `KnowledgeModelError(path, 'object keys must be strings')` |
 
 ### Boundary effects
 
@@ -162,7 +192,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `validate_knowledge_index` | `isinstance` | 254 |
+| external_call | `validate_knowledge_index` | `isinstance` | 258 |
 | external_call | `require_mapping` | `isinstance` | 765 |
 | external_call | `require_mapping` | `isinstance` | 769 |
 | unresolved_call | `require_mapping` | `key.encode` | 774 |

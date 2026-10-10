@@ -3032,6 +3032,9 @@ def _write_durable_atomic(
     *,
     fault_injector: FaultInjector | None,
 ) -> None:
+    from .wiki_write_basis import before_wiki_write, after_wiki_write
+
+    before_wiki_write(path, content)
     path.parent.mkdir(parents=True, exist_ok=True)
     descriptor, temp_name = tempfile.mkstemp(
         dir=path.parent,
@@ -3047,6 +3050,7 @@ def _write_durable_atomic(
         if fault_injector is not None:
             fault_injector(GovernanceWriteStage.TEMP_DURABLE)
         os.replace(temp_path, path)
+        after_wiki_write(path, content)
         if fault_injector is not None:
             fault_injector(GovernanceWriteStage.REPLACED)
         _fsync_directory(path.parent)

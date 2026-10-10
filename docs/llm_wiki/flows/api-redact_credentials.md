@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -13,20 +15,25 @@ sequenceDiagram
     participant p1 as apply
     participant p2 as str
     participant p3 as match.group
-    p0-->>p1: apply
-    p0-->>p1: apply
-    p0-->>p1: apply
-    p0-->>p1: apply
-    p0-->>p1: apply
-    p0-->>p1: apply
-    p0-->>p1: apply
-    p0-->>p1: apply
-    p0-->>p2: str
-    p0-->>p3: match.group
-    p0-->>p1: apply
-    p0-->>p2: str
-    p0-->>p3: match.group
+    p0-->>p1: apply(PRIVATE_KEY_BLOCK_RE, REDACTED_CREDENTIAL)
+    p0-->>p1: apply(pattern, REDACTED_CREDENTIAL)
+    p0-->>p1: apply(_AUTHORIZATION_VALUE_RE, REDACTED_CREDENTIAL)
+    p0-->>p1: apply(CREDENTIAL_VALUE_RE, REDACTED_CREDENTIAL)
+    p0-->>p1: apply(LIKELY_SECRET_RE, _likely_secret_replacement)
+    p0-->>p1: apply(_REDACTION_SENSITIVE_ASSIGNMENT_RE, _assignment_replacement)
+    p0-->>p1: apply(_REDACTION_SENSITIVE_NATURAL_LANGUAGE_RE, _assignment_replacement)
+    p0-->>p1: apply(_REDACTABLE_URI_USERINFO_RE, ...)
+    p0-->>p2: str(match.group(...))
+    p0-->>p3: match.group('scheme')
+    p0-->>p1: apply(_REDACTABLE_PROJECTION_URI_USERINFO_RE, ...)
+    p0-->>p2: str(match.group(...))
+    p0-->>p3: match.group('scheme')
 ```
+
+> Call sequence diagram shows 13 of 13 interactions; 0 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 2 of 2 (0 omitted); unresolved 11 of 11 (0 omitted). These counts cover the captured static trace.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

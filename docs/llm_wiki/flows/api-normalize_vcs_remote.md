@@ -6,6 +6,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -18,60 +20,69 @@ sequenceDiagram
     participant p6 as _WINDOWS_DRIVE_PREFIX_RE.match
     participant p7 as _MALFORMED_PERCENT_RE.search
     participant p8 as _normalize_scheme_remote
-    participant p9 as urlsplit
-    participant p10 as parsed.scheme.casefold
-    participant p11 as parsed.netloc.rsplit
-    participant p12 as authority.endswith
-    participant p13 as host.casefold
-    participant p14 as _normalize_scp_remote
-    participant p15 as _SCP_REMOTE_RE.fullmatch
-    participant p16 as match.group(…).split(…)[…].split
-    participant p17 as match.group(…).split
-    participant p18 as match.group
-    participant p19 as match.group(…).casefold
-    participant p20 as _normalized_remote_identity
-    participant p21 as unquote
-    participant p22 as decoded_path.removeprefix
-    participant p23 as path.removesuffix
-    participant p24 as path.casefold().endswith
+    participant p9 as _normalize_scp_remote
+    participant p10 as _normalized_remote_identity
+    participant p11 as urlsplit
+    participant p12 as _SCP_REMOTE_RE.fullmatch
+    participant p13 as unquote
+    participant p14 as parsed.scheme.casefold
+    participant p15 as match.group(…).split(…)[…].split
+    participant p16 as decoded_path.removeprefix
+    participant p17 as parsed.netloc.rsplit
+    participant p18 as match.group(…).split
+    participant p19 as path.removesuffix
+    participant p20 as authority.endswith
+    participant p21 as match.group
+    participant p22 as path.casefold().endswith
+    participant p23 as host.casefold
+    participant p24 as match.group(…).casefold
     participant p25 as path.casefold
     participant p26 as path.split
     participant p27 as any (src/llm_wiki_cli/services…normalized_remote_identity)
     participant p28 as '/'.join
     participant p29 as _REPOSITORY_IDENTITY_RE.fullmatch
-    p0-->>p1: isinstance
+    p0-->>p1: isinstance(value, str)
     p0-->>p2: value.strip
-    p0-->>p3: any (src/llm_wiki_cli/services…pe.py:normalize_vcs_remote)
-    p0-->>p4: ord
-    p0-->>p5: value.startswith
-    p0-->>p6: _WINDOWS_DRIVE_PREFIX_RE.match
-    p0-->>p7: _MALFORMED_PERCENT_RE.search
+    p0-->>p3: any (src/llm_wiki_cli/services…pe.py:normalize_vcs_remote)(...)
+    p0-->>p4: ord(char)
+    p0-->>p5: value.startswith((...))
+    p0-->>p6: _WINDOWS_DRIVE_PREFIX_RE.match(value)
+    p0-->>p7: _MALFORMED_PERCENT_RE.search(value)
     p0->>p8: _normalize_scheme_remote
-    p8-->>p9: urlsplit
-    p8-->>p10: parsed.scheme.casefold
-    p8-->>p11: parsed.netloc.rsplit
-    p8-->>p12: authority.endswith
-    p8-->>p13: host.casefold
-    p0->>p14: _normalize_scp_remote
-    p14-->>p15: _SCP_REMOTE_RE.fullmatch
-    p14-->>p16: match.group(…).split(…)[…].split
-    p14-->>p17: match.group(…).split
-    p14-->>p18: match.group
-    p14-->>p19: match.group(…).casefold
-    p14-->>p18: match.group
-    p0->>p20: _normalized_remote_identity
-    p20-->>p21: unquote
-    p20-->>p22: decoded_path.removeprefix
-    p20-->>p23: path.removesuffix
-    p20-->>p24: path.casefold().endswith
-    p20-->>p25: path.casefold
-    p20-->>p26: path.split
-    p20-->>p27: any (src/llm_wiki_cli/services…normalized_remote_identity)
-    p20-->>p28: '/'.join
-    p20-->>p29: _REPOSITORY_IDENTITY_RE.fullmatch
+    p0->>p9: _normalize_scp_remote
+    p0->>p10: _normalized_remote_identity
+    p8-->>p11: urlsplit(value)
+    p9-->>p12: _SCP_REMOTE_RE.fullmatch(value)
+    p10-->>p13: unquote(raw_path)
+    p8-->>p14: parsed.scheme.casefold
+    p9-->>p15: match.group(…).split(…)[…].split('?', 1)
+    p10-->>p16: decoded_path.removeprefix('/')
+    p8-->>p17: parsed.netloc.rsplit('@', 1)
+    p9-->>p18: match.group(…).split(' ', 1)
+    p10-->>p19: path.removesuffix('/')
+    p8-->>p20: authority.endswith(':')
+    p9-->>p21: match.group('path')
+    p10-->>p22: path.casefold().endswith('.git')
+    p8-->>p23: host.casefold
+    p9-->>p24: match.group(…).casefold
+    p10-->>p25: path.casefold
+    p9-->>p21: match.group('host')
+    p10-->>p26: path.split('/')
+    p10-->>p27: any (src/llm_wiki_cli/services…normalized_remote_identity)(...)
+    p10-->>p28: '/'.join(parts)
+    p10-->>p29: _REPOSITORY_IDENTITY_RE.fullmatch(identity)
 ```
 
-> Call sequence diagram shows 30 of 32 interactions; 2 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 32 interactions; 2 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 6 of 6 (0 omitted); unresolved 21 of 23 (2 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_normalized_remote_identity` | 22 | - | unresolved | 2 |
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
 

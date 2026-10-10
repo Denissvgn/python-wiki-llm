@@ -15,6 +15,8 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
@@ -27,54 +29,71 @@ sequenceDiagram
     participant p6 as TypeError (src/llm_wiki_cli/services…verification_read_view, 1)
     participant p7 as MachineVerificationReadView
     participant p8 as load_verification_receipt
-    participant p9 as Path (src/llm_wiki_cli/services…load_verification_receipt)
-    participant p10 as first_unsafe_path_component
-    participant p11 as Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p12 as os.fspath
-    participant p13 as os.path.abspath
-    participant p14 as lexical.is_absolute
-    participant p15 as Path.cwd
-    participant p16 as list (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p17 as pending_parts.pop
-    participant p18 as current.lstat
-    participant p19 as getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p20 as stat.S_ISLNK (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p21 as bool (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p22 as trusted_symlink_owner
-    participant p23 as callable
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…ne_verification_read_view)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…ne_verification_read_view)
-    p0-->>p3: replace
+    participant p9 as Path (src/llm_wiki_cli/services…ne_verification_read_view)
+    participant p10 as context
+    participant p11 as concept.extensions.get
+    participant p12 as governance.get
+    participant p13 as hash_json(…).removeprefix
+    participant p14 as hash_json
+    participant p15 as evaluate_verification_receipt
+    participant p16 as machine_verification_summary
+    participant p17 as tuple (src/llm_wiki_cli/services…ne_verification_read_view)
+    participant p18 as bool (src/llm_wiki_cli/services…ne_verification_read_view)
+    participant p19 as MappingProxyType
+    participant p20 as dict (src/llm_wiki_cli/services…ne_verification_read_view)
+    participant p21 as sorted (src/llm_wiki_cli/services…ne_verification_read_view)
+    participant p22 as summary[…].items
+    participant p23 as Path (src/llm_wiki_cli/services…load_verification_receipt)
+    p0-->>p1: isinstance (src/llm_wiki_cli/services…ne_verification_read_view)(knowledge_view, KnowledgeReadView)
+    p0-->>p2: TypeError (src/llm_wiki_cli/services…ne_verification_read_view)('knowledge_view must be a KnowledgeReadView')
+    p0-->>p3: replace(knowledge_view, machine_verification=load_machine_verification_read_view(...))
     p0->>p4: load_machine_verification_read_view
-    p4-->>p5: isinstance (src/llm_wiki_cli/services…verification_read_view, 1)
-    p4-->>p6: TypeError (src/llm_wiki_cli/services…verification_read_view, 1)
+    p4-->>p5: isinstance (src/llm_wiki_cli/services…verification_read_view, 1)(knowledge_view, KnowledgeReadView)
+    p4-->>p6: TypeError (src/llm_wiki_cli/services…verification_read_view, 1)('knowledge_view must be a KnowledgeReadView')
     p4->>p7: MachineVerificationReadView
     p4->>p8: load_verification_receipt
-    p8-->>p9: Path (src/llm_wiki_cli/services…load_verification_receipt)
-    p8->>p10: first_unsafe_path_component
-    p10-->>p11: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p10-->>p12: os.fspath
-    p10-->>p11: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p10-->>p13: os.path.abspath
-    p10-->>p14: lexical.is_absolute
-    p10-->>p15: Path.cwd
-    p10-->>p11: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p10-->>p16: list (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p10-->>p17: pending_parts.pop
-    p10-->>p18: current.lstat
-    p10-->>p19: getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p10-->>p19: getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p10-->>p20: stat.S_ISLNK (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p10-->>p21: bool (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p10-->>p21: bool (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p10-->>p19: getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p10-->>p22: trusted_symlink_owner
-    p10-->>p23: callable
-    p10-->>p19: getattr (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    p10-->>p11: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
+    p4-->>p9: Path (src/llm_wiki_cli/services…ne_verification_read_view)(wiki_dir)
+    p4->>p7: MachineVerificationReadView
+    p4->>p7: MachineVerificationReadView
+    p4-->>p10: context(None)
+    p4-->>p11: concept.extensions.get(GOVERNANCE_EXTENSION_KEY)
+    p4-->>p5: isinstance (src/llm_wiki_cli/services…verification_read_view, 1)(governance, Mapping)
+    p4-->>p12: governance.get('uid')
+    p4-->>p5: isinstance (src/llm_wiki_cli/services…verification_read_view, 1)(uid, str)
+    p4-->>p13: hash_json(…).removeprefix('sha256:')
+    p4->>p14: hash_json
+    p4-->>p10: context(selected_locator)
+    p4->>p15: evaluate_verification_receipt
+    p4->>p16: machine_verification_summary
+    p4->>p7: MachineVerificationReadView
+    p4-->>p17: tuple (src/llm_wiki_cli/services…ne_verification_read_view)(...)
+    p4-->>p18: bool (src/llm_wiki_cli/services…ne_verification_read_view)(summary[...])
+    p4-->>p19: MappingProxyType(...)
+    p4-->>p19: MappingProxyType(dict(...))
+    p4-->>p20: dict (src/llm_wiki_cli/services…ne_verification_read_view)(check_summary)
+    p4-->>p21: sorted (src/llm_wiki_cli/services…ne_verification_read_view)(...)
+    p4-->>p22: summary[…].items
+    p8-->>p23: Path (src/llm_wiki_cli/services…load_verification_receipt)(wiki_dir)
 ```
 
-> Call sequence diagram shows 30 of 213 interactions; 183 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 213 interactions; 183 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 15 of 81 (66 omitted); unresolved 6 of 31 (25 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/verification_contracts.py:load_verification_receipt` | 9 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 11 | - | external | 20 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 11 | - | unresolved | 5 |
+| `src/llm_wiki_cli/services/verification_contracts.py:load_verification_receipt` | 9 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 5 |
+| `src/llm_wiki_cli/services/verification_contracts.py:load_verification_receipt` | 9 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/verification_contracts.py:verification_receipt_path` | 40 | - | external | 1 |
+| `src/llm_wiki_cli/services/verification_contracts.py:_read_regular_receipt` | 42 | - | unresolved | 3 |
+| `src/llm_wiki_cli/services/verification_contracts.py:_read_regular_receipt` | 42 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 7 |
+> Omission summary shows 8 of 45 groups; 37 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 

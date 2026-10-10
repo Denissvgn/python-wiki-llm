@@ -15,72 +15,83 @@
 
 ## Call sequence
 
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as build_static_api_contracts
     participant p1 as _framework_records
-    participant p2 as inventory.items (src/llm_wiki_cli/services…cts.py:_framework_records)
-    participant p3 as file_data.get (src/llm_wiki_cli/services…cts.py:_framework_records)
-    participant p4 as isinstance (src/llm_wiki_cli/services…cts.py:_framework_records)
-    participant p5 as frameworks.get
-    participant p6 as is_test_source_path
-    participant p7 as str(…).replace(…).strip
-    participant p8 as str(…).replace (src/llm_wiki_cli/services…hs.py:is_test_source_path)
-    participant p9 as str (src/llm_wiki_cli/services…hs.py:is_test_source_path)
-    participant p10 as PurePosixPath (src/llm_wiki_cli/services…hs.py:is_test_source_path)
-    participant p11 as tuple (src/llm_wiki_cli/services…hs.py:is_test_source_path)
-    participant p12 as part.casefold
-    participant p13 as _TEST_DIRECTORY_NAMES.intersection
-    participant p14 as path.name.casefold
-    participant p15 as path.stem.casefold
-    participant p16 as stem.startswith
-    participant p17 as stem.endswith
-    participant p18 as fastapi.get (src/llm_wiki_cli/services…uild_static_api_contracts)
-    participant p19 as isinstance (src/llm_wiki_cli/services…uild_static_api_contracts)
-    participant p20 as sum
-    participant p21 as max
-    participant p22 as len (src/llm_wiki_cli/services…uild_static_api_contracts)
-    participant p23 as _operation_methods
-    participant p24 as str (src/llm_wiki_cli/services…cts.py:_operation_methods)
-    participant p25 as record.get (src/llm_wiki_cli/services…cts.py:_operation_methods)
-    participant p26 as decorator.upper
-    participant p27 as _kw_value
-    participant p28 as _kwargs(…).get (src/llm_wiki_cli/services…pi_contracts.py:_kw_value)
-    participant p29 as _kwargs
+    participant p2 as is_test_source_path
+    participant p3 as fastapi.get (src/llm_wiki_cli/services…uild_static_api_contracts)
+    participant p4 as isinstance (src/llm_wiki_cli/services…uild_static_api_contracts)
+    participant p5 as sum
+    participant p6 as max
+    participant p7 as len (src/llm_wiki_cli/services…uild_static_api_contracts)
+    participant p8 as _operation_methods
+    participant p9 as any (src/llm_wiki_cli/services…uild_static_api_contracts)
+    participant p10 as declarations.values
+    participant p11 as diagnostics.append
+    participant p12 as _diagnostic
+    participant p13 as declarations.items
+    participant p14 as inventory.items (src/llm_wiki_cli/services…uild_static_api_contracts)
+    participant p15 as _declaration_nodes
+    participant p16 as build_module_path_resolver
+    participant p17 as dict (src/llm_wiki_cli/services…uild_static_api_contracts)
+    participant p18 as defaultdict (src/llm_wiki_cli/services…uild_static_api_contracts)
+    participant p19 as _resolve_binding
+    participant p20 as str (src/llm_wiki_cli/services…uild_static_api_contracts)
+    participant p21 as record.get (src/llm_wiki_cli/services…uild_static_api_contracts)
     p0->>p1: _framework_records
-    p1-->>p2: inventory.items (src/llm_wiki_cli/services…cts.py:_framework_records)
-    p1-->>p3: file_data.get (src/llm_wiki_cli/services…cts.py:_framework_records)
-    p1-->>p4: isinstance (src/llm_wiki_cli/services…cts.py:_framework_records)
-    p1-->>p5: frameworks.get
-    p1-->>p4: isinstance (src/llm_wiki_cli/services…cts.py:_framework_records)
-    p0->>p6: is_test_source_path
-    p6-->>p7: str(…).replace(…).strip
-    p6-->>p8: str(…).replace (src/llm_wiki_cli/services…hs.py:is_test_source_path)
-    p6-->>p9: str (src/llm_wiki_cli/services…hs.py:is_test_source_path)
-    p6-->>p10: PurePosixPath (src/llm_wiki_cli/services…hs.py:is_test_source_path)
-    p6-->>p11: tuple (src/llm_wiki_cli/services…hs.py:is_test_source_path)
-    p6-->>p12: part.casefold
-    p6-->>p13: _TEST_DIRECTORY_NAMES.intersection
-    p6-->>p14: path.name.casefold
-    p6-->>p15: path.stem.casefold
-    p6-->>p16: stem.startswith
-    p6-->>p17: stem.endswith
-    p0-->>p18: fastapi.get (src/llm_wiki_cli/services…uild_static_api_contracts)
-    p0-->>p19: isinstance (src/llm_wiki_cli/services…uild_static_api_contracts)
-    p0-->>p20: sum
-    p0-->>p21: max
-    p0-->>p22: len (src/llm_wiki_cli/services…uild_static_api_contracts)
-    p0->>p23: _operation_methods
-    p23-->>p24: str (src/llm_wiki_cli/services…cts.py:_operation_methods)
-    p23-->>p25: record.get (src/llm_wiki_cli/services…cts.py:_operation_methods)
-    p23-->>p26: decorator.upper
-    p23->>p27: _kw_value
-    p27-->>p28: _kwargs(…).get (src/llm_wiki_cli/services…pi_contracts.py:_kw_value)
-    p27->>p29: _kwargs
+    p0->>p2: is_test_source_path
+    p0-->>p3: fastapi.get (src/llm_wiki_cli/services…uild_static_api_contracts)(kind, [...])
+    p0-->>p4: isinstance (src/llm_wiki_cli/services…uild_static_api_contracts)(record, Mapping)
+    p0-->>p5: sum(...)
+    p0-->>p6: max(1, len(...))
+    p0-->>p7: len (src/llm_wiki_cli/services…uild_static_api_contracts)(...)
+    p0->>p8: _operation_methods
+    p0-->>p9: any (src/llm_wiki_cli/services…uild_static_api_contracts)(declarations.values(...))
+    p0-->>p10: declarations.values
+    p0-->>p11: diagnostics.append(_diagnostic(...))
+    p0->>p12: _diagnostic
+    p0-->>p7: len (src/llm_wiki_cli/services…uild_static_api_contracts)(records)
+    p0-->>p13: declarations.items
+    p0-->>p14: inventory.items (src/llm_wiki_cli/services…uild_static_api_contracts)
+    p0->>p2: is_test_source_path
+    p0->>p15: _declaration_nodes
+    p0->>p16: build_module_path_resolver
+    p0-->>p17: dict (src/llm_wiki_cli/services…uild_static_api_contracts)(inventory)
+    p0-->>p18: defaultdict (src/llm_wiki_cli/services…uild_static_api_contracts)(list)
+    p0-->>p18: defaultdict (src/llm_wiki_cli/services…uild_static_api_contracts)(list)
+    p0->>p1: _framework_records
+    p0-->>p3: fastapi.get (src/llm_wiki_cli/services…uild_static_api_contracts)('operations', [...])
+    p0-->>p4: isinstance (src/llm_wiki_cli/services…uild_static_api_contracts)(record, Mapping)
+    p0->>p19: _resolve_binding
+    p0-->>p20: str (src/llm_wiki_cli/services…uild_static_api_contracts)(...)
+    p0-->>p21: record.get (src/llm_wiki_cli/services…uild_static_api_contracts)('owner')
+    p0-->>p20: str (src/llm_wiki_cli/services…uild_static_api_contracts)(...)
+    p0-->>p21: record.get (src/llm_wiki_cli/services…uild_static_api_contracts)('handler_scope')
+    p0-->>p11: diagnostics.append(_diagnostic(...))
 ```
 
-> Call sequence diagram shows 30 of 591 interactions; 561 omitted to keep the visualization within the 30-interaction and generated-diagram limits.
+> Call sequence diagram shows 30 of 591 interactions; 561 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+
+> Captured boundary calls: external 12 of 222 (210 omitted); unresolved 9 of 265 (256 omitted). These counts cover the captured static trace.
+
+Omitted captured detail, grouped by actual caller occurrence and target module:
+
+| Caller | Parent step | Target module | Kind | Omitted interactions |
+| --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/api_contracts.py:_framework_records` | 2 | - | unresolved | 3 |
+| `src/llm_wiki_cli/services/api_contracts.py:_framework_records` | 2 | - | external | 2 |
+| `src/llm_wiki_cli/services/paths.py:is_test_source_path` | 8 | - | unresolved | 8 |
+| `src/llm_wiki_cli/services/paths.py:is_test_source_path` | 8 | - | external | 3 |
+| `src/llm_wiki_cli/services/api_contracts.py:_operation_methods` | 25 | - | external | 4 |
+| `src/llm_wiki_cli/services/api_contracts.py:_operation_methods` | 25 | - | unresolved | 3 |
+| `src/llm_wiki_cli/services/api_contracts.py:_operation_methods` | 25 | [src/llm_wiki_cli/services/api_contracts.py](../modules/api_contracts.md) | internal | 1 |
+| `src/llm_wiki_cli/services/api_contracts.py:_kw_value` | 29 | - | unresolved | 1 |
+> Omission summary shows 8 of 115 groups; 107 further groups are not expanded here. Counts above include all omitted interactions.
+> Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
 
