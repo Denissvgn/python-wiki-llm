@@ -40,6 +40,34 @@ def test_combined_optional_sdk_skips_require_each_exact_sdk_owner_case():
     }
 
 
+def test_newer_parser_control_skips_require_supported_parser_owner_cases():
+    families = (
+        "tests/test_constructor_call_interfaces.py::"
+        "test_receiver_controls_share_exact_decisions_across_receiving_interfaces",
+        "tests/test_python_constructor_bindings.py::"
+        "test_namespace_effects_preserve_exact_call_authority",
+    )
+    alias = (
+        "tests/test_python_constructor_bindings.py::"
+        "test_review_type_alias_capability_validation_keeps_cold_warm_parity[type Alias = int]"
+    )
+    cases = {"ADD-021": "3.12", "CLS-007": "3.11", "CLS-016": "3.12"}
+    expected = {
+        ("core-ubuntu-3.10", f"{family}[{case}{suffix}]", "core-macos-3.14",
+         f"Owned syntax requires Python {version}")
+        for family in families for case, version in cases.items() for suffix in ("", "-M")
+    }
+    expected.add(("core-ubuntu-3.10", alias, "core-macos-3.14", "Parser lacks type alias statements"))
+    entries = json.loads((ROOT / "release/skip-allowlist.json").read_text())["entries"]
+    owned = [entry for entry in entries if entry["node_id"] == alias or any(
+        entry["node_id"].startswith(f"{family}[{case}{suffix}]")
+        for family in families for case in cases for suffix in ("", "-M")
+    )]
+    assert len(owned) == 13
+    assert {(entry["lane"], entry["node_id"], entry["owner_lane"], entry["reason"])
+            for entry in owned} == expected
+
+
 def test_maintenance_consumer_binds_identity_without_downloading_source():
     workflow = yaml.safe_load((WORKFLOWS / "release-qualification.yml").read_text())
     job = workflow["jobs"]["knowledge-maintenance"]

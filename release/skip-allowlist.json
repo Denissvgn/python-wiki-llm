@@ -1004,6 +1004,42 @@
     },
     {
       "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_constructor_call_interfaces.py::test_receiver_controls_share_exact_decisions_across_receiving_interfaces[ADD-021-M]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Owned syntax requires Python 3.12"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_constructor_call_interfaces.py::test_receiver_controls_share_exact_decisions_across_receiving_interfaces[ADD-021]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Owned syntax requires Python 3.12"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_constructor_call_interfaces.py::test_receiver_controls_share_exact_decisions_across_receiving_interfaces[CLS-007-M]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Owned syntax requires Python 3.11"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_constructor_call_interfaces.py::test_receiver_controls_share_exact_decisions_across_receiving_interfaces[CLS-007]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Owned syntax requires Python 3.11"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_constructor_call_interfaces.py::test_receiver_controls_share_exact_decisions_across_receiving_interfaces[CLS-016-M]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Owned syntax requires Python 3.12"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_constructor_call_interfaces.py::test_receiver_controls_share_exact_decisions_across_receiving_interfaces[CLS-016]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Owned syntax requires Python 3.12"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
       "node_id": "tests/test_developer_value_combined_interfaces.py::test_actual_sdk_combined_callers_compact_and_stale_custody[packed]",
       "owner_lane": "mcp-3.13",
       "reason": "Optional MCP SDK is not installed"
@@ -1565,6 +1601,48 @@
       "node_id": "tests/test_protected_artifacts.py::test_native_windows_reopens_store_with_lock_and_artifact",
       "owner_lane": "security-windows-2025",
       "reason": "native Windows protected-tree checks"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_python_constructor_bindings.py::test_namespace_effects_preserve_exact_call_authority[ADD-021-M]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Owned syntax requires Python 3.12"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_python_constructor_bindings.py::test_namespace_effects_preserve_exact_call_authority[ADD-021]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Owned syntax requires Python 3.12"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_python_constructor_bindings.py::test_namespace_effects_preserve_exact_call_authority[CLS-007-M]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Owned syntax requires Python 3.11"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_python_constructor_bindings.py::test_namespace_effects_preserve_exact_call_authority[CLS-007]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Owned syntax requires Python 3.11"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_python_constructor_bindings.py::test_namespace_effects_preserve_exact_call_authority[CLS-016-M]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Owned syntax requires Python 3.12"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_python_constructor_bindings.py::test_namespace_effects_preserve_exact_call_authority[CLS-016]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Owned syntax requires Python 3.12"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_python_constructor_bindings.py::test_review_type_alias_capability_validation_keeps_cold_warm_parity[type Alias = int]",
+      "owner_lane": "core-macos-3.14",
+      "reason": "Parser lacks type alias statements"
     },
     {
       "lane": "core-ubuntu-3.10",
