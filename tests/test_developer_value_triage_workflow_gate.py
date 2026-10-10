@@ -546,7 +546,7 @@ def test_fresh_process_reads_persisted_pending_review_without_writes(owned, caps
     )
     before = _files(owned)
     project_root = Path(__file__).resolve().parents[1]
-    project_python = project_root / ".venv/bin/python"
+    project_python = Path(sys.executable)
     assert project_python.is_file()
     compile(RESTART_READ_SCRIPT, "restart-read-control", "exec")
     restarted = subprocess.run(

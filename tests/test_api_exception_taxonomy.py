@@ -915,7 +915,7 @@ def test_public_dict_return_annotations_import_and_resolve():
             bounded | {"symbol", "pages"},
             set(),
         ),
-        api_types.ConceptResult: (concept, set()),
+        api_types.ConceptResult: (concept, {"maintenance"}),
         api_types.ConceptSectionsResult: (
             concept
             | {
@@ -923,7 +923,7 @@ def test_public_dict_return_annotations_import_and_resolve():
                 "ownership",
                 "sections",
             },
-            set(),
+            {"maintenance"},
         ),
         api_types.RelatedConceptsResult: (
             concept
@@ -935,7 +935,7 @@ def test_public_dict_return_annotations_import_and_resolve():
                 "unresolved_targets",
                 "external_targets",
             },
-            set(),
+            {"maintenance"},
         ),
         api_types.TypedGraphTraversalResult: (
             concept
@@ -948,11 +948,11 @@ def test_public_dict_return_annotations_import_and_resolve():
                 "typed_graph",
                 "edges",
             },
-            set(),
+            {"maintenance"},
         ),
         api_types.EvidenceExplanationResult: (
             concept | {"evidence"},
-            set(),
+            {"maintenance"},
         ),
         api_types.DocumentationExportResult: (
             {

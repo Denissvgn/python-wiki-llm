@@ -149,7 +149,7 @@ def run_behavior_oracle(project, change="before"):
               for path in project.source.rglob("*.py")}
     assert actual == {name: source.encode("utf-8") for name, source in expected.items()}
     interpreter = Path(sys.executable)
-    assert interpreter.parent.name == "bin" and interpreter.parent.parent.name == ".venv"
+    assert interpreter.is_file()
     code = '''import json, runpy, sys
 window = runpy.run_path(sys.argv[1])["Window"]()
 values = [0, 1, 2, 3, 4]

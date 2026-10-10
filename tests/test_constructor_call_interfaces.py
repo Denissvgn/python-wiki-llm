@@ -379,7 +379,7 @@ def test_import_alias_selection_and_cached_restart_cannot_borrow_excluded_author
     )
     before = _tree(tmp_path)
     restarted = subprocess.run(
-        [str(repo / ".venv/bin/python"), "-c", code],
+        [sys.executable, "-c", code],
         cwd=tmp_path,
         env=environment,
         capture_output=True,

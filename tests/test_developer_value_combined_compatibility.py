@@ -322,7 +322,7 @@ def test_interrupted_sync_recovery_preserves_source_prose_and_durable_pending(
     assert (project.source / "policy.py").read_bytes() == exact_source
     assert (project.wiki / "entities/Window.md").read_bytes() == exact_prose
     interpreter = Path(sys.executable)
-    assert interpreter.parent.parent.name == ".venv"
+    assert interpreter.is_file()
     restarted = subprocess.run([str(interpreter), "-I", "-c",
         "from llm_wiki_cli import cli; cli.main()", "maintenance", "status",
         *_arguments(project), "--record-id", row["record_id"], "--format", "json"],

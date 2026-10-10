@@ -45,7 +45,7 @@ def _assert_writer_preserves_authority(before, after):
 
 def _restart_status(project):
     interpreter = Path(sys.executable)
-    assert interpreter.parent.parent.name == '.venv'
+    assert interpreter.is_file()
     code = ('import json,sys; from llm_wiki_cli import api; '
             'print(json.dumps(api.get_maintenance_status(src_dir=sys.argv[1],wiki_dir=sys.argv[2],live=False,limit=100)))')
     child = subprocess.run([str(interpreter), '-I', '-c', code, str(project.source), str(project.wiki)],

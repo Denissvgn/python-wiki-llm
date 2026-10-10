@@ -586,7 +586,7 @@ def test_conditional_receiver_edit_keeps_review_pending_through_restart_and_ack(
     def restart_status():
         result = subprocess.run(
             [
-                str(repo / ".venv/bin/python"),
+                sys.executable,
                 "-m",
                 "llm_wiki_cli.cli",
                 "maintenance",
@@ -818,7 +818,7 @@ def test_frozen_service_review_persists_after_edit_sync_fresh_process_and_repeat
     )
     restarted = subprocess.run(
         [
-            str(repo / ".venv/bin/python"),
+            sys.executable,
             "-m",
             "llm_wiki_cli.cli",
             "queue",
