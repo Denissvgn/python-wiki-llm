@@ -1568,12 +1568,20 @@ class _BindingAnalyzer:
             return [{"kind": "attribute-mutator", "qualified": False}]
         return binding.get("_possible_targets", [])
 
+    @staticmethod
+    def _unique_targets(targets):
+        result = []
+        for target in targets:
+            if target not in result:
+                result.append(target)
+        return result
+
     def bind_value(self, name, value, env, source=None):
         candidates = value.get("_possible_targets", [])
         if source is not None and isinstance(source, ast.Name):
             candidates = [*candidates, *self.state.possible_targets.get(source.id, [])]
         if candidates:
-            self.state.possible_targets[name] = candidates
+            self.state.possible_targets[name] = self._unique_targets(candidates)
         else:
             self.state.possible_targets.pop(name, None)
         env[name] = (
@@ -1585,8 +1593,14 @@ class _BindingAnalyzer:
     def join_states(self, states, env, values=()):
         """Join a whole related graph without erasing aliases or possible owners."""
         objects = {}
+        visited = set()
 
         def collect(value):
+            if isinstance(value, (dict, list, tuple)):
+                identity = id(value)
+                if identity in visited:
+                    return
+                visited.add(identity)
             if isinstance(value, dict):
                 if "_allocation" in value:
                     token = value["_allocation"]
@@ -1641,6 +1655,10 @@ class _BindingAnalyzer:
                 merged.possible_targets.setdefault(name, []).extend(
                     target for binding in bindings for target in self._targets(binding)
                 )
+        merged.possible_targets = {
+            name: self._unique_targets(targets)
+            for name, targets in merged.possible_targets.items()
+        }
         merged.class_mutations = {}
         merged.import_mutations = []
         for state in states:
@@ -1670,9 +1688,9 @@ class _BindingAnalyzer:
         return {
             "kind": "unresolved",
             "reason": "receiver-path-conflict",
-            "_possible_targets": [
+            "_possible_targets": self._unique_targets(
                 target for value in returns for target in self._targets(value)
-            ],
+            ),
         }
 
     def helper_path(self, node, env):
@@ -1880,29 +1898,35 @@ class _BindingAnalyzer:
         if binding.get("kind") == "constructed-instance":
             token = binding.get("_allocation")
 
+            matches = {}
+            visited = set()
+
             def live(value):
+                if not isinstance(value, (dict, list, tuple)) or id(value) in visited:
+                    return
+                visited.add(id(value))
                 if isinstance(value, dict):
                     if token is not None and value.get("_allocation") == token:
-                        return value
-                    for key in ("target", "namespace"):
-                        found = live(value.get(key))
-                        if found is not None:
-                            return found
-                elif isinstance(value, list):
+                        matches[id(value)] = value
+                        return
+                    for item in value.values():
+                        live(item)
+                else:
                     for item in value:
-                        found = live(item)
-                        if found is not None:
-                            return found
-                return None
+                        live(item)
 
-            for value in [*env.values(), *self.state.possible_targets.values()]:
-                current = live(value)
-                if current is not None:
-                    binding = current
-                    break
-            binding["blocked_members"].append(member)
+            # Captured call owners can predate a join. Mutate every live alias
+            # of this allocation, including the captured descriptor itself.
+            matches[id(binding)] = binding
+            for value in [binding, *env.values(), *self.state.possible_targets.values()]:
+                live(value)
+            blocked = {member}
             if member in {"__class__", "__dict__"}:
-                binding["blocked_members"].append("*")
+                blocked.add("*")
+            for value in matches.values():
+                blocked.update(value["blocked_members"])
+            for value in matches.values():
+                value["blocked_members"] = sorted(blocked)
         elif (
             binding.get("kind") in {"local", "receiver"}
             and binding.get("symbol") in self.class_names
