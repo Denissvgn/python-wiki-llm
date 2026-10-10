@@ -129,11 +129,11 @@ def prepare_combined(root: Path, variant: str) -> WorkflowProject:
     project = WorkflowProject(root.resolve(), variant)
     project.source.mkdir()
     for path, source in SOURCES.items():
-        (project.source / path).write_text(source, encoding="utf-8")
+        (project.source / path).write_bytes(source.encode("utf-8"))
     if variant not in {"source-only", "native-absent"}:
         profile = project.source / ".llm-wiki/source-selection.json"
         profile.parent.mkdir()
-        profile.write_text(json.dumps({"schema_version": "llm-wiki-source-selection/v1", "include": list(SOURCES), "exclude": []}) + "\n")
+        profile.write_bytes((json.dumps({"schema_version": "llm-wiki-source-selection/v1", "include": list(SOURCES), "exclude": []}) + "\n").encode("utf-8"))
         api.bootstrap_wiki(str(project.source), str(project.wiki))
         write_description(project, BEFORE_PROSE, "entities/Harbor.md")
         sync_workflow(project)
@@ -144,7 +144,7 @@ def prepare_combined(root: Path, variant: str) -> WorkflowProject:
             migrate_knowledge_storage(project.wiki, to="indexed-v8", recovery_dir=root / "manifest-recovery")
     elif variant == "native-absent":
         (project.wiki / "guides").mkdir(parents=True)
-        (project.wiki / "guides/orientation.md").write_text("# Harbor routing\n\nInspect policy.py:Harbor.route.\n")
+        (project.wiki / "guides/orientation.md").write_bytes(("# Harbor routing\n\nInspect policy.py:Harbor.route.\n").encode("utf-8"))
     return project
 
 

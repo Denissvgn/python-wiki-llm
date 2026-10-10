@@ -153,7 +153,7 @@ def prepare_workspace(project: str, root: Path, *, tiny: bool = False) -> None:
         if root.exists() and (not root.is_dir() or any(root.iterdir())):
             raise ValueError("owned workspace must be new or empty")
         (root / "src").mkdir(parents=True)
-        (root / "src/policy.py").write_text(POLICY_SOURCE, encoding="utf-8")
+        (root / "src/policy.py").write_bytes(POLICY_SOURCE.encode("utf-8"))
     else:
         materialize(project, root)
     previous = Path.cwd()
@@ -164,7 +164,7 @@ def prepare_workspace(project: str, root: Path, *, tiny: bool = False) -> None:
             for relative, text in baseline_guides(project).items():
                 path = root / "wiki/guides" / relative
                 path.parent.mkdir(parents=True, exist_ok=True)
-                path.write_text(text, encoding="utf-8")
+                path.write_bytes(text.encode("utf-8"))
             result = run_cli(["sync", "--src-dir", "src", "--wiki-dir", "wiki",
                               "--jobs", "1", "--no-plugins", "--progress", "never"])
             if result["exit_code"] != 0:

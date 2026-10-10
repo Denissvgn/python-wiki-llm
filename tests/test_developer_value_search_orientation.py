@@ -29,14 +29,14 @@ def packet(tmp_path):
     for path, text in texts.items():
         target = tmp_path / path
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(text)
+        target.write_bytes(text.encode("utf-8"))
     policy = {
         "schema_version": "llm-wiki-source-selection/v1",
         "include": ["src/llm_wiki_cli"],
         "exclude": [],
     }
     selection = tmp_path / "selection.json"
-    selection.write_text(json.dumps(policy))
+    selection.write_bytes((json.dumps(policy)).encode("utf-8"))
     semantic = (
         json.dumps(policy, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
         + "\n"
@@ -169,14 +169,14 @@ def packet(tmp_path):
     freeze(manifest, trace)
     review = review_receipt(tmp_path, binding)
     manifest["source_review_sha256"] = commitment(review)
-    (tmp_path / "source-review-receipt.json").write_text(json.dumps(review))
+    (tmp_path / "source-review-receipt.json").write_bytes((json.dumps(review)).encode("utf-8"))
     pin_trace(tmp_path, trace)
     return manifest, binding, trace
 
 
 def review_receipt(root, binding):
     # This fixture tests provenance structure; it is not a semantic source oracle.
-    (root / "review.json").write_text("owned independent review fixture")
+    (root / "review.json").write_bytes(("owned independent review fixture").encode("utf-8"))
     return {
         "status": "source-reviewed-design",
         "reviewer_id": "independent-reviewer",
@@ -193,7 +193,7 @@ def review_receipt(root, binding):
 
 
 def pin_trace(root, trace):
-    (root / "origin-trace.sha256").write_text(commitment(trace))
+    (root / "origin-trace.sha256").write_bytes((commitment(trace)).encode("utf-8"))
 
 
 def validate_design(manifest, *, root, binding, trace):
@@ -249,9 +249,9 @@ def test_source_and_binding_drift_is_rejected(tmp_path, change):
     manifest, binding, trace = packet(tmp_path)
     ref = manifest["stages"][0]["refs"][0]
     if change in {"hash", "provider"}:
-        (tmp_path / ref["path"]).write_text("def run():\n    return 7\n")
+        (tmp_path / ref["path"]).write_bytes(("def run():\n    return 7\n").encode("utf-8"))
     elif change == "selection":
-        (tmp_path / "selection.json").write_text("{}")
+        (tmp_path / "selection.json").write_bytes(("{}").encode("utf-8"))
     elif change == "entry":
         binding["entrypoint"]["qualified_name"] = "different"
     elif change == "binding":
@@ -374,7 +374,7 @@ def test_original_occurrences_and_separate_exact_counts_are_required(tmp_path, c
 
 
 def unavailable(manifest, trace, tmp_path):
-    (tmp_path / "historical.md").write_text("30 of 114 historical interactions")
+    (tmp_path / "historical.md").write_bytes(("30 of 114 historical interactions").encode("utf-8"))
     trace.update(
         status="timed-out",
         original_flow=None,
@@ -452,7 +452,7 @@ def test_recommitted_policy_still_cannot_include_excluded_source(tmp_path):
     policy = json.loads((tmp_path / "selection.json").read_text())
     policy["exclude"] = ["src/llm_wiki_cli/services"]
     raw = json.dumps(policy)
-    (tmp_path / "selection.json").write_text(raw)
+    (tmp_path / "selection.json").write_bytes(raw.encode("utf-8"))
     binding["source_selection"]["sha256"] = hashlib.sha256(raw.encode()).hexdigest()
     canonical = (
         json.dumps(policy, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
@@ -469,9 +469,7 @@ def test_recommitted_policy_still_cannot_include_excluded_source(tmp_path):
 
 
 def test_same_named_methods_require_qualified_ast_identity(tmp_path):
-    (tmp_path / "methods.py").write_text(
-        "class One:\n    def run(self):\n        return 1\nclass Two:\n    def run(self):\n        return 2\n"
-    )
+    (tmp_path / "methods.py").write_bytes(("class One:\n    def run(self):\n        return 1\nclass Two:\n    def run(self):\n        return 2\n").encode("utf-8"))
     assert (
         source_reference(tmp_path, "methods.py", "One.run", 2, 3)["qualified_name"]
         == "One.run"
@@ -481,7 +479,7 @@ def test_same_named_methods_require_qualified_ast_identity(tmp_path):
 
 
 def test_decorators_are_part_of_source_identity_without_runtime_target_claim(tmp_path):
-    (tmp_path / "decorated.py").write_text("@wrapper\ndef run():\n    return 1\n")
+    (tmp_path / "decorated.py").write_bytes(("@wrapper\ndef run():\n    return 1\n").encode("utf-8"))
     ref = source_reference(tmp_path, "decorated.py", "run", 1, 3)
     assert ref["function_start_line"] == 1 and ref["quote"].startswith("@wrapper\n")
 
@@ -492,7 +490,7 @@ def refresh_provenance(root, manifest, binding, trace):
     trace["binding_sha256"] = commitment(binding)
     review = review_receipt(root, binding)
     manifest["source_review_sha256"] = commitment(review)
-    (root / "source-review-receipt.json").write_text(json.dumps(review))
+    (root / "source-review-receipt.json").write_bytes((json.dumps(review)).encode("utf-8"))
     freeze(manifest, trace)
     pin_trace(root, trace)
 
@@ -509,7 +507,7 @@ def test_bare_required_source_path_cannot_replace_exact_project_path(tmp_path):
     policy = json.loads((tmp_path / "selection.json").read_text())
     policy["include"].append("services")
     raw = json.dumps(policy)
-    (tmp_path / "selection.json").write_text(raw)
+    (tmp_path / "selection.json").write_bytes(raw.encode("utf-8"))
     binding["source_selection"]["sha256"] = hashlib.sha256(raw.encode()).hexdigest()
     canonical = {**policy, "include": sorted(policy["include"])}
     semantic = json.dumps(canonical, sort_keys=True, separators=(",", ":")) + "\n"
@@ -563,7 +561,7 @@ def test_decorator_and_default_calls_are_not_owned_by_function_body(
 ):
     manifest, binding, trace = packet(tmp_path)
     path = "src/llm_wiki_cli/commands/search_cmd.py"
-    (tmp_path / path).write_text(declaration)
+    (tmp_path / path).write_bytes(declaration.encode("utf-8"))
     caller = source_reference(tmp_path, path, "run", 1, len(declaration.splitlines()))
     binding["entrypoint"] = caller
     binding["selected_source_hashes"][path] = caller["whole_file_sha256"]
@@ -613,10 +611,10 @@ def test_source_review_requires_independent_bound_metadata(tmp_path, change):
     elif change == "hash-scope":
         receipt["selected_source_hashes"] = {}
     elif change == "artifact":
-        (tmp_path / "review.json").write_text("different review")
+        (tmp_path / "review.json").write_bytes(("different review").encode("utf-8"))
     else:
         receipt["runtime_acceptance"] = "passed"
-    (tmp_path / "source-review-receipt.json").write_text(json.dumps(receipt))
+    (tmp_path / "source-review-receipt.json").write_bytes((json.dumps(receipt)).encode("utf-8"))
     manifest["source_review_sha256"] = commitment(receipt)
     with pytest.raises(ValueError):
         validate_design(manifest, root=tmp_path, binding=binding, trace=trace)

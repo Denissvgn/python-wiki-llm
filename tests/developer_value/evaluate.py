@@ -220,7 +220,7 @@ class _Case:
             mutation = self.spec["mutation"]
             path = self.root / "wiki" / mutation["path"]
             before = path.read_bytes()
-            path.write_text(mutation["after"], encoding="utf-8")
+            path.write_bytes((mutation["after"]).encode("utf-8"))
             return {"path": path.relative_to(self.root).as_posix(), "before_sha256": _sha(before),
                     "after_sha256": _sha(path.read_bytes()), "after_text": path.read_text()}, "ok"
         if action == "sync":
@@ -312,7 +312,7 @@ def _prepare_case(case: _Case) -> list[dict[str, Any]]:
         needle = "## " + edit["heading"] + "\n"
         if before.count(needle) != 1:
             raise ValueError("semantic preparation lacks its unique declared heading")
-        path.write_text(before.replace(needle, needle + "\n" + edit["text"] + "\n", 1), encoding="utf-8")
+        path.write_bytes((before.replace(needle, needle + "\n" + edit["text"] + "\n", 1)).encode("utf-8"))
         records.append({"semantic_edit": dict(edit), "path": edit["wiki_path"],
                         "before_sha256": _sha(before.encode("utf-8")), "after_sha256": _sha(path.read_bytes())})
     if preparation["refresh_before_first_read"]:
@@ -501,8 +501,8 @@ def run(provider_root: Path, output: Path) -> dict[str, Any]:
         raise ValueError("evaluation output must not redirect writes or replace provider source")
     cases, query_rows, observations = [], [], {}
     retrieval_preparation: dict[str, Any] = {}
-    with tempfile.TemporaryDirectory(prefix="developer-value-evaluation-", dir="/private/tmp") as temporary:
-        work = Path(temporary)
+    with tempfile.TemporaryDirectory(prefix="developer-value-evaluation-", dir=runtime.temporary_parent()) as temporary:
+        work = Path(temporary).resolve()
         for spec in manifest["cases"]:
             root = work / spec["id"]
             stdout, stderr = io.StringIO(), io.StringIO()
@@ -551,7 +551,7 @@ def run(provider_root: Path, output: Path) -> dict[str, Any]:
                               "Raw search is bounded to 100 pages; scoring uses the first five distinct frozen source owners.",
                               "Unmapped source aliases remain noise; unavailable answer claims remain unmeasured."]}
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    output.write_bytes((json.dumps(report, indent=2, sort_keys=True) + "\n").encode("utf-8"))
     return report
 
 

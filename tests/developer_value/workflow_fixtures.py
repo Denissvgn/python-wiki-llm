@@ -116,12 +116,12 @@ def prepare_workflow(root: Path, variant: str) -> WorkflowProject:
     project = WorkflowProject(root.resolve(), variant)
     project.source.mkdir()
     for name, source in SOURCE_FILES.items():
-        (project.source / name).write_text(source, encoding="utf-8")
+        (project.source / name).write_bytes(source.encode("utf-8"))
     if variant not in {"source-only", "native-absent"}:
         profile = project.source / ".llm-wiki/source-selection.json"
         profile.parent.mkdir()
-        profile.write_text(json.dumps({"schema_version": "llm-wiki-source-selection/v1",
-                                      "include": list(SOURCE_FILES), "exclude": []}) + "\n")
+        profile.write_bytes((json.dumps({"schema_version": "llm-wiki-source-selection/v1",
+                                      "include": list(SOURCE_FILES), "exclude": []}) + "\n").encode("utf-8"))
         api.bootstrap_wiki(str(project.source), str(project.wiki))
         write_description(project, INITIAL_PROSE)
         sync_workflow(project)
@@ -134,12 +134,12 @@ def prepare_workflow(root: Path, variant: str) -> WorkflowProject:
             migrate_knowledge_storage(project.wiki, to="indexed-v8", recovery_dir=root / "manifest-recovery")
     elif variant == "native-absent":
         (project.wiki / "guides").mkdir(parents=True)
-        (project.wiki / "guides/orientation.md").write_text("# Window clipping\n\nInspect policy.py:Window.clip.\n")
+        (project.wiki / "guides/orientation.md").write_bytes(("# Window clipping\n\nInspect policy.py:Window.clip.\n").encode("utf-8"))
     return project
 
 
 def mutate_source(project, change="body"):
-    (project.source / "policy.py").write_text(policy_source(change), encoding="utf-8")
+    (project.source / "policy.py").write_bytes((policy_source(change)).encode("utf-8"))
 
 
 def run_behavior_oracle(project, change="before"):
@@ -206,5 +206,4 @@ def record_workflow_trace(project, scenario, observation):
         "source_hashes": {path.relative_to(project.source).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
                           for path in sorted(project.source.rglob("*.py"))},
         "observations": observation}
-    (output / f"{scenario}-{project.variant}.json").write_text(
-        json.dumps(payload, sort_keys=True, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    (output / f"{scenario}-{project.variant}.json").write_bytes((json.dumps(payload, sort_keys=True, indent=2, ensure_ascii=False) + "\n").encode("utf-8"))

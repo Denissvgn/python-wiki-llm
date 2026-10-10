@@ -280,7 +280,7 @@ def apply_source_mutation(case: Mapping[str, Any], source_root: Path) -> Path:
     _require(path.read_bytes() == frozen.encode("utf-8"), "source mutation basis changed from frozen bytes")
     source = frozen
     _require(source.count(mutation["before"]) == mutation["occurrences"], "source mutation basis changed")
-    path.write_text(source.replace(mutation["before"], mutation["after"]), encoding="utf-8")
+    path.write_bytes((source.replace(mutation["before"], mutation["after"])).encode("utf-8"))
     return path
 
 
@@ -325,7 +325,7 @@ def apply_prose_mutation(case: Mapping[str, Any], wiki_root: Path) -> Path:
     prefix, suffix = text[:end], text[end:]
     separator = "" if prefix.endswith("\n\n") else "\n" if prefix.endswith("\n") else "\n\n"
     updated = prefix + separator + insertion.rstrip("\r\n") + "\n\n" + suffix
-    path.write_text(updated, encoding="utf-8")
+    path.write_bytes(updated.encode("utf-8"))
     return path
 
 

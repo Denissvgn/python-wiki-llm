@@ -80,7 +80,7 @@ def tree(path):
 def tiny(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     Path("src").mkdir()
-    Path("src/policy.py").write_text(POLICY_SOURCE, encoding="utf-8")
+    Path("src/policy.py").write_bytes(POLICY_SOURCE.encode("utf-8"))
     assert Path("src/policy.py").read_bytes() == POLICY_SOURCE.encode()
     assert len(POLICY_SOURCE.encode()) == 238
     return tmp_path
@@ -206,9 +206,7 @@ def test_real_stale_executable_fact_is_not_structural_or_behavior_equivalence(
     tiny, capsys
 ):
     native(tiny, capsys)
-    Path("src/policy.py").write_text(
-        POLICY_SOURCE.replace("values[:limit]", "values[:limit - 1]"), encoding="utf-8"
-    )
+    Path("src/policy.py").write_bytes((POLICY_SOURCE.replace("values[:limit]", "values[:limit - 1]")).encode("utf-8"))
     request = native_request()
     result, received = canonical(request)
     _, value = expanded(result, request)
@@ -333,9 +331,7 @@ def test_pure_saved_result_conversion_does_not_claim_current_filesystem_validati
 ):
     request = tiny_request()
     result, received = canonical(request)
-    Path("src/policy.py").write_text(
-        POLICY_SOURCE.replace("values[:limit]", "values[:1]"), encoding="utf-8"
-    )
+    Path("src/policy.py").write_bytes((POLICY_SOURCE.replace("values[:limit]", "values[:1]")).encode("utf-8"))
     _, value = expanded(result, request)
     exact_selected(value, received)
     assert Path("src/policy.py").read_text() != POLICY_SOURCE

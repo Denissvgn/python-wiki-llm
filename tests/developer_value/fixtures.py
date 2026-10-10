@@ -298,5 +298,5 @@ def materialize(name: str, project_root: Path) -> Path:
     for relative, text in available[name].items():
         path = source / relative
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(text, encoding="utf-8")
+        path.write_bytes(text.encode("utf-8"))
     return source
