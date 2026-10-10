@@ -55,6 +55,8 @@ and source-backed discovery while retaining explicit adoption and uncertainty.
   against concurrent source and control-file changes.
 - Windows maintenance adoption validates operational locks without reading their
   locked bytes, preserving guarded capture of ordinary wiki content.
+- Scoped task contexts bind native Markdown across supported line endings and
+  encodings while retaining exact consumed-byte receipts.
 
 ### Compatibility
 

@@ -237,8 +237,19 @@ def _native_observation(native, requirement, snapshot, paths, scope, limit, impl
         "native": native_qualification}
     if facet == "typed-relationships":
         qualification["graph_completeness"] = "static-observations-only"
+    page = concept["document"]["canonical_path"]
+    citation = {"path": page, "wiki_identity": selected["root_hash"]}
+    raw_hash = digest(native.session.observations[page].content)
+    page_hash = digest(native.markdown[page].encode("utf-8"))
+    if page_hash != concept["facets"]["semantics"]["page_hash"]:
+        raise WorkflowRequestError("storage", "consumed Markdown differs from its native semantics")
+    if raw_hash != page_hash:
+        # The selected reader already verified canonical text against these
+        # exact captured bytes. Preserve both identities for portable binding;
+        # receipt hashes and final rereads continue to cover raw bytes.
+        citation["page_binding"] = {"raw_content_hash": raw_hash, "canonical_page_hash": page_hash}
     fact = {"facet": facet, "selector": selector, "state": state, "observation": observation,
-            "citations": [{"path": concept["document"]["canonical_path"], "wiki_identity": selected["root_hash"]}],
+            "citations": [citation],
             "qualification": qualification}
     fact["fact_id"] = content_id("llm-wiki-task-fact/v1", fact)
     return state, fact, reason
@@ -581,7 +592,22 @@ def validate_scoped_bindings(payload, normalized, profile):
                     raise ValueError("selected maintenance fact widened unread ledger validation")
             path = concept["document"]["canonical_path"]
             page_inputs = [item for item in inputs if item["path"] == path]
-            if len(page_inputs) != 1 or page_inputs[0]["hash"] != concept["facets"]["semantics"]["page_hash"]:
+            if len(page_inputs) != 1:
+                raise ValueError("native observation is not bound to its consumed page")
+            page_hash = concept["facets"]["semantics"]["page_hash"]
+            bindings = [citation for citation in fact["citations"] if "page_binding" in citation]
+            if bindings:
+                if len(bindings) != 1 or bindings[0].get("path") != path or bindings[0].get("wiki_identity") != storage["root_hash"]:
+                    raise ValueError("native page binding belongs to a different consumed page")
+                binding = bindings[0]["page_binding"]
+                _result_fields(binding, {"raw_content_hash", "canonical_page_hash"}, "native page binding")
+                if (not packets.is_valid_sha256(binding["raw_content_hash"])
+                        or not packets.is_valid_sha256(binding["canonical_page_hash"])
+                        or binding["raw_content_hash"] != page_inputs[0]["hash"]
+                        or binding["canonical_page_hash"] != page_hash
+                        or binding["raw_content_hash"] == binding["canonical_page_hash"]):
+                    raise ValueError("native page binding differs from its consumed bytes or canonical semantics")
+            elif page_inputs[0]["hash"] != page_hash:
                 raise ValueError("native observation is not bound to its consumed page")
             if fact["facet"] == "typed-relationships":
                 locator = concept["locator"]
