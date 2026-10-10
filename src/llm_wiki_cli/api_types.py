@@ -388,11 +388,11 @@ class PagesForSymbolResult(_BoundedQueryResult):
     pages: list[dict[str, Any]]
 
 
-class _MaintenanceProjectionOptions(TypedDict, total=False):
+class _NativeInspectionMaintenance(TypedDict, total=False):
     maintenance: dict[str, Any]
 
 
-class ConceptResult(_BoundedQueryResult, _MaintenanceProjectionOptions):
+class ConceptResult(_BoundedQueryResult, _NativeInspectionMaintenance):
     knowledge: KnowledgeStatus | dict[str, Any]
     concept: dict[str, Any] | None
     total: int
@@ -707,7 +707,7 @@ class DoctorV4Result(DoctorResult):
     health_details: HealthDetailsV2
 
 
-class NativeInspectionResult(_MaintenanceProjectionOptions):
+class NativeInspectionResult(_NativeInspectionMaintenance):
     """Bounded component results sharing one source/wiki read scope."""
 
     schema_version: str
