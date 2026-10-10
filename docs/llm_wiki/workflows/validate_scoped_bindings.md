@@ -23,6 +23,9 @@
 13. `workflow_profile.content_id`
 14. `knowledge_storage._concept_aliases`
 15. `maintenance_status.validate_maintenance_summary`
+16. `task_context._result_fields`
+17. `knowledge_evidence.is_valid_sha256`
+18. `knowledge_evidence.is_valid_sha256`
 
 ## Touches
 

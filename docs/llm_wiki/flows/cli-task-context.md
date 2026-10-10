@@ -115,9 +115,9 @@ sequenceDiagram
     p0-->>p10: isinstance (src/llm_wiki_cli/commands/task_cmd.py:run)(cause, KnowledgeStorageError)
 ```
 
-> Call sequence diagram shows 30 of 1419 interactions; 1389 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1423 interactions; 1393 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 16 of 595 (579 omitted); unresolved 2 of 342 (340 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 16 of 595 (579 omitted); unresolved 2 of 343 (341 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

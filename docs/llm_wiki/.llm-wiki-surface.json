@@ -21683,7 +21683,7 @@
             "src/llm_wiki_cli/services/maintenance_status.py",
             "src/llm_wiki_cli/services/context_budget.py"
           ],
-          "step_count": 832,
+          "step_count": 841,
           "truncated": true
         }
       },
@@ -28413,7 +28413,7 @@
             "src/llm_wiki_cli/services/maintenance_status.py",
             "src/llm_wiki_cli/services/context_budget.py"
           ],
-          "step_count": 587,
+          "step_count": 596,
           "truncated": true
         }
       },
@@ -35961,7 +35961,7 @@
             "src/llm_wiki_cli/services/task_implementation.py",
             "src/llm_wiki_cli/services/wiki_write_basis.py"
           ],
-          "step_count": 1420,
+          "step_count": 1424,
           "truncated": true
         }
       },
@@ -65977,5 +65977,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:df92868ecc1c32fe991ad961e713cea66eb1c03d3fd63fb79b93434c38ef8bda"
+  "source_hash": "sha256:67e79a260e7733f0cb185885cdef8e00d81ef0cdcb54ef5160e8889f0713d3fc"
 }

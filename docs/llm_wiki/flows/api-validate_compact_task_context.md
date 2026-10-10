@@ -90,9 +90,9 @@ sequenceDiagram
     p9->>p4: TaskCompactError
 ```
 
-> Call sequence diagram shows 30 of 586 interactions; 556 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 595 interactions; 565 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 10 of 297 (287 omitted); unresolved 4 of 141 (137 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 10 of 301 (291 omitted); unresolved 4 of 143 (139 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

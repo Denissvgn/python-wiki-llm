@@ -10,7 +10,10 @@
 2. `maintenance_status.validate_maintenance_summary`
 3. `section_ownership.observe_page_sections`
 4. `markdown_sections.parse_markdown_document`
-5. `workflow_profile.content_id`
+5. `knowledge_storage.digest`
+6. `knowledge_storage.digest`
+7. `workflow_profile.WorkflowRequestError`
+8. `workflow_profile.content_id`
 
 ## Touches
 

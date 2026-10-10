@@ -95,4 +95,4 @@ flowchart LR
 | `ContextSession.read_compact` | call | [context_session](../modules/context_session.md) | 1 |
 | `_counter` | call | [task_context](../modules/task_context.md) | 4 |
 
-> References: showing 12 of 26 logical references; 14 omitted by the 12-row generated summary limit.
+> References: showing 12 of 27 logical references; 15 omitted by the 12-row generated summary limit.

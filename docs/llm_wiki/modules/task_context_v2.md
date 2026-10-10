@@ -71,7 +71,7 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ScopedTaskState](../entities/ScopedTaskState.md) | 248 | — | — |
+| [ScopedTaskState](../entities/ScopedTaskState.md) | 259 | — | — |
 
 ## Functions
 
