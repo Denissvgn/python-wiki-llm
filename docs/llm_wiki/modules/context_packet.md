@@ -34,7 +34,7 @@ separate from live reconciliation.
 | `.documentation_query_builder` | `validate_live_query_source_selection` |
 | `.extraction_jobs` | `ExtractionJobPlan`, `ExtractionJobRequest` |
 | `.extraction_service` | `InventoryResult` |
-| `.filesystem_guard` | `guard_windows_directory_chain`, `hold_windows_readonly_file` |
+| `.filesystem_guard` | `fresh_no_follow_stat`, `guard_windows_directory_chain`, `hold_windows_readonly_file` |
 | `.implementation_evidence` | `validate_implementation_summary` |
 | `.io` | `first_unsafe_path_component` |
 | `.knowledge_consumption` | `KnowledgeReadView` |
