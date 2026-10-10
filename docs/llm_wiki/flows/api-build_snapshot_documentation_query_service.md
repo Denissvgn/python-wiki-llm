@@ -69,11 +69,11 @@ sequenceDiagram
     participant p17 as ContextPacketSourceMutationError
     participant p18 as _domain_hash
     participant p19 as KnowledgeLoadResult
-    participant p20 as walk
+    participant p20 as _governance_lock_root
     participant p21 as build_knowledge_read_view
-    participant p22 as Path (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)
-    participant p23 as path.stat
-    participant p24 as sha256_bytes
+    participant p22 as walk
+    participant p23 as Path (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)
+    participant p24 as path.stat
     p0->>p1: _wiki_anchor
     p0->>p2: load_knowledge_read_view
     p0->>p3: build_documentation_query_service_from_view
@@ -96,33 +96,33 @@ sequenceDiagram
     p1->>p18: _domain_hash
     p2->>p19: KnowledgeLoadResult
     p4->>p17: ContextPacketSourceMutationError
-    p1-->>p20: walk(root, Path(...))
+    p1->>p20: _governance_lock_root
     p2->>p21: build_knowledge_read_view
-    p1-->>p22: Path (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)
+    p1-->>p22: walk(root, Path(...))
     p2->>p7: attach_machine_verification_read_view
+    p1-->>p23: Path (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)
     p1->>p8: _assert_wiki_integrity
     p1->>p18: _domain_hash
-    p9-->>p23: path.stat(follow_symlinks=False)
-    p18->>p24: sha256_bytes
+    p9-->>p24: path.stat(follow_symlinks=False)
 ```
 
-> Call sequence diagram shows 30 of 1182 interactions; 1152 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1190 interactions; 1160 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 4 of 432 (428 omitted); unresolved 4 of 232 (228 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 4 of 437 (433 omitted); unresolved 4 of 234 (230 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/context_packet.py:_domain_hash` | 8 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 2 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:sha256_bytes` | 9 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:sha256_bytes` | 9 | - | external | 1 |
-| `src/llm_wiki_cli/services/context_packet.py:_domain_hash` | 8 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:canonical_json_bytes` | 12 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:canonical_json_bytes` | 12 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:canonical_json_text` | 14 | - | external | 1 |
-| `src/llm_wiki_cli/services/context_packet.py:_assert_wiki_integrity` | 18 | - | external | 3 |
-| `src/llm_wiki_cli/services/context_packet.py:_assert_wiki_integrity` | 18 | [src/llm_wiki_cli/services/source_snapshot.py](../modules/source_snapshot.md) | internal | 1 |
-> Omission summary shows 8 of 254 groups; 246 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/knowledge_governance.py:_governance_lock_root` | 16 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/knowledge_governance.py:_governance_lock_root` | 16 | - | external | 5 |
+> Omission summary shows 8 of 256 groups; 248 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -168,7 +168,7 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `build_snapshot_documentation_query_service` | `wiki_root: Path`, `limit: int` | - | - | `service` |
-| `_wiki_anchor` | `root: Path`, `reject_all_symlinks: bool`, `max_bytes: int \| None`, `metrics: dict[str, int] \| None`, `integrity_out: dict[str, tuple[int, ...]] \| None`, `guard_windows: bool` | `_WIKI_ANCHOR_DOMAIN`, `_WIKI_ANCHOR_DOMAIN` | - | `_domain_hash(...)`, `_domain_hash(...)` |
+| `_wiki_anchor` | `root: Path`, `reject_all_symlinks: bool`, `max_bytes: int \| None`, `metrics: dict[str, int] \| None`, `integrity_out: dict[str, tuple[int, ...]] \| None`, `guard_windows: bool` | `_WIKI_ANCHOR_DOMAIN`, `GOVERNANCE_LOCK_FILENAME`, `_WIKI_ANCHOR_DOMAIN` | - | `_domain_hash(...)`, `_domain_hash(...)` |
 | `str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)` | - | - | - | - |
 | `directory_identity` | `path: Path` | - | - | `(...)`, `(...)` |
 | `path.stat` | - | - | - | - |
@@ -185,16 +185,16 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | build_snapshot_documentation_query_service | _wiki_anchor | 440 | `_wiki_anchor(wiki_root)` |
-| _wiki_anchor | str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor) | 5062 | `str(current)` |
-| _wiki_anchor | directory_identity | 5062 | `directory_identity(current)` |
+| _wiki_anchor | str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor) | 5065 | `str(current)` |
+| _wiki_anchor | directory_identity | 5065 | `directory_identity(current)` |
 | directory_identity | path.stat | 687 | `path.stat(follow_symlinks=False)` |
-| _wiki_anchor | current.exists | 5063 | `current.exists(data not statically known)` |
-| _wiki_anchor | root.exists | 5066 | `root.exists(data not statically known)` |
-| _wiki_anchor | _domain_hash | 5067 | `_domain_hash(_WIKI_ANCHOR_DOMAIN, {...})` |
-| _domain_hash | sha256_bytes | 5197 | `sha256_bytes(canonical_json_bytes(...))` |
+| _wiki_anchor | current.exists | 5066 | `current.exists(data not statically known)` |
+| _wiki_anchor | root.exists | 5069 | `root.exists(data not statically known)` |
+| _wiki_anchor | _domain_hash | 5070 | `_domain_hash(_WIKI_ANCHOR_DOMAIN, {...})` |
+| _domain_hash | sha256_bytes | 5220 | `sha256_bytes(canonical_json_bytes(...))` |
 | sha256_bytes | hashlib.sha256(…).hexdigest (src/llm_wiki_cli/services…_evidence.py:sha256_bytes) | 199 | `hashlib.sha256(value).hexdigest(data not statically known)` |
 | sha256_bytes | hashlib.sha256 (src/llm_wiki_cli/services…_evidence.py:sha256_bytes) | 199 | `hashlib.sha256(value)` |
-| _domain_hash | canonical_json_bytes | 5198 | `canonical_json_bytes({...})` |
+| _domain_hash | canonical_json_bytes | 5221 | `canonical_json_bytes({...})` |
 
 ### Boundary effects
 
@@ -205,8 +205,8 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | unresolved_call | `directory_identity` | `path.stat` | 687 |
-| unresolved_call | `_wiki_anchor` | `current.exists` | 5063 |
-| unresolved_call | `_wiki_anchor` | `root.exists` | 5066 |
+| unresolved_call | `_wiki_anchor` | `current.exists` | 5066 |
+| unresolved_call | `_wiki_anchor` | `root.exists` | 5069 |
 | unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 199 |
 | external_call | `sha256_bytes` | `hashlib.sha256` | 199 |
 | step_limit | `build_snapshot_documentation_query_service` | `first 12 steps` | 0 |

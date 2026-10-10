@@ -2,7 +2,7 @@
 
 **Entry point:** `related_concepts` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 19 more
+**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 20 more
 
 **Complete modules touched:**
 
@@ -17,6 +17,7 @@
 - [io](../modules/io.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
+- [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [maintenance_evidence](../modules/maintenance_evidence.md)
@@ -95,9 +96,9 @@ sequenceDiagram
     p4-->>p25: list (src/llm_wiki_cli/api.py:_normalize_query_values)(islice(...))
 ```
 
-> Call sequence diagram shows 30 of 906 interactions; 876 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 914 interactions; 884 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 8 of 375 (367 omitted); unresolved 5 of 193 (188 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 8 of 380 (372 omitted); unresolved 5 of 195 (190 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -111,7 +112,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 15 | [src/llm_wiki_cli/services/wiki_surface.py](../modules/wiki_surface.md) | internal | 7 |
 | `src/llm_wiki_cli/services/wiki_surface.py:_matches_directory_path` | 24 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/wiki_surface.py:_matches_directory_path` | 24 | - | external | 3 |
-> Omission summary shows 8 of 203 groups; 195 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 206 groups; 198 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

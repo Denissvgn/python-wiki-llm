@@ -1,6 +1,6 @@
 # ContextPacketSourceMutationError
 
-**Location:** `src/llm_wiki_cli/services/context_packet.py:242`
+**Location:** `src/llm_wiki_cli/services/context_packet.py:245`
 **Kind:** Class
 **Bases:** `ContextPacketError`
 **Module:** [context_packet](../modules/context_packet.md)

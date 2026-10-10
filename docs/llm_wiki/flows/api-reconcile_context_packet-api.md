@@ -2,7 +2,7 @@
 
 **Entry point:** `reconcile_context_packet` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), and 39 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), and 40 more
 
 **Complete modules touched:**
 
@@ -28,6 +28,7 @@
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_freshness](../modules/knowledge_freshness.md)
+- [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
@@ -116,9 +117,9 @@ sequenceDiagram
     p3-->>p26: len (src/llm_wiki_cli/services…y:validate_context_packet)(raw)
 ```
 
-> Call sequence diagram shows 30 of 2391 interactions; 2361 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2399 interactions; 2369 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 5 of 784 (779 omitted); unresolved 6 of 762 (756 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 5 of 789 (784 omitted); unresolved 6 of 764 (758 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -132,7 +133,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/context_packet.py:_strict_json_payload` | 17 | - | external | 2 |
 | `src/llm_wiki_cli/services/context_packet.py:_validate_json_tree` | 24 | - | external | 1 |
 | `src/llm_wiki_cli/services/context_packet.py:_validate_json_tree` | 24 | - | unresolved | 1 |
-> Omission summary shows 8 of 519 groups; 511 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 522 groups; 514 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -195,16 +196,16 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | reconcile_context_packet (src/llm_wiki_cli/api.py) | reconcile_context_packet (src/llm_wiki_cli/services/context_packet.py) | 1791 | `context_packet_service.reconcile_context_packet(packet_bytes, src_dir, wiki_dir, allow_external_src=allow_external_src, read_only=read_only, source_selection=source_selection)` |
-| reconcile_context_packet (src/llm_wiki_cli/services/context_packet.py) | validate_context_packet | 1801 | `validate_context_packet(packet_bytes)` |
-| validate_context_packet | _coerce_packet_bytes | 1712 | `_coerce_packet_bytes(packet_bytes)` |
-| _coerce_packet_bytes | isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2493 | `isinstance(value, bytes)` |
-| _coerce_packet_bytes | isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2495 | `isinstance(value, (...))` |
-| _coerce_packet_bytes | bytes (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2496 | `bytes(value)` |
-| _coerce_packet_bytes | TypeError (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2498 | `TypeError('packet_bytes must be bytes-like')` |
-| _coerce_packet_bytes | ContextPacketMalformedError | 2500 | `ContextPacketMalformedError('packet_bytes', 'must not be empty')` |
-| _coerce_packet_bytes | len (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2501 | `len(raw)` |
-| _coerce_packet_bytes | ContextPacketMalformedError | 2502 | `ContextPacketMalformedError('packet_bytes', ...)` |
-| _coerce_packet_bytes | raw.startswith | 2506 | `raw.startswith(b'\xef\xbb\xbf')` |
+| reconcile_context_packet (src/llm_wiki_cli/services/context_packet.py) | validate_context_packet | 1804 | `validate_context_packet(packet_bytes)` |
+| validate_context_packet | _coerce_packet_bytes | 1715 | `_coerce_packet_bytes(packet_bytes)` |
+| _coerce_packet_bytes | isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2496 | `isinstance(value, bytes)` |
+| _coerce_packet_bytes | isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2498 | `isinstance(value, (...))` |
+| _coerce_packet_bytes | bytes (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2499 | `bytes(value)` |
+| _coerce_packet_bytes | TypeError (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2501 | `TypeError('packet_bytes must be bytes-like')` |
+| _coerce_packet_bytes | ContextPacketMalformedError | 2503 | `ContextPacketMalformedError('packet_bytes', 'must not be empty')` |
+| _coerce_packet_bytes | len (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes) | 2504 | `len(raw)` |
+| _coerce_packet_bytes | ContextPacketMalformedError | 2505 | `ContextPacketMalformedError('packet_bytes', ...)` |
+| _coerce_packet_bytes | raw.startswith | 2509 | `raw.startswith(b'\xef\xbb\xbf')` |
 
 ### Boundary effects
 
@@ -214,11 +215,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_coerce_packet_bytes` | `isinstance` | 2493 |
-| external_call | `_coerce_packet_bytes` | `isinstance` | 2495 |
-| external_call | `_coerce_packet_bytes` | `bytes` | 2496 |
-| external_call | `_coerce_packet_bytes` | `TypeError` | 2498 |
-| unresolved_call | `_coerce_packet_bytes` | `raw.startswith` | 2506 |
+| external_call | `_coerce_packet_bytes` | `isinstance` | 2496 |
+| external_call | `_coerce_packet_bytes` | `isinstance` | 2498 |
+| external_call | `_coerce_packet_bytes` | `bytes` | 2499 |
+| external_call | `_coerce_packet_bytes` | `TypeError` | 2501 |
+| unresolved_call | `_coerce_packet_bytes` | `raw.startswith` | 2509 |
 | step_limit | `reconcile_context_packet` | `first 12 steps` | 0 |
 | truncated_flow | `reconcile_context_packet` | `depth limit` | 0 |
 

@@ -2,7 +2,7 @@
 
 **Entry point:** `build_live_documentation_query_service` (`api`)
 **Source:** [documentation_query_builder](../modules/documentation_query_builder.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 22 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 23 more
 
 **Complete modules touched:**
 
@@ -17,6 +17,7 @@
 - [io](../modules/io.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
+- [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [maintenance_evidence](../modules/maintenance_evidence.md)
@@ -91,9 +92,9 @@ sequenceDiagram
     p0->>p18: _live_source_selection_identity
 ```
 
-> Call sequence diagram shows 30 of 1886 interactions; 1856 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1894 interactions; 1864 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 15 of 643 (628 omitted); unresolved 5 of 500 (495 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 15 of 648 (633 omitted); unresolved 5 of 502 (497 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -107,7 +108,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/validation.py:_default_path_error` | 7 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:_syntax_key` | 12 | - | external | 6 |
 | `src/llm_wiki_cli/services/validation.py:_known_syntax` | 19 | - | unresolved | 2 |
-> Omission summary shows 8 of 483 groups; 475 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 486 groups; 478 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

@@ -1,6 +1,6 @@
 # ContextPacketError
 
-**Location:** `src/llm_wiki_cli/services/context_packet.py:223`
+**Location:** `src/llm_wiki_cli/services/context_packet.py:226`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [context_packet](../modules/context_packet.md)

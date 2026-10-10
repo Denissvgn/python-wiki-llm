@@ -36,10 +36,12 @@ separate from live reconciliation.
 | `.extraction_service` | `InventoryResult` |
 | `.filesystem_guard` | `guard_windows_directory_chain`, `hold_windows_readonly_file` |
 | `.implementation_evidence` | `validate_implementation_summary` |
+| `.io` | `first_unsafe_path_component` |
 | `.knowledge_consumption` | `KnowledgeReadView` |
 | `.knowledge_envelope` | `KnowledgeEnvelopeError`, `hash_source_snapshot`, `validate_configured_public_identity` |
 | `.knowledge_evidence` | `canonical_json_bytes`, `is_valid_sha256`, `sha256_bytes` |
 | `.knowledge_freshness` | `KNOWN_FRESHNESS_REASON_CODES`, `REASON_RECORDED_BASIS_MATCHES_LIVE_EVALUATION` |
+| `.knowledge_governance` | `GOVERNANCE_LOCK_FILENAME`, `_governance_lock_root` |
 | `.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `ENDPOINT_KINDS`, `GRAPH_COVERAGE_ANALYZERS`, `GRAPH_EVIDENCE_STATES`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS`, `is_supported_relationship_kind` |
 | `.knowledge_model` | `ComputedFreshness`, `ConceptKind`, `EvidenceState`, `Lifecycle`, `Origin`, `Resolution`, `TargetClass`, `Verification`, `concept_kind_for_page_kind` |
 | `.knowledge_observability` | `knowledge_freshness_disclosure` |
@@ -65,6 +67,7 @@ separate from live reconciliation.
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `re` | `re` |
+| `stat` | `stat` |
 | `types` | `MappingProxyType` |
 | `typing` | `Any` |
 | `urllib.parse` | `urlsplit` |
@@ -88,25 +91,25 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (13) |
-| Outbound | `src` (29) |
+| Outbound | `src` (31) |
 
-> All 40 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 42 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_PacketWireContract](../entities/PacketWireContract.md) | 176 | — | One immutable schema/protocol/policy binding for canonical packets. |
-| [ContextPacketError](../entities/ContextPacketError.md) | 223 | `ValueError` | Base failure for context-packet construction and consumption. |
-| [ContextPacketMalformedError](../entities/ContextPacketMalformedError.md) | 229 | `ContextPacketError` | The supplied bytes do not satisfy the canonical packet contract. |
-| [ContextPacketSourceMutationError](../entities/ContextPacketSourceMutationError.md) | 242 | `ContextPacketError` | A captured source or wiki anchor changed before packet return. |
-| [ContextPacketUnavailableError](../entities/ContextPacketUnavailableError.md) | 254 | `ContextPacketError` | A required read-only packet capability is unavailable. |
-| [ContextPacketPathPolicyError](../entities/ContextPacketPathPolicyError.md) | 264 | `ContextPacketError` | A structural packet field violates its declared path policy. |
-| [CapturedContextRead](../entities/CapturedContextRead.md) | 384 | — | One coordinated in-memory source/wiki read used by a packet response. |
-| [QualifiedContextPacket](../entities/QualifiedContextPacket.md) | 437 | — | Immutable canonical packet bytes plus safe value accessors. |
-| [ContextPacketValidation](../entities/ContextPacketValidation.md) | 474 | — | Successful structural validation with explicitly unevaluated freshness. |
-| [ContextBasisComparison](../entities/ContextBasisComparison.md) | 517 | — | Comparison with caller data, which can never assert currentness. |
-| [ContextPacketReconciliation](../entities/ContextPacketReconciliation.md) | 543 | — | Consumer-time comparison against one fresh official read. |
+| [_PacketWireContract](../entities/PacketWireContract.md) | 179 | — | One immutable schema/protocol/policy binding for canonical packets. |
+| [ContextPacketError](../entities/ContextPacketError.md) | 226 | `ValueError` | Base failure for context-packet construction and consumption. |
+| [ContextPacketMalformedError](../entities/ContextPacketMalformedError.md) | 232 | `ContextPacketError` | The supplied bytes do not satisfy the canonical packet contract. |
+| [ContextPacketSourceMutationError](../entities/ContextPacketSourceMutationError.md) | 245 | `ContextPacketError` | A captured source or wiki anchor changed before packet return. |
+| [ContextPacketUnavailableError](../entities/ContextPacketUnavailableError.md) | 257 | `ContextPacketError` | A required read-only packet capability is unavailable. |
+| [ContextPacketPathPolicyError](../entities/ContextPacketPathPolicyError.md) | 267 | `ContextPacketError` | A structural packet field violates its declared path policy. |
+| [CapturedContextRead](../entities/CapturedContextRead.md) | 387 | — | One coordinated in-memory source/wiki read used by a packet response. |
+| [QualifiedContextPacket](../entities/QualifiedContextPacket.md) | 440 | — | Immutable canonical packet bytes plus safe value accessors. |
+| [ContextPacketValidation](../entities/ContextPacketValidation.md) | 477 | — | Successful structural validation with explicitly unevaluated freshness. |
+| [ContextBasisComparison](../entities/ContextBasisComparison.md) | 520 | — | Comparison with caller data, which can never assert currentness. |
+| [ContextPacketReconciliation](../entities/ContextPacketReconciliation.md) | 546 | — | Consumer-time comparison against one fresh official read. |
 
 ## Functions
 

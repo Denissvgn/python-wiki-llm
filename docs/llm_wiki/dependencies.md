@@ -33,8 +33,8 @@ flowchart TD
 | [validation](modules/validation.md) | 66 | 0 |
 | [config](modules/config.md) | 57 | 3 |
 | [source_snapshot](modules/source_snapshot.md) | 47 | 7 |
+| [io](modules/io.md) | 43 | 2 |
 | [services_contracts](modules/services_contracts.md) | 42 | 0 |
-| [io](modules/io.md) | 42 | 2 |
 | [sync_manifest](modules/sync_manifest.md) | 37 | 7 |
 | [wiki_surface](modules/wiki_surface.md) | 37 | 1 |
 | [knowledge_storage](modules/knowledge_storage.md) | 33 | 8 |
@@ -46,9 +46,9 @@ flowchart TD
 | [wiki_surface_index](modules/wiki_surface_index.md) | 25 | 5 |
 | [knowledge_envelope](modules/knowledge_envelope.md) | 24 | 5 |
 | [extraction_service](modules/extraction_service.md) | 22 | 29 |
+| [knowledge_governance](modules/knowledge_governance.md) | 22 | 10 |
 | [knowledge_storage_io](modules/knowledge_storage_io.md) | 22 | 4 |
 | [knowledge_consumption](modules/knowledge_consumption.md) | 21 | 8 |
-| [knowledge_governance](modules/knowledge_governance.md) | 21 | 10 |
 | [analysis_compatibility](modules/analysis_compatibility.md) | 18 | 0 |
 | [plugins](modules/plugins.md) | 17 | 3 |
 | [bootstrap_runtime](modules/bootstrap_runtime.md) | 16 | 33 |
@@ -59,7 +59,7 @@ flowchart TD
 | [knowledge_observability](modules/knowledge_observability.md) | 14 | 10 |
 | [markdown_sections](modules/markdown_sections.md) | 14 | 1 |
 | [progress](modules/progress.md) | 14 | 1 |
-| [context_packet](modules/context_packet.md) | 13 | 29 |
+| [context_packet](modules/context_packet.md) | 13 | 31 |
 | [services_dependencies](modules/services_dependencies.md) | 13 | 8 |
 | [immutable](modules/immutable.md) | 13 | 0 |
 | [knowledge_graph](modules/knowledge_graph.md) | 13 | 6 |

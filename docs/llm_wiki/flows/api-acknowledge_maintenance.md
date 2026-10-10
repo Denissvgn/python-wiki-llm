@@ -132,7 +132,7 @@ sequenceDiagram
     p9-->>p24: Path (src/llm_wiki_cli/services…dge_maintenance_authority)(src_dir)
 ```
 
-> Call sequence diagram shows 30 of 2819 interactions; 2789 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2820 interactions; 2790 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 10 of 944 (934 omitted); unresolved 4 of 672 (668 omitted). These counts cover the captured static trace.
 
@@ -148,7 +148,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 30 | - | external | 4 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 30 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 33 | - | external | 20 |
-> Omission summary shows 8 of 659 groups; 651 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 660 groups; 652 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

@@ -2,7 +2,7 @@
 
 **Entry point:** `data_flow_for_entrypoint` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 18 more
+**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 19 more
 
 **Complete modules touched:**
 
@@ -17,6 +17,7 @@
 - [io](../modules/io.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
+- [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [maintenance_evidence](../modules/maintenance_evidence.md)
@@ -90,9 +91,9 @@ sequenceDiagram
     p14->>p21: normalize_documentation_query_limit
 ```
 
-> Call sequence diagram shows 30 of 828 interactions; 798 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 836 interactions; 806 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 7 of 345 (338 omitted); unresolved 6 of 181 (175 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 7 of 350 (343 omitted); unresolved 6 of 183 (177 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -106,7 +107,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_path` | 37 | - | unresolved | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 37 | - | external | 2 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 36 | - | unresolved | 5 |
-> Omission summary shows 8 of 175 groups; 167 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 178 groups; 170 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

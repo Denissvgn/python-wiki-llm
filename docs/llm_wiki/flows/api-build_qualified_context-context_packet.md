@@ -138,9 +138,9 @@ sequenceDiagram
     p1-->>p27: deepcopy (src/llm_wiki_cli/services…et.py:_normalized_request)(dict(...))
 ```
 
-> Call sequence diagram shows 30 of 5397 interactions; 5367 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 5405 interactions; 5375 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 10 of 1692 (1682 omitted); unresolved 7 of 1838 (1831 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 10 of 1697 (1687 omitted); unresolved 7 of 1840 (1833 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -154,7 +154,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 9 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 1 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 12 | - | external | 11 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 12 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 12 |
-> Omission summary shows 8 of 1279 groups; 1271 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1282 groups; 1274 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -215,14 +215,14 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_qualified_context | _normalized_request | 1428 | `_normalized_request(...)` |
-| _normalized_request | isinstance (src/llm_wiki_cli/services…et.py:_normalized_request) | 1958 | `isinstance(request, Mapping)` |
-| _normalized_request | ProtocolRequestError | 1959 | `context_service.ProtocolRequestError('Request must be a JSON object.', 'request')` |
-| _normalized_request | deepcopy (src/llm_wiki_cli/services…et.py:_normalized_request) | 1963 | `deepcopy(dict(...))` |
-| _normalized_request | dict (src/llm_wiki_cli/services…et.py:_normalized_request) | 1963 | `dict(request)` |
-| _normalized_request | candidate.setdefault | 1964 | `candidate.setdefault('protocol', ...)` |
-| _normalized_request | candidate.setdefault | 1972 | `candidate.setdefault('filters', {...})` |
-| _normalized_request | _validate_protocol_request | 1973 | `context_service._validate_protocol_request(candidate)` |
+| build_qualified_context | _normalized_request | 1431 | `_normalized_request(...)` |
+| _normalized_request | isinstance (src/llm_wiki_cli/services…et.py:_normalized_request) | 1961 | `isinstance(request, Mapping)` |
+| _normalized_request | ProtocolRequestError | 1962 | `context_service.ProtocolRequestError('Request must be a JSON object.', 'request')` |
+| _normalized_request | deepcopy (src/llm_wiki_cli/services…et.py:_normalized_request) | 1966 | `deepcopy(dict(...))` |
+| _normalized_request | dict (src/llm_wiki_cli/services…et.py:_normalized_request) | 1966 | `dict(request)` |
+| _normalized_request | candidate.setdefault | 1967 | `candidate.setdefault('protocol', ...)` |
+| _normalized_request | candidate.setdefault | 1975 | `candidate.setdefault('filters', {...})` |
+| _normalized_request | _validate_protocol_request | 1976 | `context_service._validate_protocol_request(candidate)` |
 | _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 1104 | `isinstance(data, dict)` |
 | _validate_protocol_request | data.get (src/llm_wiki_cli/services…validate_protocol_request) | 1104 | `data.get('protocol')` |
 | _validate_protocol_request | _validate_protocol_request_impl | 1106 | `_validate_protocol_request_impl(data)` |
@@ -235,10 +235,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_normalized_request` | `isinstance` | 1958 |
-| external_call | `_normalized_request` | `deepcopy` | 1963 |
-| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1964 |
-| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1972 |
+| external_call | `_normalized_request` | `isinstance` | 1961 |
+| external_call | `_normalized_request` | `deepcopy` | 1966 |
+| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1967 |
+| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1975 |
 | external_call | `_validate_protocol_request` | `isinstance` | 1104 |
 | unresolved_call | `_validate_protocol_request` | `data.get` | 1104 |
 | step_limit | `build_qualified_context` | `first 12 steps` | 0 |
