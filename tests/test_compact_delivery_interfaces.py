@@ -4,13 +4,14 @@ from __future__ import annotations
 
 from copy import deepcopy
 import asyncio
+import importlib.util
 from hashlib import sha256
 import json
+import os
 from pathlib import Path
 import sys
 
 import pytest
-from mcp.types import CallToolResult, TextContent
 
 from llm_wiki_cli import api, cli
 from llm_wiki_cli.services import task_compact
@@ -541,6 +542,12 @@ def test_mcp_configured_session_view_and_explicit_receipt_match_python_without_i
 def test_actual_mcp_sdk_content_carries_view_then_receipt_as_separate_transport(
     project,
 ):
+    if importlib.util.find_spec("mcp") is None:
+        if os.environ.get("LLM_WIKI_REQUIRE_MCP_SDK") == "1":
+            pytest.fail("MCP SDK is required by this test environment.")
+        pytest.skip("MCP SDK is not installed.")
+    from mcp.types import CallToolResult, TextContent
+
     server = mcp_server.create_mcp_server(
         mcp_server.McpServerConfig(src_dir="src", wiki_dir="wiki", enable_sessions=True)
     )

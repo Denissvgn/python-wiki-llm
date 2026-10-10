@@ -1,5 +1,7 @@
 """Operation-local compare-and-swap hooks for adopted wiki writes."""
 
+from __future__ import annotations
+
 from contextvars import ContextVar
 from pathlib import Path
 from typing import Protocol, TYPE_CHECKING
