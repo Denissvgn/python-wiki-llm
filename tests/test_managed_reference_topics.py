@@ -229,7 +229,7 @@ def test_maintenance_contract_orders_owning_sync_before_validation() -> None:
         "3. Classify each affected page",
         "5. After the last canonical Markdown edit",
         "6. Strict validation follows",
-        "7. Report expired human-section reviews",
+        "7. Inspect ordinary pending review separately",
     )
     positions = [maintenance.index(marker) for marker in ordered_markers]
     assert positions == sorted(positions)
@@ -241,6 +241,7 @@ def test_maintenance_contract_orders_owning_sync_before_validation() -> None:
         "If sync repairs only the manifest (its stored hashes were invalid, and no pages were modified), run the same sync command again before linting.",
         "pass the same external `--src-dir` with `--allow-external-src` to `sync`, `lint`, and `ci-check`",
         "Do not fabricate replacement human reviews or receipts.",
+        "Report expired human-section reviews and stale machine-verification receipts with their existing reasons.",
         "Never leave the wiki in a state where lint reports errors.",
         "does not depend on that optional workflow",
     ):
@@ -258,7 +259,8 @@ def test_reference_contract_does_not_invent_cli_query_or_automatic_adoption() ->
     governance = texts["governance.md"]
     maintenance = texts["maintenance.md"]
 
-    assert "There is no CLI `query_documentation` subcommand." in context
+    assert "There is no CLI subcommand named `query_documentation`." in _normalized(context)
+    assert "CLI exact dispatch uses `llm-wiki query --request FILE`" in _normalized(context)
     assert not re.search(r"\bllm-wiki\s+query_documentation\b", combined)
 
     init_owners = {

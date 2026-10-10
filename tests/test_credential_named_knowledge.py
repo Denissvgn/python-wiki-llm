@@ -11,7 +11,7 @@ from llm_wiki_cli.services.io import read_md, write_md
 from llm_wiki_cli.services.knowledge_governance import (
     GOVERNANCE_FILENAME, load_governance,
 )
-from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
+from llm_wiki_cli.services.knowledge_loader import load_knowledge_state, KnowledgeStateLoadError
 from llm_wiki_cli.services.knowledge_storage import KnowledgeStorageError
 from llm_wiki_cli.services.knowledge_storage_access import capture_knowledge_slice
 from llm_wiki_cli.services.knowledge_storage_diagnostics import storage_report
@@ -157,16 +157,58 @@ def test_sync_preserves_named_concepts_and_governance_after_migration(credential
     assert snapshot(root) == first_sync
 
 
-def test_migration_rejects_newline_changes_after_commit(credential_named_wiki, tmp_path):
+def test_migration_preserves_equivalent_newlines_after_commit(credential_named_wiki, tmp_path):
     root, _selectors, _command = credential_named_wiki
     page = root / "entities" / "RuntimeSecretField.md"
     raw = page.read_bytes()
     assert b"\r" not in raw and b"\n" in raw
-    page.write_bytes(raw.replace(b"\n", b"\r\n"))
+    converted = raw.replace(b"\n", b"\r\n")
+    page.write_bytes(converted)
     before = snapshot(root)
+    logical = load_knowledge_state(root).knowledge
     recovery = tmp_path / "recovery"
-    with pytest.raises(KnowledgeStorageError, match="authored input changed") as raised:
-        migrate_knowledge_storage(root, to="packed-v4-deflate", dry_run=True, recovery_dir=recovery)
-    assert raised.value.code == "storage-mutation"
+    preview = migrate_knowledge_storage(root, to="packed-v4-deflate", dry_run=True, recovery_dir=recovery)
+    assert preview["changed"] and preview["dry_run"]
     assert snapshot(root) == before
     assert not recovery.exists()
+    migrate_knowledge_storage(root, to="packed-v4-deflate", recovery_dir=recovery)
+    assert page.read_bytes() == converted
+    for name, content in before.items():
+        if name.endswith(".md") or name == GOVERNANCE_FILENAME:
+            assert (root / name).read_bytes() == content
+    assert load_knowledge_state(root).knowledge == logical
+    assert storage_report(root, full=True)["ok"]
+
+
+def test_migration_rejects_authored_changes_after_commit(credential_named_wiki, tmp_path):
+    root, _selectors, _command = credential_named_wiki
+    page = root / "entities" / "RuntimeSecretField.md"
+    page.write_bytes(page.read_bytes().replace(b"Preserve this authored explanation.", b"Changed authored explanation."))
+    before = snapshot(root)
+    recovery = tmp_path / "recovery"
+    with pytest.raises(KnowledgeStateLoadError, match="markdown-snapshot-mismatch"):
+        migrate_knowledge_storage(root, to="packed-v4-deflate", dry_run=True, recovery_dir=recovery)
+    assert snapshot(root) == before
+    assert not recovery.exists()
+
+
+@pytest.mark.parametrize("dry_run", [False, True])
+def test_migration_rejects_newline_race_after_capture(credential_named_wiki, tmp_path, monkeypatch, dry_run):
+    from llm_wiki_cli.services import knowledge_storage_lifecycle
+
+    root, _selectors, _command = credential_named_wiki
+    page = root / "entities" / "RuntimeSecretField.md"
+    converted = page.read_bytes().replace(b"\n", b"\r")
+    before = snapshot(root)
+    original = knowledge_storage_lifecycle._committed_inputs
+
+    def capture_then_change(*args, **kwargs):
+        captured = original(*args, **kwargs)
+        page.write_bytes(converted)
+        return captured
+
+    monkeypatch.setattr(knowledge_storage_lifecycle, "_committed_inputs", capture_then_change)
+    with pytest.raises(KnowledgeStorageError) as raised:
+        migrate_knowledge_storage(root, to="packed-v4-deflate", dry_run=dry_run, recovery_dir=tmp_path / "recovery")
+    assert raised.value.code == "storage-mutation"
+    assert snapshot(root) == {**before, "entities/RuntimeSecretField.md": converted}

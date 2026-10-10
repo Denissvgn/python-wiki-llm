@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections import Counter
 from itertools import product
 from pathlib import Path
+import re
 
 from llm_wiki_cli.services.instruction_ownership import (
     CORRECTNESS_CLAUSE_COVERAGE,
@@ -57,6 +58,7 @@ EXPECTED_CURRENT_SECTIONS = {
     SchemaRenderProfile.EXPANDED_INLINE: (
         ("Preamble/markers", None),
         ("Before you start", "## Before you start"),
+        ("Explicit task routes", "## Explicit task routes"),
         ("Helper recovery", "## Helper recovery"),
         ("Repository delivery preflight", "## Repository delivery preflight"),
         ("Native knowledge preflight", "## Native knowledge preflight"),
@@ -315,7 +317,7 @@ def test_plugin_composition_preserves_the_managed_hygiene_contract_everywhere():
         assert updated.count("# --- LLM Wiki Skill: additional/guide ---") == 1
         normalized = normalize_instruction_text(updated)
         if render_profile is SchemaRenderProfile.COMPACT:
-            assert "or skill selection" in normalized
+            assert "source/Git/install/network/plugin/checker/skill authority" in normalized
         else:
             assert "cannot authorize execution, network access" in normalized
 
@@ -340,6 +342,12 @@ def test_critical_inline_clauses_are_explicit_and_semantically_present():
             "lint reports errors",
         ),
     }
+    compact_required = {
+        "relevant_code_change_activation": ("after every", "class/function/module/cross-module-flow change", "sync-then-lint"),
+        "generated_semantic_ownership": ("semantic prose only", "generated blocks are cli-owned"),
+        "source_read_only": ("source edits need explicit authority",),
+        "lint_clean_handoff": ("no lint errors",),
+    }
     inline = {
         item.name: item for item in CORRECTNESS_CLAUSE_COVERAGE if item.always_inline
     }
@@ -357,9 +365,9 @@ def test_critical_inline_clauses_are_explicit_and_semantically_present():
             render_profile=render_profile,
         )
         normalized = normalize_instruction_text(content).lower()
-        for name, concepts in required.items():
+        for name, concepts in (compact_required if render_profile is SchemaRenderProfile.COMPACT else required).items():
             clause = inline[name]
-            assert normalize_instruction_text(clause.source_text).lower() in normalized
+            assert normalize_instruction_text(clause.rendered_text(render_profile)).lower() in normalized
             for concept in concepts:
                 assert concept in normalized, (agent, name, concept)
 
@@ -452,6 +460,27 @@ def test_user_documentation_section_maps_every_selected_workflow_subroute():
             profile=profile,
             rendered_content=content,
         ) is (profile is SchemaRenderProfile.COMPACT)
+
+
+def test_compact_removal_rejects_missing_inline_safeguards():
+    profile = SchemaRenderProfile.COMPACT
+    for agent in SCHEMA_FILENAMES:
+        content = _rendered_content(agent, profile)
+        for clause in CORRECTNESS_CLAUSE_COVERAGE:
+            if not clause.always_inline:
+                continue
+            section = next(item for item in GENERATED_SECTION_COVERAGE if item.section == clause.source_section)
+            assert removal_prerequisites_ready(
+                PROJECT_ROOT, PACKAGE_ROOT, section, agent=agent,
+                profile=profile, rendered_content=content,
+            )
+            pattern = re.escape(clause.rendered_text(profile)).replace(r"\ ", r"\s+")
+            missing, count = re.subn(pattern, "", content, count=1)
+            assert count == 1
+            assert not removal_prerequisites_ready(
+                PROJECT_ROOT, PACKAGE_ROOT, section, agent=agent,
+                profile=profile, rendered_content=missing,
+            )
 
 
 def test_destination_requires_file_heading_and_package_data_inclusion(tmp_path: Path):

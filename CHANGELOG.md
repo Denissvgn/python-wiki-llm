@@ -49,6 +49,10 @@ and source-backed discovery while retaining explicit adoption and uncertainty.
   target growth or excessive traversal during Python extraction.
 - Synchronization and read projections preserve durable maintenance authority,
   canonical evidence and explicit gaps across current and legacy snapshots.
+- Concept inspection preserves maintenance status through canonical routes,
+  durable UIDs and aliases; Python result types expose available maintenance data.
+- Legacy migration accounts for its archive ignore rule while retaining guards
+  against concurrent source and control-file changes.
 
 ### Compatibility
 

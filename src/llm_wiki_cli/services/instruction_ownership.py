@@ -124,6 +124,10 @@ class CorrectnessClauseCoverage:
     always_inline: bool = False
     profiles: tuple[SchemaRenderProfile, ...] = tuple(SchemaRenderProfile)
     agent_targets: tuple[str, ...] = tuple(SCHEMA_FILENAMES)
+    compact_text: str | None = None
+
+    def rendered_text(self, profile: SchemaRenderProfile) -> str:
+        return self.compact_text if profile is SchemaRenderProfile.COMPACT and self.compact_text is not None else self.source_text
 
 
 @dataclass(frozen=True)
@@ -377,6 +381,13 @@ GENERATED_SECTION_COVERAGE: tuple[GeneratedSectionCoverage, ...] = (
         InstructionOwner.KNOWLEDGE_CONSUMER,
         (_topic("context-query"),),
         _profiled_topic_routes(_BEFORE, _COMPACT_ROUTES, "context-query"),
+        retained_kernel=True,
+        profiles=_EXPANDED_ONLY,
+    ),
+    GeneratedSectionCoverage(
+        "Explicit task routes",
+        "## Explicit task routes",
+        InstructionOwner.KNOWLEDGE_CONSUMER,
         retained_kernel=True,
         profiles=_EXPANDED_ONLY,
     ),
@@ -652,6 +663,7 @@ CORRECTNESS_CLAUSE_COVERAGE: tuple[CorrectnessClauseCoverage, ...] = (
         _correctness_route(_SYNC, _MAINTENANCE),
         InstructionOrigin.SYNC_INSTRUCTIONS,
         always_inline=True,
+        compact_text="After every class/function/module/cross-module-flow change in this session, run full sync-then-lint",
     ),
     CorrectnessClauseCoverage(
         "stale_update_guard",
@@ -688,6 +700,7 @@ CORRECTNESS_CLAUSE_COVERAGE: tuple[CorrectnessClauseCoverage, ...] = (
         _SURFACES_NAMING,
         _correctness_route(_USER_DOCS, _SURFACES_NAMING),
         always_inline=True,
+        compact_text="Semantic prose only; generated blocks are CLI-owned.",
     ),
     CorrectnessClauseCoverage(
         "source_read_only",
@@ -697,6 +710,7 @@ CORRECTNESS_CLAUSE_COVERAGE: tuple[CorrectnessClauseCoverage, ...] = (
         _MAINTENANCE,
         _correctness_route(_USER_DOCS, _MAINTENANCE),
         always_inline=True,
+        compact_text="Source edits need explicit authority.",
     ),
     CorrectnessClauseCoverage(
         "manifest_repair_recheck",
@@ -853,6 +867,7 @@ CORRECTNESS_CLAUSE_COVERAGE: tuple[CorrectnessClauseCoverage, ...] = (
         _MAINTENANCE,
         _correctness_route(_QUALITY, _MAINTENANCE),
         always_inline=True,
+        compact_text="No lint errors.",
     ),
     CorrectnessClauseCoverage(
         "entity_required_structure",
@@ -1357,7 +1372,7 @@ def removal_prerequisites_ready(
         normalized = normalize_instruction_text(rendered_content)
         for clause in CORRECTNESS_CLAUSE_COVERAGE:
             if clause.always_inline and clause.source_section == coverage.section:
-                if normalize_instruction_text(clause.source_text) not in normalized:
+                if normalize_instruction_text(clause.rendered_text(profile)) not in normalized:
                     return False
     destination_paths = {item.path for item in coverage.destinations}
     relevant_routes = tuple(

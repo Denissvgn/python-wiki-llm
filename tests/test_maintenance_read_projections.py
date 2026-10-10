@@ -120,12 +120,15 @@ def test_uid_and_alias_inspection_preserve_resolved_maintenance_status(owned, li
     )
     before = files()
     expected = api.inspect_concept(route, src_dir="src", wiki_dir="wiki", live=live)
+    assert "maintenance" in expected and "maintenance" in expected["concept"]
     for coordinate in (uid, alias):
         result = api.inspect_concept(coordinate, src_dir="src", wiki_dir="wiki", live=live)
-        assert result["concept"]["concept"]["locator"] == route
+        selected = result["concept"]["concept"]
+        assert selected is not None and selected["locator"] == route
+        assert "maintenance" in result and "maintenance" in result["concept"]
         assert result["maintenance"] == expected["maintenance"]
         assert result["concept"]["maintenance"] == expected["concept"]["maintenance"]
-        assert result["maintenance"] == result["concept"]["concept"]["maintenance"]
+        assert result["maintenance"] == selected["maintenance"]
     assert files() == before
 
 
