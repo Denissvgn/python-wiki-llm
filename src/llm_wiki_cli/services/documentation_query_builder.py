@@ -466,6 +466,7 @@ def build_live_documentation_query_service(
     require_live_freshness: bool = False,
     source_selection: str | Path | None = None,
     paths: Iterable[str] | None = None,
+    source_policy: str = "explicit",
     extract_payload_builder: Callable[..., Any] | None = None,
     source_snapshot_builder: Callable[..., Any] | None = None,
     call_edge_resolver: Callable[[Any], Any] | None = None,
@@ -544,11 +545,18 @@ def build_live_documentation_query_service(
     }
     if selected_paths is not None:
         snapshot_options["only_files"] = selected_paths
+    if source_policy == "discovery":
+        snapshot_options["respect_discovery"] = True
+        snapshot_options["respect_ignores"] = True
     stage_started = perf_counter_ns()
     source_snapshot = selected_snapshot_builder(source_root, **snapshot_options)
     guarded_snapshot = source_snapshot if isinstance(source_snapshot, SourceSnapshot) else None
     source_anchor = _source_anchor(guarded_snapshot) if guarded_snapshot is not None else None
     wiki_anchor = _wiki_anchor(wiki_root)
+    path_outcomes = {}
+    if source_policy == "discovery" and guarded_snapshot is not None and selected_paths is not None:
+        from .source_path_diagnostics import source_path_diagnostics
+        path_outcomes = source_path_diagnostics(guarded_snapshot, selected_paths)
     stage_ns["source_snapshot"] = perf_counter_ns() - stage_started
     extract_options: dict[str, Any] = {
         "deep": True,
@@ -567,6 +575,8 @@ def build_live_documentation_query_service(
         extract_options["source_plugins_only"] = True
     extract_options["source_snapshot"] = source_snapshot
     extract_options["capture_implementation_observations"] = True
+    if source_policy == "discovery":
+        extract_options["path_diagnostics"] = True
     stage_started = perf_counter_ns()
     result = selected_extract_builder(str(source_root), **extract_options)
     stage_ns["extraction"] = perf_counter_ns() - stage_started
@@ -719,6 +729,11 @@ def build_live_documentation_query_service(
         inventory_result=inventory_result,
     )
     stage_ns["service_assembly"] = perf_counter_ns() - stage_started
+    for path, outcome in getattr(inventory_result, "path_outcomes", {}).items():
+        if path in path_outcomes and path_outcomes[path]["selection_state"] == "included" and path_outcomes[path]["filesystem_state"] == "file":
+            path_outcomes[path].update(outcome)
+    if source_policy == "discovery":
+        service.path_outcomes = path_outcomes
     if guarded_snapshot is not None and source_anchor is not None:
         _assert_source_unchanged(guarded_snapshot, source_anchor)
     _assert_wiki_unchanged(wiki_root, wiki_anchor)

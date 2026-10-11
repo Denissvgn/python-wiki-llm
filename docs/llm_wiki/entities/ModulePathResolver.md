@@ -1,6 +1,6 @@
 # ModulePathResolver
 
-**Location:** `src/llm_wiki_cli/services/imports.py:43`
+**Location:** `src/llm_wiki_cli/services/imports.py:44`
 **Kind:** Class
 **Bases:** —
 **Module:** [imports](../modules/imports.md)

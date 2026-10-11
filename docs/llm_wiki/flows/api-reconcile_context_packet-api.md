@@ -117,9 +117,9 @@ sequenceDiagram
     p3-->>p26: len (src/llm_wiki_cli/services…y:validate_context_packet)(raw)
 ```
 
-> Call sequence diagram shows 30 of 2399 interactions; 2369 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2400 interactions; 2370 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 5 of 789 (784 omitted); unresolved 6 of 764 (758 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 5 of 789 (784 omitted); unresolved 6 of 765 (759 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

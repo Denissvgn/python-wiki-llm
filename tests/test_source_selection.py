@@ -1352,19 +1352,20 @@ def test_committed_profile_freezes_intended_product_census():
     }
 
     snapshot = build_source_snapshot(repository)
+    assert "integrations/obsidian/llm-wiki/esbuild.config.mjs" in snapshot.language_paths("typescript")
     assert "src/llm_wiki_cli/services/go_calls.py" in snapshot.language_paths("python")
     assert "src/llm_wiki_cli/services/packet_field_policy.py" in snapshot.language_paths("python")
     assert "src/llm_wiki_cli/services/helper_preparation.py" in snapshot.language_paths("python")
     assert {
         language: len(files) for language, files in snapshot.files_by_language.items()
     } == {
-        "python": 243,
-        "typescript": 2,
+        "python": 244,
+        "typescript": 3,
         "go": 0,
         "rust": 0,
         "haskell": 0,
     }
-    assert len(snapshot.all_source_paths) == 245
+    assert len(snapshot.all_source_paths) == 247
     assert {
         "src/llm_wiki_cli/services/analysis_compatibility.py",
         "src/llm_wiki_cli/services/analysis_capture.py",
@@ -1388,6 +1389,7 @@ def test_committed_profile_freezes_intended_product_census():
         "src/llm_wiki_cli/services/python_stdlib.py",
     } <= set(snapshot.language_paths("python"))
     assert snapshot.language_paths("typescript") == [
+        "integrations/obsidian/llm-wiki/esbuild.config.mjs",
         "integrations/obsidian/llm-wiki/main.js",
         "integrations/obsidian/llm-wiki/src/main.ts",
     ]

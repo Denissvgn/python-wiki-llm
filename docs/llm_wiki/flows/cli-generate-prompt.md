@@ -188,9 +188,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run) | 637 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
-| run | getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run) | 638 | `getattr(args, 'src_dir', '.')` |
-| run | validate_path | 639 | `validate_path(wiki_dir, '--wiki-dir')` |
+| run | getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run) | 639 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
+| run | getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run) | 640 | `getattr(args, 'src_dir', '.')` |
+| run | validate_path | 641 | `validate_path(wiki_dir, '--wiki-dir')` |
 | validate_path | PathValidationError | 134 | `PathValidationError(...)` |
 | validate_path | (…).resolve | 135 | `(Path.cwd() / path).resolve(data not statically known)` |
 | validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 135 | `Path.cwd(data not statically known)` |
@@ -198,26 +198,26 @@ flowchart LR
 | validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd(data not statically known)` |
 | validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 138 | `resolved.relative_to(cwd)` |
 | validate_path | PathValidationError | 140 | `PathValidationError(...)` |
-| run | bool (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run) | 640 | `bool(getattr(...))` |
+| run | bool (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run) | 642 | `bool(getattr(...))` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 656 |
-| output | `print` | `run` | 681 |
-| output | `print` | `run` | 695 |
-| output | `print` | `run` | 728 |
-| output | `print` | `run` | 729 |
+| output | `print` | `run` | 658 |
+| output | `print` | `run` | 683 |
+| output | `print` | `run` | 697 |
 | output | `print` | `run` | 730 |
 | output | `print` | `run` | 731 |
+| output | `print` | `run` | 732 |
+| output | `print` | `run` | 733 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `run` | `getattr` | 637 |
-| external_call | `run` | `getattr` | 638 |
+| external_call | `run` | `getattr` | 639 |
+| external_call | `run` | `getattr` | 640 |
 | unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 135 |
 | external_call | `validate_path` | `Path.cwd` | 135 |
 | unresolved_call | `validate_path` | `Path.cwd().resolve` | 136 |

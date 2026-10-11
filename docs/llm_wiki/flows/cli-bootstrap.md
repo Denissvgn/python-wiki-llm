@@ -105,9 +105,9 @@ sequenceDiagram
     p1-->>p12: getattr (src/llm_wiki_cli/services…rap_run_options_from_args)(args, 'helper_cache_dir', None)
 ```
 
-> Call sequence diagram shows 30 of 2909 interactions; 2879 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2913 interactions; 2883 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 19 of 961 (942 omitted); unresolved 0 of 881 (881 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 19 of 962 (943 omitted); unresolved 0 of 884 (884 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -186,9 +186,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | _bootstrap_run_options_from_args | 6448 | `_bootstrap_run_options_from_args(args)` |
-| _bootstrap_run_options_from_args | Path (src/llm_wiki_cli/services…rap_run_options_from_args) | 4522 | `Path(args.wiki_dir)` |
-| _bootstrap_run_options_from_args | validate_path | 4523 | `validate_path(str(...), '--wiki-dir')` |
+| run | _bootstrap_run_options_from_args | 6450 | `_bootstrap_run_options_from_args(args)` |
+| _bootstrap_run_options_from_args | Path (src/llm_wiki_cli/services…rap_run_options_from_args) | 4524 | `Path(args.wiki_dir)` |
+| _bootstrap_run_options_from_args | validate_path | 4525 | `validate_path(str(...), '--wiki-dir')` |
 | validate_path | PathValidationError | 134 | `PathValidationError(...)` |
 | validate_path | (…).resolve | 135 | `(Path.cwd() / path).resolve(data not statically known)` |
 | validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 135 | `Path.cwd(data not statically known)` |
@@ -196,13 +196,13 @@ flowchart LR
 | validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd(data not statically known)` |
 | validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 138 | `resolved.relative_to(cwd)` |
 | validate_path | PathValidationError | 140 | `PathValidationError(...)` |
-| _bootstrap_run_options_from_args | str (src/llm_wiki_cli/services…rap_run_options_from_args) | 4523 | `str(wiki_dir)` |
+| _bootstrap_run_options_from_args | str (src/llm_wiki_cli/services…rap_run_options_from_args) | 4525 | `str(wiki_dir)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 6454 |
+| output | `print` | `run` | 6456 |
 
 ### Static analysis gaps
 

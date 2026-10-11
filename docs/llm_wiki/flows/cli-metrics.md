@@ -98,7 +98,7 @@ sequenceDiagram
     p6->>p20: _utc_now
 ```
 
-> Call sequence diagram shows 30 of 1044 interactions; 1014 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1045 interactions; 1015 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 12 of 388 (376 omitted); unresolved 6 of 264 (258 omitted). These counts cover the captured static trace.
 

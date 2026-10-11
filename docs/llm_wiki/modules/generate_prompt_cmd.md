@@ -16,6 +16,7 @@ mutations.
 | Source | Symbols |
 |--------|---------|
 | `..config` | `DEFAULT_WIKI_DIR`, `validate_path`, `validate_source_root` |
+| `..extractors.common` | `TYPESCRIPT_FAMILY_EXTENSIONS` |
 | `..services.documentation_query_builder` | `validate_live_query_source_selection` |
 | `..services.extraction_service` | `filter_source_diff` |
 | `..services.metrics` | `record_event`, `resolve_agent` |
@@ -52,9 +53,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (3) |
-| Outbound | `src` (12) |
+| Outbound | `src` (13) |
 
-> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 

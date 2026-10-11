@@ -99,9 +99,9 @@ sequenceDiagram
     p1-->>p20: str (src/llm_wiki_cli/services….py:build_extract_payload)(src_root)
 ```
 
-> Call sequence diagram shows 30 of 3039 interactions; 3009 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3047 interactions; 3017 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 14 of 984 (970 omitted); unresolved 1 of 1292 (1291 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 14 of 986 (972 omitted); unresolved 1 of 1297 (1296 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -115,7 +115,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_source_root` | 3 | - | external | 11 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 3 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 22 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 2 |
-> Omission summary shows 8 of 676 groups; 668 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 678 groups; 670 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -178,7 +178,7 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | extract_source | build_extract_payload | 1136 | `extract_cmd.build_extract_payload(src_dir, changed=changed, summary=summary, deep=deep, paths=paths, package_filter=package, include_empty=include_empty, allow_external_src=allow_external_src, read_only=read_only, source_selection=source_selection)` |
-| build_extract_payload | validate_source_root | 2071 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
+| build_extract_payload | validate_source_root | 2106 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
 | validate_source_root | validate_path | 160 | `validate_path(path, label)` |
 | validate_path | PathValidationError | 134 | `PathValidationError(...)` |
 | validate_path | (…).resolve | 135 | `(Path.cwd() / path).resolve(data not statically known)` |

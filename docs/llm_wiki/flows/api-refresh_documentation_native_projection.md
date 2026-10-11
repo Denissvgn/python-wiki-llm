@@ -136,7 +136,7 @@ sequenceDiagram
     p2->>p23: snapshot_wiki
 ```
 
-> Call sequence diagram shows 30 of 4499 interactions; 4469 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4500 interactions; 4470 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 5 of 1528 (1523 omitted); unresolved 2 of 1190 (1188 omitted). These counts cover the captured static trace.
 

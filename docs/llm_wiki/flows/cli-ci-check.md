@@ -131,9 +131,9 @@ sequenceDiagram
     p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'storage_check', False)
 ```
 
-> Call sequence diagram shows 30 of 4321 interactions; 4291 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4323 interactions; 4293 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 21 of 1328 (1307 omitted); unresolved 0 of 1299 (1299 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 21 of 1328 (1307 omitted); unresolved 0 of 1300 (1300 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

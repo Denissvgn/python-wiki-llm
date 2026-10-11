@@ -153,7 +153,7 @@ and extract never run `npm install`, `go build`, `go run`, `cargo build`,
 Source discovery honors `.gitignore` before extractors run. Unescaped trailing
 ASCII spaces in ignore entries are ignored, while `\ ` preserves a literal
 final space. A root, unanchored `lib/` rule is treated as a generic build-output
-pattern for TypeScript projects, so `.ts`, `.tsx`, `.js`, and `.jsx` files under
+pattern for TypeScript projects, so `.ts`, `.tsx`, `.js`, `.jsx`, `.mjs`, and `.cjs` files under
 `src/lib/` remain first-party source; top-level `lib/`, excluded
 dependency/build directories, and explicit nested `.gitignore` rules still stay
 excluded. Generated agent

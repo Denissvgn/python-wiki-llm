@@ -107,9 +107,9 @@ sequenceDiagram
     p1-->>p16: isinstance (src/llm_wiki_cli/api.py:_normalise_focus)(focus, str)
 ```
 
-> Call sequence diagram shows 30 of 2168 interactions; 2138 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2169 interactions; 2139 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 12 of 734 (722 omitted); unresolved 1 of 796 (795 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 12 of 734 (722 omitted); unresolved 1 of 797 (796 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -185,8 +185,8 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | build_context | _normalise_focus | 1239 | `_normalise_focus(focus)` |
-| _normalise_focus | isinstance (src/llm_wiki_cli/api.py:_normalise_focus) | 3197 | `isinstance(focus, str)` |
-| _normalise_focus | list (src/llm_wiki_cli/api.py:_normalise_focus) | 3203 | `list(focus)` |
+| _normalise_focus | isinstance (src/llm_wiki_cli/api.py:_normalise_focus) | 3212 | `isinstance(focus, str)` |
+| _normalise_focus | list (src/llm_wiki_cli/api.py:_normalise_focus) | 3218 | `list(focus)` |
 | build_context | _normalize_optional_knowledge_mode | 1240 | `_normalize_optional_knowledge_mode(knowledge_mode)` |
 | _normalize_optional_knowledge_mode | isinstance (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 397 | `isinstance(value, str)` |
 | _normalize_optional_knowledge_mode | ', '.join (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 398 | `', '.join(...)` |
@@ -204,7 +204,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_normalise_focus` | `isinstance` | 3197 |
+| external_call | `_normalise_focus` | `isinstance` | 3212 |
 | external_call | `_normalize_optional_knowledge_mode` | `isinstance` | 397 |
 | unresolved_call | `_normalize_optional_knowledge_mode` | `', '.join` | 398 |
 | external_call | `_normalize_optional_knowledge_mode` | `cast` | 404 |

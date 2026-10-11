@@ -54,10 +54,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (47) |
+| Inbound | `src` (48) |
 | Outbound | `src` (7) |
 
-> All 54 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 55 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -68,13 +68,13 @@ flowchart LR
 | [SourceFile](../entities/SourceFile.md) | 117 | — | A source-tree file discovered relative to a snapshot root. |
 | [SourceFileIntegrity](../entities/SourceFileIntegrity.md) | 129 | — | Filesystem identity used for cheap between-stage mutation checks. |
 | [SourceSnapshot](../entities/SourceSnapshot.md) | 141 | — | Filtered source-tree discovery results shared by lint/extract paths. |
-| [_SnapshotBuckets](../entities/SnapshotBuckets.md) | 452 | — | — |
+| [_SnapshotBuckets](../entities/SnapshotBuckets.md) | 454 | — | — |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `_new_snapshot_buckets` | `(include_tests: Iterable[str] \| None = None, source_selection_policy: SourceSelectionPolicy \| None = None, *, expected_gitignore_paths: frozenset[str] \| None = None, respect_ignores: bool = False, max_control_bytes: int \| None = None, max_scan_entries: int \| None = None, coherent: bool = False) -> _SnapshotBuckets` | — | — |
+| `_new_snapshot_buckets` | `(include_tests: Iterable[str] \| None = None, source_selection_policy: SourceSelectionPolicy \| None = None, *, expected_gitignore_paths: frozenset[str] \| None = None, respect_ignores: bool = False, respect_discovery: bool = False, max_control_bytes: int \| None = None, max_scan_entries: int \| None = None, coherent: bool = False) -> _SnapshotBuckets` | — | — |
 | `_validate_repository_path` | `(value: object, field: str) -> str` | — | — |
 | `_normalize_only_files` | `(root: Path, only_files: Iterable[str] \| None) -> set[str] \| None` | — | — |
 | `_language_for_path` | `(path: Path, include_tests: frozenset[str]) -> str \| None` | — | — |
@@ -125,9 +125,9 @@ flowchart LR
 | `_format_unsupported_language_count` | `(language: str, data: dict[str, object]) -> str` | — | — |
 | `_policies_match` | `(left: SourceSelectionPolicy, right: SourceSelectionPolicy) -> bool` | — | — |
 | `_resolve_snapshot_selection` | `(root: Path, *, source_selection: str \| Path \| None, selection_policy: SourceSelectionPolicy \| None) -> SourceSelectionPolicy \| None` | — | — |
-| `_validate_capture_options` | `(max_files, max_bytes, respect_ignores, coherent)` | — | — |
-| `_capture_buckets` | `(include_tests, policy, max_files, max_bytes, respect_ignores, coherent)` | — | — |
-| `build_source_snapshot` | `(src_dir: str \| Path, only_files: Iterable[str] \| None = None, include_tests: Iterable[str] \| None = None, *, source_selection: str \| Path \| None = None, selection_policy: SourceSelectionPolicy \| None = None, expected_selection_inputs: Mapping[str, object] \| None \| object = _UNSET_EXPECTED_SELECTION_INPUTS, max_files: int \| None = None, max_bytes: int \| None = None, respect_ignores: bool = False, coherent: bool = False) -> SourceSnapshot` | `@observed_phase('source_snapshot')` | Build a deterministic source-tree snapshot rooted at *src_dir*. |
+| `_validate_capture_options` | `(max_files, max_bytes, respect_ignores, coherent, respect_discovery = False)` | — | — |
+| `_capture_buckets` | `(include_tests, policy, max_files, max_bytes, respect_ignores, coherent, respect_discovery = False)` | — | — |
+| `build_source_snapshot` | `(src_dir: str \| Path, only_files: Iterable[str] \| None = None, include_tests: Iterable[str] \| None = None, *, source_selection: str \| Path \| None = None, selection_policy: SourceSelectionPolicy \| None = None, expected_selection_inputs: Mapping[str, object] \| None \| object = _UNSET_EXPECTED_SELECTION_INPUTS, max_files: int \| None = None, max_bytes: int \| None = None, respect_ignores: bool = False, respect_discovery: bool = False, coherent: bool = False) -> SourceSnapshot` | `@observed_phase('source_snapshot')` | Build a deterministic source-tree snapshot rooted at *src_dir*. |
 | `_hash_extra_inventory_path` | `(root: Path, path: str, *, policy: SourceSelectionPolicy \| None, selected_regular_paths: set[str]) -> str \| None` | — | Hash one extractor-owned path without admitting a newly selected path. |
 | `source_snapshot_inputs_match_current_files` | `(snapshot: SourceSnapshot) -> bool` | — | Cheaply verify that every already captured input retains its identity. |
 | `source_snapshot_matches_current_files` | `(snapshot: SourceSnapshot, *, metrics: dict[str, int] \| None = None) -> bool` | — | Return whether *snapshot* still matches the selected source tree. |

@@ -134,9 +134,9 @@ sequenceDiagram
     p4->>p27: validated_artifact_bytes
 ```
 
-> Call sequence diagram shows 30 of 3075 interactions; 3045 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3076 interactions; 3046 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 7 of 1047 (1040 omitted); unresolved 4 of 711 (707 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 7 of 1047 (1040 omitted); unresolved 4 of 712 (708 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

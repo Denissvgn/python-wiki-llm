@@ -163,31 +163,31 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet.py) | confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | 5007 | `confirm_missing(snapshot, requested_paths)` |
-| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | isinstance (src/llm_wiki_cli/services…rmed_missing_source_paths) | 1900 | `isinstance(snapshot, SourceSnapshot)` |
-| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | TypeError | 1901 | `TypeError('missing-source confirmation requires a SourceSnapshot')` |
-| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | isinstance (src/llm_wiki_cli/services…rmed_missing_source_paths) | 1902 | `isinstance(requested_paths, (...))` |
-| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | TypeError | 1903 | `TypeError('requested_paths must be a collection of source paths')` |
-| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | GitIgnoreMatcher | 1904 | `GitIgnoreMatcher(list(...))` |
-| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | list | 1904 | `list(snapshot.gitignore_rules)` |
-| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | set | 1905 | `set(data not statically known)` |
-| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | _confirmed_source_path | 1907 | `_confirmed_source_path(path)` |
-| _confirmed_source_path | SourceSnapshotError | 1883 | `SourceSnapshotError('source_path', 'must be a portable relative source path')` |
-| _confirmed_source_path | require_repository_relative_path | 1884 | `require_repository_relative_path(value, text_error=error, posix_error=error, normalized_error=error, absolute_error=error, separator_error=error, control_error=error, reject_delete_character=True, portability_error=error)` |
+| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | isinstance (src/llm_wiki_cli/services…rmed_missing_source_paths) | 1908 | `isinstance(snapshot, SourceSnapshot)` |
+| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | TypeError | 1909 | `TypeError('missing-source confirmation requires a SourceSnapshot')` |
+| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | isinstance (src/llm_wiki_cli/services…rmed_missing_source_paths) | 1910 | `isinstance(requested_paths, (...))` |
+| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | TypeError | 1911 | `TypeError('requested_paths must be a collection of source paths')` |
+| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | GitIgnoreMatcher | 1912 | `GitIgnoreMatcher(list(...))` |
+| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | list | 1912 | `list(snapshot.gitignore_rules)` |
+| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | set | 1913 | `set(data not statically known)` |
+| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | _confirmed_source_path | 1915 | `_confirmed_source_path(path)` |
+| _confirmed_source_path | SourceSnapshotError | 1891 | `SourceSnapshotError('source_path', 'must be a portable relative source path')` |
+| _confirmed_source_path | require_repository_relative_path | 1892 | `require_repository_relative_path(value, text_error=error, posix_error=error, normalized_error=error, absolute_error=error, separator_error=error, control_error=error, reject_delete_character=True, portability_error=error)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `missing.add` | `confirmed_missing_source_paths` | 1919 |
+| mutation | `missing.add` | `confirmed_missing_source_paths` | 1927 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `confirmed_missing_source_paths` | `isinstance` | 1900 |
-| external_call | `confirmed_missing_source_paths` | `TypeError` | 1901 |
-| external_call | `confirmed_missing_source_paths` | `isinstance` | 1902 |
-| external_call | `confirmed_missing_source_paths` | `TypeError` | 1903 |
+| external_call | `confirmed_missing_source_paths` | `isinstance` | 1908 |
+| external_call | `confirmed_missing_source_paths` | `TypeError` | 1909 |
+| external_call | `confirmed_missing_source_paths` | `isinstance` | 1910 |
+| external_call | `confirmed_missing_source_paths` | `TypeError` | 1911 |
 | step_limit | `confirmed_missing_source_paths` | `first 12 steps` | 0 |
 | truncated_flow | `confirmed_missing_source_paths` | `depth limit` | 0 |
 

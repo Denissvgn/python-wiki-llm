@@ -21,6 +21,12 @@ belong in the TypeScript source and are carried here by the integration build.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 *No internal module dependencies detected.*
 
+### External packages
+
+| Language | Used packages | Undeclared packages |
+|---|---:|---:|
+| typescript | 1 | 0 |
+
 ## Functions
 
 | Function | Signature | Decorators | Description |

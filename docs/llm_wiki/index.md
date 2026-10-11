@@ -7,8 +7,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 | Surface | Count | Start here |
 |---|---:|---|
 | Entities | 661 | [Open section](#entities) |
-| Modules | 235 | [Open section](#modules) |
-| Workflows | 199 | [Open section](#workflows) |
+| Modules | 237 | [Open section](#modules) |
+| Workflows | 201 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 464 | [Open section](#entry-point-flows) |
 | Infrastructure | 0 | No pages |
@@ -735,6 +735,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [documentation_wiki_input](modules/documentation_wiki_input.md) - Read-only adoption of an existing canonical LLM Wiki.
 - [documentation_worklist](modules/documentation_worklist.md) - Deterministic semantic worklists for standalone documentation runs.
 - [entrypoints](modules/entrypoints.md) - Entry-point detection and user-flow assembly.
+- [esbuild.config](modules/esbuild.config.md) - `integrations/obsidian/llm-wiki/esbuild.config.mjs`
 - [eval_lite___init__](modules/eval_lite___init__.md) - Provider-free inspection planning for paired qualified-context arms.
 - [export](modules/export.md) - Documentation-run export services.
 - [extraction_jobs](modules/extraction_jobs.md) - `src/llm_wiki_cli/services/extraction_jobs.py`
@@ -875,6 +876,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [site_html_check](modules/site_html_check.md) - Built static-site HTML link validation.
 - [skills](modules/skills.md) - Bundled agent skill management for LLM Wiki.
 - [skills_cmd](modules/skills_cmd.md) - Commands for listing, exporting, and installing bundled agent skills.
+- [source_path_diagnostics](modules/source_path_diagnostics.md) - Supplied-path facts derived from captured discovery policy and extraction.
 - [source_selection](modules/source_selection.md) - Canonical repository source-selection policy and provenance helpers.
 - [source_snapshot](modules/source_snapshot.md) - Shared source-tree discovery for inventory, Docker, and package scans.
 - [src_main](modules/src_main.md) - `integrations/obsidian/llm-wiki/src/main.ts`
@@ -1014,6 +1016,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [get_knowledge_coverage](workflows/get_knowledge_coverage.md) - entry: `api.get_knowledge_coverage`
 - [get_maintenance_status_authority](workflows/get_maintenance_status_authority.md) - entry: `maintenance_service.get_maintenance_status_authority`
 - [guard_maintenance_owner](workflows/guard_maintenance_owner.md) - entry: `maintenance_protocol.guard_maintenance_owner`
+- [impact_query](workflows/impact_query.md) - entry: `api._impact_query`
 - [index_needs_context](workflows/index_needs_context.md) - entry: `documentation_worklist._index_needs_context`
 - [init_cmd_flow](workflows/init_cmd_flow.md) - entry: `init_cmd.run`
 - [inspect_native_concept](workflows/inspect_native_concept.md) - entry: `native_inspection.inspect_native_concept`
@@ -1093,6 +1096,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [search_prevalidated_roots](workflows/search_prevalidated_roots.md) - entry: `search_service.search_prevalidated_roots`
 - [section_locator](workflows/section_locator.md) - entry: `knowledge_governance._section_locator`
 - [source_capture](workflows/source_capture.md) - entry: `task_context_v2._source_capture`
+- [source_path_diagnostics](workflows/source_path_diagnostics.md) - entry: `source_path_diagnostics.source_path_diagnostics`
 - [status_cmd_flow](workflows/status_cmd_flow.md) - entry: `status_cmd.run`
 - [storage_report](workflows/storage_report.md) - entry: `knowledge_storage_diagnostics.storage_report`
 - [sync_run_options_from_args](workflows/sync_run_options_from_args.md) - entry: `sync_cmd._sync_run_options_from_args`

@@ -31,15 +31,15 @@ flowchart TD
 | Module | Fan-in | Fan-out |
 |--------|--------|---------|
 | [validation](modules/validation.md) | 66 | 0 |
-| [config](modules/config.md) | 57 | 3 |
-| [source_snapshot](modules/source_snapshot.md) | 47 | 7 |
+| [config](modules/config.md) | 58 | 3 |
+| [source_snapshot](modules/source_snapshot.md) | 48 | 7 |
 | [io](modules/io.md) | 43 | 2 |
 | [services_contracts](modules/services_contracts.md) | 42 | 0 |
 | [sync_manifest](modules/sync_manifest.md) | 37 | 7 |
 | [wiki_surface](modules/wiki_surface.md) | 37 | 1 |
 | [knowledge_storage](modules/knowledge_storage.md) | 33 | 8 |
+| [source_selection](modules/source_selection.md) | 33 | 2 |
 | [knowledge_model](modules/knowledge_model.md) | 32 | 13 |
-| [source_selection](modules/source_selection.md) | 32 | 2 |
 | [knowledge_evidence](modules/knowledge_evidence.md) | 29 | 1 |
 | [knowledge_artifacts](modules/knowledge_artifacts.md) | 27 | 27 |
 | [filesystem_guard](modules/filesystem_guard.md) | 26 | 1 |
@@ -49,12 +49,12 @@ flowchart TD
 | [knowledge_governance](modules/knowledge_governance.md) | 22 | 10 |
 | [knowledge_storage_io](modules/knowledge_storage_io.md) | 22 | 4 |
 | [knowledge_consumption](modules/knowledge_consumption.md) | 21 | 8 |
+| [common](modules/common.md) | 19 | 1 |
 | [analysis_compatibility](modules/analysis_compatibility.md) | 18 | 0 |
 | [plugins](modules/plugins.md) | 17 | 3 |
-| [bootstrap_runtime](modules/bootstrap_runtime.md) | 16 | 33 |
+| [bootstrap_runtime](modules/bootstrap_runtime.md) | 16 | 34 |
 | [wiki_media](modules/wiki_media.md) | 16 | 0 |
-| [common](modules/common.md) | 15 | 1 |
-| [documentation_query_builder](modules/documentation_query_builder.md) | 14 | 18 |
+| [documentation_query_builder](modules/documentation_query_builder.md) | 14 | 19 |
 | [implementation_evidence](modules/implementation_evidence.md) | 14 | 2 |
 | [knowledge_observability](modules/knowledge_observability.md) | 14 | 10 |
 | [markdown_sections](modules/markdown_sections.md) | 14 | 1 |
@@ -88,7 +88,7 @@ flowchart TD
 | [concept_identity](modules/concept_identity.md) | 8 | 2 |
 | [workspace](modules/workspace.md) | 8 | 3 |
 | [entrypoints](modules/entrypoints.md) | 8 | 4 |
-| [imports](modules/imports.md) | 8 | 4 |
+| [imports](modules/imports.md) | 8 | 5 |
 | [infrastructure_inventory](modules/infrastructure_inventory.md) | 8 | 1 |
 | [inventory_cache](modules/inventory_cache.md) | 8 | 10 |
 | [lint_service](modules/lint_service.md) | 8 | 37 |
@@ -127,7 +127,7 @@ flowchart TD
 | [task_context](modules/task_context.md) | 4 | 20 |
 | [team](modules/team.md) | 4 | 12 |
 | [api_types](modules/api_types.md) | 3 | 0 |
-| [generate_prompt_cmd](modules/generate_prompt_cmd.md) | 3 | 12 |
+| [generate_prompt_cmd](modules/generate_prompt_cmd.md) | 3 | 13 |
 | [python_bindings](modules/python_bindings.md) | 3 | 0 |
 | [bootstrap_service](modules/bootstrap_service.md) | 3 | 0 |
 | [calibration_contracts](modules/calibration_contracts.md) | 3 | 5 |
@@ -247,6 +247,7 @@ flowchart TD
 | [python_calls](modules/python_calls.md) | 1 | 3 |
 | [search_discovery_capture](modules/search_discovery_capture.md) | 1 | 9 |
 | [search_lexical](modules/search_lexical.md) | 1 | 3 |
+| [source_path_diagnostics](modules/source_path_diagnostics.md) | 1 | 4 |
 | [sync_retained_links](modules/sync_retained_links.md) | 1 | 5 |
 | [sync_transition_execution](modules/sync_transition_execution.md) | 1 | 7 |
 | [task_compact_delivery](modules/task_compact_delivery.md) | 1 | 4 |
@@ -254,6 +255,7 @@ flowchart TD
 | [wiki_git_policy](modules/wiki_git_policy.md) | 1 | 0 |
 | [wiki_scaffold](modules/wiki_scaffold.md) | 1 | 0 |
 | [render_summary](modules/render_summary.md) | 0 | 3 |
+| [esbuild.config](modules/esbuild.config.md) | 0 | 0 |
 | [llm-wiki_main](modules/llm-wiki_main.md) | 0 | 0 |
 | [src_main](modules/src_main.md) | 0 | 0 |
 | [cli](modules/cli.md) | 0 | 44 |
@@ -275,7 +277,7 @@ flowchart TD
 
 ### typescript
 
-- **Used:** `obsidian`
+- **Used:** `builtin-modules`, `esbuild`, `obsidian`
 
 ## Notes
 

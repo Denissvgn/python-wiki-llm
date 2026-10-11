@@ -73,9 +73,9 @@ sequenceDiagram
     p0-->>p5: str (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)(exc)
 ```
 
-> Call sequence diagram shows 30 of 987 interactions; 957 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 988 interactions; 958 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 20 of 331 (311 omitted); unresolved 0 of 296 (296 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 20 of 332 (312 omitted); unresolved 0 of 296 (296 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

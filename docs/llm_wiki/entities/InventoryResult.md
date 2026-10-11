@@ -1,6 +1,6 @@
 # InventoryResult
 
-**Location:** `src/llm_wiki_cli/services/extraction_service.py:174`
+**Location:** `src/llm_wiki_cli/services/extraction_service.py:175`
 **Kind:** Class
 **Bases:** —
 **Module:** [extraction_service](../modules/extraction_service.md)
@@ -33,6 +33,7 @@ property gives callers a single fail-closed check across extractor statuses.
 | `data_effect_observations` | `dict \| None` | `field(default=None, repr=False, compare=False)` | — |
 | `import_observations` | `dict \| None` | `field(default=None, repr=False, compare=False)` | — |
 | `implementation_observations` | `dict \| None` | `field(default=None, repr=False, compare=False)` | — |
+| `path_outcomes` | `dict` | `field(default_factory=dict)` | — |
 
 ## Methods
 
@@ -90,7 +91,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [extraction_service](../modules/extraction_service.md) | 2 | `analysis_components`, `cache_stats`, `data_effect_observations`, `extraction_job_plan`, `extractor_registry`, `implementation_observations`, `import_observations`, `inventory`, `plugin_components`, `plugin_lock_hash`, `plugin_lock_path`, `producer_plugin_components` |
+| [extraction_service](../modules/extraction_service.md) | 2 | `analysis_components`, `cache_stats`, `data_effect_observations`, `extraction_job_plan`, `extractor_registry`, `implementation_observations`, `import_observations`, `inventory`, `path_outcomes`, `plugin_components`, `plugin_lock_hash`, `plugin_lock_path` |
 
 ### References
 

@@ -35,6 +35,7 @@ inputs so the extraction planner receives a stable request.
 | `source_selection` | `str \| Path \| None` | `None` | — |
 | `source_plugins_only` | `bool` | `False` | — |
 | `capture_implementation_observations` | `bool` | `False` | — |
+| `capture_path_outcomes` | `bool` | `False` | — |
 
 ## Methods
 
@@ -88,7 +89,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [extraction_service](../modules/extraction_service.md) | 1 | `cache_options`, `capture_data_effect_observations`, `capture_implementation_observations`, `capture_import_observations`, `deep`, `helper_cache_dir`, `include_empty`, `include_plugins`, `include_tests`, `job_request`, `only_files`, `parallel_jobs` |
+| [extraction_service](../modules/extraction_service.md) | 1 | `cache_options`, `capture_data_effect_observations`, `capture_implementation_observations`, `capture_import_observations`, `capture_path_outcomes`, `deep`, `helper_cache_dir`, `include_empty`, `include_plugins`, `include_tests`, `job_request`, `only_files` |
 
 ### References
 

@@ -21,6 +21,7 @@ Shared construction for supported documentation query services.
 | `.knowledge_verification` | `attach_machine_verification_read_view`, `verification_summaries_for_concepts` |
 | `.maintenance_status` | `attach_maintenance_view_from_inputs` |
 | `.python_implementation` | `analysis_identity` |
+| `.source_path_diagnostics` | `source_path_diagnostics` |
 | `.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
 | `.sync_manifest` | `SyncManifest`, `SyncManifestError` |
@@ -54,9 +55,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (14) |
-| Outbound | `src` (18) |
+| Outbound | `src` (19) |
 
-> All 30 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 31 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 
@@ -76,4 +77,4 @@ flowchart LR
 | `assemble_documentation_query_service` | `(*, inventory: Mapping[str, Mapping[str, Any]], call_edges: Iterable[Mapping[str, Any]], flows: Iterable[Mapping[str, Any]], data_flows: object, dependency_analysis: Mapping[str, Any] \| None, surface_index: Mapping[str, Any] \| None, limit: int, knowledge_view: object, machine_verification: Mapping[str, Mapping[str, Any]], service_factory: Any = DocumentationGraphQueryService, inventory_result: object \| None = None, snapshot_call_inventory: bool = False) -> DocumentationGraphQueryService` | — | Assemble the shared service with a caller-supplied service factory. |
 | `build_documentation_query_service_from_view` | `(*, wiki_root: Path, knowledge_view: KnowledgeReadView, limit: int, inventory: Mapping[str, Mapping[str, Any]] \| None = None, call_edges: Iterable[Mapping[str, Any]] = (), flows: Iterable[Mapping[str, Any]] = (), data_flows: object = (), dependency_analysis: Mapping[str, Any] \| None = None, surface_index: Mapping[str, Any] \| None = None, inventory_result: object \| None = None, snapshot_call_inventory: bool = False) -> DocumentationGraphQueryService` | — | Assemble one service around an already evaluated native read view. |
 | `build_snapshot_documentation_query_service` | `(*, wiki_root: Path, limit: int) -> DocumentationGraphQueryService` | — | Build a snapshot-only service without source extraction. |
-| `build_live_documentation_query_service` | `(*, source_root: Path, wiki_root: Path, limit: int, read_only: bool, helper_cache_dir: Path \| None = None, include_plugins: bool = True, source_plugins_only: bool = False, require_live_freshness: bool = False, source_selection: str \| Path \| None = None, paths: Iterable[str] \| None = None, extract_payload_builder: Callable[..., Any] \| None = None, source_snapshot_builder: Callable[..., Any] \| None = None, call_edge_resolver: Callable[[Any], Any] \| None = None, flow_builder: Callable[[Any, Any], Any] = build_flow, surface_evaluator: Callable[..., Any] = evaluate_surface_index, knowledge_view_builder: Callable[..., Any] \| None = None, query_surface_builder: Callable[..., Any] \| None = None, dependency_analyzer: Callable[..., Any] = analyze_dependencies, verification_view_attacher: Callable[..., Any] = attach_machine_verification_read_view, verification_summarizer: Callable[..., Any] = verification_summaries_for_concepts, snapshot_view_loader: Callable[..., Any] = load_knowledge_read_view, metrics_observer: Callable[[Mapping[str, Any]], None] \| None = None, service_factory: Any = DocumentationGraphQueryService) -> DocumentationGraphQueryService` | — | Build a live service using one operation-scoped extraction. |
+| `build_live_documentation_query_service` | `(*, source_root: Path, wiki_root: Path, limit: int, read_only: bool, helper_cache_dir: Path \| None = None, include_plugins: bool = True, source_plugins_only: bool = False, require_live_freshness: bool = False, source_selection: str \| Path \| None = None, paths: Iterable[str] \| None = None, source_policy: str = 'explicit', extract_payload_builder: Callable[..., Any] \| None = None, source_snapshot_builder: Callable[..., Any] \| None = None, call_edge_resolver: Callable[[Any], Any] \| None = None, flow_builder: Callable[[Any, Any], Any] = build_flow, surface_evaluator: Callable[..., Any] = evaluate_surface_index, knowledge_view_builder: Callable[..., Any] \| None = None, query_surface_builder: Callable[..., Any] \| None = None, dependency_analyzer: Callable[..., Any] = analyze_dependencies, verification_view_attacher: Callable[..., Any] = attach_machine_verification_read_view, verification_summarizer: Callable[..., Any] = verification_summaries_for_concepts, snapshot_view_loader: Callable[..., Any] = load_knowledge_read_view, metrics_observer: Callable[[Mapping[str, Any]], None] \| None = None, service_factory: Any = DocumentationGraphQueryService) -> DocumentationGraphQueryService` | — | Build a live service using one operation-scoped extraction. |

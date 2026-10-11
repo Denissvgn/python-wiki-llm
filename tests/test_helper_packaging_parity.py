@@ -47,6 +47,7 @@ class _PlanPayload(TypedDict):
     selection_inputs: list[str]
 
 _EXPECTED_TYPESCRIPT_PATHS = [
+    "integrations/obsidian/llm-wiki/esbuild.config.mjs",
     "integrations/obsidian/llm-wiki/main.js",
     "integrations/obsidian/llm-wiki/src/main.ts",
 ]

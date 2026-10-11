@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- JavaScript `.mjs` and `.cjs` coverage across discovery, extraction, source
+  commitments, and static import resolution, including side-effect ESM imports
+  and direct unshadowed literal CommonJS `require` calls.
+- Opt-in impact-query discovery policy with separate filesystem, selection,
+  and extraction outcomes, preserving legacy inventory-presence semantics.
+
+### Fixed
+
+- Explicit relative module suffixes retain their exact identity; ambiguous
+  extensionless JavaScript imports no longer produce guessed dependency edges.
+
 ## [2.4.0] - 2026-10-10
 
 This release adds durable ordinary documentation review, compact task views,

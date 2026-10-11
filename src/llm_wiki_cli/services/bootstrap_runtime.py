@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from ..extractors.common import TYPESCRIPT_FAMILY_EXTENSIONS
+
 import ast
 import io
 import json
@@ -3569,7 +3571,7 @@ def _generate_load_order_md(
     return "\n".join(lines)
 
 
-_SOURCE_EXTS = (".py", ".ts", ".tsx", ".js", ".jsx", ".go", ".rs")
+_SOURCE_EXTS = (".py", *TYPESCRIPT_FAMILY_EXTENSIONS, ".go", ".rs")
 
 
 def _normalize_source_path(path: str) -> str:

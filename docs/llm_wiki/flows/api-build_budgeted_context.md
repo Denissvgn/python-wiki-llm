@@ -133,9 +133,9 @@ sequenceDiagram
     p20->>p27: ContextPacketSourceMutationError
 ```
 
-> Call sequence diagram shows 30 of 3363 interactions; 3333 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3367 interactions; 3337 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 12 of 1187 (1175 omitted); unresolved 5 of 1081 (1076 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 12 of 1188 (1176 omitted); unresolved 5 of 1084 (1079 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

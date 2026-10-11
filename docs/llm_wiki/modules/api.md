@@ -46,7 +46,7 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `.services.native_inspection` | `NATIVE_INSPECTION_SCHEMA_VERSION`, `inspect_native_concept` |
 | `.services.search_discovery` | `DiscoveryError`, `MAX_DISCOVERY_BYTES` |
 | `.services.search_service` | `search_wiki` |
-| `.services.source_selection` | `SourceSelectionError` |
+| `.services.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `path_is_selected` |
 | `.services.source_snapshot` | `SourceSnapshotError` |
 | `.services.storage_receipts` | `expand_storage_receipt` |
 | `.services.task_compact` | `CompactTaskContext`, `render_compact_task_context`, `validate_compact_task_context`, `expand_compact_task_context` |

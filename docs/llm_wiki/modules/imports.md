@@ -11,6 +11,7 @@ _Auto-generated from `src/llm_wiki_cli/services/imports.py`._
 | Source | Symbols |
 |--------|---------|
 | `..config` | `is_agent_worktree_path` |
+| `..extractors.common` | `TYPESCRIPT_FAMILY_EXTENSIONS` |
 | `.python_imports` | `PythonModuleIndex`, `is_python_source` |
 | `.source_snapshot` | `SourceSnapshot` |
 | `.validation` | `path_is_under`, `path_is_under_scope` |
@@ -43,17 +44,17 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (8) |
-| Outbound | `src` (4) |
+| Outbound | `src` (5) |
 
-> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_TsPathAliasRule](../entities/TsPathAliasRule.md) | 24 | — | One ``compilerOptions.paths`` mapping scoped to its tsconfig directory. |
-| [_GoModuleScope](../entities/GoModuleScope.md) | 35 | — | One ``go.mod`` module declaration scoped to its directory. |
-| [ModulePathResolver](../entities/ModulePathResolver.md) | 43 | — | Indexed module import resolver for a fixed inventory. |
+| [_TsPathAliasRule](../entities/TsPathAliasRule.md) | 25 | — | One ``compilerOptions.paths`` mapping scoped to its tsconfig directory. |
+| [_GoModuleScope](../entities/GoModuleScope.md) | 36 | — | One ``go.mod`` module declaration scoped to its directory. |
+| [ModulePathResolver](../entities/ModulePathResolver.md) | 44 | — | Indexed module import resolver for a fixed inventory. |
 
 ## Functions
 

@@ -2,7 +2,7 @@
 
 **Entry point:** `build_live_documentation_query_service` (`api`)
 **Source:** [documentation_query_builder](../modules/documentation_query_builder.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 23 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 24 more
 
 **Complete modules touched:**
 
@@ -28,6 +28,7 @@
 - [markdown_sections](../modules/markdown_sections.md)
 - [python_implementation](../modules/python_implementation.md)
 - [section_ownership](../modules/section_ownership.md)
+- [source_path_diagnostics](../modules/source_path_diagnostics.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
@@ -53,13 +54,13 @@ sequenceDiagram
     participant p9 as selected_snapshot_builder
     participant p10 as _source_anchor
     participant p11 as _wiki_anchor
-    participant p12 as list (src/llm_wiki_cli/services…cumentation_query_service)
-    participant p13 as selected_extract_builder
-    participant p14 as result.payload.get
-    participant p15 as selected_call_edge_resolver
-    participant p16 as flow_builder
-    participant p17 as getattr (src/llm_wiki_cli/services…cumentation_query_service)
-    participant p18 as _live_source_selection_identity
+    participant p12 as source_path_diagnostics
+    participant p13 as list (src/llm_wiki_cli/services…cumentation_query_service)
+    participant p14 as selected_extract_builder
+    participant p15 as result.payload.get
+    participant p16 as selected_call_edge_resolver
+    participant p17 as flow_builder
+    participant p18 as getattr (src/llm_wiki_cli/services…cumentation_query_service)
     p0->>p1: normalize_supplied_paths
     p0->>p2: DocumentationQueryError
     p0-->>p3: isinstance (src/llm_wiki_cli/services…cumentation_query_service)(read_only, bool)
@@ -76,25 +77,25 @@ sequenceDiagram
     p0-->>p3: isinstance (src/llm_wiki_cli/services…cumentation_query_service)(source_snapshot, SourceSnapshot)
     p0->>p10: _source_anchor
     p0->>p11: _wiki_anchor
+    p0->>p12: source_path_diagnostics
     p0-->>p4: perf_counter_ns
-    p0-->>p12: list (src/llm_wiki_cli/services…cumentation_query_service)(selected_paths)
+    p0-->>p13: list (src/llm_wiki_cli/services…cumentation_query_service)(selected_paths)
     p0-->>p6: str (src/llm_wiki_cli/services…cumentation_query_service)(helper_cache_dir)
     p0-->>p4: perf_counter_ns
-    p0-->>p13: selected_extract_builder(str(...), **=extract_options)
+    p0-->>p14: selected_extract_builder(str(...), **=extract_options)
     p0-->>p6: str (src/llm_wiki_cli/services…cumentation_query_service)(source_root)
     p0-->>p4: perf_counter_ns
-    p0-->>p14: result.payload.get('entrypoints', [...])
+    p0-->>p15: result.payload.get('entrypoints', [...])
     p0-->>p4: perf_counter_ns
-    p0-->>p15: selected_call_edge_resolver(inventory)
-    p0-->>p16: flow_builder(entrypoint, call_edges)
+    p0-->>p16: selected_call_edge_resolver(inventory)
+    p0-->>p17: flow_builder(entrypoint, call_edges)
     p0-->>p4: perf_counter_ns
-    p0-->>p17: getattr (src/llm_wiki_cli/services…cumentation_query_service)(result, 'inventory_result', None)
-    p0->>p18: _live_source_selection_identity
+    p0-->>p18: getattr (src/llm_wiki_cli/services…cumentation_query_service)(result, 'inventory_result', None)
 ```
 
-> Call sequence diagram shows 30 of 1894 interactions; 1864 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1960 interactions; 1930 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 15 of 648 (633 omitted); unresolved 5 of 502 (497 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 15 of 674 (659 omitted); unresolved 5 of 530 (525 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -108,7 +109,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/validation.py:_default_path_error` | 7 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:_syntax_key` | 12 | - | external | 6 |
 | `src/llm_wiki_cli/services/validation.py:_known_syntax` | 19 | - | unresolved | 2 |
-> Omission summary shows 8 of 486 groups; 478 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 500 groups; 492 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -156,7 +157,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `build_live_documentation_query_service` | `source_root: Path`, `wiki_root: Path`, `limit: int`, `read_only: bool`, `helper_cache_dir: Path \| None`, `include_plugins: bool`, `source_plugins_only: bool`, `require_live_freshness: bool` | `build_source_snapshot`, `SourceSelectionError`, `SourceSnapshot`, `SourceSelectionError`, `KnowledgeReadView`, `KnowledgeReadView`, `SourceSnapshot`, `SourceSnapshot` | `stage_ns[...]`, `snapshot_options[...]`, `stage_ns[...]`, `extract_options[...]`, `extract_options[...]`, `extract_options[...]`, `extract_options[...]`, `extract_options[...]` | `service` |
+| `build_live_documentation_query_service` | `source_root: Path`, `wiki_root: Path`, `limit: int`, `read_only: bool`, `helper_cache_dir: Path \| None`, `include_plugins: bool`, `source_plugins_only: bool`, `require_live_freshness: bool` | `build_source_snapshot`, `SourceSelectionError`, `SourceSnapshot`, `SourceSelectionError`, `KnowledgeReadView`, `KnowledgeReadView`, `SourceSnapshot`, `SourceSnapshot` | `stage_ns[...]`, `snapshot_options[...]`, `snapshot_options[...]`, `snapshot_options[...]`, `stage_ns[...]`, `extract_options[...]`, `extract_options[...]`, `extract_options[...]` | `service` |
 | `normalize_supplied_paths` | `values: object` | - | - | `tuple(...)` |
 | `_portable_supplied_path` | `value: object` | - | - | `require_portable_relative_path(...)` |
 | `DocumentationQueryError` | - | - | - | - |
@@ -173,7 +174,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_live_documentation_query_service | normalize_supplied_paths | 505 | `normalize_supplied_paths(paths)` |
+| build_live_documentation_query_service | normalize_supplied_paths | 506 | `normalize_supplied_paths(paths)` |
 | normalize_supplied_paths | _portable_supplied_path | 139 | `_portable_supplied_path(value)` |
 | _portable_supplied_path | DocumentationQueryError | 117 | `DocumentationQueryError('paths must contain normalized portable relative source paths.')` |
 | _portable_supplied_path | require_portable_relative_path | 120 | `require_portable_relative_path(value, text_error=error, relative_error=error, escape_error=error, traversal_error=error, separator_error=error, utf8_error=error, control_error=error, non_nfc_error=error, nonportable_error=error, reserved_error=error)` |

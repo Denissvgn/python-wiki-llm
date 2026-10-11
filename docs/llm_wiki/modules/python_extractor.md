@@ -56,6 +56,7 @@ flowchart LR
     n6 --> n8
     n6 --> n9
     n7 --> n0
+    n7 --> n1
     click n0 "../modules/config.md"
     click n1 "../modules/common.md"
     click n2 "../modules/fastapi_contracts.md"

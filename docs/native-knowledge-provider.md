@@ -40,6 +40,55 @@ ready native knowledge, not a positive live-currentness verdict. A successful
 unavailable/fallback response is different from a ready model with no matching
 concept. Check availability before interpreting `found=False`.
 
+### Supplied path outcomes
+
+Impact requests support an explicit discovery policy:
+
+```python
+result = api.query_documentation({
+    "operation": "impact",
+    "paths": ["src/main.mjs", "src/helper.cjs"],
+    "source_policy": "discovery",
+    "limit": 8,
+})
+```
+
+This policy honors source selection, ignore rules, excluded directories,
+generated bundles, bundled helpers, and agent worktrees. Omit `source_policy`
+or select `explicit` to retain historical exact-path extraction behavior,
+including its ignore and bundle overrides. Source-selection boundaries apply
+to both policies.
+
+With `discovery`, each returned match separates these observations:
+
+| Field | Meaning |
+|---|---|
+| `present` | An extracted inventory entry exists; this is not filesystem existence. |
+| `filesystem_state` | `file`, `missing`, `not-file`, or `unknown`. Profile-excluded paths remain unknown without a metadata read. |
+| `selection_state` | `included` or `excluded` under the captured discovery policy. |
+| `extraction_state` | `extracted`, `unsupported`, `failed`, `unavailable`, `no-documentable-content`, or `not-attempted`. |
+| `reason` | A machine-readable explanation, including `gitignore`, `generated-bundle`, `source-selection`, `unsupported-extension`, `syntax-error`, or `helper-unavailable`. |
+| `failure_scope` | When available, `file` or `extractor-batch`; a batch failure does not prove each file has a syntax error. |
+
+Diagnostic reads can retain successful sources alongside attributable extraction
+failures. Missing helpers remain unavailable, and legacy helper output without
+file outcomes remains qualified rather than being treated as proof of failure.
+Invalid paths, inconsistent protected wiki state, and source/wiki/control-file
+mutation still abort the read. Normal extraction and legacy impact requests
+retain their operational error behavior.
+
+JavaScript `.js`, `.jsx`, `.mjs`, and `.cjs` share source discovery and hashing.
+Static ESM imports, including side-effect imports, and direct unshadowed
+`require("literal")` calls supply dependency observations. Function-scoped
+require calls retain deferred scope. Shadowed and indirect require calls have
+coverage gaps; computed specifiers and dynamic imports stay unresolved.
+An explicit relative suffix selects only that exact source identity. An
+ambiguous extensionless import does not create multiple guessed edges.
+
+Supply both source paths when a targeted read needs both sides of a dependency.
+These diagnostics do not expand into a full inventory or establish global
+wiki freshness. Existing response limits and truncation disclosures apply.
+
 ```python
 from llm_wiki_cli import api
 

@@ -17,6 +17,7 @@ artifacts only after the public Markdown surface has been written.
 | `.` | `knowledge_reuse` |
 | `..` | `__version__` |
 | `..config` | `DEFAULT_WIKI_DIR`, `validate_path`, `validate_source_root` |
+| `..extractors.common` | `TYPESCRIPT_FAMILY_EXTENSIONS` |
 | `.api_contracts` | `ApiContractError`, `attach_routes_to_entry_points`, `build_api_contracts`, `link_entry_point_flows`, `render_api_contracts_markdown`, `render_flow_api_contract_section` |
 | `.bootstrap_service` | `BootstrapContractError`, `BootstrapExtractionError`, `BootstrapRequestError`, `BootstrapRequest`, `BootstrapResult` |
 | `.contracts` | `BOOTSTRAP_SUMMARY_SCHEMA_VERSION`, `KNOWLEDGE_SCHEMA_VERSION` |
@@ -81,27 +82,27 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (16) |
-| Outbound | `src` (33) |
+| Outbound | `src` (34) |
 
-> All 49 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 50 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 735 | — | — |
-| [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 1013 | — | — |
-| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3138 | — | — |
-| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4387 | — | — |
-| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4413 | — | — |
-| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4426 | — | — |
-| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4433 | — | — |
-| [_WorkflowResult](../entities/WorkflowResult.md) | 4441 | — | — |
-| [_FlowResult](../entities/FlowResult.md) | 4447 | — | — |
-| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4458 | — | — |
-| [_DependencyResult](../entities/DependencyResult.md) | 4469 | — | — |
-| [_ApiContractResult](../entities/ApiContractResult.md) | 4477 | — | — |
-| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4484 | — | — |
+| [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 737 | — | — |
+| [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 1015 | — | — |
+| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3140 | — | — |
+| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4389 | — | — |
+| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4415 | — | — |
+| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4428 | — | — |
+| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4435 | — | — |
+| [_WorkflowResult](../entities/WorkflowResult.md) | 4443 | — | — |
+| [_FlowResult](../entities/FlowResult.md) | 4449 | — | — |
+| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4460 | — | — |
+| [_DependencyResult](../entities/DependencyResult.md) | 4471 | — | — |
+| [_ApiContractResult](../entities/ApiContractResult.md) | 4479 | — | — |
+| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4486 | — | — |
 
 ## Functions
 

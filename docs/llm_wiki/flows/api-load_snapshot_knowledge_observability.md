@@ -109,9 +109,9 @@ sequenceDiagram
     p8-->>p22: max (src/llm_wiki_cli/services…ility.py:_snapshot_result)(0, round(...))
 ```
 
-> Call sequence diagram shows 30 of 2653 interactions; 2623 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2654 interactions; 2624 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 3 of 826 (823 omitted); unresolved 3 of 662 (659 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 3 of 827 (824 omitted); unresolved 3 of 662 (659 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

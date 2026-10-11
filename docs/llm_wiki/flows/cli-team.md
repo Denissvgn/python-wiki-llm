@@ -105,9 +105,9 @@ sequenceDiagram
     p3->>p20: resolve_team_policy
 ```
 
-> Call sequence diagram shows 30 of 2397 interactions; 2367 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2401 interactions; 2371 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 18 of 655 (637 omitted); unresolved 1 of 826 (825 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 18 of 656 (638 omitted); unresolved 1 of 828 (827 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -121,7 +121,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/team.py:write_default_team_config` | 17 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
 | `src/llm_wiki_cli/services/io.py:write_json_atomic` | 19 | - | external | 1 |
 | `src/llm_wiki_cli/services/io.py:write_json_atomic` | 19 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
-> Omission summary shows 8 of 623 groups; 615 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 625 groups; 617 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

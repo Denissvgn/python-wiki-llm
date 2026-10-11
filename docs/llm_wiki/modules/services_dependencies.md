@@ -90,9 +90,9 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_ManifestScope](../entities/ManifestScope.md) | 763 | — | A scoped dependency manifest rooted at a project-relative directory. |
-| [_Manifest](../entities/Manifest.md) | 777 | — | A language's declared dependencies, parsed from its manifest. |
-| [_LanguagePlugin](../entities/LanguagePlugin.md) | 799 | — | A manifest parser + import classifier for one language family. |
+| [_ManifestScope](../entities/ManifestScope.md) | 767 | — | A scoped dependency manifest rooted at a project-relative directory. |
+| [_Manifest](../entities/Manifest.md) | 781 | — | A language's declared dependencies, parsed from its manifest. |
+| [_LanguagePlugin](../entities/LanguagePlugin.md) | 803 | — | A manifest parser + import classifier for one language family. |
 
 ## Functions
 

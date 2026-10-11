@@ -1,6 +1,6 @@
 # _WorkflowResult
 
-**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4441`
+**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4443`
 **Kind:** Class
 **Bases:** —
 **Module:** [bootstrap_runtime](../modules/bootstrap_runtime.md)

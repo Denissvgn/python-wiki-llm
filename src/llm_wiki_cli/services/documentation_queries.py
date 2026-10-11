@@ -877,6 +877,7 @@ class DocumentationGraphQueryService:
         self.limit = limit
         # Preserve private captured metadata without altering public inventory.
         self.inventory_result = inventory_result
+        self.path_outcomes: dict[str, dict[str, Any]] = {}
         self.knowledge_view = knowledge_view
         self.snapshot_call_inventory = snapshot_call_inventory
         self.inventory = {

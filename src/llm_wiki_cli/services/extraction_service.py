@@ -163,6 +163,7 @@ class InventoryRequest:
     source_selection: str | Path | None = None
     source_plugins_only: bool = False
     capture_implementation_observations: bool = False
+    capture_path_outcomes: bool = False
 
     def __post_init__(self) -> None:
         object.__setattr__(
@@ -194,6 +195,7 @@ class InventoryResult:
         compare=False,
     )
     implementation_observations: dict | None = field(default=None, repr=False, compare=False)
+    path_outcomes: dict = field(default_factory=dict)
 
     @property
     def job_plan(self) -> ExtractionJobPlan:
@@ -272,6 +274,7 @@ class _ExtractionOutcome:
     data_effect_observations: dict | None = None
     import_observations: dict | None = None
     implementation_observations: dict | None = None
+    path_outcomes: dict | None = None
 
 
 @dataclass
@@ -349,7 +352,9 @@ def _run_extraction_plan(
             else str(error)
         )
         return _ExtractionOutcome(
-            plan.language, "failed", plan.files_found, {}, message
+            plan.language, "failed", plan.files_found,
+            extracted if plan.kwargs.get("diagnostics") else {}, message,
+            path_outcomes=getattr(extractor, "last_path_outcomes", None),
         )
 
     files_found = plan.files_found
@@ -371,6 +376,7 @@ def _run_extraction_plan(
             None,
         ),
         implementation_observations=getattr(extractor, "last_implementation_observations", None),
+        path_outcomes=getattr(extractor, "last_path_outcomes", None),
     )
 
 
@@ -412,6 +418,7 @@ _LEGACY_INVENTORY_REQUEST_FIELDS = (
     "source_selection",
     "source_plugins_only",
     "capture_implementation_observations",
+    "capture_path_outcomes",
 )
 
 
@@ -562,8 +569,29 @@ def _completed_inventory_result(
         ),
         source_snapshot=evaluated_source_snapshot,
         implementation_observations=implementation_observations,
+        path_outcomes=_inventory_path_outcomes(context, inventory, outcomes_by_language),
         **_python_extraction_sidecars(context, outcomes_by_language),
     )
+
+
+def _inventory_path_outcomes(context, inventory, outcomes_by_language) -> dict:
+    if not context.request.capture_path_outcomes:
+        return {}
+    result = {}
+    for language, sources in context.source_snapshot.files_by_language.items():
+        outcome = outcomes_by_language.get(language)
+        reported = outcome.path_outcomes or {} if outcome is not None else {}
+        for source in sources:
+            path = source.rel_path
+            if path in inventory:
+                result[path] = {"extraction_state": "extracted", "reason": "inventory-entry"}
+            elif path in reported:
+                result[path] = dict(reported[path])
+            elif outcome is not None and outcome.state == "failed":
+                result[path] = {"extraction_state": "failed", "reason": "extractor-batch-failed", "failure_scope": "extractor-batch"}
+            else:
+                result[path] = {"extraction_state": "unavailable", "reason": "outcome-not-reported"}
+    return result
 
 
 def _implementation_observations(context: _InventoryBuildContext, outcomes: dict[str, _ExtractionOutcome]) -> dict | None:
@@ -1064,6 +1092,7 @@ def _can_use_inventory_cache(context: _InventoryBuildContext, is_builtin: bool) 
         and context.cache is not None
         and context.cache.enabled
         and context.cache_key is not None
+        and not context.request.capture_path_outcomes
     )
 
 
@@ -1217,6 +1246,8 @@ def _build_builtin_extraction_kwargs(
     }
     if language == "typescript":
         kwargs["helper_cache_dir"] = _inventory_helper_cache_dir(context.request)
+        if context.request.capture_path_outcomes:
+            kwargs["diagnostics"] = True
     return kwargs
 
 
@@ -1287,6 +1318,9 @@ def _collect_inventory_outcomes(
             planning.status_by_language[plan.language] = ExtractorStatus(
                 plan.language, "failed", outcome.files_found, outcome.message
             )
+            if not context.request.capture_path_outcomes:
+                continue
+            extracted_by_language[plan.language] = outcome.extracted
             continue
         extracted_by_language[plan.language] = outcome.extracted
         if plan.language == "python" and plan.is_builtin:
@@ -2066,6 +2100,7 @@ def build_extract_payload(
     source_selection: str | Path | None = None,
     source_snapshot: SourceSnapshot | None = None,
     capture_implementation_observations: bool = False,
+    path_diagnostics: bool = False,
 ) -> ExtractPayloadResult:
     """Build the stable extract JSON payload without printing or exiting."""
     src_root = validate_source_root(
@@ -2185,11 +2220,12 @@ def build_extract_payload(
             include_tests=include_test_languages,
             capture_data_effect_observations=deep,
             capture_implementation_observations=capture_implementation_observations,
+            capture_path_outcomes=path_diagnostics,
             include_plugins=include_plugins,
             source_plugins_only=source_plugins_only,
         )
     )
-    if result.failed:
+    if result.failed and not path_diagnostics:
         raise ExtractorFailureError(result)
     inventory = result.inventory
 
