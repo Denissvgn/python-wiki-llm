@@ -105,9 +105,9 @@ sequenceDiagram
     p1->>p14: parse_request
 ```
 
-> Call sequence diagram shows 30 of 1450 interactions; 1420 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1454 interactions; 1424 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 11 of 576 (565 omitted); unresolved 8 of 354 (346 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 11 of 579 (568 omitted); unresolved 8 of 355 (347 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

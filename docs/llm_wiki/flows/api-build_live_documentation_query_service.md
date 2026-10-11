@@ -93,9 +93,9 @@ sequenceDiagram
     p0-->>p18: getattr (src/llm_wiki_cli/services…cumentation_query_service)(result, 'inventory_result', None)
 ```
 
-> Call sequence diagram shows 30 of 1962 interactions; 1932 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1966 interactions; 1936 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 15 of 674 (659 omitted); unresolved 5 of 531 (526 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 15 of 677 (662 omitted); unresolved 5 of 532 (527 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

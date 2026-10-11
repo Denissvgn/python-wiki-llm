@@ -101,9 +101,9 @@ sequenceDiagram
     p0-->>p19: tuple (src/llm_wiki_cli/api.py:query_documentation)(CORE_RELATIONSHIP_KINDS)
 ```
 
-> Call sequence diagram shows 30 of 2095 interactions; 2065 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2099 interactions; 2069 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 2 of 799 (797 omitted); unresolved 10 of 533 (523 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 2 of 802 (800 omitted); unresolved 10 of 534 (524 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

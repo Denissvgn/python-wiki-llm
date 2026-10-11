@@ -6,6 +6,15 @@
 
 Immutable read-only ordinary maintenance reports from one captured basis.
 
+Live captured source-backed semantic sections can be projected as untracked
+coverage when no durable ordinary-review owner exists. Such a report remains
+unadopted, contains no record or acknowledgment authority, and counts no target
+as durably tracked. Snapshot-only reads cannot invent those live targets.
+The advisory queue consumes this coverage to preserve exact inspection targets
+across structural refresh; section correctness still requires source/prose
+review. Captured unavailable joins remain explicit issues, and bounded projections
+retain their complete counts and omitted-detail qualifications.
+
 ## Imports
 
 | Source | Symbols |

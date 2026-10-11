@@ -89,9 +89,9 @@ sequenceDiagram
     p9->>p15: normalize_supplied_paths
 ```
 
-> Call sequence diagram shows 30 of 1867 interactions; 1837 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1871 interactions; 1841 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 11 of 680 (669 omitted); unresolved 2 of 490 (488 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 11 of 683 (672 omitted); unresolved 2 of 491 (489 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

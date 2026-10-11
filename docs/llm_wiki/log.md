@@ -1903,3 +1903,19 @@ source and active renderer. Unchanged source can require targeted output repair
 without reclassifying source bytes. Authored cells and custom sections retain
 their ownership, while ambiguous attribution fails before page writes. Repairs
 use guarded retained-page plans and their existing explicit recovery boundary.
+
+## 2026-10-11
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:781db935be7156af1b348828de63c5d11ed5e5c39f67c496465b763a1145e07d`
+- Pages created: 0
+- Pages updated: 34
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1541
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none

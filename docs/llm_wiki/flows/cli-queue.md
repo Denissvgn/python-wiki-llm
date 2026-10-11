@@ -141,7 +141,7 @@ sequenceDiagram
     p4-->>p6: lines.append(...)
 ```
 
-> Call sequence diagram shows 30 of 4234 interactions; 4204 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4236 interactions; 4206 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 6 of 1347 (1341 omitted); unresolved 17 of 1444 (1427 omitted). These counts cover the captured static trace.
 
@@ -157,7 +157,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_path` | 21 | - | unresolved | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 21 | - | external | 2 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 20 | - | unresolved | 5 |
-> Omission summary shows 8 of 1059 groups; 1051 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1061 groups; 1053 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

@@ -146,7 +146,8 @@ flowchart TD
 | [health_summary](modules/health_summary.md) | 3 | 1 |
 | [knowledge_coverage](modules/knowledge_coverage.md) | 3 | 3 |
 | [knowledge_storage_access](modules/knowledge_storage_access.md) | 3 | 16 |
-| [maintenance_queue](modules/maintenance_queue.md) | 3 | 6 |
+| [maintenance_queue](modules/maintenance_queue.md) | 3 | 7 |
+| [maintenance_service](modules/maintenance_service.md) | 3 | 22 |
 | [search_rank](modules/search_rank.md) | 3 | 0 |
 | [sync_analysis](modules/sync_analysis.md) | 3 | 4 |
 | [sync_analysis_cache](modules/sync_analysis_cache.md) | 3 | 15 |
@@ -176,7 +177,6 @@ flowchart TD
 | [knowledge_links](modules/knowledge_links.md) | 2 | 4 |
 | [knowledge_storage_diagnostics](modules/knowledge_storage_diagnostics.md) | 2 | 13 |
 | [knowledge_storage_lifecycle](modules/knowledge_storage_lifecycle.md) | 2 | 17 |
-| [maintenance_service](modules/maintenance_service.md) | 2 | 22 |
 | [module_maps](modules/module_maps.md) | 2 | 1 |
 | [protected_artifacts](modules/protected_artifacts.md) | 2 | 2 |
 | [python_observations](modules/python_observations.md) | 2 | 2 |

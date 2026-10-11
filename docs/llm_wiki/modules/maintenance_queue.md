@@ -10,6 +10,14 @@ priority, distinguishes actionable from informational evidence, and identifies
 the editable semantic section. Unknown provenance stays explicit; queue
 construction preserves the captured source/wiki basis and does not edit pages.
 
+For a coherent unadopted native wiki, the same captured inventory and verified
+page mappings identify source-backed semantic sections that lack ordinary review
+custody. Their exact section locators appear as bounded informational coverage
+gaps even after owning sync makes structural freshness current. This keeps
+retained authored claims visible for source/prose inspection without inventing
+pending records, acknowledgments or a verdict about their correctness. Corrected
+prose remains untracked until explicit adoption and review.
+
 ## Imports
 
 | Source | Symbols |
@@ -19,7 +27,8 @@ construction preserves the captured source/wiki basis and does not edit pages.
 | `.inventory_cache` | `InventoryCacheOptions` |
 | `.knowledge_storage` | `canonical_bytes`, `canonical_bytes` |
 | `.lint_service` | `build_report` |
-| `.maintenance_status` | `compact_maintenance_summary` |
+| `.maintenance_service` | `capture_maintenance_observations` |
+| `.maintenance_status` | `compact_maintenance_summary`, `build_maintenance_status` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
 | `dataclasses` | `asdict` |
@@ -41,15 +50,17 @@ flowchart LR
     n6["src/llm_wiki_cli/services/knowledge_storage.py"]
     n7["src/llm_wiki_cli/services/lint_service.py"]
     n8["src/llm_wiki_cli/services/maintenance_queue.py"]
-    n9["src/llm_wiki_cli/services/maintenance_status.py"]
+    n9["src/llm_wiki_cli/services/maintenance_service.py"]
+    n10["src/llm_wiki_cli/services/maintenance_status.py"]
     n0 --> n3
     n0 --> n6
     n0 --> n8
+    n0 --> n9
     n1 --> n2
     n1 --> n7
     n1 --> n8
     n2 --> n8
-    n3 --> n9
+    n3 --> n10
     n7 --> n5
     n8 --> n3
     n8 --> n4
@@ -57,7 +68,12 @@ flowchart LR
     n8 --> n6
     n8 --> n7
     n8 --> n9
+    n8 --> n10
+    n9 --> n3
     n9 --> n6
+    n9 --> n10
+    n10 --> n6
+    n10 --> n9
     click n0 "../modules/api.md"
     click n1 "../modules/cli.md"
     click n2 "../modules/queue_cmd.md"
@@ -67,7 +83,8 @@ flowchart LR
     click n6 "../modules/knowledge_storage.md"
     click n7 "../modules/lint_service.md"
     click n8 "../modules/maintenance_queue.md"
-    click n9 "../modules/maintenance_status.md"
+    click n9 "../modules/maintenance_service.md"
+    click n10 "../modules/maintenance_status.md"
 ```
 
 ### Internal neighbors
@@ -82,6 +99,7 @@ flowchart LR
 | Outbound | [inventory_cache](../modules/inventory_cache.md) |
 | Outbound | [knowledge_storage](../modules/knowledge_storage.md) |
 | Outbound | [lint_service](../modules/lint_service.md) |
+| Outbound | [maintenance_service](../modules/maintenance_service.md) |
 | Outbound | [maintenance_status](../modules/maintenance_status.md) |
 
 ## Functions
