@@ -1,6 +1,6 @@
 # _GeneratedSurfaceTransition
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1817`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1826`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)

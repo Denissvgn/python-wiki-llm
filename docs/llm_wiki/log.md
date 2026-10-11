@@ -1877,3 +1877,29 @@ page-map reuse. Complete extraction sidecars remain available for ordinary graph
 rebuilding when graph observations exceed the cache budget or detectors change.
 Compact, uncompressed JSON retains the 64 MiB limit and all native coverage
 qualifiers; unavailable observations remain explicit.
+
+## 2026-10-11
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:1912ae09cb08aa5540501a87dcfc73c7d6f4245e4571e61a7cfaea566aaf122b`
+- Pages created: 1
+- Pages updated: 41
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1534
+- Pages deprecated: 0
+- Semantic fields preserved: 2
+- Moved entities: none
+
+## 2026-10-11
+
+### Source-grounded generated section repair
+
+Ordinary sync checks surviving source-derived sections against the selected
+source and active renderer. Unchanged source can require targeted output repair
+without reclassifying source bytes. Authored cells and custom sections retain
+their ownership, while ambiguous attribution fails before page writes. Repairs
+use guarded retained-page plans and their existing explicit recovery boundary.

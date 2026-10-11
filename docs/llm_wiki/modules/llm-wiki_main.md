@@ -36,3 +36,10 @@ belong in the TypeScript source and are carried here by the integration build.
 | `getVaultPath` | `(app)` | — | — |
 | `runCommand` | `(settings, args, vaultPath)` | — | — |
 | `sourceUri` | `(settings, vaultPath, sourcePath, line)` | — | — |
+
+## Imports
+
+| Source | Symbols |
+|--------|---------|
+| `child_process` | `` |
+| `obsidian` | `` |

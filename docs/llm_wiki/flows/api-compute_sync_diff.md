@@ -163,8 +163,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| compute_sync_diff | SyncDiff | 187 | `SyncDiff(data not statically known)` |
-| compute_sync_diff | _recorded_entity_pages | 188 | `_recorded_entity_pages(manifest)` |
+| compute_sync_diff | SyncDiff | 189 | `SyncDiff(data not statically known)` |
+| compute_sync_diff | _recorded_entity_pages | 190 | `_recorded_entity_pages(manifest)` |
 | _recorded_entity_pages | _RecordedEntityPages | 76 | `_RecordedEntityPages(data not statically known)` |
 | _recorded_entity_pages | Counter (src/llm_wiki_cli/services…py:_recorded_entity_pages) | 78 | `Counter(info.get(...))` |
 | _recorded_entity_pages | info.get (src/llm_wiki_cli/services…py:_recorded_entity_pages) | 78 | `info.get('entities', [...])` |
@@ -179,12 +179,12 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `old_cls_counts.update` | `compute_sync_diff` | 193 |
-| mutation | `diff.new_files.append` | `compute_sync_diff` | 221 |
-| mutation | `diff.unchanged_files.append` | `compute_sync_diff` | 229 |
-| mutation | `diff.metadata_only_files.append` | `compute_sync_diff` | 233 |
-| mutation | `diff.changed_files.append` | `compute_sync_diff` | 235 |
-| mutation | `diff.removed_files.append` | `compute_sync_diff` | 239 |
+| mutation | `old_cls_counts.update` | `compute_sync_diff` | 195 |
+| mutation | `diff.new_files.append` | `compute_sync_diff` | 223 |
+| mutation | `diff.unchanged_files.append` | `compute_sync_diff` | 231 |
+| mutation | `diff.metadata_only_files.append` | `compute_sync_diff` | 235 |
+| mutation | `diff.changed_files.append` | `compute_sync_diff` | 237 |
+| mutation | `diff.removed_files.append` | `compute_sync_diff` | 241 |
 | mutation | `recorded.add` | `_recorded_entity_pages` | 133 |
 
 ### Static analysis gaps

@@ -25,11 +25,11 @@
       "infrastructure": 0,
       "load-order": 1,
       "log": 1,
-      "modules": 238,
+      "modules": 239,
       "workflows": 208
     },
     "dependency_architecture": 2,
-    "total": 1587
+    "total": 1588
   },
   "dependency_pages": {
     "count": 2,
@@ -7498,7 +7498,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 193,
+              "line": 195,
               "step": "compute_sync_diff",
               "step_index": 1,
               "target": "old_cls_counts.update"
@@ -7506,7 +7506,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 221,
+              "line": 223,
               "step": "compute_sync_diff",
               "step_index": 1,
               "target": "diff.new_files.append"
@@ -7514,7 +7514,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 229,
+              "line": 231,
               "step": "compute_sync_diff",
               "step_index": 1,
               "target": "diff.unchanged_files.append"
@@ -7522,7 +7522,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 233,
+              "line": 235,
               "step": "compute_sync_diff",
               "step_index": 1,
               "target": "diff.metadata_only_files.append"
@@ -7530,7 +7530,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 235,
+              "line": 237,
               "step": "compute_sync_diff",
               "step_index": 1,
               "target": "diff.changed_files.append"
@@ -7538,7 +7538,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 239,
+              "line": 241,
               "step": "compute_sync_diff",
               "step_index": 1,
               "target": "diff.removed_files.append"
@@ -35660,25 +35660,9 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 4933,
+              "line": 4965,
               "step": "run",
               "step_index": 1,
-              "target": "print"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "output",
-              "line": 2391,
-              "step": "_sync_run_options_from_args",
-              "step_index": 2,
-              "target": "print"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "output",
-              "line": 2397,
-              "step": "_sync_run_options_from_args",
-              "step_index": 2,
               "target": "print"
             },
             {
@@ -35688,30 +35672,46 @@
               "step": "_sync_run_options_from_args",
               "step_index": 2,
               "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 2409,
+              "step": "_sync_run_options_from_args",
+              "step_index": 2,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 2415,
+              "step": "_sync_run_options_from_args",
+              "step_index": 2,
+              "target": "print"
             }
           ],
           "gaps": [
             {
               "kind": "external_call",
-              "line": 2370,
+              "line": 2382,
               "step": "_sync_run_options_from_args",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 2371,
+              "line": 2383,
               "step": "_sync_run_options_from_args",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 2372,
+              "line": 2384,
               "step": "_sync_run_options_from_args",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 2373,
+              "line": 2385,
               "step": "_sync_run_options_from_args",
               "target": "getattr"
             },
@@ -35788,6 +35788,8 @@
             "src/llm_wiki_cli/services/plugins.py",
             "src/llm_wiki_cli/services/sync_analysis.py",
             "src/llm_wiki_cli/services/sync_retained_links.py",
+            "src/llm_wiki_cli/services/concept_identity.py",
+            "src/llm_wiki_cli/services/sync_generated_sections.py",
             "src/llm_wiki_cli/services/dependencies.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
             "src/llm_wiki_cli/services/knowledge_generation.py",
@@ -35795,10 +35797,9 @@
             "src/llm_wiki_cli/services/python_imports.py",
             "src/llm_wiki_cli/services/python_calls.py",
             "src/llm_wiki_cli/services/data_flow.py",
-            "src/llm_wiki_cli/services/concept_identity.py",
             "src/llm_wiki_cli/services/wiki_surface_index.py"
           ],
-          "step_count": 5355,
+          "step_count": 5428,
           "truncated": true
         }
       },
@@ -39533,6 +39534,7 @@
         "modules/sync_analysis.md",
         "modules/sync_analysis_cache.md",
         "modules/sync_cmd.md",
+        "modules/sync_generated_sections.md",
         "modules/sync_manifest.md",
         "modules/sync_retained_links.md",
         "modules/sync_transition_execution.md",
@@ -44643,6 +44645,7 @@
       "outgoing_internal_links": [
         "modules/knowledge_index.md",
         "modules/sync_analysis.md",
+        "modules/sync_generated_sections.md",
         "modules/sync_manifest.md",
         "modules/sync_transitions.md"
       ],
@@ -45573,6 +45576,7 @@
       "mcp_uri": "llm-wiki://entities/PageTransitionError",
       "outgoing_internal_links": [
         "modules/sync_analysis.md",
+        "modules/sync_generated_sections.md",
         "modules/sync_transition_execution.md",
         "modules/sync_transitions.md"
       ],
@@ -45603,6 +45607,7 @@
         "modules/knowledge_orchestration.md",
         "modules/maintenance_evidence.md",
         "modules/sync_cmd.md",
+        "modules/sync_generated_sections.md",
         "modules/sync_transition_execution.md",
         "modules/sync_transitions.md"
       ],
@@ -46394,6 +46399,7 @@
       "kind": "entities",
       "mcp_uri": "llm-wiki://entities/RetainedPageRepair",
       "outgoing_internal_links": [
+        "modules/sync_generated_sections.md",
         "modules/sync_transitions.md"
       ],
       "role": "semantic",
@@ -46801,6 +46807,7 @@
       "outgoing_internal_links": [
         "modules/maintenance_evidence.md",
         "modules/section_ownership.md",
+        "modules/sync_generated_sections.md",
         "modules/sync_retained_links.md"
       ],
       "role": "semantic",
@@ -47249,8 +47256,8 @@
         "modules/search_discovery_capture.md",
         "modules/search_service.md",
         "modules/search_source.md",
-        "modules/sync_manifest.md",
-        "modules/sync_transition_execution.md"
+        "modules/sync_generated_sections.md",
+        "modules/sync_manifest.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/knowledge_storage_io.py",
@@ -52159,6 +52166,27 @@
       "title": "sync_cmd Module"
     },
     {
+      "canonical_path": "modules/sync_generated_sections.md",
+      "id": "sync_generated_sections",
+      "kind": "modules",
+      "mcp_uri": "llm-wiki://modules/sync_generated_sections",
+      "outgoing_internal_links": [
+        "modules/bootstrap_runtime.md",
+        "modules/knowledge_storage.md",
+        "modules/knowledge_storage_io.md",
+        "modules/markdown_sections.md",
+        "modules/section_ownership.md",
+        "modules/sync_cmd.md",
+        "modules/sync_generated_sections.md",
+        "modules/sync_manifest.md",
+        "modules/sync_transitions.md",
+        "modules/wiki_surface.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/sync_generated_sections.py",
+      "title": "sync_generated_sections Module"
+    },
+    {
       "canonical_path": "modules/sync_manifest.md",
       "id": "sync_manifest",
       "kind": "modules",
@@ -55025,6 +55053,7 @@
         "modules/source_snapshot.md",
         "modules/sync_analysis_cache.md",
         "modules/sync_cmd.md",
+        "modules/sync_generated_sections.md",
         "modules/sync_manifest.md",
         "modules/sync_transition_execution.md",
         "modules/sync_transitions.md",
@@ -65152,6 +65181,7 @@
         "modules/sync_analysis.md",
         "modules/sync_analysis_cache.md",
         "modules/sync_cmd.md",
+        "modules/sync_generated_sections.md",
         "modules/sync_manifest.md",
         "modules/sync_retained_links.md",
         "modules/sync_transition_execution.md",
@@ -65955,6 +65985,7 @@
         "modules/sync_analysis.md",
         "modules/sync_analysis_cache.md",
         "modules/sync_cmd.md",
+        "modules/sync_generated_sections.md",
         "modules/sync_manifest.md",
         "modules/sync_retained_links.md",
         "modules/sync_transition_execution.md",
@@ -66205,6 +66236,7 @@
         "modules/sync_analysis.md",
         "modules/sync_analysis_cache.md",
         "modules/sync_cmd.md",
+        "modules/sync_generated_sections.md",
         "modules/sync_manifest.md",
         "modules/sync_retained_links.md",
         "modules/sync_transition_execution.md",
@@ -66244,5 +66276,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:6de96f0bdb2c957f660c3f1d0d15b06adf62293f0558187cf5d433b05e72f5c4"
+  "source_hash": "sha256:ec1788110933db14463ce514525507b27bf87845115f87de0dac1a8ad1392d22"
 }

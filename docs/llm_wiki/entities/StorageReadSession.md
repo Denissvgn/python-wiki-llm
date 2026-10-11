@@ -44,8 +44,8 @@ flowchart LR
     n8["search_prevalidated_roots (src/llm_wiki_cli/services/search_service.py)"]
     n9["capture_source_index (src/llm_wiki_cli/services/search_source.py)"]
     n10["captured_manifest (src/llm_wiki_cli/services/search_source.py)"]
-    n11["SyncManifest.load (src/llm_wiki_cli/services/sync_manifest.py)"]
-    n12["PageTransitionExecution.__init__ (src/llm_wiki_cli/services/sync_transition_execution.py)"]
+    n11["plan_generated_source_repairs (src/llm_wiki_cli/services/sync_generated_sections.py)"]
+    n12["SyncManifest.load (src/llm_wiki_cli/services/sync_manifest.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -69,8 +69,8 @@ flowchart LR
     click n8 "../modules/search_service.md"
     click n9 "../modules/search_source.md"
     click n10 "../modules/search_source.md"
-    click n11 "../modules/sync_manifest.md"
-    click n12 "../modules/sync_transition_execution.md"
+    click n11 "../modules/sync_generated_sections.md"
+    click n12 "../modules/sync_manifest.md"
 ```
 
 ### Summary
@@ -93,7 +93,7 @@ flowchart LR
 | `search_prevalidated_roots` | call | [search_service](../modules/search_service.md) | 2 |
 | `capture_source_index` | type_reference | [search_source](../modules/search_source.md) | — |
 | `captured_manifest` | type_reference | [search_source](../modules/search_source.md) | — |
+| `plan_generated_source_repairs` | call | [sync_generated_sections](../modules/sync_generated_sections.md) | 1 |
 | `SyncManifest.load` | call | [sync_manifest](../modules/sync_manifest.md) | 1 |
-| `PageTransitionExecution.__init__` | call | [sync_transition_execution](../modules/sync_transition_execution.md) | 1 |
 
-> References: showing 12 of 15 logical references; 3 omitted by the 12-row generated summary limit.
+> References: showing 12 of 16 logical references; 4 omitted by the 12-row generated summary limit.

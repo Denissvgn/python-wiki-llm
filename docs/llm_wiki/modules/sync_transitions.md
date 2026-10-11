@@ -6,6 +6,10 @@
 
 Read-only ownership and filesystem preflight for entity/module page writes.
 
+Retained page repair plans can carry source-derived section corrections as well
+as link corrections, with exact expected bytes and an explicit reason. Both
+retain the existing ownership, mutation and durable-original recovery boundary.
+
 ## Imports
 
 | Source | Symbols |
@@ -44,10 +48,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (5) |
+| Inbound | `src` (6) |
 | Outbound | `src` (9) |
 
-> All 14 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -57,8 +61,8 @@ flowchart LR
 | [PageTransition](../entities/PageTransition.md) | 27 | — | — |
 | [StagedPageMove](../entities/StagedPageMove.md) | 51 | — | — |
 | [RetainedPageRepair](../entities/RetainedPageRepair.md) | 58 | — | — |
-| [PageTransitionPlan](../entities/PageTransitionPlan.md) | 66 | — | — |
-| [_Ownership](../entities/Ownership.md) | 131 | — | — |
+| [PageTransitionPlan](../entities/PageTransitionPlan.md) | 67 | — | — |
+| [_Ownership](../entities/Ownership.md) | 132 | — | — |
 
 ## Functions
 

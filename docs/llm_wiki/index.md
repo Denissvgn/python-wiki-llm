@@ -7,7 +7,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 | Surface | Count | Start here |
 |---|---:|---|
 | Entities | 662 | [Open section](#entities) |
-| Modules | 238 | [Open section](#modules) |
+| Modules | 239 | [Open section](#modules) |
 | Workflows | 208 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 464 | [Open section](#entry-point-flows) |
@@ -889,6 +889,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [sync_analysis](modules/sync_analysis.md) - Read-only source/manifest diff analysis shared by sync and lint.
 - [sync_analysis_cache](modules/sync_analysis_cache.md) - Optional static sync inputs authenticated by the last complete commit.
 - [sync_cmd](modules/sync_cmd.md) - Incremental wiki sync — update only pages whose source has changed.
+- [sync_generated_sections](modules/sync_generated_sections.md) - Source-grounded repairs of retained entity/module generated sections.
 - [sync_manifest](modules/sync_manifest.md) - Persistent sync state with explicit versioned maintenance adoption.
 - [sync_retained_links](modules/sync_retained_links.md) - Pure, ownership-scoped link repairs for retained source pages.
 - [sync_transition_execution](modules/sync_transition_execution.md) - Guarded execution of source-page moves, with retained failure recovery data.

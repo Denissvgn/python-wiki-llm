@@ -33,6 +33,11 @@ all extraction sidecars for ordinary graph and typed-projection rebuilding. API
 and entrypoint observations still evaluate live; only matching full graph
 coverage requests the typed-graph shortcut.
 
+Ordinary sync preflights retained source-derived sections against the active
+renderer even when source hashes match. Repairs are apply-only output work and
+use verified retained-page transitions; semantic ambiguity stops before writes.
+A committed wiki projection cannot establish generated correctness by itself.
+
 ## Imports
 
 | Source | Symbols |
@@ -67,6 +72,7 @@ coverage requests the typed-graph shortcut.
 | `..services.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `path_is_selected`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `..services.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `source_snapshot_matches_current_files`, `format_unsupported_source_summary`, `unsupported_source_summary` |
 | `..services.sync_analysis` | `SyncDiff`, `SyncOwnershipError`, `compute_sync_diff` |
+| `..services.sync_generated_sections` | `plan_generated_source_repairs` |
 | `..services.sync_manifest` | `EVIDENCE_NOT_RECORDED`, `LEGACY_EVIDENCE_UNAVAILABLE`, `MANIFEST_FILENAME`, `MANIFEST_REPAIR_UNAVAILABLE`, `MANIFEST_STATE_UNAVAILABLE`, `MANIFEST_VERSION`, `SourceSelectionPruneResult`, `SyncManifest`, `prune_manifest_for_source_selection`, `retained_concept_page_paths` |
 | `..services.sync_transition_execution` | `PageTransitionExecution`, `assert_no_pending_page_moves` |
 | `..services.sync_transitions` | `PageTransitionPlan`, `find_missing_source_pages`, `plan_page_transitions` |
@@ -108,28 +114,28 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (2) |
-| Outbound | `src` (38) |
+| Outbound | `src` (39) |
 
-> All 40 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 41 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [GeneratedSurfacePruneError](../entities/GeneratedSurfacePruneError.md) | 283 | `ValueError` | A stale generated page cannot be removed without explicit authority. |
-| [SyncRuntimeRefreshError](../entities/SyncRuntimeRefreshError.md) | 287 | `ValueError` | A runtime-basis transition cannot be applied in the requested mode. |
-| [SyncResult](../entities/SyncResult.md) | 619 | — | — |
-| [_ApplyDiffContext](../entities/ApplyDiffContext.md) | 658 | — | — |
-| [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 680 | — | — |
-| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1677 | — | — |
-| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1703 | — | — |
-| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1710 | — | — |
-| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1716 | — | — |
-| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1722 | — | — |
-| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1738 | — | — |
-| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1781 | — | — |
-| [_ReusedSync](../entities/ReusedSync.md) | 1811 | — | — |
-| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1817 | — | Prior ownership proof and generated pages that cross the live boundary. |
+| [GeneratedSurfacePruneError](../entities/GeneratedSurfacePruneError.md) | 284 | `ValueError` | A stale generated page cannot be removed without explicit authority. |
+| [SyncRuntimeRefreshError](../entities/SyncRuntimeRefreshError.md) | 288 | `ValueError` | A runtime-basis transition cannot be applied in the requested mode. |
+| [SyncResult](../entities/SyncResult.md) | 620 | — | — |
+| [_ApplyDiffContext](../entities/ApplyDiffContext.md) | 659 | — | — |
+| [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 681 | — | — |
+| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1686 | — | — |
+| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1712 | — | — |
+| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1719 | — | — |
+| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1725 | — | — |
+| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1731 | — | — |
+| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1747 | — | — |
+| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1790 | — | — |
+| [_ReusedSync](../entities/ReusedSync.md) | 1820 | — | — |
+| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1826 | — | Prior ownership proof and generated pages that cross the live boundary. |
 
 ## Functions
 
