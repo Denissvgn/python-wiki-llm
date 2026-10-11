@@ -35660,7 +35660,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 4926,
+              "line": 4931,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -35798,7 +35798,7 @@
             "src/llm_wiki_cli/services/concept_identity.py",
             "src/llm_wiki_cli/services/wiki_surface_index.py"
           ],
-          "step_count": 5335,
+          "step_count": 5347,
           "truncated": true
         }
       },
@@ -66228,5 +66228,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:353ffe874eba5dedb4838e4dd05991ca12e715332b5dc9c11143b74b4fb2dc27"
+  "source_hash": "sha256:6b856ad0c5d69eafdefdaeec9cd401d95768efd4a63d91d24a59f92f9467b119"
 }

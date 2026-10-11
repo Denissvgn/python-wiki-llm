@@ -8,11 +8,13 @@
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
 1. `wiki_surface_index.evaluate_surface_index`
 2. `sync_analysis_cache.build_payload`
-3. `knowledge_orchestration.finalize_runtime_knowledge`
-4. `knowledge_orchestration.RuntimeKnowledgeInputs`
-5. `sync_analysis_cache.commitment`
-6. `knowledge_orchestration.runtime_generation_options`
-7. `sync_analysis_cache.save`
+3. `sync_analysis_cache.report_capture`
+4. `knowledge_orchestration.finalize_runtime_knowledge`
+5. `knowledge_orchestration.RuntimeKnowledgeInputs`
+6. `sync_analysis_cache.commitment`
+7. `knowledge_orchestration.runtime_generation_options`
+8. `sync_analysis_cache.report_capture`
+9. `sync_analysis_cache.save`
 
 ## Touches
 

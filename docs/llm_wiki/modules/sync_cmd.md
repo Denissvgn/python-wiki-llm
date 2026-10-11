@@ -24,6 +24,10 @@ and changed observations invalidate the graph shortcut. The planning boundary
 checks live wiki commitments before returning cached analysis; source identity
 and ownership guards remain active. Missing-page recovery and final artifact
 publication use their ordinary owning paths, including explicit full rebuild.
+Capture diagnostics distinguish an unchanged knowledge fast path from a payload
+that is qualified, over budget, or suppressed to preserve an unchanged snapshot.
+Readiness precedes publication; only a successful owning commit permits cache
+saving, and a capture skip never substitutes for required artifact writes.
 
 ## Imports
 

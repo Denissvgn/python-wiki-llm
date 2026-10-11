@@ -93,12 +93,12 @@ sequenceDiagram
     participant p14 as bool (src/llm_wiki_cli/commands…ync_run_options_from_args)
     participant p15 as load_adoption_marker
     participant p16 as isinstance (src/llm_wiki_cli/commands…_cmd.py:_run_sync_options)
-    participant p17 as _print_sync_artifact_actions
+    participant p17 as report_capture
     participant p18 as governance_writer_lock
-    participant p19 as storage_writer_lock
-    participant p20 as _print_cache_stats
+    participant p19 as _print_sync_artifact_actions
+    participant p20 as storage_writer_lock
     participant p21 as _cache_options_from_args
-    participant p22 as write_basis.assert_current
+    participant p22 as _print_cache_stats
     participant p23 as InventoryCacheOptions
     p0->>p1: _sync_run_options_from_args
     p0->>p2: maintenance_write_operation
@@ -119,22 +119,22 @@ sequenceDiagram
     p3-->>p16: isinstance (src/llm_wiki_cli/commands…_cmd.py:_run_sync_options)(prepared, _ReusedSync)
     p1-->>p6: getattr (src/llm_wiki_cli/commands…ync_run_options_from_args)(args, 'dry_run', False)
     p2->>p12: guard_maintenance_owner
-    p3->>p17: _print_sync_artifact_actions
+    p3->>p17: report_capture
     p1-->>p14: bool (src/llm_wiki_cli/commands…ync_run_options_from_args)(getattr(...))
     p2->>p18: governance_writer_lock
-    p3-->>p11: print (src/llm_wiki_cli/commands…_cmd.py:_run_sync_options)(...)
+    p3->>p19: _print_sync_artifact_actions
     p1-->>p6: getattr (src/llm_wiki_cli/commands…ync_run_options_from_args)(args, 'no_plugins', False)
-    p2->>p19: storage_writer_lock
-    p3->>p20: _print_cache_stats
+    p2->>p20: storage_writer_lock
+    p3-->>p11: print (src/llm_wiki_cli/commands…_cmd.py:_run_sync_options)(...)
     p1->>p21: _cache_options_from_args
     p2->>p12: guard_maintenance_owner
-    p3-->>p22: write_basis.assert_current
+    p3->>p22: _print_cache_stats
     p1->>p23: InventoryCacheOptions
 ```
 
-> Call sequence diagram shows 30 of 5334 interactions; 5304 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 5346 interactions; 5316 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 14 of 1854 (1840 omitted); unresolved 1 of 1658 (1657 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 14 of 1857 (1843 omitted); unresolved 0 of 1661 (1661 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -148,7 +148,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/commands/sync_cmd.py:_sync_run_options_from_args` | 2 | - | external | 31 |
 | `src/llm_wiki_cli/commands/sync_cmd.py:_sync_run_options_from_args` | 2 | [src/llm_wiki_cli/services/extraction_jobs.py](../modules/extraction_jobs.md) | internal | 1 |
 | `src/llm_wiki_cli/services/extraction_jobs.py:extraction_job_request_from_args` | 28 | - | external | 5 |
-> Omission summary shows 8 of 1175 groups; 1167 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1180 groups; 1172 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -221,7 +221,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | _sync_run_options_from_args | 4919 | `_sync_run_options_from_args(args)` |
+| run | _sync_run_options_from_args | 4924 | `_sync_run_options_from_args(args)` |
 | _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2370 | `getattr(args, 'src_dir', '.')` |
 | _sync_run_options_from_args | Path (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2371 | `Path(getattr(...))` |
 | _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2371 | `getattr(args, 'wiki_dir', 'docs/llm_wiki')` |
@@ -237,7 +237,7 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 4926 |
+| output | `print` | `run` | 4931 |
 | output | `print` | `_sync_run_options_from_args` | 2391 |
 | output | `print` | `_sync_run_options_from_args` | 2397 |
 | output | `print` | `_sync_run_options_from_args` | 2403 |

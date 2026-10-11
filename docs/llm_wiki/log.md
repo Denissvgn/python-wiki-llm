@@ -1821,3 +1821,29 @@ source/wiki/provider identity, generated ownership and required atomic writes
 retain their qualifying checks. Native writers retain a frozen logical-model
 receipt only within the active validation operation; physical storage and
 standalone reads keep their integrity obligations.
+
+## 2026-10-11
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:73cc2027419ad179b2c90de0b9ed17d274606841f0e3b8e4c5a124ec1f5105cf`
+- Pages created: 0
+- Pages updated: 6
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1568
+- Pages deprecated: 0
+- Semantic fields preserved: 3
+- Moved entities: none
+
+## 2026-10-11
+
+### Static-analysis capture eligibility
+
+Sync exposes bounded capture status, destination eligibility, byte counts and
+explicit skip reasons. Oversized observations retain ordinary generation while
+budget checks stop before constructing their complete encoding. Producer and
+input qualification, generated ownership, native integrity and successful
+owning publication remain prerequisites for reuse.

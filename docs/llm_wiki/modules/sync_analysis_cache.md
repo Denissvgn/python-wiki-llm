@@ -13,6 +13,14 @@ Source, wiki and provider changes during a matched run reject reuse. Cache data
 is saved only after successful artifact publication, and unavailable or corrupt
 cache data never replaces a required write or validation.
 
+Capture reports a fixed status and skip reason, destination eligibility, and
+the exact formatted byte count when within budget. Oversized payloads report a
+lower bound and retain ordinary generation. Counting stops at the unchanged
+64 MiB limit without retaining the complete encoding or copying oversized graph
+observations. Eligible payloads receive an independent observation copy before
+publication. Unsupported producer, plugin, maintenance and governance contexts
+remain ineligible; missing destinations and failed cache writes are explicit.
+
 ## Imports
 
 | Source | Symbols |
@@ -24,7 +32,7 @@ cache data never replaces a required write or validation.
 | `.inventory_cache` | `InventoryCacheStats`, `prepare_cache_options` |
 | `.io` | `first_unsafe_path_component`, `write_json_atomic` |
 | `.knowledge_envelope` | `hash_inventory`, `INVENTORY_HASH_EXTENSION` |
-| `.knowledge_evidence` | `hash_json`, `formatted_json_bytes`, `sha256_bytes` |
+| `.knowledge_evidence` | `hash_json`, `sha256_bytes` |
 | `.knowledge_generation` | `_graph_concepts` |
 | `.knowledge_reuse` | `implementation_hash`, `REUSE_INPUT_KEY` |
 | `.knowledge_storage` | `KnowledgeStorageError` |
@@ -34,7 +42,7 @@ cache data never replaces a required write or validation.
 | `.section_ownership` | `observe_page_sections` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
-| `dataclasses` | `asdict` |
+| `dataclasses` | `asdict`, `fields` |
 | `json` | `json` |
 | `pathlib` | `Path` |
 
@@ -71,8 +79,11 @@ flowchart LR
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `input_key` | `(options, snapshot, manifest, generation_inputs)` | `@capture_operation` | Bind source bytes, policy, schema, producer, helpers and generation options. |
+| `input_key` | `(options, snapshot, manifest, generation_inputs, *, explain = False)` | `@capture_operation` | Bind source bytes, policy, schema, producer, helpers and generation options. |
+| `cache_destination` | `(options)` | — | Return the bounded eligibility label independently of capture content. |
 | `cache_path` | `(options)` | — | — |
+| `report_capture` | `(options, status, reason, *, payload_bytes = None, over_budget = False)` | — | Emit fixed vocabulary and counts, never source content or unbounded paths. |
+| `payload_size` | `(payload)` | — | Count the exact writer encoding up to the budget, without retaining it. |
 | `load` | `(options, snapshot, manifest, generation_inputs, state)` | `@observed_phase('sync_analysis_reuse')` | A cache is advisory; only exact prior committed content authorizes reuse. |
 | `build_payload` | `(options, prepared, surface)` | — | — |
 | `commitment` | `(payload)` | — | — |
