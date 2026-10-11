@@ -106,7 +106,9 @@ initialization. Every agent can use explicit sync, lint, and reviewed prompts;
 LLM Wiki does not install Git hooks.
 
 [Agent setup](docs/wiki-guide.md#agent-support) explains instruction files and
-skill export. The [MCP server](docs/cli-reference.md#mcp) provides read-only wiki
+skill export. [Workflow installation and upgrades](docs/native-agent-workflow.md#install-the-workflow-in-another-project)
+cover setup in another project, all agent targets, and the `--no-skills` inline fallback.
+The [MCP server](docs/cli-reference.md#mcp) provides read-only wiki
 access, and [bundled skills](docs/cli-reference.md#skills) guide documentation
 and analysis workflows.
 

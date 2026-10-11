@@ -31,6 +31,115 @@ An explicit task request gathers qualified source and wiki evidence. The provide
 reads and reports; your coding host decides what to include, edit, execute and
 publish. Existing context calls retain their defaults.
 
+## Install the workflow in another project
+
+Run the following commands from the target project's root, using its own
+Python 3.10+ virtual environment at `.venv/`. Package installation supplies the
+CLI and bundled workflow; initialization writes the project-specific agent
+instructions and wiki scaffold.
+
+For a released package that includes the default development workflow:
+
+```bash
+.venv/bin/pip install agent-wiki-cli
+.venv/bin/llm-wiki init --agent generic
+```
+
+To use a source checkout, including changes that have not been published,
+install that checkout instead. Replace the quoted path with its absolute
+location; keep running commands from the target project:
+
+```bash
+.venv/bin/pip install "/absolute/path/python-wiki-llm"
+.venv/bin/llm-wiki init --agent generic
+```
+
+Choose the agent's instruction format with `--agent`:
+
+| Agent target | Project instruction file | Managed reference directory |
+|---|---|---|
+| `generic` | `AGENTS.md` | `.llm-wiki/skills/wiki-reference/` |
+| `claude` | `CLAUDE.md` | `.claude/skills/wiki-reference/` |
+| `cursor` | `.cursorrules` | `.llm-wiki/skills/wiki-reference/` |
+| `copilot` | `.github/copilot-instructions.md` | `.llm-wiki/skills/wiki-reference/` |
+| `aider` | `.aider.conf.yml` | `.llm-wiki/skills/wiki-reference/` |
+| `opencode` | `.opencode/instructions.md` | `.llm-wiki/skills/wiki-reference/` |
+
+Use `generic` for Codex or another agent that reads `AGENTS.md`. Initialization
+preserves existing user instructions outside the managed block and installs
+`references/development-workflow.md` within the managed reference directory.
+Start a new agent session, or reload its project instructions, so it reads the
+workflow. The default procedure is available without separately installing the
+optional `native-coding` skill.
+
+The default wiki scaffold is `docs/llm_wiki/`. To choose another location, pass
+`--wiki-dir .wiki` to initialization and keep that same path in subsequent
+commands. Initialization creates the scaffold; bootstrap populates the wiki
+from the project's sources:
+
+```bash
+.venv/bin/llm-wiki bootstrap --src-dir . --wiki-dir docs/llm_wiki
+```
+
+Use the actual source root and configured source selection. For languages that
+need extractor helpers, install the relevant toolchain and explicitly prepare
+the helpers with `init --prepare-extractors` or
+`llm-wiki prepare-extractors --src-dir .`; see
+[helper setup](cli-reference.md#prepare-extractors). Source-only task evidence
+can be used before bootstrap, following the [source-only route](#source-only-task-without-a-wiki).
+
+### Use the inline fallback
+
+For an agent or project that needs instructions in a single file, skip the
+managed reference installation:
+
+```bash
+.venv/bin/llm-wiki init --agent generic --no-skills
+```
+
+This writes expanded, self-contained instructions, including the development
+procedure, into the selected agent instruction file. It records the preference
+for later initialization and upgrades. An existing reference directory is
+preserved, and read-only context interfaces remain available. Initialization
+and upgrade also use expanded instructions when the managed reference is
+unavailable or cannot be verified current.
+
+### Upgrade an initialized project
+
+Update the package in the target project's environment, then refresh its
+managed instructions from that project's root:
+
+```bash
+.venv/bin/pip install --upgrade agent-wiki-cli
+.venv/bin/llm-wiki upgrade
+```
+
+For a source checkout, replace the package update command with
+`.venv/bin/pip install --upgrade "/absolute/path/python-wiki-llm"`. Package
+updates alone do not refresh project instructions. For a custom wiki location,
+use `.venv/bin/llm-wiki upgrade --wiki-dir .wiki`.
+
+Upgrade retains the configured agent, source-selection preference and skills
+preference unless explicitly overridden. It refreshes the managed instruction
+block, reference topics and missing scaffold structure while preserving user
+instructions outside the managed block and existing wiki prose. When references
+are enabled, expected managed topic files are replaced even if edited locally;
+keep project-specific rules outside that tree or back up edits before upgrading.
+Conflicting or unsafe entries are preserved and reported. See the
+[managed skills lifecycle](cli-reference.md#skills) for recovery details.
+
+To change the instruction format, use `upgrade --agent claude` or another
+supported target. To change the skills preference explicitly:
+
+```bash
+.venv/bin/llm-wiki upgrade --no-skills
+.venv/bin/llm-wiki upgrade --skills
+```
+
+The first command selects inline instructions; the second restores managed
+references and compact routing when verification succeeds. Choose the command
+for your desired mode, then reload the agent's project instructions.
+
 ## Choose an interface
 
 | Operation | Python API | CLI | MCP |

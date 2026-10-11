@@ -239,6 +239,10 @@ CPP branches. Source coordinates then refer to the supplied snapshot.
 | `cursor` | `.cursorrules` | explicit sync or reviewed IDE prompt |
 | `generic` | `AGENTS.md` | explicit sync or reviewed IDE prompt |
 
+For package installation, project initialization, managed instruction upgrades,
+and the `--no-skills` inline fallback, follow
+[workflow installation in another project](native-agent-workflow.md#install-the-workflow-in-another-project).
+
 Use explicit `sync` and `lint` commands with any agent. `generate-prompt`
 creates a prompt for review when needed. LLM Wiki does not install Git hooks. The explicit
 `trigger-agent` command can still delegate to a CLI agent; for Claude, this uses
