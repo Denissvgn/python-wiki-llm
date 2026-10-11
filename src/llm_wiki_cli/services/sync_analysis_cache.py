@@ -27,14 +27,23 @@ class SyncAnalysisMutationError(ValueError):
 
 
 @capture_operation
-def input_key(options, snapshot, manifest, generation_inputs):
+def input_key(options, snapshot, manifest, generation_inputs, *, explain=False):
     """Bind source bytes, policy, schema, producer, helpers and generation options."""
-    if (manifest.maintenance_state is not None
-            or options.initialize_surfaces or options.knowledge_format is not None
-            or any((root / ".llm-wiki/plugins.lock.json").exists()
-                   for root in (Path.cwd(), snapshot.root))
-            or (options.wiki_dir / ".llm-wiki-governance.json").exists()):
+    def skipped(reason):
+        if explain:
+            report_capture(options, "skipped", reason)
         return None
+
+    for excluded, reason in (
+        (manifest.maintenance_state is not None, "maintenance-state"),
+        (bool(options.initialize_surfaces), "surface-initialization"),
+        (options.knowledge_format is not None, "storage-format-requested"),
+        (any((root / ".llm-wiki/plugins.lock.json").exists()
+             for root in (Path.cwd(), snapshot.root)), "plugin-lock-present"),
+        ((options.wiki_dir / ".llm-wiki-governance.json").exists(), "governance-present"),
+    ):
+        if excluded:
+            return skipped(reason)
     analysis = capture_analysis(EXTRACTOR_REGISTRY, source_root=snapshot.root,
                                 helper_cache_dir=options.helper_cache_dir,
                                 languages={k for k, v in snapshot.files_by_language.items() if v})
@@ -42,8 +51,10 @@ def input_key(options, snapshot, manifest, generation_inputs):
         "llm-wiki/extractor/" + k for k, v in snapshot.files_by_language.items() if v
     }
     implementation = implementation_hash()
-    if not active <= set(analysis) or implementation is None:
-        return None
+    if not active <= set(analysis):
+        return skipped("unqualified-analysis")
+    if implementation is None:
+        return skipped("unqualified-implementation")
     inputs = dict(generation_inputs)
     inputs.pop(REUSE_INPUT_KEY, None)
     return {
@@ -59,19 +70,54 @@ def input_key(options, snapshot, manifest, generation_inputs):
     }
 
 
-def cache_path(options):
+def cache_destination(options):
+    """Return the bounded eligibility label independently of capture content."""
+    if not options.cache_options.enabled:
+        return None, "disabled"
     cache_options = prepare_cache_options(options.src_dir, options.cache_options)
     destination = cache_options.destination if cache_options is not None else None
-    if not options.cache_options.enabled or destination is None or destination.status == "failed" or destination.path is None:
-        return None
-    return destination.path.with_name(FILENAME)
+    if destination is None or destination.path is None:
+        return None, "failed" if destination is not None and destination.status == "failed" else "unconfigured"
+    if destination.status == "failed":
+        return None, "failed"
+    path = destination.path.with_name(FILENAME)
+    if first_unsafe_path_component(path) is not None:
+        return None, "redirected"
+    return path, "eligible"
+
+
+def cache_path(options):
+    return cache_destination(options)[0]
+
+
+def report_capture(options, status, reason, *, payload_bytes=None, over_budget=False):
+    """Emit fixed vocabulary and counts, never source content or unbounded paths."""
+    destination = cache_destination(options)[1]
+    size = "unavailable" if payload_bytes is None else str(payload_bytes)
+    if over_budget:
+        size = f">{MAX_BYTES}"
+    print(f"Sync analysis capture: {status} ({reason}); destination={destination}; "
+          f"payload_bytes={size}; limit_bytes={MAX_BYTES}", flush=True)
+
+
+def payload_size(payload):
+    """Count the exact writer encoding up to the budget, without retaining it."""
+    encoder = json.JSONEncoder(ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)
+    size = 1  # The writer's trailing newline.
+    for chunk in encoder.iterencode(payload):
+        if len(chunk) > MAX_BYTES - size:
+            return None
+        size += len(chunk.encode("utf-8"))
+        if size > MAX_BYTES:
+            return None
+    return size
 
 
 @observed_phase("sync_analysis_reuse")
 def load(options, snapshot, manifest, generation_inputs, state):
     """A cache is advisory; only exact prior committed content authorizes reuse."""
-    path = cache_path(options)
-    reason = "disabled"
+    path, destination = cache_destination(options)
+    reason = "disabled" if destination == "disabled" else "destination-" + destination
     payload = None
     if options.cache_options.rebuild or options.rebuild_knowledge:
         reason = "rebuild-requested"
@@ -113,18 +159,31 @@ def load(options, snapshot, manifest, generation_inputs, state):
 
 def build_payload(options, prepared, surface):
     result = prepared.inventory_result
-    if (prepared.seed_manifest or prepared.repair_only or result.failed
-            or prepared.entrypoint_analysis is None or prepared.contracts is None
-            or result.plugin_components or result.producer_plugin_components
-            or any(v != EXTRACTOR_REGISTRY.get(k) for k, v in result.extractor_registry.items())):
+    destination = cache_destination(options)[1]
+    if destination != "eligible":
+        report_capture(options, "skipped", "destination-" + destination)
         return None
-    from dataclasses import asdict
+    for excluded, reason in (
+        (prepared.seed_manifest, "seed-manifest"),
+        (prepared.repair_only, "manifest-repair"),
+        (result.failed, "inventory-failed"),
+        (prepared.entrypoint_analysis is None, "entrypoints-unavailable"),
+        (prepared.contracts is None, "contracts-unavailable"),
+        (bool(result.plugin_components), "extractor-plugins"),
+        (bool(result.producer_plugin_components), "producer-plugins"),
+        (any(v != EXTRACTOR_REGISTRY.get(k) for k, v in result.extractor_registry.items()), "custom-extractors"),
+    ):
+        if excluded:
+            report_capture(options, "skipped", reason)
+            return None
+    from dataclasses import asdict, fields
     manifest = prepared.manifest.with_generation_state(
         surfaces=prepared.surface_plan.surfaces,
         generation_inputs=prepared.surface_plan.generation_inputs,
     )
-    key = input_key(options, prepared.source_snapshot, manifest, prepared.surface_plan.generation_inputs)
+    key = input_key(options, prepared.source_snapshot, manifest, prepared.surface_plan.generation_inputs, explain=True)
     if prepared.analysis_input_key is not None and key != prepared.analysis_input_key:
+        report_capture(options, "aborted", "analysis-inputs-changed")
         raise SyncAnalysisMutationError("analysis inputs changed during cached sync")
     if key is None:
         return None
@@ -138,16 +197,21 @@ def build_payload(options, prepared, surface):
         "entity_occurrence_page_map": [[*k, v] for k, v in sorted(maps.entity_occurrence_page_cache.items())],
         "entrypoint_analysis": asdict(prepared.entrypoint_analysis),
         "contracts": prepared.contracts,
-        "graph_observations": asdict(prepared.graph_observations),
+        "graph_observations": {field.name: getattr(prepared.graph_observations, field.name)
+                               for field in fields(prepared.graph_observations)},
     }
     from .knowledge_generation import _graph_concepts
     payload["graph_concepts_hash"] = hash_json([asdict(v) for v in _graph_concepts(
         surface.pages, module_page_map=maps.module_page_map,
         occurrence_page_map=maps.entity_occurrence_page_cache,
     )])
-    from .knowledge_evidence import formatted_json_bytes
-    if len(formatted_json_bytes(payload)) > MAX_BYTES:
+    size = payload_size(payload)
+    if size is None:
+        report_capture(options, "skipped", "payload-over-budget", over_budget=True)
         return None
+    # Only eligible payloads need an isolated observation copy for publication.
+    payload["graph_observations"] = asdict(prepared.graph_observations)
+    report_capture(options, "ready", "qualified-payload", payload_bytes=size)
     return payload
 
 
@@ -187,13 +251,22 @@ def generated_sections_match(root, artifacts):
 
 def save(options, payload):
     path = cache_path(options)
-    if path is None or payload is None or options.dry_run:
+    if path is None:
+        report_capture(options, "skipped", "destination-" + cache_destination(options)[1])
+        return
+    if payload is None:
+        report_capture(options, "skipped", "payload-unavailable")
+        return
+    if options.dry_run:
+        report_capture(options, "skipped", "dry-run")
         return
     try:
         if first_unsafe_path_component(path) is not None:
             raise OSError("redirected analysis cache destination")
         write_json_atomic(path, payload)
+        report_capture(options, "saved", "committed-payload")
     except (OSError, ValueError) as exc:
+        report_capture(options, "skipped", "cache-write-failed")
         warn(options.cache_options.warning, f"Sync analysis cache was not saved: {exc}")
 
 

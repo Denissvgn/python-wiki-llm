@@ -226,3 +226,54 @@ def test_strict_readers_still_reject_actual_source_drift(primed):
                              "--format", "json", "--cache-dir", "cache"], capture_output=True, text=True)
     assert result.returncode != 0
     assert not json.loads(result.stdout)["ok"]
+
+
+def test_oversized_capture_still_completes_required_writes(primed, monkeypatch, capsys):
+    edit(text="Oversized cache must not prevent the owning commit.")
+    marker = Path("wiki/.llm-wiki-manifest.json").read_bytes()
+    monkeypatch.setattr(sync_analysis_cache, "MAX_BYTES", 128)
+    sync()
+    assert "skipped (payload-over-budget)" in capsys.readouterr().out
+    assert Path("wiki/.llm-wiki-manifest.json").read_bytes() != marker
+    assert load_knowledge_state("wiki").knowledge is not None
+    assert build_report("wiki", "src", strict=True).passed
+
+
+def test_oversized_cache_rejected_before_content_read(primed, monkeypatch):
+    cache = Path("cache", sync_analysis_cache.FILENAME)
+    with cache.open("wb") as handle:
+        handle.truncate(sync_analysis_cache.MAX_BYTES + 1)
+    edit(text="Oversized file requires ordinary generation.")
+    from llm_wiki_cli.services import knowledge_storage_io
+    import os
+    identity = cache.stat()
+    if not hasattr(os, "pread"):
+        pytest.skip("descriptor read interception requires pread")
+    original = os.pread
+    def guarded(fd, *args):
+        current = os.fstat(fd)
+        if (current.st_dev, current.st_ino) == (identity.st_dev, identity.st_ino):
+            pytest.fail("oversized cache contents were read")
+        return original(fd, *args)
+    monkeypatch.setattr(knowledge_storage_io.os, "pread", guarded)
+    with patch.object(sync_cmd, "_extract_current_inventory", wraps=sync_cmd._extract_current_inventory) as extract:
+        sync()
+    assert extract.call_count == 1
+    assert build_report("wiki", "src", strict=True).passed
+
+
+def test_unchanged_fast_path_explains_capture_skip(primed, capsys):
+    sync()
+    assert "capture: skipped (unchanged-knowledge)" in capsys.readouterr().out
+
+
+def test_unchanged_snapshot_does_not_add_commitment_to_warm_cache(primed, capsys):
+    sync(no_cache=True, rebuild_knowledge=True)
+    state = load_knowledge_state('wiki')
+    assert state.knowledge is not None
+    assert sync_analysis_cache.EXTENSION not in state.knowledge.extensions
+    sync(rebuild_knowledge=True)
+    assert 'capture: skipped (unchanged-snapshot)' in capsys.readouterr().out
+    final = load_knowledge_state('wiki').knowledge
+    assert final is not None
+    assert sync_analysis_cache.EXTENSION not in final.extensions

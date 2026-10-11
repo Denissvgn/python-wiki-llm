@@ -4583,6 +4583,8 @@ def _finalize_prepared_sync(
             and reuse_basis is not None
             and reuse_basis["source_snapshot_hash"] == prior.knowledge.bundle.snapshot.source_snapshot_hash
             and reuse_basis["markdown_snapshot_hash"] == prior.knowledge.bundle.snapshot.markdown_snapshot_hash):
+        if analysis_payload is not None:
+            sync_analysis_cache.report_capture(options, "skipped", "unchanged-snapshot")
         analysis_payload = None  # Never change an established no-op just to seed a cache.
     artifact_result = finalize_runtime_knowledge(
         RuntimeKnowledgeInputs(
@@ -4658,9 +4660,12 @@ def _finalize_prepared_sync(
     )
     _print_sync_artifact_actions(artifact_result)
     if dry_run:
+        if analysis_payload is not None:
+            sync_analysis_cache.report_capture(options, "skipped", "dry-run")
         return artifact_result
 
-    sync_analysis_cache.save(options, analysis_payload)
+    if analysis_payload is not None:
+        sync_analysis_cache.save(options, analysis_payload)
     if prepared.repair_only:
         invalid_hashes = len(_invalid_manifest_hash_paths(prepared.manifest))
         print(
@@ -4944,6 +4949,7 @@ def _run_sync_options(options, write_basis=None) -> None:
     if prepared is None:
         return
     if isinstance(prepared, _ReusedSync):
+        sync_analysis_cache.report_capture(options, "skipped", "unchanged-knowledge")
         _print_sync_artifact_actions(prepared.artifacts)
         print(
             "Dry-run: wiki is up to date." if options.dry_run else "Wiki is up to date."

@@ -25,6 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Static-analysis cache capture reports destination eligibility, skip reasons
+  and payload size. Oversized checks stop at the existing 64 MiB budget without
+  retaining the complete encoding; ordinary wiki generation continues.
+
 - Discovery impact queries distinguish Python syntax failures from modules
   without documentable content and report default-excluded Go test files as
   policy exclusions rather than unsupported extensions.
