@@ -25,6 +25,7 @@ from llm_wiki_cli.services.extractor_helpers import (
     resolve_helper_cache_root,
 )
 from llm_wiki_cli.services.inventory_cache import ENV_CACHE_DIR
+from llm_wiki_cli.services.knowledge_storage_diagnostics import storage_report
 from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
 
 
@@ -251,6 +252,7 @@ def test_documentation_dogfood_bootstrap_site_and_source_immutability(
             format="json",
             source_adapter=True,
             allow_external_src=False,
+            knowledge_format="sharded-v2",
         )
     )
     bootstrap_summary = json.loads(capsys.readouterr().out)
@@ -287,6 +289,11 @@ def test_documentation_dogfood_bootstrap_site_and_source_immutability(
     assert site_check["issues"] == []
 
     wiki_dir = source / "docs" / "llm_wiki"
+    storage = storage_report(wiki_dir, full=True)
+    assert storage["ok"] is True
+    assert storage["format"] == "sharded-v2"
+    assert storage["integrity"] == "valid-committed-snapshot"
+    assert storage["failures"] == []
     surface = json.loads(
         (wiki_dir / SURFACE_INDEX_FILENAME).read_text(encoding="utf-8")
     )
