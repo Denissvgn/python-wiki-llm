@@ -138,9 +138,9 @@ sequenceDiagram
     p1-->>p27: deepcopy (src/llm_wiki_cli/services…et.py:_normalized_request)(dict(...))
 ```
 
-> Call sequence diagram shows 30 of 5409 interactions; 5379 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 5408 interactions; 5378 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 10 of 1698 (1688 omitted); unresolved 7 of 1843 (1836 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 10 of 1698 (1688 omitted); unresolved 7 of 1841 (1834 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

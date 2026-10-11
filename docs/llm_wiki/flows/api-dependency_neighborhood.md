@@ -95,9 +95,9 @@ sequenceDiagram
     p13->>p20: DocumentationQueryError
 ```
 
-> Call sequence diagram shows 30 of 952 interactions; 922 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 953 interactions; 923 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 8 of 381 (373 omitted); unresolved 4 of 225 (221 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 8 of 381 (373 omitted); unresolved 4 of 226 (222 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

@@ -548,7 +548,10 @@ def _normalize_only_files(
     return normalized
 
 
-def _language_for_path(path: Path, include_tests: frozenset[str]) -> str | None:
+def _language_selection_for_path(
+    path: Path, include_tests: frozenset[str]
+) -> tuple[str | None, str | None]:
+    """Return recognized language and any language test-policy exclusion."""
     suffix = path.suffix
     for language, extensions in LANGUAGE_EXTENSIONS.items():
         if suffix not in extensions:
@@ -558,9 +561,14 @@ def _language_for_path(path: Path, include_tests: frozenset[str]) -> str | None:
             and path.name.endswith("_test.go")
             and "go" not in include_tests
         ):
-            return None
-        return language
-    return None
+            return language, "go-tests-excluded"
+        return language, None
+    return None, None
+
+
+def _language_for_path(path: Path, include_tests: frozenset[str]) -> str | None:
+    language, exclusion = _language_selection_for_path(path, include_tests)
+    return None if exclusion else language
 
 
 def _unsupported_language_for_path(path: Path) -> str | None:

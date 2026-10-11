@@ -77,6 +77,19 @@ Invalid paths, inconsistent protected wiki state, and source/wiki/control-file
 mutation still abort the read. Normal extraction and legacy impact requests
 retain their operational error behavior.
 
+The built-in Python extractor reports parser failures as `failed` with
+`reason: "syntax-error"` and `failure_scope: "file"`. A parsed module with no
+documentable content reports `no-documentable-content`; both can have
+`present: false` while the file exists. Extractors without attributable outcomes
+retain `unavailable` with `reason: "outcome-not-reported"`.
+
+Go `_test.go` files are excluded by the default language inclusion policy.
+Discovery reports `selection_state: "excluded"`,
+`extraction_state: "not-attempted"`, and `reason: "go-tests-excluded"`, keeping
+the filesystem observation separate. Their extension is supported. Source
+snapshot and extraction interfaces that accept `include_tests=["go"]` can
+include them; impact requests do not accept an `include_tests` option.
+
 JavaScript `.js`, `.jsx`, `.mjs`, and `.cjs` share source discovery and hashing.
 Static ESM imports, including side-effect imports, and direct unshadowed
 `require("literal")` calls supply dependency observations. Function-scoped

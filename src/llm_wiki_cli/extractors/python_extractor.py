@@ -1422,6 +1422,7 @@ def _scan_python_files(
     defer_inventory_model_kinds: bool = False,
     implementation_observations: dict[str, dict] | None = None,
     implementation_analysis_hash: str | None = None,
+    path_outcomes: dict[str, dict] | None = None,
 ) -> dict:
     """Scan Python files under *src_dir* and return a raw inventory dict.
 
@@ -1455,6 +1456,11 @@ def _scan_python_files(
                 source = data.decode("cp1252")
             tree = ast.parse(source, filename=str(py_file))
         except UnicodeDecodeError:
+            if path_outcomes is not None:
+                path_outcomes[rel.as_posix()] = {
+                    "extraction_state": "failed", "reason": "source-decode-failed",
+                    "failure_scope": "file",
+                }
             if implementation_observations is not None:
                 implementation_observations[rel.as_posix()] = capture_implementation(None, data, rel.as_posix(), configured=implementation_producer(implementation_analysis_hash), reason="unsupported-syntax")
             print(
@@ -1463,6 +1469,11 @@ def _scan_python_files(
             )
             continue
         except OSError as exc:
+            if path_outcomes is not None:
+                path_outcomes[rel.as_posix()] = {
+                    "extraction_state": "failed", "reason": "source-read-failed",
+                    "failure_scope": "file",
+                }
             if implementation_observations is not None:
                 implementation_observations[rel.as_posix()] = capture_implementation(None, None, rel.as_posix(), configured=implementation_producer(implementation_analysis_hash), reason="missing-source")
             print(
@@ -1471,6 +1482,11 @@ def _scan_python_files(
             )
             continue
         except SyntaxError:
+            if path_outcomes is not None:
+                path_outcomes[rel.as_posix()] = {
+                    "extraction_state": "failed", "reason": "syntax-error",
+                    "failure_scope": "file",
+                }
             if implementation_observations is not None:
                 implementation_observations[rel.as_posix()] = capture_implementation(None, data, rel.as_posix(), configured=implementation_producer(implementation_analysis_hash), reason="unsupported-syntax")
             continue
@@ -1540,6 +1556,11 @@ def _scan_python_files(
             or ((module_calls or has_import_bindings) and not is_module_alias)
             or include_empty
         )
+        if path_outcomes is not None:
+            path_outcomes[rel.as_posix()] = {
+                "extraction_state": "extracted" if has_content else "no-documentable-content",
+                "reason": "inventory-entry" if has_content else "no-documentable-content",
+            }
         if has_content:
             file_entry: dict[str, object] = {
                 "classes": visitor.classes,
@@ -1625,6 +1646,7 @@ class PythonExtractor:
         self.last_data_effect_observations: dict | None = None
         self.last_import_observations: dict | None = None
         self.last_implementation_observations: dict | None = None
+        self.last_path_outcomes: dict[str, dict] | None = None
 
     def extract(
         self,
@@ -1638,6 +1660,7 @@ class PythonExtractor:
         defer_inventory_model_kinds: bool = False,
         capture_implementation_observations: bool = False,
         implementation_analysis_hash: str | None = None,
+        diagnostics: bool = False,
     ) -> dict:
         """Scan *src_dir* for Python files and return an inventory dict.
 
@@ -1656,6 +1679,7 @@ class PythonExtractor:
         self.last_data_effect_observations = None
         self.last_import_observations = None
         self.last_implementation_observations = None
+        self.last_path_outcomes = {} if diagnostics else None
         implementations: dict[str, dict] | None = {} if capture_implementation_observations else None
         inventory = _scan_python_files(
             src_dir,
@@ -1668,6 +1692,7 @@ class PythonExtractor:
             defer_inventory_model_kinds=defer_inventory_model_kinds,
             implementation_observations=implementations,
             implementation_analysis_hash=implementation_analysis_hash,
+            path_outcomes=self.last_path_outcomes,
         )
         for entry in inventory.values():
             entry["language"] = "python"

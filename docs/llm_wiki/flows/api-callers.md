@@ -92,9 +92,9 @@ sequenceDiagram
     p14->>p21: normalize_documentation_query_limit
 ```
 
-> Call sequence diagram shows 30 of 901 interactions; 871 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 902 interactions; 872 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 7 of 366 (359 omitted); unresolved 6 of 208 (202 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 7 of 366 (359 omitted); unresolved 6 of 209 (203 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

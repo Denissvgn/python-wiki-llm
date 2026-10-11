@@ -97,9 +97,9 @@ sequenceDiagram
     p13->>p25: WikiSurfaceError
 ```
 
-> Call sequence diagram shows 30 of 954 interactions; 924 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 955 interactions; 925 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 6 of 382 (376 omitted); unresolved 6 of 217 (211 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 6 of 382 (376 omitted); unresolved 6 of 218 (212 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

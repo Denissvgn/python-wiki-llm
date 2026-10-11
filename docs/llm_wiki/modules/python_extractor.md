@@ -4,7 +4,13 @@
 
 ## Description
 
-Python AST extractor for agent-wiki-cli.
+Extracts Python declarations, bindings and optional implementation observations
+with the built-in AST parser. Optional path diagnostics are owned by the scan
+that reads and parses each selected file: syntax, decoding and read failures
+retain a file scope, while successful parsing without documentable content
+remains distinct from failure. The collector is reset for every extraction and
+is disabled for ordinary calls; diagnostic collection does not change which
+entries the inventory includes or the meaning of `include_empty`.
 
 ## Imports
 
@@ -89,7 +95,7 @@ flowchart LR
 |-------|------|-------|-------------|
 | [_DataEffectVisitor](../entities/DataEffectVisitor.md) | 520 | `ast.NodeVisitor` | — |
 | [ComponentVisitor](../entities/ComponentVisitor.md) | 1063 | `ast.NodeVisitor` | — |
-| [PythonExtractor](../entities/PythonExtractor.md) | 1618 | — | Extractor for Python source files using the built-in :mod:`ast` module. |
+| [PythonExtractor](../entities/PythonExtractor.md) | 1639 | — | Extractor for Python source files using the built-in :mod:`ast` module. |
 
 ## Functions
 
@@ -138,4 +144,4 @@ flowchart LR
 | `_is_main_guard` | `(test) -> bool` | — | Detect an ``if __name__ == "__main__"`` test node. |
 | `_collect_type_checking_names` | `(tree: ast.Module) -> set[str]` | — | Names bound to ``typing.TYPE_CHECKING`` anywhere in *tree*. |
 | `_is_type_checking_test` | `(test, names: set[str]) -> bool` | — | Detect an ``if TYPE_CHECKING:`` / ``if typing.TYPE_CHECKING:`` test. |
-| `_scan_python_files` | `(src_dir: str, deep: bool = False, only_files: list[str] \| None = None, include_empty: bool = False, source_files: list[str] \| None = None, data_effect_observations: list[dict] \| None = None, import_location_observations: list[dict] \| None = None, defer_inventory_model_kinds: bool = False, implementation_observations: dict[str, dict] \| None = None, implementation_analysis_hash: str \| None = None) -> dict` | — | Scan Python files under *src_dir* and return a raw inventory dict. |
+| `_scan_python_files` | `(src_dir: str, deep: bool = False, only_files: list[str] \| None = None, include_empty: bool = False, source_files: list[str] \| None = None, data_effect_observations: list[dict] \| None = None, import_location_observations: list[dict] \| None = None, defer_inventory_model_kinds: bool = False, implementation_observations: dict[str, dict] \| None = None, implementation_analysis_hash: str \| None = None, path_outcomes: dict[str, dict] \| None = None) -> dict` | — | Scan Python files under *src_dir* and return a raw inventory dict. |

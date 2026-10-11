@@ -1188,6 +1188,8 @@ def _build_extraction_kwargs(
         kwargs["include_empty"] = context.request.include_empty
         if is_builtin:
             kwargs["defer_inventory_model_kinds"] = True
+            if context.request.capture_path_outcomes:
+                kwargs["diagnostics"] = True
         if is_builtin and context.request.capture_data_effect_observations:
             kwargs["capture_data_effect_observations"] = (
                 context.request.capture_data_effect_observations

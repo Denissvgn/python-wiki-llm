@@ -1765,3 +1765,28 @@ Aligned search orientation, source-reading navigation and documentation review g
 - Pages deprecated: 0
 - Semantic fields preserved: 1
 - Moved entities: none
+
+## 2026-10-11
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:da4d36ee996a75f54d37c26b06cb570217adf08f7f988f15e4d4d7fe909daf6c`
+- Pages created: 0
+- Pages updated: 44
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1524
+- Pages deprecated: 0
+- Semantic fields preserved: 5
+- Moved entities: none
+
+## 2026-10-11
+
+### Supplied path diagnostics
+
+Python extraction now owns optional file-scoped parse/read outcomes and distinguishes
+parsed modules without documentable content. Discovery retains recognized Go source
+identity when default language policy excludes `_test.go` files, preserving separate
+filesystem, selection and extraction observations and legacy inventory semantics.

@@ -4,7 +4,14 @@
 
 ## Description
 
-Supplied-path facts derived from captured discovery policy and extraction.
+Separates supplied-path filesystem observations from captured discovery
+eligibility. Source-selection exclusions prevent a metadata read; other
+exclusions preserve the permitted no-follow filesystem observation. Recognized
+Go test files excluded by the default language policy report
+`go-tests-excluded` and `not-attempted`, rather than an unsupported extension.
+Included source files without an attributable extraction outcome remain
+unavailable until the query builder merges an extractor-owned result. Inventory
+absence cannot establish a missing file, parser failure or completed extraction.
 
 ## Imports
 
@@ -13,7 +20,7 @@ Supplied-path facts derived from captured discovery policy and extraction.
 | `..config` | `EXCLUDED_DIRS`, `GitIgnoreMatcher`, `PathValidationError`, `is_agent_worktree_path` |
 | `..extractors.common` | `is_bundled_helper_implementation_path`, `is_generated_javascript_bundle_path` |
 | `.source_selection` | `path_is_selected` |
-| `.source_snapshot` | `SourceSnapshot`, `_language_for_path`, `_is_rescuable_typescript_src_lib_file` |
+| `.source_snapshot` | `SourceSnapshot`, `_language_selection_for_path`, `_is_rescuable_typescript_src_lib_file` |
 | `__future__` | `annotations` |
 | `pathlib` | `Path` |
 | `stat` | `stat` |

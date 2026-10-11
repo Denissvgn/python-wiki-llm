@@ -10,6 +10,14 @@ safe inventory-cache entries, schedules only declared parallel-safe work, and
 merges deterministic per-language results. Callers receive both the inventory
 and explicit extractor status, cache, plugin, and source-snapshot metadata.
 
+Opt-in path diagnostics pass the request to the built-in Python and JavaScript
+extractors and carry their attributable file outcomes through extraction and
+inventory results. Inventory membership remains separate: a missing entry with
+no reported outcome is unavailable, and a failed extractor batch retains its
+batch scope. Legacy calls and trusted extractors without these observations
+keep their existing behavior; missing inventory alone never proves a parser
+failure.
+
 ## Imports
 
 | Source | Symbols |
@@ -94,7 +102,7 @@ flowchart LR
 | [_ExtractionOutcome](../entities/ExtractionOutcome.md) | 268 | — | — |
 | [_InventoryBuildContext](../entities/InventoryBuildContext.md) | 281 | — | — |
 | [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 303 | — | — |
-| [_ComposeParserState](../entities/ComposeParserState.md) | 3275 | — | — |
+| [_ComposeParserState](../entities/ComposeParserState.md) | 3277 | — | — |
 
 ## Functions
 

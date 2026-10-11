@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Discovery impact queries distinguish Python syntax failures from modules
+  without documentable content and report default-excluded Go test files as
+  policy exclusions rather than unsupported extensions.
+
 - Expanded maintenance and prompt recipes retain configured wiki paths, and
   helper-recovery instructions distinguish explicit language preparation from
   source-selection planning.

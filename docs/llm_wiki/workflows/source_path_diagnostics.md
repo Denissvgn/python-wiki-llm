@@ -14,7 +14,7 @@ even a metadata read; ignore decisions use the snapshot's captured rules.
 1. `config.GitIgnoreMatcher`
 2. `source_selection.path_is_selected`
 3. `config.PathValidationError`
-4. `source_snapshot._language_for_path`
+4. `source_snapshot._language_selection_for_path`
 5. `config.is_agent_worktree_path`
 6. `common.is_bundled_helper_implementation_path`
 7. `config.GitIgnoreMatcher.is_ignored`

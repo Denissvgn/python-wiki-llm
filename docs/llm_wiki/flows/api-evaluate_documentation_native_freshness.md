@@ -115,9 +115,9 @@ sequenceDiagram
     p7-->>p23: set (src/llm_wiki_cli/services…ive.py:_source_mismatches)(manifest.sources)
 ```
 
-> Call sequence diagram shows 30 of 3443 interactions; 3413 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3442 interactions; 3412 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 11 of 938 (927 omitted); unresolved 6 of 876 (870 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 11 of 938 (927 omitted); unresolved 6 of 874 (868 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

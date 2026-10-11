@@ -8,7 +8,7 @@ from pathlib import Path
 from ..config import EXCLUDED_DIRS, GitIgnoreMatcher, PathValidationError, is_agent_worktree_path
 from ..extractors.common import is_bundled_helper_implementation_path, is_generated_javascript_bundle_path
 from .source_selection import path_is_selected
-from .source_snapshot import SourceSnapshot, _language_for_path, _is_rescuable_typescript_src_lib_file
+from .source_snapshot import SourceSnapshot, _language_selection_for_path, _is_rescuable_typescript_src_lib_file
 
 
 def source_path_diagnostics(snapshot: SourceSnapshot, paths: tuple[str, ...]) -> dict[str, dict]:
@@ -41,7 +41,7 @@ def source_path_diagnostics(snapshot: SourceSnapshot, paths: tuple[str, ...]) ->
             row["filesystem_state"] = "missing"
         except OSError:
             row["reason"] = "filesystem-unavailable"
-        language = _language_for_path(candidate, snapshot.include_tests)
+        language, test_exclusion = _language_selection_for_path(candidate, snapshot.include_tests)
         exclusion = None
         if not EXCLUDED_DIRS.isdisjoint(relative.parts[:-1]):
             exclusion = "excluded-directory"
@@ -55,6 +55,8 @@ def source_path_diagnostics(snapshot: SourceSnapshot, paths: tuple[str, ...]) ->
             exclusion = "generated-bundle"
         if exclusion:
             row.update(selection_state="excluded", reason=exclusion)
+        elif test_exclusion:
+            row.update(selection_state="excluded", reason=test_exclusion)
         elif row["filesystem_state"] != "file":
             if row["filesystem_state"] != "unknown":
                 row["reason"] = row["filesystem_state"]

@@ -14,6 +14,13 @@ Known unsupported source languages are retained as advisory counts even without
 an explicit selection profile. Their files stay outside built-in extraction and
 respect the same directory and ignore boundaries as other discovered inputs.
 
+Language classification retains both the recognized extension and any language
+inclusion-policy exclusion. Go `_test.go` files are recognized Go source but
+excluded by default; `include_tests=["go"]` admits them through the same source
+classification as ordinary Go files. Snapshot inventory selection still omits
+excluded files, while supplied-path diagnostics can retain the exclusion reason.
+Classification does not prepare or execute extractor helpers.
+
 ## Imports
 
 | Source | Symbols |
@@ -77,6 +84,7 @@ flowchart LR
 | `_new_snapshot_buckets` | `(include_tests: Iterable[str] \| None = None, source_selection_policy: SourceSelectionPolicy \| None = None, *, expected_gitignore_paths: frozenset[str] \| None = None, respect_ignores: bool = False, respect_discovery: bool = False, max_control_bytes: int \| None = None, max_scan_entries: int \| None = None, coherent: bool = False) -> _SnapshotBuckets` | — | — |
 | `_validate_repository_path` | `(value: object, field: str) -> str` | — | — |
 | `_normalize_only_files` | `(root: Path, only_files: Iterable[str] \| None) -> set[str] \| None` | — | — |
+| `_language_selection_for_path` | `(path: Path, include_tests: frozenset[str]) -> tuple[str \| None, str \| None]` | — | Return recognized language and any language test-policy exclusion. |
 | `_language_for_path` | `(path: Path, include_tests: frozenset[str]) -> str \| None` | — | — |
 | `_unsupported_language_for_path` | `(path: Path) -> str \| None` | — | — |
 | `_is_dockerfile_candidate` | `(path: Path) -> bool` | — | — |

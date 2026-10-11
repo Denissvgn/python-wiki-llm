@@ -113,9 +113,9 @@ sequenceDiagram
     p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'plugin_dir', DEFAULT_PLUGIN_SOURCE)
 ```
 
-> Call sequence diagram shows 30 of 3165 interactions; 3135 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3164 interactions; 3134 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 19 of 949 (930 omitted); unresolved 0 of 860 (860 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 19 of 949 (930 omitted); unresolved 0 of 858 (858 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
