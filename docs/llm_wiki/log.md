@@ -1847,3 +1847,33 @@ explicit skip reasons. Oversized observations retain ordinary generation while
 budget checks stop before constructing their complete encoding. Producer and
 input qualification, generated ownership, native integrity and successful
 owning publication remain prerequisites for reuse.
+
+## 2026-10-11
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:3d22d2f1e5a63c022b2f39781ebcc31dc6b2061d678c770b866ce8233d9c4a0f`
+- Pages created: 1
+- Pages updated: 25
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1549
+- Pages deprecated: 0
+- Semantic fields preserved: 4
+- Moved entities: none
+- Flow pages initialized: 0 (none)
+- Workflow pages created: 1
+- Dependency pages initialized: 0
+- Surface policy updated: no
+
+## 2026-10-11
+
+### Bounded static-analysis reuse levels
+
+Versioned cache commitments distinguish full graph reuse from inventory and
+page-map reuse. Complete extraction sidecars remain available for ordinary graph
+rebuilding when graph observations exceed the cache budget or detectors change.
+Compact, uncompressed JSON retains the 64 MiB limit and all native coverage
+qualifiers; unavailable observations remain explicit.

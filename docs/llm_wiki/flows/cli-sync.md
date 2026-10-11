@@ -132,9 +132,9 @@ sequenceDiagram
     p1->>p23: InventoryCacheOptions
 ```
 
-> Call sequence diagram shows 30 of 5346 interactions; 5316 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 5354 interactions; 5324 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 14 of 1857 (1843 omitted); unresolved 0 of 1661 (1661 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 14 of 1859 (1845 omitted); unresolved 0 of 1667 (1667 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -221,7 +221,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | _sync_run_options_from_args | 4924 | `_sync_run_options_from_args(args)` |
+| run | _sync_run_options_from_args | 4926 | `_sync_run_options_from_args(args)` |
 | _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2370 | `getattr(args, 'src_dir', '.')` |
 | _sync_run_options_from_args | Path (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2371 | `Path(getattr(...))` |
 | _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2371 | `getattr(args, 'wiki_dir', 'docs/llm_wiki')` |
@@ -237,7 +237,7 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 4931 |
+| output | `print` | `run` | 4933 |
 | output | `print` | `_sync_run_options_from_args` | 2391 |
 | output | `print` | `_sync_run_options_from_args` | 2397 |
 | output | `print` | `_sync_run_options_from_args` | 2403 |

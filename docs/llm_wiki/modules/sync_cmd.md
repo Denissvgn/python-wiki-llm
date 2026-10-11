@@ -28,6 +28,10 @@ Capture diagnostics distinguish an unchanged knowledge fast path from a payload
 that is qualified, over budget, or suppressed to preserve an unchanged snapshot.
 Readiness precedes publication; only a successful owning commit permits cache
 saving, and a capture skip never substitutes for required artifact writes.
+Versioned inventory-only captures reuse extraction and page maps while restoring
+all extraction sidecars for ordinary graph and typed-projection rebuilding. API
+and entrypoint observations still evaluate live; only matching full graph
+coverage requests the typed-graph shortcut.
 
 ## Imports
 

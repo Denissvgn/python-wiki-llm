@@ -187,11 +187,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| committed_governance_bundle_id | _previous_committed_artifacts | 774 | `_previous_committed_artifacts(wiki_dir, manifest, committed_state=committed_state)` |
-| _previous_committed_artifacts | capture_committed_knowledge | 761 | `capture_committed_knowledge(wiki_dir, manifest)` |
-| capture_committed_knowledge | Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge) | 237 | `Path(wiki_dir).resolve(data not statically known)` |
-| capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 237 | `Path(wiki_dir)` |
-| capture_committed_knowledge | guard_maintenance_owner | 240 | `guard_maintenance_owner(root, manifest)` |
+| committed_governance_bundle_id | _previous_committed_artifacts | 776 | `_previous_committed_artifacts(wiki_dir, manifest, committed_state=committed_state)` |
+| _previous_committed_artifacts | capture_committed_knowledge | 763 | `capture_committed_knowledge(wiki_dir, manifest)` |
+| capture_committed_knowledge | Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge) | 239 | `Path(wiki_dir).resolve(data not statically known)` |
+| capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 239 | `Path(wiki_dir)` |
+| capture_committed_knowledge | guard_maintenance_owner | 242 | `guard_maintenance_owner(root, manifest)` |
 | guard_maintenance_owner | _absolute_path | 104 | `_absolute_path(Path(...))` |
 | _absolute_path | Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `Path(os.path.abspath(...))` |
 | _absolute_path | os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `os.path.abspath(path)` |
@@ -203,14 +203,14 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `captured.update` | `capture_committed_knowledge` | 266 |
+| mutation | `captured.update` | `capture_committed_knowledge` | 268 |
 | mutation | `pending_parts.pop` | `first_unsafe_path_component` | 71 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `capture_committed_knowledge` | `Path(wiki_dir).resolve` | 237 |
+| unresolved_call | `capture_committed_knowledge` | `Path(wiki_dir).resolve` | 239 |
 | external_call | `_absolute_path` | `os.path.abspath` | 49 |
 | external_call | `first_unsafe_path_component` | `os.fspath` | 51 |
 | step_limit | `committed_governance_bundle_id` | `first 12 steps` | 0 |

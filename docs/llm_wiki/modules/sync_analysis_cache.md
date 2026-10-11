@@ -4,22 +4,27 @@
 
 ## Description
 
-An optional, bounded cache of static sync analysis whose exact payload is bound
-to a validated complete knowledge commit. Reuse requires matching source bytes,
-selection and ignore policy, generation configuration, installed implementation
-and prepared-helper identities. Guarded reads compare generated wiki structure;
-semantic edits remain eligible while structural drift uses ordinary analysis.
-Source, wiki and provider changes during a matched run reject reuse. Cache data
-is saved only after successful artifact publication, and unavailable or corrupt
-cache data never replaces a required write or validation.
+An optional, bounded cache of static sync inputs authenticated by a validated
+complete knowledge commit. Version 2 records its reuse level in both the payload
+and committed metadata. Full coverage retains raw graph observations; inventory
+coverage retains inventory, page maps, detector inputs, implementation observations
+and the complete extraction sidecars, while explicitly omitting graph observations.
+Unavailable sidecars remain unavailable rather than becoming complete-empty data.
 
-Capture reports a fixed status and skip reason, destination eligibility, and
-the exact formatted byte count when within budget. Oversized payloads report a
-lower bound and retain ordinary generation. Counting stops at the unchanged
-64 MiB limit without retaining the complete encoding or copying oversized graph
-observations. Eligible payloads receive an independent observation copy before
-publication. Unsupported producer, plugin, maintenance and governance contexts
-remain ineligible; missing destinations and failed cache writes are explicit.
+Capture first considers full coverage, then inventory coverage when graph data
+exceeds the budget. The complete selected payload must fit the unchanged 64 MiB
+physical and decoded JSON limit. Compact UTF-8 JSON is uncompressed; bounded
+counting does not retain an oversized encoding. Full captures own an independent
+graph copy. Older cache schemas use ordinary generation until an eligible owning
+commit captures the current version.
+
+Reuse binds exact source bytes, selection/ignore policy, generation configuration,
+installed implementation and prepared-helper identities. Generated wiki structure
+is checked separately from semantic edits. Partial hits feed their exact sidecars
+to the ordinary graph builders and typed materializer; no omitted graph data is
+reported as zero or complete. Source, wiki and provider mutations reject matched
+reuse. Fixed capture reasons and byte counts expose ineligible contexts and budget
+failures. Cache saving follows successful owning publication and remains advisory.
 
 ## Imports
 
@@ -30,9 +35,9 @@ remain ineligible; missing destinations and failed cache writes are explicit.
 | `.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY` |
 | `.extraction_service` | `InventoryResult`, `ExtractorStatus` |
 | `.inventory_cache` | `InventoryCacheStats`, `prepare_cache_options` |
-| `.io` | `first_unsafe_path_component`, `write_json_atomic` |
+| `.io` | `first_unsafe_path_component`, `write_bytes_atomic` |
 | `.knowledge_envelope` | `hash_inventory`, `INVENTORY_HASH_EXTENSION` |
-| `.knowledge_evidence` | `hash_json`, `sha256_bytes` |
+| `.knowledge_evidence` | `canonical_json_bytes`, `hash_json`, `sha256_bytes` |
 | `.knowledge_generation` | `_graph_concepts` |
 | `.knowledge_reuse` | `implementation_hash`, `REUSE_INPUT_KEY` |
 | `.knowledge_storage` | `KnowledgeStorageError` |
@@ -64,10 +69,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (2) |
+| Inbound | `src` (3) |
 | Outbound | `src` (15) |
 
-> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 17 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

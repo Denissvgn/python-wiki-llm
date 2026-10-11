@@ -82,7 +82,7 @@ flowchart TD
 | [documentation_queries](modules/documentation_queries.md) | 9 | 9 |
 | [inventory_cache](modules/inventory_cache.md) | 9 | 10 |
 | [knowledge_freshness](modules/knowledge_freshness.md) | 9 | 8 |
-| [knowledge_orchestration](modules/knowledge_orchestration.md) | 9 | 25 |
+| [knowledge_orchestration](modules/knowledge_orchestration.md) | 9 | 26 |
 | [request_json](modules/request_json.md) | 9 | 0 |
 | [skills](modules/skills.md) | 9 | 2 |
 | [workflow_profile](modules/workflow_profile.md) | 9 | 1 |
@@ -149,6 +149,7 @@ flowchart TD
 | [maintenance_queue](modules/maintenance_queue.md) | 3 | 6 |
 | [search_rank](modules/search_rank.md) | 3 | 0 |
 | [sync_analysis](modules/sync_analysis.md) | 3 | 4 |
+| [sync_analysis_cache](modules/sync_analysis_cache.md) | 3 | 15 |
 | [task_compact](modules/task_compact.md) | 3 | 6 |
 | [docs_cmd](modules/docs_cmd.md) | 2 | 5 |
 | [init_cmd](modules/init_cmd.md) | 2 | 9 |
@@ -191,7 +192,6 @@ flowchart TD
 | [site_html_check](modules/site_html_check.md) | 2 | 1 |
 | [storage_receipts](modules/storage_receipts.md) | 2 | 3 |
 | [storage_sort](modules/storage_sort.md) | 2 | 1 |
-| [sync_analysis_cache](modules/sync_analysis_cache.md) | 2 | 15 |
 | [task_evidence](modules/task_evidence.md) | 2 | 5 |
 | [task_implementation](modules/task_implementation.md) | 2 | 5 |
 | [versioning](modules/versioning.md) | 2 | 0 |
