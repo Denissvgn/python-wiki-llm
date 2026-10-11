@@ -9,15 +9,15 @@ import json
 from ..config import EXTRACTOR_REGISTRY
 from .analysis_capture import capture_analysis, capture_operation
 from .inventory_cache import InventoryCacheStats, prepare_cache_options
-from .io import first_unsafe_path_component, write_json_atomic
-from .knowledge_evidence import hash_json
+from .io import first_unsafe_path_component, write_bytes_atomic
+from .knowledge_evidence import canonical_json_bytes, hash_json
 from .knowledge_reuse import implementation_hash, REUSE_INPUT_KEY
 from .knowledge_storage_io import read_guarded
 from .progress import observed_phase, record_counts
 from .runtime_output import warn
 
-SCHEMA = "llm-wiki-sync-analysis/v1"
-EXTENSION = "llm-wiki/sync-analysis-v1"
+SCHEMA = "llm-wiki-sync-analysis/v2"
+EXTENSION = "llm-wiki/sync-analysis-v2"
 FILENAME = "llm-wiki-sync-analysis.json"
 MAX_BYTES = 64 * 1024 * 1024
 
@@ -102,7 +102,7 @@ def report_capture(options, status, reason, *, payload_bytes=None, over_budget=F
 
 def payload_size(payload):
     """Count the exact writer encoding up to the budget, without retaining it."""
-    encoder = json.JSONEncoder(ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)
+    encoder = json.JSONEncoder(ensure_ascii=False, separators=(",", ":"), sort_keys=True, allow_nan=False)
     size = 1  # The writer's trailing newline.
     for chunk in encoder.iterencode(payload):
         if len(chunk) > MAX_BYTES - size:
@@ -135,6 +135,10 @@ def load(options, snapshot, manifest, generation_inputs, state):
             try:
                 candidate = json.loads(read_guarded(path, MAX_BYTES).content)
                 if (not isinstance(candidate, dict) or candidate.get("schema_version") != SCHEMA
+                        or candidate.get("coverage") not in {"full", "inventory"}
+                        or candidate.get("coverage") != commitment.get("coverage")
+                        or not {"data_effect_observations", "import_observations"} <= candidate.keys()
+                        or (candidate.get("coverage") == "full") != isinstance(candidate.get("graph_observations"), dict)
                         or candidate.get("input_key") != key
                         or hash_json(candidate) != commitment.get("payload_hash")):
                     reason = "cache-content-mismatch"
@@ -151,9 +155,10 @@ def load(options, snapshot, manifest, generation_inputs, state):
         if payload is not None and not generated_sections_match(options.wiki_dir, artifacts):
             payload = None
             reason = "wiki-structure-changed"
-    print(f"Sync analysis reuse: {'hit' if payload is not None else 'miss'} ({reason})", flush=True)
+    coverage = f"; coverage={payload['coverage']}" if payload is not None else ""
+    print(f"Sync analysis reuse: {'hit' if payload is not None else 'miss'} ({reason}){coverage}", flush=True)
     if payload is not None:
-        record_counts(reused_source_files=len(payload["inventory"]), reused_graph_observations=1)
+        record_counts(reused_source_files=len(payload["inventory"]), reused_graph_observations=int(payload["coverage"] == "full"))
     return payload
 
 
@@ -189,9 +194,11 @@ def build_payload(options, prepared, surface):
         return None
     maps = prepared.page_maps
     payload = {
-        "schema_version": SCHEMA, "input_key": key, "inventory": prepared.inventory,
+        "schema_version": SCHEMA, "coverage": "full", "input_key": key, "inventory": prepared.inventory,
         "statuses": {k: asdict(v) for k, v in result.statuses.items()},
         "implementation_observations": result.implementation_observations,
+        "data_effect_observations": result.data_effect_observations,
+        "import_observations": result.import_observations,
         "module_page_map": maps.module_page_map,
         "entity_page_map": [[*k, v] for k, v in sorted(maps.entity_page_cache.items())],
         "entity_occurrence_page_map": [[*k, v] for k, v in sorted(maps.entity_occurrence_page_cache.items())],
@@ -207,16 +214,23 @@ def build_payload(options, prepared, surface):
     )])
     size = payload_size(payload)
     if size is None:
+        # This is qualified partial reuse, not a truncated graph projection.
+        # The ordinary graph builders receive the exact extraction sidecars.
+        payload["coverage"] = "inventory"
+        payload["graph_observations"] = None
+        size = payload_size(payload)
+    if size is None:
         report_capture(options, "skipped", "payload-over-budget", over_budget=True)
         return None
-    # Only eligible payloads need an isolated observation copy for publication.
-    payload["graph_observations"] = asdict(prepared.graph_observations)
-    report_capture(options, "ready", "qualified-payload", payload_bytes=size)
+    if payload["coverage"] == "full":
+        payload["graph_observations"] = asdict(prepared.graph_observations)
+    report_capture(options, "ready", "qualified-" + payload["coverage"], payload_bytes=size)
     return payload
 
 
 def commitment(payload):
-    return {"schema_version": SCHEMA, "input_hash": hash_json(payload["input_key"]),
+    return {"schema_version": SCHEMA, "coverage": payload["coverage"],
+            "input_hash": hash_json(payload["input_key"]),
             "payload_hash": hash_json(payload), "graph_concepts_hash": payload["graph_concepts_hash"]} if payload is not None else None
 
 
@@ -263,7 +277,11 @@ def save(options, payload):
     try:
         if first_unsafe_path_component(path) is not None:
             raise OSError("redirected analysis cache destination")
-        write_json_atomic(path, payload)
+        content = canonical_json_bytes(payload) + b"\n"
+        if len(content) > MAX_BYTES:
+            report_capture(options, "skipped", "payload-over-budget", over_budget=True)
+            return
+        write_bytes_atomic(path, content)
         report_capture(options, "saved", "committed-payload")
     except (OSError, ValueError) as exc:
         report_capture(options, "skipped", "cache-write-failed")
@@ -281,6 +299,8 @@ def inventory_result(payload, snapshot, options):
         extractor_registry=dict(EXTRACTOR_REGISTRY), source_snapshot=snapshot,
         analysis_components=analysis,
         implementation_observations=payload["implementation_observations"],
+        data_effect_observations=payload["data_effect_observations"],
+        import_observations=payload["import_observations"],
         cache_stats=InventoryCacheStats(enabled=True, status="hit", hits=len(payload["inventory"]),
                                         path=str(cache_path(options))),
     )

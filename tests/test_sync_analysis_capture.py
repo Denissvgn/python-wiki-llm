@@ -8,7 +8,7 @@ import pytest
 
 from llm_wiki_cli.services import sync_analysis_cache as cache
 from llm_wiki_cli.services.inventory_cache import InventoryCacheOptions
-from llm_wiki_cli.services.knowledge_evidence import formatted_json_bytes
+from llm_wiki_cli.services.knowledge_evidence import canonical_json_bytes
 from llm_wiki_cli.services.runtime_output import RuntimeDestination
 
 
@@ -26,7 +26,7 @@ def eligible(tmp_path, monkeypatch):
     manifest.with_generation_state = lambda **kw: manifest
     result = NS(failed=[], plugin_components={}, producer_plugin_components={},
                 extractor_registry=cache.EXTRACTOR_REGISTRY.copy(), statuses={},
-                implementation_observations={})
+                implementation_observations={}, data_effect_observations=None, import_observations=None)
     @dataclass
     class Graph:
         flows: object = None
@@ -101,7 +101,7 @@ def test_destination_exits_do_not_construct_payload(eligible, capsys, monkeypatc
 
 @pytest.mark.parametrize('payload', [{}, {'é': ['雪', 1, None, True]}, {'nested': {'b': (3, 4)}}])
 def test_size_matches_actual_writer_and_exact_boundary(monkeypatch, payload):
-    actual = len(formatted_json_bytes(payload))
+    actual = len(canonical_json_bytes(payload)) + 1
     monkeypatch.setattr(cache, 'MAX_BYTES', actual)
     assert cache.payload_size(payload) == actual
     monkeypatch.setattr(cache, 'MAX_BYTES', actual - 1)
@@ -131,7 +131,7 @@ def test_publication_exits_are_explained(eligible, capsys, monkeypatch, mode, re
     options.dry_run = mode == 'dry-run'
     def failed(*a):
         raise OSError('unavailable')
-    monkeypatch.setattr(cache, 'write_json_atomic', failed)
+    monkeypatch.setattr(cache, 'write_bytes_atomic', failed)
     cache.save(options, None if mode == 'no-payload' else {})
     assert f'skipped ({reason})' in capsys.readouterr().out
 
@@ -150,7 +150,7 @@ def test_eligible_capture_owns_graph_copy_and_reports_written_bytes(eligible, ca
     payload = cache.build_payload(options, prepared, surface)
     assert payload is not None
     assert payload['graph_observations']['flows'] is not prepared.graph_observations.flows
-    size = len(formatted_json_bytes(payload))
+    size = len(canonical_json_bytes(payload)) + 1
     cache.save(options, payload)
     path = cache.cache_path(options)
     assert path is not None
@@ -158,3 +158,23 @@ def test_eligible_capture_owns_graph_copy_and_reports_written_bytes(eligible, ca
     output = capsys.readouterr().out
     assert f'payload_bytes={size};' in output
     assert 'saved (committed-payload)' in output
+
+
+def test_partial_capture_retains_unavailable_sidecars(eligible, monkeypatch):
+    options, prepared, surface = eligible
+    prepared.graph_observations.flows = list(range(10000))
+    monkeypatch.setattr(cache, 'MAX_BYTES', 4096)
+    payload = cache.build_payload(options, prepared, surface)
+    assert payload is not None and payload['coverage'] == 'inventory'
+    assert payload['data_effect_observations'] is None
+    assert payload['import_observations'] is None
+    assert payload['graph_observations'] is None
+
+
+def test_partial_capture_does_not_discard_over_budget_sidecars(eligible, monkeypatch, capsys):
+    options, prepared, surface = eligible
+    prepared.graph_observations.flows = list(range(10000))
+    prepared.inventory_result.data_effect_observations = {'retained': 'x' * 10000}
+    monkeypatch.setattr(cache, 'MAX_BYTES', 4096)
+    assert cache.build_payload(options, prepared, surface) is None
+    assert 'skipped (payload-over-budget)' in capsys.readouterr().out

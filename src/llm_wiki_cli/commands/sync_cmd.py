@@ -3769,10 +3769,12 @@ def _prepare_sync_run(
     contracts = _linked_api_contracts(contracts, entries)
     from dataclasses import asdict
     cached_graph_matches = bool(cached_analysis is not None
+                                and cached_analysis["coverage"] == "full"
                                 and cached_analysis["entrypoint_analysis"] == asdict(entrypoint_analysis)
                                 and cached_analysis["contracts"] == contracts)
     if cached_analysis is not None and not cached_graph_matches:
-        print("Sync graph reuse: miss (detector-observations-changed)", flush=True)
+        reason = "inventory-only-capture" if cached_analysis["coverage"] == "inventory" else "detector-observations-changed"
+        print(f"Sync graph reuse: miss ({reason})", flush=True)
     diff = _compute_sync_diff(
         manifest,
         inventory,
@@ -4065,7 +4067,7 @@ def _prepare_sync_run(
         entrypoint_analysis=entrypoint_analysis,
         contracts=contracts,
         page_transitions=page_transitions,
-        analysis_reused=cached_analysis is not None,
+        analysis_reused=cached_graph_matches,
         analysis_input_key=cached_analysis["input_key"] if cached_analysis is not None else None,
     )
 

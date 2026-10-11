@@ -34,16 +34,24 @@ def edit(wiki="wiki", text="Authored description."):
     page.write_text(first + "## Description\n\n" + text + "\n\n## " + tail)
 
 
-@pytest.fixture(params=("v1", "packed-v4-deflate"))
+@pytest.fixture(params=(("v1", "full"), ("packed-v4-deflate", "full"),
+                        ("v1", "inventory"), ("packed-v4-deflate", "inventory")))
 def primed(tmp_path, monkeypatch, request):
     monkeypatch.chdir(tmp_path)
     Path("src").mkdir()
     Path("src/app.py").write_text('class Item:\n    pass\ndef compute(value=3):\n    return value + 1\ndef run():\n    return compute()\n')
+    storage_format, coverage = request.param
     bootstrap_cmd.run(SimpleNamespace(src_dir="src", wiki_dir="wiki", depth="full",
-                                     overwrite=False, source_adapter=True, knowledge_format=request.param))
+                                     overwrite=False, source_adapter=True, knowledge_format=storage_format))
     edit()
     sync()
     assert Path("cache", sync_analysis_cache.FILENAME).exists()
+    if coverage == "inventory":
+        data = Path("cache", sync_analysis_cache.FILENAME).read_bytes()
+        monkeypatch.setattr(sync_analysis_cache, "MAX_BYTES", len(data) - 1)
+        edit(text="Prime qualified partial reuse.")
+        sync()
+        assert json.loads(Path("cache", sync_analysis_cache.FILENAME).read_bytes())["coverage"] == "inventory"
     state = load_knowledge_state("wiki")
     assert state.knowledge is not None
     assert sync_analysis_cache.EXTENSION in state.knowledge.extensions
@@ -54,8 +62,10 @@ def test_markdown_edit_reuses_static_inputs_but_completes_actual_commit(primed, 
     edit(text="Second authored description.")
     monkeypatch.setattr(sync_cmd, "_extract_current_inventory", lambda *a, **kw: pytest.fail("source extracted again"))
     monkeypatch.setattr(sync_cmd, "_prepare_sync_page_maps", lambda *a: pytest.fail("maps rebuilt"))
-    monkeypatch.setattr(sync_cmd, "_build_sync_graph_observations", lambda *a, **kw: pytest.fail("graph observations rebuilt"))
-    monkeypatch.setattr(knowledge_generation, "materialize_typed_graph", lambda *a, **kw: pytest.fail("typed graph rebuilt"))
+    coverage = json.loads(Path("cache", sync_analysis_cache.FILENAME).read_bytes())["coverage"]
+    if coverage == "full":
+        monkeypatch.setattr(sync_cmd, "_build_sync_graph_observations", lambda *a, **kw: pytest.fail("graph observations rebuilt"))
+        monkeypatch.setattr(knowledge_generation, "materialize_typed_graph", lambda *a, **kw: pytest.fail("typed graph rebuilt"))
     sync()
     assert "reuse: hit" in capsys.readouterr().out
     assert "Second authored description." in Path("wiki/modules/app.md").read_text()
@@ -114,13 +124,15 @@ def test_changed_invocation_inputs_cannot_reuse_analysis(primed, monkeypatch, ch
     assert reached or change == "selection"  # Persisted selection may reject before extraction.
 
 
-@pytest.mark.parametrize("change", ["missing", "truncated", "forged", "redirected"])
+@pytest.mark.parametrize("change", ["missing", "truncated", "forged", "redirected", "deep-nesting"])
 def test_missing_or_corrupted_cache_is_only_a_fallback(primed, monkeypatch, change):
     path = Path("cache", sync_analysis_cache.FILENAME)
     if change == "missing":
         path.unlink()
     elif change == "truncated":
         path.write_text("{")
+    elif change == "deep-nesting":
+        path.write_text("[" * 2000 + "0" + "]" * 2000)
     elif change == "forged":
         data = json.loads(path.read_text())
         data["inventory"]["app.py"]["functions"][0]["name"] = "invented"
@@ -277,3 +289,61 @@ def test_unchanged_snapshot_does_not_add_commitment_to_warm_cache(primed, capsys
     final = load_knowledge_state('wiki').knowledge
     assert final is not None
     assert sync_analysis_cache.EXTENSION not in final.extensions
+
+
+def test_partial_reuse_rebuilds_graph_with_exact_sidecars(primed, monkeypatch, capsys):
+    data = json.loads(Path('cache', sync_analysis_cache.FILENAME).read_bytes())
+    if data['coverage'] != 'inventory':
+        pytest.skip('partial coverage fixture')
+    assert data['graph_observations'] is None
+    assert data['data_effect_observations'] is not None
+    assert data['import_observations'] is not None
+    edit(text='Partial capture retains independent graph generation.')
+    monkeypatch.setattr(sync_cmd, '_extract_current_inventory', lambda *a, **kw: pytest.fail('source extracted'))
+    original = sync_cmd._build_sync_graph_observations
+    seen = []
+    def builder(*a, **kw):
+        assert kw['data_effect_observations'] == data['data_effect_observations']
+        assert kw['import_observations'] == data['import_observations']
+        seen.append(True)
+        return original(*a, **kw)
+    monkeypatch.setattr(sync_cmd, '_build_sync_graph_observations', builder)
+    with patch.object(knowledge_generation, 'materialize_typed_graph', wraps=knowledge_generation.materialize_typed_graph) as materialize:
+        sync()
+    assert seen and materialize.call_count == 1
+    output = capsys.readouterr().out
+    assert 'coverage=inventory' in output
+    assert 'Sync graph reuse: miss (inventory-only-capture)' in output
+    assert build_report('wiki', 'src', strict=True).passed
+
+
+def test_predecessor_schema_is_a_fallback(primed, monkeypatch):
+    path = Path('cache', sync_analysis_cache.FILENAME)
+    data = json.loads(path.read_bytes())
+    data['schema_version'] = 'llm-wiki-sync-analysis/v1'
+    path.write_text(json.dumps(data, separators=(',', ':')))
+    edit(text='Predecessor representation requires ordinary generation.')
+    with patch.object(sync_cmd, '_extract_current_inventory', wraps=sync_cmd._extract_current_inventory) as extract:
+        sync()
+    assert extract.call_count == 1
+    assert build_report('wiki', 'src', strict=True).passed
+
+
+def test_detector_change_rebuild_keeps_extraction_sidecars(primed, monkeypatch):
+    data = json.loads(Path('cache', sync_analysis_cache.FILENAME).read_bytes())
+    original_contracts = sync_cmd._linked_api_contracts
+    def changed(*args):
+        return {**original_contracts(*args), 'detector_variant': True}
+    monkeypatch.setattr(sync_cmd, '_linked_api_contracts', changed)
+    original_graph = sync_cmd._build_sync_graph_observations
+    seen = []
+    def rebuilt(*args, **kwargs):
+        assert kwargs['data_effect_observations'] == data['data_effect_observations']
+        assert kwargs['import_observations'] == data['import_observations']
+        seen.append(True)
+        return original_graph(*args, **kwargs)
+    monkeypatch.setattr(sync_cmd, '_build_sync_graph_observations', rebuilt)
+    edit(text='Detector changes retain original extraction evidence.')
+    sync()
+    assert seen
+    assert load_knowledge_state('wiki').knowledge is not None

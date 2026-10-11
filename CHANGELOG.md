@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Versioned, bounded static-analysis capture can reuse inventory and page maps
+  when full graph observations exceed the cache budget. Partial hits preserve
+  extraction sidecars and rebuild graph projections with their coverage intact.
+
 - Authenticated static-analysis reuse for eligible Markdown-only wiki syncs,
   with explicit hit/miss reasons, source and ownership checks, and bounded
   operation-local validation reuse for native storage writers.
@@ -24,6 +28,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and extraction outcomes, preserving legacy inventory-presence semantics.
 
 ### Fixed
+
+- Cached inventory reconstruction retains data-effect and import observations
+  when changed detector results require ordinary graph generation.
 
 - Static-analysis cache capture reports destination eligibility, skip reasons
   and payload size. Oversized checks stop at the existing 64 MiB budget without
