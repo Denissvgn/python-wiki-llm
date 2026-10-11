@@ -29,6 +29,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Ordinary sync repairs source-derived generated member tables and missing
+  sections even when source bytes are unchanged. Authored cells and custom
+  sections are retained; ambiguous attribution stops before page writes.
+
 - Cached inventory reconstruction retains data-effect and import observations
   when changed detector results require ordinary graph generation.
 

@@ -171,6 +171,7 @@ from ..services.sync_analysis import (
     SyncOwnershipError,
     compute_sync_diff as _compute_diff,
 )
+from ..services.sync_generated_sections import plan_generated_source_repairs
 from ..services.sync_transitions import (
     PageTransitionPlan, find_missing_source_pages, plan_page_transitions,
 )
@@ -1115,7 +1116,8 @@ def _record_unchanged_file_skips(
     )
     unchanged_sources = set(unchanged_files)
     unchanged_pages -= sum(
-        owner.source_path in unchanged_sources for owner in diff.missing_pages.values()
+        owner.source_path in unchanged_sources
+        for owner in (*diff.missing_pages.values(), *diff.generated_page_repairs.values())
     )
     result.skipped += unchanged_pages
     if unchanged_files:
@@ -1533,6 +1535,11 @@ def _build_apply_diff_context(
         wiki_dir, manifest, inventory, diff, module_page_map, entity_occurrence_page_cache,
         source_selection_policy=source_selection_policy,
     )
+    if diff.generated_page_repairs:
+        transitions, _ = plan_generated_source_repairs(
+            wiki_dir, transitions, inventory, module_page_map, entity_occurrence_page_cache,
+            module_renderer=_generate_module_md, entity_renderer=_generate_entity_md,
+        )
     return _ApplyDiffContext(
         wiki_dir=wiki_dir,
         src_dir=src_dir,
@@ -1564,7 +1571,9 @@ def _apply_planned_diff(ctx, diff, result, refresh_files, execution=None, *, ref
     for repair in ctx.page_transitions.retained_page_repairs:
         if execution.write(repair.path, repair.text) == "updated":
             result.updated += 1
-            print(f"  UPDATE retained page links: {repair.path}")
+            print(f"  UPDATE retained page {repair.reason}: {repair.path}")
+            if repair.reason == "generated sections":
+                result.regenerated_evidence_page_paths.add(repair.path)
     refresh_files = list(dict.fromkeys(refresh_files + [
         item.owner.source_path for item in ctx.page_transitions.transitions
         if item.action == "rename" or (item.old_path is not None and item.old_path != item.final_path)
@@ -2248,6 +2257,9 @@ def _print_dry_run_plan(
     print(f"  missing source pages: {len(application_diff.missing_pages)} repair")
     for path in sorted(application_diff.missing_pages):
         print(f"    REPAIR {path}")
+    print(f"  generated source sections: {len(application_diff.generated_page_repairs)} repair")
+    for path in sorted(application_diff.generated_page_repairs):
+        print(f"    REPAIR generated sections {path}")
     ancillary = [
         "index.md",
         "log.md",
@@ -3793,6 +3805,18 @@ def _prepare_sync_run(
         if not seed_manifest and not repair_only and not options.initialize_surfaces
         else {}
     )
+    generated_plan = None
+    if not seed_manifest and not repair_only and not options.initialize_surfaces:
+        generated_plan = _plan_source_page_transitions(
+            options.wiki_dir, manifest, inventory, diff,
+            maps.module_page_map, maps.entity_occurrence_page_cache,
+            source_selection_policy=source_snapshot.source_selection_policy,
+        )
+        generated_plan, diff.generated_page_repairs = plan_generated_source_repairs(
+            options.wiki_dir, generated_plan, inventory,
+            maps.module_page_map, maps.entity_occurrence_page_cache,
+            module_renderer=_generate_module_md, entity_renderer=_generate_entity_md,
+        )
     surface_plan = _build_surface_initialization_plan(
         options,
         manifest,
@@ -3898,6 +3922,7 @@ def _prepare_sync_run(
         and not diff.has_changes
         and not surface_plan.has_work
         and not missing_pages
+        and not diff.generated_page_repairs
         and not infrastructure_plan.has_changes
         and not source_selection_prune.deselected_source_paths
         and not source_selection_prune.deselected_page_paths
@@ -4041,6 +4066,13 @@ def _prepare_sync_run(
             maps.module_page_map, maps.entity_occurrence_page_cache,
             source_selection_policy=source_snapshot.source_selection_policy,
         )
+    if page_transitions is not None and generated_plan is not None:
+        generated_repairs = tuple(r for r in generated_plan.retained_page_repairs if r.reason == "generated sections")
+        if generated_repairs:
+            # Source/provider refreshes regenerate complete pages instead.
+            regenerated = set(_refresh_files_for_diff(application_diff))
+            generated_repairs = tuple(r for r in generated_repairs if diff.generated_page_repairs[r.path].source_path not in regenerated)
+            page_transitions = replace(page_transitions, retained_page_repairs=page_transitions.retained_page_repairs + generated_repairs)
     if cached_wiki_inputs is not None and knowledge_reuse.wiki_input_hashes(options.wiki_dir) != cached_wiki_inputs:
         raise sync_analysis_cache.SyncAnalysisMutationError("wiki changed during cached sync planning")
     return _PreparedSyncRun(

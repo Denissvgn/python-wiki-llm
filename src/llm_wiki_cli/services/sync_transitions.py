@@ -60,6 +60,7 @@ class RetainedPageRepair:
     expected_bytes: bytes
     text: str
     staging_slot: str
+    reason: str = "links"
 
 
 @dataclass(frozen=True)

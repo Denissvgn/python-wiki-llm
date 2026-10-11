@@ -237,6 +237,7 @@
     "services/storage_spool.py",
     "services/sync_analysis.py",
     "services/sync_analysis_cache.py",
+    "services/sync_generated_sections.py",
     "services/sync_manifest.py",
     "services/sync_retained_links.py",
     "services/sync_transition_execution.py",
@@ -381,6 +382,7 @@
     "services/python_observations.py",
     "services/source_selection.py",
     "services/source_snapshot.py",
+    "services/sync_generated_sections.py",
     "services/validation.py",
     "services/wiki_surface.py",
     "services/wiki_write_basis.py"
