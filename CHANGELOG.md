@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Authenticated static-analysis reuse for eligible Markdown-only wiki syncs,
+  with explicit hit/miss reasons, source and ownership checks, and bounded
+  operation-local validation reuse for native storage writers.
+
 - A default development workflow in managed agent instructions and the
   `wiki-reference` topic, with a complete inline fallback when skills are disabled
   or unavailable and shared guidance for explicitly selected native coding.

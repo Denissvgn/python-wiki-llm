@@ -110,9 +110,9 @@ sequenceDiagram
     p6-->>p26: previous.evidence_baselines.get (src/llm_wiki_cli/services…knowledge_generation_plan)(page_path)
 ```
 
-> Call sequence diagram shows 30 of 4562 interactions; 4532 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4605 interactions; 4575 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 8 of 1447 (1439 omitted); unresolved 5 of 1046 (1041 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 8 of 1460 (1452 omitted); unresolved 5 of 1054 (1049 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -126,7 +126,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_generation.py:_exact_source_mapping` | 33 | [src/llm_wiki_cli/services/knowledge_generation.py](../modules/knowledge_generation.md) | internal | 4 |
 | `src/llm_wiki_cli/services/knowledge_generation.py:_raise_page_map_parity` | 41 | - | external | 2 |
 | `src/llm_wiki_cli/services/knowledge_generation.py:_raise_page_map_parity` | 41 | [src/llm_wiki_cli/services/knowledge_generation.py](../modules/knowledge_generation.md) | internal | 2 |
-> Omission summary shows 8 of 1089 groups; 1081 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1095 groups; 1087 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -185,17 +185,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_knowledge_generation_plan | isinstance (src/llm_wiki_cli/services…wledge_generation_plan, 1) | 184 | `isinstance(inputs, KnowledgeGenerationInputs)` |
-| build_knowledge_generation_plan | TypeError (src/llm_wiki_cli/services…knowledge_generation_plan) | 185 | `TypeError('inputs must be a KnowledgeGenerationInputs')` |
-| build_knowledge_generation_plan | _knowledge_validation_operation | 187 | `_knowledge_validation_operation(...)` |
-| _knowledge_validation_operation | isinstance (src/llm_wiki_cli/services…edge_validation_operation) | 318 | `isinstance(wiki_root, Path)` |
-| _knowledge_validation_operation | wiki_root.is_absolute | 318 | `wiki_root.is_absolute(data not statically known)` |
-| _knowledge_validation_operation | TypeError (src/llm_wiki_cli/services…edge_validation_operation) | 319 | `TypeError('validation operation requires an absolute wiki root')` |
-| _knowledge_validation_operation | _IndexValidationOperation | 320 | `_IndexValidationOperation(wiki_root)` |
-| _knowledge_validation_operation | _INDEX_VALIDATION_OPERATION.set | 321 | `_INDEX_VALIDATION_OPERATION.set(operation)` |
-| _knowledge_validation_operation | object.__setattr__ (src/llm_wiki_cli/services…edge_validation_operation) | 325 | `object.__setattr__(operation, '_active', False)` |
-| _knowledge_validation_operation | _INDEX_VALIDATION_OPERATION.reset | 326 | `_INDEX_VALIDATION_OPERATION.reset(token)` |
-| build_knowledge_generation_plan | Path(…).absolute | 187 | `Path(inputs.wiki_dir).absolute(data not statically known)` |
+| build_knowledge_generation_plan | isinstance (src/llm_wiki_cli/services…wledge_generation_plan, 1) | 186 | `isinstance(inputs, KnowledgeGenerationInputs)` |
+| build_knowledge_generation_plan | TypeError (src/llm_wiki_cli/services…knowledge_generation_plan) | 187 | `TypeError('inputs must be a KnowledgeGenerationInputs')` |
+| build_knowledge_generation_plan | _knowledge_validation_operation | 189 | `_knowledge_validation_operation(...)` |
+| _knowledge_validation_operation | isinstance (src/llm_wiki_cli/services…edge_validation_operation) | 330 | `isinstance(wiki_root, Path)` |
+| _knowledge_validation_operation | wiki_root.is_absolute | 330 | `wiki_root.is_absolute(data not statically known)` |
+| _knowledge_validation_operation | TypeError (src/llm_wiki_cli/services…edge_validation_operation) | 331 | `TypeError('validation operation requires an absolute wiki root')` |
+| _knowledge_validation_operation | _IndexValidationOperation | 332 | `_IndexValidationOperation(wiki_root)` |
+| _knowledge_validation_operation | _INDEX_VALIDATION_OPERATION.set | 333 | `_INDEX_VALIDATION_OPERATION.set(operation)` |
+| _knowledge_validation_operation | object.__setattr__ (src/llm_wiki_cli/services…edge_validation_operation) | 337 | `object.__setattr__(operation, '_active', False)` |
+| _knowledge_validation_operation | _INDEX_VALIDATION_OPERATION.reset | 338 | `_INDEX_VALIDATION_OPERATION.reset(token)` |
+| build_knowledge_generation_plan | Path(…).absolute | 189 | `Path(inputs.wiki_dir).absolute(data not statically known)` |
 
 ### Boundary effects
 
@@ -205,14 +205,14 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_knowledge_generation_plan` | `isinstance` | 184 |
-| external_call | `build_knowledge_generation_plan` | `TypeError` | 185 |
-| external_call | `_knowledge_validation_operation` | `isinstance` | 318 |
-| unresolved_call | `_knowledge_validation_operation` | `wiki_root.is_absolute` | 318 |
-| external_call | `_knowledge_validation_operation` | `TypeError` | 319 |
-| external_call | `_knowledge_validation_operation` | `object.__setattr__` | 325 |
-| unresolved_call | `_knowledge_validation_operation` | `_INDEX_VALIDATION_OPERATION.reset` | 326 |
-| unresolved_call | `build_knowledge_generation_plan` | `Path(inputs.wiki_dir).absolute` | 187 |
+| external_call | `build_knowledge_generation_plan` | `isinstance` | 186 |
+| external_call | `build_knowledge_generation_plan` | `TypeError` | 187 |
+| external_call | `_knowledge_validation_operation` | `isinstance` | 330 |
+| unresolved_call | `_knowledge_validation_operation` | `wiki_root.is_absolute` | 330 |
+| external_call | `_knowledge_validation_operation` | `TypeError` | 331 |
+| external_call | `_knowledge_validation_operation` | `object.__setattr__` | 337 |
+| unresolved_call | `_knowledge_validation_operation` | `_INDEX_VALIDATION_OPERATION.reset` | 338 |
+| unresolved_call | `build_knowledge_generation_plan` | `Path(inputs.wiki_dir).absolute` | 189 |
 | step_limit | `build_knowledge_generation_plan` | `first 12 steps` | 0 |
 | truncated_flow | `build_knowledge_generation_plan` | `depth limit` | 0 |
 

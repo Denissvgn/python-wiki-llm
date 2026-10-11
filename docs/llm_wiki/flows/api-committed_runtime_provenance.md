@@ -101,9 +101,9 @@ sequenceDiagram
     p15-->>p26: Path(…).resolve (src/llm_wiki_cli/services…idate_knowledge_artifacts)
 ```
 
-> Call sequence diagram shows 30 of 860 interactions; 830 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 872 interactions; 842 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 5 of 285 (280 omitted); unresolved 9 of 157 (148 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 5 of 288 (283 omitted); unresolved 9 of 159 (150 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -186,11 +186,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| committed_runtime_provenance | _previous_committed_artifacts | 785 | `_previous_committed_artifacts(wiki_dir, manifest, committed_state=committed_state)` |
-| _previous_committed_artifacts | capture_committed_knowledge | 756 | `capture_committed_knowledge(wiki_dir, manifest)` |
-| capture_committed_knowledge | Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge) | 235 | `Path(wiki_dir).resolve(data not statically known)` |
-| capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 235 | `Path(wiki_dir)` |
-| capture_committed_knowledge | guard_maintenance_owner | 238 | `guard_maintenance_owner(root, manifest)` |
+| committed_runtime_provenance | _previous_committed_artifacts | 790 | `_previous_committed_artifacts(wiki_dir, manifest, committed_state=committed_state)` |
+| _previous_committed_artifacts | capture_committed_knowledge | 761 | `capture_committed_knowledge(wiki_dir, manifest)` |
+| capture_committed_knowledge | Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge) | 237 | `Path(wiki_dir).resolve(data not statically known)` |
+| capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 237 | `Path(wiki_dir)` |
+| capture_committed_knowledge | guard_maintenance_owner | 240 | `guard_maintenance_owner(root, manifest)` |
 | guard_maintenance_owner | _absolute_path | 104 | `_absolute_path(Path(...))` |
 | _absolute_path | Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `Path(os.path.abspath(...))` |
 | _absolute_path | os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `os.path.abspath(path)` |
@@ -202,14 +202,14 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `captured.update` | `capture_committed_knowledge` | 264 |
+| mutation | `captured.update` | `capture_committed_knowledge` | 266 |
 | mutation | `pending_parts.pop` | `first_unsafe_path_component` | 71 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `capture_committed_knowledge` | `Path(wiki_dir).resolve` | 235 |
+| unresolved_call | `capture_committed_knowledge` | `Path(wiki_dir).resolve` | 237 |
 | external_call | `_absolute_path` | `os.path.abspath` | 49 |
 | external_call | `first_unsafe_path_component` | `os.fspath` | 51 |
 | step_limit | `committed_runtime_provenance` | `first 12 steps` | 0 |

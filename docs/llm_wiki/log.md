@@ -1790,3 +1790,34 @@ Python extraction now owns optional file-scoped parse/read outcomes and distingu
 parsed modules without documentable content. Discovery retains recognized Go source
 identity when default language policy excludes `_test.go` files, preserving separate
 filesystem, selection and extraction observations and legacy inventory semantics.
+
+## 2026-10-11
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:ff05d6c6d6807126e29f9bd2f4d5419eb95ee22428dcffe0a5824026af4ffa49`
+- Pages created: 8
+- Pages updated: 95
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1471
+- Pages deprecated: 0
+- Semantic fields preserved: 2
+- Moved entities: none
+- Flow pages initialized: 0 (none)
+- Workflow pages created: 6
+- Dependency pages initialized: 0
+- Surface policy updated: no
+
+## 2026-10-11
+
+### Static analysis reuse for Markdown maintenance
+
+Ordinary sync can reuse authenticated source analysis and compatible typed graphs
+while re-evaluating Markdown and final commitments. Detector observations,
+source/wiki/provider identity, generated ownership and required atomic writes
+retain their qualifying checks. Native writers retain a frozen logical-model
+receipt only within the active validation operation; physical storage and
+standalone reads keep their integrity obligations.

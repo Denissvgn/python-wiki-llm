@@ -2,11 +2,12 @@
 
 **Entry point:** `serialize_knowledge_index` (`api`)
 **Source:** [knowledge_index](../modules/knowledge_index.md)
-**Modules touched:** [concept_identity](../modules/concept_identity.md), [implementation_evidence](../modules/implementation_evidence.md), [knowledge_envelope](../modules/knowledge_envelope.md), and 17 more
+**Modules touched:** [concept_identity](../modules/concept_identity.md), [immutable](../modules/immutable.md), [implementation_evidence](../modules/implementation_evidence.md), and 18 more
 
 **Complete modules touched:**
 
 - [concept_identity](../modules/concept_identity.md)
+- [immutable](../modules/immutable.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
@@ -90,9 +91,9 @@ sequenceDiagram
     p13-->>p19: isinstance (src/llm_wiki_cli/services…ndex.py:_first_difference)(expected, dict)
 ```
 
-> Call sequence diagram shows 30 of 1153 interactions; 1123 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1188 interactions; 1158 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 6 of 270 (264 omitted); unresolved 1 of 174 (173 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 6 of 289 (283 omitted); unresolved 1 of 177 (176 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -106,7 +107,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_model.py:_component_to_payload` | 16 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_knowledge_index_to_payload_unchecked` | 7 | - | external | 3 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_knowledge_index_to_payload_unchecked` | 7 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 3 |
-> Omission summary shows 8 of 224 groups; 216 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 229 groups; 221 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -172,12 +173,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| serialize_knowledge_index | _serialize_payload | 433 | `_serialize_payload(knowledge_index_to_payload(...))` |
-| _serialize_payload | json.dumps | 418 | `json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False, allow_nan=False)` |
-| _serialize_payload | KnowledgeModelError | 424 | `KnowledgeModelError('model', 'cannot be serialized as finite JSON')` |
-| serialize_knowledge_index | knowledge_index_to_payload | 433 | `knowledge_index_to_payload(value)` |
-| knowledge_index_to_payload | _model_to_payload | 281 | `_model_to_payload(validate_knowledge_index(...))` |
-| _model_to_payload | _knowledge_index_to_payload_unchecked | 287 | `_knowledge_index_to_payload_unchecked(model)` |
+| serialize_knowledge_index | _serialize_payload | 449 | `_serialize_payload(knowledge_index_to_payload(...))` |
+| _serialize_payload | json.dumps | 434 | `json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False, allow_nan=False)` |
+| _serialize_payload | KnowledgeModelError | 440 | `KnowledgeModelError('model', 'cannot be serialized as finite JSON')` |
+| serialize_knowledge_index | knowledge_index_to_payload | 449 | `knowledge_index_to_payload(value)` |
+| knowledge_index_to_payload | _model_to_payload | 292 | `_model_to_payload(validate_knowledge_index(...))` |
+| _model_to_payload | _knowledge_index_to_payload_unchecked | 298 | `_knowledge_index_to_payload_unchecked(model)` |
 | _knowledge_index_to_payload_unchecked | _bundle_to_payload | 2224 | `_bundle_to_payload(model.bundle)` |
 | _bundle_to_payload | _emit_extensions | 2043 | `_emit_extensions({...}, bundle.repository.extensions, 'bundle.repository.extensions')` |
 | _emit_extensions | isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions) | 2003 | `isinstance(extensions, FrozenDict)` |
@@ -192,7 +193,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_serialize_payload` | `json.dumps` | 418 |
+| external_call | `_serialize_payload` | `json.dumps` | 434 |
 | external_call | `_emit_extensions` | `isinstance` | 2003 |
 | step_limit | `serialize_knowledge_index` | `first 12 steps` | 0 |
 | truncated_flow | `serialize_knowledge_index` | `depth limit` | 0 |

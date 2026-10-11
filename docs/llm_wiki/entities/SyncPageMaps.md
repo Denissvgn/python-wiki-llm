@@ -1,6 +1,6 @@
 # _SyncPageMaps
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1702`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1703`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)
@@ -36,8 +36,9 @@ flowchart LR
     n5["_apply_sync_changes (src/llm_wiki_cli/commands/sync_cmd.py)"]
     n6["_compute_sync_diff (src/llm_wiki_cli/commands/sync_cmd.py)"]
     n7["_prepare_sync_page_maps (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n8["_qualify_infrastructure_page_drift (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n9["_regenerate_api_contracts_page (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n8["_prepare_sync_run (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n9["_qualify_infrastructure_page_drift (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n10["_regenerate_api_contracts_page (src/llm_wiki_cli/commands/sync_cmd.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -47,6 +48,7 @@ flowchart LR
     n7 --> n0
     n8 --> n0
     n9 --> n0
+    n10 --> n0
     click n0 "../modules/sync_cmd.md"
     click n1 "../modules/sync_cmd.md"
     click n2 "../modules/sync_cmd.md"
@@ -57,6 +59,7 @@ flowchart LR
     click n7 "../modules/sync_cmd.md"
     click n8 "../modules/sync_cmd.md"
     click n9 "../modules/sync_cmd.md"
+    click n10 "../modules/sync_cmd.md"
 ```
 
 ### Summary
@@ -77,5 +80,6 @@ flowchart LR
 | `_compute_sync_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_prepare_sync_page_maps` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
 | `_prepare_sync_page_maps` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_prepare_sync_run` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
 | `_qualify_infrastructure_page_drift` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_regenerate_api_contracts_page` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |

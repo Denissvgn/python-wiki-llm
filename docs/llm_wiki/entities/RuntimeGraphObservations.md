@@ -1,6 +1,6 @@
 # _RuntimeGraphObservations
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1721`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1722`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)
@@ -43,13 +43,15 @@ flowchart LR
     n3["_build_sync_graph_observations (src/llm_wiki_cli/commands/sync_cmd.py)"]
     n4["_initialization_flow_entries (src/llm_wiki_cli/commands/sync_cmd.py)"]
     n5["_planned_generated_surface_prune (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n6["_sync_flow_index_entries (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n6["_prepare_sync_run (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n7["_sync_flow_index_entries (src/llm_wiki_cli/commands/sync_cmd.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
     n6 --> n0
+    n7 --> n0
     click n0 "../modules/sync_cmd.md"
     click n1 "../modules/sync_cmd.md"
     click n2 "../modules/sync_cmd.md"
@@ -57,6 +59,7 @@ flowchart LR
     click n4 "../modules/sync_cmd.md"
     click n5 "../modules/sync_cmd.md"
     click n6 "../modules/sync_cmd.md"
+    click n7 "../modules/sync_cmd.md"
 ```
 
 ### Summary
@@ -75,4 +78,5 @@ flowchart LR
 | `_build_sync_graph_observations` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_initialization_flow_entries` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_planned_generated_surface_prune` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_prepare_sync_run` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
 | `_sync_flow_index_entries` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |

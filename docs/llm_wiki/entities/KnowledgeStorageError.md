@@ -85,7 +85,7 @@ flowchart LR
 | `api` | import | [api](../modules/api.md) | — |
 | `task_cmd` | import | [task_cmd](../modules/task_cmd.md) | — |
 | `build_knowledge_commit_plan` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 2 |
-| `validate_knowledge_artifacts` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 4 |
+| `validate_knowledge_artifacts` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 5 |
 | `audit_logical_records` | call | [knowledge_audit](../modules/knowledge_audit.md) | 3 |
 | `audit_spilled_records` | call | [knowledge_audit](../modules/knowledge_audit.md) | 2 |
 | `expected_records` | call | [knowledge_audit](../modules/knowledge_audit.md) | 1 |
@@ -95,4 +95,4 @@ flowchart LR
 | `inspect_pack` | call | [knowledge_packs](../modules/knowledge_packs.md) | 1 |
 | `_concept_aliases` | call | [knowledge_storage](../modules/knowledge_storage.md) | 1 |
 
-> References: showing 12 of 82 logical references; 70 omitted by the 12-row generated summary limit.
+> References: showing 12 of 83 logical references; 71 omitted by the 12-row generated summary limit.

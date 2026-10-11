@@ -52,17 +52,16 @@ sequenceDiagram
     participant p5 as _require_validation_receipt
     participant p6 as _model_to_payload
     participant p7 as _decode_json_object
-    participant p8 as knowledge_payload.get
-    participant p9 as freeze
-    participant p10 as dict (src/llm_wiki_cli/services…idate_knowledge_artifacts)
-    participant p11 as StorageReadSession
-    participant p12 as StorageReadSession.read
-    participant p13 as len (src/llm_wiki_cli/services…idate_knowledge_artifacts)
-    participant p14 as SyncManifest.from_payload
-    participant p15 as captured_manifest.to_payload
-    participant p16 as manifest.to_payload (src/llm_wiki_cli/services…idate_knowledge_artifacts)
-    participant p17 as StorageReadSession.recheck
-    participant p18 as storage_session.read
+    participant p8 as isinstance (src/llm_wiki_cli/services…idate_knowledge_artifacts)
+    participant p9 as knowledge_payload.get
+    participant p10 as freeze
+    participant p11 as dict (src/llm_wiki_cli/services…idate_knowledge_artifacts)
+    participant p12 as StorageReadSession
+    participant p13 as StorageReadSession.read
+    participant p14 as len (src/llm_wiki_cli/services…idate_knowledge_artifacts)
+    participant p15 as SyncManifest.from_payload
+    participant p16 as captured_manifest.to_payload
+    participant p17 as manifest.to_payload (src/llm_wiki_cli/services…idate_knowledge_artifacts)
     p0->>p1: validate_surface_index_bytes
     p0-->>p2: Path(…).resolve
     p0-->>p3: Path (src/llm_wiki_cli/services…idate_knowledge_artifacts)(wiki_dir)
@@ -71,33 +70,33 @@ sequenceDiagram
     p0->>p6: _model_to_payload
     p0->>p4: KnowledgeArtifactError
     p0->>p7: _decode_json_object
-    p0-->>p8: knowledge_payload.get('schema_version')
-    p0->>p9: freeze
-    p0-->>p10: dict (src/llm_wiki_cli/services…idate_knowledge_artifacts)(manifest.storage_objects)
-    p0->>p9: freeze
-    p0->>p11: StorageReadSession
-    p0->>p12: StorageReadSession.read
-    p0-->>p13: len (src/llm_wiki_cli/services…idate_knowledge_artifacts)(knowledge_index_bytes)
-    p0->>p12: StorageReadSession.read
-    p0-->>p13: len (src/llm_wiki_cli/services…idate_knowledge_artifacts)(surface_index_bytes)
+    p0-->>p8: isinstance (src/llm_wiki_cli/services…idate_knowledge_artifacts)(_storage_validation_receipt, _ValidatedIndexReceipt)
+    p0-->>p2: Path(…).resolve
+    p0-->>p3: Path (src/llm_wiki_cli/services…idate_knowledge_artifacts)(wiki_dir)
+    p0-->>p9: knowledge_payload.get('schema_version')
     p0->>p4: KnowledgeArtifactError
-    p0->>p12: StorageReadSession.read
-    p0->>p14: SyncManifest.from_payload
+    p0->>p5: _require_validation_receipt
+    p0-->>p9: knowledge_payload.get('schema_version')
+    p0->>p10: freeze
+    p0-->>p11: dict (src/llm_wiki_cli/services…idate_knowledge_artifacts)(manifest.storage_objects)
+    p0->>p10: freeze
+    p0->>p12: StorageReadSession
+    p0->>p13: StorageReadSession.read
+    p0-->>p14: len (src/llm_wiki_cli/services…idate_knowledge_artifacts)(knowledge_index_bytes)
+    p0->>p13: StorageReadSession.read
+    p0-->>p14: len (src/llm_wiki_cli/services…idate_knowledge_artifacts)(surface_index_bytes)
+    p0->>p4: KnowledgeArtifactError
+    p0->>p13: StorageReadSession.read
+    p0->>p15: SyncManifest.from_payload
     p0->>p7: _decode_json_object
-    p0-->>p15: captured_manifest.to_payload
-    p0-->>p16: manifest.to_payload (src/llm_wiki_cli/services…idate_knowledge_artifacts)
+    p0-->>p16: captured_manifest.to_payload
+    p0-->>p17: manifest.to_payload (src/llm_wiki_cli/services…idate_knowledge_artifacts)
     p0->>p4: KnowledgeArtifactError
-    p0->>p9: freeze
-    p0->>p17: StorageReadSession.recheck
-    p0->>p11: StorageReadSession
-    p0->>p4: KnowledgeArtifactError
-    p0-->>p18: storage_session.read(KNOWLEDGE_INDEX_FILENAME, len(...))
-    p0-->>p13: len (src/llm_wiki_cli/services…idate_knowledge_artifacts)(knowledge_index_bytes)
 ```
 
-> Call sequence diagram shows 30 of 2170 interactions; 2140 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2194 interactions; 2164 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 5 of 599 (594 omitted); unresolved 5 of 359 (354 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 6 of 605 (599 omitted); unresolved 6 of 363 (357 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -111,7 +110,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_artifacts.py:_reject_json_constant` | 11 | [src/llm_wiki_cli/services/knowledge_artifacts.py](../modules/knowledge_artifacts.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_artifacts.py:_validate_surface_payload` | 17 | [src/llm_wiki_cli/services/knowledge_artifacts.py](../modules/knowledge_artifacts.md) | internal | 8 |
 | `src/llm_wiki_cli/services/knowledge_artifacts.py:_validate_utf8_json` | 18 | - | external | 5 |
-> Omission summary shows 8 of 500 groups; 492 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 502 groups; 494 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -159,7 +158,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `validate_knowledge_artifacts` | `surface_index_bytes: bytes`, `knowledge_index_bytes: bytes`, `manifest: SyncManifest`, `object_reader: Callable[[str, int], bytes] \| None`, `wiki_dir: str \| Path \| None`, `_validation_receipt: object \| None`, `_receipt_wiki_root: Path \| None` | `STORE_SCHEMA`, `PACKED_SCHEMAS`, `KNOWLEDGE_INDEX_FILENAME`, `SURFACE_INDEX_FILENAME`, `MANIFEST_FILENAME`, `MAX_EXPANDED_BYTES`, `STORE_SCHEMA`, `PACKED_SCHEMAS` | - | `validated` |
+| `validate_knowledge_artifacts` | `surface_index_bytes: bytes`, `knowledge_index_bytes: bytes`, `manifest: SyncManifest`, `object_reader: Callable[[str, int], bytes] \| None`, `wiki_dir: str \| Path \| None`, `_validation_receipt: object \| None`, `_receipt_wiki_root: Path \| None`, `_storage_validation_receipt: object \| None` | `STORE_SCHEMA`, `PACKED_SCHEMAS`, `STORE_SCHEMA`, `PACKED_SCHEMAS`, `KNOWLEDGE_INDEX_FILENAME`, `SURFACE_INDEX_FILENAME`, `MANIFEST_FILENAME`, `MAX_EXPANDED_BYTES` | - | `validated` |
 | `validate_surface_index_bytes` | `surface_index_bytes: bytes` | - | - | `surface_payload` |
 | `_decode_json_object` | `content: bytes`, `field: str` | `KnowledgeArtifactError`, `Mapping` | - | `value` |
 | `isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)` | - | - | - | - |
@@ -176,17 +175,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_knowledge_artifacts | validate_surface_index_bytes | 293 | `validate_surface_index_bytes(surface_index_bytes)` |
+| validate_knowledge_artifacts | validate_surface_index_bytes | 294 | `validate_surface_index_bytes(surface_index_bytes)` |
 | validate_surface_index_bytes | _decode_json_object | 257 | `_decode_json_object(surface_index_bytes, 'surface_index_bytes')` |
-| _decode_json_object | isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object) | 896 | `isinstance(content, bytes)` |
-| _decode_json_object | KnowledgeArtifactError | 897 | `KnowledgeArtifactError(field, 'must be bytes')` |
-| _decode_json_object | content.decode | 899 | `content.decode('utf-8')` |
-| _decode_json_object | KnowledgeArtifactError | 901 | `KnowledgeArtifactError(field, 'must be valid UTF-8')` |
-| _decode_json_object | json.loads (src/llm_wiki_cli/services…ts.py:_decode_json_object) | 903 | `json.loads(text, object_pairs_hook=..., parse_constant=...)` |
-| _decode_json_object | _unique_json_object | 905 | `_unique_json_object(pairs, field)` |
-| _unique_json_object | KnowledgeArtifactError | 924 | `KnowledgeArtifactError(field, ...)` |
-| _decode_json_object | _reject_json_constant | 906 | `_reject_json_constant(value, field)` |
-| _reject_json_constant | KnowledgeArtifactError | 930 | `KnowledgeArtifactError(field, ...)` |
+| _decode_json_object | isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object) | 924 | `isinstance(content, bytes)` |
+| _decode_json_object | KnowledgeArtifactError | 925 | `KnowledgeArtifactError(field, 'must be bytes')` |
+| _decode_json_object | content.decode | 927 | `content.decode('utf-8')` |
+| _decode_json_object | KnowledgeArtifactError | 929 | `KnowledgeArtifactError(field, 'must be valid UTF-8')` |
+| _decode_json_object | json.loads (src/llm_wiki_cli/services…ts.py:_decode_json_object) | 931 | `json.loads(text, object_pairs_hook=..., parse_constant=...)` |
+| _decode_json_object | _unique_json_object | 933 | `_unique_json_object(pairs, field)` |
+| _unique_json_object | KnowledgeArtifactError | 952 | `KnowledgeArtifactError(field, ...)` |
+| _decode_json_object | _reject_json_constant | 934 | `_reject_json_constant(value, field)` |
+| _reject_json_constant | KnowledgeArtifactError | 958 | `KnowledgeArtifactError(field, ...)` |
 
 ### Boundary effects
 
@@ -196,9 +195,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_decode_json_object` | `isinstance` | 896 |
-| unresolved_call | `_decode_json_object` | `content.decode` | 899 |
-| external_call | `_decode_json_object` | `json.loads` | 903 |
+| external_call | `_decode_json_object` | `isinstance` | 924 |
+| unresolved_call | `_decode_json_object` | `content.decode` | 927 |
+| external_call | `_decode_json_object` | `json.loads` | 931 |
 | step_limit | `validate_knowledge_artifacts` | `first 12 steps` | 0 |
 | truncated_flow | `validate_knowledge_artifacts` | `depth limit` | 0 |
 

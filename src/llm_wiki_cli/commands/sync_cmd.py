@@ -92,6 +92,7 @@ from ..services.knowledge_artifacts import (
 )
 from ..services.knowledge_envelope import RepositoryEvidence, build_repository_record
 from ..services import knowledge_reuse
+from ..services import sync_analysis_cache
 from ..services.knowledge_evidence import hash_file
 from ..services.knowledge_evidence import (
     is_valid_sha256,
@@ -1798,6 +1799,10 @@ class _PreparedSyncRun:
     log_missing: bool
     committed_state: CommittedKnowledgeState | None = None
     reuse_observations_hash: str | None = None
+    entrypoint_analysis: _SyncEntryPointAnalysis | None = None
+    contracts: dict | None = None
+    analysis_reused: bool = False
+    analysis_input_key: dict | None = None
     page_transitions: PageTransitionPlan | None = None
     transition_execution: PageTransitionExecution | None = None
 
@@ -1958,6 +1963,7 @@ def _dependency_plan(
     inventory: dict,
     *,
     source_snapshot: SourceSnapshot | None = None,
+    cached_analysis: dict | None = None,
 ) -> tuple[dict, dict | None, tuple[str, ...], tuple[str, ...], int]:
     existing = tuple(
         stem
@@ -1980,7 +1986,7 @@ def _dependency_plan(
     )
     excluded_tests = len(inventory) - len(dependency_inventory)
     analysis = (
-        analyze_dependencies(
+        cached_analysis or analyze_dependencies(
             dependency_inventory,
             options.src_dir,
             source_snapshot=source_snapshot,
@@ -2008,6 +2014,7 @@ def _build_surface_initialization_plan(
     api_contracts: dict | None,
     generation_inputs: Mapping[str, object],
     source_snapshot: SourceSnapshot | None = None,
+    cached_dependency_analysis: dict | None = None,
 ) -> _SurfaceInitializationPlan:
     surfaces, policy_changed = _updated_surface_policies(options, manifest)
     include_all_enabled = not options.initialize_surfaces
@@ -2032,6 +2039,7 @@ def _build_surface_initialization_plan(
             surfaces,
             inventory,
             source_snapshot=source_snapshot,
+            cached_analysis=cached_dependency_analysis,
         )
     else:
         dependency_inventory = inventory
@@ -3713,16 +3721,27 @@ def _prepare_sync_run(
         baseline_manifest,
         source_snapshot,
     )
-    extracted = _extract_current_inventory(
-        options,
-        source_snapshot=source_snapshot,
+    cached_analysis = sync_analysis_cache.load(
+        options, source_snapshot, baseline_manifest, generation_inputs, committed_state,
+    ) if manifest is not None and not _invalid_manifest_hash_paths(manifest) else None
+    cached_wiki_inputs = knowledge_reuse.wiki_input_hashes(options.wiki_dir) if cached_analysis is not None else None
+    extracted = (
+        _ExtractedSyncInventory(
+            sync_analysis_cache.inventory_result(cached_analysis, source_snapshot, options), source_snapshot,
+        ) if cached_analysis is not None else _extract_current_inventory(options, source_snapshot=source_snapshot)
     )
     inventory_result = extracted.result
     source_snapshot = extracted.source_snapshot
     inventory = inventory_result.inventory
     source_content_hashes = source_snapshot.hashes_for(inventory)
     repair_only = manifest is not None and bool(_invalid_manifest_hash_paths(manifest))
-    maps = _prepare_sync_page_maps(inventory)
+    maps = (
+        _SyncPageMaps(
+            cached_analysis["module_page_map"],
+            {(a, b): c for a, b, c in cached_analysis["entity_page_map"]},
+            {(a, b, c): d for a, b, c, d in cached_analysis["entity_occurrence_page_map"]},
+        ) if cached_analysis is not None else _prepare_sync_page_maps(inventory)
+    )
     if manifest is None:
         manifest = _build_manifest_from_inventory(
             inventory,
@@ -3748,6 +3767,12 @@ def _prepare_sync_run(
     )
     entries = attach_routes_to_entry_points(entrypoint_analysis.entries, contracts)
     contracts = _linked_api_contracts(contracts, entries)
+    from dataclasses import asdict
+    cached_graph_matches = bool(cached_analysis is not None
+                                and cached_analysis["entrypoint_analysis"] == asdict(entrypoint_analysis)
+                                and cached_analysis["contracts"] == contracts)
+    if cached_analysis is not None and not cached_graph_matches:
+        print("Sync graph reuse: miss (detector-observations-changed)", flush=True)
     diff = _compute_sync_diff(
         manifest,
         inventory,
@@ -3775,6 +3800,7 @@ def _prepare_sync_run(
         api_contracts=contracts,
         generation_inputs=generation_inputs,
         source_snapshot=source_snapshot,
+        cached_dependency_analysis=cached_analysis["graph_observations"]["dependency_analysis"] if cached_analysis is not None and cached_graph_matches else None,
     )
     infrastructure_plan = _discover_infrastructure_plan(
         source_snapshot,
@@ -3885,6 +3911,12 @@ def _prepare_sync_run(
             reuse_observations_hash,
         )
         if reused is not None:
+            if cached_wiki_inputs is not None and knowledge_reuse.wiki_input_hashes(options.wiki_dir) != cached_wiki_inputs:
+                raise sync_analysis_cache.SyncAnalysisMutationError("wiki changed during cached sync planning")
+            if cached_analysis is not None and sync_analysis_cache.input_key(
+                options, source_snapshot, manifest, surface_plan.generation_inputs,
+            ) != cached_analysis["input_key"]:
+                raise sync_analysis_cache.SyncAnalysisMutationError("analysis inputs changed during cached sync")
             return reused
     graph_options = options
     graph_plan = surface_plan
@@ -3923,7 +3955,7 @@ def _prepare_sync_run(
         api_contracts=contracts,
         dependency_analysis=graph_plan.dependency_analysis,
     )
-    graph_observations = _build_sync_graph_observations(
+    graph_observations = _RuntimeGraphObservations(**cached_analysis["graph_observations"]) if cached_analysis is not None and cached_graph_matches else _build_sync_graph_observations(
         graph_options,
         inventory,
         source_snapshot,
@@ -4007,6 +4039,8 @@ def _prepare_sync_run(
             maps.module_page_map, maps.entity_occurrence_page_cache,
             source_selection_policy=source_snapshot.source_selection_policy,
         )
+    if cached_wiki_inputs is not None and knowledge_reuse.wiki_input_hashes(options.wiki_dir) != cached_wiki_inputs:
+        raise sync_analysis_cache.SyncAnalysisMutationError("wiki changed during cached sync planning")
     return _PreparedSyncRun(
         manifest=manifest,
         seed_manifest=seed_manifest,
@@ -4028,7 +4062,11 @@ def _prepare_sync_run(
         log_missing=not (options.wiki_dir / canonical_path(PageKind.LOG)).is_file(),
         committed_state=committed_state,
         reuse_observations_hash=reuse_observations_hash,
+        entrypoint_analysis=entrypoint_analysis,
+        contracts=contracts,
         page_transitions=page_transitions,
+        analysis_reused=cached_analysis is not None,
+        analysis_input_key=cached_analysis["input_key"] if cached_analysis is not None else None,
     )
 
 
@@ -4539,6 +4577,13 @@ def _finalize_prepared_sync(
         prepared.repository_evidence,
         prepared.reuse_observations_hash,
     )
+    analysis_payload = sync_analysis_cache.build_payload(options, prepared, surface)
+    prior = prepared.committed_state.artifacts if prepared.committed_state is not None else None
+    if (prior is not None and sync_analysis_cache.EXTENSION not in prior.knowledge.extensions
+            and reuse_basis is not None
+            and reuse_basis["source_snapshot_hash"] == prior.knowledge.bundle.snapshot.source_snapshot_hash
+            and reuse_basis["markdown_snapshot_hash"] == prior.knowledge.bundle.snapshot.markdown_snapshot_hash):
+        analysis_payload = None  # Never change an established no-op just to seed a cache.
     artifact_result = finalize_runtime_knowledge(
         RuntimeKnowledgeInputs(
             target_wiki_dir=target,
@@ -4556,6 +4601,8 @@ def _finalize_prepared_sync(
             previous_manifest=prepared.manifest,
             committed_state=prepared.committed_state,
             reuse_input_basis=reuse_basis,
+            sync_analysis_commitment=sync_analysis_cache.commitment(analysis_payload),
+            reuse_typed_graph=prepared.analysis_reused and not options.rebuild_knowledge,
             next_manifest=next_manifest,
             manifest_surfaces=prepared.surface_plan.surfaces,
             manifest_generation_inputs=prepared.surface_plan.generation_inputs,
@@ -4613,6 +4660,7 @@ def _finalize_prepared_sync(
     if dry_run:
         return artifact_result
 
+    sync_analysis_cache.save(options, analysis_payload)
     if prepared.repair_only:
         invalid_hashes = len(_invalid_manifest_hash_paths(prepared.manifest))
         print(
@@ -4862,7 +4910,7 @@ def _run_prepared_sync(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> 
             return
         _enforce_sync_write_safety(options, prepared)
         _execute_prepared_sync(options, prepared)
-    except SyncOwnershipError as exc:
+    except (SyncOwnershipError, sync_analysis_cache.SyncAnalysisMutationError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(2)
 
@@ -4889,6 +4937,7 @@ def _run_sync_options(options, write_basis=None) -> None:
         InfrastructureSyncError,
         SyncOwnershipError,
         SyncRuntimeRefreshError,
+        sync_analysis_cache.SyncAnalysisMutationError,
     ) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(2)

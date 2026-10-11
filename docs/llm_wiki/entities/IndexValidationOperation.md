@@ -1,6 +1,6 @@
 # _IndexValidationOperation
 
-**Location:** `src/llm_wiki_cli/services/knowledge_index.py:304`
+**Location:** `src/llm_wiki_cli/services/knowledge_index.py:315`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_index](../modules/knowledge_index.md)
@@ -18,6 +18,7 @@ _Auto-generated from `_IndexValidationOperation` in `src/llm_wiki_cli/services/k
 | `wiki_root` | `Path` | *required* | — |
 | `token` | `object` | `field(default_factory=object)` | — |
 | `_active` | `bool` | `field(default=True, init=False, repr=False, compare=False)` | — |
+| `models` | `dict` | `field(default_factory=dict, init=False, repr=False, compare=False)` | — |
 
 ## Methods
 
@@ -39,7 +40,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [knowledge_index](../modules/knowledge_index.md) | 0 | `_active`, `token`, `wiki_root` |
+| [knowledge_index](../modules/knowledge_index.md) | 0 | `_active`, `models`, `token`, `wiki_root` |
 
 ### References
 

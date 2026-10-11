@@ -13,6 +13,14 @@ pages, rereading source files, invoking extractors, or writing output.  The only
 filesystem reads are the target-state comparisons performed by
 :func:`build_knowledge_commit_plan`.
 
+
+Source-derived typed graph reuse requires a validated prior artifact and exact
+matching inventory, source snapshot, generation options, producer and concept
+coordinates. It is independent of re-evaluating Markdown sections, semantic
+hashes, links and resulting commitments. A changed basis or explicit full
+rebuild materializes the graph normally; reuse does not establish semantic
+correctness or widen source coverage.
+
 ## Imports
 
 | Source | Symbols |
@@ -20,9 +28,9 @@ filesystem reads are the target-state comparisons performed by
 | `.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY` |
 | `.implementation_evidence` | `project_concept_implementations`, `analysis_hash_from_producer` |
 | `.infrastructure_sync` | `InfrastructureSyncError`, `infrastructure_evidence_by_page` |
-| `.knowledge_artifacts` | `KnowledgeArtifactError`, `KnowledgeCommitPlan`, `build_knowledge_commit_plan`, `ValidatedKnowledgeArtifacts`, `validate_surface_index_bytes` |
-| `.knowledge_envelope` | `ConsumedInput`, `EnvelopeInputs`, `KnowledgeEnvelopeError`, `ProducerComponentInput`, `RepositoryEvidence`, `build_evaluated_envelope`, `build_repository_record` |
-| `.knowledge_evidence` | `ConceptObservationBasis`, `build_entity_observation_basis`, `build_module_observation_basis`, `is_valid_sha256` |
+| `.knowledge_artifacts` | `KnowledgeArtifactError`, `KnowledgeCommitPlan`, `build_knowledge_commit_plan`, `ValidatedKnowledgeArtifacts`, `validate_surface_index_bytes`, `require_validated_artifacts` |
+| `.knowledge_envelope` | `EvaluatedEnvelope`, `ConsumedInput`, `EnvelopeInputs`, `KnowledgeEnvelopeError`, `ProducerComponentInput`, `RepositoryEvidence`, `build_evaluated_envelope`, `build_repository_record`, `INVENTORY_HASH_EXTENSION`, `hash_inventory` |
+| `.knowledge_evidence` | `ConceptObservationBasis`, `build_entity_observation_basis`, `build_module_observation_basis`, `is_valid_sha256`, `hash_json` |
 | `.knowledge_governance` | `GovernanceLedger`, `apply_governance_projection` |
 | `.knowledge_graph` | `DEFAULT_EVIDENCE_LIMIT`, `GraphConcept`, `KnowledgeGraphError`, `KnowledgeGraphInputs`, `materialize_typed_graph` |
 | `.knowledge_index` | `KnowledgeIndexBuildError`, `KnowledgeIndexInputs`, `build_knowledge_index`, `_knowledge_validation_operation` |
@@ -31,14 +39,15 @@ filesystem reads are the target-state comparisons performed by
 | `.knowledge_reuse` | `REUSE_EXTENSION_KEY`, `REUSE_INPUT_KEY`, `bind_reuse_commitment` |
 | `.maintenance_evidence` | `captured_observations_from_knowledge`, `reconcile_pending_maintenance`, `maintenance_transfers_from_page_plan` |
 | `.maintenance_projection` | `project_maintenance_knowledge` |
-| `.progress` | `observed_phase` |
+| `.progress` | `observed_phase`, `record_counts` |
 | `.section_ownership` | `observe_page_sections`, `section_ownership_extension` |
+| `.sync_analysis_cache` | `EXTENSION` |
 | `.sync_manifest` | `EVIDENCE_NOT_RECORDED`, `MANIFEST_REPAIR_UNAVAILABLE`, `PRODUCER_BASIS_INCOMPATIBLE`, `TOMBSTONE_UNKNOWN_PROVENANCE`, `ManifestEvidenceBaseline`, `ManifestTombstone`, `SyncManifest`, `SyncManifestError` |
 | `.sync_transitions` | `PageTransitionPlan` |
 | `.wiki_surface` | `PageKind`, `WikiSurfacePage` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping`, `Sequence`, `Set` |
-| `dataclasses` | `dataclass`, `field` |
+| `dataclasses` | `dataclass`, `field`, `asdict` |
 | `json` | `json` |
 | `pathlib` | `Path` |
 | `typing` | `Any`, `TYPE_CHECKING` |
@@ -61,17 +70,17 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (1) |
-| Outbound | `src` (19) |
+| Inbound | `src` (2) |
+| Outbound | `src` (20) |
 
-> All 20 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 21 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [KnowledgeGenerationError](../entities/KnowledgeGenerationError.md) | 91 | `ValueError` | Field-specific failure at the shared generation-planning boundary. |
-| [KnowledgeGenerationInputs](../entities/KnowledgeGenerationInputs.md) | 101 | — | Complete already-evaluated inputs for one generated artifact set. |
+| [KnowledgeGenerationError](../entities/KnowledgeGenerationError.md) | 92 | `ValueError` | Field-specific failure at the shared generation-planning boundary. |
+| [KnowledgeGenerationInputs](../entities/KnowledgeGenerationInputs.md) | 102 | — | Complete already-evaluated inputs for one generated artifact set. |
 
 ## Functions
 
@@ -79,7 +88,7 @@ flowchart LR
 |----------|-----------|------------|-------------|
 | `build_knowledge_generation_plan` | `(inputs: KnowledgeGenerationInputs) -> KnowledgeCommitPlan` | — | Construct one validated atomic commit plan from evaluated inputs. |
 | `_build_knowledge_generation_plan` | `(inputs: KnowledgeGenerationInputs) -> KnowledgeCommitPlan` | — | — |
-| `_application_knowledge_extensions` | `(inputs: KnowledgeGenerationInputs, *, inventory: Mapping[str, Mapping[str, Any]], module_page_map: Mapping[str, str], occurrence_page_map: Mapping[tuple[str, str, int], str]) -> dict[str, Any]` | — | Build reserved extensions from the exact final evaluated snapshot. |
+| `_application_knowledge_extensions` | `(inputs: KnowledgeGenerationInputs, *, inventory: Mapping[str, Mapping[str, Any]], module_page_map: Mapping[str, str], occurrence_page_map: Mapping[tuple[str, str, int], str], envelope: EvaluatedEnvelope) -> dict[str, Any]` | — | Build reserved extensions from the exact final evaluated snapshot. |
 | `_graph_concepts` | `(pages: Sequence[WikiSurfacePage], *, module_page_map: Mapping[str, str], occurrence_page_map: Mapping[tuple[str, str, int], str]) -> tuple[GraphConcept, ...]` | — | Project final surface coordinates into graph ownership coordinates. |
 | `_preserve_unchanged_unknown_baselines` | `(baselines: Mapping[str, ConceptObservationBasis], previous: SyncManifest \| None, source_hashes: Mapping[str, str], regenerated_page_paths: frozenset[str]) -> dict[str, ConceptObservationBasis \| ManifestEvidenceBaseline]` | — | Keep unrecoverable provenance unknown until its source is regenerated. |
 | `_validated_evidence_page_paths` | `(value: AbstractSet[str], current_baselines: Mapping[str, ConceptObservationBasis], field_name: str) -> frozenset[str]` | — | — |

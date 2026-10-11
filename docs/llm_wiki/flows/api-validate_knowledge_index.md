@@ -2,12 +2,13 @@
 
 **Entry point:** `validate_knowledge_index` (`api`)
 **Source:** [knowledge_index](../modules/knowledge_index.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [concept_identity](../modules/concept_identity.md), [implementation_evidence](../modules/implementation_evidence.md), and 20 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [concept_identity](../modules/concept_identity.md), [immutable](../modules/immutable.md), and 21 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
 - [concept_identity](../modules/concept_identity.md)
+- [immutable](../modules/immutable.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
@@ -93,9 +94,9 @@ sequenceDiagram
     p7-->>p23: set (src/llm_wiki_cli/services…ndex.py:_first_difference)(actual)
 ```
 
-> Call sequence diagram shows 30 of 2284 interactions; 2254 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2321 interactions; 2291 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 7 of 595 (588 omitted); unresolved 2 of 405 (403 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 7 of 615 (608 omitted); unresolved 2 of 408 (406 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -109,7 +110,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_model.py:_object` | 5 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 3 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_record` | 4 | - | external | 4 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_parse_extensions` | 22 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 7 |
-> Omission summary shows 8 of 565 groups; 557 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 572 groups; 564 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -172,8 +173,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_knowledge_index | isinstance (src/llm_wiki_cli/services…:validate_knowledge_index) | 258 | `isinstance(value, KnowledgeIndex)` |
-| validate_knowledge_index | parse_knowledge_index | 260 | `parse_knowledge_index(_model_to_payload(...))` |
+| validate_knowledge_index | isinstance (src/llm_wiki_cli/services…:validate_knowledge_index) | 269 | `isinstance(value, KnowledgeIndex)` |
+| validate_knowledge_index | parse_knowledge_index | 271 | `parse_knowledge_index(_model_to_payload(...))` |
 | parse_knowledge_index | _record | 526 | `_record(payload, '', {...}, required={...})` |
 | _record | _object (src/llm_wiki_cli/services/knowledge_model.py) | 1608 | `_object(value, ...)` |
 | _object (src/llm_wiki_cli/services/knowledge_model.py) | dict (src/llm_wiki_cli/services…nowledge_model.py:_object) | 1694 | `dict(require_mapping(...))` |
@@ -192,7 +193,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `validate_knowledge_index` | `isinstance` | 258 |
+| external_call | `validate_knowledge_index` | `isinstance` | 269 |
 | external_call | `require_mapping` | `isinstance` | 765 |
 | external_call | `require_mapping` | `isinstance` | 769 |
 | unresolved_call | `require_mapping` | `key.encode` | 774 |

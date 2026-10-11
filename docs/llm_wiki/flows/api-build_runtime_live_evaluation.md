@@ -150,17 +150,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_runtime_live_evaluation | isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 591 | `isinstance(inputs, RuntimeLiveEvaluationInputs)` |
-| build_runtime_live_evaluation | TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 592 | `TypeError('inputs must be a RuntimeLiveEvaluationInputs')` |
-| build_runtime_live_evaluation | isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 593 | `isinstance(inputs.knowledge, KnowledgeIndex)` |
-| build_runtime_live_evaluation | TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 594 | `TypeError('inputs.knowledge must be a KnowledgeIndex')` |
-| build_runtime_live_evaluation | isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 595 | `isinstance(inputs.manifest, SyncManifest)` |
-| build_runtime_live_evaluation | TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 596 | `TypeError('inputs.manifest must be a SyncManifest')` |
-| build_runtime_live_evaluation | isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 597 | `isinstance(inputs.source_snapshot, SourceSnapshot)` |
-| build_runtime_live_evaluation | TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 598 | `TypeError('inputs.source_snapshot must be a SourceSnapshot')` |
-| build_runtime_live_evaluation | isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 599 | `isinstance(inputs.inventory, Mapping)` |
-| build_runtime_live_evaluation | TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 600 | `TypeError('inputs.inventory must be a mapping')` |
-| build_runtime_live_evaluation | isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 601 | `isinstance(inputs.infrastructure_inventory, Mapping)` |
+| build_runtime_live_evaluation | isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 596 | `isinstance(inputs, RuntimeLiveEvaluationInputs)` |
+| build_runtime_live_evaluation | TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 597 | `TypeError('inputs must be a RuntimeLiveEvaluationInputs')` |
+| build_runtime_live_evaluation | isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 598 | `isinstance(inputs.knowledge, KnowledgeIndex)` |
+| build_runtime_live_evaluation | TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 599 | `TypeError('inputs.knowledge must be a KnowledgeIndex')` |
+| build_runtime_live_evaluation | isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 600 | `isinstance(inputs.manifest, SyncManifest)` |
+| build_runtime_live_evaluation | TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 601 | `TypeError('inputs.manifest must be a SyncManifest')` |
+| build_runtime_live_evaluation | isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 602 | `isinstance(inputs.source_snapshot, SourceSnapshot)` |
+| build_runtime_live_evaluation | TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 603 | `TypeError('inputs.source_snapshot must be a SourceSnapshot')` |
+| build_runtime_live_evaluation | isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 604 | `isinstance(inputs.inventory, Mapping)` |
+| build_runtime_live_evaluation | TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 605 | `TypeError('inputs.inventory must be a mapping')` |
+| build_runtime_live_evaluation | isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation) | 606 | `isinstance(inputs.infrastructure_inventory, Mapping)` |
 
 ### Boundary effects
 
@@ -170,17 +170,17 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_runtime_live_evaluation` | `isinstance` | 591 |
-| external_call | `build_runtime_live_evaluation` | `TypeError` | 592 |
-| external_call | `build_runtime_live_evaluation` | `isinstance` | 593 |
-| external_call | `build_runtime_live_evaluation` | `TypeError` | 594 |
-| external_call | `build_runtime_live_evaluation` | `isinstance` | 595 |
-| external_call | `build_runtime_live_evaluation` | `TypeError` | 596 |
-| external_call | `build_runtime_live_evaluation` | `isinstance` | 597 |
-| external_call | `build_runtime_live_evaluation` | `TypeError` | 598 |
-| external_call | `build_runtime_live_evaluation` | `isinstance` | 599 |
-| external_call | `build_runtime_live_evaluation` | `TypeError` | 600 |
-| external_call | `build_runtime_live_evaluation` | `isinstance` | 601 |
+| external_call | `build_runtime_live_evaluation` | `isinstance` | 596 |
+| external_call | `build_runtime_live_evaluation` | `TypeError` | 597 |
+| external_call | `build_runtime_live_evaluation` | `isinstance` | 598 |
+| external_call | `build_runtime_live_evaluation` | `TypeError` | 599 |
+| external_call | `build_runtime_live_evaluation` | `isinstance` | 600 |
+| external_call | `build_runtime_live_evaluation` | `TypeError` | 601 |
+| external_call | `build_runtime_live_evaluation` | `isinstance` | 602 |
+| external_call | `build_runtime_live_evaluation` | `TypeError` | 603 |
+| external_call | `build_runtime_live_evaluation` | `isinstance` | 604 |
+| external_call | `build_runtime_live_evaluation` | `TypeError` | 605 |
+| external_call | `build_runtime_live_evaluation` | `isinstance` | 606 |
 | step_limit | `build_runtime_live_evaluation` | `first 12 steps` | 0 |
 
 ## Behavior

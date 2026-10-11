@@ -1,6 +1,6 @@
 # KnowledgeGenerationInputs
 
-**Location:** `src/llm_wiki_cli/services/knowledge_generation.py:101`
+**Location:** `src/llm_wiki_cli/services/knowledge_generation.py:102`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_generation](../modules/knowledge_generation.md)
@@ -59,6 +59,7 @@ inventory source.
 | `snapshot_extensions` | `Mapping[str, Any]` | `field(default_factory=dict)` | — |
 | `producer_extensions` | `Mapping[str, Any]` | `field(default_factory=dict)` | — |
 | `knowledge_extensions` | `Mapping[str, Any]` | `field(default_factory=dict)` | — |
+| `reuse_typed_graph` | `bool` | `False` | — |
 | `call_edges` | `Mapping[str, Any] \| Sequence[Mapping[str, Any]]` | `()` | — |
 | `dependency_observations` | `Mapping[str, Any] \| Sequence[Mapping[str, Any]]` | `()` | — |
 | `entrypoint_observations` | `Mapping[str, Any] \| Sequence[Mapping[str, Any]]` | `()` | — |

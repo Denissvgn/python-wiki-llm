@@ -10,7 +10,7 @@ filesystem reads are the target-state comparisons performed by
 
 from __future__ import annotations
 
-from .progress import observed_phase
+from .progress import observed_phase, record_counts
 
 import json
 from collections.abc import Mapping, Sequence
@@ -30,6 +30,7 @@ from .knowledge_artifacts import (
     validate_surface_index_bytes,
 )
 from .knowledge_envelope import (
+    EvaluatedEnvelope,
     ConsumedInput,
     EnvelopeInputs,
     KnowledgeEnvelopeError,
@@ -146,6 +147,7 @@ class KnowledgeGenerationInputs:
     snapshot_extensions: Mapping[str, Any] = field(default_factory=dict)
     producer_extensions: Mapping[str, Any] = field(default_factory=dict)
     knowledge_extensions: Mapping[str, Any] = field(default_factory=dict)
+    reuse_typed_graph: bool = False
     call_edges: Mapping[str, Any] | Sequence[Mapping[str, Any]] = ()
     dependency_observations: Mapping[str, Any] | Sequence[Mapping[str, Any]] = ()
     entrypoint_observations: Mapping[str, Any] | Sequence[Mapping[str, Any]] = ()
@@ -380,6 +382,7 @@ def _build_knowledge_generation_plan(
         inventory=inventory,
         module_page_map=module_page_map,
         occurrence_page_map=occurrence_page_map,
+        envelope=envelope,
     )
     from .knowledge_reuse import (
         REUSE_EXTENSION_KEY,
@@ -490,6 +493,7 @@ def _application_knowledge_extensions(
     inventory: Mapping[str, Mapping[str, Any]],
     module_page_map: Mapping[str, str],
     occurrence_page_map: Mapping[tuple[str, str, int], str],
+    envelope: EvaluatedEnvelope,
 ) -> dict[str, Any]:
     """Build reserved extensions from the exact final evaluated snapshot."""
 
@@ -504,7 +508,26 @@ def _application_knowledge_extensions(
                 "is application-owned and cannot be supplied by callers",
             )
 
-    graph = materialize_typed_graph(
+    from .sync_analysis_cache import EXTENSION
+    from .knowledge_artifacts import require_validated_artifacts
+    prior = inputs.prior_artifacts
+    reused_graph = None
+    if inputs.reuse_typed_graph and prior is not None:
+        require_validated_artifacts(prior)
+        commitment = extensions.get(EXTENSION)
+        from dataclasses import asdict
+        from .knowledge_envelope import INVENTORY_HASH_EXTENSION, hash_inventory
+        from .knowledge_evidence import hash_json
+        coordinates = _graph_concepts(inputs.pages, module_page_map=module_page_map, occurrence_page_map=occurrence_page_map)
+        if (isinstance(commitment, Mapping) and commitment == prior.knowledge.extensions.get(EXTENSION)
+                and commitment.get("graph_concepts_hash") == hash_json([asdict(v) for v in coordinates])
+                and hash_inventory(inventory) == prior.knowledge.bundle.snapshot.extensions[INVENTORY_HASH_EXTENSION]
+                and envelope.bundle.snapshot.source_snapshot_hash == prior.knowledge.bundle.snapshot.source_snapshot_hash
+                and envelope.bundle.snapshot.generation_options_hash == prior.knowledge.bundle.snapshot.generation_options_hash
+                and envelope.bundle.producer == prior.knowledge.bundle.producer):
+            reused_graph = prior.knowledge.extensions[TYPED_GRAPH_EXTENSION_KEY]
+            record_counts(reused_typed_graph=1)
+    graph = reused_graph if reused_graph is not None else materialize_typed_graph(
         KnowledgeGraphInputs(
             inventory=inventory,
             concepts=_graph_concepts(

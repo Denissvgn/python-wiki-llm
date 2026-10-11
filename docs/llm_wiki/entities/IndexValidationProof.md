@@ -1,6 +1,6 @@
 # _IndexValidationProof
 
-**Location:** `src/llm_wiki_cli/services/knowledge_index.py:349`
+**Location:** `src/llm_wiki_cli/services/knowledge_index.py:361`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_index](../modules/knowledge_index.md)
@@ -35,9 +35,12 @@ _Auto-generated from `_IndexValidationProof` in `src/llm_wiki_cli/services/knowl
 flowchart LR
     n0["_IndexValidationProof (src/llm_wiki_cli/services/knowledge_index.py)"]
     n1["_validated_index_receipt (src/llm_wiki_cli/services/knowledge_index.py)"]
+    n2["build_knowledge_index (src/llm_wiki_cli/services/knowledge_index.py)"]
     n1 --> n0
+    n2 --> n0
     click n0 "../modules/knowledge_index.md"
     click n1 "../modules/knowledge_index.md"
+    click n2 "../modules/knowledge_index.md"
 ```
 
 ### Summary
@@ -51,3 +54,4 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `_validated_index_receipt` | call | [knowledge_index](../modules/knowledge_index.md) | 1 |
+| `build_knowledge_index` | call | [knowledge_index](../modules/knowledge_index.md) | 1 |

@@ -12,6 +12,13 @@ module adapts those exact in-memory results to the pure generation planner and
 applies the shared atomic commit protocol.  It performs no discovery or
 extraction of its own.
 
+
+Sync transports the exact authenticated static-analysis commitment and an
+optional typed-graph reuse request to the generation owner. This is an internal
+optimization of evaluated inputs; it does not adopt storage or maintenance,
+prepare helpers, alter read scope or waive the live source and prior-artifact
+checks around publication.
+
 ## Imports
 
 | Source | Symbols |
@@ -77,10 +84,10 @@ flowchart LR
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
 | [RuntimeKnowledgeInputs](../entities/RuntimeKnowledgeInputs.md) | 134 | — | Evaluated command state needed to plan one three-artifact commit. |
-| [CommittedKnowledgeState](../entities/CommittedKnowledgeState.md) | 185 | — | One command's captured prior commit, including explicit absent/invalid state. |
-| [CommittedRuntimeProvenance](../entities/CommittedRuntimeProvenance.md) | 290 | — | Exact runtime provenance recovered from an intact committed projection. |
-| [RuntimeLiveEvaluationInputs](../entities/RuntimeLiveEvaluationInputs.md) | 299 | — | Already evaluated runtime values for one live freshness comparison. |
-| [PreparedRuntimeGenerationOptions](../entities/PreparedRuntimeGenerationOptions.md) | 322 | — | Canonical writer/reader inputs for the generation-options commitment. |
+| [CommittedKnowledgeState](../entities/CommittedKnowledgeState.md) | 187 | — | One command's captured prior commit, including explicit absent/invalid state. |
+| [CommittedRuntimeProvenance](../entities/CommittedRuntimeProvenance.md) | 292 | — | Exact runtime provenance recovered from an intact committed projection. |
+| [RuntimeLiveEvaluationInputs](../entities/RuntimeLiveEvaluationInputs.md) | 301 | — | Already evaluated runtime values for one live freshness comparison. |
+| [PreparedRuntimeGenerationOptions](../entities/PreparedRuntimeGenerationOptions.md) | 324 | — | Canonical writer/reader inputs for the generation-options commitment. |
 
 ## Functions
 

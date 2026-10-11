@@ -5,6 +5,7 @@ from collections.abc import MutableMapping
 from typing import cast
 from dataclasses import replace
 import json
+from typing import Any
 
 import pytest
 
@@ -16,6 +17,7 @@ from llm_wiki_cli.services.sync_manifest import SyncManifest
 from tests.knowledge_fixtures import one_module_two_entities_fixture
 from tests.test_knowledge_artifacts import _plan
 from tests.test_knowledge_generation import _planner_inputs
+from llm_wiki_cli.services.knowledge_packs import build_storage
 
 
 def _case(root):
@@ -30,6 +32,51 @@ def _consume(plan, receipt, root, **overrides):
         _validation_receipt=receipt, _receipt_wiki_root=root)
     options.update(overrides)
     return artifacts.validate_knowledge_artifacts(**options)
+
+
+@pytest.mark.parametrize("storage_format", ["sharded-v2", "packed-v4-deflate"])
+def test_storage_receipt_matches_full_read_and_remains_scoped(tmp_path, storage_format):
+    plan, knowledge = _case(tmp_path)
+    with index._knowledge_validation_operation(tmp_path):
+        receipt = index._validated_index_receipt(knowledge, tmp_path)
+        store = build_storage(index._model_to_payload(receipt.model), storage_format)
+        options: dict[str, Any] = dict(surface_index_bytes=plan.surface_index.content,
+                       knowledge_index_bytes=store.root_bytes,
+                       manifest=plan.committed_manifest,
+                       object_reader=lambda path, maximum: store.objects[path])
+        full = artifacts.validate_knowledge_artifacts(**options)
+        reused = artifacts.validate_knowledge_artifacts(**options,
+                _storage_validation_receipt=receipt, _receipt_wiki_root=tmp_path)
+        assert reused.knowledge == full.knowledge
+        assert reused.knowledge_index_hash == full.knowledge_index_hash
+        for forged in (replace(receipt), index._ValidatedIndexReceipt(receipt.model, receipt.content, tmp_path)):
+            with pytest.raises((TypeError, ValueError)):
+                artifacts.validate_knowledge_artifacts(**options,
+                    _storage_validation_receipt=forged, _receipt_wiki_root=tmp_path)
+        bad_options = {**options, "object_reader": lambda path, maximum: b"corrupt"}
+        with pytest.raises(artifacts.KnowledgeArtifactError):
+            artifacts.validate_knowledge_artifacts(**bad_options,
+                _storage_validation_receipt=receipt, _receipt_wiki_root=tmp_path)
+    with pytest.raises(TypeError, match="operation"):
+        artifacts.validate_knowledge_artifacts(**options,
+            _storage_validation_receipt=receipt, _receipt_wiki_root=tmp_path)
+
+
+def test_storage_parity_callback_cannot_expire_validator_authority(tmp_path, monkeypatch):
+    plan, knowledge = _case(tmp_path)
+    with index._knowledge_validation_operation(tmp_path):
+        receipt = index._validated_index_receipt(knowledge, tmp_path)
+        store = build_storage(index._model_to_payload(receipt.model), "packed-v4-deflate")
+        original = artifacts._validate_manifest_knowledge_parity
+        def changed(*args):
+            original(*args)
+            monkeypatch.setattr(index, "_validate_builder_model", lambda value: None)
+        monkeypatch.setattr(artifacts, "_validate_manifest_knowledge_parity", changed)
+        with pytest.raises(TypeError, match="validators"):
+            artifacts.validate_knowledge_artifacts(surface_index_bytes=plan.surface_index.content,
+                knowledge_index_bytes=store.root_bytes, manifest=plan.committed_manifest,
+                object_reader=lambda path, maximum: store.objects[path],
+                _storage_validation_receipt=receipt, _receipt_wiki_root=tmp_path)
 
 
 def test_receipt_requires_live_operation_and_exact_root(tmp_path):
@@ -216,7 +263,7 @@ def test_actual_generation_outputs_equal_full_path_and_scope_released(tmp_path, 
         return original(value)
     monkeypatch.setattr(index, 'parse_knowledge_index', counted)
     optimized = build_knowledge_generation_plan(inputs)
-    assert len(calls) == 2
+    assert len(calls) == 1
     assert not index._has_validation_operation(tmp_path)
     monkeypatch.setattr(index, '_has_validation_operation', lambda root: False)
     calls.clear()
@@ -236,10 +283,9 @@ def test_storage_paths_retain_full_validation_and_corruption_refusal(tmp_path, m
     def no_receipt(*args, **kwargs):
         pytest.fail('physical storage borrowed a flat-model receipt')
     monkeypatch.setattr(index, '_validated_index_receipt', no_receipt)
-    with index._knowledge_validation_operation(tmp_path):
-        plan = artifacts.build_knowledge_commit_plan(tmp_path,
-            surface_index_bytes=fixture.surface_bytes, knowledge_index=knowledge,
-            manifest=flat.committed_manifest, knowledge_format=storage)
+    plan = artifacts.build_knowledge_commit_plan(tmp_path,
+        surface_index_bytes=fixture.surface_bytes, knowledge_index=knowledge,
+        manifest=flat.committed_manifest, knowledge_format=storage)
     objects = {write.relative_path: write.content for write in plan.storage_objects}
     first = next(iter(objects))
     objects[first] += b'corrupt'

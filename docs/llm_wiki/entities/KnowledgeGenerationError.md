@@ -1,6 +1,6 @@
 # KnowledgeGenerationError
 
-**Location:** `src/llm_wiki_cli/services/knowledge_generation.py:91`
+**Location:** `src/llm_wiki_cli/services/knowledge_generation.py:92`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [knowledge_generation](../modules/knowledge_generation.md)

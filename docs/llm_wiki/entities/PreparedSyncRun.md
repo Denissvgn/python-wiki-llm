@@ -1,6 +1,6 @@
 # _PreparedSyncRun
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1780`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1781`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)
@@ -40,6 +40,10 @@ recomputing against a different source tree.
 | `log_missing` | `bool` | *required* | — |
 | `committed_state` | `CommittedKnowledgeState \| None` | `None` | — |
 | `reuse_observations_hash` | `str \| None` | `None` | — |
+| `entrypoint_analysis` | `_SyncEntryPointAnalysis \| None` | `None` | — |
+| `contracts` | `dict \| None` | `None` | — |
+| `analysis_reused` | `bool` | `False` | — |
+| `analysis_input_key` | `dict \| None` | `None` | — |
 | `page_transitions` | `PageTransitionPlan \| None` | `None` | — |
 | `transition_execution` | `PageTransitionExecution \| None` | `None` | — |
 
@@ -87,7 +91,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [sync_cmd](../modules/sync_cmd.md) | 0 | `application_diff`, `committed_state`, `diff`, `generator_refresh_required`, `graph_observations`, `infrastructure_plan`, `inventory`, `inventory_result`, `log_missing`, `manifest`, `page_maps`, `page_transitions` |
+| [sync_cmd](../modules/sync_cmd.md) | 0 | `analysis_input_key`, `analysis_reused`, `application_diff`, `committed_state`, `contracts`, `diff`, `entrypoint_analysis`, `generator_refresh_required`, `graph_observations`, `infrastructure_plan`, `inventory`, `inventory_result` |
 
 ### References
 

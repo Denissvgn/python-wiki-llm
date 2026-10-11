@@ -2,12 +2,13 @@
 
 **Entry point:** `knowledge_index_to_payload` (`api`)
 **Source:** [knowledge_index](../modules/knowledge_index.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [concept_identity](../modules/concept_identity.md), [implementation_evidence](../modules/implementation_evidence.md), and 20 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [concept_identity](../modules/concept_identity.md), [immutable](../modules/immutable.md), and 21 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
 - [concept_identity](../modules/concept_identity.md)
+- [immutable](../modules/immutable.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
@@ -91,9 +92,9 @@ sequenceDiagram
     p8->>p21: _concept_for_page
 ```
 
-> Call sequence diagram shows 30 of 1688 interactions; 1658 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1725 interactions; 1695 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 6 of 423 (417 omitted); unresolved 1 of 267 (266 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 6 of 443 (437 omitted); unresolved 1 of 270 (269 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -107,7 +108,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_model.py:_parse_extensions` | 7 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_wire_enum` | 17 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_component_to_payload` | 21 | - | external | 1 |
-> Omission summary shows 8 of 388 groups; 380 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 395 groups; 387 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -172,8 +173,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| knowledge_index_to_payload | _model_to_payload | 281 | `_model_to_payload(validate_knowledge_index(...))` |
-| _model_to_payload | _knowledge_index_to_payload_unchecked | 287 | `_knowledge_index_to_payload_unchecked(model)` |
+| knowledge_index_to_payload | _model_to_payload | 292 | `_model_to_payload(validate_knowledge_index(...))` |
+| _model_to_payload | _knowledge_index_to_payload_unchecked | 298 | `_knowledge_index_to_payload_unchecked(model)` |
 | _knowledge_index_to_payload_unchecked | _bundle_to_payload | 2224 | `_bundle_to_payload(model.bundle)` |
 | _bundle_to_payload | _emit_extensions | 2043 | `_emit_extensions({...}, bundle.repository.extensions, 'bundle.repository.extensions')` |
 | _emit_extensions | isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions) | 2003 | `isinstance(extensions, FrozenDict)` |

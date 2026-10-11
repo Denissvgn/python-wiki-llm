@@ -126,9 +126,9 @@ sequenceDiagram
     p0-->>p1: isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)(collected, InventoryResult)
 ```
 
-> Call sequence diagram shows 30 of 5261 interactions; 5231 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 5273 interactions; 5243 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 16 of 1663 (1647 omitted); unresolved 2 of 1716 (1714 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 16 of 1666 (1650 omitted); unresolved 2 of 1718 (1716 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

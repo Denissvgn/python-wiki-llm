@@ -103,9 +103,9 @@ sequenceDiagram
     p5-->>p23: set (src/llm_wiki_cli/services…ver_maintenance_authority)(intent)
 ```
 
-> Call sequence diagram shows 30 of 1781 interactions; 1751 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1793 interactions; 1763 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 9 of 599 (590 omitted); unresolved 0 of 391 (391 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 9 of 602 (593 omitted); unresolved 0 of 393 (393 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

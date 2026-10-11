@@ -18,18 +18,18 @@
     "by_kind": {
       "api-contracts": 0,
       "dependencies": 1,
-      "entities": 661,
+      "entities": 662,
       "flows": 464,
       "guides": 11,
       "index": 1,
       "infrastructure": 0,
       "load-order": 1,
       "log": 1,
-      "modules": 237,
-      "workflows": 201
+      "modules": 238,
+      "workflows": 207
     },
     "dependency_architecture": 2,
-    "total": 1578
+    "total": 1586
   },
   "dependency_pages": {
     "count": 2,
@@ -160,7 +160,7 @@
             "src/llm_wiki_cli/services/knowledge_reuse.py",
             "src/llm_wiki_cli/services/canonical_json.py"
           ],
-          "step_count": 2822,
+          "step_count": 2804,
           "truncated": true
         }
       },
@@ -646,7 +646,7 @@
             "src/llm_wiki_cli/services/canonical_json.py",
             "src/llm_wiki_cli/services/wiki_write_basis.py"
           ],
-          "step_count": 3077,
+          "step_count": 3059,
           "truncated": true
         }
       },
@@ -3779,12 +3779,10 @@
             "src/llm_wiki_cli/services/knowledge_packs.py",
             "src/llm_wiki_cli/services/knowledge_model.py",
             "src/llm_wiki_cli/services/knowledge_graph.py",
-            "src/llm_wiki_cli/services/concept_identity.py",
-            "src/llm_wiki_cli/services/validation.py",
-            "src/llm_wiki_cli/services/wiki_surface.py",
-            "src/llm_wiki_cli/services/canonical_json.py",
             "src/llm_wiki_cli/services/knowledge_index.py",
             "src/llm_wiki_cli/services/immutable.py",
+            "src/llm_wiki_cli/services/validation.py",
+            "src/llm_wiki_cli/services/wiki_surface.py",
             "src/llm_wiki_cli/services/implementation_evidence.py",
             "src/llm_wiki_cli/services/knowledge_reuse.py",
             "src/llm_wiki_cli/services/section_ownership.py",
@@ -3793,12 +3791,14 @@
             "src/llm_wiki_cli/services/wiki_media.py",
             "src/llm_wiki_cli/services/knowledge_links.py",
             "src/llm_wiki_cli/services/progress.py",
+            "src/llm_wiki_cli/services/concept_identity.py",
+            "src/llm_wiki_cli/services/canonical_json.py",
             "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/extractors/common.py",
             "src/llm_wiki_cli/services/infrastructure_sync.py",
             "src/llm_wiki_cli/services/knowledge_envelope.py"
           ],
-          "step_count": 2232,
+          "step_count": 2244,
           "truncated": true
         }
       },
@@ -3819,49 +3819,49 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 184,
+              "line": 186,
               "step": "build_knowledge_generation_plan",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 185,
+              "line": 187,
               "step": "build_knowledge_generation_plan",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 318,
+              "line": 330,
               "step": "_knowledge_validation_operation",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 318,
+              "line": 330,
               "step": "_knowledge_validation_operation",
               "target": "wiki_root.is_absolute"
             },
             {
               "kind": "external_call",
-              "line": 319,
+              "line": 331,
               "step": "_knowledge_validation_operation",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 325,
+              "line": 337,
               "step": "_knowledge_validation_operation",
               "target": "object.__setattr__"
             },
             {
               "kind": "unresolved_call",
-              "line": 326,
+              "line": 338,
               "step": "_knowledge_validation_operation",
               "target": "_INDEX_VALIDATION_OPERATION.reset"
             },
             {
               "kind": "unresolved_call",
-              "line": 187,
+              "line": 189,
               "step": "build_knowledge_generation_plan",
               "target": "Path(inputs.wiki_dir).absolute"
             },
@@ -3898,6 +3898,7 @@
             "src/llm_wiki_cli/services/knowledge_links.py",
             "src/llm_wiki_cli/services/wiki_media.py",
             "src/llm_wiki_cli/services/knowledge_graph.py",
+            "src/llm_wiki_cli/services/progress.py",
             "src/llm_wiki_cli/services/section_ownership.py",
             "src/llm_wiki_cli/services/markdown_sections.py",
             "src/llm_wiki_cli/services/knowledge_reuse.py",
@@ -3905,7 +3906,7 @@
             "src/llm_wiki_cli/services/implementation_evidence.py",
             "src/llm_wiki_cli/services/analysis_compatibility.py",
             "src/llm_wiki_cli/services/python_implementation.py",
-            "src/llm_wiki_cli/services/progress.py",
+            "src/llm_wiki_cli/services/immutable.py",
             "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_cli/services/concept_identity.py",
             "src/llm_wiki_cli/services/maintenance_evidence.py",
@@ -3920,10 +3921,9 @@
             "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/storage_spool.py",
             "src/llm_wiki_cli/services/knowledge_packs.py",
-            "src/llm_wiki_cli/services/immutable.py",
             "src/llm_wiki_cli/services/canonical_json.py"
           ],
-          "step_count": 4563,
+          "step_count": 4606,
           "truncated": true
         }
       },
@@ -3952,7 +3952,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 496,
+              "line": 512,
               "step": "_validate_and_join_inputs",
               "step_index": 2,
               "target": "joined.append"
@@ -3960,7 +3960,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 517,
+              "line": 533,
               "step": "_validate_and_join_inputs",
               "step_index": 2,
               "target": "joined.sort"
@@ -3977,19 +3977,19 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 437,
+              "line": 453,
               "step": "_validate_and_join_inputs",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 438,
+              "line": 454,
               "step": "_validate_and_join_inputs",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 538,
+              "line": 554,
               "step": "_validated_bundle",
               "target": "isinstance"
             },
@@ -4033,9 +4033,10 @@
             "src/llm_wiki_cli/services/validation.py",
             "src/llm_wiki_cli/services/wiki_media.py",
             "src/llm_wiki_cli/services/knowledge_links.py",
-            "src/llm_wiki_cli/services/progress.py"
+            "src/llm_wiki_cli/services/progress.py",
+            "src/llm_wiki_cli/services/immutable.py"
           ],
-          "step_count": 604,
+          "step_count": 641,
           "truncated": true
         }
       },
@@ -4749,7 +4750,7 @@
             "src/llm_wiki_cli/services/knowledge_observability.py",
             "src/llm_wiki_cli/services/packet_field_policy.py"
           ],
-          "step_count": 5409,
+          "step_count": 5421,
           "truncated": true
         }
       },
@@ -4836,7 +4837,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 264,
+              "line": 266,
               "step": "capture_committed_knowledge",
               "step_index": 4,
               "target": "captured.update"
@@ -4853,19 +4854,19 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 389,
+              "line": 391,
               "step": "build_runtime_knowledge_plan",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 390,
+              "line": 392,
               "step": "build_runtime_knowledge_plan",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 235,
+              "line": 237,
               "step": "capture_committed_knowledge",
               "target": "Path(wiki_dir).resolve"
             },
@@ -4938,7 +4939,7 @@
             "src/llm_wiki_cli/services/storage_spool.py",
             "src/llm_wiki_cli/services/canonical_json.py"
           ],
-          "step_count": 3694,
+          "step_count": 3737,
           "truncated": true
         }
       },
@@ -4959,67 +4960,67 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 591,
-              "step": "build_runtime_live_evaluation",
-              "target": "isinstance"
-            },
-            {
-              "kind": "external_call",
-              "line": 592,
-              "step": "build_runtime_live_evaluation",
-              "target": "TypeError"
-            },
-            {
-              "kind": "external_call",
-              "line": 593,
-              "step": "build_runtime_live_evaluation",
-              "target": "isinstance"
-            },
-            {
-              "kind": "external_call",
-              "line": 594,
-              "step": "build_runtime_live_evaluation",
-              "target": "TypeError"
-            },
-            {
-              "kind": "external_call",
-              "line": 595,
-              "step": "build_runtime_live_evaluation",
-              "target": "isinstance"
-            },
-            {
-              "kind": "external_call",
               "line": 596,
               "step": "build_runtime_live_evaluation",
-              "target": "TypeError"
+              "target": "isinstance"
             },
             {
               "kind": "external_call",
               "line": 597,
               "step": "build_runtime_live_evaluation",
-              "target": "isinstance"
+              "target": "TypeError"
             },
             {
               "kind": "external_call",
               "line": 598,
               "step": "build_runtime_live_evaluation",
-              "target": "TypeError"
+              "target": "isinstance"
             },
             {
               "kind": "external_call",
               "line": 599,
               "step": "build_runtime_live_evaluation",
-              "target": "isinstance"
+              "target": "TypeError"
             },
             {
               "kind": "external_call",
               "line": 600,
               "step": "build_runtime_live_evaluation",
-              "target": "TypeError"
+              "target": "isinstance"
             },
             {
               "kind": "external_call",
               "line": 601,
+              "step": "build_runtime_live_evaluation",
+              "target": "TypeError"
+            },
+            {
+              "kind": "external_call",
+              "line": 602,
+              "step": "build_runtime_live_evaluation",
+              "target": "isinstance"
+            },
+            {
+              "kind": "external_call",
+              "line": 603,
+              "step": "build_runtime_live_evaluation",
+              "target": "TypeError"
+            },
+            {
+              "kind": "external_call",
+              "line": 604,
+              "step": "build_runtime_live_evaluation",
+              "target": "isinstance"
+            },
+            {
+              "kind": "external_call",
+              "line": 605,
+              "step": "build_runtime_live_evaluation",
+              "target": "TypeError"
+            },
+            {
+              "kind": "external_call",
+              "line": 606,
               "step": "build_runtime_live_evaluation",
               "target": "isinstance"
             },
@@ -5155,7 +5156,7 @@
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 1191,
+          "step_count": 1203,
           "truncated": true
         }
       },
@@ -5846,7 +5847,7 @@
             "src/llm_wiki_cli/services/maintenance_shapes.py",
             "src/llm_wiki_cli/services/markdown_sections.py"
           ],
-          "step_count": 5262,
+          "step_count": 5274,
           "truncated": true
         }
       },
@@ -6440,7 +6441,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1038,
+              "line": 1043,
               "step": "collect_runtime_repository_evidence",
               "step_index": 1,
               "target": "selected_paths.add"
@@ -6448,7 +6449,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1039,
+              "line": 1044,
               "step": "collect_runtime_repository_evidence",
               "step_index": 1,
               "target": "selected_paths.update"
@@ -6456,7 +6457,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1054,
+              "line": 1059,
               "step": "collect_runtime_repository_evidence",
               "step_index": 1,
               "target": "package_roots.add"
@@ -6464,7 +6465,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1056,
+              "line": 1061,
               "step": "collect_runtime_repository_evidence",
               "step_index": 1,
               "target": "package_roots.add"
@@ -6472,7 +6473,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1062,
+              "line": 1067,
               "step": "collect_runtime_repository_evidence",
               "step_index": 1,
               "target": "helper_excludes.add"
@@ -6481,43 +6482,43 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1021,
+              "line": 1026,
               "step": "collect_runtime_repository_evidence",
               "target": "Path(source_root).resolve"
             },
             {
               "kind": "unresolved_call",
-              "line": 1022,
+              "line": 1027,
               "step": "collect_runtime_repository_evidence",
               "target": "Path(target_wiki_dir).resolve"
             },
             {
               "kind": "external_call",
-              "line": 1027,
+              "line": 1032,
               "step": "collect_runtime_repository_evidence",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1028,
+              "line": 1033,
               "step": "collect_runtime_repository_evidence",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 1029,
+              "line": 1034,
               "step": "collect_runtime_repository_evidence",
               "target": "source_snapshot.root.resolve"
             },
             {
               "kind": "external_call",
-              "line": 1030,
+              "line": 1035,
               "step": "collect_runtime_repository_evidence",
               "target": "ValueError"
             },
             {
               "kind": "unresolved_call",
-              "line": 1041,
+              "line": 1046,
               "step": "collect_runtime_repository_evidence",
               "target": "source_snapshot.captured_input_kinds.items"
             },
@@ -6576,37 +6577,37 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 681,
+              "line": 709,
               "step": "commit_knowledge_artifacts",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 682,
+              "line": 710,
               "step": "commit_knowledge_artifacts",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 683,
+              "line": 711,
               "step": "commit_knowledge_artifacts",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 684,
+              "line": 712,
               "step": "commit_knowledge_artifacts",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 685,
+              "line": 713,
               "step": "commit_knowledge_artifacts",
               "target": "callable"
             },
             {
               "kind": "external_call",
-              "line": 686,
+              "line": 714,
               "step": "commit_knowledge_artifacts",
               "target": "TypeError"
             },
@@ -6673,7 +6674,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 264,
+              "line": 266,
               "step": "capture_committed_knowledge",
               "step_index": 3,
               "target": "captured.update"
@@ -6690,7 +6691,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 235,
+              "line": 237,
               "step": "capture_committed_knowledge",
               "target": "Path(wiki_dir).resolve"
             },
@@ -6755,7 +6756,7 @@
             "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_cli/services/knowledge_envelope.py"
           ],
-          "step_count": 863,
+          "step_count": 875,
           "truncated": true
         }
       },
@@ -6776,7 +6777,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 264,
+              "line": 266,
               "step": "capture_committed_knowledge",
               "step_index": 3,
               "target": "captured.update"
@@ -6793,7 +6794,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 235,
+              "line": 237,
               "step": "capture_committed_knowledge",
               "target": "Path(wiki_dir).resolve"
             },
@@ -6858,7 +6859,7 @@
             "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_cli/services/knowledge_envelope.py"
           ],
-          "step_count": 861,
+          "step_count": 873,
           "truncated": true
         }
       },
@@ -10561,7 +10562,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 264,
+              "line": 266,
               "step": "capture_committed_knowledge",
               "step_index": 4,
               "target": "captured.update"
@@ -10578,19 +10579,19 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 851,
+              "line": 856,
               "step": "finalize_runtime_knowledge",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 852,
+              "line": 857,
               "step": "finalize_runtime_knowledge",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 235,
+              "line": 237,
               "step": "capture_committed_knowledge",
               "target": "Path(wiki_dir).resolve"
             },
@@ -10662,7 +10663,7 @@
             "src/llm_wiki_cli/services/knowledge_links.py",
             "src/llm_wiki_cli/services/maintenance_evidence.py"
           ],
-          "step_count": 3391,
+          "step_count": 3427,
           "truncated": true
         }
       },
@@ -11595,7 +11596,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/maintenance_shapes.py"
           ],
-          "step_count": 4090,
+          "step_count": 4102,
           "truncated": true
         }
       },
@@ -11735,7 +11736,7 @@
             "src/llm_wiki_cli/services/dependencies.py",
             "src/llm_wiki_cli/services/dependency_versions.py"
           ],
-          "step_count": 2367,
+          "step_count": 2379,
           "truncated": true
         }
       },
@@ -14125,9 +14126,10 @@
             "src/llm_wiki_cli/services/concept_identity.py",
             "src/llm_wiki_cli/services/knowledge_links.py",
             "src/llm_wiki_cli/services/knowledge_envelope.py",
-            "src/llm_wiki_cli/services/progress.py"
+            "src/llm_wiki_cli/services/progress.py",
+            "src/llm_wiki_cli/services/immutable.py"
           ],
-          "step_count": 1689,
+          "step_count": 1726,
           "truncated": true
         }
       },
@@ -14950,7 +14952,7 @@
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 1782,
+          "step_count": 1794,
           "truncated": true
         }
       },
@@ -15114,7 +15116,7 @@
             "src/llm_wiki_cli/services/knowledge_reuse.py",
             "src/llm_wiki_cli/services/concept_identity.py"
           ],
-          "step_count": 1875,
+          "step_count": 1899,
           "truncated": true
         }
       },
@@ -15397,7 +15399,7 @@
             "src/llm_wiki_cli/services/infrastructure_sync.py",
             "src/llm_wiki_cli/services/knowledge_reuse.py"
           ],
-          "step_count": 2656,
+          "step_count": 2668,
           "truncated": true
         }
       },
@@ -18670,25 +18672,25 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 1263,
+              "line": 1268,
               "step": "_validate_runtime_policy",
               "target": "sorted"
             },
             {
               "kind": "external_call",
-              "line": 1268,
+              "line": 1273,
               "step": "_validate_runtime_policy",
               "target": "min"
             },
             {
               "kind": "external_call",
-              "line": 1275,
+              "line": 1280,
               "step": "_validate_runtime_policy",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1281,
+              "line": 1286,
               "step": "_validate_runtime_policy",
               "target": "isinstance"
             }
@@ -19353,19 +19355,19 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 339,
+              "line": 341,
               "step": "prepare_runtime_generation_options",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 340,
+              "line": 342,
               "step": "prepare_runtime_generation_options",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 346,
+              "line": 348,
               "step": "prepare_runtime_generation_options",
               "target": "dict.fromkeys"
             }
@@ -19637,7 +19639,7 @@
             "src/llm_wiki_cli/services/knowledge_observability.py",
             "src/llm_wiki_cli/services/concept_identity.py"
           ],
-          "step_count": 2018,
+          "step_count": 2042,
           "truncated": true
         }
       },
@@ -20912,7 +20914,7 @@
             "src/llm_wiki_cli/extractors/common.py",
             "src/llm_wiki_cli/services/wiki_write_basis.py"
           ],
-          "step_count": 1782,
+          "step_count": 1794,
           "truncated": true
         }
       },
@@ -21152,7 +21154,7 @@
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4501,
+          "step_count": 4513,
           "truncated": true
         }
       },
@@ -24799,7 +24801,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4338,
+          "step_count": 4355,
           "truncated": true
         }
       },
@@ -24888,31 +24890,31 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 1481,
+              "line": 1486,
               "step": "runtime_consumed_inputs",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1482,
+              "line": 1487,
               "step": "runtime_consumed_inputs",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 1483,
+              "line": 1488,
               "step": "runtime_consumed_inputs",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1484,
+              "line": 1489,
               "step": "runtime_consumed_inputs",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 1486,
+              "line": 1491,
               "step": "runtime_consumed_inputs",
               "target": "source_snapshot.to_consumed_inputs"
             },
@@ -24968,31 +24970,31 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1162,
+              "line": 1167,
               "step": "runtime_generation_options",
               "target": "surface_value"
             },
             {
               "kind": "external_call",
-              "line": 1165,
+              "line": 1170,
               "step": "runtime_generation_options",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1164,
+              "line": 1169,
               "step": "runtime_generation_options",
               "target": "sorted"
             },
             {
               "kind": "external_call",
-              "line": 1250,
+              "line": 1255,
               "step": "_runtime_policy_from_generation_inputs",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1263,
+              "line": 1268,
               "step": "_validate_runtime_policy",
               "target": "sorted"
             },
@@ -25034,19 +25036,19 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 339,
+              "line": 341,
               "step": "prepare_runtime_generation_options",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 340,
+              "line": 342,
               "step": "prepare_runtime_generation_options",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 346,
+              "line": 348,
               "step": "prepare_runtime_generation_options",
               "target": "dict.fromkeys"
             },
@@ -25941,7 +25943,7 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 418,
+              "line": 434,
               "step": "_serialize_payload",
               "target": "json.dumps"
             },
@@ -25990,9 +25992,10 @@
             "src/llm_wiki_cli/services/wiki_media.py",
             "src/llm_wiki_cli/services/knowledge_links.py",
             "src/llm_wiki_cli/services/knowledge_envelope.py",
-            "src/llm_wiki_cli/services/progress.py"
+            "src/llm_wiki_cli/services/progress.py",
+            "src/llm_wiki_cli/services/immutable.py"
           ],
-          "step_count": 1154,
+          "step_count": 1189,
           "truncated": true
         }
       },
@@ -29198,19 +29201,19 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 896,
+              "line": 924,
               "step": "_decode_json_object",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 899,
+              "line": 927,
               "step": "_decode_json_object",
               "target": "content.decode"
             },
             {
               "kind": "external_call",
-              "line": 903,
+              "line": 931,
               "step": "_decode_json_object",
               "target": "json.loads"
             },
@@ -29265,7 +29268,7 @@
             "src/llm_wiki_cli/services/progress.py",
             "src/llm_wiki_cli/services/infrastructure_sync.py"
           ],
-          "step_count": 2171,
+          "step_count": 2195,
           "truncated": true
         }
       },
@@ -29286,7 +29289,7 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 258,
+              "line": 269,
               "step": "validate_knowledge_index",
               "target": "isinstance"
             },
@@ -29350,9 +29353,10 @@
             "src/llm_wiki_cli/services/concept_identity.py",
             "src/llm_wiki_cli/services/knowledge_links.py",
             "src/llm_wiki_cli/services/knowledge_envelope.py",
-            "src/llm_wiki_cli/services/progress.py"
+            "src/llm_wiki_cli/services/progress.py",
+            "src/llm_wiki_cli/services/immutable.py"
           ],
-          "step_count": 2285,
+          "step_count": 2322,
           "truncated": true
         }
       },
@@ -29852,25 +29856,25 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 896,
+              "line": 924,
               "step": "_decode_json_object",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 899,
+              "line": 927,
               "step": "_decode_json_object",
               "target": "content.decode"
             },
             {
               "kind": "external_call",
-              "line": 903,
+              "line": 931,
               "step": "_decode_json_object",
               "target": "json.loads"
             },
             {
               "kind": "external_call",
-              "line": 909,
+              "line": 937,
               "step": "_decode_json_object",
               "target": "isinstance"
             },
@@ -33219,7 +33223,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4338,
+          "step_count": 4355,
           "truncated": true
         }
       },
@@ -33550,7 +33554,6 @@
             "src/llm_wiki_cli/services/storage_spool.py",
             "src/llm_wiki_cli/services/knowledge_packs.py",
             "src/llm_wiki_cli/services/knowledge_index.py",
-            "src/llm_wiki_cli/services/knowledge_model.py",
             "src/llm_wiki_cli/services/immutable.py",
             "src/llm_wiki_cli/services/canonical_json.py",
             "src/llm_wiki_cli/services/knowledge_graph.py",
@@ -33561,7 +33564,7 @@
             "src/llm_wiki_cli/services/maintenance_queue.py",
             "src/llm_wiki_cli/services/request_json.py"
           ],
-          "step_count": 2334,
+          "step_count": 2339,
           "truncated": true
         }
       },
@@ -34132,7 +34135,7 @@
             "src/llm_wiki_cli/services/bootstrap_runtime.py",
             "src/llm_wiki_cli/services/wiki_write_basis.py"
           ],
-          "step_count": 3165,
+          "step_count": 3177,
           "truncated": true
         }
       },
@@ -35636,7 +35639,7 @@
             "src/llm_wiki_cli/services/legacy_hooks.py",
             "src/llm_wiki_cli/services/circuit_breaker.py"
           ],
-          "step_count": 2078,
+          "step_count": 2090,
           "truncated": true
         }
       },
@@ -35657,7 +35660,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 4878,
+              "line": 4926,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -35665,7 +35668,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2383,
+              "line": 2391,
               "step": "_sync_run_options_from_args",
               "step_index": 2,
               "target": "print"
@@ -35673,7 +35676,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2389,
+              "line": 2397,
               "step": "_sync_run_options_from_args",
               "step_index": 2,
               "target": "print"
@@ -35681,7 +35684,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2395,
+              "line": 2403,
               "step": "_sync_run_options_from_args",
               "step_index": 2,
               "target": "print"
@@ -35690,25 +35693,25 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 2362,
+              "line": 2370,
               "step": "_sync_run_options_from_args",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 2363,
+              "line": 2371,
               "step": "_sync_run_options_from_args",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 2364,
+              "line": 2372,
               "step": "_sync_run_options_from_args",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 2365,
+              "line": 2373,
               "step": "_sync_run_options_from_args",
               "target": "getattr"
             },
@@ -35770,15 +35773,20 @@
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/extractors/common.py",
             "src/llm_wiki_cli/services/api_contracts.py",
+            "src/llm_wiki_cli/services/sync_analysis_cache.py",
+            "src/llm_wiki_cli/services/analysis_capture.py",
+            "src/llm_wiki_cli/services/analysis_compatibility.py",
+            "src/llm_wiki_cli/services/extractor_helpers.py",
+            "src/llm_wiki_cli/services/markdown_sections.py",
+            "src/llm_wiki_cli/services/progress.py",
+            "src/llm_wiki_cli/services/wiki_media.py",
             "src/llm_wiki_cli/services/extraction_service.py",
             "src/llm_wiki_cli/services/bootstrap_runtime.py",
-            "src/llm_wiki_cli/services/progress.py",
             "src/llm_wiki_cli/services/paths.py",
             "src/llm_wiki_cli/services/imports.py",
             "src/llm_wiki_cli/services/entrypoints.py",
             "src/llm_wiki_cli/services/plugins.py",
             "src/llm_wiki_cli/services/sync_analysis.py",
-            "src/llm_wiki_cli/services/markdown_sections.py",
             "src/llm_wiki_cli/services/sync_retained_links.py",
             "src/llm_wiki_cli/services/dependencies.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
@@ -35790,7 +35798,7 @@
             "src/llm_wiki_cli/services/concept_identity.py",
             "src/llm_wiki_cli/services/wiki_surface_index.py"
           ],
-          "step_count": 5020,
+          "step_count": 5335,
           "truncated": true
         }
       },
@@ -38760,6 +38768,7 @@
         "entities/SurfaceInitializationPlan.md",
         "entities/SurfacePage.md",
         "entities/SurfaceRole.md",
+        "entities/SyncAnalysisMutationError.md",
         "entities/SyncDiff.md",
         "entities/SyncEntryPointAnalysis.md",
         "entities/SyncManifest.md",
@@ -39522,6 +39531,7 @@
         "modules/storage_spool.md",
         "modules/styles.md",
         "modules/sync_analysis.md",
+        "modules/sync_analysis_cache.md",
         "modules/sync_cmd.md",
         "modules/sync_manifest.md",
         "modules/sync_retained_links.md",
@@ -39559,6 +39569,7 @@
         "workflows/adopt_maintenance_authority.md",
         "workflows/advance_owned_ignore_snapshot.md",
         "workflows/append_log.md",
+        "workflows/application_knowledge_extensions.md",
         "workflows/apply_current_infrastructure_plan.md",
         "workflows/apply_entity_page.md",
         "workflows/apply_module_page.md",
@@ -39581,6 +39592,7 @@
         "workflows/build_knowledge_commit_plan.md",
         "workflows/build_knowledge_context_from_captured_read.md",
         "workflows/build_knowledge_generation_plan.md",
+        "workflows/build_knowledge_index.md",
         "workflows/build_live_documentation_query_service.md",
         "workflows/build_maintenance_queue.md",
         "workflows/build_maintenance_status.md",
@@ -39633,9 +39645,11 @@
         "workflows/extract_bootstrap_inventory.md",
         "workflows/fields.md",
         "workflows/finalize_bootstrap_artifacts.md",
+        "workflows/finalize_prepared_sync.md",
         "workflows/fresh_inventory_source_files.md",
         "workflows/generate_bootstrap_content.md",
         "workflows/generate_prompt_cmd_flow.md",
+        "workflows/generated_sections_match.md",
         "workflows/get_knowledge_coverage.md",
         "workflows/get_maintenance_status_authority.md",
         "workflows/guard_maintenance_owner.md",
@@ -39644,9 +39658,11 @@
         "workflows/init_cmd_flow.md",
         "workflows/inspect_native_concept.md",
         "workflows/install_cmd_flow.md",
+        "workflows/inventory_result.md",
         "workflows/knowledge_projection.md",
         "workflows/knowledge_storage_cmd_flow.md",
         "workflows/lint_service_flow.md",
+        "workflows/load.md",
         "workflows/load_adoption_marker.md",
         "workflows/load_control_workspace.md",
         "workflows/load_knowledge_projection.md",
@@ -41920,6 +41936,7 @@
       "outgoing_internal_links": [
         "modules/knowledge_artifacts.md",
         "modules/knowledge_envelope.md",
+        "modules/knowledge_generation.md",
         "modules/knowledge_index.md",
         "modules/knowledge_orchestration.md",
         "modules/knowledge_storage_access.md",
@@ -42214,7 +42231,8 @@
       "mcp_uri": "llm-wiki://entities/ExtractorStatus",
       "outgoing_internal_links": [
         "modules/extraction_service.md",
-        "modules/lint_service.md"
+        "modules/lint_service.md",
+        "modules/sync_analysis_cache.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/extraction_service.py",
@@ -43330,6 +43348,7 @@
         "modules/extraction_service.md",
         "modules/inventory_cache.md",
         "modules/lint_service.md",
+        "modules/sync_analysis_cache.md",
         "modules/sync_cmd.md"
       ],
       "role": "semantic",
@@ -47341,6 +47360,19 @@
       "title": "SurfaceRole"
     },
     {
+      "canonical_path": "entities/SyncAnalysisMutationError.md",
+      "id": "SyncAnalysisMutationError",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/SyncAnalysisMutationError",
+      "outgoing_internal_links": [
+        "modules/sync_analysis_cache.md",
+        "modules/sync_cmd.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/sync_analysis_cache.py",
+      "title": "SyncAnalysisMutationError"
+    },
+    {
       "canonical_path": "entities/SyncDiff.md",
       "id": "SyncDiff",
       "kind": "entities",
@@ -47803,6 +47835,7 @@
       "kind": "entities",
       "mcp_uri": "llm-wiki://entities/ValidatedIndexReceipt",
       "outgoing_internal_links": [
+        "modules/knowledge_artifacts.md",
         "modules/knowledge_index.md"
       ],
       "role": "semantic",
@@ -48433,7 +48466,8 @@
         "modules/knowledge_envelope.md",
         "modules/knowledge_maintenance.md",
         "modules/knowledge_orchestration.md",
-        "modules/python_implementation.md"
+        "modules/python_implementation.md",
+        "modules/sync_analysis_cache.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/analysis_capture.py",
@@ -51589,7 +51623,8 @@
         "modules/ci_check_cmd.md",
         "modules/cli.md",
         "modules/inventory_cache.md",
-        "modules/runtime_output.md"
+        "modules/runtime_output.md",
+        "modules/sync_analysis_cache.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/runtime_output.py",
@@ -52082,6 +52117,19 @@
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/sync_analysis.py",
       "title": "sync_analysis Module"
+    },
+    {
+      "canonical_path": "modules/sync_analysis_cache.md",
+      "id": "sync_analysis_cache",
+      "kind": "modules",
+      "mcp_uri": "llm-wiki://modules/sync_analysis_cache",
+      "outgoing_internal_links": [
+        "entities/SyncAnalysisMutationError.md",
+        "modules/sync_analysis_cache.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/sync_analysis_cache.py",
+      "title": "sync_analysis_cache Module"
     },
     {
       "canonical_path": "modules/sync_cmd.md",
@@ -52786,6 +52834,24 @@
       "title": "append_log"
     },
     {
+      "canonical_path": "workflows/application_knowledge_extensions.md",
+      "id": "application_knowledge_extensions",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/application_knowledge_extensions",
+      "outgoing_internal_links": [
+        "modules/knowledge_artifacts.md",
+        "modules/knowledge_envelope.md",
+        "modules/knowledge_evidence.md",
+        "modules/knowledge_generation.md",
+        "modules/knowledge_graph.md",
+        "modules/progress.md",
+        "modules/section_ownership.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/knowledge_generation.py",
+      "title": "application_knowledge_extensions"
+    },
+    {
       "canonical_path": "workflows/apply_current_infrastructure_plan.md",
       "id": "apply_current_infrastructure_plan",
       "kind": "workflows",
@@ -53147,6 +53213,21 @@
       "role": "mixed",
       "source_path": "src/llm_wiki_cli/services/knowledge_generation.py",
       "title": "build_knowledge_generation_plan"
+    },
+    {
+      "canonical_path": "workflows/build_knowledge_index.md",
+      "id": "build_knowledge_index",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/build_knowledge_index",
+      "outgoing_internal_links": [
+        "modules/immutable.md",
+        "modules/knowledge_index.md",
+        "modules/knowledge_model.md",
+        "modules/progress.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/knowledge_index.py",
+      "title": "build_knowledge_index"
     },
     {
       "canonical_path": "workflows/build_live_documentation_query_service.md",
@@ -54017,6 +54098,21 @@
       "title": "finalize_bootstrap_artifacts"
     },
     {
+      "canonical_path": "workflows/finalize_prepared_sync.md",
+      "id": "finalize_prepared_sync",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/finalize_prepared_sync",
+      "outgoing_internal_links": [
+        "modules/knowledge_orchestration.md",
+        "modules/sync_analysis_cache.md",
+        "modules/sync_cmd.md",
+        "modules/wiki_surface_index.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/commands/sync_cmd.py",
+      "title": "finalize_prepared_sync"
+    },
+    {
       "canonical_path": "workflows/fresh_inventory_source_files.md",
       "id": "fresh_inventory_source_files",
       "kind": "workflows",
@@ -54066,6 +54162,21 @@
       "role": "mixed",
       "source_path": "src/llm_wiki_cli/commands/generate_prompt_cmd.py",
       "title": "generate_prompt_cmd_flow"
+    },
+    {
+      "canonical_path": "workflows/generated_sections_match.md",
+      "id": "generated_sections_match",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/generated_sections_match",
+      "outgoing_internal_links": [
+        "modules/knowledge_evidence.md",
+        "modules/knowledge_storage_io.md",
+        "modules/section_ownership.md",
+        "modules/sync_analysis_cache.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/sync_analysis_cache.py",
+      "title": "generated_sections_match"
     },
     {
       "canonical_path": "workflows/get_knowledge_coverage.md",
@@ -54199,6 +54310,21 @@
       "title": "install_cmd_flow"
     },
     {
+      "canonical_path": "workflows/inventory_result.md",
+      "id": "inventory_result",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/inventory_result",
+      "outgoing_internal_links": [
+        "modules/analysis_capture.md",
+        "modules/extraction_service.md",
+        "modules/inventory_cache.md",
+        "modules/sync_analysis_cache.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/sync_analysis_cache.py",
+      "title": "inventory_result"
+    },
+    {
       "canonical_path": "workflows/knowledge_projection.md",
       "id": "knowledge_projection",
       "kind": "workflows",
@@ -54247,6 +54373,22 @@
       "role": "mixed",
       "source_path": "src/llm_wiki_cli/services/lint_service.py",
       "title": "lint_service_flow"
+    },
+    {
+      "canonical_path": "workflows/load.md",
+      "id": "load",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/load",
+      "outgoing_internal_links": [
+        "modules/knowledge_envelope.md",
+        "modules/knowledge_evidence.md",
+        "modules/knowledge_storage_io.md",
+        "modules/progress.md",
+        "modules/sync_analysis_cache.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/sync_analysis_cache.py",
+      "title": "load"
     },
     {
       "canonical_path": "workflows/load_adoption_marker.md",
@@ -54880,6 +55022,7 @@
         "modules/knowledge_orchestration.md",
         "modules/knowledge_reuse.md",
         "modules/source_snapshot.md",
+        "modules/sync_analysis_cache.md",
         "modules/sync_cmd.md",
         "modules/sync_manifest.md",
         "modules/sync_transition_execution.md",
@@ -57273,6 +57416,7 @@
       "kind": "flows",
       "mcp_uri": "llm-wiki://flows/api-build_knowledge_index",
       "outgoing_internal_links": [
+        "modules/immutable.md",
         "modules/knowledge_envelope.md",
         "modules/knowledge_evidence.md",
         "modules/knowledge_index.md",
@@ -59871,6 +60015,7 @@
       "outgoing_internal_links": [
         "modules/analysis_compatibility.md",
         "modules/concept_identity.md",
+        "modules/immutable.md",
         "modules/implementation_evidence.md",
         "modules/knowledge_envelope.md",
         "modules/knowledge_evidence.md",
@@ -62593,6 +62738,7 @@
       "mcp_uri": "llm-wiki://flows/api-serialize_knowledge_index-knowledge_index",
       "outgoing_internal_links": [
         "modules/concept_identity.md",
+        "modules/immutable.md",
         "modules/implementation_evidence.md",
         "modules/knowledge_envelope.md",
         "modules/knowledge_evidence.md",
@@ -63304,6 +63450,7 @@
       "outgoing_internal_links": [
         "modules/analysis_compatibility.md",
         "modules/concept_identity.md",
+        "modules/immutable.md",
         "modules/implementation_evidence.md",
         "modules/knowledge_envelope.md",
         "modules/knowledge_evidence.md",
@@ -64336,7 +64483,6 @@
         "modules/knowledge_graph.md",
         "modules/knowledge_index.md",
         "modules/knowledge_loader.md",
-        "modules/knowledge_model.md",
         "modules/knowledge_orchestration.md",
         "modules/knowledge_packs.md",
         "modules/knowledge_reuse.md",
@@ -64938,6 +65084,8 @@
       "kind": "flows",
       "mcp_uri": "llm-wiki://flows/cli-sync",
       "outgoing_internal_links": [
+        "modules/analysis_capture.md",
+        "modules/analysis_compatibility.md",
         "modules/api_contracts.md",
         "modules/bootstrap_runtime.md",
         "modules/common.md",
@@ -64947,6 +65095,7 @@
         "modules/entrypoints.md",
         "modules/extraction_jobs.md",
         "modules/extraction_service.md",
+        "modules/extractor_helpers.md",
         "modules/filesystem_guard.md",
         "modules/immutable.md",
         "modules/implementation_evidence.md",
@@ -64985,6 +65134,7 @@
         "modules/source_selection.md",
         "modules/source_snapshot.md",
         "modules/sync_analysis.md",
+        "modules/sync_analysis_cache.md",
         "modules/sync_cmd.md",
         "modules/sync_manifest.md",
         "modules/sync_retained_links.md",
@@ -64992,6 +65142,7 @@
         "modules/sync_transitions.md",
         "modules/validation.md",
         "modules/wiki_lifecycle.md",
+        "modules/wiki_media.md",
         "modules/wiki_surface.md",
         "modules/wiki_surface_index.md",
         "modules/wiki_write_basis.md"
@@ -65786,6 +65937,7 @@
         "modules/storage_spool.md",
         "modules/styles.md",
         "modules/sync_analysis.md",
+        "modules/sync_analysis_cache.md",
         "modules/sync_cmd.md",
         "modules/sync_manifest.md",
         "modules/sync_retained_links.md",
@@ -66035,6 +66187,7 @@
         "modules/storage_spool.md",
         "modules/styles.md",
         "modules/sync_analysis.md",
+        "modules/sync_analysis_cache.md",
         "modules/sync_cmd.md",
         "modules/sync_manifest.md",
         "modules/sync_retained_links.md",
@@ -66075,5 +66228,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:21a7055ccc9c44b4a9265031fe8272658c36bc60ed30ba7407e26c56505646b3"
+  "source_hash": "sha256:353ffe874eba5dedb4838e4dd05991ca12e715332b5dc9c11143b74b4fb2dc27"
 }

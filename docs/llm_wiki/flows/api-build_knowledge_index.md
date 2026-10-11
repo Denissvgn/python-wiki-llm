@@ -2,10 +2,11 @@
 
 **Entry point:** `build_knowledge_index` (`api`)
 **Source:** [knowledge_index](../modules/knowledge_index.md)
-**Modules touched:** [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_index](../modules/knowledge_index.md), and 6 more
+**Modules touched:** [immutable](../modules/immutable.md), [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_index](../modules/knowledge_index.md), and 6 more
 
 **Complete modules touched:**
 
+- [immutable](../modules/immutable.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_index](../modules/knowledge_index.md)
@@ -34,21 +35,22 @@ sequenceDiagram
     participant p8 as KnowledgeIndex
     participant p9 as record_counts
     participant p10 as len (src/llm_wiki_cli/services….py:build_knowledge_index)
-    participant p11 as validate_knowledge_index
-    participant p12 as KnowledgeIndexBuildError
-    participant p13 as isinstance (src/llm_wiki_cli/services…_validate_and_join_inputs)
-    participant p14 as concept_kind_for_page_kind
-    participant p15 as RelationshipRecord
-    participant p16 as _CURRENT.get
-    participant p17 as isinstance (src/llm_wiki_cli/services…:validate_knowledge_index)
-    participant p18 as TypeError (src/llm_wiki_cli/services…_validate_and_join_inputs)
-    participant p19 as ConceptRecord
-    participant p20 as RelationshipTarget
-    participant p21 as reporter.counts.update
-    participant p22 as parse_knowledge_index
-    participant p23 as _validated_bundle
-    participant p24 as DocumentRecord
-    participant p25 as RelationshipEvidence
+    participant p11 as _validator_identity
+    participant p12 as validate_knowledge_index
+    participant p13 as _INDEX_VALIDATION_OPERATION.get
+    participant p14 as TypeError (src/llm_wiki_cli/services….py:build_knowledge_index)
+    participant p15 as freeze
+    participant p16 as _serialize_payload(…).encode
+    participant p17 as _serialize_payload
+    participant p18 as _model_to_payload
+    participant p19 as _ValidatedIndexReceipt
+    participant p20 as object.__setattr__
+    participant p21 as _IndexValidationProof
+    participant p22 as id
+    participant p23 as KnowledgeIndexBuildError
+    participant p24 as isinstance (src/llm_wiki_cli/services…_validate_and_join_inputs)
+    participant p25 as concept_kind_for_page_kind
+    participant p26 as RelationshipRecord
     p0->>p1: _validate_and_join_inputs
     p0-->>p2: tuple (src/llm_wiki_cli/services….py:build_knowledge_index)(...)
     p0->>p3: _concept_for_page
@@ -61,43 +63,43 @@ sequenceDiagram
     p0->>p9: record_counts
     p0-->>p10: len (src/llm_wiki_cli/services….py:build_knowledge_index)(concepts)
     p0-->>p10: len (src/llm_wiki_cli/services….py:build_knowledge_index)(relationships)
-    p0->>p11: validate_knowledge_index
-    p0->>p12: KnowledgeIndexBuildError
-    p1-->>p13: isinstance (src/llm_wiki_cli/services…_validate_and_join_inputs)(inputs, KnowledgeIndexInputs)
-    p3->>p14: concept_kind_for_page_kind
-    p5->>p15: RelationshipRecord
-    p7->>p15: RelationshipRecord
-    p9-->>p16: _CURRENT.get
-    p11-->>p17: isinstance (src/llm_wiki_cli/services…:validate_knowledge_index)(value, KnowledgeIndex)
-    p1-->>p18: TypeError (src/llm_wiki_cli/services…_validate_and_join_inputs)('inputs must be a KnowledgeIndexInputs')
-    p3->>p19: ConceptRecord
-    p5->>p20: RelationshipTarget
-    p7->>p20: RelationshipTarget
-    p9-->>p21: reporter.counts.update(...)
-    p11->>p22: parse_knowledge_index
-    p1->>p23: _validated_bundle
-    p3->>p24: DocumentRecord
-    p5->>p25: RelationshipEvidence
-    p7->>p25: RelationshipEvidence
+    p0->>p11: _validator_identity
+    p0->>p12: validate_knowledge_index
+    p0-->>p13: _INDEX_VALIDATION_OPERATION.get
+    p0->>p11: _validator_identity
+    p0-->>p14: TypeError (src/llm_wiki_cli/services….py:build_knowledge_index)('knowledge validators changed during builder validation')
+    p0->>p15: freeze
+    p0-->>p16: _serialize_payload(…).encode('utf-8')
+    p0->>p17: _serialize_payload
+    p0->>p18: _model_to_payload
+    p0->>p19: _ValidatedIndexReceipt
+    p0-->>p20: object.__setattr__(receipt, '_proof', _IndexValidationProof(...))
+    p0->>p21: _IndexValidationProof
+    p0-->>p22: id(validated)
+    p0->>p23: KnowledgeIndexBuildError
+    p1-->>p24: isinstance (src/llm_wiki_cli/services…_validate_and_join_inputs)(inputs, KnowledgeIndexInputs)
+    p3->>p25: concept_kind_for_page_kind
+    p5->>p26: RelationshipRecord
+    p7->>p26: RelationshipRecord
 ```
 
-> Call sequence diagram shows 30 of 603 interactions; 573 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 640 interactions; 610 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 7 of 151 (144 omitted); unresolved 4 of 124 (120 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 8 of 171 (163 omitted); unresolved 4 of 127 (123 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/knowledge_index.py:_validate_and_join_inputs` | 2 | - | external | 5 |
+| `src/llm_wiki_cli/services/knowledge_index.py:_validate_and_join_inputs` | 2 | [src/llm_wiki_cli/services/knowledge_index.py](../modules/knowledge_index.md) | internal | 20 |
 | `src/llm_wiki_cli/services/knowledge_index.py:_validated_bundle` | 5 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_index.py:_validated_bundle` | 5 | [src/llm_wiki_cli/services/knowledge_index.py](../modules/knowledge_index.md) | internal | 2 |
 | `src/llm_wiki_cli/services/knowledge_index.py:_validated_bundle` | 5 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:evaluated_envelope_to_payload` | 8 | - | external | 2 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:evaluated_envelope_to_payload` | 8 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 3 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_validated_bundle_payload` | 12 | - | external | 3 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:_validated_bundle_payload` | 12 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:_validated_bundle_payload` | 12 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 2 |
-> Omission summary shows 8 of 162 groups; 154 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 171 groups; 163 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -156,7 +158,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `build_knowledge_index` | `inputs: KnowledgeIndexInputs` | `KNOWLEDGE_SCHEMA_VERSION`, `KnowledgeModelError` | - | `validate_knowledge_index(...)` |
+| `build_knowledge_index` | `inputs: KnowledgeIndexInputs` | `KNOWLEDGE_SCHEMA_VERSION`, `_INDEX_RECEIPT_ISSUER`, `KnowledgeModelError` | - | `validated` |
 | `_validate_and_join_inputs` | `inputs: KnowledgeIndexInputs` | `KnowledgeIndexInputs`, `ManifestPageSource`, `ManifestEvidenceBaseline`, `ManifestTombstone`, `ConceptObservationBasis`, `_MANIFEST_STRUCTURAL_PAGE_KINDS`, `PageKind` | - | `_BuildContext(...)` |
 | `isinstance (src/llm_wiki_cli/services…_validate_and_join_inputs)` | - | - | - | - |
 | `TypeError (src/llm_wiki_cli/services…_validate_and_join_inputs)` | - | - | - | - |
@@ -174,12 +176,12 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | build_knowledge_index | _validate_and_join_inputs | 222 | `_validate_and_join_inputs(inputs)` |
-| _validate_and_join_inputs | isinstance (src/llm_wiki_cli/services…_validate_and_join_inputs) | 437 | `isinstance(inputs, KnowledgeIndexInputs)` |
-| _validate_and_join_inputs | TypeError (src/llm_wiki_cli/services…_validate_and_join_inputs) | 438 | `TypeError('inputs must be a KnowledgeIndexInputs')` |
-| _validate_and_join_inputs | _validated_bundle | 439 | `_validated_bundle(inputs.envelope)` |
-| _validated_bundle | isinstance (src/llm_wiki_cli/services…ndex.py:_validated_bundle) | 538 | `isinstance(envelope, EvaluatedEnvelope)` |
-| _validated_bundle | KnowledgeIndexBuildError | 539 | `KnowledgeIndexBuildError('envelope', 'must be an already evaluated envelope')` |
-| _validated_bundle | evaluated_envelope_to_payload | 544 | `evaluated_envelope_to_payload(envelope)` |
+| _validate_and_join_inputs | isinstance (src/llm_wiki_cli/services…_validate_and_join_inputs) | 453 | `isinstance(inputs, KnowledgeIndexInputs)` |
+| _validate_and_join_inputs | TypeError (src/llm_wiki_cli/services…_validate_and_join_inputs) | 454 | `TypeError('inputs must be a KnowledgeIndexInputs')` |
+| _validate_and_join_inputs | _validated_bundle | 455 | `_validated_bundle(inputs.envelope)` |
+| _validated_bundle | isinstance (src/llm_wiki_cli/services…ndex.py:_validated_bundle) | 554 | `isinstance(envelope, EvaluatedEnvelope)` |
+| _validated_bundle | KnowledgeIndexBuildError | 555 | `KnowledgeIndexBuildError('envelope', 'must be an already evaluated envelope')` |
+| _validated_bundle | evaluated_envelope_to_payload | 560 | `evaluated_envelope_to_payload(envelope)` |
 | evaluated_envelope_to_payload | isinstance (src/llm_wiki_cli/services…uated_envelope_to_payload) | 1141 | `isinstance(envelope, EvaluatedEnvelope)` |
 | evaluated_envelope_to_payload | TypeError (src/llm_wiki_cli/services…uated_envelope_to_payload) | 1142 | `TypeError('envelope must be an EvaluatedEnvelope')` |
 | evaluated_envelope_to_payload | KnowledgeEnvelopeError | 1144 | `KnowledgeEnvelopeError('schema_version', ...)` |
@@ -190,17 +192,17 @@ flowchart LR
 | Kind | Target | Step | Line |
 |---|---|---|---:|
 | mutation | `relationships.extend` | `build_knowledge_index` | 229 |
-| mutation | `joined.append` | `_validate_and_join_inputs` | 496 |
-| mutation | `joined.sort` | `_validate_and_join_inputs` | 517 |
+| mutation | `joined.append` | `_validate_and_join_inputs` | 512 |
+| mutation | `joined.sort` | `_validate_and_join_inputs` | 533 |
 | mutation | `snapshot_extensions.pop` | `_validated_bundle_payload` | 1947 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_validate_and_join_inputs` | `isinstance` | 437 |
-| external_call | `_validate_and_join_inputs` | `TypeError` | 438 |
-| external_call | `_validated_bundle` | `isinstance` | 538 |
+| external_call | `_validate_and_join_inputs` | `isinstance` | 453 |
+| external_call | `_validate_and_join_inputs` | `TypeError` | 454 |
+| external_call | `_validated_bundle` | `isinstance` | 554 |
 | external_call | `evaluated_envelope_to_payload` | `isinstance` | 1141 |
 | external_call | `evaluated_envelope_to_payload` | `TypeError` | 1142 |
 | step_limit | `build_knowledge_index` | `first 12 steps` | 0 |

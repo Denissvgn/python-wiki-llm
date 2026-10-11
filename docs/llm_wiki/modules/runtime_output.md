@@ -27,15 +27,19 @@ flowchart LR
     n1["src/llm_wiki_cli/commands/ci_check_cmd.py"]
     n2["src/llm_wiki_cli/services/inventory_cache.py"]
     n3["src/llm_wiki_cli/services/runtime_output.py"]
+    n4["src/llm_wiki_cli/services/sync_analysis_cache.py"]
     n0 --> n1
     n0 --> n3
     n1 --> n2
     n1 --> n3
     n2 --> n3
+    n4 --> n2
+    n4 --> n3
     click n0 "../modules/cli.md"
     click n1 "../modules/ci_check_cmd.md"
     click n2 "../modules/inventory_cache.md"
     click n3 "../modules/runtime_output.md"
+    click n4 "../modules/sync_analysis_cache.md"
 ```
 
 ### Internal neighbors
@@ -45,6 +49,7 @@ flowchart LR
 | Inbound | [cli](../modules/cli.md) |
 | Inbound | [ci_check_cmd](../modules/ci_check_cmd.md) |
 | Inbound | [inventory_cache](../modules/inventory_cache.md) |
+| Inbound | [sync_analysis_cache](../modules/sync_analysis_cache.md) |
 
 ## Classes
 

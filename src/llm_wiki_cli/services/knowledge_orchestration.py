@@ -178,6 +178,8 @@ class RuntimeKnowledgeInputs:
         default=None, repr=False, compare=False
     )
     reuse_input_basis: Mapping[str, object] | None = None
+    sync_analysis_commitment: Mapping[str, object] | None = None
+    reuse_typed_graph: bool = False
     knowledge_format: str | None = None
 
 
@@ -514,6 +516,9 @@ def build_runtime_knowledge_plan(
             graph_evidence_limit=inputs.graph_evidence_limit,
             governance=governance,
             reuse_input_basis=inputs.reuse_input_basis,
+            knowledge_extensions=({"llm-wiki/sync-analysis-v1": inputs.sync_analysis_commitment}
+                                  if inputs.sync_analysis_commitment is not None else {}),
+            reuse_typed_graph=inputs.reuse_typed_graph,
             knowledge_format=inputs.knowledge_format,
             implementation_observations=inputs.implementation_observations,
             maintenance_adoption=marker,

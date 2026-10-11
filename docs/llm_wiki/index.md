@@ -6,9 +6,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 661 | [Open section](#entities) |
-| Modules | 237 | [Open section](#modules) |
-| Workflows | 201 | [Open section](#workflows) |
+| Entities | 662 | [Open section](#entities) |
+| Modules | 238 | [Open section](#modules) |
+| Workflows | 207 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 464 | [Open section](#entry-point-flows) |
 | Infrastructure | 0 | No pages |
@@ -591,6 +591,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [SurfaceInitializationPlan](entities/SurfaceInitializationPlan.md)
 - [SurfacePage](entities/SurfacePage.md)
 - [SurfaceRole](entities/SurfaceRole.md)
+- [SyncAnalysisMutationError](entities/SyncAnalysisMutationError.md)
 - [SyncDiff](entities/SyncDiff.md)
 - [SyncEntryPointAnalysis](entities/SyncEntryPointAnalysis.md)
 - [SyncManifest](entities/SyncManifest.md)
@@ -886,6 +887,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [storage_spool](modules/storage_spool.md) - Private bounded spill buffers; never an on-disk source of authority.
 - [styles](modules/styles.md) - Sample bounded diagram-style hooks for LLM Wiki plugins.
 - [sync_analysis](modules/sync_analysis.md) - Read-only source/manifest diff analysis shared by sync and lint.
+- [sync_analysis_cache](modules/sync_analysis_cache.md) - Optional static sync inputs authenticated by the last complete commit.
 - [sync_cmd](modules/sync_cmd.md) - Incremental wiki sync — update only pages whose source has changed.
 - [sync_manifest](modules/sync_manifest.md) - Persistent sync state with explicit versioned maintenance adoption.
 - [sync_retained_links](modules/sync_retained_links.md) - Pure, ownership-scoped link repairs for retained source pages.
@@ -939,6 +941,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [adopt_maintenance_authority](workflows/adopt_maintenance_authority.md) - entry: `maintenance_service.adopt_maintenance_authority`
 - [advance_owned_ignore_snapshot](workflows/advance_owned_ignore_snapshot.md) - entry: `migrate_cmd._advance_owned_ignore_snapshot`
 - [append_log](workflows/append_log.md) - entry: `sync_cmd._append_log`
+- [application_knowledge_extensions](workflows/application_knowledge_extensions.md) - entry: `knowledge_generation._application_knowledge_extensions`
 - [apply_current_infrastructure_plan](workflows/apply_current_infrastructure_plan.md) - entry: `sync_cmd._apply_current_infrastructure_plan`
 - [apply_entity_page](workflows/apply_entity_page.md) - entry: `sync_cmd._apply_entity_page`
 - [apply_module_page](workflows/apply_module_page.md) - entry: `sync_cmd._apply_module_page`
@@ -961,6 +964,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [build_knowledge_commit_plan](workflows/build_knowledge_commit_plan.md) - entry: `knowledge_artifacts.build_knowledge_commit_plan`
 - [build_knowledge_context_from_captured_read](workflows/build_knowledge_context_from_captured_read.md) - entry: `context_packet._build_knowledge_context_from_captured_read`
 - [build_knowledge_generation_plan](workflows/build_knowledge_generation_plan.md) - entry: `knowledge_generation._build_knowledge_generation_plan`
+- [build_knowledge_index](workflows/build_knowledge_index.md) - entry: `knowledge_index.build_knowledge_index`
 - [build_live_documentation_query_service](workflows/build_live_documentation_query_service.md) - entry: `documentation_query_builder.build_live_documentation_query_service`
 - [build_maintenance_queue](workflows/build_maintenance_queue.md) - entry: `maintenance_queue.build_maintenance_queue`
 - [build_maintenance_status](workflows/build_maintenance_status.md) - entry: `maintenance_status.build_maintenance_status`
@@ -1010,9 +1014,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [extract_bootstrap_inventory](workflows/extract_bootstrap_inventory.md) - entry: `bootstrap_runtime._extract_bootstrap_inventory`
 - [fields](workflows/fields.md) - entry: `search_lexical._fields`
 - [finalize_bootstrap_artifacts](workflows/finalize_bootstrap_artifacts.md) - entry: `bootstrap_runtime._finalize_bootstrap_artifacts`
+- [finalize_prepared_sync](workflows/finalize_prepared_sync.md) - entry: `sync_cmd._finalize_prepared_sync`
 - [fresh_inventory_source_files](workflows/fresh_inventory_source_files.md) - entry: `extraction_service._fresh_inventory_source_files`
 - [generate_bootstrap_content](workflows/generate_bootstrap_content.md) - entry: `bootstrap_runtime._generate_bootstrap_content`
 - [generate_prompt_cmd_flow](workflows/generate_prompt_cmd_flow.md) - entry: `generate_prompt_cmd.run`
+- [generated_sections_match](workflows/generated_sections_match.md) - entry: `sync_analysis_cache.generated_sections_match`
 - [get_knowledge_coverage](workflows/get_knowledge_coverage.md) - entry: `api.get_knowledge_coverage`
 - [get_maintenance_status_authority](workflows/get_maintenance_status_authority.md) - entry: `maintenance_service.get_maintenance_status_authority`
 - [guard_maintenance_owner](workflows/guard_maintenance_owner.md) - entry: `maintenance_protocol.guard_maintenance_owner`
@@ -1021,9 +1027,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [init_cmd_flow](workflows/init_cmd_flow.md) - entry: `init_cmd.run`
 - [inspect_native_concept](workflows/inspect_native_concept.md) - entry: `native_inspection.inspect_native_concept`
 - [install_cmd_flow](workflows/install_cmd_flow.md) - entry: `install_cmd.run`
+- [inventory_result](workflows/inventory_result.md) - entry: `sync_analysis_cache.inventory_result`
 - [knowledge_projection](workflows/knowledge_projection.md) - entry: `obsidian_cmd._knowledge_projection`
 - [knowledge_storage_cmd_flow](workflows/knowledge_storage_cmd_flow.md) - entry: `knowledge_storage_cmd.run`
 - [lint_service_flow](workflows/lint_service_flow.md) - entry: `lint_service.run`
+- [load](workflows/load.md) - entry: `sync_analysis_cache.load`
 - [load_adoption_marker](workflows/load_adoption_marker.md) - entry: `maintenance_protocol.load_adoption_marker`
 - [load_control_workspace](workflows/load_control_workspace.md) - entry: `controller._load_control_workspace`
 - [load_knowledge_projection](workflows/load_knowledge_projection.md) - entry: `site_cmd._load_knowledge_projection`

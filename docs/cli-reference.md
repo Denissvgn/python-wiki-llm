@@ -222,6 +222,26 @@ and lifecycle changes invalidate reuse. Governed or plugin-driven generation
 uses the full path. `--rebuild-knowledge` explicitly runs the full knowledge
 builder; `--no-cache` controls source extraction independently.
 
+Eligible ordinary syncs also retain `llm-wiki-sync-analysis.json` beside the
+inventory cache. Its exact content is bound to the last complete knowledge
+commit. When source bytes, selection, generation settings, schema, implementation,
+and prepared helper identities match, a later Markdown edit can reuse static
+inventory, page maps and source graph observations. The source-derived typed
+graph is reused only when its inventory, producer, options and concept
+coordinates still match. Markdown sections, links, assets and final commitments
+are evaluated again; page ownership and required writes retain their ordinary
+checks.
+
+The command reports `Sync analysis reuse: hit` or `miss` with a reason, and
+progress includes a `sync_analysis_reuse` phase. Missing, corrupted, oversized
+or redirected cache files fall back to ordinary analysis. Source changes,
+generated-section changes, unavailable helpers and incompatible inputs prevent
+reuse. Governed, maintenance-adopted and plugin-configured projects use ordinary
+analysis. `--no-cache`, `--rebuild-cache` and `--rebuild-knowledge` disable this
+shortcut. An established unchanged snapshot is preserved without adding cache
+metadata solely to warm a cache. Standalone strict lint and CI still validate
+their own invocation inputs.
+
 `sync`, `lint`, and `ci-check` accept `--progress auto|always|never` and
 `--progress-format text|json`. Progress events are flushed to stderr. `auto`
 shows phases in an interactive terminal and heartbeats for long phases in

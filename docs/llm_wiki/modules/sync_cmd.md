@@ -17,13 +17,21 @@ Workflow:
     5. Rebuild index.md and append a log entry if anything changed.
     6. Save the updated manifest.
 
+
+Eligible ordinary runs can reuse authenticated inventory, page maps and source
+graph observations. API and entrypoint detectors still evaluate each invocation,
+and changed observations invalidate the graph shortcut. The planning boundary
+checks live wiki commitments before returning cached analysis; source identity
+and ownership guards remain active. Missing-page recovery and final artifact
+publication use their ordinary owning paths, including explicit full rebuild.
+
 ## Imports
 
 | Source | Symbols |
 |--------|---------|
 | `..` | `__version__` |
 | `..config` | `validate_path`, `validate_source_root` |
-| `..services` | `knowledge_reuse` |
+| `..services` | `knowledge_reuse`, `sync_analysis_cache` |
 | `..services.api_contracts` | `ApiContractError`, `attach_routes_to_entry_points`, `build_api_contracts`, `link_entry_point_flows`, `load_openapi_document`, `render_api_contracts_markdown` |
 | `..services.bootstrap_runtime` | `_build_entity_relationship_summary_map`, `_build_relationships`, `_generate_dependencies_md`, `_generate_entity_md`, `_generate_flow_md`, `_generate_index_md`, `_generate_load_order_md`, `_generate_module_md`, `_generate_workflow_md`, `_generate_infrastructure_md`, `_generated_diagram_style`, `_module_name_from_path`, `_page_name_for_module`, `_source_snapshot_log_lines`, `build_entity_occurrence_page_map`, `build_entity_page_map`, `build_module_page_map` |
 | `..services.data_flow` | `analyze_data_flow`, `analyze_data_flow_detailed`, `build_data_flow_context` |
@@ -62,7 +70,7 @@ Workflow:
 | `collections` | `Counter` |
 | `contextlib` | `nullcontext` |
 | `copy` | `deepcopy` |
-| `dataclasses` | `dataclass`, `field`, `replace` |
+| `dataclasses` | `dataclass`, `field`, `replace`, `asdict` |
 | `datetime` | `date` |
 | `json` | `json` |
 | `os` | `os` |
@@ -92,28 +100,28 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (2) |
-| Outbound | `src` (37) |
+| Outbound | `src` (38) |
 
-> All 39 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 40 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [GeneratedSurfacePruneError](../entities/GeneratedSurfacePruneError.md) | 282 | `ValueError` | A stale generated page cannot be removed without explicit authority. |
-| [SyncRuntimeRefreshError](../entities/SyncRuntimeRefreshError.md) | 286 | `ValueError` | A runtime-basis transition cannot be applied in the requested mode. |
-| [SyncResult](../entities/SyncResult.md) | 618 | — | — |
-| [_ApplyDiffContext](../entities/ApplyDiffContext.md) | 657 | — | — |
-| [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 679 | — | — |
-| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1676 | — | — |
-| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1702 | — | — |
-| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1709 | — | — |
-| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1715 | — | — |
-| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1721 | — | — |
-| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1737 | — | — |
-| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1780 | — | — |
-| [_ReusedSync](../entities/ReusedSync.md) | 1806 | — | — |
-| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1812 | — | Prior ownership proof and generated pages that cross the live boundary. |
+| [GeneratedSurfacePruneError](../entities/GeneratedSurfacePruneError.md) | 283 | `ValueError` | A stale generated page cannot be removed without explicit authority. |
+| [SyncRuntimeRefreshError](../entities/SyncRuntimeRefreshError.md) | 287 | `ValueError` | A runtime-basis transition cannot be applied in the requested mode. |
+| [SyncResult](../entities/SyncResult.md) | 619 | — | — |
+| [_ApplyDiffContext](../entities/ApplyDiffContext.md) | 658 | — | — |
+| [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 680 | — | — |
+| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1677 | — | — |
+| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1703 | — | — |
+| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1710 | — | — |
+| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1716 | — | — |
+| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1722 | — | — |
+| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1738 | — | — |
+| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1781 | — | — |
+| [_ReusedSync](../entities/ReusedSync.md) | 1811 | — | — |
+| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1817 | — | Prior ownership proof and generated pages that cross the live boundary. |
 
 ## Functions
 
@@ -189,8 +197,8 @@ flowchart LR
 | `_surface_policy` | `(surfaces: Mapping[str, Mapping], key: str) -> Mapping \| None` | — | — |
 | `_filtered_surface_inventory` | `(inventory: dict, *, exclude_tests: bool) -> dict` | — | — |
 | `_flow_plan` | `(options: _SyncRunOptions, surfaces: Mapping[str, Mapping], entry_points: list[dict], *, allow_legacy_creation: bool) -> tuple[tuple[dict, ...], tuple[dict, ...], int]` | — | — |
-| `_dependency_plan` | `(options: _SyncRunOptions, surfaces: Mapping[str, Mapping], inventory: dict, *, source_snapshot: SourceSnapshot \| None = None) -> tuple[dict, dict \| None, tuple[str, ...], tuple[str, ...], int]` | — | — |
-| `_build_surface_initialization_plan` | `(options: _SyncRunOptions, manifest: 'SyncManifest', inventory: dict, entry_points: list[dict], *, source_changed: bool, api_contracts: dict \| None, generation_inputs: Mapping[str, object], source_snapshot: SourceSnapshot \| None = None) -> _SurfaceInitializationPlan` | — | — |
+| `_dependency_plan` | `(options: _SyncRunOptions, surfaces: Mapping[str, Mapping], inventory: dict, *, source_snapshot: SourceSnapshot \| None = None, cached_analysis: dict \| None = None) -> tuple[dict, dict \| None, tuple[str, ...], tuple[str, ...], int]` | — | — |
+| `_build_surface_initialization_plan` | `(options: _SyncRunOptions, manifest: 'SyncManifest', inventory: dict, entry_points: list[dict], *, source_changed: bool, api_contracts: dict \| None, generation_inputs: Mapping[str, object], source_snapshot: SourceSnapshot \| None = None, cached_dependency_analysis: dict \| None = None) -> _SurfaceInitializationPlan` | — | — |
 | `_large_surface_message` | `(plan: _SurfaceInitializationPlan, wiki_dir: Path, *, removed_pages: int = 0) -> str \| None` | — | — |
 | `_exit_if_large_unforced_surface_plan` | `(options: _SyncRunOptions, plan: _SurfaceInitializationPlan, *, removed_pages: int = 0) -> None` | — | — |
 | `_print_dry_run_plan` | `(options: _SyncRunOptions, diff: 'SyncDiff', application_diff: 'SyncDiff', plan: _SurfaceInitializationPlan, infrastructure_plan: InfrastructureSyncPlan, source_selection_prune: SourceSelectionPruneResult, manifest: SyncManifest, *, seed_manifest: bool, repair_only: bool, runtime_provenance_changed: bool) -> None` | — | — |

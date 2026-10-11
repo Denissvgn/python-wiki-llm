@@ -1,6 +1,6 @@
 # _ExtractedSyncInventory
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1709`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1710`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)
@@ -29,9 +29,12 @@ _Auto-generated from `_ExtractedSyncInventory` in `src/llm_wiki_cli/commands/syn
 flowchart LR
     n0["_ExtractedSyncInventory (src/llm_wiki_cli/commands/sync_cmd.py)"]
     n1["_extract_current_inventory (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n2["_prepare_sync_run (src/llm_wiki_cli/commands/sync_cmd.py)"]
     n1 --> n0
+    n2 --> n0
     click n0 "../modules/sync_cmd.md"
     click n1 "../modules/sync_cmd.md"
+    click n2 "../modules/sync_cmd.md"
 ```
 
 ### Summary
@@ -46,3 +49,4 @@ flowchart LR
 |---|---|---|---:|
 | `_extract_current_inventory` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
 | `_extract_current_inventory` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_prepare_sync_run` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
