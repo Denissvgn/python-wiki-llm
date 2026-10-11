@@ -25,85 +25,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as evaluated_envelope_to_payload
-    participant p1 as isinstance (src/llm_wiki_cli/services…uated_envelope_to_payload)
-    participant p2 as TypeError (src/llm_wiki_cli/services…uated_envelope_to_payload)
-    participant p3 as KnowledgeEnvelopeError
-    participant p4 as _validated_bundle_payload
-    participant p5 as bundle_payload[…].get(…).get
-    participant p6 as bundle_payload[…].get
-    participant p7 as is_valid_sha256
-    participant p8 as dict (src/llm_wiki_cli/services…_validated_bundle_payload)
-    participant p9 as snapshot_extensions.pop
-    participant p10 as replace (src/llm_wiki_cli/services…_validated_bundle_payload)
-    participant p11 as knowledge_index_to_payload
-    participant p12 as KnowledgeIndex
-    participant p13 as isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload)
-    participant p14 as TypeError (src/llm_wiki_cli/services…nowledge_index_to_payload)
-    participant p15 as _emit_extensions
-    participant p16 as _bundle_to_payload
-    participant p17 as _concept_to_payload
-    participant p18 as _relationship_to_payload
-    participant p19 as KnowledgeModelError
-    participant p20 as parse_knowledge_index
-    participant p21 as _knowledge_index_to_payload_unchecked
-    participant p22 as isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions)
-    participant p23 as _wire_enum
-    participant p24 as _record
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…uated_envelope_to_payload)(envelope, EvaluatedEnvelope)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…uated_envelope_to_payload)('envelope must be an EvaluatedEnvelope')
-    p0->>p3: KnowledgeEnvelopeError
-    p0->>p4: _validated_bundle_payload
-    p0-->>p5: bundle_payload[…].get(…).get(INVENTORY_HASH_EXTENSION)
-    p0-->>p6: bundle_payload[…].get('extensions', {...})
-    p0->>p7: is_valid_sha256
-    p0->>p3: KnowledgeEnvelopeError
-    p4-->>p8: dict (src/llm_wiki_cli/services…_validated_bundle_payload)(bundle.snapshot.extensions)
-    p4-->>p9: snapshot_extensions.pop(GOVERNANCE_HASH_EXTENSION_KEY, None)
-    p4-->>p10: replace (src/llm_wiki_cli/services…_validated_bundle_payload)(bundle, snapshot=replace(...))
-    p4-->>p10: replace (src/llm_wiki_cli/services…_validated_bundle_payload)(bundle.snapshot, extensions=snapshot_extensions)
-    p4->>p11: knowledge_index_to_payload
-    p4->>p12: KnowledgeIndex
-    p4->>p3: KnowledgeEnvelopeError
-    p11-->>p13: isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload)(model, KnowledgeIndex)
-    p11-->>p14: TypeError (src/llm_wiki_cli/services…nowledge_index_to_payload)('model must be a KnowledgeIndex')
-    p11->>p15: _emit_extensions
-    p11->>p16: _bundle_to_payload
-    p11->>p17: _concept_to_payload
-    p11->>p18: _relationship_to_payload
-    p11->>p19: KnowledgeModelError
-    p11->>p20: parse_knowledge_index
-    p11->>p21: _knowledge_index_to_payload_unchecked
-    p15-->>p22: isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions)(extensions, FrozenDict)
-    p16->>p15: _emit_extensions
-    p17->>p23: _wire_enum
-    p18->>p23: _wire_enum
-    p20->>p24: _record
-    p21->>p16: _bundle_to_payload
+    participant p1 as _validated_bundle_payload
+    participant p2 as KnowledgeEnvelopeError
+    participant p3 as is_valid_sha256
+    participant p4 as knowledge_index_to_payload
+    participant p5 as _emit_extensions
+    participant p6 as _bundle_to_payload
+    participant p7 as _concept_to_payload
+    participant p8 as _relationship_to_payload
+    participant p9 as parse_knowledge_index
+    participant p10 as _knowledge_index_to_payload_unchecked
+    participant p11 as _record
+    participant p12 as _parse_extensions
+    participant p13 as _string
+    participant p14 as _basis_to_payload
+    participant p15 as _relationship_target_to_payload
+    participant p16 as _parse_bundle
+    participant p17 as _component_to_payload
+    participant p18 as _relationship_evidence_to_payload
+    participant p19 as _array (src/llm_wiki_cli/services/knowledge_model.py)
+    participant p20 as _actor_to_payload
+    participant p21 as _parse_concept
+    participant p22 as _parse_relationship
+    participant p23 as _document_to_payload
+    participant p24 as _validated_reserved_extensions
+    participant p25 as _validate_index_references
+    participant p26 as validate_implementation_collection
+    participant p27 as validate_maintenance_projection
+    participant p28 as validate_governance_projection
+    participant p29 as isinstance (src/llm_wiki_cli/services…uated_envelope_to_payload)
+    participant p30 as bundle_payload[…].get(…).get
+    p0->>p1: _validated_bundle_payload
+    p0->>p2: KnowledgeEnvelopeError
+    p0->>p3: is_valid_sha256
+    p1->>p4: knowledge_index_to_payload
+    p4->>p5: _emit_extensions
+    p4->>p6: _bundle_to_payload
+    p4->>p7: _concept_to_payload
+    p4->>p8: _relationship_to_payload
+    p4->>p9: parse_knowledge_index
+    p4->>p10: _knowledge_index_to_payload_unchecked
+    p9->>p11: _record
+    p5->>p12: _parse_extensions
+    p9->>p13: _string
+    p7->>p14: _basis_to_payload
+    p8->>p15: _relationship_target_to_payload
+    p9->>p16: _parse_bundle
+    p6->>p17: _component_to_payload
+    p8->>p18: _relationship_evidence_to_payload
+    p9->>p19: _array (src/llm_wiki_cli/services/knowledge_model.py)
+    p7->>p20: _actor_to_payload
+    p9->>p21: _parse_concept
+    p9->>p22: _parse_relationship
+    p7->>p23: _document_to_payload
+    p9->>p24: _validated_reserved_extensions
+    p9->>p25: _validate_index_references
+    p9->>p26: validate_implementation_collection
+    p9->>p27: validate_maintenance_projection
+    p9->>p28: validate_governance_projection
+    p0-->>p29: isinstance (src/llm_wiki_cli/services…uated_envelope_to_payload)(envelope, EvaluatedEnvelope)
+    p0-->>p30: bundle_payload[…].get(…).get(INVENTORY_HASH_EXTENSION)
 ```
 
 > Call sequence diagram shows 30 of 812 interactions; 782 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 8 of 192 (184 omitted); unresolved 3 of 117 (114 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 192 (191 omitted); unresolved 1 of 117 (116 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_model.py:_emit_extensions` | 13 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 1 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:evaluated_envelope_to_payload` | 1 | - | external | 1 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_validated_bundle_payload` | 5 | - | external | 3 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_validated_bundle_payload` | 5 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/knowledge_model.py:knowledge_index_to_payload` | 10 | - | external | 2 |
+| `src/llm_wiki_cli/services/knowledge_model.py:_emit_extensions` | 13 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_parse_extensions` | 15 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 7 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_object` | 16 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_object` | 16 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_model.py:_object` | 16 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 3 |
-| `src/llm_wiki_cli/services/knowledge_model.py:_parse_extensions` | 15 | - | external | 1 |
-| `src/llm_wiki_cli/services/knowledge_model.py:_parse_extensions` | 15 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_model.py:_normalize_json_value` | 26 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 1 |
-> Omission summary shows 8 of 158 groups; 150 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 164 groups; 156 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

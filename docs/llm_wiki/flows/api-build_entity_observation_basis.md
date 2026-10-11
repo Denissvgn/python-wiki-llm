@@ -6,7 +6,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -19,60 +19,65 @@ sequenceDiagram
     participant p5 as hash_json
     participant p6 as ConceptObservationBasis
     participant p7 as _validate_source_path
-    participant p8 as require_nonempty_text
-    participant p9 as _inventory_language
-    participant p10 as sha256_bytes
-    participant p11 as _validate_hash
-    participant p12 as ValueError (src/llm_wiki_cli/services…alidate_entity_coordinate)
-    participant p13 as isinstance (src/llm_wiki_cli/services…malize_entity_observation)
-    participant p14 as canonical_json_bytes
-    participant p15 as _validate_extractor_ref
-    participant p16 as require_positive_int
-    participant p17 as _record_array
-    participant p18 as _validate_inventory_complete
-    participant p19 as _record_name
-    participant p20 as _InventoryNormalizationError
-    participant p21 as _validate_entity_record
-    participant p22 as _structural_copy
-    participant p23 as require_repository_relative_path
-    participant p24 as require_sha256
-    participant p25 as require_string
-    participant p26 as require_bool
+    participant p8 as _inventory_language
+    participant p9 as _validate_hash
+    participant p10 as canonical_json_bytes
+    participant p11 as _validate_extractor_ref
+    participant p12 as require_positive_int
+    participant p13 as _record_array
+    participant p14 as _validate_inventory_complete
+    participant p15 as _record_name
+    participant p16 as _validate_entity_record
+    participant p17 as _structural_copy
+    participant p18 as require_repository_relative_path
+    participant p19 as require_sha256
+    participant p20 as require_nonnegative_int
+    participant p21 as _validate_module_entity_record
+    participant p22 as _optional_record_array
+    participant p23 as _validate_optional_json_array
+    participant p24 as _validate_optional_mapping
+    participant p25 as _validate_optional_record_array
+    participant p26 as _validate_optional_booleans
+    participant p27 as _validate_callable_record
+    participant p28 as require_mapping_list
+    participant p29 as ValueError (src/llm_wiki_cli/services…alidate_entity_coordinate)
+    participant p30 as sha256_bytes
+    participant p31 as hashlib.sha256(…).hexdigest
     p0->>p1: _validate_basis_inputs
     p0->>p2: _validate_entity_coordinate
     p0->>p3: _unknown_basis
     p0->>p4: _normalize_entity_observation
     p0->>p5: hash_json
-    p0->>p3: _unknown_basis
-    p0->>p3: _unknown_basis
     p0->>p6: ConceptObservationBasis
     p1->>p7: _validate_source_path
-    p2->>p8: require_nonempty_text
-    p3->>p6: ConceptObservationBasis
-    p4->>p9: _inventory_language
-    p5->>p10: sha256_bytes
-    p1->>p11: _validate_hash
-    p2-->>p12: ValueError (src/llm_wiki_cli/services…alidate_entity_coordinate)('entity_name must be a non-empty string')
-    p4-->>p13: isinstance (src/llm_wiki_cli/services…malize_entity_observation)(file_data, Mapping)
-    p5->>p14: canonical_json_bytes
-    p1->>p15: _validate_extractor_ref
-    p2->>p16: require_positive_int
-    p4->>p17: _record_array
-    p1->>p18: _validate_inventory_complete
-    p2-->>p12: ValueError (src/llm_wiki_cli/services…alidate_entity_coordinate)('occurrence must be a positive integer')
-    p4->>p19: _record_name
-    p4->>p20: _InventoryNormalizationError
-    p4->>p21: _validate_entity_record
-    p4->>p22: _structural_copy
-    p7->>p23: require_repository_relative_path
-    p11->>p24: require_sha256
-    p15->>p25: require_string
-    p18->>p26: require_bool
+    p4->>p8: _inventory_language
+    p1->>p9: _validate_hash
+    p5->>p10: canonical_json_bytes
+    p1->>p11: _validate_extractor_ref
+    p2->>p12: require_positive_int
+    p4->>p13: _record_array
+    p1->>p14: _validate_inventory_complete
+    p4->>p15: _record_name
+    p4->>p16: _validate_entity_record
+    p4->>p17: _structural_copy
+    p7->>p18: require_repository_relative_path
+    p9->>p19: require_sha256
+    p12->>p20: require_nonnegative_int
+    p16->>p21: _validate_module_entity_record
+    p16->>p22: _optional_record_array
+    p16->>p23: _validate_optional_json_array
+    p16->>p24: _validate_optional_mapping
+    p16->>p25: _validate_optional_record_array
+    p16->>p26: _validate_optional_booleans
+    p16->>p27: _validate_callable_record
+    p22->>p28: require_mapping_list
+    p2-->>p29: ValueError (src/llm_wiki_cli/services…alidate_entity_coordinate)('entity_name must be a non-empty string')
+    p30-->>p31: hashlib.sha256(…).hexdigest
 ```
 
 > Call sequence diagram shows 30 of 214 interactions; 184 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 3 of 60 (57 omitted); unresolved 0 of 38 (38 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 60 (59 omitted); unresolved 1 of 38 (37 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -86,7 +91,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 27 | - | external | 4 |
 | `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 27 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 13 |
 | `src/llm_wiki_cli/services/validation.py:_default_path_error` | 29 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-> Omission summary shows 8 of 72 groups; 64 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 78 groups; 70 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

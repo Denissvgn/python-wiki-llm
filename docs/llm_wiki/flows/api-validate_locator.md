@@ -6,82 +6,90 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as validate_locator
     participant p1 as _machine_text
-    participant p2 as _contains_uri_userinfo
-    participant p3 as _looks_absolute_path
-    participant p4 as ConceptIdentityError
-    participant p5 as validate_exact_page_coordinate
-    participant p6 as isinstance (src/llm_wiki_cli/services…_identity.py:_machine_text)
-    participant p7 as urlsplit
-    participant p8 as value.startswith
-    participant p9 as isinstance (src/llm_wiki_cli/services…date_exact_page_coordinate)
-    participant p10 as _WINDOWS_ABSOLUTE_RE.match
-    participant p11 as value.strip (src/llm_wiki_cli/services…date_exact_page_coordinate)
-    participant p12 as len (src/llm_wiki_cli/services…_identity.py:_machine_text)
-    participant p13 as WikiSurfaceError
-    participant p14 as value.strip (src/llm_wiki_cli/services…_identity.py:_machine_text)
-    participant p15 as any (src/llm_wiki_cli/services…date_exact_page_coordinate)
-    participant p16 as any (src/llm_wiki_cli/services…_identity.py:_machine_text)
-    participant p17 as ord (src/llm_wiki_cli/services…date_exact_page_coordinate)
-    participant p18 as character.isspace
-    participant p19 as unicodedata.normalize (src/llm_wiki_cli/services…_identity.py:_machine_text)
-    participant p20 as _matches_directory_path
-    participant p21 as _matches_directory_uri
+    participant p2 as validate_exact_page_coordinate
+    participant p3 as _contains_uri_userinfo
+    participant p4 as _looks_absolute_path
+    participant p5 as ConceptIdentityError
+    participant p6 as _matches_directory_path
+    participant p7 as _matches_directory_uri
+    participant p8 as is_safe_page_id
+    participant p9 as canonical_path
+    participant p10 as mcp_uri
+    participant p11 as _entry_for
+    participant p12 as _validate_page_id
+    participant p13 as is_portable_path_component
+    participant p14 as require_portable_path_component
+    participant p15 as WikiSurfaceError
+    participant p16 as PageKind
+    participant p17 as SharedValidationError
+    participant p18 as isinstance (src/llm_wiki_cli/services…_identity.py:_machine_text)
+    participant p19 as value.startswith
+    participant p20 as urlsplit
+    participant p21 as isinstance (src/llm_wiki_cli/services…date_exact_page_coordinate)
+    participant p22 as _WINDOWS_ABSOLUTE_RE.match
+    participant p23 as value.strip (src/llm_wiki_cli/services…date_exact_page_coordinate)
+    participant p24 as len (src/llm_wiki_cli/services…_identity.py:_machine_text)
+    participant p25 as value.strip (src/llm_wiki_cli/services…_identity.py:_machine_text)
+    participant p26 as any (src/llm_wiki_cli/services…date_exact_page_coordinate)
+    participant p27 as any (src/llm_wiki_cli/services…_identity.py:_machine_text)
+    participant p28 as ord (src/llm_wiki_cli/services…date_exact_page_coordinate)
+    participant p29 as character.isspace
     p0->>p1: _machine_text
-    p0->>p2: _contains_uri_userinfo
-    p0->>p3: _looks_absolute_path
-    p0->>p4: ConceptIdentityError
-    p0->>p5: validate_exact_page_coordinate
-    p0->>p4: ConceptIdentityError
-    p0->>p4: ConceptIdentityError
-    p1-->>p6: isinstance (src/llm_wiki_cli/services…_identity.py:_machine_text)(value, str)
-    p2-->>p7: urlsplit(value)
-    p3-->>p8: value.startswith((...))
-    p5-->>p9: isinstance (src/llm_wiki_cli/services…date_exact_page_coordinate)(value, str)
-    p1->>p4: ConceptIdentityError
-    p3-->>p10: _WINDOWS_ABSOLUTE_RE.match(value)
-    p5-->>p11: value.strip (src/llm_wiki_cli/services…date_exact_page_coordinate)
-    p1-->>p12: len (src/llm_wiki_cli/services…_identity.py:_machine_text)(value)
-    p5->>p13: WikiSurfaceError
-    p1->>p4: ConceptIdentityError
-    p5-->>p11: value.strip (src/llm_wiki_cli/services…date_exact_page_coordinate)
-    p1-->>p14: value.strip (src/llm_wiki_cli/services…_identity.py:_machine_text)
-    p5-->>p15: any (src/llm_wiki_cli/services…date_exact_page_coordinate)(...)
-    p1-->>p16: any (src/llm_wiki_cli/services…_identity.py:_machine_text)(...)
-    p5-->>p17: ord (src/llm_wiki_cli/services…date_exact_page_coordinate)(character)
-    p1-->>p18: character.isspace
-    p5-->>p17: ord (src/llm_wiki_cli/services…date_exact_page_coordinate)(character)
-    p1->>p4: ConceptIdentityError
-    p5->>p13: WikiSurfaceError
-    p1-->>p19: unicodedata.normalize (src/llm_wiki_cli/services…_identity.py:_machine_text)('NFC', value)
-    p5->>p20: _matches_directory_path
-    p1->>p4: ConceptIdentityError
-    p5->>p21: _matches_directory_uri
+    p0->>p2: validate_exact_page_coordinate
+    p0->>p3: _contains_uri_userinfo
+    p0->>p4: _looks_absolute_path
+    p0->>p5: ConceptIdentityError
+    p2->>p6: _matches_directory_path
+    p2->>p7: _matches_directory_uri
+    p6->>p8: is_safe_page_id
+    p6->>p9: canonical_path
+    p7->>p10: mcp_uri
+    p9->>p11: _entry_for
+    p9->>p12: _validate_page_id
+    p8->>p13: is_portable_path_component
+    p13->>p14: require_portable_path_component
+    p2->>p15: WikiSurfaceError
+    p11->>p16: PageKind
+    p14->>p17: SharedValidationError
+    p1-->>p18: isinstance (src/llm_wiki_cli/services…_identity.py:_machine_text)(value, str)
+    p4-->>p19: value.startswith((...))
+    p3-->>p20: urlsplit(value)
+    p2-->>p21: isinstance (src/llm_wiki_cli/services…date_exact_page_coordinate)(value, str)
+    p4-->>p22: _WINDOWS_ABSOLUTE_RE.match(value)
+    p2-->>p23: value.strip (src/llm_wiki_cli/services…date_exact_page_coordinate)
+    p1-->>p24: len (src/llm_wiki_cli/services…_identity.py:_machine_text)(value)
+    p2-->>p23: value.strip (src/llm_wiki_cli/services…date_exact_page_coordinate)
+    p1-->>p25: value.strip (src/llm_wiki_cli/services…_identity.py:_machine_text)
+    p2-->>p26: any (src/llm_wiki_cli/services…date_exact_page_coordinate)(...)
+    p1-->>p27: any (src/llm_wiki_cli/services…_identity.py:_machine_text)(...)
+    p2-->>p28: ord (src/llm_wiki_cli/services…date_exact_page_coordinate)(character)
+    p1-->>p29: character.isspace
 ```
 
 > Call sequence diagram shows 30 of 87 interactions; 57 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 9 of 28 (19 omitted); unresolved 6 of 17 (11 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 7 of 28 (21 omitted); unresolved 6 of 17 (11 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 2 | - | external | 2 |
+| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 2 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 5 |
+| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 2 | - | external | 3 |
 | `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 2 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 2 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 1 |
+| `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 23 | - | external | 1 |
+| `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 23 | [src/llm_wiki_cli/services/wiki_surface.py](../modules/wiki_surface.md) | internal | 4 |
 | `src/llm_wiki_cli/services/wiki_surface.py:_matches_directory_path` | 32 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/wiki_surface.py:_matches_directory_path` | 32 | - | external | 3 |
-| `src/llm_wiki_cli/services/wiki_surface.py:_matches_directory_path` | 32 | [src/llm_wiki_cli/services/wiki_surface.py](../modules/wiki_surface.md) | internal | 2 |
 | `src/llm_wiki_cli/services/wiki_surface.py:is_safe_page_id` | 38 | - | external | 3 |
-| `src/llm_wiki_cli/services/wiki_surface.py:is_safe_page_id` | 38 | - | unresolved | 2 |
-> Omission summary shows 8 of 24 groups; 16 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 23 groups; 15 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow

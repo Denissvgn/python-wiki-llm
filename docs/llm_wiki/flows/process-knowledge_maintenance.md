@@ -66,76 +66,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as main
-    participant p1 as argparse.ArgumentParser
-    participant p2 as parser.add_subparsers
-    participant p3 as commands.add_parser
-    participant p4 as before.add_argument
-    participant p5 as sorted (src/llm_wiki_cli/services…ledge_maintenance.py:main)
-    participant p6 as command.add_argument
-    participant p7 as parser.parse_args
-    participant p8 as vars(…).copy
-    participant p9 as vars
-    participant p10 as Path (src/llm_wiki_cli/services…ledge_maintenance.py:main)
-    participant p11 as values.pop
-    participant p12 as preflight
-    participant p13 as read_guarded
-    participant p14 as strict_json (src/llm_wiki_cli/services…ledge_maintenance.py:main)
-    participant p15 as str (src/llm_wiki_cli/services…ledge_maintenance.py:main)
-    p0-->>p1: argparse.ArgumentParser
-    p0-->>p2: parser.add_subparsers(dest='command', required=True)
-    p0-->>p3: commands.add_parser('preflight')
-    p0-->>p4: before.add_argument(..., required=True)
-    p0-->>p4: before.add_argument(...)
-    p0-->>p4: before.add_argument('--allow-editable', action='store_true')
-    p0-->>p4: before.add_argument('--comparison-policy', choices=sorted(...), default='auto')
-    p0-->>p5: sorted (src/llm_wiki_cli/services…ledge_maintenance.py:main)(ac.POLICIES)
-    p0-->>p3: commands.add_parser(name)
-    p0-->>p6: command.add_argument('--report', required=True)
-    p0-->>p6: command.add_argument('--preflight', required=True)
-    p0-->>p6: command.add_argument('--candidate-sha', required=True)
-    p0-->>p6: command.add_argument('--candidate-tree', required=True)
-    p0-->>p6: command.add_argument('--src-dir', required=True)
-    p0-->>p6: command.add_argument('--wiki-dir', required=True)
-    p0-->>p6: command.add_argument('--receipt', required=True)
-    p0-->>p6: command.add_argument('--output', required=True)
-    p0-->>p7: parser.parse_args(argv)
-    p0-->>p8: vars(…).copy
-    p0-->>p9: vars(args)
-    p0-->>p10: Path (src/llm_wiki_cli/services…ledge_maintenance.py:main)(values.pop(...))
-    p0-->>p11: values.pop('output')
-    p0-->>p11: values.pop('command')
-    p0->>p12: preflight
-    p0->>p13: read_guarded
-    p0-->>p10: Path (src/llm_wiki_cli/services…ledge_maintenance.py:main)(args.report)
-    p0->>p13: read_guarded
-    p0-->>p10: Path (src/llm_wiki_cli/services…ledge_maintenance.py:main)(args.preflight)
-    p0-->>p14: strict_json (src/llm_wiki_cli/services…ledge_maintenance.py:main)(pre)
-    p0-->>p15: str (src/llm_wiki_cli/services…ledge_maintenance.py:main)(Path(...))
+    participant p1 as preflight
+    participant p2 as read_guarded
+    participant p3 as validate_path
+    participant p4 as validate_source_root
+    participant p5 as build_source_snapshot
+    participant p6 as _archive_binding
+    participant p7 as _installed
+    participant p8 as StorageReadSession.read
+    participant p9 as parse_packed_root
+    participant p10 as parse_knowledge_index
+    participant p11 as SyncManifest.load
+    participant p12 as validate_persisted_source_selection_identity
+    participant p13 as has_contract
+    participant p14 as capture_analysis
+    participant p15 as _producer_evidence
+    participant p16 as _infrastructure_extractor_component
+    participant p17 as build_producer_record
+    participant p18 as compare_components
+    participant p19 as runtime_generation_options
+    participant p20 as runtime_generation_options_hash
+    participant p21 as get_prepared_typescript_root
+    participant p22 as get_prepared_binary
+    participant p23 as hash_source_snapshot
+    participant p24 as producer_contracts
+    participant p25 as _validate_range
+    participant p26 as _validate_capture_options
+    participant p27 as _require_relative_name
+    participant p28 as decode_bytes
+    participant p29 as argparse.ArgumentParser
+    participant p30 as parser.add_subparsers
+    p0->>p1: preflight
+    p0->>p2: read_guarded
+    p1->>p3: validate_path
+    p1->>p4: validate_source_root
+    p1->>p5: build_source_snapshot
+    p1->>p6: _archive_binding
+    p1->>p7: _installed
+    p1->>p8: StorageReadSession.read
+    p1->>p9: parse_packed_root
+    p1->>p10: parse_knowledge_index
+    p1->>p11: SyncManifest.load
+    p1->>p12: validate_persisted_source_selection_identity
+    p1->>p13: has_contract
+    p1->>p14: capture_analysis
+    p1->>p15: _producer_evidence
+    p1->>p16: _infrastructure_extractor_component
+    p1->>p17: build_producer_record
+    p1->>p18: compare_components
+    p1->>p19: runtime_generation_options
+    p1->>p20: runtime_generation_options_hash
+    p1->>p21: get_prepared_typescript_root
+    p1->>p22: get_prepared_binary
+    p1->>p23: hash_source_snapshot
+    p1->>p24: producer_contracts
+    p2->>p25: _validate_range
+    p5->>p26: _validate_capture_options
+    p8->>p27: _require_relative_name
+    p9->>p28: decode_bytes
+    p0-->>p29: argparse.ArgumentParser
+    p0-->>p30: parser.add_subparsers(dest='command', required=True)
 ```
 
 > Call sequence diagram shows 30 of 3244 interactions; 3214 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 7 of 1024 (1017 omitted); unresolved 20 of 780 (760 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1024 (1023 omitted); unresolved 1 of 780 (779 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/knowledge_maintenance.py:main` | 1 | - | unresolved | 27 |
+| `src/llm_wiki_cli/services/knowledge_maintenance.py:main` | 1 | - | external | 10 |
 | `src/llm_wiki_cli/services/knowledge_maintenance.py:preflight` | 25 | - | unresolved | 34 |
 | `src/llm_wiki_cli/services/knowledge_maintenance.py:preflight` | 25 | - | external | 13 |
-| `src/llm_wiki_cli/services/knowledge_maintenance.py:preflight` | 25 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
 | `src/llm_wiki_cli/config.py:validate_path` | 28 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
 | `src/llm_wiki_cli/config.py:validate_path` | 28 | - | unresolved | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 28 | - | external | 2 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 36 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 36 | - | unresolved | 5 |
-> Omission summary shows 8 of 751 groups; 743 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 744 groups; 736 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

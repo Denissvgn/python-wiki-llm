@@ -17,65 +17,77 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as admit_calibration_run
     participant p1 as _open_store
-    participant p2 as store.lock
-    participant p3 as _load_run_locked
-    participant p4 as _recheck_bound_controls
-    participant p5 as _terminal_transition_locked
-    participant p6 as _sha256_json
-    participant p7 as _json_round_trip
-    participant p8 as _authority_freshness_failure
-    participant p9 as P0CalibrationTransitionError
-    participant p10 as _has_indeterminate_admission_probe
-    participant p11 as store.read_json (src/llm_wiki_cli/services….py:admit_calibration_run)
-    participant p12 as run.payload.get (src/llm_wiki_cli/services….py:admit_calibration_run)
-    participant p13 as _pre_admission_authority_freshness_failure
-    participant p14 as run.payload[…].get (src/llm_wiki_cli/services….py:admit_calibration_run)
-    participant p15 as isinstance (src/llm_wiki_cli/services….py:admit_calibration_run)
-    participant p16 as _admit_local_oci
-    participant p17 as _admit_external_broker
-    participant p18 as _validate_authority_grant
+    participant p2 as _load_run_locked
+    participant p3 as _recheck_bound_controls
+    participant p4 as _authority_freshness_failure
+    participant p5 as _pre_admission_authority_freshness_failure
+    participant p6 as _admit_local_oci
+    participant p7 as _admit_external_broker
+    participant p8 as _build_host_authorization
+    participant p9 as _terminal_transition_locked
+    participant p10 as _sha256_json
+    participant p11 as _json_round_trip
+    participant p12 as P0CalibrationTransitionError
+    participant p13 as _has_indeterminate_admission_probe
+    participant p14 as _validate_authority_grant
+    participant p15 as _bounded_error
+    participant p16 as _commit_transition
+    participant p17 as _load_emergency_rejection
+    participant p18 as _recover_pending_transaction
+    participant p19 as OciRuntimeConfig.from_execution_manifest
+    participant p20 as _block_ambiguous_recovery
+    participant p21 as _persist_emergency_rejection
+    participant p22 as create_oci_admission_probe_environment
+    participant p23 as OciAdmissionProbeRequest.create
+    participant p24 as _validate_host_authorization
+    participant p25 as execute_oci_admission_probe
+    participant p26 as _unknown_root_entries
+    participant p27 as _load_control_workspace
+    participant p28 as _validate_isolation_attestation
+    participant p29 as isinstance (src/llm_wiki_cli/services….py:admit_calibration_run)
+    participant p30 as store.lock
     p0->>p1: _open_store
-    p0-->>p2: store.lock
-    p0->>p3: _load_run_locked
-    p0->>p4: _recheck_bound_controls
-    p0->>p5: _terminal_transition_locked
-    p0->>p6: _sha256_json
-    p0->>p7: _json_round_trip
-    p0->>p8: _authority_freshness_failure
-    p0->>p5: _terminal_transition_locked
-    p0->>p5: _terminal_transition_locked
-    p0->>p9: P0CalibrationTransitionError
-    p0->>p4: _recheck_bound_controls
-    p0->>p5: _terminal_transition_locked
-    p0->>p10: _has_indeterminate_admission_probe
-    p0->>p5: _terminal_transition_locked
-    p0-->>p11: store.read_json (src/llm_wiki_cli/services….py:admit_calibration_run)('baseline/execution-manifest.json')
-    p0->>p7: _json_round_trip
-    p0-->>p12: run.payload.get (src/llm_wiki_cli/services….py:admit_calibration_run)('authority_hash')
-    p0->>p6: _sha256_json
-    p0->>p5: _terminal_transition_locked
-    p0->>p13: _pre_admission_authority_freshness_failure
-    p0->>p5: _terminal_transition_locked
-    p0-->>p14: run.payload[…].get (src/llm_wiki_cli/services….py:admit_calibration_run)('authority_grant')
-    p0-->>p15: isinstance (src/llm_wiki_cli/services….py:admit_calibration_run)(authority_path, str)
-    p0->>p5: _terminal_transition_locked
-    p0-->>p11: store.read_json (src/llm_wiki_cli/services….py:admit_calibration_run)(authority_path)
-    p0->>p5: _terminal_transition_locked
-    p0->>p16: _admit_local_oci
-    p0->>p17: _admit_external_broker
-    p0->>p18: _validate_authority_grant
+    p0->>p2: _load_run_locked
+    p0->>p3: _recheck_bound_controls
+    p0->>p4: _authority_freshness_failure
+    p0->>p5: _pre_admission_authority_freshness_failure
+    p0->>p6: _admit_local_oci
+    p0->>p7: _admit_external_broker
+    p0->>p8: _build_host_authorization
+    p0->>p9: _terminal_transition_locked
+    p0->>p10: _sha256_json
+    p0->>p11: _json_round_trip
+    p0->>p12: P0CalibrationTransitionError
+    p0->>p13: _has_indeterminate_admission_probe
+    p0->>p14: _validate_authority_grant
+    p0->>p15: _bounded_error
+    p0->>p16: _commit_transition
+    p2->>p17: _load_emergency_rejection
+    p2->>p18: _recover_pending_transaction
+    p6->>p19: OciRuntimeConfig.from_execution_manifest
+    p2->>p20: _block_ambiguous_recovery
+    p2->>p21: _persist_emergency_rejection
+    p6->>p22: create_oci_admission_probe_environment
+    p6->>p23: OciAdmissionProbeRequest.create
+    p4->>p24: _validate_host_authorization
+    p6->>p25: execute_oci_admission_probe
+    p2->>p26: _unknown_root_entries
+    p3->>p27: _load_control_workspace
+    p4->>p28: _validate_isolation_attestation
+    p0-->>p29: isinstance (src/llm_wiki_cli/services….py:admit_calibration_run)(authority_path, str)
+    p0-->>p30: store.lock
 ```
 
 > Call sequence diagram shows 30 of 1938 interactions; 1908 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 469 (468 omitted); unresolved 5 of 595 (590 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 469 (468 omitted); unresolved 1 of 595 (594 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -85,10 +97,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/calibration/controller.py:_open_store` | 2 | [src/llm_wiki_cli/services/calibration/controller.py](../modules/controller.md) | internal | 1 |
 | `src/llm_wiki_cli/services/calibration/controller.py:_open_store` | 2 | - | external | 1 |
 | `src/llm_wiki_cli/services/calibration/controller.py:_load_run_locked` | 7 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/calibration/controller.py:_load_run_locked` | 7 | [src/llm_wiki_cli/services/calibration/controller.py](../modules/controller.md) | internal | 13 |
 | `src/llm_wiki_cli/services/calibration/controller.py:_load_emergency_rejection` | 9 | - | unresolved | 7 |
 | `src/llm_wiki_cli/services/calibration/controller.py:_load_emergency_rejection` | 9 | [src/llm_wiki_cli/services/calibration/controller.py](../modules/controller.md) | internal | 5 |
 | `src/llm_wiki_cli/services/calibration/controller.py:_require_exact_fields` | 11 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 2 |
+| `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 12 | - | external | 9 |
 > Omission summary shows 8 of 340 groups; 332 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

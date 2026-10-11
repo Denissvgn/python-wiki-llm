@@ -6,87 +6,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as atomic_write_executable_bytes
     participant p1 as atomic_write_guarded_bytes
-    participant p2 as Path (src/llm_wiki_cli/services…tomic_write_guarded_bytes)
-    participant p3 as target.is_absolute
-    participant p4 as OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)
-    participant p5 as isinstance (src/llm_wiki_cli/services…tomic_write_guarded_bytes)
-    participant p6 as TypeError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)
-    participant p7 as before_wiki_write
-    participant p8 as _atomic_write_guarded_bytes_windows
-    participant p9 as _atomic_write_private_bytes_posix
-    participant p10 as after_wiki_write
-    participant p11 as ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)
-    participant p12 as uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows)
-    participant p13 as getattr (src/llm_wiki_cli/services…write_private_bytes_posix)
-    participant p14 as ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…basis.py:after_wiki_write)
-    participant p15 as basis.before_write
-    participant p16 as basis.after_write
-    participant p17 as Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)
-    participant p18 as guard_windows_directory_chain
-    participant p19 as OSError (src/llm_wiki_cli/services…write_private_bytes_posix)
-    participant p20 as Path (src/llm_wiki_cli/services…basis.py:after_wiki_write)
-    participant p21 as Path (src/llm_wiki_cli/services…ite_guarded_bytes_windows)
-    participant p22 as os.path.lexists (src/llm_wiki_cli/services…ite_guarded_bytes_windows)
-    participant p23 as os.open (src/llm_wiki_cli/services…write_private_bytes_posix)
-    participant p24 as target.lstat
-    participant p25 as uuid.uuid4 (src/llm_wiki_cli/services…write_private_bytes_posix)
-    participant p26 as getattr (src/llm_wiki_cli/services…ite_guarded_bytes_windows)
+    participant p2 as _atomic_write_guarded_bytes_windows
+    participant p3 as _atomic_write_private_bytes_posix
+    participant p4 as guard_windows_directory_chain
+    participant p5 as windows_object_identity
+    participant p6 as _commit_windows_absent_snapshot
+    participant p7 as open_windows_readonly_file
+    participant p8 as _restore_posix_quarantined_entry
+    participant p9 as windows_object_identity_from_values
+    participant p10 as _open_windows_readonly_file_handle
+    participant p11 as _open_windows_directory_guard
+    participant p12 as create_private_windows_directory
+    participant p13 as _private_windows_security_attributes
+    participant p14 as move_windows_path_write_through
+    participant p15 as _verify_windows_handle_restrictive_dacl
+    participant p16 as before_wiki_write
+    participant p17 as after_wiki_write
+    participant p18 as WindowsFileGuardError
+    participant p19 as _read_posix_descriptor
+    participant p20 as WindowsDirectoryGuardError
+    participant p21 as _restore_posix_entry_between
+    participant p22 as _close_windows_handle
+    participant p23 as WindowsIdentityUnavailableError
+    participant p24 as WindowsObjectIdentity
+    participant p25 as _windows_api_path
+    participant p26 as _WindowsDirectoryGuardUnavailableError
+    participant p27 as WindowsDurabilityError
+    participant p28 as _current_windows_user_sid
+    participant p29 as Path (src/llm_wiki_cli/services…tomic_write_guarded_bytes)
+    participant p30 as target.is_absolute
     p0->>p1: atomic_write_guarded_bytes
-    p1-->>p2: Path (src/llm_wiki_cli/services…tomic_write_guarded_bytes)(path)
-    p1-->>p3: target.is_absolute
-    p1-->>p4: OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)(...)
-    p1-->>p4: OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)(...)
-    p1-->>p5: isinstance (src/llm_wiki_cli/services…tomic_write_guarded_bytes)(data, bytes)
-    p1-->>p6: TypeError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)('Guarded output data must be bytes.')
-    p1->>p7: before_wiki_write
-    p1->>p8: _atomic_write_guarded_bytes_windows
-    p1->>p9: _atomic_write_private_bytes_posix
-    p1->>p10: after_wiki_write
-    p7-->>p11: ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)
-    p8-->>p12: uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows)
-    p9-->>p13: getattr (src/llm_wiki_cli/services…write_private_bytes_posix)(os, 'O_NOFOLLOW', None)
-    p10-->>p14: ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…basis.py:after_wiki_write)
-    p7-->>p15: basis.before_write(Path(...), content)
-    p8-->>p12: uuid.uuid4 (src/llm_wiki_cli/services…ite_guarded_bytes_windows)
-    p9-->>p13: getattr (src/llm_wiki_cli/services…write_private_bytes_posix)(os, 'O_DIRECTORY', None)
-    p10-->>p16: basis.after_write(Path(...), content)
-    p7-->>p17: Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)(path)
-    p8->>p18: guard_windows_directory_chain
-    p9-->>p19: OSError (src/llm_wiki_cli/services…write_private_bytes_posix)('This POSIX platform cannot provide no-follow directory writes.')
-    p10-->>p20: Path (src/llm_wiki_cli/services…basis.py:after_wiki_write)(path)
-    p8-->>p21: Path (src/llm_wiki_cli/services…ite_guarded_bytes_windows)(parent.anchor)
-    p9-->>p13: getattr (src/llm_wiki_cli/services…write_private_bytes_posix)(os, 'O_CLOEXEC', 0)
-    p8-->>p22: os.path.lexists (src/llm_wiki_cli/services…ite_guarded_bytes_windows)(target)
-    p9-->>p23: os.open (src/llm_wiki_cli/services…write_private_bytes_posix)(target.anchor, directory_flags)
-    p8-->>p24: target.lstat
-    p9-->>p25: uuid.uuid4 (src/llm_wiki_cli/services…write_private_bytes_posix)
-    p8-->>p26: getattr (src/llm_wiki_cli/services…ite_guarded_bytes_windows)(existing, 'st_file_attributes', 0)
+    p1->>p2: _atomic_write_guarded_bytes_windows
+    p1->>p3: _atomic_write_private_bytes_posix
+    p2->>p4: guard_windows_directory_chain
+    p2->>p5: windows_object_identity
+    p2->>p6: _commit_windows_absent_snapshot
+    p2->>p7: open_windows_readonly_file
+    p3->>p8: _restore_posix_quarantined_entry
+    p5->>p9: windows_object_identity_from_values
+    p7->>p10: _open_windows_readonly_file_handle
+    p4->>p11: _open_windows_directory_guard
+    p4->>p12: create_private_windows_directory
+    p12->>p13: _private_windows_security_attributes
+    p12->>p14: move_windows_path_write_through
+    p11->>p15: _verify_windows_handle_restrictive_dacl
+    p1->>p16: before_wiki_write
+    p1->>p17: after_wiki_write
+    p2->>p18: WindowsFileGuardError
+    p3->>p19: _read_posix_descriptor
+    p4->>p20: WindowsDirectoryGuardError
+    p8->>p21: _restore_posix_entry_between
+    p7->>p22: _close_windows_handle
+    p9->>p23: WindowsIdentityUnavailableError
+    p9->>p24: WindowsObjectIdentity
+    p11->>p25: _windows_api_path
+    p11->>p26: _WindowsDirectoryGuardUnavailableError
+    p14->>p27: WindowsDurabilityError
+    p13->>p28: _current_windows_user_sid
+    p1-->>p29: Path (src/llm_wiki_cli/services…tomic_write_guarded_bytes)(path)
+    p1-->>p30: target.is_absolute
 ```
 
 > Call sequence diagram shows 30 of 353 interactions; 323 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 18 of 219 (201 omitted); unresolved 6 of 43 (37 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 219 (218 omitted); unresolved 1 of 43 (42 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 16 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 9 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:atomic_write_guarded_bytes` | 2 | - | external | 4 |
+| `src/llm_wiki_cli/services/wiki_write_basis.py:before_wiki_write` | 9 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/wiki_write_basis.py:before_wiki_write` | 9 | - | external | 1 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_atomic_write_guarded_bytes_windows` | 13 | - | external | 19 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 16 | - | external | 9 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 16 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 6 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 16 | - | unresolved | 4 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 24 | - | external | 14 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 24 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 24 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 9 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_windows_api_path` | 27 | - | external | 2 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_windows_api_path` | 27 | - | unresolved | 2 |
-> Omission summary shows 8 of 43 groups; 35 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 45 groups; 37 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

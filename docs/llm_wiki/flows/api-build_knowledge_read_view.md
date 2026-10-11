@@ -29,84 +29,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as build_knowledge_read_view
-    participant p1 as isinstance (src/llm_wiki_cli/services…build_knowledge_read_view)
-    participant p2 as TypeError (src/llm_wiki_cli/services…build_knowledge_read_view)
-    participant p3 as _read_mode
-    participant p4 as _validate_load_result
-    participant p5 as _loaded_freshness
-    participant p6 as _knowledge_counts
+    participant p1 as _read_mode
+    participant p2 as _validate_load_result
+    participant p3 as _loaded_freshness
+    participant p4 as _knowledge_counts
+    participant p5 as _snapshot_maintenance_report
+    participant p6 as _implementation_report
     participant p7 as KnowledgeReadView
-    participant p8 as _snapshot_maintenance_report
-    participant p9 as _implementation_report
-    participant p10 as _unsupported_reason
-    participant p11 as isinstance (src/llm_wiki_cli/services…consumption.py:_read_mode)
-    participant p12 as isinstance (src/llm_wiki_cli/services….py:_validate_load_result)
-    participant p13 as require_validated_artifacts
-    participant p14 as Counter (src/llm_wiki_cli/services…tion.py:_knowledge_counts)
-    participant p15 as build_maintenance_status
-    participant p16 as any (src/llm_wiki_cli/services…py:_implementation_report)
-    participant p17 as TypeError (src/llm_wiki_cli/services…consumption.py:_read_mode)
-    participant p18 as TypeError (src/llm_wiki_cli/services….py:_validate_load_result)
-    participant p19 as evaluate_knowledge_freshness
-    participant p20 as marker_from_validated_state
-    participant p21 as compare_knowledge_implementation
-    participant p22 as isinstance (src/llm_wiki_cli/services…tion.py:_knowledge_counts)
-    participant p23 as KnowledgeReadMode
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…build_knowledge_read_view)(load_result, KnowledgeLoadResult)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…build_knowledge_read_view)('load_result must be a KnowledgeLoadResult')
-    p0->>p3: _read_mode
-    p0->>p4: _validate_load_result
-    p0->>p5: _loaded_freshness
-    p0->>p6: _knowledge_counts
+    participant p8 as _unsupported_reason
+    participant p9 as build_maintenance_status
+    participant p10 as evaluate_knowledge_freshness
+    participant p11 as marker_from_validated_state
+    participant p12 as compare_knowledge_implementation
+    participant p13 as parse_knowledge_index
+    participant p14 as _knowledge_index_to_payload_unchecked
+    participant p15 as _evaluate_model_freshness
+    participant p16 as owner_key
+    participant p17 as compare_implementation_observations
+    participant p18 as _record
+    participant p19 as _bundle_to_payload
+    participant p20 as _validate_live_evaluation
+    participant p21 as _string
+    participant p22 as _parse_bundle
+    participant p23 as _evaluate_concept
+    participant p24 as _array (src/llm_wiki_cli/services/knowledge_model.py)
+    participant p25 as _concept_to_payload
+    participant p26 as _parse_concept
+    participant p27 as _relationship_to_payload
+    participant p28 as _parse_relationship
+    participant p29 as isinstance (src/llm_wiki_cli/services…build_knowledge_read_view)
+    participant p30 as evidence.get
+    p0->>p1: _read_mode
+    p0->>p2: _validate_load_result
+    p0->>p3: _loaded_freshness
+    p0->>p4: _knowledge_counts
+    p0->>p5: _snapshot_maintenance_report
+    p0->>p6: _implementation_report
     p0->>p7: KnowledgeReadView
-    p0->>p8: _snapshot_maintenance_report
-    p0->>p9: _implementation_report
-    p0->>p7: KnowledgeReadView
-    p0->>p10: _unsupported_reason
-    p0->>p7: KnowledgeReadView
-    p3-->>p11: isinstance (src/llm_wiki_cli/services…consumption.py:_read_mode)(snapshot_only, bool)
-    p4-->>p12: isinstance (src/llm_wiki_cli/services….py:_validate_load_result)(result.status, KnowledgeLoadState)
-    p5->>p13: require_validated_artifacts
-    p6-->>p14: Counter (src/llm_wiki_cli/services…tion.py:_knowledge_counts)
-    p8->>p15: build_maintenance_status
-    p9-->>p16: any (src/llm_wiki_cli/services…py:_implementation_report)(...)
-    p3-->>p17: TypeError (src/llm_wiki_cli/services…consumption.py:_read_mode)('snapshot_only must be a boolean')
-    p4-->>p18: TypeError (src/llm_wiki_cli/services….py:_validate_load_result)('load_result.status must be a KnowledgeLoadState')
-    p5->>p19: evaluate_knowledge_freshness
-    p6-->>p14: Counter (src/llm_wiki_cli/services…tion.py:_knowledge_counts)
-    p8->>p20: marker_from_validated_state
-    p9->>p21: compare_knowledge_implementation
-    p3-->>p11: isinstance (src/llm_wiki_cli/services…consumption.py:_read_mode)(mode, KnowledgeReadMode)
-    p4-->>p12: isinstance (src/llm_wiki_cli/services….py:_validate_load_result)(result.underlying_status, KnowledgeLoadState)
-    p5->>p19: evaluate_knowledge_freshness
-    p6-->>p22: isinstance (src/llm_wiki_cli/services…tion.py:_knowledge_counts)(raw_kind, Enum)
-    p9->>p21: compare_knowledge_implementation
-    p3->>p23: KnowledgeReadMode
+    p0->>p8: _unsupported_reason
+    p5->>p9: build_maintenance_status
+    p3->>p10: evaluate_knowledge_freshness
+    p5->>p11: marker_from_validated_state
+    p6->>p12: compare_knowledge_implementation
+    p10->>p13: parse_knowledge_index
+    p10->>p14: _knowledge_index_to_payload_unchecked
+    p10->>p15: _evaluate_model_freshness
+    p9->>p16: owner_key
+    p9->>p17: compare_implementation_observations
+    p13->>p18: _record
+    p14->>p19: _bundle_to_payload
+    p15->>p20: _validate_live_evaluation
+    p13->>p21: _string
+    p13->>p22: _parse_bundle
+    p15->>p23: _evaluate_concept
+    p13->>p24: _array (src/llm_wiki_cli/services/knowledge_model.py)
+    p14->>p25: _concept_to_payload
+    p13->>p26: _parse_concept
+    p14->>p27: _relationship_to_payload
+    p13->>p28: _parse_relationship
+    p0-->>p29: isinstance (src/llm_wiki_cli/services…build_knowledge_read_view)(load_result, KnowledgeLoadResult)
+    p4-->>p30: evidence.get(state, 0)
 ```
 
 > Call sequence diagram shows 30 of 1117 interactions; 1087 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 12 of 309 (297 omitted); unresolved 0 of 184 (184 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 309 (308 omitted); unresolved 1 of 184 (183 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_consumption.py:_read_mode` | 4 | - | external | 2 |
-| `src/llm_wiki_cli/services/knowledge_consumption.py:_validate_load_result` | 11 | - | external | 15 |
+| `src/llm_wiki_cli/services/knowledge_consumption.py:build_knowledge_read_view` | 1 | - | external | 1 |
+| `src/llm_wiki_cli/services/knowledge_consumption.py:_read_mode` | 4 | - | external | 5 |
+| `src/llm_wiki_cli/services/knowledge_consumption.py:_read_mode` | 4 | [src/llm_wiki_cli/services/knowledge_consumption.py](../modules/knowledge_consumption.md) | internal | 1 |
+| `src/llm_wiki_cli/services/knowledge_consumption.py:_validate_load_result` | 11 | - | external | 18 |
 | `src/llm_wiki_cli/services/knowledge_consumption.py:_validate_load_result` | 11 | [src/llm_wiki_cli/services/knowledge_consumption.py](../modules/knowledge_consumption.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_consumption.py:_unsupported_reason` | 29 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/knowledge_consumption.py:_loaded_freshness` | 32 | [src/llm_wiki_cli/services/knowledge_artifacts.py](../modules/knowledge_artifacts.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_artifacts.py:require_validated_artifacts` | 33 | - | external | 4 |
-| `src/llm_wiki_cli/services/knowledge_freshness.py:evaluate_knowledge_freshness` | 38 | - | external | 2 |
-| `src/llm_wiki_cli/services/knowledge_freshness.py:evaluate_knowledge_freshness` | 38 | [src/llm_wiki_cli/services/knowledge_artifacts.py](../modules/knowledge_artifacts.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_freshness.py:evaluate_knowledge_freshness` | 38 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 3 |
-> Omission summary shows 8 of 214 groups; 206 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 219 groups; 211 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

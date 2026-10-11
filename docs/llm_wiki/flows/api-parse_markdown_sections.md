@@ -6,71 +6,74 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as parse_markdown_sections
     participant p1 as parse_markdown_document
-    participant p2 as isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)
-    participant p3 as TypeError
-    participant p4 as ValueError (src/llm_wiki_cli/services…py:parse_markdown_document)
-    participant p5 as normalize_markdown
-    participant p6 as list
-    participant p7 as _iter_structural_headings
-    participant p8 as defaultdict
-    participant p9 as stack.pop
-    participant p10 as candidates.append
-    participant p11 as _HeadingCandidate
-    participant p12 as stack.append
-    participant p13 as len (src/llm_wiki_cli/services…py:parse_markdown_document)
-    participant p14 as utf8_prefix_lengths.append
-    participant p15 as character.encode
-    participant p16 as enumerate (src/llm_wiki_cli/services…py:parse_markdown_document)
-    participant p17 as section_locator
-    participant p18 as exact_text.encode
-    participant p19 as sections.append
-    participant p20 as MarkdownSection
-    participant p21 as sha256_bytes
-    participant p22 as children[…].append
-    participant p23 as replace
-    participant p24 as tuple (src/llm_wiki_cli/services…py:parse_markdown_document)
+    participant p2 as _iter_structural_headings
+    participant p3 as hash_json
+    participant p4 as _frontmatter_extent
+    participant p5 as canonical_json_bytes
+    participant p6 as normalize_markdown
+    participant p7 as _HeadingCandidate
+    participant p8 as section_locator
+    participant p9 as MarkdownSection
+    participant p10 as sha256_bytes
+    participant p11 as MarkdownSectionDocument
+    participant p12 as _line_content
+    participant p13 as _atx_heading
+    participant p14 as canonical_json_text
+    participant p15 as isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)
+    participant p16 as stack.pop
+    participant p17 as TypeError
+    participant p18 as ValueError (src/llm_wiki_cli/services…py:parse_markdown_document)
+    participant p19 as list
+    participant p20 as defaultdict
+    participant p21 as candidates.append
+    participant p22 as stack.append
+    participant p23 as len (src/llm_wiki_cli/services…py:parse_markdown_document)
+    participant p24 as utf8_prefix_lengths.append
+    participant p25 as character.encode
+    participant p26 as enumerate (src/llm_wiki_cli/services…py:parse_markdown_document)
+    participant p27 as exact_text.encode
     p0->>p1: parse_markdown_document
-    p1-->>p2: isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)(markdown, str)
-    p1-->>p3: TypeError('markdown must be a string')
-    p1-->>p2: isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)(page_locator, str)
-    p1-->>p4: ValueError (src/llm_wiki_cli/services…py:parse_markdown_document)('page_locator must be a non-empty string')
-    p1->>p5: normalize_markdown
-    p1-->>p6: list(_iter_structural_headings(...))
-    p1->>p7: _iter_structural_headings
-    p1-->>p8: defaultdict(int)
-    p1-->>p9: stack.pop
-    p1-->>p10: candidates.append(_HeadingCandidate(...))
-    p1->>p11: _HeadingCandidate
-    p1-->>p12: stack.append(...)
-    p1-->>p13: len (src/llm_wiki_cli/services…py:parse_markdown_document)(candidates)
-    p1-->>p14: utf8_prefix_lengths.append(...)
-    p1-->>p13: len (src/llm_wiki_cli/services…py:parse_markdown_document)(character.encode(...))
-    p1-->>p15: character.encode('utf-8')
-    p1-->>p16: enumerate (src/llm_wiki_cli/services…py:parse_markdown_document)(candidates)
-    p1-->>p13: len (src/llm_wiki_cli/services…py:parse_markdown_document)(normalized)
-    p1->>p17: section_locator
-    p1->>p17: section_locator
-    p1-->>p18: exact_text.encode('utf-8')
-    p1-->>p19: sections.append(MarkdownSection(...))
-    p1->>p20: MarkdownSection
-    p1->>p21: sha256_bytes
-    p1-->>p8: defaultdict(list)
-    p1-->>p22: children[…].append(section.locator)
-    p1-->>p23: replace(section, child_locators=tuple(...))
-    p1-->>p24: tuple (src/llm_wiki_cli/services…py:parse_markdown_document)(children[...])
-    p1-->>p6: list(section.child_locators)
+    p1->>p2: _iter_structural_headings
+    p1->>p3: hash_json
+    p2->>p4: _frontmatter_extent
+    p3->>p5: canonical_json_bytes
+    p1->>p6: normalize_markdown
+    p1->>p7: _HeadingCandidate
+    p1->>p8: section_locator
+    p1->>p9: MarkdownSection
+    p1->>p10: sha256_bytes
+    p1->>p11: MarkdownSectionDocument
+    p2->>p12: _line_content
+    p2->>p13: _atx_heading
+    p5->>p14: canonical_json_text
+    p1-->>p15: isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)(markdown, str)
+    p1-->>p16: stack.pop
+    p1-->>p17: TypeError('markdown must be a string')
+    p1-->>p15: isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)(page_locator, str)
+    p1-->>p18: ValueError (src/llm_wiki_cli/services…py:parse_markdown_document)('page_locator must be a non-empty string')
+    p1-->>p19: list(_iter_structural_headings(...))
+    p1-->>p20: defaultdict(int)
+    p1-->>p21: candidates.append(_HeadingCandidate(...))
+    p1-->>p22: stack.append(...)
+    p1-->>p23: len (src/llm_wiki_cli/services…py:parse_markdown_document)(candidates)
+    p1-->>p24: utf8_prefix_lengths.append(...)
+    p1-->>p23: len (src/llm_wiki_cli/services…py:parse_markdown_document)(character.encode(...))
+    p1-->>p25: character.encode('utf-8')
+    p1-->>p26: enumerate (src/llm_wiki_cli/services…py:parse_markdown_document)(candidates)
+    p1-->>p23: len (src/llm_wiki_cli/services…py:parse_markdown_document)(normalized)
+    p1-->>p27: exact_text.encode('utf-8')
 ```
 
 > Call sequence diagram shows 30 of 86 interactions; 56 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 14 of 43 (29 omitted); unresolved 8 of 24 (16 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 10 of 43 (33 omitted); unresolved 6 of 24 (18 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -78,13 +81,13 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/markdown_sections.py:normalize_markdown` | 7 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/markdown_sections.py:_iter_structural_headings` | 11 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/markdown_sections.py:_iter_structural_headings` | 11 | [src/llm_wiki_cli/services/markdown_sections.py](../modules/markdown_sections.md) | internal | 3 |
 | `src/llm_wiki_cli/services/markdown_sections.py:_frontmatter_extent` | 13 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/markdown_sections.py:_frontmatter_extent` | 13 | [src/llm_wiki_cli/services/markdown_sections.py](../modules/markdown_sections.md) | internal | 2 |
 | `src/llm_wiki_cli/services/markdown_sections.py:_line_content` | 16 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/markdown_sections.py:_frontmatter_extent` | 13 | - | external | 2 |
 | `src/llm_wiki_cli/services/markdown_sections.py:_iter_structural_headings` | 11 | - | external | 5 |
-> Omission summary shows 8 of 22 groups; 14 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/markdown_sections.py:_atx_heading` | 30 | - | unresolved | 3 |
+> Omission summary shows 8 of 20 groups; 12 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow

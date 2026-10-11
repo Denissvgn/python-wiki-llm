@@ -41,7 +41,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -50,72 +50,82 @@ sequenceDiagram
     participant p1 as build_extract_payload
     participant p2 as _caused_by
     participant p3 as WorkspaceStateError
-    participant p4 as str (src/llm_wiki_cli/api.py:extract_source)
-    participant p5 as _path_error_field
-    participant p6 as InvalidRequestError
-    participant p7 as cast
-    participant p8 as validate_source_root
-    participant p9 as set (src/llm_wiki_cli/api.py:_caused_by)
-    participant p10 as ValueError (src/llm_wiki_cli/services….py:build_extract_payload)
-    participant p11 as id
-    participant p12 as validate_source_paths
-    participant p13 as isinstance (src/llm_wiki_cli/api.py:_caused_by)
-    participant p14 as seen.add (src/llm_wiki_cli/api.py:_caused_by)
-    participant p15 as _source_snapshot_for_inventory_request
-    participant p16 as InventoryRequest
-    participant p17 as resolve_source_selection
-    participant p18 as normalize_include_tests
-    participant p19 as _git_changed_files
-    participant p20 as str (src/llm_wiki_cli/services….py:build_extract_payload)
+    participant p4 as _path_error_field
+    participant p5 as InvalidRequestError
+    participant p6 as validate_source_root
+    participant p7 as validate_source_paths
+    participant p8 as _source_snapshot_for_inventory_request
+    participant p9 as _git_changed_files
+    participant p10 as _build_extract_source_snapshot
+    participant p11 as _partition_snapshot_git_changes
+    participant p12 as analyze_dependencies
+    participant p13 as build_api_contracts
+    participant p14 as _data_flow_details_contract
+    participant p15 as get_inventory_result
+    participant p16 as detect_entry_points
+    participant p17 as read_console_scripts
+    participant p18 as attach_routes_to_entry_points
+    participant p19 as resolve_call_edges
+    participant p20 as build_data_flow_context
+    participant p21 as analyze_data_flow_detailed
+    participant p22 as build_flow_detailed
+    participant p23 as _summarize_inventory
+    participant p24 as get_docker_inventory
+    participant p25 as validate_path
+    participant p26 as build_source_snapshot
+    participant p27 as build_dependency_graph
+    participant p28 as load_openapi_document
+    participant p29 as str (src/llm_wiki_cli/api.py:extract_source)
+    participant p30 as seen.add (src/llm_wiki_cli/api.py:_caused_by)
     p0->>p1: build_extract_payload
     p0->>p2: _caused_by
     p0->>p3: WorkspaceStateError
-    p0-->>p4: str (src/llm_wiki_cli/api.py:extract_source)(exc)
-    p0->>p5: _path_error_field
-    p0-->>p4: str (src/llm_wiki_cli/api.py:extract_source)(exc)
-    p0->>p6: InvalidRequestError
-    p0-->>p4: str (src/llm_wiki_cli/api.py:extract_source)(exc)
-    p0->>p5: _path_error_field
-    p0-->>p4: str (src/llm_wiki_cli/api.py:extract_source)(exc)
-    p0->>p3: WorkspaceStateError
-    p0-->>p4: str (src/llm_wiki_cli/api.py:extract_source)(exc)
-    p0->>p6: InvalidRequestError
-    p0-->>p4: str (src/llm_wiki_cli/api.py:extract_source)(exc)
-    p0-->>p7: cast(ExtractSourceResult, result.payload)
-    p1->>p8: validate_source_root
-    p2-->>p9: set (src/llm_wiki_cli/api.py:_caused_by)
-    p1-->>p10: ValueError (src/llm_wiki_cli/services….py:build_extract_payload)('--openapi-file requires --deep.')
-    p2-->>p11: id(current)
-    p1->>p12: validate_source_paths
-    p2-->>p13: isinstance (src/llm_wiki_cli/api.py:_caused_by)(current, expected)
-    p1-->>p10: ValueError (src/llm_wiki_cli/services….py:build_extract_payload)('--changed and --paths are mutually exclusive.')
-    p2-->>p14: seen.add (src/llm_wiki_cli/api.py:_caused_by)(id(...))
-    p1->>p15: _source_snapshot_for_inventory_request
-    p2-->>p11: id(current)
-    p1->>p16: InventoryRequest
-    p1->>p17: resolve_source_selection
-    p1->>p18: normalize_include_tests
-    p1->>p19: _git_changed_files
-    p1-->>p20: str (src/llm_wiki_cli/services….py:build_extract_payload)(src_root)
+    p0->>p4: _path_error_field
+    p0->>p5: InvalidRequestError
+    p1->>p6: validate_source_root
+    p1->>p7: validate_source_paths
+    p1->>p8: _source_snapshot_for_inventory_request
+    p1->>p9: _git_changed_files
+    p1->>p10: _build_extract_source_snapshot
+    p1->>p11: _partition_snapshot_git_changes
+    p1->>p12: analyze_dependencies
+    p1->>p13: build_api_contracts
+    p1->>p14: _data_flow_details_contract
+    p1->>p15: get_inventory_result
+    p1->>p16: detect_entry_points
+    p1->>p17: read_console_scripts
+    p1->>p18: attach_routes_to_entry_points
+    p1->>p19: resolve_call_edges
+    p1->>p20: build_data_flow_context
+    p1->>p21: analyze_data_flow_detailed
+    p1->>p22: build_flow_detailed
+    p1->>p23: _summarize_inventory
+    p1->>p24: get_docker_inventory
+    p6->>p25: validate_path
+    p8->>p26: build_source_snapshot
+    p12->>p27: build_dependency_graph
+    p13->>p28: load_openapi_document
+    p0-->>p29: str (src/llm_wiki_cli/api.py:extract_source)(exc)
+    p2-->>p30: seen.add (src/llm_wiki_cli/api.py:_caused_by)(id(...))
 ```
 
 > Call sequence diagram shows 30 of 3047 interactions; 3017 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 14 of 986 (972 omitted); unresolved 1 of 1297 (1296 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 986 (985 omitted); unresolved 1 of 1297 (1296 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 3 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
 | `src/llm_wiki_cli/config.py:validate_path` | 4 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
 | `src/llm_wiki_cli/config.py:validate_path` | 4 | - | unresolved | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 4 | - | external | 2 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 3 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 3 | - | external | 11 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 3 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 6 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 3 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 22 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 2 |
-> Omission summary shows 8 of 678 groups; 670 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 682 groups; 674 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

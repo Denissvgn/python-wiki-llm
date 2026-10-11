@@ -44,7 +44,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -54,75 +54,81 @@ sequenceDiagram
     participant p2 as load_knowledge_read_view
     participant p3 as build_documentation_query_service_from_view
     participant p4 as _assert_wiki_unchanged
-    participant p5 as str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)
-    participant p6 as isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view)
-    participant p7 as attach_machine_verification_read_view
-    participant p8 as _assert_wiki_integrity
-    participant p9 as directory_identity
-    participant p10 as TypeError (src/llm_wiki_cli/services…:load_knowledge_read_view)
-    participant p11 as assemble_documentation_query_service
-    participant p12 as current.exists
-    participant p13 as load_knowledge_state
-    participant p14 as verification_summaries_for_concepts
-    participant p15 as root.exists
-    participant p16 as _unsupported_reason
-    participant p17 as ContextPacketSourceMutationError
-    participant p18 as _domain_hash
-    participant p19 as KnowledgeLoadResult
-    participant p20 as _governance_lock_root
-    participant p21 as build_knowledge_read_view
-    participant p22 as walk
-    participant p23 as Path (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)
-    participant p24 as path.stat
+    participant p5 as load_knowledge_state
+    participant p6 as verification_summaries_for_concepts
+    participant p7 as _domain_hash
+    participant p8 as build_knowledge_read_view
+    participant p9 as attach_machine_verification_read_view
+    participant p10 as _assert_wiki_integrity
+    participant p11 as canonical_json_bytes
+    participant p12 as _read_mode
+    participant p13 as _validate_load_result
+    participant p14 as load_machine_verification_read_view
+    participant p15 as _loaded_freshness
+    participant p16 as _knowledge_counts
+    participant p17 as guard_maintenance_owner
+    participant p18 as _snapshot_maintenance_report
+    participant p19 as _implementation_report
+    participant p20 as _load_once
+    participant p21 as _deep_copy
+    participant p22 as _absolute_path
+    participant p23 as _read_artifact
+    participant p24 as build_maintenance_status
+    participant p25 as evaluate_knowledge_freshness
+    participant p26 as marker_from_validated_state
+    participant p27 as compare_knowledge_implementation
+    participant p28 as load_adoption_marker
+    participant p29 as str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)
+    participant p30 as current.exists
     p0->>p1: _wiki_anchor
     p0->>p2: load_knowledge_read_view
     p0->>p3: build_documentation_query_service_from_view
     p0->>p4: _assert_wiki_unchanged
-    p1-->>p5: str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)(current)
-    p2-->>p6: isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view)(include_machine_verification, bool)
-    p3->>p7: attach_machine_verification_read_view
-    p4->>p8: _assert_wiki_integrity
-    p1->>p9: directory_identity
-    p2-->>p10: TypeError (src/llm_wiki_cli/services…:load_knowledge_read_view)('include_machine_verification must be a boolean')
-    p3->>p11: assemble_documentation_query_service
-    p4->>p1: _wiki_anchor
-    p1-->>p12: current.exists
-    p2->>p13: load_knowledge_state
-    p3->>p14: verification_summaries_for_concepts
-    p4->>p1: _wiki_anchor
-    p1-->>p15: root.exists
-    p2->>p16: _unsupported_reason
-    p4->>p17: ContextPacketSourceMutationError
-    p1->>p18: _domain_hash
-    p2->>p19: KnowledgeLoadResult
-    p4->>p17: ContextPacketSourceMutationError
-    p1->>p20: _governance_lock_root
-    p2->>p21: build_knowledge_read_view
-    p1-->>p22: walk(root, Path(...))
-    p2->>p7: attach_machine_verification_read_view
-    p1-->>p23: Path (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)
-    p1->>p8: _assert_wiki_integrity
-    p1->>p18: _domain_hash
-    p9-->>p24: path.stat(follow_symlinks=False)
+    p2->>p5: load_knowledge_state
+    p3->>p6: verification_summaries_for_concepts
+    p1->>p7: _domain_hash
+    p2->>p8: build_knowledge_read_view
+    p2->>p9: attach_machine_verification_read_view
+    p1->>p10: _assert_wiki_integrity
+    p7->>p11: canonical_json_bytes
+    p8->>p12: _read_mode
+    p8->>p13: _validate_load_result
+    p9->>p14: load_machine_verification_read_view
+    p8->>p15: _loaded_freshness
+    p8->>p16: _knowledge_counts
+    p5->>p17: guard_maintenance_owner
+    p8->>p18: _snapshot_maintenance_report
+    p8->>p19: _implementation_report
+    p5->>p20: _load_once
+    p6->>p21: _deep_copy
+    p17->>p22: _absolute_path
+    p20->>p23: _read_artifact
+    p18->>p24: build_maintenance_status
+    p15->>p25: evaluate_knowledge_freshness
+    p18->>p26: marker_from_validated_state
+    p19->>p27: compare_knowledge_implementation
+    p17->>p28: load_adoption_marker
+    p1-->>p29: str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)(current)
+    p1-->>p30: current.exists
 ```
 
 > Call sequence diagram shows 30 of 1206 interactions; 1176 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 4 of 443 (439 omitted); unresolved 4 of 237 (233 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 443 (442 omitted); unresolved 1 of 237 (236 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/context_packet.py:_domain_hash` | 8 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 2 |
+| `src/llm_wiki_cli/services/context_packet.py:_wiki_anchor` | 2 | [src/llm_wiki_cli/services/source_snapshot.py](../modules/source_snapshot.md) | internal | 1 |
+| `src/llm_wiki_cli/services/source_snapshot.py:directory_identity` | 4 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/context_packet.py:_wiki_anchor` | 2 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/context_packet.py:_domain_hash` | 8 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:sha256_bytes` | 9 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:sha256_bytes` | 9 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:canonical_json_bytes` | 12 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:canonical_json_bytes` | 12 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:canonical_json_text` | 14 | - | external | 1 |
-| `src/llm_wiki_cli/services/knowledge_governance.py:_governance_lock_root` | 16 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/knowledge_governance.py:_governance_lock_root` | 16 | - | external | 5 |
-> Omission summary shows 8 of 256 groups; 248 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 264 groups; 256 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

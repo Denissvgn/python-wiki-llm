@@ -66,7 +66,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -75,77 +75,82 @@ sequenceDiagram
     participant p1 as _normalize_query_input
     participant p2 as normalize_concept_coordinate
     participant p3 as _normalize_query_limit
-    participant p4 as isinstance (src/llm_wiki_cli/api.py:inspect_concept)
-    participant p5 as InvalidRequestError
-    participant p6 as cast
-    participant p7 as inspect_native_concept
-    participant p8 as _validate_wiki_dir
-    participant p9 as callback
-    participant p10 as normalize_documentation_query_text
-    participant p11 as capture_context_read
-    participant p12 as validate_path
-    participant p13 as validate_exact_page_coordinate
-    participant p14 as normalize_documentation_query_limit
-    participant p15 as str (src/llm_wiki_cli/services…py:inspect_native_concept)
-    participant p16 as str (src/llm_wiki_cli/api.py:_normalize_query_input)
-    participant p17 as validator
-    participant p18 as DocumentationQueryError
-    participant p19 as build_documentation_query_service_from_view
-    participant p20 as _wiki_anchor
-    participant p21 as build_snapshot_documentation_query_service
-    participant p22 as service.get_concept
-    participant p23 as service.traverse_typed_graph
-    participant p24 as service.list_concept_sections
-    participant p25 as build_knowledge_coverage
+    participant p4 as inspect_native_concept
+    participant p5 as _validate_wiki_dir
+    participant p6 as InvalidRequestError
+    participant p7 as normalize_documentation_query_text
+    participant p8 as capture_context_read
+    participant p9 as validate_exact_page_coordinate
+    participant p10 as normalize_documentation_query_limit
+    participant p11 as build_documentation_query_service_from_view
+    participant p12 as build_snapshot_documentation_query_service
+    participant p13 as build_knowledge_coverage
+    participant p14 as load_knowledge_read_view
+    participant p15 as verification_summaries_for_concepts
+    participant p16 as _matches_directory_path
+    participant p17 as _matches_directory_uri
+    participant p18 as validate_source_root
+    participant p19 as resolve_source_selection
+    participant p20 as capture_source_selection_inputs
+    participant p21 as validate_live_query_source_selection
+    participant p22 as build_source_snapshot
+    participant p23 as _guard_windows_inputs
+    participant p24 as _assert_source_unchanged
+    participant p25 as _assert_source_inputs_unchanged
+    participant p26 as _wiki_anchor
+    participant p27 as get_entry_points
+    participant p28 as read_console_scripts
+    participant p29 as isinstance (src/llm_wiki_cli/api.py:inspect_concept)
+    participant p30 as callback
     p0->>p1: _normalize_query_input
     p0->>p2: normalize_concept_coordinate
     p0->>p3: _normalize_query_limit
-    p0-->>p4: isinstance (src/llm_wiki_cli/api.py:inspect_concept)(value, bool)
-    p0->>p5: InvalidRequestError
-    p0-->>p4: isinstance (src/llm_wiki_cli/api.py:inspect_concept)(helper_cache_dir, (...))
-    p0->>p5: InvalidRequestError
-    p0-->>p6: cast(NativeInspectionResult, inspect_native_concept(...))
-    p0->>p7: inspect_native_concept
-    p0->>p8: _validate_wiki_dir
-    p1-->>p9: callback
-    p2->>p10: normalize_documentation_query_text
-    p3->>p1: _normalize_query_input
-    p7->>p11: capture_context_read
-    p8->>p12: validate_path
-    p1->>p5: InvalidRequestError
-    p2->>p13: validate_exact_page_coordinate
-    p3->>p14: normalize_documentation_query_limit
-    p7-->>p15: str (src/llm_wiki_cli/services…py:inspect_native_concept)(wiki_root)
-    p1-->>p16: str (src/llm_wiki_cli/api.py:_normalize_query_input)(exc)
-    p2-->>p17: validator(selected)
-    p7-->>p15: str (src/llm_wiki_cli/services…py:inspect_native_concept)(helper_cache_dir)
-    p2->>p18: DocumentationQueryError
-    p7->>p19: build_documentation_query_service_from_view
-    p7->>p20: _wiki_anchor
-    p7->>p21: build_snapshot_documentation_query_service
-    p7-->>p22: service.get_concept(coordinate)
-    p7-->>p23: service.traverse_typed_graph(coordinate, include_evidence=include_evidence)
-    p7-->>p24: service.list_concept_sections(coordinate)
-    p7->>p25: build_knowledge_coverage
+    p0->>p4: inspect_native_concept
+    p0->>p5: _validate_wiki_dir
+    p0->>p6: InvalidRequestError
+    p2->>p7: normalize_documentation_query_text
+    p4->>p8: capture_context_read
+    p2->>p9: validate_exact_page_coordinate
+    p3->>p10: normalize_documentation_query_limit
+    p4->>p11: build_documentation_query_service_from_view
+    p4->>p12: build_snapshot_documentation_query_service
+    p4->>p13: build_knowledge_coverage
+    p12->>p14: load_knowledge_read_view
+    p11->>p15: verification_summaries_for_concepts
+    p9->>p16: _matches_directory_path
+    p9->>p17: _matches_directory_uri
+    p8->>p18: validate_source_root
+    p8->>p19: resolve_source_selection
+    p8->>p20: capture_source_selection_inputs
+    p8->>p21: validate_live_query_source_selection
+    p8->>p22: build_source_snapshot
+    p8->>p23: _guard_windows_inputs
+    p8->>p24: _assert_source_unchanged
+    p8->>p25: _assert_source_inputs_unchanged
+    p8->>p26: _wiki_anchor
+    p8->>p27: get_entry_points
+    p8->>p28: read_console_scripts
+    p0-->>p29: isinstance (src/llm_wiki_cli/api.py:inspect_concept)(value, bool)
+    p1-->>p30: callback
 ```
 
 > Call sequence diagram shows 30 of 2793 interactions; 2763 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 6 of 943 (937 omitted); unresolved 5 of 883 (878 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 943 (942 omitted); unresolved 1 of 883 (882 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/api.py:_normalize_query_input` | 2 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 1 |
+| `src/llm_wiki_cli/api.py:_normalize_query_input` | 2 | - | external | 1 |
 | `src/llm_wiki_cli/services/documentation_query_builder.py:normalize_documentation_query_text` | 7 | - | external | 2 |
 | `src/llm_wiki_cli/services/documentation_query_builder.py:normalize_documentation_query_text` | 7 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/documentation_query_builder.py:normalize_documentation_query_text` | 7 | [src/llm_wiki_cli/services/documentation_queries.py](../modules/documentation_queries.md) | internal | 2 |
 | `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 15 | - | external | 4 |
 | `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 15 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 15 | [src/llm_wiki_cli/services/wiki_surface.py](../modules/wiki_surface.md) | internal | 7 |
-| `src/llm_wiki_cli/services/wiki_surface.py:_matches_directory_path` | 24 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/wiki_surface.py:_matches_directory_path` | 24 | - | external | 3 |
-> Omission summary shows 8 of 668 groups; 660 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 15 | [src/llm_wiki_cli/services/wiki_surface.py](../modules/wiki_surface.md) | internal | 5 |
+> Omission summary shows 8 of 673 groups; 665 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

@@ -41,79 +41,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as prepare_documentation_run
-    participant p1 as _RefreshArchiveTransaction
-    participant p2 as _InitialPrepareTransaction
-    participant p3 as _prepare_documentation_run_impl
-    participant p4 as _commit_refresh_archive
-    participant p5 as _commit_initial_prepare
-    participant p6 as _rollback_refresh_archive
-    participant p7 as DocumentationIntegrityError (src/llm_wiki_cli/services…prepare_documentation_run)
-    participant p8 as _rollback_initial_prepare
-    participant p9 as DocumentationSchemaError
-    participant p10 as site_name.strip
-    participant p11 as _validate_documentation_projection_policy
-    participant p12 as _resolve_workspace_root_argument
-    participant p13 as _recover_interrupted_refresh
-    participant p14 as resolve_documentation_policy
-    participant p15 as DocumentationIntakeBrief.from_values
-    participant p16 as _assert_existing_workspace_layout_safe
-    participant p17 as documentation_run_path
-    participant p18 as run_path.is_file
-    p0-->>p1: _RefreshArchiveTransaction
-    p0-->>p2: _InitialPrepareTransaction
-    p0->>p3: _prepare_documentation_run_impl
-    p0-->>p4: _commit_refresh_archive(refresh_transaction)
-    p0-->>p5: _commit_initial_prepare(initial_prepare_transaction)
-    p0-->>p6: _rollback_refresh_archive(refresh_transaction)
-    p0-->>p7: DocumentationIntegrityError (src/llm_wiki_cli/services…prepare_documentation_run)(...)
-    p0-->>p8: _rollback_initial_prepare(initial_prepare_transaction)
-    p0-->>p7: DocumentationIntegrityError (src/llm_wiki_cli/services…prepare_documentation_run)(...)
-    p3-->>p9: DocumentationSchemaError(...)
-    p3-->>p9: DocumentationSchemaError(...)
-    p3-->>p10: site_name.strip
-    p3-->>p9: DocumentationSchemaError('External user documentation requires a non-default site name.')
-    p3-->>p9: DocumentationSchemaError('semantic_budget must not be negative.')
-    p3-->>p9: DocumentationSchemaError('adjustment_loop_limit must be positive.')
-    p3-->>p9: DocumentationSchemaError(...)
-    p3-->>p9: DocumentationSchemaError('link_mode must be http or file.')
-    p3-->>p11: _validate_documentation_projection_policy(knowledge_mode, knowledge_public_repository_identity)
-    p3-->>p9: DocumentationSchemaError('bootstrap_source requires an explicit source_root.')
-    p3-->>p9: DocumentationSchemaError('bootstrap_source cannot also specify input_wiki_root.')
-    p3-->>p9: DocumentationSchemaError('bootstrap_source always uses require-current source freshness.')
-    p3-->>p9: DocumentationSchemaError('adopt_existing_wiki requires an explicit input_wiki_root.')
-    p3-->>p9: DocumentationSchemaError("Wiki-only adoption requires freshness_policy='allow-unverified'.")
-    p3-->>p12: _resolve_workspace_root_argument(workspace)
-    p3-->>p13: _recover_interrupted_refresh(workspace_root)
-    p3-->>p14: resolve_documentation_policy(…)
-    p3-->>p15: DocumentationIntakeBrief.from_values(…)
-    p3-->>p16: _assert_existing_workspace_layout_safe(workspace_root)
-    p3-->>p17: documentation_run_path(workspace_root)
-    p3-->>p18: run_path.is_file
+    participant p1 as _prepare_documentation_run_impl
+    participant p2 as execute_bootstrap
+    participant p3 as _adopt_documentation_wiki_snapshot_with_runtime
+    participant p4 as _execute_documentation_workspace_refresh
+    participant p5 as _validate_freshness_policy
+    participant p6 as _bootstrap_run_options_from_request
+    participant p7 as _execute_bootstrap_options
+    participant p8 as _validate_input_root
+    participant p9 as _validate_workspace_root
+    participant p10 as _validate_source_root
+    participant p11 as _validate_root_isolation
+    participant p12 as _open_input_root_descriptor
+    participant p13 as _adopt_validated_wiki_snapshot
+    participant p14 as guard_maintenance_owner
+    participant p15 as _paths_overlap
+    participant p16 as _collect_input_tree
+    participant p17 as _preflight_public_bootstrap
+    participant p18 as _load_and_validate_metadata
+    participant p19 as _preflight_bootstrap_source_selection
+    participant p20 as _is_relative_to
+    participant p21 as _assert_input_directory
+    participant p22 as _unknown_entries
+    participant p23 as maintenance_write_operation
+    participant p24 as _inspect_markdown
+    participant p25 as _execute_bootstrap_options_locked
+    participant p26 as _semantic_page_records
+    participant p27 as _resolve_metadata_freshness
+    participant p28 as _enforce_freshness_policy
+    participant p29 as io.StringIO (src/llm_wiki_cli/services…time.py:execute_bootstrap)
+    participant p30 as _RefreshArchiveTransaction
+    p0->>p1: _prepare_documentation_run_impl
+    p1->>p2: execute_bootstrap
+    p1->>p3: _adopt_documentation_wiki_snapshot_with_runtime
+    p1->>p4: _execute_documentation_workspace_refresh
+    p3->>p5: _validate_freshness_policy
+    p2->>p6: _bootstrap_run_options_from_request
+    p2->>p7: _execute_bootstrap_options
+    p3->>p8: _validate_input_root
+    p3->>p9: _validate_workspace_root
+    p3->>p10: _validate_source_root
+    p3->>p11: _validate_root_isolation
+    p3->>p12: _open_input_root_descriptor
+    p3->>p13: _adopt_validated_wiki_snapshot
+    p7->>p14: guard_maintenance_owner
+    p11->>p15: _paths_overlap
+    p13->>p16: _collect_input_tree
+    p7->>p17: _preflight_public_bootstrap
+    p13->>p18: _load_and_validate_metadata
+    p7->>p19: _preflight_bootstrap_source_selection
+    p11->>p20: _is_relative_to
+    p12->>p21: _assert_input_directory
+    p13->>p22: _unknown_entries
+    p7->>p23: maintenance_write_operation
+    p13->>p24: _inspect_markdown
+    p7->>p25: _execute_bootstrap_options_locked
+    p13->>p26: _semantic_page_records
+    p13->>p27: _resolve_metadata_freshness
+    p13->>p28: _enforce_freshness_policy
+    p2-->>p29: io.StringIO (src/llm_wiki_cli/services…time.py:execute_bootstrap)
+    p0-->>p30: _RefreshArchiveTransaction
 ```
 
 > Call sequence diagram shows 30 of 1114 interactions; 1084 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 0 of 263 (263 omitted); unresolved 29 of 353 (324 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 263 (262 omitted); unresolved 1 of 353 (352 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/documentation_run/prepare.py:_prepare_documentation_run_impl` | 4 | - | unresolved | 134 |
-| `src/llm_wiki_cli/services/documentation_run/prepare.py:_prepare_documentation_run_impl` | 4 | [src/llm_wiki_cli/services/bootstrap_runtime.py](../modules/bootstrap_runtime.md) | internal | 2 |
-| `src/llm_wiki_cli/services/bootstrap_runtime.py:execute_bootstrap` | 57 | - | external | 1 |
-| `src/llm_wiki_cli/services/bootstrap_runtime.py:execute_bootstrap` | 57 | [src/llm_wiki_cli/services/bootstrap_runtime.py](../modules/bootstrap_runtime.md) | internal | 2 |
+| `src/llm_wiki_cli/services/documentation_run/prepare.py:prepare_documentation_run` | 1 | - | unresolved | 7 |
+| `src/llm_wiki_cli/services/documentation_run/prepare.py:_prepare_documentation_run_impl` | 4 | - | unresolved | 155 |
 | `src/llm_wiki_cli/services/bootstrap_runtime.py:_bootstrap_run_options_from_request` | 59 | - | unresolved | 5 |
 | `src/llm_wiki_cli/services/bootstrap_runtime.py:_bootstrap_run_options_from_request` | 59 | - | external | 5 |
 | `src/llm_wiki_cli/services/bootstrap_runtime.py:_bootstrap_run_options_from_request` | 59 | [src/llm_wiki_cli/services/bootstrap_service.py](../modules/bootstrap_service.md) | internal | 3 |
 | `src/llm_wiki_cli/services/bootstrap_runtime.py:_bootstrap_run_options_from_request` | 59 | [src/llm_wiki_cli/services/bootstrap_runtime.py](../modules/bootstrap_runtime.md) | internal | 1 |
-> Omission summary shows 8 of 269 groups; 261 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/maintenance_protocol.py:guard_maintenance_owner` | 75 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 1 |
+| `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 76 | - | external | 4 |
+> Omission summary shows 8 of 264 groups; 256 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

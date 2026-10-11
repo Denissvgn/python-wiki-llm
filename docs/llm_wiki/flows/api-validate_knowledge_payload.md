@@ -28,7 +28,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -36,71 +36,83 @@ sequenceDiagram
     participant p0 as validate_knowledge_payload
     participant p1 as parse_knowledge_index
     participant p2 as _record
-    participant p3 as _string
-    participant p4 as KnowledgeModelError
-    participant p5 as _parse_bundle
-    participant p6 as _array (src/llm_wiki_cli/services/knowledge_model.py)
-    participant p7 as tuple (src/llm_wiki_cli/services….py:parse_knowledge_index)
-    participant p8 as _parse_concept
-    participant p9 as enumerate (src/llm_wiki_cli/services….py:parse_knowledge_index)
-    participant p10 as _parse_relationship
-    participant p11 as _validated_reserved_extensions
-    participant p12 as _validate_index_references
-    participant p13 as KnowledgeIndex
-    participant p14 as validate_implementation_collection
-    participant p15 as str (src/llm_wiki_cli/services….py:parse_knowledge_index)
-    participant p16 as validate_maintenance_projection
-    participant p17 as validate_governance_projection
-    participant p18 as getattr
+    participant p3 as _parse_bundle
+    participant p4 as _parse_concept
+    participant p5 as _parse_relationship
+    participant p6 as _validated_reserved_extensions
+    participant p7 as _validate_index_references
+    participant p8 as validate_implementation_collection
+    participant p9 as validate_maintenance_projection
+    participant p10 as validate_governance_projection
+    participant p11 as _object (src/llm_wiki_cli/services/knowledge_model.py)
+    participant p12 as _parse_document
+    participant p13 as validate_reuse_commitment
+    participant p14 as _parse_repository
+    participant p15 as _locator (src/llm_wiki_cli/services/knowledge_model.py)
+    participant p16 as _parse_snapshot
+    participant p17 as typed_graph_from_knowledge_extensions
+    participant p18 as mcp_uri
+    participant p19 as _parse_producer
+    participant p20 as _parse_relationship_target
+    participant p21 as validate_maintenance_binding
+    participant p22 as validate_maintenance_state
+    participant p23 as _object (src/llm_wiki_cli/services/knowledge_governance.py)
+    participant p24 as _open_enum_value
+    participant p25 as canonical_hash
+    participant p26 as _exact_fields
+    participant p27 as _parse_extensions
+    participant p28 as validate_section_ownership
+    participant p29 as tuple (src/llm_wiki_cli/services….py:parse_knowledge_index)
+    participant p30 as validated.get
     p0->>p1: parse_knowledge_index
     p1->>p2: _record
-    p1->>p3: _string
-    p1->>p4: KnowledgeModelError
-    p1->>p5: _parse_bundle
-    p1->>p6: _array (src/llm_wiki_cli/services/knowledge_model.py)
-    p1-->>p7: tuple (src/llm_wiki_cli/services….py:parse_knowledge_index)(...)
-    p1->>p8: _parse_concept
-    p1-->>p9: enumerate (src/llm_wiki_cli/services….py:parse_knowledge_index)(concepts_value)
-    p1->>p6: _array (src/llm_wiki_cli/services/knowledge_model.py)
-    p1-->>p7: tuple (src/llm_wiki_cli/services….py:parse_knowledge_index)(...)
-    p1->>p10: _parse_relationship
-    p1-->>p9: enumerate (src/llm_wiki_cli/services….py:parse_knowledge_index)(relationships_value)
-    p1->>p11: _validated_reserved_extensions
-    p1->>p12: _validate_index_references
-    p1->>p13: KnowledgeIndex
-    p1->>p14: validate_implementation_collection
-    p1->>p4: KnowledgeModelError
-    p1-->>p15: str (src/llm_wiki_cli/services….py:parse_knowledge_index)(exc)
-    p1->>p16: validate_maintenance_projection
-    p1->>p4: KnowledgeModelError
-    p1-->>p15: str (src/llm_wiki_cli/services….py:parse_knowledge_index)(exc)
-    p1->>p17: validate_governance_projection
-    p1-->>p18: getattr(exc, 'field', 'extensions')
-    p1-->>p18: getattr(exc, 'message', str(...))
-    p1-->>p15: str (src/llm_wiki_cli/services….py:parse_knowledge_index)(exc)
-    p1-->>p18: getattr(exc, 'code', None)
-    p1->>p4: KnowledgeModelError
-    p1-->>p15: str (src/llm_wiki_cli/services….py:parse_knowledge_index)(field)
-    p1-->>p15: str (src/llm_wiki_cli/services….py:parse_knowledge_index)(message)
+    p1->>p3: _parse_bundle
+    p1->>p4: _parse_concept
+    p1->>p5: _parse_relationship
+    p1->>p6: _validated_reserved_extensions
+    p1->>p7: _validate_index_references
+    p1->>p8: validate_implementation_collection
+    p1->>p9: validate_maintenance_projection
+    p1->>p10: validate_governance_projection
+    p2->>p11: _object (src/llm_wiki_cli/services/knowledge_model.py)
+    p4->>p12: _parse_document
+    p6->>p13: validate_reuse_commitment
+    p3->>p14: _parse_repository
+    p4->>p15: _locator (src/llm_wiki_cli/services/knowledge_model.py)
+    p3->>p16: _parse_snapshot
+    p6->>p17: typed_graph_from_knowledge_extensions
+    p4->>p18: mcp_uri
+    p3->>p19: _parse_producer
+    p5->>p20: _parse_relationship_target
+    p9->>p21: validate_maintenance_binding
+    p9->>p22: validate_maintenance_state
+    p10->>p23: _object (src/llm_wiki_cli/services/knowledge_governance.py)
+    p4->>p24: _open_enum_value
+    p9->>p25: canonical_hash
+    p10->>p26: _exact_fields
+    p2->>p27: _parse_extensions
+    p6->>p28: validate_section_ownership
+    p1-->>p29: tuple (src/llm_wiki_cli/services….py:parse_knowledge_index)(...)
+    p8-->>p30: validated.get(IMPLEMENTATION_KEY)
 ```
 
 > Call sequence diagram shows 30 of 1718 interactions; 1688 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 12 of 470 (458 omitted); unresolved 0 of 308 (308 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 470 (469 omitted); unresolved 1 of 308 (307 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_model.py:_record` | 3 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 7 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_object` | 4 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_object` | 4 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_mapping` | 6 | - | external | 2 |
 | `src/llm_wiki_cli/services/validation.py:require_mapping` | 6 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_object` | 4 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 3 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_record` | 3 | - | external | 4 |
+| `src/llm_wiki_cli/services/knowledge_model.py:_record` | 3 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 5 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_parse_extensions` | 21 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 7 |
-> Omission summary shows 8 of 414 groups; 406 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 411 groups; 403 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

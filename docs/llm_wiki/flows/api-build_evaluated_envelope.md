@@ -22,85 +22,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as build_evaluated_envelope
-    participant p1 as isinstance (src/llm_wiki_cli/services…:build_evaluated_envelope)
-    participant p2 as TypeError (src/llm_wiki_cli/services…:build_evaluated_envelope)
-    participant p3 as KnowledgeEnvelopeError
-    participant p4 as _extensions_copy
-    participant p5 as hash_source_snapshot
-    participant p6 as hash_inventory
-    participant p7 as _validate_inventory_source_parity
-    participant p8 as snapshot_extensions.get
-    participant p9 as SnapshotRecord
-    participant p10 as hash_markdown_snapshot
+    participant p1 as _extensions_copy
+    participant p2 as hash_source_snapshot
+    participant p3 as hash_inventory
+    participant p4 as _validate_inventory_source_parity
+    participant p5 as hash_markdown_snapshot
+    participant p6 as hash_generation_options
+    participant p7 as build_producer_record
+    participant p8 as evaluated_envelope_to_payload
+    participant p9 as KnowledgeEnvelopeError
+    participant p10 as SnapshotRecord
     participant p11 as sha256_bytes
-    participant p12 as hash_generation_options
-    participant p13 as build_producer_record
-    participant p14 as BundleRecord
-    participant p15 as EvaluatedEnvelope
-    participant p16 as evaluated_envelope_to_payload
-    participant p17 as isinstance (src/llm_wiki_cli/services…elope.py:_extensions_copy)
-    participant p18 as set (src/llm_wiki_cli/services…e.py:hash_source_snapshot)
-    participant p19 as isinstance (src/llm_wiki_cli/services…nvelope.py:hash_inventory)
-    participant p20 as set(…).issubset
-    participant p21 as isinstance (src/llm_wiki_cli/services…py:hash_markdown_snapshot)
-    participant p22 as isinstance (src/llm_wiki_cli/services…y:hash_generation_options)
-    participant p23 as _build_component
-    participant p24 as isinstance (src/llm_wiki_cli/services…uated_envelope_to_payload)
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…:build_evaluated_envelope)(inputs, EnvelopeInputs)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…:build_evaluated_envelope)('inputs must be an EnvelopeInputs')
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…:build_evaluated_envelope)(inputs.repository, RepositoryRecord)
-    p0->>p3: KnowledgeEnvelopeError
-    p0->>p4: _extensions_copy
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…:build_evaluated_envelope)(inputs.surface_index_bytes, bytes)
-    p0->>p3: KnowledgeEnvelopeError
-    p0->>p5: hash_source_snapshot
-    p0->>p6: hash_inventory
-    p0->>p7: _validate_inventory_source_parity
-    p0->>p4: _extensions_copy
-    p0-->>p8: snapshot_extensions.get(INVENTORY_HASH_EXTENSION)
-    p0->>p3: KnowledgeEnvelopeError
-    p0->>p9: SnapshotRecord
-    p0->>p10: hash_markdown_snapshot
+    participant p12 as BundleRecord
+    participant p13 as EvaluatedEnvelope
+    participant p14 as _build_component
+    participant p15 as _validated_bundle_payload
+    participant p16 as _normalized_allowlist
+    participant p17 as _repository_relative_path
+    participant p18 as _reject_unknown_option_keys
+    participant p19 as _hash_structured
+    participant p20 as _normalized_markdown_bytes
+    participant p21 as require_repository_relative_path
+    participant p22 as canonical_json_bytes
+    participant p23 as knowledge_index_to_payload
+    participant p24 as _validated_limitations
+    participant p25 as hash_component_configuration
+    participant p26 as _emit_extensions
+    participant p27 as _bundle_to_payload
+    participant p28 as _concept_to_payload
+    participant p29 as isinstance (src/llm_wiki_cli/services…:build_evaluated_envelope)
+    participant p30 as snapshot_extensions.get
+    p0->>p1: _extensions_copy
+    p0->>p2: hash_source_snapshot
+    p0->>p3: hash_inventory
+    p0->>p4: _validate_inventory_source_parity
+    p0->>p5: hash_markdown_snapshot
+    p0->>p6: hash_generation_options
+    p0->>p7: build_producer_record
+    p0->>p8: evaluated_envelope_to_payload
+    p0->>p9: KnowledgeEnvelopeError
+    p0->>p10: SnapshotRecord
     p0->>p11: sha256_bytes
-    p0->>p12: hash_generation_options
-    p0->>p13: build_producer_record
-    p0->>p14: BundleRecord
-    p0->>p4: _extensions_copy
-    p0->>p15: EvaluatedEnvelope
-    p0->>p16: evaluated_envelope_to_payload
-    p4-->>p17: isinstance (src/llm_wiki_cli/services…elope.py:_extensions_copy)(value, Mapping)
-    p5-->>p18: set (src/llm_wiki_cli/services…e.py:hash_source_snapshot)
-    p6-->>p19: isinstance (src/llm_wiki_cli/services…nvelope.py:hash_inventory)(inventory, Mapping)
-    p7-->>p20: set(…).issubset(consumed_paths)
-    p10-->>p21: isinstance (src/llm_wiki_cli/services…py:hash_markdown_snapshot)(pages, Mapping)
-    p12-->>p22: isinstance (src/llm_wiki_cli/services…y:hash_generation_options)(values, Mapping)
-    p13->>p23: _build_component
-    p16-->>p24: isinstance (src/llm_wiki_cli/services…uated_envelope_to_payload)(envelope, EvaluatedEnvelope)
+    p0->>p12: BundleRecord
+    p0->>p13: EvaluatedEnvelope
+    p7->>p14: _build_component
+    p8->>p15: _validated_bundle_payload
+    p6->>p16: _normalized_allowlist
+    p3->>p17: _repository_relative_path
+    p6->>p18: _reject_unknown_option_keys
+    p2->>p19: _hash_structured
+    p5->>p20: _normalized_markdown_bytes
+    p17->>p21: require_repository_relative_path
+    p19->>p22: canonical_json_bytes
+    p15->>p23: knowledge_index_to_payload
+    p14->>p24: _validated_limitations
+    p14->>p25: hash_component_configuration
+    p23->>p26: _emit_extensions
+    p23->>p27: _bundle_to_payload
+    p23->>p28: _concept_to_payload
+    p0-->>p29: isinstance (src/llm_wiki_cli/services…:build_evaluated_envelope)(inputs, EnvelopeInputs)
+    p0-->>p30: snapshot_extensions.get(INVENTORY_HASH_EXTENSION)
 ```
 
 > Call sequence diagram shows 30 of 550 interactions; 520 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 10 of 150 (140 omitted); unresolved 2 of 78 (76 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 150 (149 omitted); unresolved 1 of 78 (77 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:build_evaluated_envelope` | 1 | - | external | 3 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_extensions_copy` | 6 | - | external | 4 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_extensions_copy` | 6 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 3 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:_extensions_copy` | 6 | - | external | 3 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_reject_machine_local_paths` | 12 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_reject_machine_local_paths` | 12 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:hash_source_snapshot` | 18 | - | external | 2 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:hash_source_snapshot` | 18 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 3 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:hash_source_snapshot` | 18 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:_hash_structured` | 27 | - | unresolved | 1 |
-> Omission summary shows 8 of 135 groups; 127 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/knowledge_envelope.py:build_evaluated_envelope` | 1 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 4 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:hash_source_snapshot` | 18 | - | external | 3 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:hash_source_snapshot` | 18 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 2 |
+> Omission summary shows 8 of 137 groups; 129 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

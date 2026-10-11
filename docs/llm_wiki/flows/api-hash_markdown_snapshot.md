@@ -6,81 +6,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as hash_markdown_snapshot
-    participant p1 as isinstance (src/llm_wiki_cli/services…py:hash_markdown_snapshot)
-    participant p2 as KnowledgeEnvelopeError
-    participant p3 as set (src/llm_wiki_cli/services…py:hash_markdown_snapshot)
-    participant p4 as pages.items
-    participant p5 as _repository_relative_path
-    participant p6 as canonical_path.endswith
-    participant p7 as seen.add
-    participant p8 as _normalized_markdown_bytes
-    participant p9 as records.append
-    participant p10 as sha256_bytes
-    participant p11 as records.sort
-    participant p12 as _hash_structured
-    participant p13 as require_repository_relative_path
-    participant p14 as isinstance (src/llm_wiki_cli/services…normalized_markdown_bytes)
-    participant p15 as hashlib.sha256(…).hexdigest
-    participant p16 as payload.values
-    participant p17 as value.decode
-    participant p18 as hashlib.sha256
-    participant p19 as _validate_json_tree
-    participant p20 as canonical_json_bytes
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…py:hash_markdown_snapshot)(pages, Mapping)
-    p0->>p2: KnowledgeEnvelopeError
-    p0-->>p3: set (src/llm_wiki_cli/services…py:hash_markdown_snapshot)
-    p0-->>p4: pages.items
-    p0->>p5: _repository_relative_path
-    p0-->>p6: canonical_path.endswith('.md')
-    p0->>p2: KnowledgeEnvelopeError
-    p0->>p2: KnowledgeEnvelopeError
-    p0-->>p7: seen.add(canonical_path)
-    p0->>p8: _normalized_markdown_bytes
-    p0-->>p9: records.append({...})
-    p0->>p10: sha256_bytes
-    p0-->>p11: records.sort(key=...)
-    p0->>p12: _hash_structured
-    p5->>p13: require_repository_relative_path
-    p8-->>p14: isinstance (src/llm_wiki_cli/services…normalized_markdown_bytes)(value, bytes)
-    p10-->>p15: hashlib.sha256(…).hexdigest
-    p12-->>p16: payload.values
-    p5->>p2: KnowledgeEnvelopeError
-    p8-->>p17: value.decode('utf-8')
-    p10-->>p18: hashlib.sha256(value)
-    p12->>p19: _validate_json_tree
-    p5->>p2: KnowledgeEnvelopeError
-    p8->>p2: KnowledgeEnvelopeError
-    p12->>p10: sha256_bytes
-    p5->>p2: KnowledgeEnvelopeError
-    p8-->>p14: isinstance (src/llm_wiki_cli/services…normalized_markdown_bytes)(value, str)
-    p12->>p20: canonical_json_bytes
-    p8->>p2: KnowledgeEnvelopeError
-    p12->>p2: KnowledgeEnvelopeError
+    participant p1 as _repository_relative_path
+    participant p2 as _normalized_markdown_bytes
+    participant p3 as _hash_structured
+    participant p4 as KnowledgeEnvelopeError
+    participant p5 as sha256_bytes
+    participant p6 as require_repository_relative_path
+    participant p7 as canonical_json_bytes
+    participant p8 as require_portable_relative_path
+    participant p9 as _default_path_error
+    participant p10 as _check_path_collision
+    participant p11 as require_portable_path_component
+    participant p12 as _validate_json_tree
+    participant p13 as _syntax_key
+    participant p14 as canonical_json_text
+    participant p15 as _known_syntax
+    participant p16 as _remember_syntax
+    participant p17 as SharedValidationError
+    participant p18 as portable_path_key
+    participant p19 as isinstance (src/llm_wiki_cli/services…py:hash_markdown_snapshot)
+    participant p20 as pages.items
+    participant p21 as set (src/llm_wiki_cli/services…py:hash_markdown_snapshot)
+    participant p22 as canonical_path.endswith
+    participant p23 as seen.add
+    participant p24 as records.append
+    participant p25 as records.sort
+    participant p26 as isinstance (src/llm_wiki_cli/services…normalized_markdown_bytes)
+    participant p27 as hashlib.sha256(…).hexdigest
+    participant p28 as payload.values
+    participant p29 as value.decode
+    participant p30 as hashlib.sha256
+    p0->>p1: _repository_relative_path
+    p0->>p2: _normalized_markdown_bytes
+    p0->>p3: _hash_structured
+    p0->>p4: KnowledgeEnvelopeError
+    p0->>p5: sha256_bytes
+    p1->>p6: require_repository_relative_path
+    p3->>p7: canonical_json_bytes
+    p6->>p8: require_portable_relative_path
+    p8->>p9: _default_path_error
+    p8->>p10: _check_path_collision
+    p8->>p11: require_portable_path_component
+    p3->>p12: _validate_json_tree
+    p6->>p13: _syntax_key
+    p7->>p14: canonical_json_text
+    p6->>p15: _known_syntax
+    p6->>p16: _remember_syntax
+    p9->>p17: SharedValidationError
+    p10->>p18: portable_path_key
+    p0-->>p19: isinstance (src/llm_wiki_cli/services…py:hash_markdown_snapshot)(pages, Mapping)
+    p0-->>p20: pages.items
+    p0-->>p21: set (src/llm_wiki_cli/services…py:hash_markdown_snapshot)
+    p0-->>p22: canonical_path.endswith('.md')
+    p0-->>p23: seen.add(canonical_path)
+    p0-->>p24: records.append({...})
+    p0-->>p25: records.sort(key=...)
+    p2-->>p26: isinstance (src/llm_wiki_cli/services…normalized_markdown_bytes)(value, bytes)
+    p5-->>p27: hashlib.sha256(…).hexdigest
+    p3-->>p28: payload.values
+    p2-->>p29: value.decode('utf-8')
+    p5-->>p30: hashlib.sha256(value)
 ```
 
 > Call sequence diagram shows 30 of 113 interactions; 83 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 5 of 31 (26 omitted); unresolved 8 of 38 (30 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 4 of 31 (27 omitted); unresolved 8 of 38 (30 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 7 | - | external | 7 |
-| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 7 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 4 |
 | `src/llm_wiki_cli/services/validation.py:_syntax_key` | 9 | - | external | 6 |
 | `src/llm_wiki_cli/services/validation.py:_known_syntax` | 16 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 7 | - | unresolved | 5 |
 | `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 30 | - | external | 4 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 30 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 13 |
-| `src/llm_wiki_cli/services/validation.py:_default_path_error` | 32 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-> Omission summary shows 8 of 25 groups; 17 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 30 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 10 |
+| `src/llm_wiki_cli/services/validation.py:portable_path_key` | 40 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/validation.py:portable_path_key` | 40 | - | external | 1 |
+> Omission summary shows 8 of 27 groups; 19 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow

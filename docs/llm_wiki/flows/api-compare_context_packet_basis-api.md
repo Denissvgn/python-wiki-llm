@@ -15,7 +15,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -25,63 +25,67 @@ sequenceDiagram
     participant p2 as _raise_context_packet_api_error
     participant p3 as validate_context_packet
     participant p4 as _raise_required_knowledge_api_error
-    participant p5 as isinstance (src/llm_wiki_cli/services…pare_context_packet_basis)
-    participant p6 as describe_context_packet_error
-    participant p7 as TypeError (src/llm_wiki_cli/services…pare_context_packet_basis)
-    participant p8 as leaf
-    participant p9 as validation.packet.to_payload
-    participant p10 as set (src/llm_wiki_cli/services…pare_context_packet_basis)
-    participant p11 as sorted (src/llm_wiki_cli/services…pare_context_packet_basis)
-    participant p12 as ContextPacketMalformedError
-    participant p13 as ContextBasisComparison
-    participant p14 as all (src/llm_wiki_cli/services…pare_context_packet_basis)
-    participant p15 as facet_matches.values
-    participant p16 as MappingProxyType (src/llm_wiki_cli/services…pare_context_packet_basis)
-    participant p17 as _coerce_packet_bytes
-    participant p18 as _required_knowledge_failure
-    participant p19 as getattr (src/llm_wiki_cli/services…ribe_context_packet_error)
-    participant p20 as _strict_json_payload
-    participant p21 as WorkspaceStateError
-    participant p22 as isinstance (src/llm_wiki_cli/services…ribe_context_packet_error)
-    participant p23 as _packet_contract_for_schema
-    participant p24 as str (src/llm_wiki_cli/api.py:_…uired_knowledge_api_error)
-    participant p25 as payload.get
-    participant p26 as {'source': 'source_snapshot', 'wiki': 'wiki_dir'}.get
+    participant p5 as _coerce_packet_bytes
+    participant p6 as _strict_json_payload
+    participant p7 as _packet_contract_for_schema
+    participant p8 as _validate_packet_shape
+    participant p9 as _encode_packet_payload
+    participant p10 as _packet_id
+    participant p11 as _path_policy_receipt
+    participant p12 as QualifiedContextPacket._from_validated_payload
+    participant p13 as _exact_fields
+    participant p14 as canonical_json_bytes
+    participant p15 as _freeze_json
+    participant p16 as _validate_assurance
+    participant p17 as _validate_packet_request
+    participant p18 as _validate_response
+    participant p19 as _validate_basis
+    participant p20 as _validate_response_basis_consistency
+    participant p21 as _validate_delivery
+    participant p22 as _validate_path_policy_shape
+    participant p23 as _mapping
+    participant p24 as _validate_protocol_request
+    participant p25 as _path_policy_digest
+    participant p26 as _nonnegative_integer
+    participant p27 as _validate_repository_basis
+    participant p28 as _validate_knowledge_basis
+    participant p29 as isinstance (src/llm_wiki_cli/services…pare_context_packet_basis)
+    participant p30 as leaf
     p0->>p1: compare_context_packet_basis (src/llm_wiki_cli/services/context_packet.py)
     p0->>p2: _raise_context_packet_api_error
     p1->>p3: validate_context_packet
     p2->>p4: _raise_required_knowledge_api_error
-    p1-->>p5: isinstance (src/llm_wiki_cli/services…pare_context_packet_basis)(expected_basis, Mapping)
-    p2->>p6: describe_context_packet_error
-    p1-->>p7: TypeError (src/llm_wiki_cli/services…pare_context_packet_basis)('expected_basis must be a mapping')
-    p2-->>p8: leaf(failure[...], code=failure[...], details=failure[...])
-    p1-->>p9: validation.packet.to_payload
-    p1-->>p10: set (src/llm_wiki_cli/services…pare_context_packet_basis)(packet_basis)
-    p1-->>p11: sorted (src/llm_wiki_cli/services…pare_context_packet_basis)(...)
-    p1-->>p10: set (src/llm_wiki_cli/services…pare_context_packet_basis)(expected_basis)
-    p1->>p12: ContextPacketMalformedError
-    p1->>p12: ContextPacketMalformedError
-    p1-->>p11: sorted (src/llm_wiki_cli/services…pare_context_packet_basis)(expected_basis)
-    p1->>p13: ContextBasisComparison
-    p1-->>p14: all (src/llm_wiki_cli/services…pare_context_packet_basis)(facet_matches.values(...))
-    p1-->>p15: facet_matches.values
-    p1-->>p16: MappingProxyType (src/llm_wiki_cli/services…pare_context_packet_basis)(facet_matches)
-    p3->>p17: _coerce_packet_bytes
-    p4->>p18: _required_knowledge_failure
-    p6-->>p19: getattr (src/llm_wiki_cli/services…ribe_context_packet_error)(error, 'field', None)
-    p3->>p20: _strict_json_payload
-    p4->>p21: WorkspaceStateError
-    p6-->>p22: isinstance (src/llm_wiki_cli/services…ribe_context_packet_error)(error, ContextPacketMalformedError)
-    p3->>p23: _packet_contract_for_schema
-    p4-->>p24: str (src/llm_wiki_cli/api.py:_…uired_knowledge_api_error)(exc)
-    p6-->>p22: isinstance (src/llm_wiki_cli/services…ribe_context_packet_error)(error, ContextPacketSourceMutationError)
-    p3-->>p25: payload.get('schema_version')
-    p6-->>p26: {'source': 'source_snapshot', 'wiki': 'wiki_dir'}.get(error.facet, error.facet)
+    p3->>p5: _coerce_packet_bytes
+    p3->>p6: _strict_json_payload
+    p3->>p7: _packet_contract_for_schema
+    p3->>p8: _validate_packet_shape
+    p3->>p9: _encode_packet_payload
+    p3->>p10: _packet_id
+    p3->>p11: _path_policy_receipt
+    p3->>p12: QualifiedContextPacket._from_validated_payload
+    p8->>p13: _exact_fields
+    p9->>p14: canonical_json_bytes
+    p12->>p15: _freeze_json
+    p8->>p16: _validate_assurance
+    p8->>p17: _validate_packet_request
+    p8->>p18: _validate_response
+    p8->>p19: _validate_basis
+    p8->>p20: _validate_response_basis_consistency
+    p8->>p21: _validate_delivery
+    p8->>p22: _validate_path_policy_shape
+    p16->>p23: _mapping
+    p17->>p24: _validate_protocol_request
+    p22->>p25: _path_policy_digest
+    p19->>p26: _nonnegative_integer
+    p19->>p27: _validate_repository_basis
+    p19->>p28: _validate_knowledge_basis
+    p1-->>p29: isinstance (src/llm_wiki_cli/services…pare_context_packet_basis)(expected_basis, Mapping)
+    p2-->>p30: leaf(failure[...], code=failure[...], details=failure[...])
 ```
 
 > Call sequence diagram shows 30 of 467 interactions; 437 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 12 of 140 (128 omitted); unresolved 5 of 94 (89 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 140 (139 omitted); unresolved 1 of 94 (93 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -95,7 +99,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/context_packet.py:_strict_json_payload` | 17 | - | external | 2 |
 | `src/llm_wiki_cli/services/context_packet.py:_validate_json_tree` | 24 | - | external | 1 |
 | `src/llm_wiki_cli/services/context_packet.py:_validate_json_tree` | 24 | - | unresolved | 1 |
-> Omission summary shows 8 of 105 groups; 97 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 109 groups; 101 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

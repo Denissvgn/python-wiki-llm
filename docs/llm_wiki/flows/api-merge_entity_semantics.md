@@ -6,81 +6,86 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as merge_entity_semantics
-    participant p1 as semantics.get
-    participant p2 as merge_semantic_markdown
-    participant p3 as isinstance
-    participant p4 as dict
-    participant p5 as normalize_markdown
-    participant p6 as section_body
-    participant p7 as should_preserve_semantic_value
-    participant p8 as replace_section_body
-    participant p9 as table_description_cells
-    participant p10 as preserve_table_description_cells
-    participant p11 as (…).get (src/llm_wiki_cli/services…y:merge_semantic_markdown)
-    participant p12 as SemanticMergeResult
-    participant p13 as text.replace(…).replace
-    participant p14 as normalize_markdown(…).splitlines (src/llm_wiki_cli/services…_sections.py:section_body)
-    participant p15 as is_placeholder_description
-    participant p16 as normalize_markdown(…).splitlines (src/llm_wiki_cli/services…s.py:replace_section_body)
-    participant p17 as normalize_markdown(…).splitlines (src/llm_wiki_cli/services…y:table_description_cells)
-    participant p18 as normalize_markdown(…).splitlines (src/llm_wiki_cli/services…e_table_description_cells)
-    participant p19 as text.replace
-    participant p20 as (…).strip (src/llm_wiki_cli/services…d_preserve_semantic_value)
-    p0-->>p1: semantics.get('attributes', {...})
-    p0-->>p1: semantics.get('methods', {...})
-    p0-->>p1: semantics.get('description')
-    p0->>p2: merge_semantic_markdown
-    p0-->>p3: isinstance(description, str)
-    p0-->>p3: isinstance(attributes, Mapping)
-    p0-->>p4: dict(attributes)
-    p0-->>p3: isinstance(methods, Mapping)
-    p0-->>p4: dict(methods)
-    p2->>p5: normalize_markdown
-    p2->>p6: section_body
-    p2->>p6: section_body
-    p2->>p7: should_preserve_semantic_value
-    p2->>p8: replace_section_body
-    p2->>p9: table_description_cells
-    p2->>p10: preserve_table_description_cells
-    p2-->>p11: (…).get (src/llm_wiki_cli/services…y:merge_semantic_markdown)(heading)
-    p2->>p12: SemanticMergeResult
-    p5-->>p13: text.replace(…).replace('\r', '\n')
-    p6-->>p14: normalize_markdown(…).splitlines (src/llm_wiki_cli/services…_sections.py:section_body)
-    p7->>p15: is_placeholder_description
-    p8-->>p16: normalize_markdown(…).splitlines (src/llm_wiki_cli/services…s.py:replace_section_body)
-    p9-->>p17: normalize_markdown(…).splitlines (src/llm_wiki_cli/services…y:table_description_cells)
-    p10-->>p18: normalize_markdown(…).splitlines (src/llm_wiki_cli/services…e_table_description_cells)
-    p5-->>p19: text.replace('\r\n', '\n')
-    p6->>p5: normalize_markdown
-    p7-->>p20: (…).strip (src/llm_wiki_cli/services…d_preserve_semantic_value)
-    p8->>p5: normalize_markdown
-    p9->>p5: normalize_markdown
-    p10->>p5: normalize_markdown
+    participant p1 as merge_semantic_markdown
+    participant p2 as section_body
+    participant p3 as should_preserve_semantic_value
+    participant p4 as replace_section_body
+    participant p5 as table_description_cells
+    participant p6 as preserve_table_description_cells
+    participant p7 as normalize_markdown
+    participant p8 as SemanticMergeResult
+    participant p9 as is_placeholder_description
+    participant p10 as section_bounds
+    participant p11 as split_table_row
+    participant p12 as trim_blank_lines
+    participant p13 as is_table_separator
+    participant p14 as semantic_table_key
+    participant p15 as format_table_row
+    participant p16 as isinstance
+    participant p17 as semantics.get
+    participant p18 as dict
+    participant p19 as (…).get (src/llm_wiki_cli/services…y:merge_semantic_markdown)
+    participant p20 as text.replace(…).replace
+    participant p21 as normalize_markdown(…).splitlines (src/llm_wiki_cli/services…_sections.py:section_body)
+    participant p22 as normalize_markdown(…).splitlines (src/llm_wiki_cli/services…s.py:replace_section_body)
+    participant p23 as normalize_markdown(…).splitlines (src/llm_wiki_cli/services…y:table_description_cells)
+    participant p24 as normalize_markdown(…).splitlines (src/llm_wiki_cli/services…e_table_description_cells)
+    participant p25 as text.replace
+    p0->>p1: merge_semantic_markdown
+    p1->>p2: section_body
+    p1->>p3: should_preserve_semantic_value
+    p1->>p4: replace_section_body
+    p1->>p5: table_description_cells
+    p1->>p6: preserve_table_description_cells
+    p1->>p7: normalize_markdown
+    p1->>p8: SemanticMergeResult
+    p3->>p9: is_placeholder_description
+    p2->>p10: section_bounds
+    p5->>p11: split_table_row
+    p2->>p12: trim_blank_lines
+    p5->>p13: is_table_separator
+    p5->>p14: semantic_table_key
+    p6->>p15: format_table_row
+    p0-->>p16: isinstance(description, str)
+    p0-->>p17: semantics.get('attributes', {...})
+    p0-->>p17: semantics.get('methods', {...})
+    p0-->>p17: semantics.get('description')
+    p0-->>p16: isinstance(attributes, Mapping)
+    p0-->>p18: dict(attributes)
+    p0-->>p16: isinstance(methods, Mapping)
+    p0-->>p18: dict(methods)
+    p1-->>p19: (…).get (src/llm_wiki_cli/services…y:merge_semantic_markdown)(heading)
+    p7-->>p20: text.replace(…).replace('\r', '\n')
+    p2-->>p21: normalize_markdown(…).splitlines (src/llm_wiki_cli/services…_sections.py:section_body)
+    p4-->>p22: normalize_markdown(…).splitlines (src/llm_wiki_cli/services…s.py:replace_section_body)
+    p5-->>p23: normalize_markdown(…).splitlines (src/llm_wiki_cli/services…y:table_description_cells)
+    p6-->>p24: normalize_markdown(…).splitlines (src/llm_wiki_cli/services…e_table_description_cells)
+    p7-->>p25: text.replace('\r\n', '\n')
 ```
 
 > Call sequence diagram shows 30 of 112 interactions; 82 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 5 of 24 (19 omitted); unresolved 11 of 57 (46 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 5 of 24 (19 omitted); unresolved 10 of 57 (47 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/markdown_sections.py:section_body` | 9 | [src/llm_wiki_cli/services/markdown_sections.py](../modules/markdown_sections.md) | internal | 2 |
+| `src/llm_wiki_cli/services/markdown_sections.py:section_body` | 9 | [src/llm_wiki_cli/services/markdown_sections.py](../modules/markdown_sections.md) | internal | 1 |
 | `src/llm_wiki_cli/services/markdown_sections.py:section_bounds` | 12 | - | unresolved | 10 |
 | `src/llm_wiki_cli/services/markdown_sections.py:section_bounds` | 12 | - | external | 6 |
 | `src/llm_wiki_cli/services/markdown_sections.py:section_body` | 9 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/markdown_sections.py:trim_blank_lines` | 31 | - | external | 1 |
 | `src/llm_wiki_cli/services/markdown_sections.py:trim_blank_lines` | 31 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/section_ownership.py:merge_semantic_markdown` | 5 | [src/llm_wiki_cli/services/markdown_sections.py](../modules/markdown_sections.md) | internal | 1 |
 | `src/llm_wiki_cli/services/markdown_sections.py:is_placeholder_description` | 37 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/markdown_sections.py:should_preserve_semantic_value` | 36 | - | unresolved | 2 |
-> Omission summary shows 8 of 23 groups; 15 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 24 groups; 16 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow

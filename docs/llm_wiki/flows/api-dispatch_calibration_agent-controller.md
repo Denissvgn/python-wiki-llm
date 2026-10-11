@@ -17,7 +17,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -25,66 +25,74 @@ sequenceDiagram
     participant p0 as dispatch_calibration_agent
     participant p1 as _require_choice
     participant p2 as _open_store
-    participant p3 as store.lock (src/llm_wiki_cli/services…ispatch_calibration_agent)
-    participant p4 as _load_run_locked
-    participant p5 as P0CalibrationTransitionError
-    participant p6 as _recheck_bound_controls
-    participant p7 as _terminal_transition_locked
-    participant p8 as P0CalibrationIntegrityError
-    participant p9 as _authority_freshness_failure
-    participant p10 as _packet_path_for_role_state
-    participant p11 as _require_sha256
-    participant p12 as store.read_json (src/llm_wiki_cli/services…ispatch_calibration_agent)
-    participant p13 as _json_round_trip
-    participant p14 as len (src/llm_wiki_cli/services…ispatch_calibration_agent)
-    participant p15 as datetime.now (src/llm_wiki_cli/services…ispatch_calibration_agent)
-    participant p16 as int (src/llm_wiki_cli/services…ispatch_calibration_agent)
+    participant p3 as _load_run_locked
+    participant p4 as _recheck_bound_controls
+    participant p5 as _authority_freshness_failure
+    participant p6 as _packet_path_for_role_state
+    participant p7 as OciRuntimeConfig.from_execution_manifest
+    participant p8 as dispatch_oci_agent
+    participant p9 as P0CalibrationDispatchReceipt.from_dict
+    participant p10 as P0CalibrationAgentResult.from_dict
+    participant p11 as _record_p0_calibration_agent_result
+    participant p12 as P0CalibrationTransitionError
+    participant p13 as _terminal_transition_locked
+    participant p14 as P0CalibrationIntegrityError
+    participant p15 as _require_sha256
+    participant p16 as _json_round_trip
     participant p17 as _format_timestamp
-    participant p18 as timedelta
-    participant p19 as _commit_transition
-    participant p20 as OciRuntimeConfig.from_execution_manifest
-    participant p21 as OciDispatchContext
+    participant p18 as _commit_transition
+    participant p19 as OciDispatchContext
+    participant p20 as _bounded_error
+    participant p21 as require_choice
+    participant p22 as validate_execution_manifest
+    participant p23 as _validate_mount_paths
+    participant p24 as _load_emergency_rejection
+    participant p25 as _validate_runtime_executable_identity
+    participant p26 as _validate_dispatch_receipt
+    participant p27 as _validate_agent_result
+    participant p28 as _recover_pending_transaction
+    participant p29 as len (src/llm_wiki_cli/services…ispatch_calibration_agent)
+    participant p30 as store.lock (src/llm_wiki_cli/services…ispatch_calibration_agent)
     p0->>p1: _require_choice
     p0->>p2: _open_store
-    p0-->>p3: store.lock (src/llm_wiki_cli/services…ispatch_calibration_agent)
-    p0->>p4: _load_run_locked
-    p0->>p5: P0CalibrationTransitionError
-    p0->>p5: P0CalibrationTransitionError
-    p0->>p5: P0CalibrationTransitionError
-    p0->>p6: _recheck_bound_controls
-    p0->>p7: _terminal_transition_locked
-    p0->>p8: P0CalibrationIntegrityError
-    p0->>p9: _authority_freshness_failure
-    p0->>p7: _terminal_transition_locked
-    p0->>p5: P0CalibrationTransitionError
-    p0->>p10: _packet_path_for_role_state
-    p0->>p11: _require_sha256
-    p0-->>p12: store.read_json (src/llm_wiki_cli/services…ispatch_calibration_agent)(...)
-    p0-->>p12: store.read_json (src/llm_wiki_cli/services…ispatch_calibration_agent)(...)
-    p0->>p13: _json_round_trip
-    p0-->>p14: len (src/llm_wiki_cli/services…ispatch_calibration_agent)(active)
-    p0->>p5: P0CalibrationTransitionError
-    p0-->>p15: datetime.now (src/llm_wiki_cli/services…ispatch_calibration_agent)(timezone.utc)
-    p0-->>p16: int (src/llm_wiki_cli/services…ispatch_calibration_agent)(...)
-    p0-->>p16: int (src/llm_wiki_cli/services…ispatch_calibration_agent)(...)
+    p0->>p3: _load_run_locked
+    p0->>p4: _recheck_bound_controls
+    p0->>p5: _authority_freshness_failure
+    p0->>p6: _packet_path_for_role_state
+    p0->>p7: OciRuntimeConfig.from_execution_manifest
+    p0->>p8: dispatch_oci_agent
+    p0->>p9: P0CalibrationDispatchReceipt.from_dict
+    p0->>p10: P0CalibrationAgentResult.from_dict
+    p0->>p11: _record_p0_calibration_agent_result
+    p0->>p12: P0CalibrationTransitionError
+    p0->>p13: _terminal_transition_locked
+    p0->>p14: P0CalibrationIntegrityError
+    p0->>p15: _require_sha256
+    p0->>p16: _json_round_trip
     p0->>p17: _format_timestamp
-    p0->>p17: _format_timestamp
-    p0-->>p18: timedelta(seconds=...)
-    p0->>p13: _json_round_trip
-    p0->>p19: _commit_transition
-    p0->>p20: OciRuntimeConfig.from_execution_manifest
-    p0->>p21: OciDispatchContext
+    p0->>p18: _commit_transition
+    p0->>p19: OciDispatchContext
+    p0->>p20: _bounded_error
+    p1->>p21: require_choice
+    p7->>p22: validate_execution_manifest
+    p8->>p23: _validate_mount_paths
+    p3->>p24: _load_emergency_rejection
+    p8->>p25: _validate_runtime_executable_identity
+    p9->>p26: _validate_dispatch_receipt
+    p10->>p27: _validate_agent_result
+    p3->>p28: _recover_pending_transaction
+    p0-->>p29: len (src/llm_wiki_cli/services…ispatch_calibration_agent)(active)
+    p0-->>p30: store.lock (src/llm_wiki_cli/services…ispatch_calibration_agent)
 ```
 
 > Call sequence diagram shows 30 of 2372 interactions; 2342 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 5 of 600 (595 omitted); unresolved 3 of 735 (732 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 600 (599 omitted); unresolved 1 of 735 (734 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/calibration/controller.py:_require_choice` | 2 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_choice` | 3 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_trimmed_text` | 4 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 5 | - | external | 1 |
@@ -92,7 +100,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 5 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:contains_control_character` | 8 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_choice` | 3 | - | external | 1 |
-> Omission summary shows 8 of 401 groups; 393 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/validation.py:require_choice` | 3 | - | unresolved | 1 |
+> Omission summary shows 8 of 399 groups; 391 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

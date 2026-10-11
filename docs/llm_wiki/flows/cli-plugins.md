@@ -17,74 +17,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as run
-    participant p1 as getattr (src/llm_wiki_cli/commands/plugins_cmd.py:run)
-    participant p2 as list_plugins
-    participant p3 as print
-    participant p4 as _render_components
-    participant p5 as list_samples
-    participant p6 as export_sample
-    participant p7 as bool (src/llm_wiki_cli/commands/plugins_cmd.py:run)
-    participant p8 as validate_plugin
-    participant p9 as sys.exit
-    participant p10 as validate_path
-    participant p11 as remove_plugin
-    participant p12 as strip_plugin_skill_blocks
-    participant p13 as len (src/llm_wiki_cli/commands/plugins_cmd.py:run)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/plugins_cmd.py:run)(args, 'plugins_action', None)
-    p0->>p2: list_plugins
-    p0-->>p3: print('No llm-wiki plugins installed.')
-    p0-->>p3: print(...)
-    p0-->>p3: print(...)
-    p0->>p4: _render_components
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/plugins_cmd.py:run)(args, 'samples_action', None)
-    p0->>p5: list_samples
-    p0-->>p3: print('No bundled plugin samples found.')
-    p0-->>p3: print(...)
-    p0->>p6: export_sample
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/plugins_cmd.py:run)(args, 'sample_id')
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/plugins_cmd.py:run)(args, 'dest')
-    p0-->>p7: bool (src/llm_wiki_cli/commands/plugins_cmd.py:run)(getattr(...))
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/plugins_cmd.py:run)(args, 'force', False)
-    p0->>p8: validate_plugin
-    p0-->>p3: print(..., file=sys.stderr)
-    p0-->>p9: sys.exit(1)
-    p0-->>p3: print(...)
-    p0-->>p3: print(...)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/plugins_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
-    p0->>p10: validate_path
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/plugins_cmd.py:run)(args, 'plugin_id')
-    p0->>p11: remove_plugin
-    p0-->>p3: print(..., file=sys.stderr)
-    p0-->>p9: sys.exit(1)
-    p0->>p12: strip_plugin_skill_blocks
-    p0-->>p3: print(...)
-    p0-->>p3: print(...)
-    p0-->>p13: len (src/llm_wiki_cli/commands/plugins_cmd.py:run)(touched)
+    participant p1 as list_plugins
+    participant p2 as export_sample
+    participant p3 as validate_plugin
+    participant p4 as validate_path
+    participant p5 as remove_plugin
+    participant p6 as strip_plugin_skill_blocks
+    participant p7 as _render_components
+    participant p8 as list_samples
+    participant p9 as read_lock
+    participant p10 as _resolve_sample_id
+    participant p11 as _manifest_root
+    participant p12 as require_safe_schema_path
+    participant p13 as _sample_resource
+    participant p14 as _ensure_no_reserved_plugin_sources
+    participant p15 as _resolve_destination
+    participant p16 as _prepare_destination
+    participant p17 as _copy_resource_tree
+    participant p18 as plugin_store
+    participant p19 as strip_skill_blocks
+    participant p20 as write_bytes_atomic
+    participant p21 as _ensure_id
+    participant p22 as write_lock
+    participant p23 as _version_satisfies
+    participant p24 as _normalize_component
+    participant p25 as lock_path
+    participant p26 as _ensure_entry_point
+    participant p27 as _safe_component_path
+    participant p28 as _validate_prompt_template_vcs_boundary
+    participant p29 as getattr (src/llm_wiki_cli/commands/plugins_cmd.py:run)
+    participant p30 as plugin.get
+    p0->>p1: list_plugins
+    p0->>p2: export_sample
+    p0->>p3: validate_plugin
+    p0->>p4: validate_path
+    p0->>p5: remove_plugin
+    p0->>p6: strip_plugin_skill_blocks
+    p0->>p7: _render_components
+    p0->>p8: list_samples
+    p1->>p9: read_lock
+    p2->>p10: _resolve_sample_id
+    p3->>p11: _manifest_root
+    p6->>p12: require_safe_schema_path
+    p2->>p13: _sample_resource
+    p3->>p14: _ensure_no_reserved_plugin_sources
+    p2->>p15: _resolve_destination
+    p2->>p16: _prepare_destination
+    p2->>p17: _copy_resource_tree
+    p5->>p18: plugin_store
+    p6->>p19: strip_skill_blocks
+    p6->>p20: write_bytes_atomic
+    p3->>p21: _ensure_id
+    p5->>p22: write_lock
+    p3->>p23: _version_satisfies
+    p3->>p24: _normalize_component
+    p9->>p25: lock_path
+    p24->>p26: _ensure_entry_point
+    p24->>p27: _safe_component_path
+    p24->>p28: _validate_prompt_template_vcs_boundary
+    p0-->>p29: getattr (src/llm_wiki_cli/commands/plugins_cmd.py:run)(args, 'plugins_action', None)
+    p7-->>p30: plugin.get('components', [...])
 ```
 
 > Call sequence diagram shows 30 of 368 interactions; 338 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 22 of 121 (99 omitted); unresolved 0 of 133 (133 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 121 (120 omitted); unresolved 1 of 133 (132 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/plugins.py:list_plugins` | 3 | [src/llm_wiki_cli/services/plugins.py](../modules/plugins.md) | internal | 1 |
-| `src/llm_wiki_cli/services/plugins.py:read_lock` | 4 | [src/llm_wiki_cli/services/plugins.py](../modules/plugins.md) | internal | 4 |
 | `src/llm_wiki_cli/services/plugins.py:lock_path` | 5 | [src/llm_wiki_cli/services/plugins.py](../modules/plugins.md) | internal | 1 |
 | `src/llm_wiki_cli/services/plugins.py:plugin_home` | 6 | - | external | 1 |
 | `src/llm_wiki_cli/services/plugins.py:read_lock` | 4 | - | unresolved | 4 |
+| `src/llm_wiki_cli/services/plugins.py:read_lock` | 4 | [src/llm_wiki_cli/services/plugins.py](../modules/plugins.md) | internal | 3 |
 | `src/llm_wiki_cli/services/plugins.py:read_lock` | 4 | - | external | 3 |
 | `src/llm_wiki_cli/services/plugins.py:list_plugins` | 3 | - | external | 1 |
 | `src/llm_wiki_cli/services/plugins.py:list_plugins` | 3 | - | unresolved | 2 |
-> Omission summary shows 8 of 101 groups; 93 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/commands/plugins_cmd.py:run` | 1 | - | external | 28 |
+> Omission summary shows 8 of 98 groups; 90 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

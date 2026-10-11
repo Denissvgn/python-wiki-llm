@@ -54,84 +54,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as evaluate_documentation_native_freshness
-    participant p1 as isinstance (src/llm_wiki_cli/services…entation_native_freshness)
-    participant p2 as TypeError (src/llm_wiki_cli/services…entation_native_freshness)
-    participant p3 as _native_source_snapshot_preflight
-    participant p4 as _generation_input_paths
-    participant p5 as _collect_runtime
-    participant p6 as _runtime_generation_options
-    participant p7 as _source_mismatches
-    participant p8 as set (src/llm_wiki_cli/services…entation_native_freshness)
-    participant p9 as (…).lstat
-    participant p10 as missing_source_paths.add
-    participant p11 as build_runtime_live_evaluation
-    participant p12 as RuntimeLiveEvaluationInputs
-    participant p13 as tuple (src/llm_wiki_cli/services…entation_native_freshness)
-    participant p14 as evaluate_knowledge_freshness
-    participant p15 as DocumentationNativeError
-    participant p16 as list (src/llm_wiki_cli/services…entation_native_freshness)
-    participant p17 as reasons.append (src/llm_wiki_cli/services…entation_native_freshness)
-    participant p18 as sorted (src/llm_wiki_cli/services…entation_native_freshness)
-    participant p19 as DocumentationNativeFreshness
-    participant p20 as _validated_directory
-    participant p21 as manifest.generation_inputs.get (src/llm_wiki_cli/services…y:_generation_input_paths)
-    participant p22 as runtime_generation_options
-    participant p23 as set (src/llm_wiki_cli/services…ive.py:_source_mismatches)
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…entation_native_freshness)(knowledge, KnowledgeIndex)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…entation_native_freshness)('knowledge must be a KnowledgeIndex')
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…entation_native_freshness)(manifest, SyncManifest)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…entation_native_freshness)('manifest must be a SyncManifest')
-    p0->>p3: _native_source_snapshot_preflight
-    p0->>p4: _generation_input_paths
-    p0->>p5: _collect_runtime
-    p0->>p6: _runtime_generation_options
-    p0->>p7: _source_mismatches
-    p0-->>p8: set (src/llm_wiki_cli/services…entation_native_freshness)(manifest.sources)
-    p0-->>p8: set (src/llm_wiki_cli/services…entation_native_freshness)(runtime.inventory)
-    p0-->>p9: (…).lstat
-    p0-->>p10: missing_source_paths.add(basis.source_path)
-    p0->>p11: build_runtime_live_evaluation
-    p0->>p12: RuntimeLiveEvaluationInputs
-    p0-->>p13: tuple (src/llm_wiki_cli/services…entation_native_freshness)(RUNTIME_GENERATION_OPTION_DEFAULTS)
-    p0->>p14: evaluate_knowledge_freshness
-    p0->>p15: DocumentationNativeError
-    p0-->>p16: list (src/llm_wiki_cli/services…entation_native_freshness)(source_mismatches)
-    p0-->>p17: reasons.append (src/llm_wiki_cli/services…entation_native_freshness)('generation-options-changed')
-    p0-->>p17: reasons.append (src/llm_wiki_cli/services…entation_native_freshness)('producer-basis-changed')
-    p0-->>p18: sorted (src/llm_wiki_cli/services…entation_native_freshness)(structural_locators)
-    p0-->>p17: reasons.append (src/llm_wiki_cli/services…entation_native_freshness)(...)
-    p0->>p19: DocumentationNativeFreshness
-    p0-->>p13: tuple (src/llm_wiki_cli/services…entation_native_freshness)(reasons)
-    p3->>p20: _validated_directory
-    p4-->>p21: manifest.generation_inputs.get (src/llm_wiki_cli/services…y:_generation_input_paths)('openapi')
-    p5->>p20: _validated_directory
-    p6->>p22: runtime_generation_options
-    p7-->>p23: set (src/llm_wiki_cli/services…ive.py:_source_mismatches)(manifest.sources)
+    participant p1 as _native_source_snapshot_preflight
+    participant p2 as _generation_input_paths
+    participant p3 as _collect_runtime
+    participant p4 as _runtime_generation_options
+    participant p5 as _source_mismatches
+    participant p6 as build_runtime_live_evaluation
+    participant p7 as evaluate_knowledge_freshness
+    participant p8 as RuntimeLiveEvaluationInputs
+    participant p9 as DocumentationNativeError
+    participant p10 as DocumentationNativeFreshness
+    participant p11 as _validated_directory
+    participant p12 as runtime_generation_options
+    participant p13 as resolve_source_selection
+    participant p14 as capture_source_selection_inputs
+    participant p15 as source_selection_identity_from_generation_inputs
+    participant p16 as parse_knowledge_index
+    participant p17 as validate_persisted_source_selection_identity
+    participant p18 as _knowledge_index_to_payload_unchecked
+    participant p19 as build_source_snapshot
+    participant p20 as get_inventory_result
+    participant p21 as _evaluate_model_freshness
+    participant p22 as has_contract
+    participant p23 as get_docker_inventory
+    participant p24 as get_yaml_infrastructure_inventory
+    participant p25 as _live_source_snapshot_hash
+    participant p26 as _producer_evidence
+    participant p27 as _infrastructure_extractor_component
+    participant p28 as build_producer_record
+    participant p29 as isinstance (src/llm_wiki_cli/services…entation_native_freshness)
+    participant p30 as (…).lstat
+    p0->>p1: _native_source_snapshot_preflight
+    p0->>p2: _generation_input_paths
+    p0->>p3: _collect_runtime
+    p0->>p4: _runtime_generation_options
+    p0->>p5: _source_mismatches
+    p0->>p6: build_runtime_live_evaluation
+    p0->>p7: evaluate_knowledge_freshness
+    p0->>p8: RuntimeLiveEvaluationInputs
+    p0->>p9: DocumentationNativeError
+    p0->>p10: DocumentationNativeFreshness
+    p1->>p11: _validated_directory
+    p4->>p12: runtime_generation_options
+    p1->>p13: resolve_source_selection
+    p1->>p14: capture_source_selection_inputs
+    p1->>p15: source_selection_identity_from_generation_inputs
+    p7->>p16: parse_knowledge_index
+    p1->>p17: validate_persisted_source_selection_identity
+    p7->>p18: _knowledge_index_to_payload_unchecked
+    p1->>p19: build_source_snapshot
+    p3->>p20: get_inventory_result
+    p7->>p21: _evaluate_model_freshness
+    p6->>p22: has_contract
+    p3->>p23: get_docker_inventory
+    p3->>p24: get_yaml_infrastructure_inventory
+    p5->>p25: _live_source_snapshot_hash
+    p6->>p26: _producer_evidence
+    p6->>p27: _infrastructure_extractor_component
+    p6->>p28: build_producer_record
+    p0-->>p29: isinstance (src/llm_wiki_cli/services…entation_native_freshness)(knowledge, KnowledgeIndex)
+    p0-->>p30: (…).lstat
 ```
 
 > Call sequence diagram shows 30 of 3442 interactions; 3412 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 11 of 938 (927 omitted); unresolved 6 of 874 (868 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 938 (937 omitted); unresolved 1 of 874 (873 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/documentation_native.py:evaluate_documentation_native_freshness` | 1 | - | external | 9 |
 | `src/llm_wiki_cli/services/documentation_native.py:_validated_directory` | 7 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/documentation_native.py:_validated_directory` | 7 | - | external | 3 |
 | `src/llm_wiki_cli/services/documentation_native.py:_validated_directory` | 7 | [src/llm_wiki_cli/services/documentation_native.py](../modules/documentation_native.md) | internal | 2 |
-| `src/llm_wiki_cli/services/documentation_native.py:_native_source_snapshot_preflight` | 6 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 3 |
 | `src/llm_wiki_cli/services/source_selection.py:resolve_source_selection` | 16 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/source_selection.py:resolve_source_selection` | 16 | - | external | 1 |
 | `src/llm_wiki_cli/services/source_selection.py:resolve_source_selection` | 16 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 8 |
 | `src/llm_wiki_cli/services/source_selection.py:_override_text` | 20 | - | external | 3 |
-> Omission summary shows 8 of 922 groups; 914 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 919 groups; 911 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

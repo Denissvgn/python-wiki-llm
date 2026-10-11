@@ -19,87 +19,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as build_context_from_captured_read
-    participant p1 as isinstance (src/llm_wiki_cli/services…ext_from_captured_read, 2)
-    participant p2 as TypeError (src/llm_wiki_cli/services…ontext_from_captured_read)
-    participant p3 as _normalized_request
-    participant p4 as _build_legacy_context_from_captured_read
-    participant p5 as _build_knowledge_context_from_captured_read
-    participant p6 as isinstance (src/llm_wiki_cli/services…et.py:_normalized_request)
-    participant p7 as _thaw_json
-    participant p8 as ProtocolRequestError
-    participant p9 as _apply_protocol_filters
-    participant p10 as deepcopy
-    participant p11 as _build_protocol_enrichment_from_captured_read
-    participant p12 as _captured_source_classification
-    participant p13 as dict (src/llm_wiki_cli/services…et.py:_normalized_request)
-    participant p14 as warnings.append (src/llm_wiki_cli/services…ontext_from_captured_read)
-    participant p15 as any (src/llm_wiki_cli/services…ontext_from_captured_read)
-    participant p16 as candidate.setdefault
-    participant p17 as knowledge_view_selection_eligible
-    participant p18 as _normalise_changed_paths
+    participant p1 as _normalized_request
+    participant p2 as _build_legacy_context_from_captured_read
+    participant p3 as _build_knowledge_context_from_captured_read
+    participant p4 as _thaw_json
+    participant p5 as _apply_protocol_filters
+    participant p6 as _build_protocol_enrichment_from_captured_read
+    participant p7 as _captured_source_classification
+    participant p8 as _validate_protocol_request
+    participant p9 as _captured_query_service
+    participant p10 as _build_import_graph
+    participant p11 as _explicit_filter_enrichment_from_captured_read
+    participant p12 as _build_context_payload_with_freshness_preference
+    participant p13 as _captured_source_payload
+    participant p14 as _build_explicit_knowledge_response
+    participant p15 as _build_context_payload
+    participant p16 as _empty_knowledge_bounds
+    participant p17 as _validate_protocol_request_impl
+    participant p18 as _matches_module_filter
     participant p19 as _context_query_surface
-    participant p20 as _validate_protocol_request
-    participant p21 as list (src/llm_wiki_cli/services…ontext_from_captured_read)
-    participant p22 as _captured_query_service
-    participant p23 as _build_import_graph
-    participant p24 as _explicit_filter_enrichment_from_captured_read
-    participant p25 as _classify_files
-    participant p26 as _context_freshness_rank_by_source
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…ext_from_captured_read, 2)(captured, CapturedContextRead)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…ontext_from_captured_read)('captured must be a CapturedContextRead')
-    p0->>p3: _normalized_request
-    p0->>p4: _build_legacy_context_from_captured_read
-    p0->>p5: _build_knowledge_context_from_captured_read
-    p3-->>p6: isinstance (src/llm_wiki_cli/services…et.py:_normalized_request)(request, Mapping)
-    p4->>p7: _thaw_json
-    p5->>p7: _thaw_json
-    p3->>p8: ProtocolRequestError
-    p4->>p9: _apply_protocol_filters
-    p5->>p9: _apply_protocol_filters
-    p3-->>p10: deepcopy(dict(...))
-    p4->>p11: _build_protocol_enrichment_from_captured_read
-    p5->>p12: _captured_source_classification
-    p3-->>p13: dict (src/llm_wiki_cli/services…et.py:_normalized_request)(request)
-    p4-->>p14: warnings.append (src/llm_wiki_cli/services…ontext_from_captured_read)('Could not get changed files from git. Treating all files as high priority.')
-    p5-->>p15: any (src/llm_wiki_cli/services…ontext_from_captured_read)(...)
-    p3-->>p16: candidate.setdefault('protocol', ...)
-    p4-->>p14: warnings.append (src/llm_wiki_cli/services…ontext_from_captured_read)('No files changed in the last commit. Treating all files as high priority.')
-    p5->>p17: knowledge_view_selection_eligible
-    p3-->>p16: candidate.setdefault('filters', {...})
-    p4->>p18: _normalise_changed_paths
-    p5->>p19: _context_query_surface
-    p3->>p20: _validate_protocol_request
-    p4-->>p21: list (src/llm_wiki_cli/services…ontext_from_captured_read)(captured.changed_files)
-    p5->>p22: _captured_query_service
-    p4->>p23: _build_import_graph
-    p5->>p24: _explicit_filter_enrichment_from_captured_read
-    p4->>p25: _classify_files
-    p5->>p26: _context_freshness_rank_by_source
+    participant p20 as verification_summaries_for_concepts
+    participant p21 as _context_freshness_rank_by_source
+    participant p22 as _compact_typed_graph_status
+    participant p23 as _symbol_pages_payload
+    participant p24 as _fit_explicit_knowledge_response
+    participant p25 as _surface_filter_payload
+    participant p26 as _append_knowledge_context_warning
+    participant p27 as validate_request
+    participant p28 as _entry_tokens
+    participant p29 as isinstance (src/llm_wiki_cli/services…ext_from_captured_read, 2)
+    participant p30 as warnings.append (src/llm_wiki_cli/services…ontext_from_captured_read)
+    p0->>p1: _normalized_request
+    p0->>p2: _build_legacy_context_from_captured_read
+    p0->>p3: _build_knowledge_context_from_captured_read
+    p2->>p4: _thaw_json
+    p2->>p5: _apply_protocol_filters
+    p2->>p6: _build_protocol_enrichment_from_captured_read
+    p3->>p7: _captured_source_classification
+    p1->>p8: _validate_protocol_request
+    p3->>p9: _captured_query_service
+    p2->>p10: _build_import_graph
+    p3->>p11: _explicit_filter_enrichment_from_captured_read
+    p2->>p12: _build_context_payload_with_freshness_preference
+    p3->>p13: _captured_source_payload
+    p3->>p14: _build_explicit_knowledge_response
+    p12->>p15: _build_context_payload
+    p14->>p16: _empty_knowledge_bounds
+    p8->>p17: _validate_protocol_request_impl
+    p5->>p18: _matches_module_filter
+    p6->>p19: _context_query_surface
+    p6->>p20: verification_summaries_for_concepts
+    p6->>p21: _context_freshness_rank_by_source
+    p6->>p22: _compact_typed_graph_status
+    p6->>p23: _symbol_pages_payload
+    p14->>p24: _fit_explicit_knowledge_response
+    p6->>p25: _surface_filter_payload
+    p6->>p26: _append_knowledge_context_warning
+    p17->>p27: validate_request
+    p15->>p28: _entry_tokens
+    p0-->>p29: isinstance (src/llm_wiki_cli/services…ext_from_captured_read, 2)(captured, CapturedContextRead)
+    p2-->>p30: warnings.append (src/llm_wiki_cli/services…ontext_from_captured_read)('Could not get changed files from git. Treating all files as high priority.')
 ```
 
 > Call sequence diagram shows 30 of 672 interactions; 642 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 7 of 285 (278 omitted); unresolved 4 of 224 (220 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 285 (284 omitted); unresolved 1 of 224 (223 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/context_packet.py:build_context_from_captured_read` | 1 | - | external | 1 |
+| `src/llm_wiki_cli/services/context_packet.py:_normalized_request` | 4 | - | external | 3 |
+| `src/llm_wiki_cli/services/context_packet.py:_normalized_request` | 4 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 1 |
+| `src/llm_wiki_cli/services/context_packet.py:_normalized_request` | 4 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 11 | - | external | 2 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 11 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 11 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 1 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 14 | - | external | 11 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 14 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 12 |
-| `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 14 | - | unresolved | 6 |
-| `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 14 | [src/llm_wiki_cli/services/context_budget.py](../modules/context_budget.md) | internal | 1 |
-| `src/llm_wiki_cli/services/context_budget.py:validate_request` | 21 | - | external | 10 |
-> Omission summary shows 8 of 162 groups; 154 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 163 groups; 155 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

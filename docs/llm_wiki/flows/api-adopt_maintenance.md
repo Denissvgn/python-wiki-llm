@@ -69,88 +69,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as adopt_maintenance
-    participant p1 as type (src/llm_wiki_cli/api.py:adopt_maintenance)
-    participant p2 as ValueError (src/llm_wiki_cli/api.py:adopt_maintenance)
-    participant p3 as cast (src/llm_wiki_cli/api.py:adopt_maintenance)
-    participant p4 as adopt_maintenance_authority
-    participant p5 as _validate_wiki_dir
-    participant p6 as _absolute_path
-    participant p7 as validate_path
-    participant p8 as _outside_recovery
-    participant p9 as governance_writer_lock
-    participant p10 as storage_writer_lock
-    participant p11 as load_adoption_marker
-    participant p12 as guard_maintenance_owner
-    participant p13 as snapshot_wiki
-    participant p14 as _capture_basis
-    participant p15 as _capture
-    participant p16 as str (src/llm_wiki_cli/services…opt_maintenance_authority)
-    participant p17 as new_identity
-    participant p18 as capture_maintenance_observations
-    participant p19 as reconcile_pending_maintenance
-    participant p20 as view.manifest_basis.with_maintenance_state
-    participant p21 as project_maintenance_knowledge
-    participant p22 as dict (src/llm_wiki_cli/services…opt_maintenance_authority)
-    participant p23 as generation_inputs.pop (src/llm_wiki_cli/services…opt_maintenance_authority)
-    participant p24 as manifest.with_generation_state
-    participant p25 as extensions.pop (src/llm_wiki_cli/services…opt_maintenance_authority)
-    participant p26 as replace (src/llm_wiki_cli/services…opt_maintenance_authority)
-    participant p27 as validated_artifact_bytes
-    p0-->>p1: type (src/llm_wiki_cli/api.py:adopt_maintenance)(allow_external_src)
-    p0-->>p2: ValueError (src/llm_wiki_cli/api.py:adopt_maintenance)('Unsupported maintenance adoption options')
-    p0-->>p3: cast (src/llm_wiki_cli/api.py:adopt_maintenance)(MaintenanceAdoptionResult, adopt_maintenance_authority(...))
-    p0->>p4: adopt_maintenance_authority
-    p0->>p5: _validate_wiki_dir
-    p4->>p6: _absolute_path
-    p5->>p7: validate_path
-    p4->>p6: _absolute_path
-    p4->>p8: _outside_recovery
-    p4->>p9: governance_writer_lock
-    p4->>p10: storage_writer_lock
-    p4->>p11: load_adoption_marker
-    p4->>p12: guard_maintenance_owner
-    p4->>p12: guard_maintenance_owner
-    p4->>p13: snapshot_wiki
-    p4->>p14: _capture_basis
-    p4->>p15: _capture
-    p4-->>p16: str (src/llm_wiki_cli/services…opt_maintenance_authority)(source)
-    p4->>p17: new_identity
-    p4->>p18: capture_maintenance_observations
-    p4->>p19: reconcile_pending_maintenance
-    p4-->>p20: view.manifest_basis.with_maintenance_state(state)
-    p4->>p21: project_maintenance_knowledge
-    p4-->>p22: dict (src/llm_wiki_cli/services…opt_maintenance_authority)(manifest.generation_inputs)
-    p4-->>p23: generation_inputs.pop (src/llm_wiki_cli/services…opt_maintenance_authority)(REUSE_INPUT_KEY, None)
-    p4-->>p24: manifest.with_generation_state(surfaces=manifest.surfaces, generation_inputs=generation_inputs)
-    p4-->>p22: dict (src/llm_wiki_cli/services…opt_maintenance_authority)(knowledge.extensions)
-    p4-->>p25: extensions.pop (src/llm_wiki_cli/services…opt_maintenance_authority)(REUSE_EXTENSION_KEY, None)
-    p4-->>p26: replace (src/llm_wiki_cli/services…opt_maintenance_authority)(knowledge, extensions=extensions)
-    p4->>p27: validated_artifact_bytes
+    participant p1 as adopt_maintenance_authority
+    participant p2 as _validate_wiki_dir
+    participant p3 as _absolute_path
+    participant p4 as _outside_recovery
+    participant p5 as governance_writer_lock
+    participant p6 as storage_writer_lock
+    participant p7 as load_adoption_marker
+    participant p8 as guard_maintenance_owner
+    participant p9 as snapshot_wiki
+    participant p10 as _capture_basis
+    participant p11 as _capture
+    participant p12 as reconcile_pending_maintenance
+    participant p13 as project_maintenance_knowledge
+    participant p14 as validated_artifact_bytes
+    participant p15 as build_knowledge_commit_plan
+    participant p16 as save_recovery_snapshot
+    participant p17 as commit_knowledge_artifacts
+    participant p18 as capture_context_read
+    participant p19 as ensure_guarded_directory
+    participant p20 as current_manifest_format
+    participant p21 as SyncManifest.load
+    participant p22 as read_guarded
+    participant p23 as validate_maintenance_adoption
+    participant p24 as governance_lock
+    participant p25 as canonical_bytes
+    participant p26 as canonical_hash
+    participant p27 as _commit_sharded
+    participant p28 as _commit_flat
+    participant p29 as type (src/llm_wiki_cli/api.py:adopt_maintenance)
+    participant p30 as view.manifest_basis.with_maintenance_state
+    p0->>p1: adopt_maintenance_authority
+    p0->>p2: _validate_wiki_dir
+    p1->>p3: _absolute_path
+    p1->>p4: _outside_recovery
+    p1->>p5: governance_writer_lock
+    p1->>p6: storage_writer_lock
+    p1->>p7: load_adoption_marker
+    p1->>p8: guard_maintenance_owner
+    p1->>p9: snapshot_wiki
+    p1->>p10: _capture_basis
+    p1->>p11: _capture
+    p1->>p12: reconcile_pending_maintenance
+    p1->>p13: project_maintenance_knowledge
+    p1->>p14: validated_artifact_bytes
+    p1->>p15: build_knowledge_commit_plan
+    p1->>p16: save_recovery_snapshot
+    p1->>p17: commit_knowledge_artifacts
+    p11->>p18: capture_context_read
+    p16->>p19: ensure_guarded_directory
+    p15->>p20: current_manifest_format
+    p8->>p21: SyncManifest.load
+    p7->>p22: read_guarded
+    p7->>p23: validate_maintenance_adoption
+    p5->>p24: governance_lock
+    p7->>p25: canonical_bytes
+    p12->>p26: canonical_hash
+    p17->>p27: _commit_sharded
+    p17->>p28: _commit_flat
+    p0-->>p29: type (src/llm_wiki_cli/api.py:adopt_maintenance)(allow_external_src)
+    p1-->>p30: view.manifest_basis.with_maintenance_state(state)
 ```
 
 > Call sequence diagram shows 30 of 3058 interactions; 3028 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 7 of 1047 (1040 omitted); unresolved 4 of 715 (711 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1047 (1046 omitted); unresolved 1 of 715 (714 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/api.py:adopt_maintenance` | 1 | - | external | 2 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 6 | - | external | 4 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 6 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 9 | - | external | 20 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 9 | - | unresolved | 5 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 6 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 6 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/maintenance_service.py:_outside_recovery` | 42 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 1 |
-| `src/llm_wiki_cli/services/maintenance_service.py:_outside_recovery` | 42 | - | unresolved | 3 |
-> Omission summary shows 8 of 724 groups; 716 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/maintenance_service.py:adopt_maintenance_authority` | 5 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 1 |
+> Omission summary shows 8 of 723 groups; 715 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

@@ -28,80 +28,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as serialize_knowledge_index
-    participant p1 as json.dumps (src/llm_wiki_cli/services…serialize_knowledge_index)
-    participant p2 as knowledge_index_to_payload
-    participant p3 as KnowledgeModelError
-    participant p4 as isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload)
-    participant p5 as TypeError (src/llm_wiki_cli/services…nowledge_index_to_payload)
-    participant p6 as _emit_extensions
-    participant p7 as _bundle_to_payload
-    participant p8 as _concept_to_payload
-    participant p9 as _relationship_to_payload
-    participant p10 as parse_knowledge_index
-    participant p11 as _knowledge_index_to_payload_unchecked
-    participant p12 as isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions)
-    participant p13 as _wire_enum
-    participant p14 as _record
-    participant p15 as _parse_extensions
-    participant p16 as _string
-    participant p17 as sorted (src/llm_wiki_cli/services…ndex_to_payload_unchecked)
-    participant p18 as _basis_to_payload
-    participant p19 as _relationship_target_to_payload
-    p0-->>p1: json.dumps (src/llm_wiki_cli/services…serialize_knowledge_index)(knowledge_index_to_payload(...), indent=2, sort_keys=True, ensure_ascii=False, allow_nan=False)
-    p0->>p2: knowledge_index_to_payload
-    p0->>p3: KnowledgeModelError
-    p2-->>p4: isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload)(model, KnowledgeIndex)
-    p2-->>p5: TypeError (src/llm_wiki_cli/services…nowledge_index_to_payload)('model must be a KnowledgeIndex')
-    p2->>p6: _emit_extensions
-    p2->>p7: _bundle_to_payload
-    p2->>p8: _concept_to_payload
-    p2->>p9: _relationship_to_payload
-    p2->>p3: KnowledgeModelError
-    p2->>p10: parse_knowledge_index
-    p2->>p11: _knowledge_index_to_payload_unchecked
-    p6-->>p12: isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions)(extensions, FrozenDict)
-    p7->>p6: _emit_extensions
-    p8->>p13: _wire_enum
-    p9->>p13: _wire_enum
-    p10->>p14: _record
-    p11->>p7: _bundle_to_payload
-    p6->>p15: _parse_extensions
-    p7->>p13: _wire_enum
-    p8->>p13: _wire_enum
-    p9->>p6: _emit_extensions
-    p10->>p16: _string
-    p11-->>p17: sorted (src/llm_wiki_cli/services…ndex_to_payload_unchecked)(producer[...], key=...)
-    p7->>p6: _emit_extensions
-    p8->>p18: _basis_to_payload
-    p9->>p19: _relationship_target_to_payload
-    p10->>p3: KnowledgeModelError
-    p11-->>p17: sorted (src/llm_wiki_cli/services…ndex_to_payload_unchecked)(producer[...], key=...)
-    p7->>p6: _emit_extensions
+    participant p1 as knowledge_index_to_payload
+    participant p2 as KnowledgeModelError
+    participant p3 as _emit_extensions
+    participant p4 as _bundle_to_payload
+    participant p5 as _concept_to_payload
+    participant p6 as _relationship_to_payload
+    participant p7 as parse_knowledge_index
+    participant p8 as _knowledge_index_to_payload_unchecked
+    participant p9 as _record
+    participant p10 as _parse_extensions
+    participant p11 as _basis_to_payload
+    participant p12 as _relationship_target_to_payload
+    participant p13 as _parse_bundle
+    participant p14 as _component_to_payload
+    participant p15 as _relationship_evidence_to_payload
+    participant p16 as _actor_to_payload
+    participant p17 as _parse_concept
+    participant p18 as _parse_relationship
+    participant p19 as _document_to_payload
+    participant p20 as _validated_reserved_extensions
+    participant p21 as _validate_index_references
+    participant p22 as validate_implementation_collection
+    participant p23 as validate_maintenance_projection
+    participant p24 as validate_governance_projection
+    participant p25 as _object (src/llm_wiki_cli/services/knowledge_model.py)
+    participant p26 as _parse_document
+    participant p27 as validate_reuse_commitment
+    participant p28 as _parse_repository
+    participant p29 as json.dumps (src/llm_wiki_cli/services…serialize_knowledge_index)
+    participant p30 as validated.get
+    p0->>p1: knowledge_index_to_payload
+    p0->>p2: KnowledgeModelError
+    p1->>p3: _emit_extensions
+    p1->>p4: _bundle_to_payload
+    p1->>p5: _concept_to_payload
+    p1->>p6: _relationship_to_payload
+    p1->>p7: parse_knowledge_index
+    p1->>p8: _knowledge_index_to_payload_unchecked
+    p7->>p9: _record
+    p3->>p10: _parse_extensions
+    p5->>p11: _basis_to_payload
+    p6->>p12: _relationship_target_to_payload
+    p7->>p13: _parse_bundle
+    p4->>p14: _component_to_payload
+    p6->>p15: _relationship_evidence_to_payload
+    p5->>p16: _actor_to_payload
+    p7->>p17: _parse_concept
+    p7->>p18: _parse_relationship
+    p5->>p19: _document_to_payload
+    p7->>p20: _validated_reserved_extensions
+    p7->>p21: _validate_index_references
+    p7->>p22: validate_implementation_collection
+    p7->>p23: validate_maintenance_projection
+    p7->>p24: validate_governance_projection
+    p10->>p25: _object (src/llm_wiki_cli/services/knowledge_model.py)
+    p17->>p26: _parse_document
+    p20->>p27: validate_reuse_commitment
+    p13->>p28: _parse_repository
+    p0-->>p29: json.dumps (src/llm_wiki_cli/services…serialize_knowledge_index)(knowledge_index_to_payload(...), indent=2, sort_keys=True, ensure_ascii=False, allow_nan=False)
+    p22-->>p30: validated.get(IMPLEMENTATION_KEY)
 ```
 
 > Call sequence diagram shows 30 of 1280 interactions; 1250 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 6 of 335 (329 omitted); unresolved 0 of 203 (203 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 335 (334 omitted); unresolved 1 of 203 (202 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_model.py:_parse_extensions` | 8 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 7 |
+| `src/llm_wiki_cli/services/knowledge_model.py:knowledge_index_to_payload` | 3 | - | external | 2 |
+| `src/llm_wiki_cli/services/knowledge_model.py:_emit_extensions` | 6 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_object` | 9 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_object` | 9 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_mapping` | 11 | - | external | 2 |
 | `src/llm_wiki_cli/services/validation.py:require_mapping` | 11 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_object` | 9 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 3 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_parse_extensions` | 8 | - | external | 1 |
-| `src/llm_wiki_cli/services/knowledge_model.py:_parse_extensions` | 8 | - | unresolved | 1 |
-> Omission summary shows 8 of 285 groups; 277 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 284 groups; 276 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

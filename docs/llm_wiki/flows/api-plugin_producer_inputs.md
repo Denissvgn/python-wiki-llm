@@ -6,69 +6,75 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as plugin_producer_inputs
-    participant p1 as enumerate
-    participant p2 as isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)
+    participant p1 as _safe_plugin_component_metadata
+    participant p2 as _plugin_metadata_mapping
     participant p3 as KnowledgeEnvelopeError
-    participant p4 as component.get (src/llm_wiki_cli/services….py:plugin_producer_inputs)
-    participant p5 as _COMPONENT_ID_RE.fullmatch (src/llm_wiki_cli/services….py:plugin_producer_inputs)
-    participant p6 as version.strip
-    participant p7 as any (src/llm_wiki_cli/services….py:plugin_producer_inputs)
-    participant p8 as ord
-    participant p9 as _reject_machine_local_paths
-    participant p10 as grouped.setdefault
-    participant p11 as set (src/llm_wiki_cli/services….py:plugin_producer_inputs)
-    participant p12 as entry[…].add (src/llm_wiki_cli/services…:plugin_producer_inputs, 1)
-    participant p13 as _safe_plugin_component_metadata
-    participant p14 as entry[…].add (src/llm_wiki_cli/services….py:plugin_producer_inputs)
-    participant p15 as entry[…].append
-    participant p16 as _plugin_metadata_mapping
-    participant p17 as min
-    p0-->>p1: enumerate(components)
-    p0-->>p2: isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)(component, Mapping)
+    participant p4 as _reject_machine_local_paths
+    participant p5 as ProducerComponentInput
+    participant p6 as enumerate
+    participant p7 as component.get (src/llm_wiki_cli/services….py:plugin_producer_inputs)
+    participant p8 as isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)
+    participant p9 as _COMPONENT_ID_RE.fullmatch (src/llm_wiki_cli/services….py:plugin_producer_inputs)
+    participant p10 as version.strip
+    participant p11 as any (src/llm_wiki_cli/services….py:plugin_producer_inputs)
+    participant p12 as ord
+    participant p13 as grouped.setdefault
+    participant p14 as set (src/llm_wiki_cli/services….py:plugin_producer_inputs)
+    participant p15 as entry[…].add (src/llm_wiki_cli/services…:plugin_producer_inputs, 1)
+    participant p16 as entry[…].add (src/llm_wiki_cli/services….py:plugin_producer_inputs)
+    participant p17 as entry[…].append
+    participant p18 as min
+    participant p19 as sorted
+    participant p20 as len
+    participant p21 as next
+    participant p22 as iter
+    p0->>p1: _safe_plugin_component_metadata
+    p0->>p2: _plugin_metadata_mapping
     p0->>p3: KnowledgeEnvelopeError
-    p0-->>p4: component.get (src/llm_wiki_cli/services….py:plugin_producer_inputs)('plugin_id')
-    p0-->>p2: isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)(plugin_id, str)
-    p0-->>p5: _COMPONENT_ID_RE.fullmatch (src/llm_wiki_cli/services….py:plugin_producer_inputs)(plugin_id)
-    p0->>p3: KnowledgeEnvelopeError
-    p0-->>p4: component.get (src/llm_wiki_cli/services….py:plugin_producer_inputs)('plugin_version')
-    p0-->>p2: isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)(version, str)
-    p0->>p3: KnowledgeEnvelopeError
-    p0-->>p2: isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)(version, str)
-    p0-->>p6: version.strip
-    p0-->>p7: any (src/llm_wiki_cli/services….py:plugin_producer_inputs)(...)
-    p0-->>p8: ord(char)
-    p0->>p3: KnowledgeEnvelopeError
-    p0->>p9: _reject_machine_local_paths
-    p0-->>p10: grouped.setdefault(plugin_id, {...})
-    p0-->>p11: set (src/llm_wiki_cli/services….py:plugin_producer_inputs)
-    p0-->>p11: set (src/llm_wiki_cli/services….py:plugin_producer_inputs)
-    p0-->>p12: entry[…].add (src/llm_wiki_cli/services…:plugin_producer_inputs, 1)(...)
-    p0->>p13: _safe_plugin_component_metadata
-    p0->>p3: KnowledgeEnvelopeError
-    p0-->>p14: entry[…].add (src/llm_wiki_cli/services….py:plugin_producer_inputs)(coordinate)
-    p0-->>p15: entry[…].append(safe_component)
-    p0->>p16: _plugin_metadata_mapping
-    p0->>p16: _plugin_metadata_mapping
-    p0-->>p11: set (src/llm_wiki_cli/services….py:plugin_producer_inputs)(metadata)
-    p0-->>p11: set (src/llm_wiki_cli/services….py:plugin_producer_inputs)(grouped)
-    p0-->>p17: min(unknown)
-    p0->>p3: KnowledgeEnvelopeError
+    p0->>p4: _reject_machine_local_paths
+    p0->>p5: ProducerComponentInput
+    p0-->>p6: enumerate(components)
+    p0-->>p7: component.get (src/llm_wiki_cli/services….py:plugin_producer_inputs)('plugin_id')
+    p0-->>p8: isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)(component, Mapping)
+    p0-->>p8: isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)(plugin_id, str)
+    p0-->>p9: _COMPONENT_ID_RE.fullmatch (src/llm_wiki_cli/services….py:plugin_producer_inputs)(plugin_id)
+    p0-->>p7: component.get (src/llm_wiki_cli/services….py:plugin_producer_inputs)('plugin_version')
+    p0-->>p8: isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)(version, str)
+    p0-->>p8: isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)(version, str)
+    p0-->>p10: version.strip
+    p0-->>p11: any (src/llm_wiki_cli/services….py:plugin_producer_inputs)(...)
+    p0-->>p12: ord(char)
+    p0-->>p13: grouped.setdefault(plugin_id, {...})
+    p0-->>p14: set (src/llm_wiki_cli/services….py:plugin_producer_inputs)
+    p0-->>p14: set (src/llm_wiki_cli/services….py:plugin_producer_inputs)
+    p0-->>p15: entry[…].add (src/llm_wiki_cli/services…:plugin_producer_inputs, 1)(...)
+    p0-->>p16: entry[…].add (src/llm_wiki_cli/services….py:plugin_producer_inputs)(coordinate)
+    p0-->>p17: entry[…].append(safe_component)
+    p0-->>p14: set (src/llm_wiki_cli/services….py:plugin_producer_inputs)(metadata)
+    p0-->>p14: set (src/llm_wiki_cli/services….py:plugin_producer_inputs)(grouped)
+    p0-->>p18: min(unknown)
+    p0-->>p19: sorted(grouped)
+    p0-->>p20: len(versions)
+    p0-->>p21: next(iter(...))
+    p0-->>p22: iter(versions)
+    p0-->>p19: sorted(entry[...], key=...)
 ```
 
 > Call sequence diagram shows 30 of 68 interactions; 38 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 12 of 29 (17 omitted); unresolved 8 of 17 (9 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 17 of 29 (12 omitted); unresolved 8 of 17 (9 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:plugin_producer_inputs` | 1 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 10 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_reject_machine_local_paths` | 17 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_reject_machine_local_paths` | 17 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_safe_plugin_component_metadata` | 24 | - | unresolved | 3 |
@@ -76,7 +82,6 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_safe_plugin_component_metadata` | 24 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 5 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_plugin_metadata_mapping` | 40 | - | external | 3 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_plugin_metadata_mapping` | 40 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 2 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:plugin_producer_inputs` | 1 | - | external | 9 |
 > Omission summary shows 8 of 10 groups; 2 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

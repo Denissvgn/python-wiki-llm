@@ -33,7 +33,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -42,76 +42,82 @@ sequenceDiagram
     participant p1 as _normalize_query_input
     participant p2 as normalize_supplied_paths
     participant p3 as _effective_query_limit
-    participant p4 as cast
-    participant p5 as _run_query
-    participant p6 as _query_service(…).dependency_neighborhood
-    participant p7 as _query_service
-    participant p8 as callback (src/llm_wiki_cli/api.py:_normalize_query_input)
-    participant p9 as _portable_supplied_path
-    participant p10 as _normalize_query_limit
-    participant p11 as callback (src/llm_wiki_cli/api.py:_run_query)
-    participant p12 as InvalidRequestError
-    participant p13 as _supplied_path_values
-    participant p14 as build_documentation_query_service
-    participant p15 as str (src/llm_wiki_cli/api.py:_normalize_query_input)
-    participant p16 as tuple (src/llm_wiki_cli/services…:normalize_supplied_paths)
-    participant p17 as str (src/llm_wiki_cli/api.py:_run_query)
-    participant p18 as sorted (src/llm_wiki_cli/services…:normalize_supplied_paths)
-    participant p19 as item.casefold
-    participant p20 as DocumentationQueryError
-    participant p21 as isinstance (src/llm_wiki_cli/services….py:_supplied_path_values)
-    participant p22 as isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service)
-    participant p23 as require_portable_relative_path
-    participant p24 as normalize_documentation_query_limit
+    participant p4 as _run_query
+    participant p5 as _query_service
+    participant p6 as _portable_supplied_path
+    participant p7 as _normalize_query_limit
+    participant p8 as _supplied_path_values
+    participant p9 as build_documentation_query_service
+    participant p10 as require_portable_relative_path
+    participant p11 as normalize_documentation_query_limit
+    participant p12 as validate_source_root
+    participant p13 as _validate_wiki_dir
+    participant p14 as build_live_documentation_query_service
+    participant p15 as validate_path
+    participant p16 as _default_path_error
+    participant p17 as resolve_source_selection
+    participant p18 as _check_path_collision
+    participant p19 as capture_source_selection_inputs
+    participant p20 as validate_live_query_source_selection
+    participant p21 as windows_current_user_sid
+    participant p22 as _source_anchor
+    participant p23 as _wiki_anchor
+    participant p24 as source_path_diagnostics
+    participant p25 as require_portable_path_component
+    participant p26 as _live_source_selection_identity
+    participant p27 as confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet.py)
+    participant p28 as attach_implementation_read_view
+    participant p29 as cast
+    participant p30 as _query_service(…).dependency_neighborhood
     p0->>p1: _normalize_query_input
     p0->>p2: normalize_supplied_paths
     p0->>p3: _effective_query_limit
-    p0-->>p4: cast(DependencyNeighborhoodResult, _run_query(...))
-    p0->>p5: _run_query
-    p0-->>p6: _query_service(…).dependency_neighborhood(query)
-    p0->>p7: _query_service
-    p1-->>p8: callback (src/llm_wiki_cli/api.py:_normalize_query_input)
-    p2->>p9: _portable_supplied_path
-    p3->>p10: _normalize_query_limit
-    p5-->>p11: callback (src/llm_wiki_cli/api.py:_run_query)
-    p7->>p12: InvalidRequestError
-    p1->>p12: InvalidRequestError
-    p2->>p13: _supplied_path_values
-    p5->>p12: InvalidRequestError
-    p7->>p14: build_documentation_query_service
-    p1-->>p15: str (src/llm_wiki_cli/api.py:_normalize_query_input)(exc)
-    p2-->>p16: tuple (src/llm_wiki_cli/services…:normalize_supplied_paths)(sorted(...))
-    p5-->>p17: str (src/llm_wiki_cli/api.py:_run_query)(exc)
-    p2-->>p18: sorted (src/llm_wiki_cli/services…:normalize_supplied_paths)(normalized, key=...)
-    p2-->>p19: item.casefold
-    p9->>p20: DocumentationQueryError
-    p13-->>p21: isinstance (src/llm_wiki_cli/services….py:_supplied_path_values)(values, (...))
-    p10->>p1: _normalize_query_input
-    p14-->>p22: isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service)(value, bool)
-    p9->>p23: require_portable_relative_path
-    p13-->>p21: isinstance (src/llm_wiki_cli/services….py:_supplied_path_values)(values, Iterable)
-    p10->>p24: normalize_documentation_query_limit
-    p14->>p12: InvalidRequestError
-    p13->>p20: DocumentationQueryError
+    p0->>p4: _run_query
+    p0->>p5: _query_service
+    p2->>p6: _portable_supplied_path
+    p3->>p7: _normalize_query_limit
+    p2->>p8: _supplied_path_values
+    p5->>p9: build_documentation_query_service
+    p6->>p10: require_portable_relative_path
+    p7->>p11: normalize_documentation_query_limit
+    p9->>p12: validate_source_root
+    p9->>p13: _validate_wiki_dir
+    p9->>p14: build_live_documentation_query_service
+    p12->>p15: validate_path
+    p10->>p16: _default_path_error
+    p14->>p17: resolve_source_selection
+    p10->>p18: _check_path_collision
+    p14->>p19: capture_source_selection_inputs
+    p14->>p20: validate_live_query_source_selection
+    p12->>p21: windows_current_user_sid
+    p14->>p22: _source_anchor
+    p14->>p23: _wiki_anchor
+    p14->>p24: source_path_diagnostics
+    p10->>p25: require_portable_path_component
+    p14->>p26: _live_source_selection_identity
+    p14->>p27: confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet.py)
+    p14->>p28: attach_implementation_read_view
+    p0-->>p29: cast(DependencyNeighborhoodResult, _run_query(...))
+    p0-->>p30: _query_service(…).dependency_neighborhood(query)
 ```
 
 > Call sequence diagram shows 30 of 957 interactions; 927 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 8 of 384 (376 omitted); unresolved 4 of 227 (223 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 384 (383 omitted); unresolved 1 of 227 (226 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/api.py:_normalize_query_input` | 2 | - | unresolved | 1 |
+| `src/llm_wiki_cli/api.py:_normalize_query_input` | 2 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 1 |
+| `src/llm_wiki_cli/api.py:_normalize_query_input` | 2 | - | external | 1 |
+| `src/llm_wiki_cli/services/documentation_query_builder.py:_portable_supplied_path` | 7 | [src/llm_wiki_cli/services/documentation_queries.py](../modules/documentation_queries.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 9 | - | external | 4 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 9 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 13 |
 | `src/llm_wiki_cli/services/validation.py:_default_path_error` | 11 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 9 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 10 |
 | `src/llm_wiki_cli/services/validation.py:_syntax_key` | 16 | - | external | 6 |
-| `src/llm_wiki_cli/services/validation.py:_known_syntax` | 23 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/validation.py:_check_path_collision` | 26 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 2 |
-| `src/llm_wiki_cli/services/validation.py:portable_path_key` | 27 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/validation.py:portable_path_key` | 27 | - | external | 1 |
-> Omission summary shows 8 of 205 groups; 197 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 210 groups; 202 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

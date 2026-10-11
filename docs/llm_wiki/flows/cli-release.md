@@ -6,62 +6,67 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as run
-    participant p1 as getattr
-    participant p2 as Path (src/llm_wiki_cli/commands/release_cmd.py:run)
-    participant p3 as changelog_path.exists
-    participant p4 as print
-    participant p5 as sys.exit
-    participant p6 as find_version_file
-    participant p7 as read_version
-    participant p8 as stamp_changelog
-    participant p9 as changelog_path.write_bytes
-    participant p10 as new_text.encode
-    participant p11 as date.today().isoformat (src/llm_wiki_cli/commands/release_cmd.py:run)
-    participant p12 as date.today (src/llm_wiki_cli/commands/release_cmd.py:run)
-    participant p13 as subprocess.run
-    participant p14 as str
-    participant p15 as (…).strip
-    p0-->>p1: getattr(args, 'root', '.')
-    p0-->>p2: Path (src/llm_wiki_cli/commands/release_cmd.py:run)(getattr(...))
-    p0-->>p1: getattr(args, 'changelog', 'CHANGELOG.md')
-    p0-->>p3: changelog_path.exists
-    p0-->>p4: print(..., file=sys.stderr)
-    p0-->>p5: sys.exit(1)
-    p0->>p6: find_version_file
-    p0-->>p4: print('Error: No version file found (pyproject.toml, setup.cfg, package.json, VERSION).', file=sys.stderr)
-    p0-->>p5: sys.exit(1)
-    p0->>p7: read_version
-    p0-->>p4: print(..., file=sys.stderr)
-    p0-->>p5: sys.exit(1)
-    p0->>p8: stamp_changelog
-    p0-->>p4: print(..., file=sys.stderr)
-    p0-->>p5: sys.exit(1)
-    p0-->>p4: print('CHANGELOG.md: [Unreleased] is empty — nothing to stamp (run after the agent adds entries).')
-    p0-->>p9: changelog_path.write_bytes(new_text.encode(...))
-    p0-->>p10: new_text.encode('utf-8')
-    p0-->>p4: print(...)
-    p0-->>p11: date.today().isoformat (src/llm_wiki_cli/commands/release_cmd.py:run)
-    p0-->>p12: date.today (src/llm_wiki_cli/commands/release_cmd.py:run)
-    p0-->>p1: getattr(args, 'stage', False)
-    p0-->>p13: subprocess.run([...], check=True, capture_output=True, shell=False, text=True)
-    p0-->>p14: str(changelog_path)
-    p0-->>p4: print('Error: git not found could not stage changelog.', file=sys.stderr)
-    p0-->>p5: sys.exit(1)
-    p0-->>p15: (…).strip
-    p0-->>p4: print(..., file=sys.stderr)
-    p0-->>p4: print(detail, file=sys.stderr)
-    p0-->>p5: sys.exit(1)
+    participant p1 as read_version
+    participant p2 as stamp_changelog
+    participant p3 as find_version_file
+    participant p4 as _read_pyproject_version
+    participant p5 as _table_body
+    participant p6 as _unreleased_has_content
+    participant p7 as _detect_repo_url
+    participant p8 as _project_version_is_dynamic
+    participant p9 as _static_version_from_body
+    participant p10 as _table_bounds
+    participant p11 as getattr
+    participant p12 as changelog_path.exists
+    participant p13 as Path (src/llm_wiki_cli/commands/release_cmd.py:run)
+    participant p14 as print
+    participant p15 as sys.exit
+    participant p16 as changelog_path.write_bytes
+    participant p17 as new_text.encode
+    participant p18 as date.today().isoformat (src/llm_wiki_cli/commands/release_cmd.py:run)
+    participant p19 as date.today (src/llm_wiki_cli/commands/release_cmd.py:run)
+    participant p20 as subprocess.run
+    p0->>p1: read_version
+    p0->>p2: stamp_changelog
+    p0->>p3: find_version_file
+    p1->>p4: _read_pyproject_version
+    p4->>p5: _table_body
+    p2->>p6: _unreleased_has_content
+    p2->>p7: _detect_repo_url
+    p4->>p8: _project_version_is_dynamic
+    p4->>p9: _static_version_from_body
+    p5->>p10: _table_bounds
+    p0-->>p11: getattr(args, 'root', '.')
+    p0-->>p12: changelog_path.exists
+    p0-->>p13: Path (src/llm_wiki_cli/commands/release_cmd.py:run)(getattr(...))
+    p0-->>p11: getattr(args, 'changelog', 'CHANGELOG.md')
+    p0-->>p14: print(..., file=sys.stderr)
+    p0-->>p15: sys.exit(1)
+    p0-->>p14: print('Error: No version file found (pyproject.toml, setup.cfg, package.json, VERSION).', file=sys.stderr)
+    p0-->>p15: sys.exit(1)
+    p0-->>p14: print(..., file=sys.stderr)
+    p0-->>p15: sys.exit(1)
+    p0-->>p14: print(..., file=sys.stderr)
+    p0-->>p15: sys.exit(1)
+    p0-->>p14: print('CHANGELOG.md: [Unreleased] is empty — nothing to stamp (run after the agent adds entries).')
+    p0-->>p16: changelog_path.write_bytes(new_text.encode(...))
+    p0-->>p17: new_text.encode('utf-8')
+    p0-->>p14: print(...)
+    p0-->>p18: date.today().isoformat (src/llm_wiki_cli/commands/release_cmd.py:run)
+    p0-->>p19: date.today (src/llm_wiki_cli/commands/release_cmd.py:run)
+    p0-->>p11: getattr(args, 'stage', False)
+    p0-->>p20: subprocess.run([...], check=True, capture_output=True, shell=False, text=True)
 ```
 
 > Call sequence diagram shows 30 of 100 interactions; 70 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 22 of 43 (21 omitted); unresolved 5 of 45 (40 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 16 of 43 (27 omitted); unresolved 4 of 45 (41 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -70,12 +75,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/versioning.py:find_version_file` | 8 | - | external | 1 |
 | `src/llm_wiki_cli/services/versioning.py:find_version_file` | 8 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/versioning.py:read_version` | 13 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/versioning.py:read_version` | 13 | [src/llm_wiki_cli/services/versioning.py](../modules/versioning.md) | internal | 1 |
 | `src/llm_wiki_cli/services/versioning.py:_read_pyproject_version` | 15 | - | unresolved | 9 |
 | `src/llm_wiki_cli/services/versioning.py:_read_pyproject_version` | 15 | - | external | 6 |
-| `src/llm_wiki_cli/services/versioning.py:_read_pyproject_version` | 15 | [src/llm_wiki_cli/services/versioning.py](../modules/versioning.md) | internal | 5 |
-| `src/llm_wiki_cli/services/versioning.py:_table_body` | 31 | [src/llm_wiki_cli/services/versioning.py](../modules/versioning.md) | internal | 1 |
-> Omission summary shows 8 of 21 groups; 13 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/versioning.py:_table_bounds` | 32 | - | unresolved | 6 |
+| `src/llm_wiki_cli/services/versioning.py:_table_bounds` | 32 | - | external | 1 |
+| `src/llm_wiki_cli/services/versioning.py:_project_version_is_dynamic` | 40 | - | external | 3 |
+> Omission summary shows 8 of 19 groups; 11 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow

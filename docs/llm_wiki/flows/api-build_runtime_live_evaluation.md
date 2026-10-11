@@ -21,71 +21,83 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as build_runtime_live_evaluation
-    participant p1 as isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)
-    participant p2 as TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation)
-    participant p3 as has_contract
-    participant p4 as replace (src/llm_wiki_cli/services…d_runtime_live_evaluation)
-    participant p5 as dict (src/llm_wiki_cli/services…d_runtime_live_evaluation)
-    participant p6 as inputs.infrastructure_inventory.items
-    participant p7 as inputs.source_snapshot.hashes_for
-    participant p8 as sorted (src/llm_wiki_cli/services…d_runtime_live_evaluation)
-    participant p9 as set (src/llm_wiki_cli/services…d_runtime_live_evaluation)
-    participant p10 as inputs.source_snapshot.captured_content_hashes.get
-    participant p11 as _producer_evidence
-    participant p12 as _infrastructure_extractor_component
-    participant p13 as build_producer_record
-    participant p14 as _tool_component
-    participant p15 as prepare_runtime_generation_options
-    participant p16 as LiveKnowledgeEvaluation
-    participant p17 as hash_generation_options
-    participant p18 as analysis_identity
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)(inputs, RuntimeLiveEvaluationInputs)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation)('inputs must be a RuntimeLiveEvaluationInputs')
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)(inputs.knowledge, KnowledgeIndex)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation)('inputs.knowledge must be a KnowledgeIndex')
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)(inputs.manifest, SyncManifest)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation)('inputs.manifest must be a SyncManifest')
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)(inputs.source_snapshot, SourceSnapshot)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation)('inputs.source_snapshot must be a SourceSnapshot')
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)(inputs.inventory, Mapping)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation)('inputs.inventory must be a mapping')
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)(inputs.infrastructure_inventory, Mapping)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…d_runtime_live_evaluation)('inputs.infrastructure_inventory must be a mapping')
-    p0->>p3: has_contract
-    p0-->>p4: replace (src/llm_wiki_cli/services…d_runtime_live_evaluation)(inputs, analysis_components=None)
-    p0-->>p5: dict (src/llm_wiki_cli/services…d_runtime_live_evaluation)(inputs.inventory)
-    p0-->>p5: dict (src/llm_wiki_cli/services…d_runtime_live_evaluation)(record)
-    p0-->>p6: inputs.infrastructure_inventory.items
-    p0-->>p5: dict (src/llm_wiki_cli/services…d_runtime_live_evaluation)(inputs.source_snapshot.hashes_for(...))
-    p0-->>p7: inputs.source_snapshot.hashes_for(inventory)
-    p0-->>p8: sorted (src/llm_wiki_cli/services…d_runtime_live_evaluation)(...)
-    p0-->>p9: set (src/llm_wiki_cli/services…d_runtime_live_evaluation)(infrastructure_inventory)
-    p0-->>p10: inputs.source_snapshot.captured_content_hashes.get(source_path)
-    p0->>p11: _producer_evidence
-    p0->>p12: _infrastructure_extractor_component
-    p0->>p13: build_producer_record
-    p0->>p14: _tool_component
-    p0->>p15: prepare_runtime_generation_options
-    p0->>p16: LiveKnowledgeEvaluation
-    p0->>p17: hash_generation_options
-    p0->>p18: analysis_identity
+    participant p1 as has_contract
+    participant p2 as _producer_evidence
+    participant p3 as _infrastructure_extractor_component
+    participant p4 as build_producer_record
+    participant p5 as _tool_component
+    participant p6 as prepare_runtime_generation_options
+    participant p7 as hash_generation_options
+    participant p8 as analysis_identity
+    participant p9 as _runtime_live_concept_bases
+    participant p10 as current_infrastructure_bases
+    participant p11 as LiveKnowledgeEvaluation
+    participant p12 as component_record
+    participant p13 as _build_component
+    participant p14 as build_infrastructure_page_map
+    participant p15 as _plugin_extractors_by_language
+    participant p16 as build_infrastructure_observation_basis
+    participant p17 as _source_hash
+    participant p18 as _observation_hash
+    participant p19 as _normalized_allowlist
+    participant p20 as build_module_observation_basis
+    participant p21 as _reject_unknown_option_keys
+    participant p22 as build_entity_observation_basis
+    participant p23 as _digest
+    participant p24 as attach
+    participant p25 as plugin_producer_inputs
+    participant p26 as _validate_basis_inputs
+    participant p27 as _unknown_basis
+    participant p28 as _validate_entity_coordinate
+    participant p29 as isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)
+    participant p30 as inputs.infrastructure_inventory.items
+    p0->>p1: has_contract
+    p0->>p2: _producer_evidence
+    p0->>p3: _infrastructure_extractor_component
+    p0->>p4: build_producer_record
+    p0->>p5: _tool_component
+    p0->>p6: prepare_runtime_generation_options
+    p0->>p7: hash_generation_options
+    p0->>p8: analysis_identity
+    p0->>p9: _runtime_live_concept_bases
+    p0->>p10: current_infrastructure_bases
+    p0->>p11: LiveKnowledgeEvaluation
+    p1->>p12: component_record
+    p4->>p13: _build_component
+    p10->>p14: build_infrastructure_page_map
+    p2->>p15: _plugin_extractors_by_language
+    p10->>p16: build_infrastructure_observation_basis
+    p10->>p17: _source_hash
+    p10->>p18: _observation_hash
+    p7->>p19: _normalized_allowlist
+    p9->>p20: build_module_observation_basis
+    p7->>p21: _reject_unknown_option_keys
+    p9->>p22: build_entity_observation_basis
+    p8->>p23: _digest
+    p2->>p24: attach
+    p2->>p25: plugin_producer_inputs
+    p20->>p26: _validate_basis_inputs
+    p20->>p27: _unknown_basis
+    p22->>p28: _validate_entity_coordinate
+    p0-->>p29: isinstance (src/llm_wiki_cli/services…d_runtime_live_evaluation)(inputs, RuntimeLiveEvaluationInputs)
+    p0-->>p30: inputs.infrastructure_inventory.items
 ```
 
 > Call sequence diagram shows 30 of 574 interactions; 544 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 18 of 212 (194 omitted); unresolved 3 of 111 (108 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 212 (211 omitted); unresolved 1 of 111 (110 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/analysis_compatibility.py:has_contract` | 14 | [src/llm_wiki_cli/services/analysis_compatibility.py](../modules/analysis_compatibility.md) | internal | 1 |
+| `src/llm_wiki_cli/services/knowledge_orchestration.py:build_runtime_live_evaluation` | 1 | - | external | 18 |
 | `src/llm_wiki_cli/services/analysis_compatibility.py:component_record` | 15 | - | external | 4 |
 | `src/llm_wiki_cli/services/analysis_compatibility.py:component_record` | 15 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/analysis_compatibility.py:component_record` | 15 | [src/llm_wiki_cli/services/analysis_compatibility.py](../modules/analysis_compatibility.md) | internal | 2 |
@@ -93,7 +105,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/analysis_compatibility.py:validate_record` | 20 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/analysis_compatibility.py:validate_record` | 20 | [src/llm_wiki_cli/services/analysis_compatibility.py](../modules/analysis_compatibility.md) | internal | 1 |
 | `src/llm_wiki_cli/services/analysis_compatibility.py:digest` | 43 | - | unresolved | 2 |
-> Omission summary shows 8 of 181 groups; 173 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 174 groups; 166 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

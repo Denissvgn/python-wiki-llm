@@ -29,81 +29,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as build_artifact_verification_context
-    participant p1 as isinstance (src/llm_wiki_cli/services…fact_verification_context)
-    participant p2 as TypeError (src/llm_wiki_cli/services…fact_verification_context)
-    participant p3 as _sha256
-    participant p4 as knowledge_index_to_payload
-    participant p5 as knowledge.extensions.get (src/llm_wiki_cli/services…fact_verification_context)
-    participant p6 as projected.get
-    participant p7 as next (src/llm_wiki_cli/services…fact_verification_context)
-    participant p8 as VerificationContractError
-    participant p9 as selected.extensions.get
-    participant p10 as summary.get (src/llm_wiki_cli/services…fact_verification_context)
-    participant p11 as hash_json(…).removeprefix
-    participant p12 as hash_json
-    participant p13 as VerificationContext
-    participant p14 as tuple (src/llm_wiki_cli/services…fact_verification_context)
-    participant p15 as require_sha256
-    participant p16 as isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload)
-    participant p17 as TypeError (src/llm_wiki_cli/services…nowledge_index_to_payload)
-    participant p18 as _emit_extensions
-    participant p19 as _bundle_to_payload
-    participant p20 as _concept_to_payload
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…fact_verification_context)(knowledge, KnowledgeIndex)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…fact_verification_context)('knowledge must be a KnowledgeIndex')
-    p0->>p3: _sha256
-    p0->>p3: _sha256
-    p0->>p3: _sha256
-    p0->>p3: _sha256
-    p0->>p4: knowledge_index_to_payload
-    p0-->>p5: knowledge.extensions.get (src/llm_wiki_cli/services…fact_verification_context)(governance_key)
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…fact_verification_context)(projected, Mapping)
-    p0-->>p6: projected.get('bundle_id')
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…fact_verification_context)(bundle_id, str)
-    p0-->>p7: next (src/llm_wiki_cli/services…fact_verification_context)(..., None)
-    p0->>p8: VerificationContractError
-    p0-->>p7: next (src/llm_wiki_cli/services…fact_verification_context)(...)
-    p0-->>p9: selected.extensions.get(governance_key)
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…fact_verification_context)(summary, Mapping)
-    p0-->>p10: summary.get (src/llm_wiki_cli/services…fact_verification_context)('uid')
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…fact_verification_context)(projected_uid, str)
-    p0-->>p11: hash_json(…).removeprefix('sha256:')
-    p0->>p12: hash_json
-    p0->>p12: hash_json
-    p0->>p13: VerificationContext
-    p0-->>p14: tuple (src/llm_wiki_cli/services…fact_verification_context)(artifact_diagnostics)
-    p3->>p15: require_sha256
-    p4-->>p16: isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload)(model, KnowledgeIndex)
-    p3->>p8: VerificationContractError
-    p4-->>p17: TypeError (src/llm_wiki_cli/services…nowledge_index_to_payload)('model must be a KnowledgeIndex')
-    p4->>p18: _emit_extensions
-    p4->>p19: _bundle_to_payload
-    p4->>p20: _concept_to_payload
+    participant p1 as _sha256
+    participant p2 as knowledge_index_to_payload
+    participant p3 as VerificationContractError
+    participant p4 as hash_json
+    participant p5 as VerificationContext
+    participant p6 as require_sha256
+    participant p7 as _emit_extensions
+    participant p8 as _bundle_to_payload
+    participant p9 as _concept_to_payload
+    participant p10 as _relationship_to_payload
+    participant p11 as parse_knowledge_index
+    participant p12 as _knowledge_index_to_payload_unchecked
+    participant p13 as _record
+    participant p14 as require_trimmed_text
+    participant p15 as _parse_extensions
+    participant p16 as _basis_to_payload
+    participant p17 as _relationship_target_to_payload
+    participant p18 as _parse_bundle
+    participant p19 as _component_to_payload
+    participant p20 as _relationship_evidence_to_payload
+    participant p21 as _actor_to_payload
+    participant p22 as _parse_concept
+    participant p23 as _parse_relationship
+    participant p24 as _document_to_payload
+    participant p25 as _validated_reserved_extensions
+    participant p26 as _validate_index_references
+    participant p27 as validate_implementation_collection
+    participant p28 as validate_maintenance_projection
+    participant p29 as isinstance (src/llm_wiki_cli/services…fact_verification_context)
+    participant p30 as knowledge.extensions.get (src/llm_wiki_cli/services…fact_verification_context)
+    p0->>p1: _sha256
+    p0->>p2: knowledge_index_to_payload
+    p0->>p3: VerificationContractError
+    p0->>p4: hash_json
+    p0->>p5: VerificationContext
+    p1->>p6: require_sha256
+    p2->>p7: _emit_extensions
+    p2->>p8: _bundle_to_payload
+    p2->>p9: _concept_to_payload
+    p2->>p10: _relationship_to_payload
+    p2->>p11: parse_knowledge_index
+    p2->>p12: _knowledge_index_to_payload_unchecked
+    p11->>p13: _record
+    p6->>p14: require_trimmed_text
+    p7->>p15: _parse_extensions
+    p9->>p16: _basis_to_payload
+    p10->>p17: _relationship_target_to_payload
+    p11->>p18: _parse_bundle
+    p8->>p19: _component_to_payload
+    p10->>p20: _relationship_evidence_to_payload
+    p9->>p21: _actor_to_payload
+    p11->>p22: _parse_concept
+    p11->>p23: _parse_relationship
+    p9->>p24: _document_to_payload
+    p11->>p25: _validated_reserved_extensions
+    p11->>p26: _validate_index_references
+    p11->>p27: validate_implementation_collection
+    p11->>p28: validate_maintenance_projection
+    p0-->>p29: isinstance (src/llm_wiki_cli/services…fact_verification_context)(knowledge, KnowledgeIndex)
+    p0-->>p30: knowledge.extensions.get (src/llm_wiki_cli/services…fact_verification_context)(governance_key)
 ```
 
 > Call sequence diagram shows 30 of 1310 interactions; 1280 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 11 of 345 (334 omitted); unresolved 5 of 211 (206 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 345 (344 omitted); unresolved 1 of 211 (210 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/verification_contracts.py:build_artifact_verification_context` | 1 | - | external | 8 |
 | `src/llm_wiki_cli/services/validation.py:require_sha256` | 5 | - | external | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_sha256` | 5 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_trimmed_text` | 7 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 8 | - | external | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 8 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 8 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:contains_control_character` | 11 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_sha256` | 5 | - | unresolved | 1 |
-> Omission summary shows 8 of 296 groups; 288 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 298 groups; 290 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

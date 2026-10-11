@@ -6,77 +6,80 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as run
-    participant p1 as _mcp_service_export
-    participant p2 as getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)
-    participant p3 as bool (src/llm_wiki_cli/commands/mcp_cmd.py:run)
-    participant p4 as validate_source_root
-    participant p5 as config_type
-    participant p6 as str
-    participant p7 as tuple
-    participant p8 as runner
-    participant p9 as print
-    participant p10 as SystemExit
-    participant p11 as globals().get
-    participant p12 as validate_path
-    participant p13 as globals
-    participant p14 as Path(…).expanduser
-    participant p15 as getattr (src/llm_wiki_cli/commands…md.py:_mcp_service_export)
-    participant p16 as Path (src/llm_wiki_cli/config.py:validate_source_root)
-    p0->>p1: _mcp_service_export
-    p0->>p1: _mcp_service_export
-    p0->>p1: _mcp_service_export
-    p0->>p1: _mcp_service_export
-    p0-->>p2: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'src_dir', '.')
-    p0-->>p3: bool (src/llm_wiki_cli/commands/mcp_cmd.py:run)(getattr(...))
-    p0-->>p2: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'allow_external_src', False)
-    p0->>p4: validate_source_root
-    p0-->>p5: config_type(…)
-    p0-->>p2: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'comparison_policy', 'auto')
-    p0-->>p6: str(source_root)
-    p0-->>p2: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'wiki_dir', 'docs/llm_wiki')
-    p0-->>p2: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'transport', 'stdio')
-    p0-->>p2: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'host', '127.0.0.1')
-    p0-->>p2: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'port', 8765)
-    p0-->>p2: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'path', '/mcp')
-    p0-->>p7: tuple(...)
-    p0-->>p2: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'allowed_origin', None)
-    p0-->>p2: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'source_selection', None)
-    p0-->>p2: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'tokenizer', None)
-    p0-->>p2: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'enable_sessions', False)
-    p0-->>p8: runner(config)
-    p0-->>p9: print(..., file=sys.stderr)
-    p0-->>p10: SystemExit(1)
-    p1-->>p11: globals().get(name, _MISSING)
-    p4->>p12: validate_path
-    p1-->>p13: globals
-    p4-->>p14: Path(…).expanduser
-    p1-->>p15: getattr (src/llm_wiki_cli/commands…md.py:_mcp_service_export)(mcp_server, name)
-    p4-->>p16: Path (src/llm_wiki_cli/config.py:validate_source_root)(path)
+    participant p1 as validate_source_root
+    participant p2 as _mcp_service_export
+    participant p3 as validate_path
+    participant p4 as windows_current_user_sid
+    participant p5 as _current_windows_user_sid
+    participant p6 as _windows_sid_string
+    participant p7 as PathValidationError
+    participant p8 as first_unsafe_path_component
+    participant p9 as WindowsSecurityGuardError
+    participant p10 as _close_windows_handle
+    participant p11 as getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)
+    participant p12 as config_type
+    participant p13 as bool (src/llm_wiki_cli/commands/mcp_cmd.py:run)
+    participant p14 as str
+    participant p15 as tuple
+    participant p16 as runner
+    participant p17 as print
+    participant p18 as SystemExit
+    participant p19 as globals().get
+    p0->>p1: validate_source_root
+    p0->>p2: _mcp_service_export
+    p1->>p3: validate_path
+    p1->>p4: windows_current_user_sid
+    p4->>p5: _current_windows_user_sid
+    p5->>p6: _windows_sid_string
+    p1->>p7: PathValidationError
+    p1->>p8: first_unsafe_path_component
+    p4->>p9: WindowsSecurityGuardError
+    p5->>p10: _close_windows_handle
+    p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'src_dir', '.')
+    p0-->>p12: config_type(…)
+    p0-->>p13: bool (src/llm_wiki_cli/commands/mcp_cmd.py:run)(getattr(...))
+    p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'allow_external_src', False)
+    p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'comparison_policy', 'auto')
+    p0-->>p14: str(source_root)
+    p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'wiki_dir', 'docs/llm_wiki')
+    p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'transport', 'stdio')
+    p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'host', '127.0.0.1')
+    p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'port', 8765)
+    p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'path', '/mcp')
+    p0-->>p15: tuple(...)
+    p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'allowed_origin', None)
+    p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'source_selection', None)
+    p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'tokenizer', None)
+    p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'enable_sessions', False)
+    p0-->>p16: runner(config)
+    p0-->>p17: print(..., file=sys.stderr)
+    p0-->>p18: SystemExit(1)
+    p2-->>p19: globals().get(name, _MISSING)
 ```
 
 > Call sequence diagram shows 30 of 130 interactions; 100 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 20 of 82 (62 omitted); unresolved 4 of 23 (19 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 17 of 82 (65 omitted); unresolved 3 of 23 (20 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/commands/mcp_cmd.py:_mcp_service_export` | 2 | - | external | 1 |
+| `src/llm_wiki_cli/commands/mcp_cmd.py:_mcp_service_export` | 2 | - | external | 3 |
+| `src/llm_wiki_cli/commands/mcp_cmd.py:run` | 1 | [src/llm_wiki_cli/commands/mcp_cmd.py](../modules/mcp_cmd.md) | internal | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 14 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
 | `src/llm_wiki_cli/config.py:validate_path` | 14 | - | unresolved | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 14 | - | external | 2 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 13 | - | unresolved | 4 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 13 | - | external | 10 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 13 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 6 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 13 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
-> Omission summary shows 8 of 20 groups; 12 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/config.py:validate_source_root` | 13 | - | unresolved | 5 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 13 | - | external | 11 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 13 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 5 |
+> Omission summary shows 8 of 18 groups; 10 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow

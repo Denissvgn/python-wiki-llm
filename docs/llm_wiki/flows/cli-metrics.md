@@ -40,81 +40,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as run
-    participant p1 as getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)
-    participant p2 as bool (src/llm_wiki_cli/commands/metrics_cmd.py:run)
-    participant p3 as validate_source_root
-    participant p4 as str (src/llm_wiki_cli/commands/metrics_cmd.py:run)
+    participant p1 as validate_source_root
+    participant p2 as load_events
+    participant p3 as summarize_events
+    participant p4 as render_text
     participant p5 as validate_path
-    participant p6 as load_events
-    participant p7 as summarize_events
-    participant p8 as print
-    participant p9 as json.dumps
-    participant p10 as render_text
-    participant p11 as metrics_path
-    participant p12 as event.get (src/llm_wiki_cli/services…trics.py:summarize_events)
-    participant p13 as _fmt_percent
-    participant p14 as Path(…).expanduser
-    participant p15 as path.exists
-    participant p16 as Path (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p17 as parse_window
-    participant p18 as _fmt_ms
-    participant p19 as candidate.is_absolute
-    participant p20 as _utc_now
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)(args, 'src_dir', '.')
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)(args, 'last', '30d')
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)(args, 'format', 'text')
-    p0-->>p2: bool (src/llm_wiki_cli/commands/metrics_cmd.py:run)(getattr(...))
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)(args, 'allow_external_src', False)
-    p0->>p3: validate_source_root
-    p0-->>p4: str (src/llm_wiki_cli/commands/metrics_cmd.py:run)(source_root)
+    participant p6 as _sanitize_metrics_value
+    participant p7 as windows_current_user_sid
+    participant p8 as _fmt_phase_durations
+    participant p9 as current_coverage
+    participant p10 as _current_windows_user_sid
+    participant p11 as resolve_source_selection
+    participant p12 as capture_source_selection_inputs
+    participant p13 as validate_live_query_source_selection
+    participant p14 as _safe_knowledge_summary
+    participant p15 as build_source_snapshot
+    participant p16 as get_inventory_result
+    participant p17 as build_entity_occurrence_page_map
+    participant p18 as SyncManifest.load
+    participant p19 as _validate_capture_options
+    participant p20 as _build_inventory_result
+    participant p21 as _coerce_inventory_request
+    participant p22 as _resolve_snapshot_selection
+    participant p23 as _override_text
+    participant p24 as _new_snapshot_buckets
+    participant p25 as _normalize_only_files
+    participant p26 as _collect_source_selection_controls
+    participant p27 as validate_persisted_source_selection_identity
+    participant p28 as build_module_page_map
+    participant p29 as getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)
+    participant p30 as event.get (src/llm_wiki_cli/services…trics.py:summarize_events)
+    p0->>p1: validate_source_root
+    p0->>p2: load_events
+    p0->>p3: summarize_events
+    p0->>p4: render_text
     p0->>p5: validate_path
-    p0->>p6: load_events
-    p0->>p7: summarize_events
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)(args, 'source_selection', None)
-    p0-->>p8: print(json.dumps(...))
-    p0-->>p9: json.dumps(summary, indent=2, sort_keys=True)
-    p0-->>p8: print(render_text(...), end='')
-    p0->>p10: render_text
-    p3->>p5: validate_path
-    p6->>p11: metrics_path
-    p7-->>p12: event.get (src/llm_wiki_cli/services…trics.py:summarize_events)('event')
-    p10->>p13: _fmt_percent
-    p3-->>p14: Path(…).expanduser
-    p6-->>p15: path.exists
-    p7-->>p12: event.get (src/llm_wiki_cli/services…trics.py:summarize_events)('strict')
-    p10->>p13: _fmt_percent
-    p3-->>p16: Path (src/llm_wiki_cli/config.py:validate_source_root)(path)
-    p6->>p17: parse_window
-    p7-->>p12: event.get (src/llm_wiki_cli/services…trics.py:summarize_events)('passed')
-    p10->>p18: _fmt_ms
-    p3-->>p19: candidate.is_absolute
-    p6->>p20: _utc_now
+    p2->>p6: _sanitize_metrics_value
+    p1->>p7: windows_current_user_sid
+    p4->>p8: _fmt_phase_durations
+    p3->>p9: current_coverage
+    p7->>p10: _current_windows_user_sid
+    p9->>p11: resolve_source_selection
+    p9->>p12: capture_source_selection_inputs
+    p9->>p13: validate_live_query_source_selection
+    p6->>p14: _safe_knowledge_summary
+    p9->>p15: build_source_snapshot
+    p9->>p16: get_inventory_result
+    p9->>p17: build_entity_occurrence_page_map
+    p13->>p18: SyncManifest.load
+    p15->>p19: _validate_capture_options
+    p16->>p20: _build_inventory_result
+    p16->>p21: _coerce_inventory_request
+    p12->>p22: _resolve_snapshot_selection
+    p11->>p23: _override_text
+    p12->>p24: _new_snapshot_buckets
+    p15->>p25: _normalize_only_files
+    p12->>p26: _collect_source_selection_controls
+    p13->>p27: validate_persisted_source_selection_identity
+    p17->>p28: build_module_page_map
+    p0-->>p29: getattr (src/llm_wiki_cli/commands/metrics_cmd.py:run)(args, 'src_dir', '.')
+    p3-->>p30: event.get (src/llm_wiki_cli/services…trics.py:summarize_events)('event')
 ```
 
 > Call sequence diagram shows 30 of 1045 interactions; 1015 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 12 of 388 (376 omitted); unresolved 6 of 264 (258 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 388 (387 omitted); unresolved 1 of 264 (263 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/commands/metrics_cmd.py:run` | 1 | - | external | 10 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 8 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
 | `src/llm_wiki_cli/config.py:validate_path` | 9 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
 | `src/llm_wiki_cli/config.py:validate_path` | 9 | - | unresolved | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 9 | - | external | 2 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 8 | - | external | 10 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 8 | - | unresolved | 3 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 8 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 6 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 8 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 27 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 2 |
-> Omission summary shows 8 of 279 groups; 271 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/config.py:validate_source_root` | 8 | - | unresolved | 5 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 8 | - | external | 11 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 27 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
+> Omission summary shows 8 of 275 groups; 267 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

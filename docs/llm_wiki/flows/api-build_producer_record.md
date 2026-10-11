@@ -6,80 +6,85 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as build_producer_record
     participant p1 as _build_component
-    participant p2 as tuple (src/llm_wiki_cli/services…e.py:build_producer_record)
-    participant p3 as sorted (src/llm_wiki_cli/services…e.py:build_producer_record)
-    participant p4 as enumerate (src/llm_wiki_cli/services…e.py:build_producer_record)
-    participant p5 as ProducerRecord
-    participant p6 as _extensions_copy
-    participant p7 as len
-    participant p8 as set (src/llm_wiki_cli/services…e.py:build_producer_record)
-    participant p9 as next
-    participant p10 as ids.count
-    participant p11 as KnowledgeEnvelopeError
-    participant p12 as isinstance (src/llm_wiki_cli/services…velope.py:_build_component)
-    participant p13 as _COMPONENT_ID_RE.fullmatch
-    participant p14 as set (src/llm_wiki_cli/services…velope.py:_build_component)
-    participant p15 as _validated_limitations
-    participant p16 as limitations.add
-    participant p17 as value.version.strip
-    participant p18 as any (src/llm_wiki_cli/services…velope.py:_build_component)
-    participant p19 as ord
+    participant p2 as ProducerRecord
+    participant p3 as _extensions_copy
+    participant p4 as KnowledgeEnvelopeError
+    participant p5 as _validated_limitations
+    participant p6 as hash_component_configuration
+    participant p7 as _hash_structured
+    participant p8 as canonical_json_bytes
+    participant p9 as _reject_machine_local_paths
+    participant p10 as ProducerComponent
+    participant p11 as _validate_json_tree
+    participant p12 as sha256_bytes
+    participant p13 as canonical_json_text
+    participant p14 as tuple (src/llm_wiki_cli/services…e.py:build_producer_record)
+    participant p15 as ids.count
+    participant p16 as sorted (src/llm_wiki_cli/services…e.py:build_producer_record)
+    participant p17 as enumerate (src/llm_wiki_cli/services…e.py:build_producer_record)
+    participant p18 as len
+    participant p19 as set (src/llm_wiki_cli/services…e.py:build_producer_record)
+    participant p20 as next
+    participant p21 as isinstance (src/llm_wiki_cli/services…velope.py:_build_component)
+    participant p22 as _COMPONENT_ID_RE.fullmatch
+    participant p23 as set (src/llm_wiki_cli/services…velope.py:_build_component)
+    participant p24 as limitations.add
     p0->>p1: _build_component
-    p0-->>p2: tuple (src/llm_wiki_cli/services…e.py:build_producer_record)(sorted(...))
-    p0-->>p3: sorted (src/llm_wiki_cli/services…e.py:build_producer_record)(..., key=...)
-    p0->>p1: _build_component
-    p0-->>p4: enumerate (src/llm_wiki_cli/services…e.py:build_producer_record)(extractors)
-    p0-->>p2: tuple (src/llm_wiki_cli/services…e.py:build_producer_record)(sorted(...))
-    p0-->>p3: sorted (src/llm_wiki_cli/services…e.py:build_producer_record)(..., key=...)
-    p0->>p1: _build_component
-    p0-->>p4: enumerate (src/llm_wiki_cli/services…e.py:build_producer_record)(plugins)
-    p0->>p5: ProducerRecord
-    p0->>p6: _extensions_copy
-    p0-->>p7: len(ids)
-    p0-->>p7: len(set(...))
-    p0-->>p8: set (src/llm_wiki_cli/services…e.py:build_producer_record)(ids)
-    p0-->>p9: next(...)
-    p0-->>p10: ids.count(item)
-    p0->>p11: KnowledgeEnvelopeError
-    p1-->>p12: isinstance (src/llm_wiki_cli/services…velope.py:_build_component)(value, ProducerComponentInput)
-    p1->>p11: KnowledgeEnvelopeError
-    p1-->>p12: isinstance (src/llm_wiki_cli/services…velope.py:_build_component)(value.component_id, str)
-    p1-->>p13: _COMPONENT_ID_RE.fullmatch(value.component_id)
-    p1->>p11: KnowledgeEnvelopeError
-    p1-->>p14: set (src/llm_wiki_cli/services…velope.py:_build_component)(_validated_limitations(...))
-    p1->>p15: _validated_limitations
-    p1-->>p16: limitations.add(VERSION_UNKNOWN)
-    p1-->>p12: isinstance (src/llm_wiki_cli/services…velope.py:_build_component)(value.version, str)
-    p1-->>p17: value.version.strip
-    p1-->>p18: any (src/llm_wiki_cli/services…velope.py:_build_component)(...)
-    p1-->>p19: ord(char)
-    p1->>p11: KnowledgeEnvelopeError
+    p0->>p2: ProducerRecord
+    p0->>p3: _extensions_copy
+    p0->>p4: KnowledgeEnvelopeError
+    p1->>p5: _validated_limitations
+    p1->>p6: hash_component_configuration
+    p6->>p7: _hash_structured
+    p7->>p8: canonical_json_bytes
+    p1->>p9: _reject_machine_local_paths
+    p1->>p10: ProducerComponent
+    p7->>p11: _validate_json_tree
+    p7->>p12: sha256_bytes
+    p8->>p13: canonical_json_text
+    p0-->>p14: tuple (src/llm_wiki_cli/services…e.py:build_producer_record)(sorted(...))
+    p0-->>p15: ids.count(item)
+    p0-->>p16: sorted (src/llm_wiki_cli/services…e.py:build_producer_record)(..., key=...)
+    p0-->>p17: enumerate (src/llm_wiki_cli/services…e.py:build_producer_record)(extractors)
+    p0-->>p14: tuple (src/llm_wiki_cli/services…e.py:build_producer_record)(sorted(...))
+    p0-->>p16: sorted (src/llm_wiki_cli/services…e.py:build_producer_record)(..., key=...)
+    p0-->>p17: enumerate (src/llm_wiki_cli/services…e.py:build_producer_record)(plugins)
+    p0-->>p18: len(ids)
+    p0-->>p18: len(set(...))
+    p0-->>p19: set (src/llm_wiki_cli/services…e.py:build_producer_record)(ids)
+    p0-->>p20: next(...)
+    p1-->>p21: isinstance (src/llm_wiki_cli/services…velope.py:_build_component)(value, ProducerComponentInput)
+    p1-->>p21: isinstance (src/llm_wiki_cli/services…velope.py:_build_component)(value.component_id, str)
+    p1-->>p22: _COMPONENT_ID_RE.fullmatch(value.component_id)
+    p1-->>p23: set (src/llm_wiki_cli/services…velope.py:_build_component)(_validated_limitations(...))
+    p1-->>p24: limitations.add(VERSION_UNKNOWN)
+    p1-->>p21: isinstance (src/llm_wiki_cli/services…velope.py:_build_component)(value.version, str)
 ```
 
 > Call sequence diagram shows 30 of 72 interactions; 42 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 16 of 31 (15 omitted); unresolved 4 of 11 (7 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 14 of 31 (17 omitted); unresolved 3 of 11 (8 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_build_component` | 2 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 6 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_validated_limitations` | 9 | - | external | 4 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_validated_limitations` | 9 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 3 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_validated_limitations` | 9 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:_build_component` | 2 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 5 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_build_component` | 2 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_build_component` | 2 | - | external | 4 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_reject_machine_local_paths` | 24 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_reject_machine_local_paths` | 24 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:_build_component` | 2 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:hash_component_configuration` | 30 | - | external | 1 |
-> Omission summary shows 8 of 23 groups; 15 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 21 groups; 13 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow

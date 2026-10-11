@@ -17,77 +17,84 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as save_governance
     participant p1 as validate_governance_ledger
-    participant p2 as validated.to_bytes
-    participant p3 as len (src/llm_wiki_cli/services…rnance.py:save_governance)
+    participant p2 as _read_governance_bytes
+    participant p3 as _write_durable_atomic
     participant p4 as GovernanceError
-    participant p5 as Path (src/llm_wiki_cli/services…rnance.py:save_governance)
-    participant p6 as first_unsafe_path_component
-    participant p7 as _read_governance_bytes
-    participant p8 as sha256_bytes
-    participant p9 as is_valid_sha256
-    participant p10 as GovernanceConflictError
-    participant p11 as GovernanceWriteResult
-    participant p12 as _write_durable_atomic
-    participant p13 as isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)
-    participant p14 as Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p15 as path.lstat
-    participant p16 as isinstance (src/llm_wiki_cli/services…idence.py:is_valid_sha256)
-    participant p17 as before_wiki_write
-    participant p18 as TypeError
-    participant p19 as os.fspath
-    participant p20 as _SHA256_RE.fullmatch (src/llm_wiki_cli/services…idence.py:is_valid_sha256)
-    participant p21 as path.parent.mkdir
-    participant p22 as getattr (src/llm_wiki_cli/services…py:_read_governance_bytes)
-    participant p23 as tempfile.mkstemp
+    participant p5 as first_unsafe_path_component
+    participant p6 as sha256_bytes
+    participant p7 as is_valid_sha256
+    participant p8 as GovernanceConflictError
+    participant p9 as GovernanceWriteResult
+    participant p10 as _bundle_id
+    participant p11 as _concept_uid
+    participant p12 as _concept_kind
+    participant p13 as _identity_value
+    participant p14 as _identity_ownership_key
+    participant p15 as _validate_lifecycle_event_fields
+    participant p16 as _validate_lifecycle_histories
+    participant p17 as _validate_review_event_fields
+    participant p18 as validate_bundle_id
+    participant p19 as validate_concept_uid
+    participant p20 as validate_concept_kind
+    participant p21 as _alias_type
+    participant p22 as identity_coordinate_key
+    participant p23 as _event_id
+    participant p24 as validate_alias_value
+    participant p25 as _existing_uid
+    participant p26 as _section_locator
+    participant p27 as _hash
+    participant p28 as _review_evidence
+    participant p29 as len (src/llm_wiki_cli/services…rnance.py:save_governance)
+    participant p30 as validated.to_bytes
     p0->>p1: validate_governance_ledger
-    p0-->>p2: validated.to_bytes
-    p0-->>p3: len (src/llm_wiki_cli/services…rnance.py:save_governance)(content)
+    p0->>p2: _read_governance_bytes
+    p0->>p3: _write_durable_atomic
     p0->>p4: GovernanceError
-    p0-->>p5: Path (src/llm_wiki_cli/services…rnance.py:save_governance)(wiki_dir)
-    p0->>p6: first_unsafe_path_component
-    p0->>p4: GovernanceError
-    p0->>p7: _read_governance_bytes
-    p0->>p8: sha256_bytes
-    p0->>p9: is_valid_sha256
-    p0->>p4: GovernanceError
-    p0->>p10: GovernanceConflictError
-    p0->>p8: sha256_bytes
-    p0->>p11: GovernanceWriteResult
-    p0->>p12: _write_durable_atomic
-    p0->>p11: GovernanceWriteResult
-    p1-->>p13: isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)(ledger, GovernanceLedger)
-    p6-->>p14: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)(os.fspath(...))
-    p7-->>p15: path.lstat
-    p9-->>p16: isinstance (src/llm_wiki_cli/services…idence.py:is_valid_sha256)(value, str)
-    p12->>p17: before_wiki_write
-    p1-->>p18: TypeError('ledger must be a GovernanceLedger')
-    p6-->>p19: os.fspath(path)
-    p7->>p4: GovernanceError
-    p9-->>p20: _SHA256_RE.fullmatch (src/llm_wiki_cli/services…idence.py:is_valid_sha256)(value)
-    p12-->>p21: path.parent.mkdir(parents=True, exist_ok=True)
-    p1->>p4: GovernanceError
-    p6-->>p14: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)(os.path.abspath(...))
-    p7-->>p22: getattr (src/llm_wiki_cli/services…py:_read_governance_bytes)(metadata, 'st_file_attributes', 0)
-    p12-->>p23: tempfile.mkstemp(dir=path.parent, prefix=..., suffix='.tmp')
+    p0->>p5: first_unsafe_path_component
+    p0->>p6: sha256_bytes
+    p0->>p7: is_valid_sha256
+    p0->>p8: GovernanceConflictError
+    p0->>p9: GovernanceWriteResult
+    p1->>p10: _bundle_id
+    p1->>p11: _concept_uid
+    p1->>p12: _concept_kind
+    p1->>p13: _identity_value
+    p1->>p14: _identity_ownership_key
+    p1->>p15: _validate_lifecycle_event_fields
+    p1->>p16: _validate_lifecycle_histories
+    p1->>p17: _validate_review_event_fields
+    p10->>p18: validate_bundle_id
+    p11->>p19: validate_concept_uid
+    p12->>p20: validate_concept_kind
+    p13->>p21: _alias_type
+    p14->>p22: identity_coordinate_key
+    p15->>p23: _event_id
+    p13->>p24: validate_alias_value
+    p15->>p25: _existing_uid
+    p17->>p26: _section_locator
+    p17->>p27: _hash
+    p17->>p28: _review_evidence
+    p0-->>p29: len (src/llm_wiki_cli/services…rnance.py:save_governance)(content)
+    p0-->>p30: validated.to_bytes
 ```
 
 > Call sequence diagram shows 30 of 414 interactions; 384 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 10 of 116 (106 omitted); unresolved 4 of 96 (92 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 116 (115 omitted); unresolved 1 of 96 (95 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_governance.py:validate_governance_ledger` | 2 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 26 |
-| `src/llm_wiki_cli/services/knowledge_governance.py:_bundle_id` | 6 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 1 |
+| `src/llm_wiki_cli/services/knowledge_governance.py:validate_governance_ledger` | 2 | - | external | 15 |
+| `src/llm_wiki_cli/services/knowledge_governance.py:validate_governance_ledger` | 2 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 19 |
 | `src/llm_wiki_cli/services/concept_identity.py:validate_bundle_id` | 7 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 4 |
 | `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 8 | - | external | 6 |
 | `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 8 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 5 |

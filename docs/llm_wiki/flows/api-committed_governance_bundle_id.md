@@ -37,7 +37,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -46,79 +46,82 @@ sequenceDiagram
     participant p1 as _previous_committed_artifacts
     participant p2 as governance_bundle_id_from_knowledge
     participant p3 as capture_committed_knowledge
-    participant p4 as validate_governance_projection
-    participant p5 as state.require_for
-    participant p6 as isinstance (src/llm_wiki_cli/services…_bundle_id_from_knowledge)
-    participant p7 as Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge)
-    participant p8 as Path (src/llm_wiki_cli/services…pture_committed_knowledge)
-    participant p9 as guard_maintenance_owner
-    participant p10 as (…).read_bytes
-    participant p11 as SyncManifest.from_payload
-    participant p12 as _decode_json_object
-    participant p13 as read_guarded (src/llm_wiki_cli/services…pture_committed_knowledge)
-    participant p14 as recorded_manifest.to_payload
-    participant p15 as manifest.to_payload (src/llm_wiki_cli/services…pture_committed_knowledge)
-    participant p16 as KnowledgeArtifactError
-    participant p17 as validate_knowledge_artifacts
-    participant p18 as captured.update
-    participant p19 as isinstance (src/llm_wiki_cli/services…pture_committed_knowledge)
-    participant p20 as exc.field.split
-    participant p21 as CommittedKnowledgeState
-    participant p22 as freeze
-    participant p23 as object.__setattr__ (src/llm_wiki_cli/services…pture_committed_knowledge)
-    participant p24 as _absolute_path
-    participant p25 as isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)
-    participant p26 as validate_surface_index_bytes
-    participant p27 as Path (src/llm_wiki_cli/services…y:guard_maintenance_owner)
+    participant p4 as guard_maintenance_owner
+    participant p5 as _decode_json_object
+    participant p6 as validate_knowledge_artifacts
+    participant p7 as _absolute_path
+    participant p8 as validate_surface_index_bytes
+    participant p9 as load_adoption_marker
+    participant p10 as SyncManifest.load
+    participant p11 as _require_validation_receipt
+    participant p12 as _unique_json_object
+    participant p13 as _reject_json_constant
+    participant p14 as freeze
+    participant p15 as open_knowledge_store
+    participant p16 as _validated_index_serialization
+    participant p17 as logical_digest
+    participant p18 as typed_graph_from_knowledge_extensions
+    participant p19 as validate_section_ownership
+    participant p20 as _validate_surface_knowledge_parity
+    participant p21 as _validate_manifest_knowledge_parity
+    participant p22 as validate_reuse_artifact_parity
+    participant p23 as governance_hash_from_knowledge
+    participant p24 as _section_object
+    participant p25 as validate_governance_projection
+    participant p26 as _validate_surface_payload
+    participant p27 as validate_knowledge_index
+    participant p28 as _section_fields
+    participant p29 as isinstance (src/llm_wiki_cli/services…_bundle_id_from_knowledge)
+    participant p30 as state.require_for
     p0->>p1: _previous_committed_artifacts
     p0->>p2: governance_bundle_id_from_knowledge
     p1->>p3: capture_committed_knowledge
-    p2->>p4: validate_governance_projection
-    p1-->>p5: state.require_for(wiki_dir)
-    p2-->>p6: isinstance (src/llm_wiki_cli/services…_bundle_id_from_knowledge)(value, str)
-    p3-->>p7: Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge)
-    p3-->>p8: Path (src/llm_wiki_cli/services…pture_committed_knowledge)(wiki_dir)
-    p3->>p9: guard_maintenance_owner
-    p3-->>p10: (…).read_bytes
-    p3->>p11: SyncManifest.from_payload
-    p3->>p12: _decode_json_object
-    p3-->>p13: read_guarded (src/llm_wiki_cli/services…pture_committed_knowledge)(..., maximum)
-    p3-->>p14: recorded_manifest.to_payload
-    p3-->>p15: manifest.to_payload (src/llm_wiki_cli/services…pture_committed_knowledge)
-    p3->>p16: KnowledgeArtifactError
-    p3->>p17: validate_knowledge_artifacts
-    p3-->>p18: captured.update(candidate.storage_objects)
-    p3-->>p19: isinstance (src/llm_wiki_cli/services…pture_committed_knowledge)(exc, KnowledgeArtifactError)
-    p3-->>p20: exc.field.split('.')
-    p3->>p16: KnowledgeArtifactError
-    p3->>p16: KnowledgeArtifactError
-    p3->>p16: KnowledgeArtifactError
-    p3->>p21: CommittedKnowledgeState
-    p3->>p22: freeze
-    p3-->>p23: object.__setattr__ (src/llm_wiki_cli/services…pture_committed_knowledge)(state, '_issued', _COMMITTED_STATE_TOKEN)
-    p9->>p24: _absolute_path
-    p12-->>p25: isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)(content, bytes)
-    p17->>p26: validate_surface_index_bytes
-    p9-->>p27: Path (src/llm_wiki_cli/services…y:guard_maintenance_owner)(wiki_dir)
+    p3->>p4: guard_maintenance_owner
+    p3->>p5: _decode_json_object
+    p3->>p6: validate_knowledge_artifacts
+    p4->>p7: _absolute_path
+    p6->>p8: validate_surface_index_bytes
+    p4->>p9: load_adoption_marker
+    p4->>p10: SyncManifest.load
+    p6->>p11: _require_validation_receipt
+    p5->>p12: _unique_json_object
+    p5->>p13: _reject_json_constant
+    p6->>p14: freeze
+    p6->>p15: open_knowledge_store
+    p6->>p16: _validated_index_serialization
+    p6->>p17: logical_digest
+    p6->>p18: typed_graph_from_knowledge_extensions
+    p6->>p19: validate_section_ownership
+    p6->>p20: _validate_surface_knowledge_parity
+    p6->>p21: _validate_manifest_knowledge_parity
+    p6->>p22: validate_reuse_artifact_parity
+    p6->>p23: governance_hash_from_knowledge
+    p19->>p24: _section_object
+    p23->>p25: validate_governance_projection
+    p8->>p26: _validate_surface_payload
+    p16->>p27: validate_knowledge_index
+    p19->>p28: _section_fields
+    p2-->>p29: isinstance (src/llm_wiki_cli/services…_bundle_id_from_knowledge)(value, str)
+    p1-->>p30: state.require_for(wiki_dir)
 ```
 
 > Call sequence diagram shows 30 of 874 interactions; 844 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 6 of 289 (283 omitted); unresolved 8 of 159 (151 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 289 (288 omitted); unresolved 1 of 159 (158 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/knowledge_orchestration.py:capture_committed_knowledge` | 3 | - | unresolved | 7 |
+| `src/llm_wiki_cli/services/knowledge_orchestration.py:capture_committed_knowledge` | 3 | - | external | 3 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 7 | - | external | 4 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 7 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 10 | - | external | 20 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 10 | - | unresolved | 5 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 7 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 7 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/maintenance_protocol.py:guard_maintenance_owner` | 6 | [src/llm_wiki_cli/services/maintenance_protocol.py](../modules/maintenance_protocol.md) | internal | 8 |
-| `src/llm_wiki_cli/services/maintenance_protocol.py:load_adoption_marker` | 43 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 2 |
-> Omission summary shows 8 of 175 groups; 167 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 176 groups; 168 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

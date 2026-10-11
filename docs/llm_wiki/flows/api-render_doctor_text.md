@@ -6,80 +6,80 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as render_doctor_text
     participant p1 as _render_doctor_payload
-    participant p2 as report.to_payload
-    participant p3 as isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)
-    participant p4 as _format_counts
-    participant p5 as lines.append
-    participant p6 as lines.extend
-    participant p7 as ', '.join (src/llm_wiki_cli/services….py:_render_doctor_payload)
-    participant p8 as summary_cell
-    participant p9 as detailed_health_rows
-    participant p10 as '\n'.join
-    participant p11 as isinstance (src/llm_wiki_cli/services…_service.py:_format_counts)
-    participant p12 as len (src/llm_wiki_cli/services…th_summary.py:summary_cell)
-    participant p13 as report.get
-    participant p14 as ', '.join (src/llm_wiki_cli/services…_service.py:_format_counts)
-    participant p15 as ValueError
-    participant p16 as primary.sort
-    participant p17 as str
-    participant p18 as ' '.join (src/llm_wiki_cli/services…ry.py:detailed_health_rows)
-    participant p19 as unicodedata.category
-    participant p20 as len (src/llm_wiki_cli/services…ry.py:detailed_health_rows)
+    participant p2 as detailed_health_rows
+    participant p3 as _format_counts
+    participant p4 as summary_cell
+    participant p5 as freshness_counts
+    participant p6 as _versions
+    participant p7 as isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)
+    participant p8 as report.to_payload
+    participant p9 as lines.append
+    participant p10 as lines.extend
+    participant p11 as ', '.join (src/llm_wiki_cli/services….py:_render_doctor_payload)
+    participant p12 as '\n'.join
+    participant p13 as isinstance (src/llm_wiki_cli/services…_service.py:_format_counts)
+    participant p14 as len (src/llm_wiki_cli/services…th_summary.py:summary_cell)
+    participant p15 as report.get
+    participant p16 as ', '.join (src/llm_wiki_cli/services…_service.py:_format_counts)
+    participant p17 as ValueError
+    participant p18 as primary.sort
+    participant p19 as str
+    participant p20 as ' '.join (src/llm_wiki_cli/services…ry.py:detailed_health_rows)
     p0->>p1: _render_doctor_payload
-    p0-->>p2: report.to_payload(report_schema=report_schema)
-    p1-->>p3: isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)(availability, Mapping)
-    p1-->>p3: isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)(freshness, Mapping)
-    p1-->>p3: isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)(snapshot, Mapping)
-    p1-->>p3: isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)(governance, Mapping)
-    p1-->>p3: isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)(drift, Mapping)
-    p1-->>p3: isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)(verification, Mapping)
-    p1->>p4: _format_counts
-    p1-->>p5: lines.append(...)
-    p1-->>p6: lines.extend([...])
-    p1-->>p5: lines.append(...)
-    p1-->>p5: lines.append(...)
-    p1-->>p7: ', '.join (src/llm_wiki_cli/services….py:_render_doctor_payload)(payload[...])
-    p1-->>p5: lines.append(...)
-    p1-->>p7: ', '.join (src/llm_wiki_cli/services….py:_render_doctor_payload)(payload[...])
-    p1-->>p6: lines.extend(...)
-    p1->>p8: summary_cell
-    p1->>p9: detailed_health_rows
-    p1-->>p10: '\n'.join(lines)
-    p4-->>p11: isinstance (src/llm_wiki_cli/services…_service.py:_format_counts)(value, Mapping)
-    p8-->>p12: len (src/llm_wiki_cli/services…th_summary.py:summary_cell)(marker)
-    p9-->>p13: report.get('health_details')
-    p4-->>p14: ', '.join (src/llm_wiki_cli/services…_service.py:_format_counts)(...)
-    p8-->>p15: ValueError('summary cell limit is too small')
-    p9-->>p16: primary.sort(key=...)
-    p8-->>p17: str(value)
-    p9-->>p18: ' '.join (src/llm_wiki_cli/services…ry.py:detailed_health_rows)(...)
-    p8-->>p19: unicodedata.category(character)
-    p9-->>p20: len (src/llm_wiki_cli/services…ry.py:detailed_health_rows)(primary)
+    p1->>p2: detailed_health_rows
+    p1->>p3: _format_counts
+    p1->>p4: summary_cell
+    p2->>p5: freshness_counts
+    p2->>p6: _versions
+    p1-->>p7: isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)(availability, Mapping)
+    p0-->>p8: report.to_payload(report_schema=report_schema)
+    p1-->>p7: isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)(freshness, Mapping)
+    p1-->>p7: isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)(snapshot, Mapping)
+    p1-->>p7: isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)(governance, Mapping)
+    p1-->>p7: isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)(drift, Mapping)
+    p1-->>p7: isinstance (src/llm_wiki_cli/services….py:_render_doctor_payload)(verification, Mapping)
+    p1-->>p9: lines.append(...)
+    p1-->>p10: lines.extend([...])
+    p1-->>p9: lines.append(...)
+    p1-->>p9: lines.append(...)
+    p1-->>p11: ', '.join (src/llm_wiki_cli/services….py:_render_doctor_payload)(payload[...])
+    p1-->>p9: lines.append(...)
+    p1-->>p11: ', '.join (src/llm_wiki_cli/services….py:_render_doctor_payload)(payload[...])
+    p1-->>p10: lines.extend(...)
+    p1-->>p12: '\n'.join(lines)
+    p3-->>p13: isinstance (src/llm_wiki_cli/services…_service.py:_format_counts)(value, Mapping)
+    p4-->>p14: len (src/llm_wiki_cli/services…th_summary.py:summary_cell)(marker)
+    p2-->>p15: report.get('health_details')
+    p3-->>p16: ', '.join (src/llm_wiki_cli/services…_service.py:_format_counts)(...)
+    p4-->>p17: ValueError('summary cell limit is too small')
+    p2-->>p18: primary.sort(key=...)
+    p4-->>p19: str(value)
+    p2-->>p20: ' '.join (src/llm_wiki_cli/services…ry.py:detailed_health_rows)(...)
 ```
 
 > Call sequence diagram shows 30 of 64 interactions; 34 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 12 of 21 (9 omitted); unresolved 14 of 36 (22 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 10 of 21 (11 omitted); unresolved 14 of 36 (22 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/health_summary.py:summary_cell` | 20 | - | external | 3 |
+| `src/llm_wiki_cli/services/health_summary.py:summary_cell` | 20 | - | external | 4 |
 | `src/llm_wiki_cli/services/health_summary.py:summary_cell` | 20 | - | unresolved | 8 |
-| `src/llm_wiki_cli/services/health_summary.py:detailed_health_rows` | 36 | - | external | 1 |
+| `src/llm_wiki_cli/services/health_summary.py:detailed_health_rows` | 36 | - | external | 2 |
 | `src/llm_wiki_cli/services/health_summary.py:detailed_health_rows` | 36 | - | unresolved | 6 |
-| `src/llm_wiki_cli/services/health_summary.py:detailed_health_rows` | 36 | [src/llm_wiki_cli/services/health_summary.py](../modules/health_summary.md) | internal | 3 |
 | `src/llm_wiki_cli/services/health_summary.py:freshness_counts` | 47 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/health_summary.py:_versions` | 49 | - | external | 5 |
 | `src/llm_wiki_cli/services/health_summary.py:_versions` | 49 | - | unresolved | 7 |
+| `src/llm_wiki_cli/services/health_summary.py:detailed_health_rows` | 36 | [src/llm_wiki_cli/services/health_summary.py](../modules/health_summary.md) | internal | 1 |
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow

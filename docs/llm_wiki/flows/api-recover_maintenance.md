@@ -42,84 +42,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as recover_maintenance
-    participant p1 as type (src/llm_wiki_cli/api.py:recover_maintenance)
-    participant p2 as ValueError (src/llm_wiki_cli/api.py:recover_maintenance)
-    participant p3 as _identity (src/llm_wiki_cli/services/maintenance_state.py)
-    participant p4 as cast (src/llm_wiki_cli/api.py:recover_maintenance)
-    participant p5 as recover_maintenance_authority
-    participant p6 as _validate_wiki_dir
-    participant p7 as UUID
-    participant p8 as _absolute_path
-    participant p9 as validate_path
-    participant p10 as MaintenanceError
-    participant p11 as require
-    participant p12 as load_recovery_snapshot
-    participant p13 as str (src/llm_wiki_cli/services…enance_state.py:_identity)
-    participant p14 as MaintenanceProtocolError
-    participant p15 as governance_writer_lock
-    participant p16 as storage_writer_lock
-    participant p17 as load_adoption_marker
-    participant p18 as SyncManifest.load
-    participant p19 as maintenance_state_hash
-    participant p20 as json.loads (src/llm_wiki_cli/services…ver_maintenance_authority)
-    participant p21 as read_guarded
-    participant p22 as isinstance (src/llm_wiki_cli/services…ver_maintenance_authority)
-    participant p23 as set (src/llm_wiki_cli/services…ver_maintenance_authority)
-    p0-->>p1: type (src/llm_wiki_cli/api.py:recover_maintenance)(allow_prepared_adoption)
-    p0-->>p1: type (src/llm_wiki_cli/api.py:recover_maintenance)(allow_captured_preimage)
-    p0-->>p2: ValueError (src/llm_wiki_cli/api.py:recover_maintenance)('Maintenance recovery modes must be booleans')
-    p0->>p3: _identity (src/llm_wiki_cli/services/maintenance_state.py)
-    p0-->>p4: cast (src/llm_wiki_cli/api.py:recover_maintenance)(MaintenanceRecoveryResult, recover_maintenance_authority(...))
-    p0->>p5: recover_maintenance_authority
-    p0->>p6: _validate_wiki_dir
-    p3-->>p7: UUID(value)
-    p5->>p8: _absolute_path
-    p6->>p9: validate_path
-    p3->>p10: MaintenanceError
-    p5->>p8: _absolute_path
-    p3->>p11: require
-    p5->>p12: load_recovery_snapshot
-    p3-->>p13: str (src/llm_wiki_cli/services…enance_state.py:_identity)(parsed)
-    p5->>p14: MaintenanceProtocolError
-    p5->>p14: MaintenanceProtocolError
-    p5->>p15: governance_writer_lock
-    p5->>p16: storage_writer_lock
-    p5->>p17: load_adoption_marker
-    p5->>p14: MaintenanceProtocolError
-    p5->>p18: SyncManifest.load
-    p5->>p19: maintenance_state_hash
-    p5->>p19: maintenance_state_hash
-    p5->>p14: MaintenanceProtocolError
-    p5->>p14: MaintenanceProtocolError
-    p5-->>p20: json.loads (src/llm_wiki_cli/services…ver_maintenance_authority)(..., object_pairs_hook=_pairs, parse_constant=_constant)
-    p5->>p21: read_guarded
-    p5-->>p22: isinstance (src/llm_wiki_cli/services…ver_maintenance_authority)(intent, dict)
-    p5-->>p23: set (src/llm_wiki_cli/services…ver_maintenance_authority)(intent)
+    participant p1 as _identity (src/llm_wiki_cli/services/maintenance_state.py)
+    participant p2 as recover_maintenance_authority
+    participant p3 as _validate_wiki_dir
+    participant p4 as _absolute_path
+    participant p5 as validate_path
+    participant p6 as require
+    participant p7 as load_recovery_snapshot
+    participant p8 as governance_writer_lock
+    participant p9 as storage_writer_lock
+    participant p10 as load_adoption_marker
+    participant p11 as SyncManifest.load
+    participant p12 as build_source_snapshot
+    participant p13 as hash_source_snapshot
+    participant p14 as snapshot_wiki
+    participant p15 as _capture_basis
+    participant p16 as atomic_write_guarded_bytes
+    participant p17 as unlink_guarded_bytes
+    participant p18 as ensure_guarded_directory
+    participant p19 as guard_maintenance_owner
+    participant p20 as _load_recovery_snapshot
+    participant p21 as _validate_capture_options
+    participant p22 as _unlink_guarded_bytes
+    participant p23 as _resolve_snapshot_selection
+    participant p24 as _normalize_only_files
+    participant p25 as governance_lock
+    participant p26 as _atomic_write_guarded_bytes_windows
+    participant p27 as _empty_source_snapshot
+    participant p28 as _hash_structured
+    participant p29 as type (src/llm_wiki_cli/api.py:recover_maintenance)
+    participant p30 as intent.get
+    p0->>p1: _identity (src/llm_wiki_cli/services/maintenance_state.py)
+    p0->>p2: recover_maintenance_authority
+    p0->>p3: _validate_wiki_dir
+    p2->>p4: _absolute_path
+    p3->>p5: validate_path
+    p1->>p6: require
+    p2->>p7: load_recovery_snapshot
+    p2->>p8: governance_writer_lock
+    p2->>p9: storage_writer_lock
+    p2->>p10: load_adoption_marker
+    p2->>p11: SyncManifest.load
+    p2->>p12: build_source_snapshot
+    p2->>p13: hash_source_snapshot
+    p2->>p14: snapshot_wiki
+    p2->>p15: _capture_basis
+    p2->>p16: atomic_write_guarded_bytes
+    p2->>p17: unlink_guarded_bytes
+    p2->>p18: ensure_guarded_directory
+    p2->>p19: guard_maintenance_owner
+    p7->>p20: _load_recovery_snapshot
+    p12->>p21: _validate_capture_options
+    p17->>p22: _unlink_guarded_bytes
+    p12->>p23: _resolve_snapshot_selection
+    p12->>p24: _normalize_only_files
+    p8->>p25: governance_lock
+    p16->>p26: _atomic_write_guarded_bytes_windows
+    p12->>p27: _empty_source_snapshot
+    p13->>p28: _hash_structured
+    p0-->>p29: type (src/llm_wiki_cli/api.py:recover_maintenance)(allow_prepared_adoption)
+    p2-->>p30: intent.get('adoption_id')
 ```
 
 > Call sequence diagram shows 30 of 1793 interactions; 1763 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 9 of 602 (593 omitted); unresolved 0 of 393 (393 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 602 (601 omitted); unresolved 1 of 393 (392 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/api.py:recover_maintenance` | 1 | - | external | 3 |
+| `src/llm_wiki_cli/services/maintenance_state.py:_identity` | 5 | - | external | 2 |
+| `src/llm_wiki_cli/services/maintenance_state.py:_identity` | 5 | [src/llm_wiki_cli/services/maintenance_shapes.py](../modules/maintenance_shapes.md) | internal | 1 |
 | `src/llm_wiki_cli/services/maintenance_shapes.py:require` | 8 | [src/llm_wiki_cli/services/maintenance_shapes.py](../modules/maintenance_shapes.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 13 | - | external | 4 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 13 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 16 | - | external | 20 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 16 | - | unresolved | 5 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 13 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 13 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/maintenance_service.py:load_recovery_snapshot` | 49 | [src/llm_wiki_cli/services/maintenance_service.py](../modules/maintenance_service.md) | internal | 1 |
-> Omission summary shows 8 of 420 groups; 412 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 419 groups; 411 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

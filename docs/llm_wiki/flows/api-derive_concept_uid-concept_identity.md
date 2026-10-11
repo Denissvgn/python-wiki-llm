@@ -6,7 +6,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -15,61 +15,67 @@ sequenceDiagram
     participant p1 as validate_bundle_id
     participant p2 as validate_concept_kind
     participant p3 as validate_natural_key
-    participant p4 as json.dumps(…).encode
-    participant p5 as json.dumps
-    participant p6 as hashlib.sha256(…).hexdigest
-    participant p7 as hashlib.sha256
-    participant p8 as _uid_tag
-    participant p9 as _machine_text
-    participant p10 as _UID_TAG_BY_KIND.get
-    participant p11 as _BUNDLE_ID_RE.fullmatch
-    participant p12 as _QUALIFIED_KIND_RE.fullmatch
-    participant p13 as text.partition
-    participant p14 as text.casefold
-    participant p15 as ConceptIdentityError
-    participant p16 as _NATURAL_KEY_PREFIX_RE.fullmatch
-    participant p17 as _looks_absolute_path
-    participant p18 as _NATURAL_KEY_PAYLOAD_RE.fullmatch
-    participant p19 as _contains_uri_userinfo
-    participant p20 as _INVALID_PERCENT_RE.search
-    participant p21 as _PERCENT_ESCAPE_RE.finditer
-    participant p22 as match.group
-    participant p23 as match.group(…).upper
+    participant p4 as _uid_tag
+    participant p5 as _machine_text
+    participant p6 as _safe_decoded_coordinate
+    participant p7 as ConceptIdentityError
+    participant p8 as _looks_absolute_path
+    participant p9 as _contains_uri_userinfo
+    participant p10 as _contains_coordinate_userinfo
+    participant p11 as json.dumps
+    participant p12 as json.dumps(…).encode
+    participant p13 as hashlib.sha256(…).hexdigest
+    participant p14 as hashlib.sha256
+    participant p15 as _UID_TAG_BY_KIND.get
+    participant p16 as _BUNDLE_ID_RE.fullmatch
+    participant p17 as _QUALIFIED_KIND_RE.fullmatch
+    participant p18 as text.partition
+    participant p19 as text.casefold
+    participant p20 as _NATURAL_KEY_PREFIX_RE.fullmatch
+    participant p21 as _NATURAL_KEY_PAYLOAD_RE.fullmatch
+    participant p22 as _INVALID_PERCENT_RE.search
+    participant p23 as _PERCENT_ESCAPE_RE.finditer
+    participant p24 as match.group
+    participant p25 as match.group(…).upper
+    participant p26 as unquote
+    participant p27 as quote
+    participant p28 as _URI_SCHEME_RE.match
+    participant p29 as decoded.split
     p0->>p1: validate_bundle_id
     p0->>p2: validate_concept_kind
     p0->>p3: validate_natural_key
-    p0-->>p4: json.dumps(…).encode('utf-8')
-    p0-->>p5: json.dumps({...}, ensure_ascii=False, separators=(...), sort_keys=True, allow_nan=False)
-    p0-->>p6: hashlib.sha256(…).hexdigest
-    p0-->>p7: hashlib.sha256(encoded)
-    p0->>p8: _uid_tag
-    p1->>p9: _machine_text
-    p2->>p9: _machine_text
-    p3->>p9: _machine_text
-    p8-->>p10: _UID_TAG_BY_KIND.get(concept_kind, 'concept')
-    p1-->>p11: _BUNDLE_ID_RE.fullmatch(text)
-    p2-->>p12: _QUALIFIED_KIND_RE.fullmatch(text)
-    p3-->>p13: text.partition(':')
-    p1-->>p14: text.casefold
-    p2->>p15: ConceptIdentityError
-    p3-->>p16: _NATURAL_KEY_PREFIX_RE.fullmatch(prefix)
-    p1->>p17: _looks_absolute_path
-    p3-->>p18: _NATURAL_KEY_PAYLOAD_RE.fullmatch(payload)
-    p1->>p19: _contains_uri_userinfo
-    p3->>p15: ConceptIdentityError
-    p1->>p15: ConceptIdentityError
-    p3-->>p20: _INVALID_PERCENT_RE.search(payload)
-    p3->>p15: ConceptIdentityError
-    p3-->>p21: _PERCENT_ESCAPE_RE.finditer(payload)
-    p3-->>p22: match.group(1)
-    p3-->>p23: match.group(…).upper
-    p3-->>p22: match.group(1)
-    p3->>p15: ConceptIdentityError
+    p0->>p4: _uid_tag
+    p1->>p5: _machine_text
+    p3->>p6: _safe_decoded_coordinate
+    p2->>p7: ConceptIdentityError
+    p1->>p8: _looks_absolute_path
+    p1->>p9: _contains_uri_userinfo
+    p3->>p10: _contains_coordinate_userinfo
+    p0-->>p11: json.dumps({...}, ensure_ascii=False, separators=(...), sort_keys=True, allow_nan=False)
+    p0-->>p12: json.dumps(…).encode('utf-8')
+    p0-->>p13: hashlib.sha256(…).hexdigest
+    p0-->>p14: hashlib.sha256(encoded)
+    p4-->>p15: _UID_TAG_BY_KIND.get(concept_kind, 'concept')
+    p1-->>p16: _BUNDLE_ID_RE.fullmatch(text)
+    p2-->>p17: _QUALIFIED_KIND_RE.fullmatch(text)
+    p3-->>p18: text.partition(':')
+    p1-->>p19: text.casefold
+    p3-->>p20: _NATURAL_KEY_PREFIX_RE.fullmatch(prefix)
+    p3-->>p21: _NATURAL_KEY_PAYLOAD_RE.fullmatch(payload)
+    p3-->>p22: _INVALID_PERCENT_RE.search(payload)
+    p3-->>p23: _PERCENT_ESCAPE_RE.finditer(payload)
+    p3-->>p24: match.group(1)
+    p3-->>p25: match.group(…).upper
+    p3-->>p24: match.group(1)
+    p3-->>p26: unquote(payload, encoding='utf-8', errors='strict')
+    p3-->>p27: quote(decoded, safe=_NATURAL_KEY_QUOTE_SAFE)
+    p3-->>p28: _URI_SCHEME_RE.match(decoded)
+    p3-->>p29: decoded.split(' ', 1)
 ```
 
 > Call sequence diagram shows 30 of 77 interactions; 47 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 2 of 16 (14 omitted); unresolved 14 of 28 (14 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 4 of 16 (12 omitted); unresolved 16 of 28 (12 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -80,10 +86,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 3 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/concept_identity.py:_looks_absolute_path` | 20 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/concept_identity.py:_contains_uri_userinfo` | 23 | - | external | 1 |
-| `src/llm_wiki_cli/services/concept_identity.py:validate_natural_key` | 30 | - | external | 3 |
-| `src/llm_wiki_cli/services/concept_identity.py:validate_natural_key` | 30 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 11 |
-| `src/llm_wiki_cli/services/concept_identity.py:_safe_decoded_coordinate` | 45 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 3 |
-> Omission summary shows 8 of 13 groups; 5 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/concept_identity.py:validate_bundle_id` | 2 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 1 |
+| `src/llm_wiki_cli/services/concept_identity.py:validate_concept_kind` | 26 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 1 |
+| `src/llm_wiki_cli/services/concept_identity.py:validate_natural_key` | 30 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 13 |
+> Omission summary shows 8 of 15 groups; 7 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow

@@ -17,7 +17,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -27,61 +27,67 @@ sequenceDiagram
     participant p2 as strip_governance_projection
     participant p3 as validate_governance_ledger
     participant p4 as concept_references_from_knowledge
-    participant p5 as current.concepts.values
-    participant p6 as set (src/llm_wiki_cli/services…ply_governance_projection)
-    participant p7 as min (src/llm_wiki_cli/services…ply_governance_projection)
-    participant p8 as GovernanceError
-    participant p9 as lifecycle_state_by_uid
-    participant p10 as defaultdict (src/llm_wiki_cli/services…ply_governance_projection)
-    participant p11 as current.aliases.values
-    participant p12 as aliases_by_uid[…].append
-    participant p13 as current.lifecycle_events.values (src/llm_wiki_cli/services…ply_governance_projection)
-    participant p14 as lifecycle_by_uid[…].append
-    participant p15 as current.review_events.values
-    participant p16 as reviews_by_uid[…].append
-    participant p17 as _lifecycle_event_summary
-    participant p18 as _ordered_lifecycle_events
-    participant p19 as sorted (src/llm_wiki_cli/services…ply_governance_projection)
-    participant p20 as evaluate_review_event
-    participant p21 as review_items.append
-    participant p22 as _review_event_summary
-    participant p23 as _bounded_event_payload
-    participant p24 as dict (src/llm_wiki_cli/services…ply_governance_projection)
+    participant p5 as lifecycle_state_by_uid
+    participant p6 as evaluate_review_event
+    participant p7 as _add_supersession_edges
+    participant p8 as validate_governance_projection
+    participant p9 as GovernanceError
+    participant p10 as _lifecycle_event_summary
+    participant p11 as _ordered_lifecycle_events
+    participant p12 as _review_event_summary
+    participant p13 as _bounded_event_payload
+    participant p14 as _bundle_id
+    participant p15 as natural_key_for (src/llm_wiki_cli/services/knowledge_governance.py)
+    participant p16 as materialize_typed_graph
+    participant p17 as _validated_references
+    participant p18 as _object (src/llm_wiki_cli/services/knowledge_governance.py)
+    participant p19 as _exact_fields
+    participant p20 as _concept_uid
+    participant p21 as _concept_kind
+    participant p22 as current_review_evidence
+    participant p23 as validate_typed_graph
+    participant p24 as _identity_value
+    participant p25 as _identity_ownership_key
+    participant p26 as _validate_concept_summary
+    participant p27 as _validate_lifecycle_event_fields
+    participant p28 as _validate_lifecycle_histories
+    participant p29 as set (src/llm_wiki_cli/services…ply_governance_projection)
+    participant p30 as current.concepts.values
     p0->>p1: _event_limit
     p0->>p2: strip_governance_projection
     p0->>p3: validate_governance_ledger
     p0->>p4: concept_references_from_knowledge
-    p0-->>p5: current.concepts.values
-    p0-->>p6: set (src/llm_wiki_cli/services…ply_governance_projection)(active_by_locator)
-    p0-->>p6: set (src/llm_wiki_cli/services…ply_governance_projection)(allocations_by_locator)
-    p0-->>p7: min (src/llm_wiki_cli/services…ply_governance_projection)(missing)
-    p0->>p8: GovernanceError
-    p0->>p9: lifecycle_state_by_uid
-    p0-->>p10: defaultdict (src/llm_wiki_cli/services…ply_governance_projection)(list)
-    p0-->>p11: current.aliases.values
-    p0-->>p12: aliases_by_uid[…].append(alias)
-    p0-->>p10: defaultdict (src/llm_wiki_cli/services…ply_governance_projection)(list)
-    p0-->>p13: current.lifecycle_events.values (src/llm_wiki_cli/services…ply_governance_projection)
-    p0-->>p14: lifecycle_by_uid[…].append(event)
-    p0-->>p10: defaultdict (src/llm_wiki_cli/services…ply_governance_projection)(list)
-    p0-->>p15: current.review_events.values
-    p0-->>p16: reviews_by_uid[…].append(event)
-    p0->>p8: GovernanceError
-    p0->>p17: _lifecycle_event_summary
-    p0->>p18: _ordered_lifecycle_events
-    p0-->>p19: sorted (src/llm_wiki_cli/services…ply_governance_projection)(reviews_by_uid[...], key=...)
-    p0->>p20: evaluate_review_event
-    p0-->>p21: review_items.append(_review_event_summary(...))
-    p0->>p22: _review_event_summary
-    p0-->>p19: sorted (src/llm_wiki_cli/services…ply_governance_projection)(aliases_by_uid[...], key=...)
-    p0->>p23: _bounded_event_payload
-    p0->>p23: _bounded_event_payload
-    p0-->>p24: dict (src/llm_wiki_cli/services…ply_governance_projection)(concept.extensions)
+    p0->>p5: lifecycle_state_by_uid
+    p0->>p6: evaluate_review_event
+    p0->>p7: _add_supersession_edges
+    p0->>p8: validate_governance_projection
+    p0->>p9: GovernanceError
+    p0->>p10: _lifecycle_event_summary
+    p0->>p11: _ordered_lifecycle_events
+    p0->>p12: _review_event_summary
+    p0->>p13: _bounded_event_payload
+    p3->>p14: _bundle_id
+    p4->>p15: natural_key_for (src/llm_wiki_cli/services/knowledge_governance.py)
+    p7->>p16: materialize_typed_graph
+    p4->>p17: _validated_references
+    p8->>p18: _object (src/llm_wiki_cli/services/knowledge_governance.py)
+    p8->>p19: _exact_fields
+    p3->>p20: _concept_uid
+    p3->>p21: _concept_kind
+    p6->>p22: current_review_evidence
+    p2->>p23: validate_typed_graph
+    p3->>p24: _identity_value
+    p3->>p25: _identity_ownership_key
+    p8->>p26: _validate_concept_summary
+    p3->>p27: _validate_lifecycle_event_fields
+    p3->>p28: _validate_lifecycle_histories
+    p0-->>p29: set (src/llm_wiki_cli/services…ply_governance_projection)(active_by_locator)
+    p0-->>p30: current.concepts.values
 ```
 
 > Call sequence diagram shows 30 of 1397 interactions; 1367 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 9 of 417 (408 omitted); unresolved 8 of 326 (318 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 417 (416 omitted); unresolved 1 of 326 (325 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -91,11 +97,11 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_governance.py:_event_limit` | 2 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:strip_governance_projection` | 6 | - | external | 15 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:strip_governance_projection` | 6 | - | unresolved | 8 |
-| `src/llm_wiki_cli/services/knowledge_governance.py:strip_governance_projection` | 6 | [src/llm_wiki_cli/services/knowledge_graph.py](../modules/knowledge_graph.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_graph.py:validate_typed_graph` | 23 | [src/llm_wiki_cli/services/knowledge_graph.py](../modules/knowledge_graph.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_graph.py:_parse_typed_graph` | 24 | [src/llm_wiki_cli/services/knowledge_graph.py](../modules/knowledge_graph.md) | internal | 16 |
 | `src/llm_wiki_cli/services/knowledge_graph.py:_object` | 25 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-> Omission summary shows 8 of 296 groups; 288 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/validation.py:require_mapping` | 26 | - | external | 2 |
+> Omission summary shows 8 of 295 groups; 287 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

@@ -24,82 +24,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as commit_knowledge_artifacts
-    participant p1 as isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts)
-    participant p2 as TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts)
-    participant p3 as callable (src/llm_wiki_cli/services…ommit_knowledge_artifacts)
-    participant p4 as storage_writer_lock
-    participant p5 as load_adoption_marker
+    participant p1 as storage_writer_lock
+    participant p2 as load_adoption_marker
+    participant p3 as guard_maintenance_owner
+    participant p4 as _commit_sharded
+    participant p5 as _commit_flat
     participant p6 as KnowledgeArtifactError
-    participant p7 as guard_maintenance_owner
-    participant p8 as _commit_sharded
-    participant p9 as _commit_flat
-    participant p10 as KnowledgeCommitResult
-    participant p11 as _absolute_path
-    participant p12 as _apply_write
-    participant p13 as Path (src/llm_wiki_cli/services…ol.py:storage_writer_lock)
-    participant p14 as Path (src/llm_wiki_cli/services…l.py:load_adoption_marker)
-    participant p15 as Path (src/llm_wiki_cli/services…y:guard_maintenance_owner)
-    participant p16 as ensure_guarded_directory
-    participant p17 as str (src/llm_wiki_cli/services…ol.py:storage_writer_lock)
-    participant p18 as path.exists
-    participant p19 as _verify_persisted
-    participant p20 as _identity (src/llm_wiki_cli/services/maintenance_protocol.py)
-    participant p21 as path.is_symlink
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts)(plan, KnowledgeCommitPlan)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts)('plan must be a KnowledgeCommitPlan')
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts)(dry_run, bool)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts)('dry_run must be a bool')
-    p0-->>p3: callable (src/llm_wiki_cli/services…ommit_knowledge_artifacts)(fault_injector)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts)('fault_injector must be callable')
-    p0->>p4: storage_writer_lock
-    p0->>p5: load_adoption_marker
+    participant p7 as KnowledgeCommitResult
+    participant p8 as _absolute_path
+    participant p9 as _apply_write
+    participant p10 as ensure_guarded_directory
+    participant p11 as _verify_persisted
+    participant p12 as SyncManifest.load
+    participant p13 as read_guarded
+    participant p14 as governance_lock
+    participant p15 as validate_maintenance_adoption
+    participant p16 as canonical_bytes
+    participant p17 as _validate_range
+    participant p18 as _detached
+    participant p19 as write_bytes_atomic
+    participant p20 as guard_windows_directory_chain
+    participant p21 as maintenance_core
+    participant p22 as open_windows_readonly_file
+    participant p23 as _assert_windows_file_binding
+    participant p24 as StorageReadSession.read
+    participant p25 as SyncManifest.from_payload
+    participant p26 as StorageReadSession.recheck
+    participant p27 as _raise_io_error
+    participant p28 as _require_relative_name
+    participant p29 as isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts)
+    participant p30 as path.exists
+    p0->>p1: storage_writer_lock
+    p0->>p2: load_adoption_marker
+    p0->>p3: guard_maintenance_owner
+    p0->>p4: _commit_sharded
+    p0->>p5: _commit_flat
     p0->>p6: KnowledgeArtifactError
-    p0->>p7: guard_maintenance_owner
-    p0->>p8: _commit_sharded
-    p0->>p9: _commit_flat
-    p0->>p10: KnowledgeCommitResult
-    p4->>p11: _absolute_path
-    p5->>p11: _absolute_path
-    p7->>p11: _absolute_path
-    p8->>p11: _absolute_path
-    p9->>p12: _apply_write
-    p4-->>p13: Path (src/llm_wiki_cli/services…ol.py:storage_writer_lock)(wiki_dir)
-    p5-->>p14: Path (src/llm_wiki_cli/services…l.py:load_adoption_marker)(wiki_dir)
-    p7-->>p15: Path (src/llm_wiki_cli/services…y:guard_maintenance_owner)(wiki_dir)
-    p8->>p16: ensure_guarded_directory
-    p9->>p12: _apply_write
-    p4-->>p17: str (src/llm_wiki_cli/services…ol.py:storage_writer_lock)(root)
-    p5-->>p18: path.exists
-    p7->>p5: load_adoption_marker
-    p8->>p4: storage_writer_lock
-    p9->>p19: _verify_persisted
-    p4->>p20: _identity (src/llm_wiki_cli/services/maintenance_protocol.py)
-    p5-->>p21: path.is_symlink
+    p0->>p7: KnowledgeCommitResult
+    p1->>p8: _absolute_path
+    p5->>p9: _apply_write
+    p4->>p10: ensure_guarded_directory
+    p5->>p11: _verify_persisted
+    p3->>p12: SyncManifest.load
+    p2->>p13: read_guarded
+    p1->>p14: governance_lock
+    p2->>p15: validate_maintenance_adoption
+    p2->>p16: canonical_bytes
+    p13->>p17: _validate_range
+    p15->>p18: _detached
+    p9->>p19: write_bytes_atomic
+    p13->>p20: guard_windows_directory_chain
+    p15->>p21: maintenance_core
+    p13->>p22: open_windows_readonly_file
+    p13->>p23: _assert_windows_file_binding
+    p12->>p24: StorageReadSession.read
+    p12->>p25: SyncManifest.from_payload
+    p12->>p26: StorageReadSession.recheck
+    p13->>p27: _raise_io_error
+    p24->>p28: _require_relative_name
+    p0-->>p29: isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts)(plan, KnowledgeCommitPlan)
+    p2-->>p30: path.exists
 ```
 
 > Call sequence diagram shows 30 of 802 interactions; 772 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 10 of 332 (322 omitted); unresolved 2 of 141 (139 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 332 (331 omitted); unresolved 1 of 141 (140 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/knowledge_artifacts.py:commit_knowledge_artifacts` | 1 | - | external | 5 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 9 | - | external | 4 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 9 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 12 | - | external | 20 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 12 | - | unresolved | 5 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 9 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 9 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/maintenance_protocol.py:_identity` | 46 | - | external | 4 |
-| `src/llm_wiki_cli/services/maintenance_protocol.py:storage_writer_lock` | 8 | - | unresolved | 3 |
-> Omission summary shows 8 of 194 groups; 186 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/maintenance_protocol.py:storage_writer_lock` | 8 | - | external | 2 |
+> Omission summary shows 8 of 195 groups; 187 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

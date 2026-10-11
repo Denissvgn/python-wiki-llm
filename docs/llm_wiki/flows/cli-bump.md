@@ -6,79 +6,79 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as run
-    participant p1 as getattr
-    participant p2 as find_version_file
-    participant p3 as print
-    participant p4 as sys.exit
-    participant p5 as read_version
-    participant p6 as bump_patch
-    participant p7 as bump_minor
-    participant p8 as write_version
-    participant p9 as subprocess.run
-    participant p10 as str
-    participant p11 as (…).strip
-    participant p12 as Path
-    participant p13 as path.read_text (src/llm_wiki_cli/services…ersioning.py:read_version)
-    participant p14 as VERSION_RE.match (src/llm_wiki_cli/services/versioning.py:bump_patch)
-    participant p15 as VERSION_RE.match (src/llm_wiki_cli/services/versioning.py:bump_minor)
-    participant p16 as path.read_text (src/llm_wiki_cli/services…rsioning.py:write_version)
-    participant p17 as candidate.exists
-    participant p18 as _read_pyproject_version
-    participant p19 as ValueError (src/llm_wiki_cli/services/versioning.py:bump_patch)
-    p0-->>p1: getattr(args, 'root', '.')
-    p0->>p2: find_version_file
-    p0-->>p3: print('Error: No version file found (pyproject.toml, setup.cfg, package.json, VERSION).', file=sys.stderr)
-    p0-->>p4: sys.exit(1)
-    p0->>p5: read_version
-    p0-->>p3: print(..., file=sys.stderr)
-    p0-->>p4: sys.exit(1)
-    p0->>p6: bump_patch
-    p0->>p7: bump_minor
-    p0-->>p3: print(..., file=sys.stderr)
-    p0-->>p4: sys.exit(1)
-    p0->>p8: write_version
-    p0-->>p3: print(...)
-    p0-->>p1: getattr(args, 'stage', False)
-    p0-->>p9: subprocess.run([...], check=True, capture_output=True, text=True)
-    p0-->>p10: str(version_file)
-    p0-->>p3: print('Error: git not found could not stage version file.', file=sys.stderr)
-    p0-->>p4: sys.exit(1)
-    p0-->>p11: (…).strip
-    p0-->>p3: print(..., file=sys.stderr)
-    p0-->>p3: print(detail, file=sys.stderr)
-    p0-->>p4: sys.exit(1)
-    p2-->>p12: Path(root)
-    p5-->>p13: path.read_text (src/llm_wiki_cli/services…ersioning.py:read_version)(encoding='utf-8')
-    p6-->>p14: VERSION_RE.match (src/llm_wiki_cli/services/versioning.py:bump_patch)(version)
-    p7-->>p15: VERSION_RE.match (src/llm_wiki_cli/services/versioning.py:bump_minor)(version)
-    p8-->>p16: path.read_text (src/llm_wiki_cli/services…rsioning.py:write_version)(encoding='utf-8')
-    p2-->>p17: candidate.exists
-    p5->>p18: _read_pyproject_version
-    p6-->>p19: ValueError (src/llm_wiki_cli/services/versioning.py:bump_patch)(...)
+    participant p1 as read_version
+    participant p2 as write_version
+    participant p3 as find_version_file
+    participant p4 as bump_patch
+    participant p5 as bump_minor
+    participant p6 as _read_pyproject_version
+    participant p7 as _write_pyproject_version
+    participant p8 as _table_body
+    participant p9 as _table_bounds
+    participant p10 as _project_version_is_dynamic
+    participant p11 as _replace_static_version_line
+    participant p12 as _static_version_from_body
+    participant p13 as getattr
+    participant p14 as (…).strip
+    participant p15 as print
+    participant p16 as sys.exit
+    participant p17 as subprocess.run
+    participant p18 as str
+    participant p19 as Path
+    p0->>p1: read_version
+    p0->>p2: write_version
+    p0->>p3: find_version_file
+    p0->>p4: bump_patch
+    p0->>p5: bump_minor
+    p1->>p6: _read_pyproject_version
+    p2->>p7: _write_pyproject_version
+    p6->>p8: _table_body
+    p7->>p9: _table_bounds
+    p7->>p10: _project_version_is_dynamic
+    p7->>p11: _replace_static_version_line
+    p6->>p12: _static_version_from_body
+    p0-->>p13: getattr(args, 'root', '.')
+    p0-->>p14: (…).strip
+    p0-->>p15: print('Error: No version file found (pyproject.toml, setup.cfg, package.json, VERSION).', file=sys.stderr)
+    p0-->>p16: sys.exit(1)
+    p0-->>p15: print(..., file=sys.stderr)
+    p0-->>p16: sys.exit(1)
+    p0-->>p15: print(..., file=sys.stderr)
+    p0-->>p16: sys.exit(1)
+    p0-->>p15: print(...)
+    p0-->>p13: getattr(args, 'stage', False)
+    p0-->>p17: subprocess.run([...], check=True, capture_output=True, text=True)
+    p0-->>p18: str(version_file)
+    p0-->>p15: print('Error: git not found could not stage version file.', file=sys.stderr)
+    p0-->>p16: sys.exit(1)
+    p0-->>p15: print(..., file=sys.stderr)
+    p0-->>p15: print(detail, file=sys.stderr)
+    p0-->>p16: sys.exit(1)
+    p3-->>p19: Path(root)
 ```
 
 > Call sequence diagram shows 30 of 99 interactions; 69 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 18 of 40 (22 omitted); unresolved 6 of 41 (35 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 17 of 40 (23 omitted); unresolved 1 of 41 (40 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/versioning.py:find_version_file` | 3 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/versioning.py:read_version` | 8 | - | unresolved | 4 |
 | `src/llm_wiki_cli/services/versioning.py:_read_pyproject_version` | 10 | - | unresolved | 9 |
 | `src/llm_wiki_cli/services/versioning.py:_read_pyproject_version` | 10 | - | external | 6 |
-| `src/llm_wiki_cli/services/versioning.py:_read_pyproject_version` | 10 | [src/llm_wiki_cli/services/versioning.py](../modules/versioning.md) | internal | 5 |
 | `src/llm_wiki_cli/services/versioning.py:_table_body` | 26 | [src/llm_wiki_cli/services/versioning.py](../modules/versioning.md) | internal | 1 |
 | `src/llm_wiki_cli/services/versioning.py:_table_bounds` | 27 | - | unresolved | 6 |
 | `src/llm_wiki_cli/services/versioning.py:_table_bounds` | 27 | - | external | 1 |
-| `src/llm_wiki_cli/services/versioning.py:_project_version_is_dynamic` | 35 | - | external | 3 |
-| `src/llm_wiki_cli/services/versioning.py:_project_version_is_dynamic` | 35 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/versioning.py:_read_pyproject_version` | 10 | [src/llm_wiki_cli/services/versioning.py](../modules/versioning.md) | internal | 3 |
 > Omission summary shows 8 of 22 groups; 14 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

@@ -79,85 +79,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as run
     participant p1 as build_maintenance_queue
-    participant p2 as print
-    participant p3 as json.dumps (src/llm_wiki_cli/commands/queue_cmd.py:run)
-    participant p4 as render_queue
-    participant p5 as validate_queue_limit
-    participant p6 as lines.append
-    participant p7 as capture_context_read
-    participant p8 as lines.extend
-    participant p9 as build_report
-    participant p10 as str (src/llm_wiki_cli/services…y:build_maintenance_queue)
-    participant p11 as queue.get
-    participant p12 as InventoryCacheOptions
-    participant p13 as qualification.get
-    participant p14 as build_documentation_worklist
-    participant p15 as len (src/llm_wiki_cli/services…y:build_maintenance_queue)
-    participant p16 as Path(…).resolve().relative_to(…).as_posix
-    participant p17 as Path(…).resolve().relative_to
-    participant p18 as Path(…).resolve (src/llm_wiki_cli/services…y:build_maintenance_queue)
-    participant p19 as ', '.join (src/llm_wiki_cli/services…nce_queue.py:render_queue)
-    participant p20 as Path (src/llm_wiki_cli/services…y:build_maintenance_queue)
-    participant p21 as sorted (src/llm_wiki_cli/services…nce_queue.py:render_queue)
-    participant p22 as issues.setdefault(…).append
-    participant p23 as qualification[…].items
-    participant p24 as issues.setdefault
+    participant p2 as render_queue
+    participant p3 as capture_context_read
+    participant p4 as build_report
+    participant p5 as build_documentation_worklist
+    participant p6 as compose_queue
+    participant p7 as _assert_selection_unchanged
+    participant p8 as _require_non_negative_int
+    participant p9 as _require_positive_int
+    participant p10 as select_changes
+    participant p11 as _new_lint_report
+    participant p12 as _preflight_lint_inputs
+    participant p13 as _finalize_lint_report
+    participant p14 as prepare_cache_options
+    participant p15 as _collect_lint_inputs
+    participant p16 as _run_report_checks
+    participant p17 as _surface_page_map
+    participant p18 as validate_source_root
+    participant p19 as resolve_source_selection
+    participant p20 as _source_path_from_page
+    participant p21 as capture_source_selection_inputs
+    participant p22 as _normalise_dependency_metrics
+    participant p23 as validate_live_query_source_selection
+    participant p24 as _normalise_entrypoints
+    participant p25 as build_source_snapshot
+    participant p26 as _guard_windows_inputs
+    participant p27 as _assert_source_unchanged
+    participant p28 as _centrality_score
+    participant p29 as print
+    participant p30 as lines.append
     p0->>p1: build_maintenance_queue
-    p0-->>p2: print(..., end=...)
-    p0-->>p3: json.dumps (src/llm_wiki_cli/commands/queue_cmd.py:run)(queue, ensure_ascii=False, sort_keys=True, indent=2)
-    p0->>p4: render_queue
-    p1->>p5: validate_queue_limit
-    p4-->>p6: lines.append(...)
-    p1->>p7: capture_context_read
-    p4-->>p8: lines.extend(...)
-    p1->>p9: build_report
-    p4-->>p6: lines.append(...)
-    p1-->>p10: str (src/llm_wiki_cli/services…y:build_maintenance_queue)(captured.source_root)
-    p4-->>p11: queue.get('qualification')
-    p1->>p12: InventoryCacheOptions
-    p4-->>p13: qualification.get('ordinary_review_custody')
-    p1->>p14: build_documentation_worklist
-    p4-->>p6: lines.append(...)
-    p1-->>p15: len (src/llm_wiki_cli/services…y:build_maintenance_queue)(captured.surface_evaluation.pages)
-    p4-->>p6: lines.append(' Source/prose correctness is not established')
-    p1-->>p16: Path(…).resolve().relative_to(…).as_posix
-    p4-->>p6: lines.append(...)
-    p1-->>p17: Path(…).resolve().relative_to(captured.wiki_root)
-    p4-->>p6: lines.append(...)
-    p1-->>p18: Path(…).resolve (src/llm_wiki_cli/services…y:build_maintenance_queue)
-    p4-->>p19: ', '.join (src/llm_wiki_cli/services…nce_queue.py:render_queue)(...)
-    p1-->>p20: Path (src/llm_wiki_cli/services…y:build_maintenance_queue)(issue.path)
-    p4-->>p21: sorted (src/llm_wiki_cli/services…nce_queue.py:render_queue)(...)
-    p1-->>p22: issues.setdefault(…).append(issue)
-    p4-->>p23: qualification[…].items
-    p1-->>p24: issues.setdefault(path, [...])
-    p4-->>p6: lines.append(...)
+    p0->>p2: render_queue
+    p1->>p3: capture_context_read
+    p1->>p4: build_report
+    p1->>p5: build_documentation_worklist
+    p1->>p6: compose_queue
+    p1->>p7: _assert_selection_unchanged
+    p5->>p8: _require_non_negative_int
+    p5->>p9: _require_positive_int
+    p7->>p10: select_changes
+    p4->>p11: _new_lint_report
+    p4->>p12: _preflight_lint_inputs
+    p4->>p13: _finalize_lint_report
+    p4->>p14: prepare_cache_options
+    p4->>p15: _collect_lint_inputs
+    p4->>p16: _run_report_checks
+    p5->>p17: _surface_page_map
+    p3->>p18: validate_source_root
+    p3->>p19: resolve_source_selection
+    p5->>p20: _source_path_from_page
+    p3->>p21: capture_source_selection_inputs
+    p5->>p22: _normalise_dependency_metrics
+    p3->>p23: validate_live_query_source_selection
+    p5->>p24: _normalise_entrypoints
+    p3->>p25: build_source_snapshot
+    p3->>p26: _guard_windows_inputs
+    p3->>p27: _assert_source_unchanged
+    p5->>p28: _centrality_score
+    p0-->>p29: print(..., end=...)
+    p2-->>p30: lines.append(...)
 ```
 
 > Call sequence diagram shows 30 of 4236 interactions; 4206 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 6 of 1347 (1341 omitted); unresolved 17 of 1444 (1427 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1347 (1346 omitted); unresolved 1 of 1444 (1443 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/maintenance_queue.py:build_maintenance_queue` | 2 | [src/llm_wiki_cli/services/maintenance_queue.py](../modules/maintenance_queue.md) | internal | 1 |
 | `src/llm_wiki_cli/services/maintenance_queue.py:validate_queue_limit` | 3 | - | external | 3 |
 | `src/llm_wiki_cli/services/context_packet.py:capture_context_read` | 7 | - | external | 36 |
-| `src/llm_wiki_cli/services/context_packet.py:capture_context_read` | 7 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 20 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
 | `src/llm_wiki_cli/config.py:validate_path` | 21 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
 | `src/llm_wiki_cli/config.py:validate_path` | 21 | - | unresolved | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 21 | - | external | 2 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 20 | - | unresolved | 5 |
-> Omission summary shows 8 of 1061 groups; 1053 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1060 groups; 1052 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

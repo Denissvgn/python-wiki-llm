@@ -15,77 +15,84 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as evaluate_review_event
     participant p1 as validate_governance_ledger
-    participant p2 as isinstance (src/llm_wiki_cli/services….py:evaluate_review_event)
-    participant p3 as TypeError (src/llm_wiki_cli/services….py:evaluate_review_event)
-    participant p4 as _validate_review_event_fields
-    participant p5 as concepts.get
-    participant p6 as reasons.append
-    participant p7 as _section_records_by_locator(…).get
-    participant p8 as _section_records_by_locator
-    participant p9 as section.get (src/llm_wiki_cli/services….py:evaluate_review_event)
-    participant p10 as is_valid_sha256
-    participant p11 as current_review_evidence
-    participant p12 as ReviewValidity
-    participant p13 as tuple (src/llm_wiki_cli/services….py:evaluate_review_event)
-    participant p14 as isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)
-    participant p15 as knowledge.extensions.get
-    participant p16 as isinstance (src/llm_wiki_cli/services…idence.py:is_valid_sha256)
-    participant p17 as isinstance (src/llm_wiki_cli/services…y:current_review_evidence)
-    participant p18 as TypeError (src/llm_wiki_cli/services…alidate_governance_ledger)
-    participant p19 as isinstance (src/llm_wiki_cli/services…ection_records_by_locator)
-    participant p20 as _SHA256_RE.fullmatch (src/llm_wiki_cli/services…idence.py:is_valid_sha256)
-    participant p21 as TypeError (src/llm_wiki_cli/services…y:current_review_evidence)
-    participant p22 as GovernanceError
-    participant p23 as extension.get
+    participant p2 as current_review_evidence
+    participant p3 as _validate_review_event_fields
+    participant p4 as _section_records_by_locator
+    participant p5 as is_valid_sha256
+    participant p6 as ReviewValidity
+    participant p7 as _bundle_id
+    participant p8 as _concept_uid
+    participant p9 as _concept_kind
+    participant p10 as _identity_value
+    participant p11 as _identity_ownership_key
+    participant p12 as _validate_lifecycle_event_fields
+    participant p13 as _validate_lifecycle_histories
+    participant p14 as validate_bundle_id
+    participant p15 as validate_concept_uid
+    participant p16 as validate_concept_kind
+    participant p17 as _alias_type
+    participant p18 as identity_coordinate_key
+    participant p19 as _event_id
+    participant p20 as validate_alias_value
+    participant p21 as _existing_uid
+    participant p22 as _section_locator
+    participant p23 as _hash
+    participant p24 as _review_evidence
+    participant p25 as _actor
+    participant p26 as authored_event_time
+    participant p27 as _machine_code
+    participant p28 as _derived_event_id
+    participant p29 as isinstance (src/llm_wiki_cli/services….py:evaluate_review_event)
+    participant p30 as concepts.get
     p0->>p1: validate_governance_ledger
-    p0-->>p2: isinstance (src/llm_wiki_cli/services….py:evaluate_review_event)(event, ReviewEvent)
-    p0-->>p3: TypeError (src/llm_wiki_cli/services….py:evaluate_review_event)('event must be a ReviewEvent')
-    p0->>p4: _validate_review_event_fields
-    p0-->>p2: isinstance (src/llm_wiki_cli/services….py:evaluate_review_event)(knowledge, KnowledgeIndex)
-    p0-->>p3: TypeError (src/llm_wiki_cli/services….py:evaluate_review_event)('knowledge must be a KnowledgeIndex')
-    p0-->>p5: concepts.get(allocation.locator)
-    p0-->>p6: reasons.append('concept-missing')
-    p0-->>p7: _section_records_by_locator(…).get(event.section_locator)
-    p0->>p8: _section_records_by_locator
-    p0-->>p6: reasons.append('section-missing')
-    p0-->>p9: section.get (src/llm_wiki_cli/services….py:evaluate_review_event)('semantic_hash')
-    p0->>p10: is_valid_sha256
-    p0-->>p6: reasons.append('basis-incompatible')
-    p0-->>p6: reasons.append('scope-changed')
-    p0->>p11: current_review_evidence
-    p0-->>p6: reasons.append('basis-incompatible')
-    p0-->>p6: reasons.append('evidence-changed')
-    p0->>p12: ReviewValidity
-    p0-->>p13: tuple (src/llm_wiki_cli/services….py:evaluate_review_event)(...)
-    p1-->>p14: isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)(ledger, GovernanceLedger)
-    p8-->>p15: knowledge.extensions.get(SECTION_OWNERSHIP_EXTENSION_KEY)
-    p10-->>p16: isinstance (src/llm_wiki_cli/services…idence.py:is_valid_sha256)(value, str)
-    p11-->>p17: isinstance (src/llm_wiki_cli/services…y:current_review_evidence)(concept, ConceptRecord)
-    p1-->>p18: TypeError (src/llm_wiki_cli/services…alidate_governance_ledger)('ledger must be a GovernanceLedger')
-    p8-->>p19: isinstance (src/llm_wiki_cli/services…ection_records_by_locator)(extension, Mapping)
-    p10-->>p20: _SHA256_RE.fullmatch (src/llm_wiki_cli/services…idence.py:is_valid_sha256)(value)
-    p11-->>p21: TypeError (src/llm_wiki_cli/services…y:current_review_evidence)('concept must be a ConceptRecord')
-    p1->>p22: GovernanceError
-    p8-->>p23: extension.get('pages')
+    p0->>p2: current_review_evidence
+    p0->>p3: _validate_review_event_fields
+    p0->>p4: _section_records_by_locator
+    p0->>p5: is_valid_sha256
+    p0->>p6: ReviewValidity
+    p1->>p7: _bundle_id
+    p1->>p8: _concept_uid
+    p1->>p9: _concept_kind
+    p1->>p10: _identity_value
+    p1->>p11: _identity_ownership_key
+    p1->>p12: _validate_lifecycle_event_fields
+    p1->>p13: _validate_lifecycle_histories
+    p7->>p14: validate_bundle_id
+    p8->>p15: validate_concept_uid
+    p9->>p16: validate_concept_kind
+    p10->>p17: _alias_type
+    p11->>p18: identity_coordinate_key
+    p12->>p19: _event_id
+    p10->>p20: validate_alias_value
+    p12->>p21: _existing_uid
+    p3->>p22: _section_locator
+    p3->>p23: _hash
+    p3->>p24: _review_evidence
+    p12->>p25: _actor
+    p12->>p26: authored_event_time
+    p12->>p27: _machine_code
+    p12->>p28: _derived_event_id
+    p0-->>p29: isinstance (src/llm_wiki_cli/services….py:evaluate_review_event)(event, ReviewEvent)
+    p0-->>p30: concepts.get(allocation.locator)
 ```
 
 > Call sequence diagram shows 30 of 357 interactions; 327 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 11 of 80 (69 omitted); unresolved 12 of 88 (76 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 80 (79 omitted); unresolved 1 of 88 (87 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_governance.py:validate_governance_ledger` | 2 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 26 |
-| `src/llm_wiki_cli/services/knowledge_governance.py:_bundle_id` | 6 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 1 |
+| `src/llm_wiki_cli/services/knowledge_governance.py:validate_governance_ledger` | 2 | - | external | 15 |
+| `src/llm_wiki_cli/services/knowledge_governance.py:validate_governance_ledger` | 2 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 20 |
 | `src/llm_wiki_cli/services/concept_identity.py:validate_bundle_id` | 7 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 4 |
 | `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 8 | - | external | 6 |
 | `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 8 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 5 |

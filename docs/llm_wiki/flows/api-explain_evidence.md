@@ -34,7 +34,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -43,77 +43,82 @@ sequenceDiagram
     participant p1 as _normalize_query_input
     participant p2 as normalize_concept_coordinate
     participant p3 as _effective_query_limit
-    participant p4 as cast
-    participant p5 as _run_query
-    participant p6 as _query_service(…).explain_evidence
-    participant p7 as _query_service
-    participant p8 as callback (src/llm_wiki_cli/api.py:_normalize_query_input)
-    participant p9 as normalize_documentation_query_text
-    participant p10 as _normalize_query_limit
-    participant p11 as callback (src/llm_wiki_cli/api.py:_run_query)
-    participant p12 as InvalidRequestError
-    participant p13 as validate_exact_page_coordinate
-    participant p14 as build_documentation_query_service
-    participant p15 as str (src/llm_wiki_cli/api.py:_normalize_query_input)
-    participant p16 as validator
-    participant p17 as str (src/llm_wiki_cli/api.py:_run_query)
-    participant p18 as DocumentationQueryError
-    participant p19 as isinstance (src/llm_wiki_cli/services…_documentation_query_text)
-    participant p20 as isinstance (src/llm_wiki_cli/services…ate_exact_page_coordinate)
-    participant p21 as isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service)
-    participant p22 as value.strip (src/llm_wiki_cli/services…_documentation_query_text)
-    participant p23 as value.strip (src/llm_wiki_cli/services…ate_exact_page_coordinate)
-    participant p24 as normalize_documentation_query_limit
-    participant p25 as WikiSurfaceError
+    participant p4 as _run_query
+    participant p5 as _query_service
+    participant p6 as normalize_documentation_query_text
+    participant p7 as _normalize_query_limit
+    participant p8 as validate_exact_page_coordinate
+    participant p9 as build_documentation_query_service
+    participant p10 as normalize_documentation_query_limit
+    participant p11 as validate_source_root
+    participant p12 as _validate_wiki_dir
+    participant p13 as _matches_directory_path
+    participant p14 as _matches_directory_uri
+    participant p15 as build_live_documentation_query_service
+    participant p16 as validate_path
+    participant p17 as normalize_supplied_paths
+    participant p18 as is_safe_page_id
+    participant p19 as resolve_source_selection
+    participant p20 as canonical_path
+    participant p21 as mcp_uri
+    participant p22 as capture_source_selection_inputs
+    participant p23 as validate_live_query_source_selection
+    participant p24 as windows_current_user_sid
+    participant p25 as _source_anchor
+    participant p26 as _wiki_anchor
+    participant p27 as source_path_diagnostics
+    participant p28 as _live_source_selection_identity
+    participant p29 as cast
+    participant p30 as _query_service(…).explain_evidence
     p0->>p1: _normalize_query_input
     p0->>p2: normalize_concept_coordinate
     p0->>p3: _effective_query_limit
-    p0-->>p4: cast(EvidenceExplanationResult, _run_query(...))
-    p0->>p5: _run_query
-    p0-->>p6: _query_service(…).explain_evidence(query)
-    p0->>p7: _query_service
-    p1-->>p8: callback (src/llm_wiki_cli/api.py:_normalize_query_input)
-    p2->>p9: normalize_documentation_query_text
-    p3->>p10: _normalize_query_limit
-    p5-->>p11: callback (src/llm_wiki_cli/api.py:_run_query)
-    p7->>p12: InvalidRequestError
-    p1->>p12: InvalidRequestError
-    p2->>p13: validate_exact_page_coordinate
-    p5->>p12: InvalidRequestError
-    p7->>p14: build_documentation_query_service
-    p1-->>p15: str (src/llm_wiki_cli/api.py:_normalize_query_input)(exc)
-    p2-->>p16: validator(selected)
-    p5-->>p17: str (src/llm_wiki_cli/api.py:_run_query)(exc)
-    p2->>p18: DocumentationQueryError
-    p9-->>p19: isinstance (src/llm_wiki_cli/services…_documentation_query_text)(value, str)
-    p13-->>p20: isinstance (src/llm_wiki_cli/services…ate_exact_page_coordinate)(value, str)
-    p10->>p1: _normalize_query_input
-    p14-->>p21: isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service)(value, bool)
-    p9-->>p22: value.strip (src/llm_wiki_cli/services…_documentation_query_text)
-    p13-->>p23: value.strip (src/llm_wiki_cli/services…ate_exact_page_coordinate)
-    p10->>p24: normalize_documentation_query_limit
-    p14->>p12: InvalidRequestError
-    p9->>p18: DocumentationQueryError
-    p13->>p25: WikiSurfaceError
+    p0->>p4: _run_query
+    p0->>p5: _query_service
+    p2->>p6: normalize_documentation_query_text
+    p3->>p7: _normalize_query_limit
+    p2->>p8: validate_exact_page_coordinate
+    p5->>p9: build_documentation_query_service
+    p7->>p10: normalize_documentation_query_limit
+    p9->>p11: validate_source_root
+    p9->>p12: _validate_wiki_dir
+    p8->>p13: _matches_directory_path
+    p8->>p14: _matches_directory_uri
+    p9->>p15: build_live_documentation_query_service
+    p11->>p16: validate_path
+    p15->>p17: normalize_supplied_paths
+    p13->>p18: is_safe_page_id
+    p15->>p19: resolve_source_selection
+    p13->>p20: canonical_path
+    p14->>p21: mcp_uri
+    p15->>p22: capture_source_selection_inputs
+    p15->>p23: validate_live_query_source_selection
+    p11->>p24: windows_current_user_sid
+    p15->>p25: _source_anchor
+    p15->>p26: _wiki_anchor
+    p15->>p27: source_path_diagnostics
+    p15->>p28: _live_source_selection_identity
+    p0-->>p29: cast(EvidenceExplanationResult, _run_query(...))
+    p0-->>p30: _query_service(…).explain_evidence(query)
 ```
 
 > Call sequence diagram shows 30 of 959 interactions; 929 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 6 of 385 (379 omitted); unresolved 6 of 219 (213 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 385 (384 omitted); unresolved 1 of 219 (218 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/documentation_query_builder.py:normalize_documentation_query_text` | 7 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/documentation_query_builder.py:normalize_documentation_query_text` | 7 | - | external | 1 |
-| `src/llm_wiki_cli/services/documentation_query_builder.py:normalize_documentation_query_text` | 7 | [src/llm_wiki_cli/services/documentation_queries.py](../modules/documentation_queries.md) | internal | 1 |
-| `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 15 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 15 | - | external | 3 |
-| `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 15 | [src/llm_wiki_cli/services/wiki_surface.py](../modules/wiki_surface.md) | internal | 6 |
-| `src/llm_wiki_cli/services/wiki_surface.py:_matches_directory_path` | 24 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/wiki_surface.py:_matches_directory_path` | 24 | - | external | 3 |
-> Omission summary shows 8 of 218 groups; 210 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/api.py:_normalize_query_input` | 2 | - | unresolved | 1 |
+| `src/llm_wiki_cli/api.py:_normalize_query_input` | 2 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 1 |
+| `src/llm_wiki_cli/api.py:_normalize_query_input` | 2 | - | external | 1 |
+| `src/llm_wiki_cli/services/documentation_query_builder.py:normalize_documentation_query_text` | 7 | - | external | 2 |
+| `src/llm_wiki_cli/services/documentation_query_builder.py:normalize_documentation_query_text` | 7 | - | unresolved | 3 |
+| `src/llm_wiki_cli/services/documentation_query_builder.py:normalize_documentation_query_text` | 7 | [src/llm_wiki_cli/services/documentation_queries.py](../modules/documentation_queries.md) | internal | 2 |
+| `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 15 | - | external | 4 |
+| `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 15 | - | unresolved | 2 |
+> Omission summary shows 8 of 222 groups; 214 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

@@ -33,71 +33,83 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as run
-    participant p1 as getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)
-    participant p2 as validate_path
-    participant p3 as bool (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)
-    participant p4 as validate_source_root
-    participant p5 as str (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)
-    participant p6 as team_prompt_template_default
-    participant p7 as print
-    participant p8 as SystemExit
-    participant p9 as classify_wiki_git_policy
-    participant p10 as Path.cwd (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)
-    participant p11 as _validated_prompt_snapshot
-    participant p12 as _prompt_git_diff
-    participant p13 as _build_prompt
-    participant p14 as _redact_prompt_artifact
-    participant p15 as _selected_prompt_diff
-    participant p16 as resolve_change_type
-    participant p17 as resolve_agent
-    participant p18 as record_event
-    participant p19 as write_private_text
-    p0-->>p1: getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)(args, 'src_dir', '.')
-    p0->>p2: validate_path
-    p0-->>p3: bool (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)(getattr(...))
-    p0-->>p1: getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)(args, 'allow_external_src', False)
-    p0->>p4: validate_source_root
-    p0-->>p5: str (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)(source_root)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)(args, 'output', _DEFAULT_PROMPT_FILE)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)(args, 'print_prompt', False)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)(args, 'change_type', 'auto')
-    p0-->>p1: getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)(args, 'template', None)
-    p0->>p6: team_prompt_template_default
-    p0-->>p7: print(..., file=sys.stderr)
-    p0-->>p8: SystemExit(1)
-    p0->>p9: classify_wiki_git_policy
-    p0-->>p10: Path.cwd (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)(args, 'source_selection', None)
-    p0->>p11: _validated_prompt_snapshot
-    p0->>p12: _prompt_git_diff
-    p0->>p13: _build_prompt
-    p0-->>p7: print(..., file=sys.stderr)
-    p0-->>p8: SystemExit(1)
-    p0->>p14: _redact_prompt_artifact
-    p0->>p15: _selected_prompt_diff
-    p0->>p16: resolve_change_type
-    p0->>p17: resolve_agent
-    p0-->>p7: print(prompt)
-    p0->>p18: record_event
-    p0->>p19: write_private_text
-    p0->>p18: record_event
+    participant p1 as validate_path
+    participant p2 as validate_source_root
+    participant p3 as team_prompt_template_default
+    participant p4 as classify_wiki_git_policy
+    participant p5 as _validated_prompt_snapshot
+    participant p6 as _prompt_git_diff
+    participant p7 as _build_prompt
+    participant p8 as _redact_prompt_artifact
+    participant p9 as resolve_agent
+    participant p10 as record_event
+    participant p11 as _selected_prompt_diff
+    participant p12 as resolve_change_type
+    participant p13 as write_private_text
+    participant p14 as shell_quote
+    participant p15 as load_team_config
+    participant p16 as resolve_source_selection
+    participant p17 as capture_source_selection_inputs
+    participant p18 as read_config
+    participant p19 as validate_live_query_source_selection
+    participant p20 as _validated_prompt_selection_and_diff
+    participant p21 as _indeterminate
+    participant p22 as _iso_now
+    participant p23 as _sanitize_metrics_value
+    participant p24 as _template_values
+    participant p25 as _run_git
+    participant p26 as build_source_snapshot
+    participant p27 as _render_prompt_body
+    participant p28 as _render_repository_handoff
+    participant p29 as getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)
+    participant p30 as read_config(…).get
+    p0->>p1: validate_path
+    p0->>p2: validate_source_root
+    p0->>p3: team_prompt_template_default
+    p0->>p4: classify_wiki_git_policy
+    p0->>p5: _validated_prompt_snapshot
+    p0->>p6: _prompt_git_diff
+    p0->>p7: _build_prompt
+    p0->>p8: _redact_prompt_artifact
+    p0->>p9: resolve_agent
+    p0->>p10: record_event
+    p0->>p11: _selected_prompt_diff
+    p0->>p12: resolve_change_type
+    p0->>p13: write_private_text
+    p0->>p14: shell_quote
+    p3->>p15: load_team_config
+    p5->>p16: resolve_source_selection
+    p5->>p17: capture_source_selection_inputs
+    p9->>p18: read_config
+    p5->>p19: validate_live_query_source_selection
+    p7->>p20: _validated_prompt_selection_and_diff
+    p4->>p21: _indeterminate
+    p10->>p22: _iso_now
+    p10->>p23: _sanitize_metrics_value
+    p7->>p24: _template_values
+    p4->>p25: _run_git
+    p5->>p26: build_source_snapshot
+    p7->>p27: _render_prompt_body
+    p7->>p28: _render_repository_handoff
+    p0-->>p29: getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
+    p9-->>p30: read_config(…).get('agent')
 ```
 
 > Call sequence diagram shows 30 of 1376 interactions; 1346 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 16 of 424 (408 omitted); unresolved 0 of 386 (386 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 424 (423 omitted); unresolved 1 of 386 (385 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/commands/generate_prompt_cmd.py:run` | 1 | - | external | 20 |
 | `src/llm_wiki_cli/config.py:validate_path` | 4 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
 | `src/llm_wiki_cli/config.py:validate_path` | 4 | - | unresolved | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 4 | - | external | 2 |
@@ -105,8 +117,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_source_root` | 14 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 14 | - | external | 11 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 14 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 26 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 2 |
-> Omission summary shows 8 of 395 groups; 387 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 390 groups; 382 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

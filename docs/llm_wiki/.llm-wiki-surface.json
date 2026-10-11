@@ -1800,37 +1800,37 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 6411,
+              "line": 6412,
               "step": "execute_bootstrap",
               "target": "io.StringIO"
             },
             {
               "kind": "unresolved_call",
-              "line": 4566,
+              "line": 4567,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.source_root).expanduser().resolve"
             },
             {
               "kind": "unresolved_call",
-              "line": 4566,
+              "line": 4567,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.source_root).expanduser"
             },
             {
               "kind": "unresolved_call",
-              "line": 4567,
+              "line": 4568,
               "step": "_bootstrap_run_options_from_request",
               "target": "source_root.is_dir"
             },
             {
               "kind": "unresolved_call",
-              "line": 4571,
+              "line": 4572,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.wiki_root).expanduser().resolve"
             },
             {
               "kind": "unresolved_call",
-              "line": 4571,
+              "line": 4572,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.wiki_root).expanduser"
             },
@@ -31395,7 +31395,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 6456,
+              "line": 6457,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -66279,5 +66279,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:8d1b8fba09bb06183b795fe9921b66feae98931e6234617ed013fbe73fdbaf0e"
+  "source_hash": "sha256:5eae3c48949176515a4c187e4d0fc481d647f026c1b26b585439055ca2ba737f"
 }

@@ -35,7 +35,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -45,72 +45,80 @@ sequenceDiagram
     participant p2 as _validated
     participant p3 as normalize_view_options
     participant p4 as _projection
-    participant p5 as _accounted_render
-    participant p6 as CompactTaskContext
-    participant p7 as isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated)
-    participant p8 as isinstance (src/llm_wiki_cli/services…py:normalize_view_options)
-    participant p9 as deepcopy (src/llm_wiki_cli/services…sk_compact.py:_projection)
-    participant p10 as range
-    participant p11 as TaskCompactError
-    participant p12 as set (src/llm_wiki_cli/services…py:normalize_view_options)
-    participant p13 as facts[…][…].items
-    participant p14 as render
-    participant p15 as all (src/llm_wiki_cli/services…sk_compact.py:_projection)
-    participant p16 as counter.count (src/llm_wiki_cli/services…dget.py:_accounted_render)
-    participant p17 as type (src/llm_wiki_cli/services…py:normalize_view_options)
-    participant p18 as _same
-    participant p19 as isinstance (src/llm_wiki_cli/services…dget.py:_accounted_render)
-    participant p20 as normalize_task_request
-    participant p21 as next
-    participant p22 as enumerate (src/llm_wiki_cli/services…sk_compact.py:_projection)
+    participant p5 as _same
+    participant p6 as normalize_task_request
+    participant p7 as _counter
+    participant p8 as validate_task_context
+    participant p9 as _encode_observation
+    participant p10 as exact_fields
+    participant p11 as _encode_contract
+    participant p12 as bounded_text
+    participant p13 as _array
+    participant p14 as coordinate
+    participant p15 as _validate_task_claims
+    participant p16 as validate_changes
+    participant p17 as normalize_profile
+    participant p18 as content_id
+    participant p19 as validate_context_packet
+    participant p20 as validate_task_implementations
+    participant p21 as validate_scoped_bindings
+    participant p22 as _coerce_packet_bytes
+    participant p23 as normalize_supplied_paths
+    participant p24 as _strict_json_payload
+    participant p25 as normalize_concept_coordinate
+    participant p26 as _packet_contract_for_schema
+    participant p27 as expand_storage_receipt
+    participant p28 as _validate_packet_shape
+    participant p29 as isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated)
+    participant p30 as facts[…][…].items
     p0->>p1: render_compact_task_context (src/llm_wiki_cli/services/task_compact.py)
     p1->>p2: _validated
     p1->>p3: normalize_view_options
     p1->>p4: _projection
-    p1->>p5: _accounted_render
-    p1->>p5: _accounted_render
-    p1->>p6: CompactTaskContext
-    p1->>p6: CompactTaskContext
-    p2-->>p7: isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated)(canonical_text, TaskContext)
-    p3-->>p8: isinstance (src/llm_wiki_cli/services…py:normalize_view_options)(value, Mapping)
-    p4-->>p9: deepcopy (src/llm_wiki_cli/services…sk_compact.py:_projection)(value)
-    p5-->>p10: range(32)
-    p2->>p11: TaskCompactError
-    p3-->>p12: set (src/llm_wiki_cli/services…py:normalize_view_options)(value)
-    p4-->>p13: facts[…][…].items
-    p5-->>p14: render(accounting)
-    p2-->>p7: isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated)(canonical_text, str)
-    p3->>p11: TaskCompactError
-    p4-->>p15: all (src/llm_wiki_cli/services…sk_compact.py:_projection)(...)
-    p5-->>p16: counter.count (src/llm_wiki_cli/services…dget.py:_accounted_render)(text)
-    p2->>p11: TaskCompactError
-    p3-->>p17: type (src/llm_wiki_cli/services…py:normalize_view_options)(budget)
-    p4->>p18: _same
-    p5-->>p19: isinstance (src/llm_wiki_cli/services…dget.py:_accounted_render)(used, bool)
-    p2->>p20: normalize_task_request
-    p3->>p11: TaskCompactError
-    p4-->>p21: next(..., None)
-    p5-->>p19: isinstance (src/llm_wiki_cli/services…dget.py:_accounted_render)(used, int)
-    p2->>p11: TaskCompactError
-    p4-->>p22: enumerate (src/llm_wiki_cli/services…sk_compact.py:_projection)(citations)
+    p4->>p5: _same
+    p2->>p6: normalize_task_request
+    p2->>p7: _counter
+    p2->>p8: validate_task_context
+    p4->>p9: _encode_observation
+    p6->>p10: exact_fields
+    p9->>p11: _encode_contract
+    p6->>p12: bounded_text
+    p6->>p13: _array
+    p6->>p14: coordinate
+    p8->>p15: _validate_task_claims
+    p6->>p16: validate_changes
+    p6->>p17: normalize_profile
+    p6->>p18: content_id
+    p8->>p19: validate_context_packet
+    p8->>p20: validate_task_implementations
+    p8->>p21: validate_scoped_bindings
+    p19->>p22: _coerce_packet_bytes
+    p14->>p23: normalize_supplied_paths
+    p19->>p24: _strict_json_payload
+    p14->>p25: normalize_concept_coordinate
+    p19->>p26: _packet_contract_for_schema
+    p21->>p27: expand_storage_receipt
+    p19->>p28: _validate_packet_shape
+    p2-->>p29: isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated)(canonical_text, TaskContext)
+    p4-->>p30: facts[…][…].items
 ```
 
 > Call sequence diagram shows 30 of 840 interactions; 810 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 12 of 419 (407 omitted); unresolved 3 of 198 (195 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 419 (418 omitted); unresolved 1 of 198 (197 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 8 | [src/llm_wiki_cli/services/workflow_profile.py](../modules/workflow_profile.md) | internal | 20 |
+| `src/llm_wiki_cli/services/task_compact.py:_validated` | 3 | [src/llm_wiki_cli/services/task_compact.py](../modules/task_compact.md) | internal | 5 |
+| `src/llm_wiki_cli/services/task_compact.py:_validated` | 3 | - | external | 2 |
 | `src/llm_wiki_cli/services/workflow_profile.py:exact_fields` | 9 | - | external | 5 |
 | `src/llm_wiki_cli/services/workflow_profile.py:exact_fields` | 9 | [src/llm_wiki_cli/services/workflow_profile.py](../modules/workflow_profile.md) | internal | 2 |
 | `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 8 | - | unresolved | 22 |
 | `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 8 | - | external | 10 |
+| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 8 | [src/llm_wiki_cli/services/workflow_profile.py](../modules/workflow_profile.md) | internal | 16 |
 | `src/llm_wiki_cli/services/workflow_profile.py:bounded_text` | 20 | - | external | 2 |
-| `src/llm_wiki_cli/services/workflow_profile.py:bounded_text` | 20 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/workflow_profile.py:bounded_text` | 20 | [src/llm_wiki_cli/services/workflow_profile.py](../modules/workflow_profile.md) | internal | 3 |
 > Omission summary shows 8 of 153 groups; 145 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

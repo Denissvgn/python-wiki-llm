@@ -41,69 +41,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as run
-    participant p1 as getattr (src/llm_wiki_cli/services/extraction_service.py:run)
-    participant p2 as print (src/llm_wiki_cli/services/extraction_service.py:run)
-    participant p3 as sys.exit
-    participant p4 as len (src/llm_wiki_cli/services/extraction_service.py:run)
-    participant p5 as build_extract_payload
-    participant p6 as print_inventory_failures
-    participant p7 as str (src/llm_wiki_cli/services/extraction_service.py:run)
-    participant p8 as message.startswith
-    p0-->>p1: getattr (src/llm_wiki_cli/services/extraction_service.py:run)(args, 'src_dir', '.')
-    p0-->>p1: getattr (src/llm_wiki_cli/services/extraction_service.py:run)(args, 'changed', False)
-    p0-->>p1: getattr (src/llm_wiki_cli/services/extraction_service.py:run)(args, 'summary', False)
-    p0-->>p1: getattr (src/llm_wiki_cli/services/extraction_service.py:run)(args, 'deep', False)
-    p0-->>p1: getattr (src/llm_wiki_cli/services/extraction_service.py:run)(args, 'paths', None)
-    p0-->>p1: getattr (src/llm_wiki_cli/services/extraction_service.py:run)(args, 'package', None)
-    p0-->>p1: getattr (src/llm_wiki_cli/services/extraction_service.py:run)(args, 'include_empty', False)
-    p0-->>p1: getattr (src/llm_wiki_cli/services/extraction_service.py:run)(args, 'output', None)
-    p0-->>p1: getattr (src/llm_wiki_cli/services/extraction_service.py:run)(args, 'read_only', False)
-    p0-->>p1: getattr (src/llm_wiki_cli/services/extraction_service.py:run)(args, 'allow_external_src', False)
-    p0-->>p1: getattr (src/llm_wiki_cli/services/extraction_service.py:run)(args, 'helper_cache_dir', None)
-    p0-->>p1: getattr (src/llm_wiki_cli/services/extraction_service.py:run)(args, 'include_tests', None)
-    p0-->>p1: getattr (src/llm_wiki_cli/services/extraction_service.py:run)(args, 'openapi_file', None)
-    p0-->>p1: getattr (src/llm_wiki_cli/services/extraction_service.py:run)(args, 'source_selection', None)
-    p0-->>p2: print (src/llm_wiki_cli/services/extraction_service.py:run)('Error: --changed and --paths are mutually exclusive.', file=sys.stderr)
-    p0-->>p3: sys.exit(2)
-    p0-->>p2: print (src/llm_wiki_cli/services/extraction_service.py:run)('Extracting changed file(s)...', file=sys.stderr)
-    p0-->>p2: print (src/llm_wiki_cli/services/extraction_service.py:run)(..., file=sys.stderr)
-    p0-->>p4: len (src/llm_wiki_cli/services/extraction_service.py:run)(paths)
-    p0-->>p2: print (src/llm_wiki_cli/services/extraction_service.py:run)(..., file=sys.stderr)
-    p0->>p5: build_extract_payload
-    p0->>p6: print_inventory_failures
-    p0-->>p3: sys.exit(1)
-    p0-->>p7: str (src/llm_wiki_cli/services/extraction_service.py:run)(exc)
-    p0-->>p8: message.startswith('No files found for package')
-    p0-->>p2: print (src/llm_wiki_cli/services/extraction_service.py:run)(message, file=sys.stderr)
-    p0-->>p3: sys.exit(1)
-    p0-->>p2: print (src/llm_wiki_cli/services/extraction_service.py:run)(..., file=sys.stderr)
-    p0-->>p3: sys.exit(2)
-    p0-->>p2: print (src/llm_wiki_cli/services/extraction_service.py:run)('No files changed in the last commit.', file=sys.stderr)
+    participant p1 as build_extract_payload
+    participant p2 as write_text_output
+    participant p3 as format_unsupported_source_summary
+    participant p4 as print_inventory_failures
+    participant p5 as validate_source_root
+    participant p6 as _format_unsupported_language_count
+    participant p7 as validate_source_paths
+    participant p8 as _write_utf8_text
+    participant p9 as _source_snapshot_for_inventory_request
+    participant p10 as _git_changed_files
+    participant p11 as _build_extract_source_snapshot
+    participant p12 as _partition_snapshot_git_changes
+    participant p13 as analyze_dependencies
+    participant p14 as build_api_contracts
+    participant p15 as _data_flow_details_contract
+    participant p16 as get_inventory_result
+    participant p17 as detect_entry_points
+    participant p18 as read_console_scripts
+    participant p19 as attach_routes_to_entry_points
+    participant p20 as resolve_call_edges
+    participant p21 as build_data_flow_context
+    participant p22 as analyze_data_flow_detailed
+    participant p23 as build_flow_detailed
+    participant p24 as _summarize_inventory
+    participant p25 as get_docker_inventory
+    participant p26 as validate_path
+    participant p27 as build_source_snapshot
+    participant p28 as build_dependency_graph
+    participant p29 as getattr (src/llm_wiki_cli/services/extraction_service.py:run)
+    participant p30 as message.startswith
+    p0->>p1: build_extract_payload
+    p0->>p2: write_text_output
+    p0->>p3: format_unsupported_source_summary
+    p0->>p4: print_inventory_failures
+    p1->>p5: validate_source_root
+    p3->>p6: _format_unsupported_language_count
+    p1->>p7: validate_source_paths
+    p2->>p8: _write_utf8_text
+    p1->>p9: _source_snapshot_for_inventory_request
+    p1->>p10: _git_changed_files
+    p1->>p11: _build_extract_source_snapshot
+    p1->>p12: _partition_snapshot_git_changes
+    p1->>p13: analyze_dependencies
+    p1->>p14: build_api_contracts
+    p1->>p15: _data_flow_details_contract
+    p1->>p16: get_inventory_result
+    p1->>p17: detect_entry_points
+    p1->>p18: read_console_scripts
+    p1->>p19: attach_routes_to_entry_points
+    p1->>p20: resolve_call_edges
+    p1->>p21: build_data_flow_context
+    p1->>p22: analyze_data_flow_detailed
+    p1->>p23: build_flow_detailed
+    p1->>p24: _summarize_inventory
+    p1->>p25: get_docker_inventory
+    p5->>p26: validate_path
+    p9->>p27: build_source_snapshot
+    p13->>p28: build_dependency_graph
+    p0-->>p29: getattr (src/llm_wiki_cli/services/extraction_service.py:run)(args, 'src_dir', '.')
+    p0-->>p30: message.startswith('No files found for package')
 ```
 
 > Call sequence diagram shows 30 of 3111 interactions; 3081 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 27 of 1030 (1003 omitted); unresolved 1 of 1315 (1314 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1030 (1029 omitted); unresolved 1 of 1315 (1314 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/extraction_service.py:build_extract_payload` | 22 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 23 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
+| `src/llm_wiki_cli/services/extraction_service.py:run` | 1 | - | external | 36 |
 | `src/llm_wiki_cli/config.py:validate_path` | 24 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
 | `src/llm_wiki_cli/config.py:validate_path` | 24 | - | unresolved | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 24 | - | external | 2 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 23 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 23 | - | external | 11 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 23 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 6 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 23 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
-> Omission summary shows 8 of 705 groups; 697 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 699 groups; 691 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

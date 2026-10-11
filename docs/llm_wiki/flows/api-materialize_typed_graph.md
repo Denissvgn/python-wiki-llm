@@ -14,82 +14,90 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as materialize_typed_graph
-    participant p1 as isinstance (src/llm_wiki_cli/services…y:materialize_typed_graph)
-    participant p2 as TypeError
-    participant p3 as KnowledgeGraphError
-    participant p4 as _normalise_graph_concepts
-    participant p5 as _json_value
-    participant p6 as _graph_concept_payload
-    participant p7 as _observation_bundle_for_hash
-    participant p8 as _sorted_json_records
-    participant p9 as _normalise_analyzer_limitations
-    participant p10 as sha256_bytes
-    participant p11 as _canonical_json(…).encode (src/llm_wiki_cli/services…y:materialize_typed_graph)
-    participant p12 as _canonical_json
-    participant p13 as input_payloads.items
-    participant p14 as _canonical_json(…).encode (src/llm_wiki_cli/services…aterialize_typed_graph, 1)
-    participant p15 as _materialization_state
-    participant p16 as _materialize_contains
-    participant p17 as _materialize_imports
-    participant p18 as _materialize_calls
-    participant p19 as _materialize_entrypoints
-    participant p20 as _materialize_data_effects
-    participant p21 as _materialize_external_dependencies
-    participant p22 as _aggregate_input_hash
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…y:materialize_typed_graph)(inputs, KnowledgeGraphInputs)
-    p0-->>p2: TypeError('inputs must be a KnowledgeGraphInputs')
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…y:materialize_typed_graph)(inputs.evidence_limit, bool)
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…y:materialize_typed_graph)(inputs.evidence_limit, int)
-    p0->>p3: KnowledgeGraphError
-    p0->>p4: _normalise_graph_concepts
-    p0->>p5: _json_value
-    p0->>p6: _graph_concept_payload
-    p0->>p7: _observation_bundle_for_hash
-    p0->>p7: _observation_bundle_for_hash
-    p0->>p7: _observation_bundle_for_hash
-    p0->>p8: _sorted_json_records
-    p0->>p8: _sorted_json_records
-    p0->>p8: _sorted_json_records
-    p0->>p9: _normalise_analyzer_limitations
-    p0->>p10: sha256_bytes
-    p0-->>p11: _canonical_json(…).encode (src/llm_wiki_cli/services…y:materialize_typed_graph)('utf-8')
-    p0->>p12: _canonical_json
-    p0-->>p13: input_payloads.items
-    p0->>p10: sha256_bytes
-    p0-->>p14: _canonical_json(…).encode (src/llm_wiki_cli/services…aterialize_typed_graph, 1)('utf-8')
-    p0->>p12: _canonical_json
-    p0->>p15: _materialization_state
-    p0->>p16: _materialize_contains
-    p0->>p17: _materialize_imports
-    p0->>p18: _materialize_calls
-    p0->>p19: _materialize_entrypoints
-    p0->>p20: _materialize_data_effects
-    p0->>p21: _materialize_external_dependencies
-    p0->>p22: _aggregate_input_hash
+    participant p1 as _normalise_graph_concepts
+    participant p2 as _json_value
+    participant p3 as _observation_bundle_for_hash
+    participant p4 as _normalise_analyzer_limitations
+    participant p5 as _canonical_json
+    participant p6 as _materialization_state
+    participant p7 as _materialize_contains
+    participant p8 as _materialize_imports
+    participant p9 as _materialize_calls
+    participant p10 as _materialize_entrypoints
+    participant p11 as _materialize_data_effects
+    participant p12 as _materialize_external_dependencies
+    participant p13 as _aggregate_input_hash
+    participant p14 as validate_typed_graph
+    participant p15 as KnowledgeGraphError
+    participant p16 as _graph_concept_payload
+    participant p17 as _sorted_json_records
+    participant p18 as sha256_bytes
+    participant p19 as _observation_collection
+    participant p20 as _parse_typed_graph
+    participant p21 as concept_endpoint
+    participant p22 as source_symbol_endpoint
+    participant p23 as _locator
+    participant p24 as _limitations
+    participant p25 as _limitation
+    participant p26 as _coverage
+    participant p27 as _relative_path
+    participant p28 as _positive_int
+    participant p29 as isinstance (src/llm_wiki_cli/services…y:materialize_typed_graph)
+    participant p30 as _canonical_json(…).encode (src/llm_wiki_cli/services…y:materialize_typed_graph)
+    p0->>p1: _normalise_graph_concepts
+    p0->>p2: _json_value
+    p0->>p3: _observation_bundle_for_hash
+    p0->>p4: _normalise_analyzer_limitations
+    p0->>p5: _canonical_json
+    p0->>p6: _materialization_state
+    p0->>p7: _materialize_contains
+    p0->>p8: _materialize_imports
+    p0->>p9: _materialize_calls
+    p0->>p10: _materialize_entrypoints
+    p0->>p11: _materialize_data_effects
+    p0->>p12: _materialize_external_dependencies
+    p0->>p13: _aggregate_input_hash
+    p0->>p14: validate_typed_graph
+    p0->>p15: KnowledgeGraphError
+    p0->>p16: _graph_concept_payload
+    p0->>p17: _sorted_json_records
+    p0->>p18: sha256_bytes
+    p8->>p19: _observation_collection
+    p14->>p20: _parse_typed_graph
+    p7->>p21: concept_endpoint
+    p7->>p22: source_symbol_endpoint
+    p1->>p23: _locator
+    p7->>p24: _limitations
+    p4->>p25: _limitation
+    p7->>p26: _coverage
+    p1->>p27: _relative_path
+    p1->>p28: _positive_int
+    p0-->>p29: isinstance (src/llm_wiki_cli/services…y:materialize_typed_graph)(inputs, KnowledgeGraphInputs)
+    p0-->>p30: _canonical_json(…).encode (src/llm_wiki_cli/services…y:materialize_typed_graph)('utf-8')
 ```
 
 > Call sequence diagram shows 30 of 873 interactions; 843 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 4 of 273 (269 omitted); unresolved 3 of 218 (215 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 273 (272 omitted); unresolved 1 of 218 (217 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/knowledge_graph.py:materialize_typed_graph` | 1 | - | external | 6 |
 | `src/llm_wiki_cli/services/knowledge_graph.py:_normalise_graph_concepts` | 7 | - | external | 6 |
-| `src/llm_wiki_cli/services/knowledge_graph.py:_normalise_graph_concepts` | 7 | [src/llm_wiki_cli/services/knowledge_graph.py](../modules/knowledge_graph.md) | internal | 10 |
+| `src/llm_wiki_cli/services/knowledge_graph.py:_normalise_graph_concepts` | 7 | [src/llm_wiki_cli/services/knowledge_graph.py](../modules/knowledge_graph.md) | internal | 7 |
 | `src/llm_wiki_cli/services/knowledge_graph.py:_locator` | 15 | [src/llm_wiki_cli/services/knowledge_graph.py](../modules/knowledge_graph.md) | internal | 3 |
 | `src/llm_wiki_cli/services/knowledge_graph.py:_name` | 16 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 17 | - | external | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 17 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 17 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:contains_control_character` | 20 | - | unresolved | 1 |
 > Omission summary shows 8 of 202 groups; 194 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

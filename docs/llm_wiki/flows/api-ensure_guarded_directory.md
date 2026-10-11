@@ -6,77 +6,82 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as ensure_guarded_directory
-    participant p1 as Path (src/llm_wiki_cli/services…:ensure_guarded_directory)
-    participant p2 as target.is_absolute
-    participant p3 as OSError
-    participant p4 as guard_windows_directory_chain
-    participant p5 as getattr
-    participant p6 as os.open
-    participant p7 as os.mkdir
-    participant p8 as os.close
+    participant p1 as guard_windows_directory_chain
+    participant p2 as _open_windows_directory_guard
+    participant p3 as create_private_windows_directory
+    participant p4 as _private_windows_security_attributes
+    participant p5 as move_windows_path_write_through
+    participant p6 as _verify_windows_handle_restrictive_dacl
+    participant p7 as _current_windows_user_sid
+    participant p8 as _windows_sid_string
     participant p9 as WindowsDirectoryGuardError
-    participant p10 as Path (src/llm_wiki_cli/services…d_windows_directory_chain)
-    participant p11 as os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)
-    participant p12 as os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)
-    participant p13 as handles.append
-    participant p14 as _open_windows_directory_guard
-    participant p15 as enumerate
-    participant p16 as len
-    p0-->>p1: Path (src/llm_wiki_cli/services…:ensure_guarded_directory)(path)
-    p0-->>p2: target.is_absolute
-    p0-->>p3: OSError(...)
-    p0-->>p1: Path (src/llm_wiki_cli/services…:ensure_guarded_directory)(target.anchor)
-    p0->>p4: guard_windows_directory_chain
-    p0-->>p1: Path (src/llm_wiki_cli/services…:ensure_guarded_directory)(target.anchor)
-    p0-->>p5: getattr(os, 'O_NOFOLLOW', None)
-    p0-->>p5: getattr(os, 'O_DIRECTORY', None)
-    p0-->>p3: OSError('This POSIX platform cannot create guarded directories.')
-    p0-->>p5: getattr(os, 'O_CLOEXEC', 0)
-    p0-->>p6: os.open(target.anchor, flags)
-    p0-->>p1: Path (src/llm_wiki_cli/services…:ensure_guarded_directory)(component)
-    p0-->>p3: OSError(...)
-    p0-->>p6: os.open(component, flags, dir_fd=descriptor)
-    p0-->>p7: os.mkdir(component, mode, dir_fd=descriptor)
-    p0-->>p6: os.open(component, flags, dir_fd=descriptor)
-    p0-->>p8: os.close(descriptor)
-    p0-->>p8: os.close(descriptor)
-    p4->>p9: WindowsDirectoryGuardError
-    p4-->>p10: Path (src/llm_wiki_cli/services…d_windows_directory_chain)(os.path.abspath(...))
-    p4-->>p11: os.path.abspath (src/llm_wiki_cli/services…d_windows_directory_chain)(os.fspath(...))
-    p4-->>p12: os.fspath (src/llm_wiki_cli/services…d_windows_directory_chain)(root)
-    p4->>p9: WindowsDirectoryGuardError
-    p4-->>p10: Path (src/llm_wiki_cli/services…d_windows_directory_chain)(root_path.anchor)
-    p4-->>p13: handles.append(_open_windows_directory_guard(...))
-    p4->>p14: _open_windows_directory_guard
-    p4-->>p15: enumerate(root_components)
-    p4-->>p13: handles.append(_open_windows_directory_guard(...))
-    p4->>p14: _open_windows_directory_guard
-    p4-->>p16: len(root_components)
+    participant p10 as _close_windows_handle
+    participant p11 as _windows_api_path
+    participant p12 as _WindowsDirectoryGuardUnavailableError
+    participant p13 as WindowsDurabilityError
+    participant p14 as WindowsSecurityGuardError
+    participant p15 as Path (src/llm_wiki_cli/services…:ensure_guarded_directory)
+    participant p16 as target.is_absolute
+    participant p17 as OSError
+    participant p18 as getattr
+    participant p19 as os.open
+    participant p20 as os.mkdir
+    participant p21 as os.close
+    p0->>p1: guard_windows_directory_chain
+    p1->>p2: _open_windows_directory_guard
+    p1->>p3: create_private_windows_directory
+    p3->>p4: _private_windows_security_attributes
+    p3->>p5: move_windows_path_write_through
+    p2->>p6: _verify_windows_handle_restrictive_dacl
+    p6->>p7: _current_windows_user_sid
+    p7->>p8: _windows_sid_string
+    p1->>p9: WindowsDirectoryGuardError
+    p1->>p10: _close_windows_handle
+    p2->>p11: _windows_api_path
+    p2->>p12: _WindowsDirectoryGuardUnavailableError
+    p5->>p13: WindowsDurabilityError
+    p4->>p14: WindowsSecurityGuardError
+    p0-->>p15: Path (src/llm_wiki_cli/services…:ensure_guarded_directory)(path)
+    p0-->>p16: target.is_absolute
+    p0-->>p17: OSError(...)
+    p0-->>p15: Path (src/llm_wiki_cli/services…:ensure_guarded_directory)(target.anchor)
+    p0-->>p15: Path (src/llm_wiki_cli/services…:ensure_guarded_directory)(target.anchor)
+    p0-->>p18: getattr(os, 'O_NOFOLLOW', None)
+    p0-->>p18: getattr(os, 'O_DIRECTORY', None)
+    p0-->>p17: OSError('This POSIX platform cannot create guarded directories.')
+    p0-->>p18: getattr(os, 'O_CLOEXEC', 0)
+    p0-->>p19: os.open(target.anchor, flags)
+    p0-->>p15: Path (src/llm_wiki_cli/services…:ensure_guarded_directory)(component)
+    p0-->>p17: OSError(...)
+    p0-->>p19: os.open(component, flags, dir_fd=descriptor)
+    p0-->>p20: os.mkdir(component, mode, dir_fd=descriptor)
+    p0-->>p19: os.open(component, flags, dir_fd=descriptor)
+    p0-->>p21: os.close(descriptor)
 ```
 
 > Call sequence diagram shows 30 of 230 interactions; 200 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 22 of 144 (122 omitted); unresolved 3 of 28 (25 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 15 of 144 (129 omitted); unresolved 1 of 28 (27 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 6 | - | external | 9 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 6 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 5 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 6 | - | unresolved | 4 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 14 | - | external | 14 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 14 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 14 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 9 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:_windows_api_path` | 17 | - | external | 2 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:_windows_api_path` | 17 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_close_windows_handle` | 32 | - | external | 2 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_close_windows_handle` | 32 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_verify_windows_handle_restrictive_dacl` | 42 | - | external | 50 |
-> Omission summary shows 8 of 28 groups; 20 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 14 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 6 |
+> Omission summary shows 8 of 29 groups; 21 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow

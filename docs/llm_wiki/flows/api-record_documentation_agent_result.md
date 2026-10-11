@@ -6,82 +6,88 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as record_documentation_agent_result
-    participant p1 as _resolve_workspace_root_argument
-    participant p2 as load_documentation_run
-    participant p3 as DocumentationAgentResult.from_dict
-    participant p4 as isinstance (src/llm_wiki_cli/services…ocumentation_agent_result)
-    participant p5 as result.to_dict
-    participant p6 as DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_result)
-    participant p7 as run.stage_attempts.get
-    participant p8 as result_path.exists
-    participant p9 as _verify_stage_dispatch_integrity
-    participant p10 as _block_run_for_integrity
-    participant p11 as DocumentationIntegrityError (src/llm_wiki_cli/services…ocumentation_agent_result)
-    participant p12 as _verify_read_only_inputs
-    participant p13 as str (src/llm_wiki_cli/services…ocumentation_agent_result)
-    participant p14 as run.evidence.get (src/llm_wiki_cli/services…ocumentation_agent_result)
-    participant p15 as _read_json (src/llm_wiki_cli/services…ocumentation_agent_result)
-    participant p16 as _workspace_path (src/llm_wiki_cli/services…ocumentation_agent_result)
-    participant p17 as TreeBaseline.from_dict
-    participant p18 as capture_tree_baseline
-    participant p19 as _changed_paths
-    participant p20 as set (src/llm_wiki_cli/services…ocumentation_agent_result)
-    participant p21 as sorted (src/llm_wiki_cli/services…ocumentation_agent_result)
-    p0-->>p1: _resolve_workspace_root_argument(workspace)
-    p0-->>p2: load_documentation_run(workspace_root)
-    p0-->>p3: DocumentationAgentResult.from_dict(...)
-    p0-->>p4: isinstance (src/llm_wiki_cli/services…ocumentation_agent_result)(result, DocumentationAgentResult)
-    p0-->>p5: result.to_dict
-    p0-->>p6: DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_result)('Agent result run_id does not match the workspace.')
-    p0-->>p6: DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_result)(...)
-    p0-->>p7: run.stage_attempts.get(normalized.stage, 0)
-    p0-->>p6: DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_result)('Agent result requires a previously recorded stage packet attempt.')
-    p0-->>p8: result_path.exists
-    p0-->>p6: DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_result)(…)
-    p0-->>p9: _verify_stage_dispatch_integrity(workspace_root, run, stage=normalized.stage, attempt=attempt)
-    p0-->>p10: _block_run_for_integrity(workspace_root, run, 'Worker reported a forbidden source/input/generated mutation.')
-    p0-->>p11: DocumentationIntegrityError (src/llm_wiki_cli/services…ocumentation_agent_result)(…)
-    p0-->>p12: _verify_read_only_inputs(workspace_root, run)
-    p0-->>p10: _block_run_for_integrity(workspace_root, run, str(...))
-    p0-->>p13: str (src/llm_wiki_cli/services…ocumentation_agent_result)(exc)
-    p0-->>p14: run.evidence.get (src/llm_wiki_cli/services…ocumentation_agent_result)(...)
-    p0-->>p11: DocumentationIntegrityError (src/llm_wiki_cli/services…ocumentation_agent_result)('No pre-stage wiki baseline exists for result reconciliation.')
-    p0-->>p15: _read_json (src/llm_wiki_cli/services…ocumentation_agent_result)(_workspace_path(...))
-    p0-->>p16: _workspace_path (src/llm_wiki_cli/services…ocumentation_agent_result)(workspace_root, before_path)
-    p0-->>p17: TreeBaseline.from_dict(before_payload[...])
-    p0-->>p18: capture_tree_baseline(wiki_root, display=...)
-    p0-->>p19: _changed_paths(before_tree, current_tree)
-    p0-->>p20: set (src/llm_wiki_cli/services…ocumentation_agent_result)(actual_changed)
-    p0-->>p20: set (src/llm_wiki_cli/services…ocumentation_agent_result)(normalized.changed_wiki_paths)
-    p0-->>p10: _block_run_for_integrity(workspace_root, run, 'Worker changed-path report does not match the workspace diff.')
-    p0-->>p11: DocumentationIntegrityError (src/llm_wiki_cli/services…ocumentation_agent_result)(...)
-    p0-->>p21: sorted (src/llm_wiki_cli/services…ocumentation_agent_result)(normalized.changed_wiki_paths)
-    p0-->>p15: _read_json (src/llm_wiki_cli/services…ocumentation_agent_result)(_workspace_path(...))
+    participant p1 as _merge_agent_findings
+    participant p2 as _verify_user_docs_gate
+    participant p3 as _preflight_documentation_native_evidence
+    participant p4 as _validate_result_work_ids
+    participant p5 as _reconcile_imported_page_edits
+    participant p6 as _capture_native_evidence_transaction
+    participant p7 as _reconcile_documentation_native_evidence
+    participant p8 as _rollback_native_evidence_transaction
+    participant p9 as _merge_unique
+    participant p10 as _reconcile_semantic_readiness
+    participant p11 as _record_review_ledger_iteration
+    participant p12 as _has_unresolved_high_findings
+    participant p13 as _review_adjustment_state
+    participant p14 as _finding_text_values
+    participant p15 as _canonical_evidence_targets
+    participant p16 as _resolve_workspace_root_argument
+    participant p17 as load_documentation_run
+    participant p18 as DocumentationAgentResult.from_dict
+    participant p19 as isinstance (src/llm_wiki_cli/services…ocumentation_agent_result)
+    participant p20 as result.to_dict
+    participant p21 as DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_result)
+    participant p22 as run.stage_attempts.get
+    participant p23 as result_path.exists
+    participant p24 as _verify_stage_dispatch_integrity
+    participant p25 as _block_run_for_integrity
+    participant p26 as DocumentationIntegrityError (src/llm_wiki_cli/services…ocumentation_agent_result)
+    participant p27 as _verify_read_only_inputs
+    p0->>p1: _merge_agent_findings
+    p0->>p2: _verify_user_docs_gate
+    p0->>p3: _preflight_documentation_native_evidence
+    p0->>p4: _validate_result_work_ids
+    p0->>p5: _reconcile_imported_page_edits
+    p0->>p6: _capture_native_evidence_transaction
+    p0->>p7: _reconcile_documentation_native_evidence
+    p0->>p8: _rollback_native_evidence_transaction
+    p0->>p9: _merge_unique
+    p0->>p10: _reconcile_semantic_readiness
+    p0->>p11: _record_review_ledger_iteration
+    p0->>p12: _has_unresolved_high_findings
+    p0->>p13: _review_adjustment_state
+    p1->>p14: _finding_text_values
+    p2->>p15: _canonical_evidence_targets
+    p0-->>p16: _resolve_workspace_root_argument(workspace)
+    p0-->>p17: load_documentation_run(workspace_root)
+    p0-->>p18: DocumentationAgentResult.from_dict(...)
+    p0-->>p19: isinstance (src/llm_wiki_cli/services…ocumentation_agent_result)(result, DocumentationAgentResult)
+    p0-->>p20: result.to_dict
+    p0-->>p21: DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_result)('Agent result run_id does not match the workspace.')
+    p0-->>p21: DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_result)(...)
+    p0-->>p22: run.stage_attempts.get(normalized.stage, 0)
+    p0-->>p21: DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_result)('Agent result requires a previously recorded stage packet attempt.')
+    p0-->>p23: result_path.exists
+    p0-->>p21: DocumentationSchemaError (src/llm_wiki_cli/services…ocumentation_agent_result)(…)
+    p0-->>p24: _verify_stage_dispatch_integrity(workspace_root, run, stage=normalized.stage, attempt=attempt)
+    p0-->>p25: _block_run_for_integrity(workspace_root, run, 'Worker reported a forbidden source/input/generated mutation.')
+    p0-->>p26: DocumentationIntegrityError (src/llm_wiki_cli/services…ocumentation_agent_result)(…)
+    p0-->>p27: _verify_read_only_inputs(workspace_root, run)
 ```
 
 > Call sequence diagram shows 30 of 458 interactions; 428 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 0 of 0 (0 omitted); unresolved 30 of 436 (406 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 0 of 0 (0 omitted); unresolved 15 of 436 (421 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/documentation_run/record.py:record_documentation_agent_result` | 1 | - | unresolved | 52 |
-| `src/llm_wiki_cli/services/documentation_run/record.py:record_documentation_agent_result` | 1 | [src/llm_wiki_cli/services/documentation_run/record.py](../modules/record.md) | internal | 16 |
+| `src/llm_wiki_cli/services/documentation_run/record.py:record_documentation_agent_result` | 1 | - | unresolved | 67 |
 | `src/llm_wiki_cli/services/documentation_run/record.py:_preflight_documentation_native_evidence` | 45 | - | unresolved | 22 |
 | `src/llm_wiki_cli/services/documentation_run/record.py:_validate_result_work_ids` | 68 | - | unresolved | 38 |
 | `src/llm_wiki_cli/services/documentation_run/record.py:_reconcile_imported_page_edits` | 108 | - | unresolved | 36 |
 | `src/llm_wiki_cli/services/documentation_run/record.py:_capture_native_evidence_transaction` | 147 | - | unresolved | 8 |
 | `src/llm_wiki_cli/services/documentation_run/record.py:_reconcile_documentation_native_evidence` | 161 | - | unresolved | 26 |
 | `src/llm_wiki_cli/services/documentation_run/record.py:_rollback_native_evidence_transaction` | 190 | - | unresolved | 4 |
-> Omission summary shows 8 of 19 groups; 11 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/documentation_run/record.py:_merge_unique` | 210 | - | unresolved | 1 |
+> Omission summary shows 8 of 18 groups; 10 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow

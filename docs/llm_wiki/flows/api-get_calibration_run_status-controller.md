@@ -16,87 +16,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as get_calibration_run_status
     participant p1 as _open_store
-    participant p2 as store.lock
-    participant p3 as _load_run_locked
-    participant p4 as _recheck_bound_controls
-    participant p5 as _terminal_transition_locked
-    participant p6 as _authority_freshness_failure
-    participant p7 as _has_indeterminate_admission_probe
-    participant p8 as _stale_active_dispatches
-    participant p9 as _status_from_run
-    participant p10 as ProtectedArtifactStore
-    participant p11 as store.exists (src/llm_wiki_cli/services…oller.py:_load_run_locked)
-    participant p12 as store.read_json (src/llm_wiki_cli/services…y:_recheck_bound_controls)
-    participant p13 as run.payload[…].get
-    participant p14 as run.payload.get (src/llm_wiki_cli/services…terminate_admission_probe)
-    participant p15 as datetime.now (src/llm_wiki_cli/services…:_stale_active_dispatches)
-    participant p16 as P0CalibrationStatus
-    participant p17 as P0CalibrationIntegrityError
-    participant p18 as _load_emergency_rejection
-    participant p19 as _require_exact_fields
-    participant p20 as isinstance (src/llm_wiki_cli/services…thority_freshness_failure)
-    participant p21 as isinstance (src/llm_wiki_cli/services…terminate_admission_probe)
-    participant p22 as run.payload[…].items
-    participant p23 as str (src/llm_wiki_cli/services…oller.py:_status_from_run)
-    participant p24 as str (src/llm_wiki_cli/services…controller.py:_open_store)
-    participant p25 as _recover_pending_transaction
-    participant p26 as bindings.get
+    participant p2 as _load_run_locked
+    participant p3 as _recheck_bound_controls
+    participant p4 as _authority_freshness_failure
+    participant p5 as _stale_active_dispatches
+    participant p6 as _status_from_run
+    participant p7 as _terminal_transition_locked
+    participant p8 as _has_indeterminate_admission_probe
+    participant p9 as _load_emergency_rejection
+    participant p10 as _recover_pending_transaction
+    participant p11 as _block_ambiguous_recovery
+    participant p12 as _persist_emergency_rejection
+    participant p13 as _validate_authority_grant
+    participant p14 as _validate_host_authorization
+    participant p15 as _unknown_root_entries
+    participant p16 as _load_control_workspace
+    participant p17 as _validate_isolation_attestation
+    participant p18 as _assert_controls_match
+    participant p19 as _portable_control_record
+    participant p20 as _validate_external_broker_authentication
+    participant p21 as _authenticate_external_attestation
+    participant p22 as _revalidate_external_receipt_authentications
+    participant p23 as require_attestation_authentication
+    participant p24 as _require_exact_fields
+    participant p25 as _assert_regular_directory
+    participant p26 as _validate_pending_transaction_for_recovery
+    participant p27 as _read_workspace_json
+    participant p28 as _utc_now
+    participant p29 as datetime.now (src/llm_wiki_cli/services…:_stale_active_dispatches)
+    participant p30 as store.lock
     p0->>p1: _open_store
-    p0-->>p2: store.lock
-    p0->>p3: _load_run_locked
-    p0->>p4: _recheck_bound_controls
-    p0->>p5: _terminal_transition_locked
-    p0->>p6: _authority_freshness_failure
-    p0->>p5: _terminal_transition_locked
-    p0->>p7: _has_indeterminate_admission_probe
-    p0->>p5: _terminal_transition_locked
-    p0->>p8: _stale_active_dispatches
-    p0->>p5: _terminal_transition_locked
-    p0->>p9: _status_from_run
-    p1->>p10: ProtectedArtifactStore
-    p3-->>p11: store.exists (src/llm_wiki_cli/services…oller.py:_load_run_locked)('terminal-rejection.json')
-    p4-->>p12: store.read_json (src/llm_wiki_cli/services…y:_recheck_bound_controls)('baseline/runtime-bindings.json')
-    p6-->>p13: run.payload[…].get('authority_grant')
-    p7-->>p14: run.payload.get (src/llm_wiki_cli/services…terminate_admission_probe)('authority_hash')
-    p8-->>p15: datetime.now (src/llm_wiki_cli/services…:_stale_active_dispatches)(timezone.utc)
-    p9->>p16: P0CalibrationStatus
-    p1->>p17: P0CalibrationIntegrityError
-    p3->>p18: _load_emergency_rejection
-    p4->>p19: _require_exact_fields
-    p6-->>p20: isinstance (src/llm_wiki_cli/services…thority_freshness_failure)(authority_path, str)
-    p7-->>p21: isinstance (src/llm_wiki_cli/services…terminate_admission_probe)(..., str)
-    p8-->>p22: run.payload[…].items
-    p9-->>p23: str (src/llm_wiki_cli/services…oller.py:_status_from_run)(...)
-    p1-->>p24: str (src/llm_wiki_cli/services…controller.py:_open_store)(exc)
-    p3->>p25: _recover_pending_transaction
-    p4-->>p26: bindings.get('schema_version')
-    p6->>p17: P0CalibrationIntegrityError
+    p0->>p2: _load_run_locked
+    p0->>p3: _recheck_bound_controls
+    p0->>p4: _authority_freshness_failure
+    p0->>p5: _stale_active_dispatches
+    p0->>p6: _status_from_run
+    p0->>p7: _terminal_transition_locked
+    p0->>p8: _has_indeterminate_admission_probe
+    p2->>p9: _load_emergency_rejection
+    p2->>p10: _recover_pending_transaction
+    p2->>p11: _block_ambiguous_recovery
+    p2->>p12: _persist_emergency_rejection
+    p4->>p13: _validate_authority_grant
+    p4->>p14: _validate_host_authorization
+    p2->>p15: _unknown_root_entries
+    p3->>p16: _load_control_workspace
+    p4->>p17: _validate_isolation_attestation
+    p3->>p18: _assert_controls_match
+    p3->>p19: _portable_control_record
+    p4->>p20: _validate_external_broker_authentication
+    p4->>p21: _authenticate_external_attestation
+    p4->>p22: _revalidate_external_receipt_authentications
+    p21->>p23: require_attestation_authentication
+    p9->>p24: _require_exact_fields
+    p16->>p25: _assert_regular_directory
+    p10->>p26: _validate_pending_transaction_for_recovery
+    p16->>p27: _read_workspace_json
+    p11->>p28: _utc_now
+    p5-->>p29: datetime.now (src/llm_wiki_cli/services…:_stale_active_dispatches)(timezone.utc)
+    p0-->>p30: store.lock
 ```
 
 > Call sequence diagram shows 30 of 1230 interactions; 1200 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 5 of 279 (274 omitted); unresolved 7 of 439 (432 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 279 (278 omitted); unresolved 1 of 439 (438 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/calibration/controller.py:_open_store` | 2 | [src/llm_wiki_cli/services/protected_artifacts.py](../modules/protected_artifacts.md) | internal | 1 |
+| `src/llm_wiki_cli/services/calibration/controller.py:_open_store` | 2 | [src/llm_wiki_cli/services/calibration/controller.py](../modules/controller.md) | internal | 1 |
+| `src/llm_wiki_cli/services/calibration/controller.py:_open_store` | 2 | - | external | 1 |
+| `src/llm_wiki_cli/services/calibration/controller.py:_load_run_locked` | 7 | - | unresolved | 4 |
 | `src/llm_wiki_cli/services/calibration/controller.py:_load_emergency_rejection` | 9 | - | unresolved | 7 |
-| `src/llm_wiki_cli/services/calibration/controller.py:_load_emergency_rejection` | 9 | [src/llm_wiki_cli/services/calibration/controller.py](../modules/controller.md) | internal | 5 |
 | `src/llm_wiki_cli/services/calibration/controller.py:_require_exact_fields` | 11 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 2 |
 | `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 12 | - | external | 9 |
 | `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 12 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/calibration/controller.py:_require_exact_fields` | 11 | [src/llm_wiki_cli/services/calibration/controller.py](../modules/controller.md) | internal | 2 |
-| `src/llm_wiki_cli/services/calibration/controller.py:_require_exact_fields` | 11 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/calibration/controller.py:_require_exact_fields` | 11 | - | external | 2 |
-> Omission summary shows 8 of 186 groups; 178 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 191 groups; 183 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

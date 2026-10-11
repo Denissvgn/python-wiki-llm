@@ -30,84 +30,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as evaluate_knowledge_freshness
-    participant p1 as isinstance (src/llm_wiki_cli/services…luate_knowledge_freshness)
-    participant p2 as require_validated_artifacts
-    participant p3 as parse_knowledge_index
-    participant p4 as _knowledge_index_to_payload_unchecked
+    participant p1 as parse_knowledge_index
+    participant p2 as _knowledge_index_to_payload_unchecked
+    participant p3 as _evaluate_model_freshness
+    participant p4 as require_validated_artifacts
     participant p5 as KnowledgeFreshnessError
-    participant p6 as _evaluate_model_freshness
-    participant p7 as isinstance (src/llm_wiki_cli/services…quire_validated_artifacts)
-    participant p8 as _record
-    participant p9 as _bundle_to_payload
-    participant p10 as _validate_live_evaluation
-    participant p11 as TypeError (src/llm_wiki_cli/services…quire_validated_artifacts)
-    participant p12 as _string
-    participant p13 as sorted (src/llm_wiki_cli/services…ndex_to_payload_unchecked)
-    participant p14 as Counter
-    participant p15 as KnowledgeModelError
-    participant p16 as sorted (src/llm_wiki_cli/services…_evaluate_model_freshness)
-    participant p17 as _parse_bundle
-    participant p18 as _evaluate_concept
-    participant p19 as _array (src/llm_wiki_cli/services/knowledge_model.py)
-    participant p20 as _concept_to_payload
-    participant p21 as counts.get
-    participant p22 as tuple (src/llm_wiki_cli/services….py:parse_knowledge_index)
-    participant p23 as KnowledgeFreshnessReport
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…luate_knowledge_freshness)(knowledge, ValidatedKnowledgeArtifacts)
-    p0->>p2: require_validated_artifacts
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…luate_knowledge_freshness)(knowledge, KnowledgeIndex)
-    p0->>p3: parse_knowledge_index
-    p0->>p4: _knowledge_index_to_payload_unchecked
-    p0->>p3: parse_knowledge_index
+    participant p6 as _record
+    participant p7 as _bundle_to_payload
+    participant p8 as _validate_live_evaluation
+    participant p9 as _parse_bundle
+    participant p10 as _evaluate_concept
+    participant p11 as _concept_to_payload
+    participant p12 as _parse_concept
+    participant p13 as _relationship_to_payload
+    participant p14 as _parse_relationship
+    participant p15 as _validated_reserved_extensions
+    participant p16 as _validate_index_references
+    participant p17 as validate_implementation_collection
+    participant p18 as validate_maintenance_projection
+    participant p19 as validate_governance_projection
+    participant p20 as _object (src/llm_wiki_cli/services/knowledge_model.py)
+    participant p21 as _emit_extensions
+    participant p22 as _recorded_basis_details
+    participant p23 as _parse_document
+    participant p24 as validate_reuse_commitment
+    participant p25 as _result
+    participant p26 as _parse_repository
+    participant p27 as _basis_to_payload
+    participant p28 as _relationship_target_to_payload
+    participant p29 as isinstance (src/llm_wiki_cli/services…luate_knowledge_freshness)
+    participant p30 as counts.get
+    p0->>p1: parse_knowledge_index
+    p0->>p2: _knowledge_index_to_payload_unchecked
+    p0->>p3: _evaluate_model_freshness
+    p0->>p4: require_validated_artifacts
     p0->>p5: KnowledgeFreshnessError
-    p0->>p6: _evaluate_model_freshness
-    p2-->>p7: isinstance (src/llm_wiki_cli/services…quire_validated_artifacts)(value, ValidatedKnowledgeArtifacts)
-    p3->>p8: _record
-    p4->>p9: _bundle_to_payload
-    p6->>p10: _validate_live_evaluation
-    p2-->>p11: TypeError (src/llm_wiki_cli/services…quire_validated_artifacts)('expected validator-issued knowledge artifacts')
-    p3->>p12: _string
-    p4-->>p13: sorted (src/llm_wiki_cli/services…ndex_to_payload_unchecked)(producer[...], key=...)
-    p6-->>p14: Counter
-    p2-->>p7: isinstance (src/llm_wiki_cli/services…quire_validated_artifacts)(validation, _ArtifactValidation)
-    p3->>p15: KnowledgeModelError
-    p4-->>p13: sorted (src/llm_wiki_cli/services…ndex_to_payload_unchecked)(producer[...], key=...)
-    p6-->>p16: sorted (src/llm_wiki_cli/services…_evaluate_model_freshness)(model.concepts, key=...)
-    p2-->>p11: TypeError (src/llm_wiki_cli/services…quire_validated_artifacts)('knowledge artifacts were not issued by the validator or were replaced')
-    p3->>p17: _parse_bundle
-    p4-->>p13: sorted (src/llm_wiki_cli/services…ndex_to_payload_unchecked)(..., key=...)
-    p6->>p18: _evaluate_concept
-    p3->>p19: _array (src/llm_wiki_cli/services/knowledge_model.py)
-    p4->>p20: _concept_to_payload
-    p6-->>p21: counts.get(state, 0)
-    p3-->>p22: tuple (src/llm_wiki_cli/services….py:parse_knowledge_index)(...)
-    p4-->>p13: sorted (src/llm_wiki_cli/services…ndex_to_payload_unchecked)(..., key=_canonical_relationship_key)
-    p6->>p23: KnowledgeFreshnessReport
+    p1->>p6: _record
+    p2->>p7: _bundle_to_payload
+    p3->>p8: _validate_live_evaluation
+    p1->>p9: _parse_bundle
+    p3->>p10: _evaluate_concept
+    p2->>p11: _concept_to_payload
+    p1->>p12: _parse_concept
+    p2->>p13: _relationship_to_payload
+    p1->>p14: _parse_relationship
+    p1->>p15: _validated_reserved_extensions
+    p1->>p16: _validate_index_references
+    p1->>p17: validate_implementation_collection
+    p1->>p18: validate_maintenance_projection
+    p1->>p19: validate_governance_projection
+    p6->>p20: _object (src/llm_wiki_cli/services/knowledge_model.py)
+    p7->>p21: _emit_extensions
+    p10->>p22: _recorded_basis_details
+    p12->>p23: _parse_document
+    p15->>p24: validate_reuse_commitment
+    p10->>p25: _result
+    p9->>p26: _parse_repository
+    p11->>p27: _basis_to_payload
+    p13->>p28: _relationship_target_to_payload
+    p0-->>p29: isinstance (src/llm_wiki_cli/services…luate_knowledge_freshness)(knowledge, ValidatedKnowledgeArtifacts)
+    p3-->>p30: counts.get(state, 0)
 ```
 
 > Call sequence diagram shows 30 of 1931 interactions; 1901 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 13 of 514 (501 omitted); unresolved 1 of 332 (331 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 514 (513 omitted); unresolved 1 of 332 (331 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_model.py:_record` | 10 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 7 |
+| `src/llm_wiki_cli/services/knowledge_artifacts.py:require_validated_artifacts` | 3 | - | external | 4 |
+| `src/llm_wiki_cli/services/knowledge_freshness.py:evaluate_knowledge_freshness` | 1 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_object` | 11 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_object` | 11 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_mapping` | 13 | - | external | 2 |
 | `src/llm_wiki_cli/services/validation.py:require_mapping` | 13 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_object` | 11 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 3 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_record` | 10 | - | external | 4 |
-| `src/llm_wiki_cli/services/knowledge_model.py:_parse_extensions` | 28 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 7 |
-> Omission summary shows 8 of 466 groups; 458 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 467 groups; 459 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

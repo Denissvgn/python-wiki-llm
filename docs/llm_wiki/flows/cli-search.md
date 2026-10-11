@@ -44,82 +44,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as run
     participant p1 as validate_source_root
-    participant p2 as validate_path
-    participant p3 as search_wiki (src/llm_wiki_cli/api.py)
-    participant p4 as getattr (src/llm_wiki_cli/commands/search_cmd.py:run)
-    participant p5 as print
-    participant p6 as json.dumps (src/llm_wiki_cli/commands/search_cmd.py:run)
-    participant p7 as cast
-    participant p8 as Path(…).expanduser
-    participant p9 as search_wiki (src/llm_wiki_cli/services/search_service.py)
-    participant p10 as Path (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p11 as InvalidRequestError
-    participant p12 as candidate.is_absolute
-    participant p13 as str (src/llm_wiki_cli/api.py:search_wiki)
-    participant p14 as Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p15 as candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p16 as PathValidationError
-    participant p17 as resolved.is_dir
-    participant p18 as os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p19 as windows_current_user_sid
-    participant p20 as isinstance (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p21 as getattr (src/llm_wiki_cli/config.py:validate_source_root)
+    participant p2 as search_wiki (src/llm_wiki_cli/api.py)
+    participant p3 as validate_path
+    participant p4 as search_wiki (src/llm_wiki_cli/services/search_service.py)
+    participant p5 as windows_current_user_sid
+    participant p6 as _current_windows_user_sid
+    participant p7 as normalize_search
+    participant p8 as search_prevalidated_roots
+    participant p9 as normalize_documentation_query_limit
+    participant p10 as resolve_source_selection
+    participant p11 as capture_source_selection_inputs
+    participant p12 as validate_live_query_source_selection
+    participant p13 as build_source_snapshot
+    participant p14 as search_records
+    participant p15 as page_records
+    participant p16 as _page_membership
+    participant p17 as captured_manifest
+    participant p18 as _windows_sid_string
+    participant p19 as capture_source_index
+    participant p20 as capture_discovery
+    participant p21 as enrich_search
+    participant p22 as source_snapshot_matches_current_files
+    participant p23 as SyncManifest.load
+    participant p24 as _validate_capture_options
+    participant p25 as rank_pages (src/llm_wiki_cli/services/search_rank.py)
+    participant p26 as _object
+    participant p27 as rank_pages (src/llm_wiki_cli/services/search_lexical.py)
+    participant p28 as _resolve_snapshot_selection
+    participant p29 as getattr (src/llm_wiki_cli/commands/search_cmd.py:run)
+    participant p30 as Path(…).expanduser
     p0->>p1: validate_source_root
-    p0->>p2: validate_path
-    p0->>p3: search_wiki (src/llm_wiki_cli/api.py)
-    p0-->>p4: getattr (src/llm_wiki_cli/commands/search_cmd.py:run)(args, 'include_source', False)
-    p0-->>p4: getattr (src/llm_wiki_cli/commands/search_cmd.py:run)(args, 'discovery', None)
-    p0-->>p5: print(json.dumps(...))
-    p0-->>p6: json.dumps (src/llm_wiki_cli/commands/search_cmd.py:run)(result, ensure_ascii=False, sort_keys=True, indent=2)
-    p0-->>p5: print(...)
-    p0-->>p5: print(...)
-    p0-->>p5: print(...)
-    p0-->>p5: print(json.dumps(...))
-    p0-->>p6: json.dumps (src/llm_wiki_cli/commands/search_cmd.py:run)(result[...], ensure_ascii=False, sort_keys=True, indent=2)
-    p1->>p2: validate_path
-    p3-->>p7: cast(SearchResult, search(...))
-    p1-->>p8: Path(…).expanduser
-    p3->>p9: search_wiki (src/llm_wiki_cli/services/search_service.py)
-    p1-->>p10: Path (src/llm_wiki_cli/config.py:validate_source_root)(path)
-    p3->>p11: InvalidRequestError
-    p1-->>p12: candidate.is_absolute
-    p3-->>p13: str (src/llm_wiki_cli/api.py:search_wiki)(exc)
-    p1-->>p14: Path.cwd (src/llm_wiki_cli/config.py:validate_source_root)
-    p1-->>p15: candidate.resolve (src/llm_wiki_cli/config.py:validate_source_root)(strict=True)
-    p1->>p16: PathValidationError
-    p1-->>p17: resolved.is_dir
-    p1->>p16: PathValidationError
-    p1-->>p10: Path (src/llm_wiki_cli/config.py:validate_source_root)(os.path.abspath(...))
-    p1-->>p18: os.path.abspath (src/llm_wiki_cli/config.py:validate_source_root)(candidate)
-    p1->>p19: windows_current_user_sid
-    p1-->>p20: isinstance (src/llm_wiki_cli/config.py:validate_source_root)(current_sid, str)
-    p1-->>p21: getattr (src/llm_wiki_cli/config.py:validate_source_root)(os, 'geteuid', None)
+    p0->>p2: search_wiki (src/llm_wiki_cli/api.py)
+    p0->>p3: validate_path
+    p2->>p4: search_wiki (src/llm_wiki_cli/services/search_service.py)
+    p1->>p5: windows_current_user_sid
+    p5->>p6: _current_windows_user_sid
+    p4->>p7: normalize_search
+    p4->>p8: search_prevalidated_roots
+    p7->>p9: normalize_documentation_query_limit
+    p8->>p10: resolve_source_selection
+    p8->>p11: capture_source_selection_inputs
+    p8->>p12: validate_live_query_source_selection
+    p8->>p13: build_source_snapshot
+    p8->>p14: search_records
+    p8->>p15: page_records
+    p8->>p16: _page_membership
+    p8->>p17: captured_manifest
+    p6->>p18: _windows_sid_string
+    p8->>p19: capture_source_index
+    p8->>p20: capture_discovery
+    p8->>p21: enrich_search
+    p8->>p22: source_snapshot_matches_current_files
+    p12->>p23: SyncManifest.load
+    p13->>p24: _validate_capture_options
+    p14->>p25: rank_pages (src/llm_wiki_cli/services/search_rank.py)
+    p21->>p26: _object
+    p14->>p27: rank_pages (src/llm_wiki_cli/services/search_lexical.py)
+    p11->>p28: _resolve_snapshot_selection
+    p0-->>p29: getattr (src/llm_wiki_cli/commands/search_cmd.py:run)(args, 'include_source', False)
+    p1-->>p30: Path(…).expanduser
 ```
 
 > Call sequence diagram shows 30 of 1255 interactions; 1225 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 17 of 508 (491 omitted); unresolved 4 of 356 (352 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 508 (507 omitted); unresolved 1 of 356 (355 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 2 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
 | `src/llm_wiki_cli/config.py:validate_path` | 3 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
 | `src/llm_wiki_cli/config.py:validate_path` | 3 | - | unresolved | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 3 | - | external | 2 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 21 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 2 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 2 | - | external | 11 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 2 | - | unresolved | 4 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 21 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:_current_windows_user_sid` | 23 | - | external | 19 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_current_windows_user_sid` | 23 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_current_windows_user_sid` | 23 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 5 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_windows_sid_string` | 49 | - | external | 8 |
-> Omission summary shows 8 of 221 groups; 213 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 217 groups; 209 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

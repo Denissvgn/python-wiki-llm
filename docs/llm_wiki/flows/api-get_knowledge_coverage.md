@@ -71,81 +71,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as get_knowledge_coverage
-    participant p1 as isinstance (src/llm_wiki_cli/api.py:get_knowledge_coverage)
-    participant p2 as InvalidRequestError
-    participant p3 as getattr (src/llm_wiki_cli/api.py:get_knowledge_coverage)
-    participant p4 as cast
-    participant p5 as build_knowledge_coverage
-    participant p6 as capture_context_read
-    participant p7 as str (src/llm_wiki_cli/api.py:get_knowledge_coverage)
-    participant p8 as _assert_source_unchanged
-    participant p9 as _assert_wiki_unchanged
-    participant p10 as _validate_wiki_dir
-    participant p11 as _wiki_anchor
-    participant p12 as load_knowledge_read_view
-    participant p13 as isinstance (src/llm_wiki_cli/services…:build_knowledge_coverage)
-    participant p14 as isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)
-    participant p15 as validate_path
-    participant p16 as isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view)
-    participant p17 as TypeError (src/llm_wiki_cli/services…:build_knowledge_coverage)
-    participant p18 as TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)
-    participant p19 as TypeError (src/llm_wiki_cli/services…:load_knowledge_read_view)
-    participant p20 as set (src/llm_wiki_cli/services…:build_knowledge_coverage)
-    p0-->>p1: isinstance (src/llm_wiki_cli/api.py:get_knowledge_coverage)(value, bool)
-    p0->>p2: InvalidRequestError
-    p0-->>p1: isinstance (src/llm_wiki_cli/api.py:get_knowledge_coverage)(helper_cache_dir, (...))
-    p0->>p2: InvalidRequestError
-    p0->>p2: InvalidRequestError
-    p0-->>p3: getattr (src/llm_wiki_cli/api.py:get_knowledge_coverage)(service, 'knowledge_view', None)
-    p0-->>p1: isinstance (src/llm_wiki_cli/api.py:get_knowledge_coverage)(view, KnowledgeReadView)
-    p0->>p2: InvalidRequestError
-    p0-->>p4: cast(KnowledgeCoverageResult, build_knowledge_coverage(...))
-    p0->>p5: build_knowledge_coverage
-    p0->>p6: capture_context_read
-    p0-->>p7: str (src/llm_wiki_cli/api.py:get_knowledge_coverage)(helper_cache_dir)
-    p0->>p5: build_knowledge_coverage
-    p0->>p8: _assert_source_unchanged
-    p0->>p9: _assert_wiki_unchanged
-    p0->>p10: _validate_wiki_dir
-    p0->>p11: _wiki_anchor
-    p0->>p12: load_knowledge_read_view
-    p0->>p5: build_knowledge_coverage
-    p0->>p9: _assert_wiki_unchanged
-    p0-->>p4: cast(KnowledgeCoverageResult, payload)
-    p5-->>p13: isinstance (src/llm_wiki_cli/services…:build_knowledge_coverage)(view, KnowledgeReadView)
-    p6-->>p14: isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)(read_only, bool)
-    p10->>p15: validate_path
-    p12-->>p16: isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view)(include_machine_verification, bool)
-    p5-->>p17: TypeError (src/llm_wiki_cli/services…:build_knowledge_coverage)('view must be a validated knowledge read view')
-    p6-->>p18: TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)('read_only must be a boolean')
-    p12-->>p19: TypeError (src/llm_wiki_cli/services…:load_knowledge_read_view)('include_machine_verification must be a boolean')
-    p5-->>p20: set (src/llm_wiki_cli/services…:build_knowledge_coverage)(freshness.by_locator)
-    p6-->>p14: isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)(allow_external_src, bool)
+    participant p1 as build_knowledge_coverage
+    participant p2 as capture_context_read
+    participant p3 as _validate_wiki_dir
+    participant p4 as load_knowledge_read_view
+    participant p5 as InvalidRequestError
+    participant p6 as _assert_source_unchanged
+    participant p7 as _assert_wiki_unchanged
+    participant p8 as _wiki_anchor
+    participant p9 as validate_source_root
+    participant p10 as resolve_source_selection
+    participant p11 as capture_source_selection_inputs
+    participant p12 as validate_live_query_source_selection
+    participant p13 as build_source_snapshot
+    participant p14 as _guard_windows_inputs
+    participant p15 as _assert_source_inputs_unchanged
+    participant p16 as get_entry_points
+    participant p17 as read_console_scripts
+    participant p18 as resolve_call_edges
+    participant p19 as build_flow
+    participant p20 as build_data_flow_context
+    participant p21 as analyze_data_flow
+    participant p22 as evaluate_surface_index
+    participant p23 as _build_context_knowledge_view
+    participant p24 as analyze_dependencies
+    participant p25 as _selected_git_changed_files
+    participant p26 as _freeze_json
+    participant p27 as attach_maintenance_status
+    participant p28 as validate_path
+    participant p29 as isinstance (src/llm_wiki_cli/api.py:get_knowledge_coverage)
+    participant p30 as counts
+    p0->>p1: build_knowledge_coverage
+    p0->>p2: capture_context_read
+    p0->>p3: _validate_wiki_dir
+    p0->>p4: load_knowledge_read_view
+    p0->>p5: InvalidRequestError
+    p0->>p6: _assert_source_unchanged
+    p0->>p7: _assert_wiki_unchanged
+    p0->>p8: _wiki_anchor
+    p2->>p9: validate_source_root
+    p2->>p10: resolve_source_selection
+    p2->>p11: capture_source_selection_inputs
+    p2->>p12: validate_live_query_source_selection
+    p2->>p13: build_source_snapshot
+    p2->>p14: _guard_windows_inputs
+    p2->>p15: _assert_source_inputs_unchanged
+    p2->>p16: get_entry_points
+    p2->>p17: read_console_scripts
+    p2->>p18: resolve_call_edges
+    p2->>p19: build_flow
+    p2->>p20: build_data_flow_context
+    p2->>p21: analyze_data_flow
+    p2->>p22: evaluate_surface_index
+    p2->>p23: _build_context_knowledge_view
+    p2->>p24: analyze_dependencies
+    p2->>p25: _selected_git_changed_files
+    p2->>p26: _freeze_json
+    p2->>p27: attach_maintenance_status
+    p9->>p28: validate_path
+    p0-->>p29: isinstance (src/llm_wiki_cli/api.py:get_knowledge_coverage)(value, bool)
+    p1-->>p30: counts
 ```
 
 > Call sequence diagram shows 30 of 4105 interactions; 4075 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 15 of 1301 (1286 omitted); unresolved 0 of 1344 (1344 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1301 (1300 omitted); unresolved 1 of 1344 (1343 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_coverage.py:build_knowledge_coverage` | 11 | - | external | 12 |
-| `src/llm_wiki_cli/services/knowledge_coverage.py:build_knowledge_coverage` | 11 | - | unresolved | 7 |
+| `src/llm_wiki_cli/api.py:get_knowledge_coverage` | 1 | - | external | 6 |
+| `src/llm_wiki_cli/api.py:get_knowledge_coverage` | 1 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 3 |
+| `src/llm_wiki_cli/services/knowledge_coverage.py:build_knowledge_coverage` | 11 | - | external | 15 |
+| `src/llm_wiki_cli/services/knowledge_coverage.py:build_knowledge_coverage` | 11 | - | unresolved | 6 |
 | `src/llm_wiki_cli/services/knowledge_coverage.py:build_knowledge_coverage` | 11 | [src/llm_wiki_cli/services/knowledge_freshness.py](../modules/knowledge_freshness.md) | internal | 1 |
-| `src/llm_wiki_cli/services/context_packet.py:capture_context_read` | 35 | - | external | 33 |
-| `src/llm_wiki_cli/services/context_packet.py:capture_context_read` | 35 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 48 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
+| `src/llm_wiki_cli/services/context_packet.py:capture_context_read` | 35 | - | external | 36 |
 | `src/llm_wiki_cli/config.py:validate_path` | 49 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
 | `src/llm_wiki_cli/config.py:validate_path` | 49 | - | unresolved | 3 |
-> Omission summary shows 8 of 1010 groups; 1002 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1008 groups; 1000 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

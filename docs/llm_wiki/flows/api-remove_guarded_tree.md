@@ -6,79 +6,90 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as remove_guarded_tree
-    participant p1 as Path (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)
-    participant p2 as target.is_absolute
-    participant p3 as OSError (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)
-    participant p4 as uuid.uuid4 (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)
-    participant p5 as guard_windows_directory_chain
-    participant p6 as create_private_windows_directory
-    participant p7 as move_windows_path_write_through
-    participant p8 as claimed.lstat
-    participant p9 as windows_object_identity
-    participant p10 as str (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)
-    participant p11 as getattr (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)
-    participant p12 as stat.S_ISDIR (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)
-    participant p13 as WindowsDirectoryGuardError
-    participant p14 as _guarded_tree_manifest_windows_path
-    participant p15 as any
-    participant p16 as clear_windows
-    participant p17 as claimed.rmdir
-    participant p18 as quarantine.rmdir
-    p0-->>p1: Path (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)(path)
-    p0-->>p2: target.is_absolute
-    p0-->>p3: OSError (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)(...)
-    p0-->>p4: uuid.uuid4 (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)
-    p0->>p5: guard_windows_directory_chain
-    p0-->>p1: Path (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)(target.parent.anchor)
-    p0->>p6: create_private_windows_directory
-    p0->>p7: move_windows_path_write_through
-    p0-->>p8: claimed.lstat
-    p0->>p9: windows_object_identity
-    p0-->>p10: str (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)(claimed)
-    p0-->>p11: getattr (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)(metadata, 'st_file_attributes', 0)
-    p0-->>p12: stat.S_ISDIR (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)(metadata.st_mode)
-    p0->>p13: WindowsDirectoryGuardError
-    p0->>p13: WindowsDirectoryGuardError
-    p0->>p14: _guarded_tree_manifest_windows_path
-    p0->>p13: WindowsDirectoryGuardError
-    p0-->>p15: any(...)
-    p0-->>p12: stat.S_ISDIR (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)(entry[...])
-    p0->>p13: WindowsDirectoryGuardError
-    p0-->>p16: clear_windows(claimed)
-    p0->>p9: windows_object_identity
-    p0-->>p8: claimed.lstat
-    p0-->>p10: str (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)(claimed)
-    p0->>p13: WindowsDirectoryGuardError
-    p0-->>p17: claimed.rmdir
-    p0->>p7: move_windows_path_write_through
-    p0-->>p18: quarantine.rmdir
-    p0-->>p11: getattr (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)(os, 'O_NOFOLLOW', None)
-    p0-->>p11: getattr (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)(os, 'O_DIRECTORY', None)
+    participant p1 as guard_windows_directory_chain
+    participant p2 as windows_object_identity
+    participant p3 as _guarded_tree_manifest_windows_path
+    participant p4 as _guarded_tree_manifest_posix_fd
+    participant p5 as create_private_windows_directory
+    participant p6 as move_windows_path_write_through
+    participant p7 as WindowsDirectoryGuardError
+    participant p8 as windows_object_identity_from_values
+    participant p9 as _open_windows_directory_guard
+    participant p10 as _guarded_tree_entry_windows_path
+    participant p11 as _private_windows_security_attributes
+    participant p12 as open_windows_readonly_file
+    participant p13 as _verify_windows_handle_restrictive_dacl
+    participant p14 as _open_windows_readonly_file_handle
+    participant p15 as _current_windows_user_sid
+    participant p16 as _windows_sid_string
+    participant p17 as _read_posix_descriptor
+    participant p18 as _close_windows_handle
+    participant p19 as WindowsIdentityUnavailableError
+    participant p20 as WindowsObjectIdentity
+    participant p21 as _windows_api_path
+    participant p22 as _WindowsDirectoryGuardUnavailableError
+    participant p23 as WindowsFileGuardError
+    participant p24 as WindowsDurabilityError
+    participant p25 as WindowsSecurityGuardError
+    participant p26 as Path (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)
+    participant p27 as target.is_absolute
+    participant p28 as OSError (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)
+    participant p29 as uuid.uuid4 (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)
+    p0->>p1: guard_windows_directory_chain
+    p0->>p2: windows_object_identity
+    p0->>p3: _guarded_tree_manifest_windows_path
+    p0->>p4: _guarded_tree_manifest_posix_fd
+    p0->>p5: create_private_windows_directory
+    p0->>p6: move_windows_path_write_through
+    p0->>p7: WindowsDirectoryGuardError
+    p2->>p8: windows_object_identity_from_values
+    p1->>p9: _open_windows_directory_guard
+    p3->>p10: _guarded_tree_entry_windows_path
+    p5->>p11: _private_windows_security_attributes
+    p10->>p12: open_windows_readonly_file
+    p9->>p13: _verify_windows_handle_restrictive_dacl
+    p12->>p14: _open_windows_readonly_file_handle
+    p13->>p15: _current_windows_user_sid
+    p15->>p16: _windows_sid_string
+    p4->>p17: _read_posix_descriptor
+    p1->>p18: _close_windows_handle
+    p8->>p19: WindowsIdentityUnavailableError
+    p8->>p20: WindowsObjectIdentity
+    p9->>p21: _windows_api_path
+    p9->>p22: _WindowsDirectoryGuardUnavailableError
+    p10->>p23: WindowsFileGuardError
+    p6->>p24: WindowsDurabilityError
+    p11->>p25: WindowsSecurityGuardError
+    p0-->>p26: Path (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)(path)
+    p0-->>p27: target.is_absolute
+    p0-->>p28: OSError (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)(...)
+    p0-->>p29: uuid.uuid4 (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)
+    p0-->>p26: Path (src/llm_wiki_cli/services…rd.py:remove_guarded_tree)(target.parent.anchor)
 ```
 
 > Call sequence diagram shows 30 of 385 interactions; 355 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 12 of 236 (224 omitted); unresolved 6 of 53 (47 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 4 of 236 (232 omitted); unresolved 1 of 53 (52 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 6 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 9 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 6 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 7 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 6 | - | external | 9 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 6 | - | unresolved | 4 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 14 | - | external | 14 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 14 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 14 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 9 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:_windows_api_path` | 17 | - | external | 2 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:_windows_api_path` | 17 | - | unresolved | 2 |
-> Omission summary shows 8 of 52 groups; 44 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 14 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 6 |
+> Omission summary shows 8 of 49 groups; 41 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow

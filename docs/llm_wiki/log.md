@@ -1919,3 +1919,19 @@ use guarded retained-page plans and their existing explicit recovery boundary.
 - Pages deprecated: 0
 - Semantic fields preserved: 1
 - Moved entities: none
+
+## 2026-10-12
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:1f9bcabfe7dc4bb95e01e92de245f0fa692c72ea02994cee212606cd3374eb57`
+- Pages created: 0
+- Pages updated: 476
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1099
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none

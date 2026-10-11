@@ -6,7 +6,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -16,58 +16,66 @@ sequenceDiagram
     participant p2 as GovernanceError
     participant p3 as validate_concept_kind
     participant p4 as require_repository_relative_path
-    participant p5 as ConceptIdentityError
-    participant p6 as validate_natural_key
-    participant p7 as _machine_text
-    participant p8 as isinstance (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p9 as _QUALIFIED_KIND_RE.fullmatch
-    participant p10 as _syntax_key
-    participant p11 as text.partition
-    participant p12 as _known_syntax
-    participant p13 as _NATURAL_KEY_PREFIX_RE.fullmatch
-    participant p14 as value.strip (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p15 as _NATURAL_KEY_PAYLOAD_RE.fullmatch
-    participant p16 as any (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p17 as ord (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p18 as _INVALID_PERCENT_RE.search
-    participant p19 as value.startswith (src/llm_wiki_cli/services…_repository_relative_path)
-    participant p20 as _PERCENT_ESCAPE_RE.finditer
-    participant p21 as match.group
+    participant p5 as validate_natural_key
+    participant p6 as _machine_text
+    participant p7 as require_portable_relative_path
+    participant p8 as _safe_decoded_coordinate
+    participant p9 as _default_path_error
+    participant p10 as _check_path_collision
+    participant p11 as require_portable_path_component
+    participant p12 as ConceptIdentityError
+    participant p13 as _syntax_key
+    participant p14 as _known_syntax
+    participant p15 as _remember_syntax
+    participant p16 as _contains_uri_userinfo
+    participant p17 as _contains_coordinate_userinfo
+    participant p18 as _looks_absolute_path
+    participant p19 as SharedValidationError
+    participant p20 as portable_path_key
+    participant p21 as isinstance (src/llm_wiki_cli/services…_repository_relative_path)
+    participant p22 as _QUALIFIED_KIND_RE.fullmatch
+    participant p23 as text.partition
+    participant p24 as _NATURAL_KEY_PREFIX_RE.fullmatch
+    participant p25 as value.strip (src/llm_wiki_cli/services…_repository_relative_path)
+    participant p26 as _NATURAL_KEY_PAYLOAD_RE.fullmatch
+    participant p27 as any (src/llm_wiki_cli/services…_repository_relative_path)
+    participant p28 as ord (src/llm_wiki_cli/services…_repository_relative_path)
+    participant p29 as _INVALID_PERCENT_RE.search
     p0->>p1: natural_key_for (src/llm_wiki_cli/services/concept_identity.py)
     p0->>p2: GovernanceError
     p1->>p3: validate_concept_kind
     p1->>p4: require_repository_relative_path
-    p1->>p5: ConceptIdentityError
-    p1->>p5: ConceptIdentityError
-    p1->>p5: ConceptIdentityError
-    p1->>p5: ConceptIdentityError
-    p1->>p6: validate_natural_key
-    p3->>p7: _machine_text
-    p4-->>p8: isinstance (src/llm_wiki_cli/services…_repository_relative_path)(value, str)
-    p6->>p7: _machine_text
-    p3-->>p9: _QUALIFIED_KIND_RE.fullmatch(text)
-    p4->>p10: _syntax_key
-    p6-->>p11: text.partition(':')
-    p3->>p5: ConceptIdentityError
-    p4->>p12: _known_syntax
-    p6-->>p13: _NATURAL_KEY_PREFIX_RE.fullmatch(prefix)
-    p4-->>p14: value.strip (src/llm_wiki_cli/services…_repository_relative_path)
-    p6-->>p15: _NATURAL_KEY_PAYLOAD_RE.fullmatch(payload)
-    p4-->>p16: any (src/llm_wiki_cli/services…_repository_relative_path)(...)
-    p6->>p5: ConceptIdentityError
-    p4-->>p17: ord (src/llm_wiki_cli/services…_repository_relative_path)(character)
-    p6-->>p18: _INVALID_PERCENT_RE.search(payload)
-    p4-->>p17: ord (src/llm_wiki_cli/services…_repository_relative_path)(character)
-    p6->>p5: ConceptIdentityError
-    p4-->>p19: value.startswith (src/llm_wiki_cli/services…_repository_relative_path)('/')
-    p6-->>p20: _PERCENT_ESCAPE_RE.finditer(payload)
-    p4-->>p19: value.startswith (src/llm_wiki_cli/services…_repository_relative_path)('\\')
-    p6-->>p21: match.group(1)
+    p1->>p5: validate_natural_key
+    p3->>p6: _machine_text
+    p4->>p7: require_portable_relative_path
+    p5->>p8: _safe_decoded_coordinate
+    p7->>p9: _default_path_error
+    p7->>p10: _check_path_collision
+    p7->>p11: require_portable_path_component
+    p1->>p12: ConceptIdentityError
+    p4->>p13: _syntax_key
+    p4->>p14: _known_syntax
+    p4->>p15: _remember_syntax
+    p5->>p16: _contains_uri_userinfo
+    p5->>p17: _contains_coordinate_userinfo
+    p5->>p18: _looks_absolute_path
+    p9->>p19: SharedValidationError
+    p10->>p20: portable_path_key
+    p4-->>p21: isinstance (src/llm_wiki_cli/services…_repository_relative_path)(value, str)
+    p3-->>p22: _QUALIFIED_KIND_RE.fullmatch(text)
+    p5-->>p23: text.partition(':')
+    p5-->>p24: _NATURAL_KEY_PREFIX_RE.fullmatch(prefix)
+    p4-->>p25: value.strip (src/llm_wiki_cli/services…_repository_relative_path)
+    p5-->>p26: _NATURAL_KEY_PAYLOAD_RE.fullmatch(payload)
+    p4-->>p27: any (src/llm_wiki_cli/services…_repository_relative_path)(...)
+    p4-->>p28: ord (src/llm_wiki_cli/services…_repository_relative_path)(character)
+    p5-->>p29: _INVALID_PERCENT_RE.search(payload)
+    p4-->>p28: ord (src/llm_wiki_cli/services…_repository_relative_path)(character)
 ```
 
 > Call sequence diagram shows 30 of 145 interactions; 115 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 4 of 38 (34 omitted); unresolved 10 of 48 (38 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 4 of 38 (34 omitted); unresolved 6 of 48 (42 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -76,11 +84,11 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 4 | - | external | 6 |
 | `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 4 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 5 |
 | `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 4 | - | unresolved | 3 |
+| `src/llm_wiki_cli/services/concept_identity.py:validate_concept_kind` | 3 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:_syntax_key` | 23 | - | external | 6 |
 | `src/llm_wiki_cli/services/validation.py:_known_syntax` | 30 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 21 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 21 | - | unresolved | 4 |
 | `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 21 | - | external | 3 |
-| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 21 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 2 |
 > Omission summary shows 8 of 31 groups; 23 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

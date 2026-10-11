@@ -6,26 +6,26 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as capture_generated_ownership
-    participant p1 as Path(…).expanduser().resolve
-    participant p2 as Path(…).expanduser
-    participant p3 as Path
-    participant p4 as path.is_symlink
-    participant p5 as DocumentationIntegrityError
-    participant p6 as path.is_file
-    participant p7 as hash_bytes
-    participant p8 as path.read_bytes
-    participant p9 as sorted
-    participant p10 as root.rglob
-    participant p11 as path.relative_to(…).as_posix
-    participant p12 as path.relative_to
-    participant p13 as path.read_text
-    participant p14 as _generated_sections
+    participant p1 as _generated_sections
+    participant p2 as Path(…).expanduser().resolve
+    participant p3 as Path(…).expanduser
+    participant p4 as Path
+    participant p5 as path.is_symlink
+    participant p6 as DocumentationIntegrityError
+    participant p7 as path.is_file
+    participant p8 as hash_bytes
+    participant p9 as path.read_bytes
+    participant p10 as sorted
+    participant p11 as root.rglob
+    participant p12 as path.relative_to(…).as_posix
+    participant p13 as path.relative_to
+    participant p14 as path.read_text
     participant p15 as section.encode
     participant p16 as text.splitlines
     participant p17 as enumerate
@@ -37,36 +37,36 @@ sequenceDiagram
     participant p23 as lines[…][…].strip
     participant p24 as re.sub(…).strip
     participant p25 as re.sub
-    p0-->>p1: Path(…).expanduser().resolve
-    p0-->>p2: Path(…).expanduser
-    p0-->>p3: Path(wiki_root)
-    p0-->>p4: path.is_symlink
-    p0-->>p5: DocumentationIntegrityError(...)
-    p0-->>p6: path.is_file
-    p0-->>p7: hash_bytes(path.read_bytes(...))
-    p0-->>p8: path.read_bytes
-    p0-->>p9: sorted(root.rglob(...))
-    p0-->>p10: root.rglob('*.md')
-    p0-->>p4: path.is_symlink
-    p0-->>p6: path.is_file
-    p0-->>p5: DocumentationIntegrityError(...)
-    p0-->>p11: path.relative_to(…).as_posix
-    p0-->>p12: path.relative_to(root)
-    p0-->>p13: path.read_text(encoding='utf-8')
-    p0->>p14: _generated_sections
-    p0-->>p7: hash_bytes(section.encode(...))
+    p0->>p1: _generated_sections
+    p0-->>p2: Path(…).expanduser().resolve
+    p0-->>p3: Path(…).expanduser
+    p0-->>p4: Path(wiki_root)
+    p0-->>p5: path.is_symlink
+    p0-->>p6: DocumentationIntegrityError(...)
+    p0-->>p7: path.is_file
+    p0-->>p8: hash_bytes(path.read_bytes(...))
+    p0-->>p9: path.read_bytes
+    p0-->>p10: sorted(root.rglob(...))
+    p0-->>p11: root.rglob('*.md')
+    p0-->>p5: path.is_symlink
+    p0-->>p7: path.is_file
+    p0-->>p6: DocumentationIntegrityError(...)
+    p0-->>p12: path.relative_to(…).as_posix
+    p0-->>p13: path.relative_to(root)
+    p0-->>p14: path.read_text(encoding='utf-8')
+    p0-->>p8: hash_bytes(section.encode(...))
     p0-->>p15: section.encode('utf-8')
-    p14-->>p16: text.splitlines(keepends=True)
-    p14-->>p17: enumerate(lines)
-    p14-->>p18: line.startswith(' ')
-    p14-->>p19: starts.append(len(...))
-    p14-->>p20: len(lines)
-    p14-->>p17: enumerate(...)
-    p14-->>p21: ''.join(...)
-    p14-->>p22: lines[…][…].strip().lower
-    p14-->>p23: lines[…][…].strip
-    p14-->>p24: re.sub(…).strip('-')
-    p14-->>p25: re.sub('[^a-z0-9]+', '-', heading)
+    p1-->>p16: text.splitlines(keepends=True)
+    p1-->>p17: enumerate(lines)
+    p1-->>p18: line.startswith(' ')
+    p1-->>p19: starts.append(len(...))
+    p1-->>p20: len(lines)
+    p1-->>p17: enumerate(...)
+    p1-->>p21: ''.join(...)
+    p1-->>p22: lines[…][…].strip().lower
+    p1-->>p23: lines[…][…].strip
+    p1-->>p24: re.sub(…).strip('-')
+    p1-->>p25: re.sub('[^a-z0-9]+', '-', heading)
 ```
 
 > Call sequence diagram shows 30 of 32 interactions; 2 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.

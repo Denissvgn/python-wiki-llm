@@ -6,84 +6,90 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as unlink_guarded_bytes
-    participant p1 as before_wiki_write
-    participant p2 as _unlink_guarded_bytes
+    participant p1 as _unlink_guarded_bytes
+    participant p2 as before_wiki_write
     participant p3 as after_wiki_write
-    participant p4 as ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)
-    participant p5 as Path (src/llm_wiki_cli/services….py:_unlink_guarded_bytes)
-    participant p6 as ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…basis.py:after_wiki_write)
-    participant p7 as basis.before_write
-    participant p8 as target.is_absolute
-    participant p9 as basis.after_write
-    participant p10 as Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)
-    participant p11 as OSError
-    participant p12 as Path (src/llm_wiki_cli/services…basis.py:after_wiki_write)
-    participant p13 as isinstance
-    participant p14 as TypeError
-    participant p15 as uuid.uuid4 (src/llm_wiki_cli/services….py:_unlink_guarded_bytes)
-    participant p16 as guard_windows_directory_chain
-    participant p17 as move_windows_path_write_through
-    participant p18 as quarantine.lstat
-    participant p19 as getattr (src/llm_wiki_cli/services….py:_unlink_guarded_bytes)
-    participant p20 as WindowsFileGuardError
-    participant p21 as open_windows_readonly_file
-    participant p22 as stat.S_ISREG
-    participant p23 as stream.read
-    participant p24 as quarantine.unlink
-    p0->>p1: before_wiki_write
-    p0->>p2: _unlink_guarded_bytes
+    participant p4 as guard_windows_directory_chain
+    participant p5 as open_windows_readonly_file
+    participant p6 as _restore_posix_quarantined_entry
+    participant p7 as _open_windows_readonly_file_handle
+    participant p8 as _open_windows_directory_guard
+    participant p9 as windows_object_identity
+    participant p10 as create_private_windows_directory
+    participant p11 as windows_object_identity_from_values
+    participant p12 as _private_windows_security_attributes
+    participant p13 as move_windows_path_write_through
+    participant p14 as _verify_windows_handle_restrictive_dacl
+    participant p15 as _current_windows_user_sid
+    participant p16 as WindowsFileGuardError
+    participant p17 as WindowsDirectoryGuardError
+    participant p18 as _restore_posix_entry_between
+    participant p19 as _close_windows_handle
+    participant p20 as _windows_api_path
+    participant p21 as _WindowsDirectoryGuardUnavailableError
+    participant p22 as WindowsDurabilityError
+    participant p23 as WindowsIdentityUnavailableError
+    participant p24 as WindowsObjectIdentity
+    participant p25 as WindowsSecurityGuardError
+    participant p26 as _windows_sid_string
+    participant p27 as Path (src/llm_wiki_cli/services….py:_unlink_guarded_bytes)
+    participant p28 as ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)
+    participant p29 as ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…basis.py:after_wiki_write)
+    participant p30 as basis.before_write
+    p0->>p1: _unlink_guarded_bytes
+    p0->>p2: before_wiki_write
     p0->>p3: after_wiki_write
-    p1-->>p4: ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)
-    p2-->>p5: Path (src/llm_wiki_cli/services….py:_unlink_guarded_bytes)(path)
-    p3-->>p6: ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…basis.py:after_wiki_write)
-    p1-->>p7: basis.before_write(Path(...), content)
-    p2-->>p8: target.is_absolute
-    p3-->>p9: basis.after_write(Path(...), content)
-    p1-->>p10: Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)(path)
-    p2-->>p11: OSError(...)
-    p3-->>p12: Path (src/llm_wiki_cli/services…basis.py:after_wiki_write)(path)
-    p2-->>p13: isinstance(expected, bytes)
-    p2-->>p14: TypeError('Guarded unlink expected content must be bytes.')
-    p2-->>p15: uuid.uuid4 (src/llm_wiki_cli/services….py:_unlink_guarded_bytes)
-    p2->>p16: guard_windows_directory_chain
-    p2-->>p5: Path (src/llm_wiki_cli/services….py:_unlink_guarded_bytes)(target.parent.anchor)
-    p2->>p17: move_windows_path_write_through
-    p2-->>p18: quarantine.lstat
-    p2-->>p19: getattr (src/llm_wiki_cli/services….py:_unlink_guarded_bytes)(metadata, 'st_file_attributes', 0)
-    p2->>p20: WindowsFileGuardError
-    p2->>p21: open_windows_readonly_file
-    p2-->>p22: stat.S_ISREG(opened.st_mode)
-    p2-->>p23: stream.read
-    p2->>p20: WindowsFileGuardError
-    p2-->>p24: quarantine.unlink
-    p2->>p17: move_windows_path_write_through
-    p2-->>p19: getattr (src/llm_wiki_cli/services….py:_unlink_guarded_bytes)(os, 'O_NOFOLLOW', None)
-    p2-->>p19: getattr (src/llm_wiki_cli/services….py:_unlink_guarded_bytes)(os, 'O_DIRECTORY', None)
-    p2-->>p11: OSError('This POSIX platform cannot provide guarded unlink.')
+    p1->>p4: guard_windows_directory_chain
+    p1->>p5: open_windows_readonly_file
+    p1->>p6: _restore_posix_quarantined_entry
+    p5->>p7: _open_windows_readonly_file_handle
+    p4->>p8: _open_windows_directory_guard
+    p5->>p9: windows_object_identity
+    p4->>p10: create_private_windows_directory
+    p9->>p11: windows_object_identity_from_values
+    p10->>p12: _private_windows_security_attributes
+    p10->>p13: move_windows_path_write_through
+    p8->>p14: _verify_windows_handle_restrictive_dacl
+    p14->>p15: _current_windows_user_sid
+    p1->>p16: WindowsFileGuardError
+    p4->>p17: WindowsDirectoryGuardError
+    p6->>p18: _restore_posix_entry_between
+    p5->>p19: _close_windows_handle
+    p8->>p20: _windows_api_path
+    p8->>p21: _WindowsDirectoryGuardUnavailableError
+    p13->>p22: WindowsDurabilityError
+    p11->>p23: WindowsIdentityUnavailableError
+    p11->>p24: WindowsObjectIdentity
+    p12->>p25: WindowsSecurityGuardError
+    p14->>p26: _windows_sid_string
+    p1-->>p27: Path (src/llm_wiki_cli/services….py:_unlink_guarded_bytes)(path)
+    p2-->>p28: ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)
+    p3-->>p29: ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…basis.py:after_wiki_write)
+    p2-->>p30: basis.before_write(Path(...), content)
 ```
 
 > Call sequence diagram shows 30 of 311 interactions; 281 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 13 of 185 (172 omitted); unresolved 8 of 41 (33 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 185 (184 omitted); unresolved 3 of 41 (38 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 13 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 9 |
+| `src/llm_wiki_cli/services/wiki_write_basis.py:before_wiki_write` | 2 | - | external | 1 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_unlink_guarded_bytes` | 6 | - | unresolved | 6 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_unlink_guarded_bytes` | 6 | - | external | 27 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 13 | - | external | 9 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 13 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 6 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 13 | - | unresolved | 4 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 21 | - | external | 14 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 21 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 21 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 9 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_windows_api_path` | 24 | - | external | 2 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_windows_api_path` | 24 | - | unresolved | 2 |
 > Omission summary shows 8 of 40 groups; 32 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

@@ -22,7 +22,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -32,73 +32,81 @@ sequenceDiagram
     participant p2 as validate_compact_task_context
     participant p3 as _expanded
     participant p4 as render_compact_task_context
-    participant p5 as dict
-    participant p6 as isinstance (src/llm_wiki_cli/services…date_compact_task_context)
-    participant p7 as zip
-    participant p8 as TaskCompactError
-    participant p9 as _decode_observation
-    participant p10 as json.loads (src/llm_wiki_cli/services…date_compact_task_context)
-    participant p11 as deepcopy (src/llm_wiki_cli/services/task_compact.py:_expanded)
-    participant p12 as fact.pop
-    participant p13 as canonical_json(…).decode (src/llm_wiki_cli/services…date_compact_task_context)
-    participant p14 as canonical_json
-    participant p15 as facts.append
-    participant p16 as deepcopy (src/llm_wiki_cli/services…date_compact_task_context)
-    participant p17 as requirements.append (src/llm_wiki_cli/services/task_compact.py:_expanded)
-    participant p18 as coverage.append
-    participant p19 as _decode_limits
-    participant p20 as _validated
-    participant p21 as deepcopy (src/llm_wiki_cli/services…ct.py:_decode_observation)
-    participant p22 as _LIMIT_SUMMARIES.index
+    participant p5 as _decode_observation
+    participant p6 as _validated
+    participant p7 as normalize_view_options
+    participant p8 as _decode_contract
+    participant p9 as _projection
+    participant p10 as _same
+    participant p11 as normalize_task_request
+    participant p12 as _counter
+    participant p13 as validate_task_context
+    participant p14 as _encode_observation
+    participant p15 as TaskCompactError
+    participant p16 as canonical_json
+    participant p17 as _decode_limits
+    participant p18 as _accounted_render
+    participant p19 as CompactTaskContext
+    participant p20 as _CheckedCounter
+    participant p21 as _encode_limits
+    participant p22 as exact_fields
+    participant p23 as WorkflowRequestError
+    participant p24 as EstimatedCounter
+    participant p25 as _encode_contract
+    participant p26 as bounded_text
+    participant p27 as _array
+    participant p28 as content_id
+    participant p29 as dict
+    participant p30 as fact.pop
     p0->>p1: expand_compact_task_context (src/llm_wiki_cli/services/task_compact.py)
     p1->>p2: validate_compact_task_context
     p1->>p3: _expanded
     p2->>p4: render_compact_task_context
-    p3-->>p5: dict(zip(...))
-    p2-->>p6: isinstance (src/llm_wiki_cli/services…date_compact_task_context)(compact_text, str)
-    p3-->>p7: zip(FACT_COLUMNS, row)
-    p2->>p8: TaskCompactError
-    p3->>p9: _decode_observation
-    p2-->>p10: json.loads (src/llm_wiki_cli/services…date_compact_task_context)(compact_text, object_pairs_hook=_pairs, parse_constant=_constant)
-    p3-->>p11: deepcopy (src/llm_wiki_cli/services/task_compact.py:_expanded)(...)
-    p2->>p8: TaskCompactError
-    p3-->>p12: fact.pop('citation_refs')
-    p2-->>p13: canonical_json(…).decode (src/llm_wiki_cli/services…date_compact_task_context)('utf-8')
-    p3-->>p11: deepcopy (src/llm_wiki_cli/services/task_compact.py:_expanded)(payload[...])
-    p2->>p14: canonical_json
-    p3-->>p15: facts.append(fact)
-    p2->>p8: TaskCompactError
-    p3-->>p5: dict(zip(...))
-    p2-->>p16: deepcopy (src/llm_wiki_cli/services…date_compact_task_context)(payload)
-    p3-->>p7: zip(REQUIREMENT_COLUMNS, row)
-    p3-->>p17: requirements.append (src/llm_wiki_cli/services/task_compact.py:_expanded)(...)
-    p3-->>p18: coverage.append({...})
-    p3-->>p11: deepcopy (src/llm_wiki_cli/services/task_compact.py:_expanded)(payload[...])
-    p3-->>p11: deepcopy (src/llm_wiki_cli/services/task_compact.py:_expanded)(payload[...])
-    p3-->>p11: deepcopy (src/llm_wiki_cli/services/task_compact.py:_expanded)(...)
-    p3->>p19: _decode_limits
-    p4->>p20: _validated
-    p9-->>p21: deepcopy (src/llm_wiki_cli/services…ct.py:_decode_observation)(value[...])
-    p19-->>p22: _LIMIT_SUMMARIES.index(value[...])
+    p3->>p5: _decode_observation
+    p4->>p6: _validated
+    p4->>p7: normalize_view_options
+    p5->>p8: _decode_contract
+    p4->>p9: _projection
+    p9->>p10: _same
+    p6->>p11: normalize_task_request
+    p6->>p12: _counter
+    p6->>p13: validate_task_context
+    p9->>p14: _encode_observation
+    p2->>p15: TaskCompactError
+    p2->>p16: canonical_json
+    p3->>p17: _decode_limits
+    p4->>p18: _accounted_render
+    p4->>p19: CompactTaskContext
+    p6->>p20: _CheckedCounter
+    p9->>p21: _encode_limits
+    p11->>p22: exact_fields
+    p12->>p23: WorkflowRequestError
+    p12->>p24: EstimatedCounter
+    p14->>p25: _encode_contract
+    p11->>p26: bounded_text
+    p11->>p27: _array
+    p13->>p28: content_id
+    p3-->>p29: dict(zip(...))
+    p3-->>p30: fact.pop('citation_refs')
 ```
 
 > Call sequence diagram shows 30 of 277 interactions; 247 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 13 of 123 (110 omitted); unresolved 6 of 69 (63 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 123 (122 omitted); unresolved 1 of 69 (68 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/task_compact.py:_validated` | 5 | - | external | 3 |
-| `src/llm_wiki_cli/services/task_compact.py:_validated` | 5 | [src/llm_wiki_cli/services/task_compact.py](../modules/task_compact.md) | internal | 5 |
-| `src/llm_wiki_cli/services/task_compact.py:_validated` | 5 | [src/llm_wiki_cli/services/task_contract.py](../modules/task_contract.md) | internal | 1 |
-| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 10 | [src/llm_wiki_cli/services/workflow_profile.py](../modules/workflow_profile.md) | internal | 20 |
+| `src/llm_wiki_cli/services/task_compact.py:_validated` | 5 | [src/llm_wiki_cli/services/task_compact.py](../modules/task_compact.md) | internal | 4 |
 | `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 10 | - | unresolved | 22 |
 | `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 10 | - | external | 10 |
-| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 10 | [src/llm_wiki_cli/services/task_contract.py](../modules/task_contract.md) | internal | 4 |
+| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 10 | [src/llm_wiki_cli/services/workflow_profile.py](../modules/workflow_profile.md) | internal | 18 |
+| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 10 | [src/llm_wiki_cli/services/task_contract.py](../modules/task_contract.md) | internal | 3 |
 | `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 10 | [src/llm_wiki_cli/services/change_selection.py](../modules/change_selection.md) | internal | 1 |
-> Omission summary shows 8 of 41 groups; 33 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 10 | [src/llm_wiki_cli/services/documentation_query_builder.py](../modules/documentation_query_builder.md) | internal | 1 |
+> Omission summary shows 8 of 44 groups; 36 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

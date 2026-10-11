@@ -75,7 +75,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -83,62 +83,69 @@ sequenceDiagram
     participant p0 as refresh_documentation_native_projection
     participant p1 as load_adoption_marker
     participant p2 as maintenance_write_operation
-    participant p3 as nullcontext
-    participant p4 as _refresh_documentation_native_projection
-    participant p5 as _absolute_path
-    participant p6 as _validated_directory
-    participant p7 as Path (src/llm_wiki_cli/services…l.py:load_adoption_marker)
-    participant p8 as Path (src/llm_wiki_cli/services…intenance_write_operation)
-    participant p9 as path.exists (src/llm_wiki_cli/services…l.py:load_adoption_marker)
-    participant p10 as guard_maintenance_owner
-    participant p11 as _refresh_manifest_version
-    participant p12 as path.is_symlink (src/llm_wiki_cli/services…l.py:load_adoption_marker)
-    participant p13 as SyncManifest.load
-    participant p14 as read_guarded (src/llm_wiki_cli/services/knowledge_storage_io.py)
-    participant p15 as DocumentationNativeError
-    participant p16 as json.loads (src/llm_wiki_cli/services…l.py:load_adoption_marker)
-    participant p17 as governance_writer_lock
-    participant p18 as validate_maintenance_adoption
-    participant p19 as storage_writer_lock
-    participant p20 as canonical_bytes
-    participant p21 as _validate_refresh_artifact_basis
-    participant p22 as ValueError (src/llm_wiki_cli/services…l.py:load_adoption_marker)
-    participant p23 as snapshot_wiki
+    participant p3 as _refresh_documentation_native_projection
+    participant p4 as _absolute_path
+    participant p5 as _validated_directory
+    participant p6 as guard_maintenance_owner
+    participant p7 as _refresh_manifest_version
+    participant p8 as read_guarded (src/llm_wiki_cli/services/knowledge_storage_io.py)
+    participant p9 as governance_writer_lock
+    participant p10 as validate_maintenance_adoption
+    participant p11 as storage_writer_lock
+    participant p12 as canonical_bytes
+    participant p13 as _validate_refresh_artifact_basis
+    participant p14 as snapshot_wiki
+    participant p15 as _native_source_snapshot_preflight
+    participant p16 as _generation_input_paths
+    participant p17 as _collect_runtime
+    participant p18 as _recovery_directory
+    participant p19 as _page_maps
+    participant p20 as save_recovery_snapshot
+    participant p21 as _runtime_generation_options
+    participant p22 as _evaluate_runtime_surface
+    participant p23 as _markdown_hashes
+    participant p24 as finalize_runtime_knowledge
+    participant p25 as collect_runtime_repository_evidence
+    participant p26 as _build_context_knowledge_view
+    participant p27 as _validate_range
+    participant p28 as _detached
+    participant p29 as nullcontext
+    participant p30 as path.exists (src/llm_wiki_cli/services…l.py:load_adoption_marker)
     p0->>p1: load_adoption_marker
     p0->>p2: maintenance_write_operation
-    p0-->>p3: nullcontext
-    p0->>p4: _refresh_documentation_native_projection
-    p1->>p5: _absolute_path
-    p2->>p5: _absolute_path
-    p4->>p6: _validated_directory
-    p1-->>p7: Path (src/llm_wiki_cli/services…l.py:load_adoption_marker)(wiki_dir)
-    p2-->>p8: Path (src/llm_wiki_cli/services…intenance_write_operation)(wiki_dir)
-    p4->>p6: _validated_directory
-    p1-->>p9: path.exists (src/llm_wiki_cli/services…l.py:load_adoption_marker)
-    p2->>p10: guard_maintenance_owner
-    p4->>p11: _refresh_manifest_version
-    p1-->>p12: path.is_symlink (src/llm_wiki_cli/services…l.py:load_adoption_marker)
-    p2->>p1: load_adoption_marker
-    p4->>p13: SyncManifest.load
-    p1->>p14: read_guarded (src/llm_wiki_cli/services/knowledge_storage_io.py)
-    p2->>p10: guard_maintenance_owner
-    p4->>p15: DocumentationNativeError
-    p1-->>p16: json.loads (src/llm_wiki_cli/services…l.py:load_adoption_marker)(raw, object_pairs_hook=_pairs, parse_constant=_constant)
-    p2->>p17: governance_writer_lock
-    p4->>p10: guard_maintenance_owner
-    p1->>p18: validate_maintenance_adoption
-    p2->>p19: storage_writer_lock
-    p4->>p15: DocumentationNativeError
-    p1->>p20: canonical_bytes
-    p2->>p10: guard_maintenance_owner
-    p4->>p21: _validate_refresh_artifact_basis
-    p1-->>p22: ValueError (src/llm_wiki_cli/services…l.py:load_adoption_marker)('adoption marker must retain canonical immutable bytes')
-    p2->>p23: snapshot_wiki
+    p0->>p3: _refresh_documentation_native_projection
+    p1->>p4: _absolute_path
+    p3->>p5: _validated_directory
+    p2->>p6: guard_maintenance_owner
+    p3->>p7: _refresh_manifest_version
+    p1->>p8: read_guarded (src/llm_wiki_cli/services/knowledge_storage_io.py)
+    p2->>p9: governance_writer_lock
+    p1->>p10: validate_maintenance_adoption
+    p2->>p11: storage_writer_lock
+    p1->>p12: canonical_bytes
+    p3->>p13: _validate_refresh_artifact_basis
+    p2->>p14: snapshot_wiki
+    p3->>p15: _native_source_snapshot_preflight
+    p3->>p16: _generation_input_paths
+    p3->>p17: _collect_runtime
+    p2->>p18: _recovery_directory
+    p3->>p19: _page_maps
+    p2->>p20: save_recovery_snapshot
+    p3->>p21: _runtime_generation_options
+    p3->>p22: _evaluate_runtime_surface
+    p3->>p23: _markdown_hashes
+    p3->>p24: finalize_runtime_knowledge
+    p3->>p25: collect_runtime_repository_evidence
+    p3->>p26: _build_context_knowledge_view
+    p8->>p27: _validate_range
+    p10->>p28: _detached
+    p0-->>p29: nullcontext
+    p1-->>p30: path.exists (src/llm_wiki_cli/services…l.py:load_adoption_marker)
 ```
 
 > Call sequence diagram shows 30 of 4516 interactions; 4486 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 5 of 1534 (1529 omitted); unresolved 2 of 1193 (1191 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1534 (1533 omitted); unresolved 1 of 1193 (1192 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -150,9 +157,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 6 | - | unresolved | 5 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 3 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 3 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:read_guarded` | 41 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 15 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:_validate_range` | 42 | - | external | 4 |
-> Omission summary shows 8 of 1086 groups; 1078 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/maintenance_protocol.py:load_adoption_marker` | 2 | - | external | 3 |
+| `src/llm_wiki_cli/services/maintenance_protocol.py:load_adoption_marker` | 2 | - | unresolved | 1 |
+> Omission summary shows 8 of 1089 groups; 1081 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

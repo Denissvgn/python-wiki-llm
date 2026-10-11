@@ -51,73 +51,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as run
-    participant p1 as getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)
-    participant p2 as ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)
-    participant p3 as build_capability_doctor
-    participant p4 as extraction_job_request_from_args
-    participant p5 as print
-    participant p6 as json.dumps
-    participant p7 as render_capability_doctor
-    participant p8 as SystemExit
-    participant p9 as build_doctor_report
-    participant p10 as bool (src/llm_wiki_cli/commands/doctor_cmd.py:run)
-    participant p11 as report.to_payload (src/llm_wiki_cli/commands/doctor_cmd.py:run)
-    participant p12 as render_doctor_text
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'report_schema', 'auto')
-    p0-->>p2: ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)('--report-schema must be v1 or v3')
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'capabilities', False)
-    p0-->>p2: ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)('--capabilities and --report-schema are mutually exclusive')
-    p0->>p3: build_capability_doctor
-    p0->>p4: extraction_job_request_from_args
-    p0-->>p5: print(..., end=...)
-    p0-->>p6: json.dumps(report, indent=2, sort_keys=True)
-    p0->>p7: render_capability_doctor
-    p0-->>p8: SystemExit(report[...])
-    p0->>p9: build_doctor_report
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'src_dir', '.')
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'comparison_policy', 'auto')
-    p0-->>p10: bool (src/llm_wiki_cli/commands/doctor_cmd.py:run)(getattr(...))
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'strict', False)
-    p0-->>p10: bool (src/llm_wiki_cli/commands/doctor_cmd.py:run)(getattr(...))
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'allow_external_src', False)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'helper_cache_dir', None)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'include_tests', None)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'jobs', 1)
-    p0->>p4: extraction_job_request_from_args
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'source_selection', None)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'format', 'text')
-    p0-->>p5: print(json.dumps(...))
-    p0-->>p6: json.dumps(report.to_payload(...), indent=2, sort_keys=True)
-    p0-->>p11: report.to_payload (src/llm_wiki_cli/commands/doctor_cmd.py:run)(report_schema=report_schema)
-    p0-->>p5: print(render_doctor_text(...), end='')
-    p0->>p12: render_doctor_text
-    p0-->>p8: SystemExit(report.exit_code)
+    participant p1 as build_capability_doctor
+    participant p2 as extraction_job_request_from_args
+    participant p3 as render_capability_doctor
+    participant p4 as render_doctor_text
+    participant p5 as build_doctor_report
+    participant p6 as build_capability_diagnostics
+    participant p7 as _render_doctor_payload
+    participant p8 as validate_source_root
+    participant p9 as build_source_snapshot
+    participant p10 as resolve_helper_cache_root
+    participant p11 as get_prepared_typescript_root
+    participant p12 as get_prepared_binary
+    participant p13 as helper_preparation_argv
+    participant p14 as build_report
+    participant p15 as detailed_health_rows
+    participant p16 as compose_doctor_report
+    participant p17 as read_lock
+    participant p18 as validate_plugin
+    participant p19 as plugin_store
+    participant p20 as validate_path
+    participant p21 as _validate_capture_options
+    participant p22 as lock_path
+    participant p23 as _manifest_root
+    participant p24 as _manifest_current
+    participant p25 as _ensure_no_reserved_plugin_sources
+    participant p26 as _resolve_snapshot_selection
+    participant p27 as _normalize_only_files
+    participant p28 as _new_lint_report
+    participant p29 as getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)
+    participant p30 as report.to_payload (src/llm_wiki_cli/commands/doctor_cmd.py:run)
+    p0->>p1: build_capability_doctor
+    p0->>p2: extraction_job_request_from_args
+    p0->>p3: render_capability_doctor
+    p0->>p4: render_doctor_text
+    p0->>p5: build_doctor_report
+    p1->>p6: build_capability_diagnostics
+    p3->>p7: _render_doctor_payload
+    p6->>p8: validate_source_root
+    p6->>p9: build_source_snapshot
+    p6->>p10: resolve_helper_cache_root
+    p6->>p11: get_prepared_typescript_root
+    p6->>p12: get_prepared_binary
+    p6->>p13: helper_preparation_argv
+    p5->>p14: build_report
+    p7->>p15: detailed_health_rows
+    p5->>p16: compose_doctor_report
+    p6->>p17: read_lock
+    p6->>p18: validate_plugin
+    p6->>p19: plugin_store
+    p8->>p20: validate_path
+    p9->>p21: _validate_capture_options
+    p17->>p22: lock_path
+    p18->>p23: _manifest_root
+    p11->>p24: _manifest_current
+    p18->>p25: _ensure_no_reserved_plugin_sources
+    p9->>p26: _resolve_snapshot_selection
+    p9->>p27: _normalize_only_files
+    p14->>p28: _new_lint_report
+    p0-->>p29: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'report_schema', 'auto')
+    p0-->>p30: report.to_payload (src/llm_wiki_cli/commands/doctor_cmd.py:run)(report_schema=report_schema)
 ```
 
 > Call sequence diagram shows 30 of 1348 interactions; 1318 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 23 of 404 (381 omitted); unresolved 1 of 412 (411 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 404 (403 omitted); unresolved 1 of 412 (411 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/capability_diagnostics.py:build_capability_doctor` | 6 | [src/llm_wiki_cli/services/capability_diagnostics.py](../modules/capability_diagnostics.md) | internal | 1 |
-| `src/llm_wiki_cli/services/capability_diagnostics.py:build_capability_diagnostics` | 7 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 1 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 8 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
+| `src/llm_wiki_cli/commands/doctor_cmd.py:run` | 1 | - | external | 22 |
 | `src/llm_wiki_cli/config.py:validate_path` | 9 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
 | `src/llm_wiki_cli/config.py:validate_path` | 9 | - | unresolved | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 9 | - | external | 2 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 8 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 8 | - | external | 11 |
-> Omission summary shows 8 of 369 groups; 361 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/config.py:validate_source_root` | 8 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 6 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 8 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
+> Omission summary shows 8 of 365 groups; 357 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

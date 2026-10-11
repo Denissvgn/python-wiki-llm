@@ -80,74 +80,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as run
-    participant p1 as getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)
-    participant p2 as RuntimeOutputError
-    participant p3 as bool (src/llm_wiki_cli/commands/ci_check_cmd.py:run)
-    participant p4 as validate_source_root
-    participant p5 as str (src/llm_wiki_cli/commands/ci_check_cmd.py:run)
-    participant p6 as validate_path
-    participant p7 as cache_options_from_args
-    participant p8 as _report_destination
-    participant p9 as prepare_cache_options
-    participant p10 as replace (src/llm_wiki_cli/commands/ci_check_cmd.py:run)
-    participant p11 as time.monotonic
-    participant p12 as extraction_job_request_from_args
-    participant p13 as build_report
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'storage_git_base', None)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'storage_git_head', None)
-    p0->>p2: RuntimeOutputError
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'src_dir', '.')
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'format', 'text')
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'report_schema', 'auto')
-    p0->>p2: RuntimeOutputError
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'helper_cache_dir', None)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'include_tests', None)
-    p0-->>p3: bool (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(getattr(...))
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'allow_external_src', False)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'source_selection', None)
-    p0->>p4: validate_source_root
-    p0-->>p5: str (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(src_root)
-    p0->>p6: validate_path
-    p0->>p7: cache_options_from_args
-    p0->>p8: _report_destination
-    p0->>p9: prepare_cache_options
-    p0-->>p10: replace (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(cache_options, stats_enabled=True)
-    p0-->>p11: time.monotonic
-    p0->>p12: extraction_job_request_from_args
-    p0->>p13: build_report
-    p0-->>p3: bool (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(getattr(...))
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'knowledge_drift_report', False)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'jobs', 1)
-    p0-->>p3: bool (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(getattr(...))
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'no_plugins', False)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'comparison_policy', 'auto')
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'storage_check', False)
+    participant p1 as validate_source_root
+    participant p2 as cache_options_from_args
+    participant p3 as _report_destination
+    participant p4 as prepare_cache_options
+    participant p5 as extraction_job_request_from_args
+    participant p6 as build_report
+    participant p7 as storage_report
+    participant p8 as _persist_report
+    participant p9 as _render_console
+    participant p10 as record_validation_event
+    participant p11 as RuntimeOutputError
+    participant p12 as validate_path
+    participant p13 as LintIssue
+    participant p14 as InventoryCacheStats
+    participant p15 as format_cache_stats
+    participant p16 as write_bytes_atomic
+    participant p17 as _safe_knowledge_summary
+    participant p18 as build_ci_check_payload
+    participant p19 as record_event
+    participant p20 as resolve_inventory_cache_path
+    participant p21 as render_text
+    participant p22 as _new_lint_report
+    participant p23 as _preflight_lint_inputs
+    participant p24 as _finalize_lint_report
+    participant p25 as _collect_lint_inputs
+    participant p26 as prepare_destination
+    participant p27 as _run_report_checks
+    participant p28 as windows_current_user_sid
+    participant p29 as getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)
+    participant p30 as storage.get
+    p0->>p1: validate_source_root
+    p0->>p2: cache_options_from_args
+    p0->>p3: _report_destination
+    p0->>p4: prepare_cache_options
+    p0->>p5: extraction_job_request_from_args
+    p0->>p6: build_report
+    p0->>p7: storage_report
+    p0->>p8: _persist_report
+    p0->>p9: _render_console
+    p0->>p10: record_validation_event
+    p0->>p11: RuntimeOutputError
+    p0->>p12: validate_path
+    p0->>p13: LintIssue
+    p0->>p14: InventoryCacheStats
+    p0->>p15: format_cache_stats
+    p8->>p16: write_bytes_atomic
+    p10->>p17: _safe_knowledge_summary
+    p9->>p18: build_ci_check_payload
+    p10->>p19: record_event
+    p4->>p20: resolve_inventory_cache_path
+    p9->>p21: render_text
+    p6->>p22: _new_lint_report
+    p6->>p23: _preflight_lint_inputs
+    p6->>p24: _finalize_lint_report
+    p6->>p25: _collect_lint_inputs
+    p3->>p26: prepare_destination
+    p6->>p27: _run_report_checks
+    p1->>p28: windows_current_user_sid
+    p0-->>p29: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'storage_git_base', None)
+    p0-->>p30: storage.get('failures', [...])
 ```
 
 > Call sequence diagram shows 30 of 4323 interactions; 4293 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 21 of 1328 (1307 omitted); unresolved 0 of 1300 (1300 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1328 (1327 omitted); unresolved 1 of 1300 (1299 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/commands/ci_check_cmd.py:run` | 1 | - | external | 30 |
+| `src/llm_wiki_cli/commands/ci_check_cmd.py:run` | 1 | [src/llm_wiki_cli/services/runtime_output.py](../modules/runtime_output.md) | internal | 1 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 15 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
 | `src/llm_wiki_cli/config.py:validate_path` | 16 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
 | `src/llm_wiki_cli/config.py:validate_path` | 16 | - | unresolved | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 16 | - | external | 2 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 15 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 15 | - | external | 11 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 15 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 34 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 2 |
-> Omission summary shows 8 of 1106 groups; 1098 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1098 groups; 1090 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

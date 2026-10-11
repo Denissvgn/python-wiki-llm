@@ -67,84 +67,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as get_maintenance_status
-    participant p1 as type (src/llm_wiki_cli/api.py:get_maintenance_status)
-    participant p2 as ValueError (src/llm_wiki_cli/api.py:get_maintenance_status)
+    participant p1 as get_maintenance_status_authority
+    participant p2 as _validate_wiki_dir
     participant p3 as validate_queue_limit
-    participant p4 as cast (src/llm_wiki_cli/api.py:get_maintenance_status)
-    participant p5 as get_maintenance_status_authority
-    participant p6 as _validate_wiki_dir
-    participant p7 as isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit)
-    participant p8 as _validate_status_request
-    participant p9 as validate_path
-    participant p10 as _absolute_path
-    participant p11 as ValueError (src/llm_wiki_cli/services…e.py:validate_queue_limit)
-    participant p12 as Path (src/llm_wiki_cli/services…ntenance_status_authority)
-    participant p13 as snapshot_wiki
-    participant p14 as guard_maintenance_owner
-    participant p15 as SyncManifest.load
-    participant p16 as capture_committed_knowledge
-    participant p17 as build_maintenance_status
-    participant p18 as MaintenanceProtocolError
-    participant p19 as _capture
-    participant p20 as maintenance_report_from_captured
-    participant p21 as _native_prose_coherent
-    participant p22 as source_snapshot_matches_current_files
-    participant p23 as prior.assert_current
-    p0-->>p1: type (src/llm_wiki_cli/api.py:get_maintenance_status)(live)
-    p0-->>p1: type (src/llm_wiki_cli/api.py:get_maintenance_status)(allow_external_src)
-    p0-->>p2: ValueError (src/llm_wiki_cli/api.py:get_maintenance_status)('Maintenance status boolean options must be booleans')
+    participant p4 as _validate_status_request
+    participant p5 as _absolute_path
+    participant p6 as snapshot_wiki
+    participant p7 as guard_maintenance_owner
+    participant p8 as capture_committed_knowledge
+    participant p9 as build_maintenance_status
+    participant p10 as _capture
+    participant p11 as capture_context_read
+    participant p12 as load_adoption_marker
+    participant p13 as _identity (src/llm_wiki_cli/services/maintenance_state.py)
+    participant p14 as SyncManifest.load
+    participant p15 as _decode_json_object
+    participant p16 as validate_knowledge_artifacts
+    participant p17 as read_guarded (src/llm_wiki_cli/services/knowledge_storage_io.py)
+    participant p18 as owner_key
+    participant p19 as compare_implementation_observations
+    participant p20 as _validate_range
+    participant p21 as validate_surface_index_bytes
+    participant p22 as require
+    participant p23 as guard_windows_directory_chain
+    participant p24 as open_windows_readonly_file
+    participant p25 as _require_validation_receipt
+    participant p26 as _unique_json_object
+    participant p27 as _assert_windows_file_binding
+    participant p28 as validate_maintenance_adoption
+    participant p29 as type (src/llm_wiki_cli/api.py:get_maintenance_status)
+    participant p30 as prior.assert_current
+    p0->>p1: get_maintenance_status_authority
+    p0->>p2: _validate_wiki_dir
     p0->>p3: validate_queue_limit
-    p0-->>p4: cast (src/llm_wiki_cli/api.py:get_maintenance_status)(MaintenanceStatusResult, get_maintenance_status_authority(...))
-    p0->>p5: get_maintenance_status_authority
-    p0->>p6: _validate_wiki_dir
-    p3-->>p7: isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit)(limit, bool)
-    p5->>p8: _validate_status_request
-    p6->>p9: validate_path
-    p3-->>p7: isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit)(limit, int)
-    p5->>p10: _absolute_path
-    p3-->>p11: ValueError (src/llm_wiki_cli/services…e.py:validate_queue_limit)(...)
-    p5-->>p12: Path (src/llm_wiki_cli/services…ntenance_status_authority)(wiki_dir)
-    p5->>p13: snapshot_wiki
-    p5->>p14: guard_maintenance_owner
-    p5->>p15: SyncManifest.load
-    p5->>p16: capture_committed_knowledge
-    p5->>p17: build_maintenance_status
-    p5->>p18: MaintenanceProtocolError
-    p5->>p19: _capture
-    p5->>p20: maintenance_report_from_captured
-    p5->>p17: build_maintenance_status
-    p5->>p21: _native_prose_coherent
-    p5->>p22: source_snapshot_matches_current_files
-    p5->>p18: MaintenanceProtocolError
-    p5-->>p23: prior.assert_current
-    p5->>p13: snapshot_wiki
-    p5->>p18: MaintenanceProtocolError
-    p5->>p18: MaintenanceProtocolError
+    p1->>p4: _validate_status_request
+    p1->>p5: _absolute_path
+    p1->>p6: snapshot_wiki
+    p1->>p7: guard_maintenance_owner
+    p1->>p8: capture_committed_knowledge
+    p1->>p9: build_maintenance_status
+    p1->>p10: _capture
+    p10->>p11: capture_context_read
+    p7->>p12: load_adoption_marker
+    p4->>p13: _identity (src/llm_wiki_cli/services/maintenance_state.py)
+    p7->>p14: SyncManifest.load
+    p8->>p15: _decode_json_object
+    p8->>p16: validate_knowledge_artifacts
+    p6->>p17: read_guarded (src/llm_wiki_cli/services/knowledge_storage_io.py)
+    p9->>p18: owner_key
+    p9->>p19: compare_implementation_observations
+    p17->>p20: _validate_range
+    p16->>p21: validate_surface_index_bytes
+    p13->>p22: require
+    p17->>p23: guard_windows_directory_chain
+    p17->>p24: open_windows_readonly_file
+    p16->>p25: _require_validation_receipt
+    p15->>p26: _unique_json_object
+    p17->>p27: _assert_windows_file_binding
+    p12->>p28: validate_maintenance_adoption
+    p0-->>p29: type (src/llm_wiki_cli/api.py:get_maintenance_status)(live)
+    p1-->>p30: prior.assert_current
 ```
 
 > Call sequence diagram shows 30 of 2382 interactions; 2352 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 8 of 798 (790 omitted); unresolved 1 of 569 (568 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 798 (797 omitted); unresolved 1 of 569 (568 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/api.py:get_maintenance_status` | 1 | - | external | 3 |
+| `src/llm_wiki_cli/services/maintenance_queue.py:validate_queue_limit` | 5 | - | external | 3 |
 | `src/llm_wiki_cli/services/maintenance_service.py:_validate_status_request` | 11 | - | external | 2 |
 | `src/llm_wiki_cli/services/maintenance_service.py:_validate_status_request` | 11 | [src/llm_wiki_cli/services/maintenance_protocol.py](../modules/maintenance_protocol.md) | internal | 1 |
-| `src/llm_wiki_cli/services/maintenance_service.py:_validate_status_request` | 11 | [src/llm_wiki_cli/services/maintenance_state.py](../modules/maintenance_state.md) | internal | 1 |
 | `src/llm_wiki_cli/services/maintenance_state.py:_identity` | 15 | - | external | 2 |
-| `src/llm_wiki_cli/services/maintenance_state.py:_identity` | 15 | [src/llm_wiki_cli/services/maintenance_shapes.py](../modules/maintenance_shapes.md) | internal | 2 |
+| `src/llm_wiki_cli/services/maintenance_state.py:_identity` | 15 | [src/llm_wiki_cli/services/maintenance_shapes.py](../modules/maintenance_shapes.md) | internal | 1 |
 | `src/llm_wiki_cli/services/maintenance_shapes.py:require` | 18 | [src/llm_wiki_cli/services/maintenance_shapes.py](../modules/maintenance_shapes.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 21 | - | external | 4 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 21 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
-> Omission summary shows 8 of 561 groups; 553 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 565 groups; 557 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

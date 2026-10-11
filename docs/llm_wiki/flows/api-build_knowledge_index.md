@@ -19,87 +19,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as build_knowledge_index
     participant p1 as _validate_and_join_inputs
-    participant p2 as tuple (src/llm_wiki_cli/services….py:build_knowledge_index)
-    participant p3 as _concept_for_page
-    participant p4 as inputs.concept_extensions_by_page.get
-    participant p5 as _derived_relationship
-    participant p6 as relationships.extend
-    participant p7 as _link_relationship
+    participant p2 as _concept_for_page
+    participant p3 as _derived_relationship
+    participant p4 as _link_relationship
+    participant p5 as validate_knowledge_index
+    participant p6 as freeze
+    participant p7 as _serialize_payload
     participant p8 as KnowledgeIndex
     participant p9 as record_counts
-    participant p10 as len (src/llm_wiki_cli/services….py:build_knowledge_index)
-    participant p11 as _validator_identity
-    participant p12 as validate_knowledge_index
-    participant p13 as _INDEX_VALIDATION_OPERATION.get
-    participant p14 as TypeError (src/llm_wiki_cli/services….py:build_knowledge_index)
-    participant p15 as freeze
-    participant p16 as _serialize_payload(…).encode
-    participant p17 as _serialize_payload
-    participant p18 as _model_to_payload
-    participant p19 as _ValidatedIndexReceipt
-    participant p20 as object.__setattr__
-    participant p21 as _IndexValidationProof
-    participant p22 as id
-    participant p23 as KnowledgeIndexBuildError
-    participant p24 as isinstance (src/llm_wiki_cli/services…_validate_and_join_inputs)
-    participant p25 as concept_kind_for_page_kind
-    participant p26 as RelationshipRecord
+    participant p10 as _validator_identity
+    participant p11 as _model_to_payload
+    participant p12 as _ValidatedIndexReceipt
+    participant p13 as _IndexValidationProof
+    participant p14 as KnowledgeIndexBuildError
+    participant p15 as concept_kind_for_page_kind
+    participant p16 as _validated_bundle
+    participant p17 as _validated_pages
+    participant p18 as _validated_content
+    participant p19 as _structural_facet
+    participant p20 as _validate_builder_model
+    participant p21 as _validate_snapshot_commitments
+    participant p22 as _surface_pages
+    participant p23 as _typed_mapping
+    participant p24 as _first_difference
+    participant p25 as _validate_surface_page
+    participant p26 as _validate_page_evidence
+    participant p27 as _reject_extra_state
+    participant p28 as _validated_observations
+    participant p29 as tuple (src/llm_wiki_cli/services….py:build_knowledge_index)
+    participant p30 as inputs.concept_extensions_by_page.get
     p0->>p1: _validate_and_join_inputs
-    p0-->>p2: tuple (src/llm_wiki_cli/services….py:build_knowledge_index)(...)
-    p0->>p3: _concept_for_page
-    p0-->>p4: inputs.concept_extensions_by_page.get(joined.page.relative_path, {...})
-    p0->>p5: _derived_relationship
-    p0-->>p6: relationships.extend(...)
-    p0->>p7: _link_relationship
+    p0->>p2: _concept_for_page
+    p0->>p3: _derived_relationship
+    p0->>p4: _link_relationship
+    p0->>p5: validate_knowledge_index
+    p0->>p6: freeze
+    p0->>p7: _serialize_payload
     p0->>p8: KnowledgeIndex
-    p0-->>p2: tuple (src/llm_wiki_cli/services….py:build_knowledge_index)(relationships)
     p0->>p9: record_counts
-    p0-->>p10: len (src/llm_wiki_cli/services….py:build_knowledge_index)(concepts)
-    p0-->>p10: len (src/llm_wiki_cli/services….py:build_knowledge_index)(relationships)
-    p0->>p11: _validator_identity
-    p0->>p12: validate_knowledge_index
-    p0-->>p13: _INDEX_VALIDATION_OPERATION.get
-    p0->>p11: _validator_identity
-    p0-->>p14: TypeError (src/llm_wiki_cli/services….py:build_knowledge_index)('knowledge validators changed during builder validation')
-    p0->>p15: freeze
-    p0-->>p16: _serialize_payload(…).encode('utf-8')
-    p0->>p17: _serialize_payload
-    p0->>p18: _model_to_payload
-    p0->>p19: _ValidatedIndexReceipt
-    p0-->>p20: object.__setattr__(receipt, '_proof', _IndexValidationProof(...))
-    p0->>p21: _IndexValidationProof
-    p0-->>p22: id(validated)
-    p0->>p23: KnowledgeIndexBuildError
-    p1-->>p24: isinstance (src/llm_wiki_cli/services…_validate_and_join_inputs)(inputs, KnowledgeIndexInputs)
-    p3->>p25: concept_kind_for_page_kind
-    p5->>p26: RelationshipRecord
-    p7->>p26: RelationshipRecord
+    p0->>p10: _validator_identity
+    p0->>p11: _model_to_payload
+    p0->>p12: _ValidatedIndexReceipt
+    p0->>p13: _IndexValidationProof
+    p0->>p14: KnowledgeIndexBuildError
+    p2->>p15: concept_kind_for_page_kind
+    p1->>p16: _validated_bundle
+    p1->>p17: _validated_pages
+    p1->>p18: _validated_content
+    p2->>p19: _structural_facet
+    p5->>p20: _validate_builder_model
+    p1->>p21: _validate_snapshot_commitments
+    p1->>p22: _surface_pages
+    p1->>p23: _typed_mapping
+    p5->>p24: _first_difference
+    p1->>p25: _validate_surface_page
+    p1->>p26: _validate_page_evidence
+    p1->>p27: _reject_extra_state
+    p1->>p28: _validated_observations
+    p0-->>p29: tuple (src/llm_wiki_cli/services….py:build_knowledge_index)(...)
+    p0-->>p30: inputs.concept_extensions_by_page.get(joined.page.relative_path, {...})
 ```
 
 > Call sequence diagram shows 30 of 640 interactions; 610 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 8 of 171 (163 omitted); unresolved 4 of 127 (123 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 171 (170 omitted); unresolved 1 of 127 (126 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_index.py:_validate_and_join_inputs` | 2 | - | external | 5 |
-| `src/llm_wiki_cli/services/knowledge_index.py:_validate_and_join_inputs` | 2 | [src/llm_wiki_cli/services/knowledge_index.py](../modules/knowledge_index.md) | internal | 20 |
+| `src/llm_wiki_cli/services/knowledge_index.py:_validate_and_join_inputs` | 2 | - | external | 6 |
 | `src/llm_wiki_cli/services/knowledge_index.py:_validated_bundle` | 5 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_index.py:_validated_bundle` | 5 | [src/llm_wiki_cli/services/knowledge_index.py](../modules/knowledge_index.md) | internal | 2 |
 | `src/llm_wiki_cli/services/knowledge_index.py:_validated_bundle` | 5 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:evaluated_envelope_to_payload` | 8 | - | external | 2 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:evaluated_envelope_to_payload` | 8 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 3 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_validated_bundle_payload` | 12 | - | external | 3 |
-> Omission summary shows 8 of 171 groups; 163 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_validated_bundle_payload` | 12 | - | unresolved | 1 |
+> Omission summary shows 8 of 173 groups; 165 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

@@ -6,60 +6,60 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as compare_generated_ownership
     participant p1 as capture_generated_ownership
-    participant p2 as dict
-    participant p3 as sorted (src/llm_wiki_cli/services…ompare_generated_ownership)
-    participant p4 as set
-    participant p5 as Path(…).expanduser().resolve
-    participant p6 as Path(…).expanduser
-    participant p7 as Path
-    participant p8 as path.is_symlink
-    participant p9 as DocumentationIntegrityError
-    participant p10 as path.is_file
-    participant p11 as hash_bytes
-    participant p12 as path.read_bytes
-    participant p13 as sorted (src/llm_wiki_cli/services…apture_generated_ownership)
-    participant p14 as root.rglob
-    participant p15 as path.relative_to(…).as_posix
-    participant p16 as path.relative_to
-    participant p17 as path.read_text
-    participant p18 as _generated_sections
+    participant p2 as _generated_sections
+    participant p3 as dict
+    participant p4 as sorted (src/llm_wiki_cli/services…ompare_generated_ownership)
+    participant p5 as set
+    participant p6 as Path(…).expanduser().resolve
+    participant p7 as Path(…).expanduser
+    participant p8 as Path
+    participant p9 as path.is_symlink
+    participant p10 as DocumentationIntegrityError
+    participant p11 as path.is_file
+    participant p12 as hash_bytes
+    participant p13 as path.read_bytes
+    participant p14 as sorted (src/llm_wiki_cli/services…apture_generated_ownership)
+    participant p15 as root.rglob
+    participant p16 as path.relative_to(…).as_posix
+    participant p17 as path.relative_to
+    participant p18 as path.read_text
     participant p19 as section.encode
     p0->>p1: capture_generated_ownership
-    p0-->>p2: dict(baseline)
-    p0-->>p3: sorted (src/llm_wiki_cli/services…ompare_generated_ownership)(...)
-    p0-->>p4: set(current)
-    p0-->>p4: set(before)
-    p0-->>p3: sorted (src/llm_wiki_cli/services…ompare_generated_ownership)(...)
-    p0-->>p4: set(before)
-    p0-->>p4: set(current)
-    p0-->>p3: sorted (src/llm_wiki_cli/services…ompare_generated_ownership)(...)
-    p0-->>p4: set(before)
-    p0-->>p4: set(current)
-    p1-->>p5: Path(…).expanduser().resolve
-    p1-->>p6: Path(…).expanduser
-    p1-->>p7: Path(wiki_root)
-    p1-->>p8: path.is_symlink
-    p1-->>p9: DocumentationIntegrityError(...)
-    p1-->>p10: path.is_file
-    p1-->>p11: hash_bytes(path.read_bytes(...))
-    p1-->>p12: path.read_bytes
-    p1-->>p13: sorted (src/llm_wiki_cli/services…apture_generated_ownership)(root.rglob(...))
-    p1-->>p14: root.rglob('*.md')
-    p1-->>p8: path.is_symlink
-    p1-->>p10: path.is_file
-    p1-->>p9: DocumentationIntegrityError(...)
-    p1-->>p15: path.relative_to(…).as_posix
-    p1-->>p16: path.relative_to(root)
-    p1-->>p17: path.read_text(encoding='utf-8')
-    p1->>p18: _generated_sections
-    p1-->>p11: hash_bytes(section.encode(...))
+    p1->>p2: _generated_sections
+    p0-->>p3: dict(baseline)
+    p0-->>p4: sorted (src/llm_wiki_cli/services…ompare_generated_ownership)(...)
+    p0-->>p5: set(current)
+    p0-->>p5: set(before)
+    p0-->>p4: sorted (src/llm_wiki_cli/services…ompare_generated_ownership)(...)
+    p0-->>p5: set(before)
+    p0-->>p5: set(current)
+    p0-->>p4: sorted (src/llm_wiki_cli/services…ompare_generated_ownership)(...)
+    p0-->>p5: set(before)
+    p0-->>p5: set(current)
+    p1-->>p6: Path(…).expanduser().resolve
+    p1-->>p7: Path(…).expanduser
+    p1-->>p8: Path(wiki_root)
+    p1-->>p9: path.is_symlink
+    p1-->>p10: DocumentationIntegrityError(...)
+    p1-->>p11: path.is_file
+    p1-->>p12: hash_bytes(path.read_bytes(...))
+    p1-->>p13: path.read_bytes
+    p1-->>p14: sorted (src/llm_wiki_cli/services…apture_generated_ownership)(root.rglob(...))
+    p1-->>p15: root.rglob('*.md')
+    p1-->>p9: path.is_symlink
+    p1-->>p11: path.is_file
+    p1-->>p10: DocumentationIntegrityError(...)
+    p1-->>p16: path.relative_to(…).as_posix
+    p1-->>p17: path.relative_to(root)
+    p1-->>p18: path.read_text(encoding='utf-8')
+    p1-->>p12: hash_bytes(section.encode(...))
     p1-->>p19: section.encode('utf-8')
 ```
 

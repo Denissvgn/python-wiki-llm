@@ -66,70 +66,77 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as reconcile_context_packet
     participant p1 as validate_context_packet
-    participant p2 as validation.packet.to_payload
-    participant p3 as build_qualified_context
-    participant p4 as live_packet.to_payload
-    participant p5 as _reconcile_packet_views
-    participant p6 as _coerce_packet_bytes
-    participant p7 as _normalized_request
-    participant p8 as _strict_json_payload
-    participant p9 as _packet_contract_for_request
-    participant p10 as _encode_packet_payload
-    participant p11 as _packet_contract_for_schema
-    participant p12 as capture_context_read
-    participant p13 as payload.get (src/llm_wiki_cli/services…y:validate_context_packet)
-    participant p14 as normalized.get (src/llm_wiki_cli/services…y:build_qualified_context)
-    participant p15 as len (src/llm_wiki_cli/services…y:validate_context_packet)
-    participant p16 as _reconciliation_facets
-    participant p17 as ContextPacketMalformedError
-    participant p18 as bool (src/llm_wiki_cli/services…y:build_qualified_context)
-    participant p19 as any (src/llm_wiki_cli/services…y:_reconcile_packet_views)
-    participant p20 as _validate_packet_shape
-    participant p21 as set (src/llm_wiki_cli/services…y:build_qualified_context)
-    participant p22 as required_states.values
-    participant p23 as build_context_from_captured_read
+    participant p2 as build_qualified_context
+    participant p3 as _reconcile_packet_views
+    participant p4 as _coerce_packet_bytes
+    participant p5 as _normalized_request
+    participant p6 as _strict_json_payload
+    participant p7 as _packet_contract_for_request
+    participant p8 as _packet_contract_for_schema
+    participant p9 as capture_context_read
+    participant p10 as _reconciliation_facets
+    participant p11 as _validate_packet_shape
+    participant p12 as _encode_packet_payload
+    participant p13 as build_context_from_captured_read
+    participant p14 as _protocol_success_payload
+    participant p15 as ContextPacketReconciliation._from_official_read
+    participant p16 as _packet_id
+    participant p17 as _path_policy_receipt
+    participant p18 as _fit_knowledge_packet_response
+    participant p19 as packet_from_captured_response
+    participant p20 as QualifiedContextPacket._from_validated_payload
+    participant p21 as _exact_fields
+    participant p22 as _candidate_packet_size
+    participant p23 as _render_markdown
+    participant p24 as _freeze_json
+    participant p25 as _validate_reconciliation_contract
+    participant p26 as _build_legacy_context_from_captured_read
+    participant p27 as _validate_assurance
+    participant p28 as _build_knowledge_context_from_captured_read
+    participant p29 as len (src/llm_wiki_cli/services…y:validate_context_packet)
+    participant p30 as validation.packet.to_payload
     p0->>p1: validate_context_packet
-    p0-->>p2: validation.packet.to_payload
-    p0->>p3: build_qualified_context
-    p0-->>p4: live_packet.to_payload
-    p0->>p5: _reconcile_packet_views
-    p1->>p6: _coerce_packet_bytes
-    p3->>p7: _normalized_request
-    p5->>p1: validate_context_packet
-    p1->>p8: _strict_json_payload
-    p3->>p9: _packet_contract_for_request
-    p5->>p10: _encode_packet_payload
-    p1->>p11: _packet_contract_for_schema
-    p3->>p12: capture_context_read
-    p5->>p1: validate_context_packet
-    p1-->>p13: payload.get (src/llm_wiki_cli/services…y:validate_context_packet)('schema_version')
-    p3-->>p14: normalized.get (src/llm_wiki_cli/services…y:build_qualified_context)('knowledge_mode')
-    p5->>p10: _encode_packet_payload
-    p1-->>p15: len (src/llm_wiki_cli/services…y:validate_context_packet)(raw)
-    p3-->>p14: normalized.get (src/llm_wiki_cli/services…y:build_qualified_context)('knowledge_mode')
-    p5->>p16: _reconciliation_facets
-    p1->>p17: ContextPacketMalformedError
-    p3-->>p18: bool (src/llm_wiki_cli/services…y:build_qualified_context)(...)
-    p5-->>p19: any (src/llm_wiki_cli/services…y:_reconcile_packet_views)(...)
-    p1->>p20: _validate_packet_shape
-    p3-->>p21: set (src/llm_wiki_cli/services…y:build_qualified_context)(normalized[...])
-    p5-->>p22: required_states.values
-    p1->>p10: _encode_packet_payload
-    p3->>p23: build_context_from_captured_read
-    p5-->>p19: any (src/llm_wiki_cli/services…y:_reconcile_packet_views)(...)
-    p1->>p17: ContextPacketMalformedError
+    p0->>p2: build_qualified_context
+    p0->>p3: _reconcile_packet_views
+    p1->>p4: _coerce_packet_bytes
+    p2->>p5: _normalized_request
+    p1->>p6: _strict_json_payload
+    p2->>p7: _packet_contract_for_request
+    p1->>p8: _packet_contract_for_schema
+    p2->>p9: capture_context_read
+    p3->>p10: _reconciliation_facets
+    p1->>p11: _validate_packet_shape
+    p1->>p12: _encode_packet_payload
+    p2->>p13: build_context_from_captured_read
+    p2->>p14: _protocol_success_payload
+    p3->>p15: ContextPacketReconciliation._from_official_read
+    p1->>p16: _packet_id
+    p1->>p17: _path_policy_receipt
+    p2->>p18: _fit_knowledge_packet_response
+    p2->>p19: packet_from_captured_response
+    p1->>p20: QualifiedContextPacket._from_validated_payload
+    p11->>p21: _exact_fields
+    p18->>p22: _candidate_packet_size
+    p14->>p23: _render_markdown
+    p20->>p24: _freeze_json
+    p15->>p25: _validate_reconciliation_contract
+    p13->>p26: _build_legacy_context_from_captured_read
+    p11->>p27: _validate_assurance
+    p13->>p28: _build_knowledge_context_from_captured_read
+    p1-->>p29: len (src/llm_wiki_cli/services…y:validate_context_packet)(raw)
+    p0-->>p30: validation.packet.to_payload
 ```
 
 > Call sequence diagram shows 30 of 4070 interactions; 4040 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 5 of 1350 (1345 omitted); unresolved 6 of 1357 (1351 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1350 (1349 omitted); unresolved 1 of 1357 (1356 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -143,7 +150,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/context_packet.py:_strict_json_payload` | 16 | - | external | 2 |
 | `src/llm_wiki_cli/services/context_packet.py:_validate_json_tree` | 23 | - | external | 1 |
 | `src/llm_wiki_cli/services/context_packet.py:_validate_json_tree` | 23 | - | unresolved | 1 |
-> Omission summary shows 8 of 889 groups; 881 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 887 groups; 879 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

@@ -38,14 +38,34 @@ Both rankers report `total`, `returned`, `count`, `truncated`, and `bounds.resul
 
 Return to [`search_cmd.py:run`](../../../src/llm_wiki_cli/commands/search_cmd.py#L8-L31). JSON prints the complete result dictionary. Text prints each path/title and snippet, the returned/total summary, and optional discovery JSON. Use JSON when inspecting ranking qualifications, provenance, bounds, or source-indexing metadata.
 
-## Reading past the saved flow
+## Reading the generated flow
 
-The saved flow leaves the local API `search_wiki` hop as a dashed boundary. This reading route follows source definitions across that boundary; it does not convert it into a resolved captured call. Local API imports, module namespaces, decorators, the `eligible` closure and reader callback, and `page_records` generator consumption still require care when interpreting static expansion.
+The [generated search flow](../flows/cli-search.md#call-sequence) includes the
+captured CLI/API/service calls and representatives of validation, corpus
+selection, ranking and result handling. The default lexical ranker and legacy
+ranker have distinct source-qualified participants. Their presence shows static
+call sites; it does not mean both ranking branches execute for one request.
 
-The [saved flow disclosure](../flows/cli-search.md#call-sequence) reports 30 displayed of 114 captured interactions, with 84 omitted. These are historical saved static counts. A fresh whole-source static capture attempt timed out after 600 seconds; a current full trace and current omission counts are unavailable. The saved counts must not stand in for fresh output or runtime equivalence.
+Use this source-reading route to inspect the branch guards, source-selection
+policy and publication checks behind those displayed stages. Decorators, module
+namespaces, the `eligible` closure and reader callback still require care;
+calling `page_records` does not by itself establish generator consumption.
+The diagram's omitted-interaction and boundary counts describe its current
+captured input, while detailed queries retain their own scope and limits.
 
-Keep traversal omissions separate from display omissions. [`entrypoints.py:build_flow_detailed`](../../../src/llm_wiki_cli/services/entrypoints.py#L1302-L1335) reports depth-bounded traversal coverage; default traversal depth is 6. [`flow_overview.py:select_flow_overview`](../../../src/llm_wiki_cli/services/flow_overview.py#L75-L137) selects at most 30 captured interactions for presentation, subject also to [renderer ceilings](../../../src/llm_wiki_cli/services/diagrams.py#L63-L65) of 40 nodes, 80 body lines, and 6000 characters. Display order and omissions do not establish which calls execute.
+Keep traversal omissions separate from display omissions.
+[`entrypoints.py:build_flow_detailed`](../../../src/llm_wiki_cli/services/entrypoints.py#L1302)
+reports depth-bounded traversal coverage; default traversal depth is 6.
+[`flow_overview.py:select_flow_overview`](../../../src/llm_wiki_cli/services/flow_overview.py#L75)
+selects at most 30 representative captured interactions, favoring coherent
+internal continuations and distinct exact targets while retaining boundary
+examples. The [renderer ceilings](../../../src/llm_wiki_cli/services/diagrams.py#L63)
+remain 40 nodes, 80 body lines and 6000 characters. Repeated sites remain in the
+underlying trace, and final counts reconcile any shorter renderer-admitted prefix.
+Omitted intermediate occurrences are not replaced by synthetic arrows.
 
-For a supported bounded graph query, read [`src/llm_wiki_cli/api.py:flow_for_entrypoint`](../../../src/llm_wiki_cli/api.py#L2103-L2136). Its result is a bounded static query, not an observed search execution or a guarantee that the full current trace will be available. Use the source links above for the four reading stages while that trace is unavailable.
-
-This is a source-grounded reading route, not a generated runtime diagram. Current generated trace coverage is unestablished. The current whole-provider trace capture timed out. The saved static flow shows 30 of 114 interactions with 84 display omissions; these saved counts are not a fresh trace for current code. Static presentation order does not prove runtime execution.
+For a supported bounded graph query, read
+[`src/llm_wiki_cli/api.py:flow_for_entrypoint`](../../../src/llm_wiki_cli/api.py#L2103).
+Its result is a bounded static query, not an observed search execution. This guide
+and the generated diagram provide complementary source orientation; neither
+establishes runtime execution order, dynamic completeness or semantic correctness.

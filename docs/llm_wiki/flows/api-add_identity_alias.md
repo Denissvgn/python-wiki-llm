@@ -6,82 +6,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as add_identity_alias
-    participant p1 as isinstance (src/llm_wiki_cli/services…ity.py:add_identity_alias)
-    participant p2 as TypeError (src/llm_wiki_cli/services…ity.py:add_identity_alias)
+    participant p1 as validate_identity_registry
+    participant p2 as _deduplicated_aliases
     participant p3 as _typed_tuple
-    participant p4 as all
-    participant p5 as validate_identity_registry
-    participant p6 as {item.uid: item for item in current}.get
-    participant p7 as ConceptIdentityError
-    participant p8 as validate_alias_type
-    participant p9 as validate_alias_value
-    participant p10 as identity_coordinate_key
-    participant p11 as tuple (src/llm_wiki_cli/services…ity.py:add_identity_alias)
-    participant p12 as _deduplicated_aliases
-    participant p13 as IdentityAlias
-    participant p14 as IdentityUpdate
-    participant p15 as isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)
-    participant p16 as cast (src/llm_wiki_cli/services….py:_deduplicated_aliases)
-    participant p17 as TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)
-    participant p18 as tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple)
-    participant p19 as find_identity_collisions
-    participant p20 as IdentityCollisionError
-    participant p21 as _sorted_aliases
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…ity.py:add_identity_alias)(allocation, ConceptAllocation)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…ity.py:add_identity_alias)('allocation must be a ConceptAllocation')
+    participant p4 as ConceptIdentityError
+    participant p5 as validate_alias_type
+    participant p6 as validate_alias_value
+    participant p7 as identity_coordinate_key
+    participant p8 as IdentityAlias
+    participant p9 as IdentityUpdate
+    participant p10 as find_identity_collisions
+    participant p11 as canonical_path
+    participant p12 as mcp_uri
+    participant p13 as _entry_for
+    participant p14 as validate_locator
+    participant p15 as _validate_page_id
+    participant p16 as validate_natural_key
+    participant p17 as IdentityCollisionError
+    participant p18 as _sorted_aliases
+    participant p19 as IdentityCollision
+    participant p20 as iter_page_kinds
+    participant p21 as AliasType
+    participant p22 as WikiSurfaceError
+    participant p23 as _machine_text
+    participant p24 as _contains_uri_userinfo
+    participant p25 as PageKind
+    participant p26 as _looks_absolute_path
+    participant p27 as is_safe_page_id
+    participant p28 as validate_exact_page_coordinate
+    participant p29 as isinstance (src/llm_wiki_cli/services…ity.py:add_identity_alias)
+    participant p30 as {item.uid: item for item in current}.get
+    p0->>p1: validate_identity_registry
+    p0->>p2: _deduplicated_aliases
     p0->>p3: _typed_tuple
-    p0-->>p4: all(...)
-    p0->>p5: validate_identity_registry
-    p0-->>p6: {item.uid: item for item in current}.get(allocation.uid)
-    p0->>p7: ConceptIdentityError
-    p0->>p8: validate_alias_type
-    p0->>p9: validate_alias_value
-    p0->>p10: identity_coordinate_key
-    p0->>p10: identity_coordinate_key
-    p0-->>p11: tuple (src/llm_wiki_cli/services…ity.py:add_identity_alias)(...)
-    p0->>p10: identity_coordinate_key
-    p0->>p12: _deduplicated_aliases
-    p0->>p13: IdentityAlias
-    p0-->>p11: tuple (src/llm_wiki_cli/services…ity.py:add_identity_alias)(...)
-    p0->>p5: validate_identity_registry
-    p0->>p14: IdentityUpdate
-    p3-->>p15: isinstance (src/llm_wiki_cli/services…_identity.py:_typed_tuple)(values, (...))
-    p5->>p3: _typed_tuple
-    p12-->>p16: cast (src/llm_wiki_cli/services….py:_deduplicated_aliases)(AliasType, item.alias_type)
-    p3-->>p17: TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)(...)
-    p5->>p3: _typed_tuple
-    p12->>p10: identity_coordinate_key
-    p3-->>p18: tuple (src/llm_wiki_cli/services…_identity.py:_typed_tuple)(values)
-    p5->>p19: find_identity_collisions
-    p12-->>p16: cast (src/llm_wiki_cli/services….py:_deduplicated_aliases)(AliasType, item.alias_type)
-    p3-->>p17: TypeError (src/llm_wiki_cli/services…_identity.py:_typed_tuple)(...)
-    p5->>p20: IdentityCollisionError
-    p12->>p21: _sorted_aliases
+    p0->>p4: ConceptIdentityError
+    p0->>p5: validate_alias_type
+    p0->>p6: validate_alias_value
+    p0->>p7: identity_coordinate_key
+    p0->>p8: IdentityAlias
+    p0->>p9: IdentityUpdate
+    p1->>p10: find_identity_collisions
+    p7->>p11: canonical_path
+    p7->>p12: mcp_uri
+    p11->>p13: _entry_for
+    p6->>p14: validate_locator
+    p11->>p15: _validate_page_id
+    p6->>p16: validate_natural_key
+    p1->>p17: IdentityCollisionError
+    p2->>p18: _sorted_aliases
+    p10->>p19: IdentityCollision
+    p7->>p20: iter_page_kinds
+    p5->>p21: AliasType
+    p11->>p22: WikiSurfaceError
+    p14->>p23: _machine_text
+    p14->>p24: _contains_uri_userinfo
+    p13->>p25: PageKind
+    p14->>p26: _looks_absolute_path
+    p15->>p27: is_safe_page_id
+    p14->>p28: validate_exact_page_coordinate
+    p0-->>p29: isinstance (src/llm_wiki_cli/services…ity.py:add_identity_alias)(allocation, ConceptAllocation)
+    p0-->>p30: {item.uid: item for item in current}.get(allocation.uid)
 ```
 
 > Call sequence diagram shows 30 of 159 interactions; 129 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 11 of 52 (41 omitted); unresolved 1 of 33 (32 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 52 (51 omitted); unresolved 1 of 33 (32 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/concept_identity.py:_typed_tuple` | 4 | - | external | 3 |
-| `src/llm_wiki_cli/services/concept_identity.py:find_identity_collisions` | 16 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 10 |
+| `src/llm_wiki_cli/services/concept_identity.py:add_identity_alias` | 1 | - | external | 4 |
+| `src/llm_wiki_cli/services/concept_identity.py:_typed_tuple` | 4 | - | external | 7 |
+| `src/llm_wiki_cli/services/concept_identity.py:validate_identity_registry` | 13 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 3 |
+| `src/llm_wiki_cli/services/concept_identity.py:find_identity_collisions` | 16 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 9 |
 | `src/llm_wiki_cli/services/concept_identity.py:find_identity_collisions` | 16 | - | external | 24 |
 | `src/llm_wiki_cli/services/concept_identity.py:find_identity_collisions` | 16 | - | unresolved | 15 |
 | `src/llm_wiki_cli/services/concept_identity.py:identity_coordinate_key` | 25 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 2 |
 | `src/llm_wiki_cli/services/concept_identity.py:validate_alias_type` | 26 | - | external | 1 |
-| `src/llm_wiki_cli/services/concept_identity.py:validate_alias_type` | 26 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 2 |
-| `src/llm_wiki_cli/services/concept_identity.py:validate_alias_value` | 30 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 3 |
-> Omission summary shows 8 of 27 groups; 19 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 29 groups; 21 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

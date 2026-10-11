@@ -69,86 +69,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as acknowledge_maintenance
-    participant p1 as type (src/llm_wiki_cli/api.py:acknowledge_maintenance)
-    participant p2 as ValueError (src/llm_wiki_cli/api.py:acknowledge_maintenance)
-    participant p3 as _detached
-    participant p4 as maintenance_core
-    participant p5 as core.validate_schema (src/llm_wiki_cli/api.py:acknowledge_maintenance)
-    participant p6 as core._coordinate
-    participant p7 as core._target
-    participant p8 as cast (src/llm_wiki_cli/api.py:acknowledge_maintenance)
-    participant p9 as acknowledge_maintenance_authority
-    participant p10 as _validate_wiki_dir
-    participant p11 as deepcopy (src/llm_wiki_cli/services…enance_state.py:_detached)
-    participant p12 as MaintenanceCore
-    participant p13 as _identity (src/llm_wiki_cli/services/maintenance_state.py)
-    participant p14 as validate_path
-    participant p15 as MaintenanceError
-    participant p16 as is_valid_sha256
-    participant p17 as require
-    participant p18 as MaintenanceProtocolError
-    participant p19 as type (src/llm_wiki_cli/services…enance_state.py:_detached)
-    participant p20 as isinstance (src/llm_wiki_cli/services…enance_state.py:_detached)
-    participant p21 as deepcopy (src/llm_wiki_cli/services…dge_maintenance_authority)
-    participant p22 as core.validate_schema (src/llm_wiki_cli/services…dge_maintenance_authority)
-    participant p23 as _absolute_path
-    participant p24 as Path (src/llm_wiki_cli/services…dge_maintenance_authority)
-    participant p25 as _outside_recovery
-    p0-->>p1: type (src/llm_wiki_cli/api.py:acknowledge_maintenance)(allow_external_src)
-    p0-->>p2: ValueError (src/llm_wiki_cli/api.py:acknowledge_maintenance)('allow_external_src must be a boolean')
-    p0->>p3: _detached
-    p0->>p4: maintenance_core
-    p0-->>p5: core.validate_schema (src/llm_wiki_cli/api.py:acknowledge_maintenance)('maintenance-event-v1', {...})
-    p0-->>p6: core._coordinate(basis[...])
-    p0-->>p7: core._target(basis[...])
-    p0-->>p8: cast (src/llm_wiki_cli/api.py:acknowledge_maintenance)(MaintenanceAcknowledgmentResult, acknowledge_maintenance_authority(...))
-    p0->>p9: acknowledge_maintenance_authority
-    p0->>p10: _validate_wiki_dir
-    p3-->>p11: deepcopy (src/llm_wiki_cli/services…enance_state.py:_detached)(value)
-    p4->>p12: MaintenanceCore
-    p9->>p13: _identity (src/llm_wiki_cli/services/maintenance_state.py)
-    p10->>p14: validate_path
-    p3->>p15: MaintenanceError
-    p9->>p16: is_valid_sha256
-    p3->>p17: require
-    p9->>p18: MaintenanceProtocolError
-    p3-->>p19: type (src/llm_wiki_cli/services…enance_state.py:_detached)(result)
-    p9->>p4: maintenance_core
-    p3-->>p20: isinstance (src/llm_wiki_cli/services…enance_state.py:_detached)(result, dict)
-    p9-->>p21: deepcopy (src/llm_wiki_cli/services…dge_maintenance_authority)(expected_basis)
-    p9-->>p22: core.validate_schema (src/llm_wiki_cli/services…dge_maintenance_authority)('maintenance-event-v1', event)
-    p9->>p23: _absolute_path
-    p9-->>p24: Path (src/llm_wiki_cli/services…dge_maintenance_authority)(wiki_dir)
-    p9->>p25: _outside_recovery
-    p9->>p23: _absolute_path
-    p9-->>p24: Path (src/llm_wiki_cli/services…dge_maintenance_authority)(recovery_dir)
-    p9->>p23: _absolute_path
-    p9-->>p24: Path (src/llm_wiki_cli/services…dge_maintenance_authority)(src_dir)
+    participant p1 as _detached
+    participant p2 as maintenance_core
+    participant p3 as acknowledge_maintenance_authority
+    participant p4 as _validate_wiki_dir
+    participant p5 as _identity (src/llm_wiki_cli/services/maintenance_state.py)
+    participant p6 as require
+    participant p7 as _absolute_path
+    participant p8 as _outside_recovery
+    participant p9 as maintenance_write_operation
+    participant p10 as _capture
+    participant p11 as owner_key
+    participant p12 as reconcile_pending_maintenance
+    participant p13 as project_maintenance_knowledge
+    participant p14 as validated_artifact_bytes
+    participant p15 as build_knowledge_commit_plan
+    participant p16 as commit_knowledge_artifacts
+    participant p17 as capture_context_read
+    participant p18 as canonical_hash
+    participant p19 as guard_maintenance_owner
+    participant p20 as current_manifest_format
+    participant p21 as governance_writer_lock
+    participant p22 as storage_writer_lock
+    participant p23 as snapshot_wiki
+    participant p24 as _commit_sharded
+    participant p25 as _recovery_directory
+    participant p26 as _commit_flat
+    participant p27 as _planned_write
+    participant p28 as save_recovery_snapshot
+    participant p29 as type (src/llm_wiki_cli/api.py:acknowledge_maintenance)
+    participant p30 as core.validate_schema (src/llm_wiki_cli/api.py:acknowledge_maintenance)
+    p0->>p1: _detached
+    p0->>p2: maintenance_core
+    p0->>p3: acknowledge_maintenance_authority
+    p0->>p4: _validate_wiki_dir
+    p3->>p5: _identity (src/llm_wiki_cli/services/maintenance_state.py)
+    p1->>p6: require
+    p3->>p7: _absolute_path
+    p3->>p8: _outside_recovery
+    p3->>p9: maintenance_write_operation
+    p3->>p10: _capture
+    p3->>p11: owner_key
+    p3->>p12: reconcile_pending_maintenance
+    p3->>p13: project_maintenance_knowledge
+    p3->>p14: validated_artifact_bytes
+    p3->>p15: build_knowledge_commit_plan
+    p3->>p16: commit_knowledge_artifacts
+    p10->>p17: capture_context_read
+    p11->>p18: canonical_hash
+    p9->>p19: guard_maintenance_owner
+    p15->>p20: current_manifest_format
+    p9->>p21: governance_writer_lock
+    p9->>p22: storage_writer_lock
+    p9->>p23: snapshot_wiki
+    p16->>p24: _commit_sharded
+    p9->>p25: _recovery_directory
+    p16->>p26: _commit_flat
+    p15->>p27: _planned_write
+    p9->>p28: save_recovery_snapshot
+    p0-->>p29: type (src/llm_wiki_cli/api.py:acknowledge_maintenance)(allow_external_src)
+    p0-->>p30: core.validate_schema (src/llm_wiki_cli/api.py:acknowledge_maintenance)('maintenance-event-v1', {...})
 ```
 
 > Call sequence diagram shows 30 of 2803 interactions; 2773 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 10 of 944 (934 omitted); unresolved 4 of 676 (672 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 944 (943 omitted); unresolved 1 of 676 (675 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/api.py:acknowledge_maintenance` | 1 | - | external | 2 |
+| `src/llm_wiki_cli/services/maintenance_state.py:_detached` | 4 | - | external | 3 |
+| `src/llm_wiki_cli/services/maintenance_state.py:_detached` | 4 | [src/llm_wiki_cli/services/maintenance_shapes.py](../modules/maintenance_shapes.md) | internal | 1 |
 | `src/llm_wiki_cli/services/maintenance_shapes.py:require` | 7 | [src/llm_wiki_cli/services/maintenance_shapes.py](../modules/maintenance_shapes.md) | internal | 1 |
+| `src/llm_wiki_cli/services/maintenance_state.py:maintenance_core` | 11 | [src/llm_wiki_cli/services/maintenance_state.py](../modules/maintenance_state.md) | internal | 1 |
+| `src/llm_wiki_cli/api.py:acknowledge_maintenance` | 1 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/maintenance_state.py:_identity` | 18 | - | external | 2 |
 | `src/llm_wiki_cli/services/maintenance_state.py:_identity` | 18 | [src/llm_wiki_cli/services/maintenance_shapes.py](../modules/maintenance_shapes.md) | internal | 2 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:is_valid_sha256` | 23 | - | external | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:is_valid_sha256` | 23 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 30 | - | external | 4 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 30 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 33 | - | external | 20 |
-> Omission summary shows 8 of 655 groups; 647 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 658 groups; 650 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

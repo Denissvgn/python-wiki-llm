@@ -19,77 +19,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as run
-    participant p1 as getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)
-    participant p2 as _dedupe_languages
-    participant p3 as bool (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)
-    participant p4 as validate_source_root
-    participant p5 as str (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)
-    participant p6 as print (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)
-    participant p7 as SystemExit
-    participant p8 as resolve_source_selection
-    participant p9 as build_source_snapshot
-    participant p10 as _languages_from_snapshot
-    participant p11 as _print_plan
-    participant p12 as resolve_helper_cache_root
-    participant p13 as sys.exit
-    participant p14 as Path (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)
-    participant p15 as prepare_helper
-    participant p16 as HelperPrepareResult
-    p0-->>p1: getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)(args, 'src_dir', '.')
-    p0-->>p1: getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)(args, 'cache_dir', None)
-    p0->>p2: _dedupe_languages
-    p0-->>p1: getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)(args, 'language', None)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)(args, 'source_selection', None)
-    p0-->>p3: bool (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)(getattr(...))
-    p0-->>p1: getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)(args, 'allow_external_src', False)
-    p0-->>p3: bool (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)(getattr(...))
-    p0-->>p1: getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)(args, 'plan', False)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)(args, 'format', 'text')
-    p0->>p4: validate_source_root
-    p0-->>p5: str (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)(src_root)
-    p0-->>p6: print (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)(…)
-    p0-->>p7: SystemExit(2)
-    p0->>p8: resolve_source_selection
-    p0->>p9: build_source_snapshot
-    p0-->>p6: print (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)('Error: --format is only available with --plan.', file=sys.stderr)
-    p0-->>p7: SystemExit(2)
-    p0->>p10: _languages_from_snapshot
-    p0->>p11: _print_plan
-    p0->>p12: resolve_helper_cache_root
-    p0-->>p6: print (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)(…)
-    p0-->>p13: sys.exit(1)
-    p0->>p10: _languages_from_snapshot
-    p0-->>p6: print (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)('No TypeScript/JavaScript, Go, Rust, or Haskell source files found. Nothing to prepare.')
-    p0-->>p6: print (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)(...)
-    p0-->>p14: Path (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)(cache_root)
-    p0->>p15: prepare_helper
-    p0->>p16: HelperPrepareResult
-    p0-->>p5: str (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)(exc)
+    participant p1 as validate_source_root
+    participant p2 as resolve_source_selection
+    participant p3 as build_source_snapshot
+    participant p4 as _languages_from_snapshot
+    participant p5 as _print_plan
+    participant p6 as resolve_helper_cache_root
+    participant p7 as prepare_helper
+    participant p8 as _format_result
+    participant p9 as _dedupe_languages
+    participant p10 as HelperPrepareResult
+    participant p11 as validate_path
+    participant p12 as _validate_capture_options
+    participant p13 as selected_helper_languages
+    participant p14 as prepare_typescript
+    participant p15 as prepare_go
+    participant p16 as prepare_rust
+    participant p17 as _override_text
+    participant p18 as _resolve_snapshot_selection
+    participant p19 as prepare_haskell
+    participant p20 as _normalize_only_files
+    participant p21 as _locate_exact_path
+    participant p22 as _nearest_git_dir
+    participant p23 as _read_config
+    participant p24 as _empty_source_snapshot
+    participant p25 as _policy_from_content
+    participant p26 as _capture_buckets
+    participant p27 as _validate_policy_filesystem
+    participant p28 as _collect_source_tree
+    participant p29 as getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)
+    participant p30 as results.append
+    p0->>p1: validate_source_root
+    p0->>p2: resolve_source_selection
+    p0->>p3: build_source_snapshot
+    p0->>p4: _languages_from_snapshot
+    p0->>p5: _print_plan
+    p0->>p6: resolve_helper_cache_root
+    p0->>p7: prepare_helper
+    p0->>p8: _format_result
+    p0->>p9: _dedupe_languages
+    p0->>p10: HelperPrepareResult
+    p1->>p11: validate_path
+    p3->>p12: _validate_capture_options
+    p4->>p13: selected_helper_languages
+    p7->>p14: prepare_typescript
+    p7->>p15: prepare_go
+    p7->>p16: prepare_rust
+    p2->>p17: _override_text
+    p3->>p18: _resolve_snapshot_selection
+    p7->>p19: prepare_haskell
+    p3->>p20: _normalize_only_files
+    p2->>p21: _locate_exact_path
+    p6->>p22: _nearest_git_dir
+    p2->>p23: _read_config
+    p3->>p24: _empty_source_snapshot
+    p2->>p25: _policy_from_content
+    p3->>p26: _capture_buckets
+    p2->>p27: _validate_policy_filesystem
+    p3->>p28: _collect_source_tree
+    p0-->>p29: getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)(args, 'src_dir', '.')
+    p0-->>p30: results.append(result)
 ```
 
 > Call sequence diagram shows 30 of 989 interactions; 959 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 20 of 332 (312 omitted); unresolved 0 of 296 (296 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 332 (331 omitted); unresolved 1 of 296 (295 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/commands/prepare_extractors_cmd.py:run` | 1 | - | external | 22 |
 | `src/llm_wiki_cli/commands/prepare_extractors_cmd.py:_dedupe_languages` | 4 | - | external | 1 |
 | `src/llm_wiki_cli/commands/prepare_extractors_cmd.py:_dedupe_languages` | 4 | - | unresolved | 2 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 15 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
 | `src/llm_wiki_cli/config.py:validate_path` | 16 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
 | `src/llm_wiki_cli/config.py:validate_path` | 16 | - | unresolved | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 16 | - | external | 2 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 15 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 15 | - | external | 11 |
-> Omission summary shows 8 of 271 groups; 263 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 268 groups; 260 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

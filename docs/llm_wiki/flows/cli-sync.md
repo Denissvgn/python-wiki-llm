@@ -72,7 +72,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -81,75 +81,82 @@ sequenceDiagram
     participant p1 as _sync_run_options_from_args
     participant p2 as maintenance_write_operation
     participant p3 as _run_sync_options
-    participant p4 as print (src/llm_wiki_cli/commands/sync_cmd.py:run)
-    participant p5 as sys.exit (src/llm_wiki_cli/commands/sync_cmd.py:run)
-    participant p6 as getattr (src/llm_wiki_cli/commands…ync_run_options_from_args)
-    participant p7 as _absolute_path
-    participant p8 as _prepare_sync_run
-    participant p9 as Path (src/llm_wiki_cli/commands…ync_run_options_from_args)
-    participant p10 as Path (src/llm_wiki_cli/services…intenance_write_operation)
-    participant p11 as print (src/llm_wiki_cli/commands…_cmd.py:_run_sync_options)
-    participant p12 as guard_maintenance_owner
-    participant p13 as sys.exit (src/llm_wiki_cli/commands…_cmd.py:_run_sync_options)
-    participant p14 as bool (src/llm_wiki_cli/commands…ync_run_options_from_args)
-    participant p15 as load_adoption_marker
-    participant p16 as isinstance (src/llm_wiki_cli/commands…_cmd.py:_run_sync_options)
-    participant p17 as report_capture
-    participant p18 as governance_writer_lock
-    participant p19 as _print_sync_artifact_actions
-    participant p20 as storage_writer_lock
-    participant p21 as _cache_options_from_args
-    participant p22 as _print_cache_stats
-    participant p23 as InventoryCacheOptions
+    participant p4 as _absolute_path
+    participant p5 as _prepare_sync_run
+    participant p6 as guard_maintenance_owner
+    participant p7 as report_capture
+    participant p8 as governance_writer_lock
+    participant p9 as storage_writer_lock
+    participant p10 as _cache_options_from_args
+    participant p11 as _print_cache_stats
+    participant p12 as snapshot_wiki
+    participant p13 as _run_prepared_sync
+    participant p14 as _recovery_directory
+    participant p15 as extraction_job_request_from_args
+    participant p16 as save_recovery_snapshot
+    participant p17 as validate_source_root
+    participant p18 as cache_options_from_args
+    participant p19 as validate_path
+    participant p20 as assert_no_pending_page_moves
+    participant p21 as _run_sync_dry_run
+    participant p22 as ensure_guarded_directory
+    participant p23 as _load_or_seed_manifest
+    participant p24 as _enforce_sync_write_safety
+    participant p25 as load_adoption_marker
+    participant p26 as SyncManifest.load
+    participant p27 as _validate_persisted_source_selection
+    participant p28 as prepare_cache_options
+    participant p29 as print (src/llm_wiki_cli/commands/sync_cmd.py:run)
+    participant p30 as write_basis.assert_current
     p0->>p1: _sync_run_options_from_args
     p0->>p2: maintenance_write_operation
     p0->>p3: _run_sync_options
-    p0-->>p4: print (src/llm_wiki_cli/commands/sync_cmd.py:run)(..., file=sys.stderr)
-    p0-->>p5: sys.exit (src/llm_wiki_cli/commands/sync_cmd.py:run)(2)
-    p1-->>p6: getattr (src/llm_wiki_cli/commands…ync_run_options_from_args)(args, 'src_dir', '.')
-    p2->>p7: _absolute_path
-    p3->>p8: _prepare_sync_run
-    p1-->>p9: Path (src/llm_wiki_cli/commands…ync_run_options_from_args)(getattr(...))
-    p2-->>p10: Path (src/llm_wiki_cli/services…intenance_write_operation)(wiki_dir)
-    p3-->>p11: print (src/llm_wiki_cli/commands…_cmd.py:_run_sync_options)(..., file=sys.stderr)
-    p1-->>p6: getattr (src/llm_wiki_cli/commands…ync_run_options_from_args)(args, 'wiki_dir', 'docs/llm_wiki')
-    p2->>p12: guard_maintenance_owner
-    p3-->>p13: sys.exit (src/llm_wiki_cli/commands…_cmd.py:_run_sync_options)(2)
-    p1-->>p14: bool (src/llm_wiki_cli/commands…ync_run_options_from_args)(getattr(...))
-    p2->>p15: load_adoption_marker
-    p3-->>p16: isinstance (src/llm_wiki_cli/commands…_cmd.py:_run_sync_options)(prepared, _ReusedSync)
-    p1-->>p6: getattr (src/llm_wiki_cli/commands…ync_run_options_from_args)(args, 'dry_run', False)
-    p2->>p12: guard_maintenance_owner
-    p3->>p17: report_capture
-    p1-->>p14: bool (src/llm_wiki_cli/commands…ync_run_options_from_args)(getattr(...))
-    p2->>p18: governance_writer_lock
-    p3->>p19: _print_sync_artifact_actions
-    p1-->>p6: getattr (src/llm_wiki_cli/commands…ync_run_options_from_args)(args, 'no_plugins', False)
-    p2->>p20: storage_writer_lock
-    p3-->>p11: print (src/llm_wiki_cli/commands…_cmd.py:_run_sync_options)(...)
-    p1->>p21: _cache_options_from_args
-    p2->>p12: guard_maintenance_owner
-    p3->>p22: _print_cache_stats
-    p1->>p23: InventoryCacheOptions
+    p2->>p4: _absolute_path
+    p3->>p5: _prepare_sync_run
+    p2->>p6: guard_maintenance_owner
+    p3->>p7: report_capture
+    p2->>p8: governance_writer_lock
+    p2->>p9: storage_writer_lock
+    p1->>p10: _cache_options_from_args
+    p3->>p11: _print_cache_stats
+    p2->>p12: snapshot_wiki
+    p3->>p13: _run_prepared_sync
+    p2->>p14: _recovery_directory
+    p1->>p15: extraction_job_request_from_args
+    p2->>p16: save_recovery_snapshot
+    p1->>p17: validate_source_root
+    p10->>p18: cache_options_from_args
+    p17->>p19: validate_path
+    p5->>p20: assert_no_pending_page_moves
+    p13->>p21: _run_sync_dry_run
+    p16->>p22: ensure_guarded_directory
+    p5->>p23: _load_or_seed_manifest
+    p13->>p24: _enforce_sync_write_safety
+    p6->>p25: load_adoption_marker
+    p6->>p26: SyncManifest.load
+    p5->>p27: _validate_persisted_source_selection
+    p5->>p28: prepare_cache_options
+    p0-->>p29: print (src/llm_wiki_cli/commands/sync_cmd.py:run)(..., file=sys.stderr)
+    p3-->>p30: write_basis.assert_current
 ```
 
 > Call sequence diagram shows 30 of 5427 interactions; 5397 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 14 of 1878 (1864 omitted); unresolved 0 of 1690 (1690 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1878 (1877 omitted); unresolved 1 of 1690 (1689 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/commands/sync_cmd.py:_cache_options_from_args` | 10 | [src/llm_wiki_cli/services/inventory_cache.py](../modules/inventory_cache.md) | internal | 1 |
+| `src/llm_wiki_cli/commands/sync_cmd.py:_sync_run_options_from_args` | 2 | - | external | 38 |
 | `src/llm_wiki_cli/services/inventory_cache.py:cache_options_from_args` | 11 | - | external | 8 |
 | `src/llm_wiki_cli/services/inventory_cache.py:cache_options_from_args` | 11 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/inventory_cache.py:cache_options_from_args` | 11 | [src/llm_wiki_cli/services/runtime_output.py](../modules/runtime_output.md) | internal | 2 |
 | `src/llm_wiki_cli/services/inventory_cache.py:cache_options_from_args` | 11 | [src/llm_wiki_cli/services/inventory_cache.py](../modules/inventory_cache.md) | internal | 1 |
-| `src/llm_wiki_cli/commands/sync_cmd.py:_sync_run_options_from_args` | 2 | - | external | 31 |
-| `src/llm_wiki_cli/commands/sync_cmd.py:_sync_run_options_from_args` | 2 | [src/llm_wiki_cli/services/extraction_jobs.py](../modules/extraction_jobs.md) | internal | 1 |
+| `src/llm_wiki_cli/commands/sync_cmd.py:_sync_run_options_from_args` | 2 | [src/llm_wiki_cli/services/inventory_cache.py](../modules/inventory_cache.md) | internal | 1 |
 | `src/llm_wiki_cli/services/extraction_jobs.py:extraction_job_request_from_args` | 28 | - | external | 5 |
-> Omission summary shows 8 of 1202 groups; 1194 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/extraction_jobs.py:extraction_job_request_from_args` | 28 | [src/llm_wiki_cli/services/extraction_jobs.py](../modules/extraction_jobs.md) | internal | 1 |
+> Omission summary shows 8 of 1199 groups; 1191 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

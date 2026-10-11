@@ -13,7 +13,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -23,78 +23,81 @@ sequenceDiagram
     participant p2 as build_infrastructure_observation_basis
     participant p3 as _source_hash
     participant p4 as _observation_hash
-    participant p5 as sorted (src/llm_wiki_cli/services…rent_infrastructure_bases)
-    participant p6 as inventory.items
-    participant p7 as sorted (src/llm_wiki_cli/services…d_infrastructure_page_map)
-    participant p8 as _validate_source_path
-    participant p9 as snapshot.captured_content_hashes.get
-    participant p10 as hash_json
-    participant p11 as infrastructure_page_name
-    participant p12 as _validate_hash
-    participant p13 as is_valid_sha256
-    participant p14 as str
-    participant p15 as by_stem.setdefault(…).append
-    participant p16 as InfrastructureSyncError
-    participant p17 as info.get
-    participant p18 as by_stem.setdefault
-    participant p19 as _validate_extractor_ref
-    participant p20 as dict
+    participant p5 as _validate_source_path
+    participant p6 as _validate_hash
+    participant p7 as _validate_extractor_ref
+    participant p8 as hash_json
+    participant p9 as require_repository_relative_path
+    participant p10 as require_sha256
+    participant p11 as canonical_json_bytes
+    participant p12 as require_trimmed_text
+    participant p13 as require_portable_relative_path
+    participant p14 as require_nonempty_text
+    participant p15 as _default_path_error
+    participant p16 as _check_path_collision
+    participant p17 as require_portable_path_component
+    participant p18 as infrastructure_page_name
+    participant p19 as is_valid_sha256
+    participant p20 as InfrastructureSyncError
     participant p21 as ConceptObservationBasis
-    participant p22 as by_stem.items
-    participant p23 as len (src/llm_wiki_cli/services…d_infrastructure_page_map)
-    participant p24 as hash_json(…).removeprefix
-    participant p25 as source_path.replace(…).replace(…).replace
-    participant p26 as sha256_bytes
-    participant p27 as require_repository_relative_path
+    participant p22 as sha256_bytes
+    participant p23 as require_string
+    participant p24 as canonical_json_text
+    participant p25 as _syntax_key
+    participant p26 as _known_syntax
+    participant p27 as _remember_syntax
+    participant p28 as SharedValidationError
+    participant p29 as sorted (src/llm_wiki_cli/services…rent_infrastructure_bases)
+    participant p30 as inventory.items
     p0->>p1: build_infrastructure_page_map
     p0->>p2: build_infrastructure_observation_basis
     p0->>p3: _source_hash
     p0->>p4: _observation_hash
-    p0-->>p5: sorted (src/llm_wiki_cli/services…rent_infrastructure_bases)(inventory.items(...))
-    p0-->>p6: inventory.items
-    p1-->>p7: sorted (src/llm_wiki_cli/services…d_infrastructure_page_map)(source_paths)
-    p2->>p8: _validate_source_path
-    p3-->>p9: snapshot.captured_content_hashes.get(source_path)
-    p4->>p10: hash_json
-    p1->>p11: infrastructure_page_name
-    p2->>p12: _validate_hash
-    p3->>p13: is_valid_sha256
-    p4-->>p14: str(...)
-    p1-->>p15: by_stem.setdefault(…).append(source_path)
-    p2->>p12: _validate_hash
-    p3->>p16: InfrastructureSyncError
-    p4-->>p17: info.get('type')
-    p1-->>p18: by_stem.setdefault(stem, [...])
-    p2->>p19: _validate_extractor_ref
-    p4-->>p20: dict(info)
-    p1-->>p7: sorted (src/llm_wiki_cli/services…d_infrastructure_page_map)(by_stem.items(...))
+    p2->>p5: _validate_source_path
+    p2->>p6: _validate_hash
+    p2->>p7: _validate_extractor_ref
+    p1->>p8: hash_json
+    p5->>p9: require_repository_relative_path
+    p6->>p10: require_sha256
+    p8->>p11: canonical_json_bytes
+    p10->>p12: require_trimmed_text
+    p9->>p13: require_portable_relative_path
+    p12->>p14: require_nonempty_text
+    p13->>p15: _default_path_error
+    p13->>p16: _check_path_collision
+    p13->>p17: require_portable_path_component
+    p1->>p18: infrastructure_page_name
+    p3->>p19: is_valid_sha256
+    p3->>p20: InfrastructureSyncError
     p2->>p21: ConceptObservationBasis
-    p1-->>p22: by_stem.items
-    p1-->>p23: len (src/llm_wiki_cli/services…d_infrastructure_page_map)(grouped_paths)
-    p1-->>p24: hash_json(…).removeprefix('sha256:')
-    p1->>p10: hash_json
-    p11-->>p25: source_path.replace(…).replace(…).replace('.', '_')
-    p10->>p26: sha256_bytes
-    p8->>p27: require_repository_relative_path
+    p8->>p22: sha256_bytes
+    p7->>p23: require_string
+    p11->>p24: canonical_json_text
+    p9->>p25: _syntax_key
+    p9->>p26: _known_syntax
+    p9->>p27: _remember_syntax
+    p15->>p28: SharedValidationError
+    p0-->>p29: sorted (src/llm_wiki_cli/services…rent_infrastructure_bases)(inventory.items(...))
+    p0-->>p30: inventory.items
 ```
 
 > Call sequence diagram shows 30 of 130 interactions; 100 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 6 of 41 (35 omitted); unresolved 8 of 41 (33 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 41 (40 omitted); unresolved 1 of 41 (40 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/infrastructure_inventory.py:infrastructure_page_name` | 4 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/infrastructure_sync.py:build_infrastructure_page_map` | 2 | - | external | 3 |
+| `src/llm_wiki_cli/services/infrastructure_inventory.py:infrastructure_page_name` | 4 | - | unresolved | 3 |
+| `src/llm_wiki_cli/services/infrastructure_sync.py:build_infrastructure_page_map` | 2 | - | unresolved | 4 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:sha256_bytes` | 15 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:sha256_bytes` | 15 | - | external | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:hash_json` | 14 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:canonical_json_bytes` | 18 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:canonical_json_bytes` | 18 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:canonical_json_text` | 20 | - | external | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 24 | - | external | 7 |
-> Omission summary shows 8 of 40 groups; 32 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 39 groups; 31 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

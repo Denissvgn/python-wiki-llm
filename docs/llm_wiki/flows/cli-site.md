@@ -39,71 +39,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as run
-    participant p1 as getattr (src/llm_wiki_cli/commands/site_cmd.py:run)
-    participant p2 as validate_path
-    participant p3 as _hub_requested
-    participant p4 as _validate_hub_args
-    participant p5 as _load_hub_knowledge_projections
-    participant p6 as export_site_hub
-    participant p7 as bool (src/llm_wiki_cli/commands/site_cmd.py:run)
+    participant p1 as validate_path
+    participant p2 as _validate_hub_args
+    participant p3 as _load_hub_knowledge_projections
+    participant p4 as export_site_hub
+    participant p5 as _print_report
+    participant p6 as check_site_hub
+    participant p7 as _hub_requested
     participant p8 as _knowledge_metadata
     participant p9 as _load_knowledge_projection
     participant p10 as export_site_mirror
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/site_cmd.py:run)(args, 'site_action', None)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/site_cmd.py:run)(args, 'output_format', 'text')
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/site_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/site_cmd.py:run)(args, 'out_dir')
-    p0->>p2: validate_path
-    p0->>p3: _hub_requested
-    p0->>p4: _validate_hub_args
-    p0->>p5: _load_hub_knowledge_projections
-    p0->>p6: export_site_hub
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/site_cmd.py:run)(args, 'format', 'plain')
-    p0-->>p7: bool (src/llm_wiki_cli/commands/site_cmd.py:run)(getattr(...))
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/site_cmd.py:run)(args, 'file_friendly', False)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/site_cmd.py:run)(args, 'profile', 'reference')
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/site_cmd.py:run)(args, 'site_name', None)
-    p0-->>p7: bool (src/llm_wiki_cli/commands/site_cmd.py:run)(getattr(...))
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/site_cmd.py:run)(args, 'front_matter', False)
-    p0-->>p7: bool (src/llm_wiki_cli/commands/site_cmd.py:run)(getattr(...))
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/site_cmd.py:run)(args, 'dry_run', False)
+    participant p11 as check_site_mirror
+    participant p12 as _validate_format
+    participant p13 as _validate_link_mode (src/llm_wiki_cli/services/site_export.py)
+    participant p14 as resolve_site_hub_sources
+    participant p15 as _validate_file_friendly
+    participant p16 as _validate_profile
+    participant p17 as render_report_text
+    participant p18 as _preflight_hub_knowledge_projections
+    participant p19 as _preflight_hub_root_output_collisions
+    participant p20 as _validate_output_base
+    participant p21 as _preflight_existing_unexpected_knowledge_pages
+    participant p22 as _expected_hub_markdown_paths
+    participant p23 as _source_identity
+    participant p24 as _build_publication_selection
+    participant p25 as _check_publication_receipt
+    participant p26 as _preflight_publication_export
+    participant p27 as _selection_mismatch_issues
+    participant p28 as _begin_publication_export
+    participant p29 as getattr (src/llm_wiki_cli/commands/site_cmd.py:run)
+    participant p30 as (…).resolve (src/llm_wiki_cli/config.py:validate_path)
+    p0->>p1: validate_path
+    p0->>p2: _validate_hub_args
+    p0->>p3: _load_hub_knowledge_projections
+    p0->>p4: export_site_hub
+    p0->>p5: _print_report
+    p0->>p6: check_site_hub
+    p0->>p7: _hub_requested
     p0->>p8: _knowledge_metadata
-    p0->>p2: validate_path
     p0->>p9: _load_knowledge_projection
     p0->>p10: export_site_mirror
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/site_cmd.py:run)(args, 'format', 'plain')
-    p0-->>p7: bool (src/llm_wiki_cli/commands/site_cmd.py:run)(getattr(...))
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/site_cmd.py:run)(args, 'file_friendly', False)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/site_cmd.py:run)(args, 'profile', 'reference')
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/site_cmd.py:run)(args, 'site_name', None)
-    p0-->>p7: bool (src/llm_wiki_cli/commands/site_cmd.py:run)(getattr(...))
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/site_cmd.py:run)(args, 'front_matter', False)
-    p0-->>p7: bool (src/llm_wiki_cli/commands/site_cmd.py:run)(getattr(...))
+    p0->>p11: check_site_mirror
+    p4->>p12: _validate_format
+    p6->>p13: _validate_link_mode (src/llm_wiki_cli/services/site_export.py)
+    p3->>p14: resolve_site_hub_sources
+    p4->>p15: _validate_file_friendly
+    p4->>p16: _validate_profile
+    p5->>p17: render_report_text
+    p4->>p18: _preflight_hub_knowledge_projections
+    p4->>p19: _preflight_hub_root_output_collisions
+    p4->>p20: _validate_output_base
+    p4->>p21: _preflight_existing_unexpected_knowledge_pages
+    p4->>p22: _expected_hub_markdown_paths
+    p4->>p23: _source_identity
+    p4->>p24: _build_publication_selection
+    p6->>p25: _check_publication_receipt
+    p4->>p26: _preflight_publication_export
+    p6->>p27: _selection_mismatch_issues
+    p4->>p28: _begin_publication_export
+    p0-->>p29: getattr (src/llm_wiki_cli/commands/site_cmd.py:run)(args, 'site_action', None)
+    p1-->>p30: (…).resolve (src/llm_wiki_cli/config.py:validate_path)
 ```
 
 > Call sequence diagram shows 30 of 2531 interactions; 2501 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 21 of 681 (660 omitted); unresolved 0 of 799 (799 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 681 (680 omitted); unresolved 1 of 799 (798 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/commands/site_cmd.py:run` | 1 | - | external | 37 |
 | `src/llm_wiki_cli/config.py:validate_path` | 6 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
-| `src/llm_wiki_cli/config.py:validate_path` | 6 | - | unresolved | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 6 | - | external | 2 |
+| `src/llm_wiki_cli/config.py:validate_path` | 6 | - | unresolved | 2 |
 | `src/llm_wiki_cli/commands/site_cmd.py:_hub_requested` | 14 | - | external | 3 |
 | `src/llm_wiki_cli/commands/site_cmd.py:_validate_hub_args` | 18 | - | external | 3 |
 | `src/llm_wiki_cli/commands/site_cmd.py:_validate_hub_args` | 18 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
 | `src/llm_wiki_cli/commands/site_cmd.py:_load_hub_knowledge_projections` | 24 | [src/llm_wiki_cli/commands/site_cmd.py](../modules/site_cmd.md) | internal | 2 |
-| `src/llm_wiki_cli/commands/site_cmd.py:_knowledge_metadata` | 25 | - | external | 3 |
-> Omission summary shows 8 of 548 groups; 540 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 547 groups; 539 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

@@ -37,71 +37,82 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as build_live_documentation_query_service
     participant p1 as normalize_supplied_paths
-    participant p2 as DocumentationQueryError
-    participant p3 as isinstance (src/llm_wiki_cli/services…cumentation_query_service)
-    participant p4 as perf_counter_ns
-    participant p5 as resolve_source_selection
-    participant p6 as str (src/llm_wiki_cli/services…cumentation_query_service)
-    participant p7 as capture_source_selection_inputs
-    participant p8 as validate_live_query_source_selection
-    participant p9 as selected_snapshot_builder
-    participant p10 as _source_anchor
-    participant p11 as _wiki_anchor
-    participant p12 as source_path_diagnostics
-    participant p13 as list (src/llm_wiki_cli/services…cumentation_query_service)
-    participant p14 as selected_extract_builder
-    participant p15 as result.payload.get
-    participant p16 as selected_call_edge_resolver
-    participant p17 as flow_builder
-    participant p18 as getattr (src/llm_wiki_cli/services…cumentation_query_service)
+    participant p2 as resolve_source_selection
+    participant p3 as capture_source_selection_inputs
+    participant p4 as validate_live_query_source_selection
+    participant p5 as _source_anchor
+    participant p6 as _wiki_anchor
+    participant p7 as source_path_diagnostics
+    participant p8 as _live_source_selection_identity
+    participant p9 as confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet.py)
+    participant p10 as attach_implementation_read_view
+    participant p11 as analysis_identity
+    participant p12 as read_guarded
+    participant p13 as attach_maintenance_view_from_inputs
+    participant p14 as _assert_source_unchanged
+    participant p15 as _assert_wiki_unchanged
+    participant p16 as DocumentationQueryError
+    participant p17 as assemble_documentation_query_service
+    participant p18 as _portable_supplied_path
+    participant p19 as SyncManifest.load
+    participant p20 as _domain_hash
+    participant p21 as confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py)
+    participant p22 as _supplied_path_values
+    participant p23 as _absolute_path
+    participant p24 as source_snapshot_matches_current_files
+    participant p25 as _resolve_snapshot_selection
+    participant p26 as _override_text
+    participant p27 as _new_snapshot_buckets
+    participant p28 as open_windows_readonly_file
+    participant p29 as isinstance (src/llm_wiki_cli/services…cumentation_query_service)
+    participant p30 as selected_snapshot_builder
     p0->>p1: normalize_supplied_paths
-    p0->>p2: DocumentationQueryError
-    p0-->>p3: isinstance (src/llm_wiki_cli/services…cumentation_query_service)(read_only, bool)
-    p0->>p2: DocumentationQueryError
-    p0-->>p4: perf_counter_ns
-    p0->>p5: resolve_source_selection
-    p0->>p2: DocumentationQueryError
-    p0-->>p6: str (src/llm_wiki_cli/services…cumentation_query_service)(exc)
-    p0->>p7: capture_source_selection_inputs
-    p0->>p8: validate_live_query_source_selection
-    p0-->>p4: perf_counter_ns
-    p0-->>p4: perf_counter_ns
-    p0-->>p9: selected_snapshot_builder(source_root, **=snapshot_options)
-    p0-->>p3: isinstance (src/llm_wiki_cli/services…cumentation_query_service)(source_snapshot, SourceSnapshot)
-    p0->>p10: _source_anchor
-    p0->>p11: _wiki_anchor
-    p0->>p12: source_path_diagnostics
-    p0-->>p4: perf_counter_ns
-    p0-->>p13: list (src/llm_wiki_cli/services…cumentation_query_service)(selected_paths)
-    p0-->>p6: str (src/llm_wiki_cli/services…cumentation_query_service)(helper_cache_dir)
-    p0-->>p4: perf_counter_ns
-    p0-->>p14: selected_extract_builder(str(...), **=extract_options)
-    p0-->>p6: str (src/llm_wiki_cli/services…cumentation_query_service)(source_root)
-    p0-->>p4: perf_counter_ns
-    p0-->>p15: result.payload.get('entrypoints', [...])
-    p0-->>p4: perf_counter_ns
-    p0-->>p16: selected_call_edge_resolver(inventory)
-    p0-->>p17: flow_builder(entrypoint, call_edges)
-    p0-->>p4: perf_counter_ns
-    p0-->>p18: getattr (src/llm_wiki_cli/services…cumentation_query_service)(result, 'inventory_result', None)
+    p0->>p2: resolve_source_selection
+    p0->>p3: capture_source_selection_inputs
+    p0->>p4: validate_live_query_source_selection
+    p0->>p5: _source_anchor
+    p0->>p6: _wiki_anchor
+    p0->>p7: source_path_diagnostics
+    p0->>p8: _live_source_selection_identity
+    p0->>p9: confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet.py)
+    p0->>p10: attach_implementation_read_view
+    p0->>p11: analysis_identity
+    p0->>p12: read_guarded
+    p0->>p13: attach_maintenance_view_from_inputs
+    p0->>p14: _assert_source_unchanged
+    p0->>p15: _assert_wiki_unchanged
+    p0->>p16: DocumentationQueryError
+    p0->>p17: assemble_documentation_query_service
+    p1->>p18: _portable_supplied_path
+    p4->>p19: SyncManifest.load
+    p5->>p20: _domain_hash
+    p9->>p21: confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py)
+    p1->>p22: _supplied_path_values
+    p12->>p23: _absolute_path
+    p14->>p24: source_snapshot_matches_current_files
+    p3->>p25: _resolve_snapshot_selection
+    p2->>p26: _override_text
+    p3->>p27: _new_snapshot_buckets
+    p12->>p28: open_windows_readonly_file
+    p0-->>p29: isinstance (src/llm_wiki_cli/services…cumentation_query_service)(read_only, bool)
+    p0-->>p30: selected_snapshot_builder(source_root, **=snapshot_options)
 ```
 
 > Call sequence diagram shows 30 of 1966 interactions; 1936 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 15 of 677 (662 omitted); unresolved 5 of 532 (527 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 677 (676 omitted); unresolved 1 of 532 (531 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/documentation_query_builder.py:normalize_supplied_paths` | 2 | [src/llm_wiki_cli/services/documentation_query_builder.py](../modules/documentation_query_builder.md) | internal | 2 |
 | `src/llm_wiki_cli/services/documentation_query_builder.py:_portable_supplied_path` | 3 | [src/llm_wiki_cli/services/documentation_queries.py](../modules/documentation_queries.md) | internal | 1 |
 | `src/llm_wiki_cli/services/documentation_query_builder.py:_portable_supplied_path` | 3 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 5 | - | external | 4 |
@@ -109,7 +120,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/validation.py:_default_path_error` | 7 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:_syntax_key` | 12 | - | external | 6 |
 | `src/llm_wiki_cli/services/validation.py:_known_syntax` | 19 | - | unresolved | 2 |
-> Omission summary shows 8 of 501 groups; 493 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/validation.py:_check_path_collision` | 22 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 2 |
+> Omission summary shows 8 of 492 groups; 484 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

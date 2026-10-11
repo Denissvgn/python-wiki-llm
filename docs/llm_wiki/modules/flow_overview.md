@@ -6,6 +6,19 @@
 
 Pure bounded presentation selection over a complete captured call trace.
 
+When the captured trace exceeds the display budget, immediate internal siblings
+and internal occurrences with coherent captured children take priority. Distinct
+exact internal targets receive representative occurrences before repeated helper
+sites, alongside examples of captured external and unresolved boundaries. All
+original occurrences, arguments and caller/target metadata remain available for
+coverage and omission accounting; no aggregate invocation or replacement parent
+is inferred. Smaller and boundary-only traces retain their existing ordering.
+
+The diagram renderer can admit a shorter prefix under its node, line or character
+ceilings. Final counts reflect that admitted prefix separately from the upstream
+depth-bound trace. Display order, a resolved declaration body and a generator
+call do not establish runtime execution or consumption.
+
 ## Imports
 
 | Source | Symbols |
@@ -50,5 +63,5 @@ flowchart LR
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
 | `_coordinate` | `(step: Mapping[str, Any]) -> dict[str, Any]` | — | — |
-| `select_flow_overview` | `(flow: Mapping[str, Any], interactions: Sequence[Mapping[str, Any]], *, limit: int = 30) -> FlowOverview` | — | Balance depth and actual-parent siblings without rewriting call evidence. |
+| `select_flow_overview` | `(flow: Mapping[str, Any], interactions: Sequence[Mapping[str, Any]], *, limit: int = 30) -> FlowOverview` | — | Select representative internal continuations and captured boundaries. |
 | `trim_flow_overview` | `(overview: FlowOverview, displayed_count: int) -> FlowOverview` | — | Reconcile the actual renderer-admitted prefix against the complete trace. |

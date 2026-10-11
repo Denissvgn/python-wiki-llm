@@ -6,81 +6,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as deserialize_verification_receipt
-    participant p1 as isinstance (src/llm_wiki_cli/services…lize_verification_receipt)
-    participant p2 as TypeError
-    participant p3 as len (src/llm_wiki_cli/services…lize_verification_receipt)
-    participant p4 as VerificationReceiptError
-    participant p5 as content.decode
-    participant p6 as json.loads
-    participant p7 as validate_verification_receipt
-    participant p8 as serialize_verification_receipt
-    participant p9 as isinstance (src/llm_wiki_cli/services…date_verification_receipt)
-    participant p10 as formatted_json_bytes
-    participant p11 as _receipt_to_payload
-    participant p12 as verification_receipt_to_payload
-    participant p13 as _object
-    participant p14 as len (src/llm_wiki_cli/services…e_verification_receipt, 1)
-    participant p15 as _exact_fields
-    participant p16 as _string
-    participant p17 as _receipt_hash
-    participant p18 as _scope_uid
-    participant p19 as str (src/llm_wiki_cli/services…date_verification_receipt)
-    participant p20 as _receipt_anchor_mapping
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…lize_verification_receipt)(content, bytes)
-    p0-->>p2: TypeError('content must be bytes')
-    p0-->>p3: len (src/llm_wiki_cli/services…lize_verification_receipt)(content)
-    p0->>p4: VerificationReceiptError
-    p0-->>p5: content.decode('utf-8')
-    p0->>p4: VerificationReceiptError
-    p0-->>p6: json.loads(text, object_pairs_hook=unique_object, parse_constant=reject_constant)
-    p0->>p4: VerificationReceiptError
-    p0->>p7: validate_verification_receipt
-    p0->>p8: serialize_verification_receipt
-    p0->>p4: VerificationReceiptError
-    p7-->>p9: isinstance (src/llm_wiki_cli/services…date_verification_receipt)(value, VerificationReceipt)
-    p8->>p10: formatted_json_bytes
-    p7->>p11: _receipt_to_payload
-    p8->>p12: verification_receipt_to_payload
-    p7->>p13: _object
-    p8-->>p14: len (src/llm_wiki_cli/services…e_verification_receipt, 1)(content)
-    p7->>p15: _exact_fields
-    p8->>p4: VerificationReceiptError
-    p7->>p16: _string
-    p7->>p4: VerificationReceiptError
-    p7->>p17: _receipt_hash
-    p7->>p13: _object
-    p7->>p15: _exact_fields
-    p7->>p16: _string
-    p7->>p18: _scope_uid
-    p7->>p4: VerificationReceiptError
-    p7-->>p19: str (src/llm_wiki_cli/services…date_verification_receipt)(exc)
-    p7->>p17: _receipt_hash
-    p7->>p20: _receipt_anchor_mapping
+    participant p1 as validate_verification_receipt
+    participant p2 as serialize_verification_receipt
+    participant p3 as VerificationReceiptError
+    participant p4 as formatted_json_bytes
+    participant p5 as verification_receipt_to_payload
+    participant p6 as _object
+    participant p7 as _exact_fields
+    participant p8 as _string
+    participant p9 as _receipt_hash
+    participant p10 as _scope_uid
+    participant p11 as _receipt_anchor_mapping
+    participant p12 as hash_json
+    participant p13 as _parse_check
+    participant p14 as _sha256
+    participant p15 as _checker_id
+    participant p16 as _normalized_anchor_mapping
+    participant p17 as canonical_json_bytes
+    participant p18 as _checker_version
+    participant p19 as _array
+    participant p20 as _parse_diagnostic
+    participant p21 as _parse_coverage
+    participant p22 as require_sha256
+    participant p23 as _nonnegative_int
+    participant p24 as require_nonnegative_int
+    participant p25 as require_trimmed_text
+    participant p26 as _receipt_to_payload
+    participant p27 as VerificationResult
+    participant p28 as VerificationReceipt
+    participant p29 as isinstance (src/llm_wiki_cli/services…lize_verification_receipt)
+    participant p30 as content.decode
+    p0->>p1: validate_verification_receipt
+    p0->>p2: serialize_verification_receipt
+    p0->>p3: VerificationReceiptError
+    p2->>p4: formatted_json_bytes
+    p2->>p5: verification_receipt_to_payload
+    p1->>p6: _object
+    p1->>p7: _exact_fields
+    p1->>p8: _string
+    p1->>p9: _receipt_hash
+    p1->>p10: _scope_uid
+    p1->>p11: _receipt_anchor_mapping
+    p1->>p12: hash_json
+    p1->>p13: _parse_check
+    p9->>p14: _sha256
+    p13->>p15: _checker_id
+    p11->>p16: _normalized_anchor_mapping
+    p12->>p17: canonical_json_bytes
+    p13->>p18: _checker_version
+    p13->>p19: _array
+    p13->>p20: _parse_diagnostic
+    p13->>p21: _parse_coverage
+    p14->>p22: require_sha256
+    p21->>p23: _nonnegative_int
+    p23->>p24: require_nonnegative_int
+    p22->>p25: require_trimmed_text
+    p1->>p26: _receipt_to_payload
+    p1->>p27: VerificationResult
+    p1->>p28: VerificationReceipt
+    p0-->>p29: isinstance (src/llm_wiki_cli/services…lize_verification_receipt)(content, bytes)
+    p0-->>p30: content.decode('utf-8')
 ```
 
 > Call sequence diagram shows 30 of 182 interactions; 152 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 7 of 54 (47 omitted); unresolved 1 of 20 (19 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 54 (53 omitted); unresolved 1 of 20 (19 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/verification_contracts.py:deserialize_verification_receipt` | 1 | - | external | 3 |
+| `src/llm_wiki_cli/services/verification_contracts.py:deserialize_verification_receipt` | 1 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 3 |
+| `src/llm_wiki_cli/services/verification_contracts.py:validate_verification_receipt` | 10 | - | external | 7 |
 | `src/llm_wiki_cli/services/verification_contracts.py:_receipt_to_payload` | 12 | - | external | 2 |
 | `src/llm_wiki_cli/services/verification_contracts.py:_receipt_to_payload` | 12 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/verification_contracts.py:_object` | 16 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_mapping` | 17 | - | external | 2 |
 | `src/llm_wiki_cli/services/validation.py:require_mapping` | 17 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/verification_contracts.py:_object` | 16 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 2 |
-| `src/llm_wiki_cli/services/verification_contracts.py:_exact_fields` | 23 | - | external | 1 |
-| `src/llm_wiki_cli/services/verification_contracts.py:_exact_fields` | 23 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-> Omission summary shows 8 of 63 groups; 55 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 64 groups; 56 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

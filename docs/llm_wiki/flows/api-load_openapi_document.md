@@ -6,79 +6,86 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as load_openapi_document
     participant p1 as _resolve_openapi_path
-    participant p2 as resolved.suffix.lower
-    participant p3 as resolved.read_bytes
-    participant p4 as ApiContractError
-    participant p5 as len (src/llm_wiki_cli/services…s.py:load_openapi_document)
-    participant p6 as data.decode
-    participant p7 as json.loads
-    participant p8 as yaml.safe_load
-    participant p9 as isinstance (src/llm_wiki_cli/services…s.py:load_openapi_document)
-    participant p10 as str
-    participant p11 as document.get
-    participant p12 as version.startswith
-    participant p13 as dict
-    participant p14 as hashlib.sha256(…).hexdigest
-    participant p15 as hashlib.sha256
-    participant p16 as Path(…).resolve
-    participant p17 as Path
-    participant p18 as Path(…).expanduser
+    participant p2 as ApiContractError
+    participant p3 as path_is_selected
+    participant p4 as _path_contains_link_or_reparse
+    participant p5 as _selection_path
+    participant p6 as path_is_link_or_reparse
+    participant p7 as _require_selection_path
+    participant p8 as require_repository_relative_path
+    participant p9 as SourceSelectionError
+    participant p10 as _is_under
+    participant p11 as _is_link_or_reparse_stat
+    participant p12 as _syntax_key
+    participant p13 as _known_syntax
+    participant p14 as require_portable_relative_path
+    participant p15 as _remember_syntax
+    participant p16 as len (src/llm_wiki_cli/services…s.py:load_openapi_document)
+    participant p17 as resolved.suffix.lower
+    participant p18 as resolved.read_bytes
+    participant p19 as data.decode
+    participant p20 as json.loads
+    participant p21 as yaml.safe_load
+    participant p22 as isinstance (src/llm_wiki_cli/services…s.py:load_openapi_document)
+    participant p23 as str
+    participant p24 as document.get
+    participant p25 as version.startswith
     p0->>p1: _resolve_openapi_path
-    p0-->>p2: resolved.suffix.lower
-    p0-->>p3: resolved.read_bytes
-    p0->>p4: ApiContractError
-    p0-->>p5: len (src/llm_wiki_cli/services…s.py:load_openapi_document)(data)
-    p0->>p4: ApiContractError
-    p0-->>p6: data.decode('utf-8')
-    p0->>p4: ApiContractError
-    p0-->>p7: json.loads(text)
-    p0-->>p8: yaml.safe_load(text)
-    p0-->>p7: json.loads(text)
-    p0-->>p8: yaml.safe_load(text)
-    p0->>p4: ApiContractError
-    p0-->>p9: isinstance (src/llm_wiki_cli/services…s.py:load_openapi_document)(document, Mapping)
-    p0->>p4: ApiContractError
-    p0-->>p10: str(...)
-    p0-->>p11: document.get('openapi')
-    p0-->>p12: version.startswith('3.0.')
-    p0-->>p12: version.startswith('3.1.')
-    p0->>p4: ApiContractError
-    p0-->>p9: isinstance (src/llm_wiki_cli/services…s.py:load_openapi_document)(document.get(...), Mapping)
-    p0-->>p11: document.get('paths')
-    p0->>p4: ApiContractError
-    p0-->>p13: dict(document)
-    p0-->>p14: hashlib.sha256(…).hexdigest
-    p0-->>p15: hashlib.sha256(data)
-    p1-->>p16: Path(…).resolve
-    p1-->>p17: Path(source_root)
-    p1-->>p18: Path(…).expanduser
-    p1-->>p17: Path(path)
+    p0->>p2: ApiContractError
+    p1->>p3: path_is_selected
+    p1->>p4: _path_contains_link_or_reparse
+    p3->>p5: _selection_path
+    p4->>p6: path_is_link_or_reparse
+    p5->>p7: _require_selection_path
+    p7->>p8: require_repository_relative_path
+    p3->>p9: SourceSelectionError
+    p3->>p10: _is_under
+    p6->>p11: _is_link_or_reparse_stat
+    p8->>p12: _syntax_key
+    p8->>p13: _known_syntax
+    p8->>p14: require_portable_relative_path
+    p8->>p15: _remember_syntax
+    p0-->>p16: len (src/llm_wiki_cli/services…s.py:load_openapi_document)(data)
+    p0-->>p17: resolved.suffix.lower
+    p0-->>p18: resolved.read_bytes
+    p0-->>p19: data.decode('utf-8')
+    p0-->>p20: json.loads(text)
+    p0-->>p21: yaml.safe_load(text)
+    p0-->>p20: json.loads(text)
+    p0-->>p21: yaml.safe_load(text)
+    p0-->>p22: isinstance (src/llm_wiki_cli/services…s.py:load_openapi_document)(document, Mapping)
+    p0-->>p23: str(...)
+    p0-->>p24: document.get('openapi')
+    p0-->>p25: version.startswith('3.0.')
+    p0-->>p25: version.startswith('3.1.')
+    p0-->>p22: isinstance (src/llm_wiki_cli/services…s.py:load_openapi_document)(document.get(...), Mapping)
+    p0-->>p24: document.get('paths')
 ```
 
 > Call sequence diagram shows 30 of 98 interactions; 68 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 12 of 30 (18 omitted); unresolved 10 of 27 (17 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 8 of 30 (22 omitted); unresolved 7 of 27 (20 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/api_contracts.py:_resolve_openapi_path` | 2 | - | unresolved | 8 |
-| `src/llm_wiki_cli/services/api_contracts.py:_resolve_openapi_path` | 2 | - | external | 2 |
-| `src/llm_wiki_cli/services/api_contracts.py:_resolve_openapi_path` | 2 | [src/llm_wiki_cli/services/api_contracts.py](../modules/api_contracts.md) | internal | 9 |
-| `src/llm_wiki_cli/services/api_contracts.py:_resolve_openapi_path` | 2 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 2 |
-| `src/llm_wiki_cli/services/source_selection.py:path_is_selected` | 19 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 4 |
-| `src/llm_wiki_cli/services/source_selection.py:_selection_path` | 20 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 4 |
-| `src/llm_wiki_cli/services/source_selection.py:_require_selection_path` | 21 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/api_contracts.py:_resolve_openapi_path` | 2 | - | unresolved | 10 |
+| `src/llm_wiki_cli/services/api_contracts.py:_resolve_openapi_path` | 2 | - | external | 4 |
+| `src/llm_wiki_cli/services/api_contracts.py:_resolve_openapi_path` | 2 | [src/llm_wiki_cli/services/api_contracts.py](../modules/api_contracts.md) | internal | 8 |
 | `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 22 | - | external | 7 |
-> Omission summary shows 8 of 20 groups; 12 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 22 | - | unresolved | 5 |
+| `src/llm_wiki_cli/services/source_selection.py:_require_selection_path` | 21 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 7 |
+| `src/llm_wiki_cli/services/source_selection.py:_selection_path` | 20 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 3 |
+| `src/llm_wiki_cli/services/source_selection.py:_selection_path` | 20 | - | external | 2 |
+> Omission summary shows 8 of 19 groups; 11 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

@@ -18,83 +18,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as compose_doctor_report
-    participant p1 as isinstance (src/llm_wiki_cli/services….py:compose_doctor_report)
-    participant p2 as TypeError (src/llm_wiki_cli/services….py:compose_doctor_report)
-    participant p3 as Path
-    participant p4 as _availability_section
-    participant p5 as _freshness_section
+    participant p1 as _availability_section
+    participant p2 as _freshness_section
+    participant p3 as _governance_section
+    participant p4 as _drift_section
+    participant p5 as _verification_section
     participant p6 as _snapshot_section
-    participant p7 as _governance_section
-    participant p8 as _drift_section
-    participant p9 as _verification_section
-    participant p10 as classify_health_sections
-    participant p11 as bool (src/llm_wiki_cli/services….py:compose_doctor_report)
-    participant p12 as _issues
-    participant p13 as DoctorReport
-    participant p14 as _knowledge_declared
-    participant p15 as int (src/llm_wiki_cli/services…ice.py:_freshness_section)
-    participant p16 as sorted (src/llm_wiki_cli/services…vice.py:_snapshot_section)
-    participant p17 as isinstance (src/llm_wiki_cli/services…service.py:_drift_section)
-    participant p18 as unhealthy.append
-    participant p19 as len (src/llm_wiki_cli/services…vice.py:_snapshot_section)
-    participant p20 as _reasons
-    participant p21 as TypeError (src/llm_wiki_cli/services…service.py:_drift_section)
-    participant p22 as knowledge_freshness_disclosure
-    p0-->>p1: isinstance (src/llm_wiki_cli/services….py:compose_doctor_report)(lint, LintReport)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services….py:compose_doctor_report)('lint must be a LintReport')
-    p0-->>p1: isinstance (src/llm_wiki_cli/services….py:compose_doctor_report)(strict, bool)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services….py:compose_doctor_report)('strict must be a boolean')
-    p0-->>p3: Path(wiki_dir)
-    p0->>p4: _availability_section
-    p0->>p5: _freshness_section
+    participant p7 as classify_health_sections
+    participant p8 as _issues
+    participant p9 as DoctorReport
+    participant p10 as _knowledge_declared
+    participant p11 as knowledge_freshness_disclosure
+    participant p12 as SyncManifest.load
+    participant p13 as StorageReadSession.read
+    participant p14 as SyncManifest.from_payload
+    participant p15 as decode_bytes
+    participant p16 as StorageReadSession.recheck
+    participant p17 as _require_relative_name
+    participant p18 as _mapping_value
+    participant p19 as StorageReadSession.phase
+    participant p20 as _fail
+    participant p21 as StorageReadSession.read_ranges
+    participant p22 as ManifestStoreReader.materialize
+    participant p23 as StorageReadSession.read_range
+    participant p24 as canonical_bytes
+    participant p25 as _copy_sources
+    participant p26 as _legacy_operational_state
+    participant p27 as _validate_exact_keys
+    participant p28 as _copy_mapping
+    participant p29 as isinstance (src/llm_wiki_cli/services….py:compose_doctor_report)
+    participant p30 as unhealthy.append
+    p0->>p1: _availability_section
+    p0->>p2: _freshness_section
+    p0->>p3: _governance_section
+    p0->>p4: _drift_section
+    p0->>p5: _verification_section
     p0->>p6: _snapshot_section
-    p0->>p7: _governance_section
-    p0->>p8: _drift_section
-    p0->>p9: _verification_section
-    p0->>p10: classify_health_sections
-    p0-->>p11: bool (src/llm_wiki_cli/services….py:compose_doctor_report)(_issues(...))
-    p0->>p12: _issues
-    p0->>p13: DoctorReport
-    p4->>p14: _knowledge_declared
-    p5-->>p15: int (src/llm_wiki_cli/services…ice.py:_freshness_section)(summary.freshness_counts[...])
-    p6-->>p16: sorted (src/llm_wiki_cli/services…vice.py:_snapshot_section)(...)
-    p7->>p12: _issues
-    p8-->>p17: isinstance (src/llm_wiki_cli/services…service.py:_drift_section)(raw_counts, Mapping)
-    p9->>p12: _issues
-    p10-->>p18: unhealthy.append('source-selection-mismatch')
-    p4->>p14: _knowledge_declared
-    p5-->>p15: int (src/llm_wiki_cli/services…ice.py:_freshness_section)(view.freshness.counts[...])
-    p6-->>p19: len (src/llm_wiki_cli/services…vice.py:_snapshot_section)(view.projection_findings)
-    p7->>p20: _reasons
-    p8-->>p21: TypeError (src/llm_wiki_cli/services…service.py:_drift_section)('freshness counts_by_state must be a mapping')
-    p9->>p20: _reasons
-    p10-->>p18: unhealthy.append('knowledge-unsupported')
-    p5->>p22: knowledge_freshness_disclosure
+    p0->>p7: classify_health_sections
+    p0->>p8: _issues
+    p0->>p9: DoctorReport
+    p1->>p10: _knowledge_declared
+    p2->>p11: knowledge_freshness_disclosure
+    p10->>p12: SyncManifest.load
+    p12->>p13: StorageReadSession.read
+    p12->>p14: SyncManifest.from_payload
+    p12->>p15: decode_bytes
+    p12->>p16: StorageReadSession.recheck
+    p13->>p17: _require_relative_name
+    p14->>p18: _mapping_value
+    p16->>p19: StorageReadSession.phase
+    p15->>p20: _fail
+    p16->>p21: StorageReadSession.read_ranges
+    p14->>p22: ManifestStoreReader.materialize
+    p16->>p23: StorageReadSession.read_range
+    p15->>p24: canonical_bytes
+    p14->>p25: _copy_sources
+    p14->>p26: _legacy_operational_state
+    p14->>p27: _validate_exact_keys
+    p14->>p28: _copy_mapping
+    p0-->>p29: isinstance (src/llm_wiki_cli/services….py:compose_doctor_report)(lint, LintReport)
+    p7-->>p30: unhealthy.append('source-selection-mismatch')
 ```
 
 > Call sequence diagram shows 30 of 316 interactions; 286 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 12 of 91 (79 omitted); unresolved 2 of 70 (68 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 91 (90 omitted); unresolved 1 of 70 (69 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/doctor_service.py:compose_doctor_report` | 1 | - | external | 5 |
 | `src/llm_wiki_cli/services/doctor_service.py:_knowledge_declared` | 8 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/doctor_service.py:_knowledge_declared` | 8 | [src/llm_wiki_cli/services/sync_manifest.py](../modules/sync_manifest.md) | internal | 1 |
 | `src/llm_wiki_cli/services/sync_manifest.py:SyncManifest.load` | 11 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/sync_manifest.py:SyncManifest.load` | 11 | - | external | 3 |
-| `src/llm_wiki_cli/services/sync_manifest.py:SyncManifest.load` | 11 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 3 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:StorageReadSession.read` | 19 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 2 |
+| `src/llm_wiki_cli/services/sync_manifest.py:SyncManifest.load` | 11 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_require_relative_name` | 20 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_require_relative_name` | 20 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
-> Omission summary shows 8 of 83 groups; 75 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/knowledge_storage_io.py:StorageReadSession.read` | 19 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 3 |
+> Omission summary shows 8 of 85 groups; 77 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

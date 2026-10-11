@@ -73,7 +73,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -82,79 +82,82 @@ sequenceDiagram
     participant p1 as _normalized_request
     participant p2 as _packet_contract_for_request
     participant p3 as capture_context_read
-    participant p4 as normalized.get (src/llm_wiki_cli/services…y:build_qualified_context)
-    participant p5 as bool (src/llm_wiki_cli/services…y:build_qualified_context)
-    participant p6 as set (src/llm_wiki_cli/services…y:build_qualified_context)
-    participant p7 as build_context_from_captured_read
-    participant p8 as _protocol_success_payload
-    participant p9 as sorted (src/llm_wiki_cli/services…y:build_qualified_context)
-    participant p10 as payload.get(…).items
-    participant p11 as payload.get (src/llm_wiki_cli/services…y:build_qualified_context)
-    participant p12 as isinstance (src/llm_wiki_cli/services…y:build_qualified_context)
-    participant p13 as _fit_knowledge_packet_response
-    participant p14 as packet_from_captured_response
-    participant p15 as isinstance (src/llm_wiki_cli/services…et.py:_normalized_request)
-    participant p16 as request.get (src/llm_wiki_cli/services…cket_contract_for_request)
-    participant p17 as isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)
-    participant p18 as isinstance (src/llm_wiki_cli/services…ext_from_captured_read, 2)
-    participant p19 as request.get (src/llm_wiki_cli/services…_protocol_success_payload)
-    participant p20 as _candidate_packet_size
-    participant p21 as ProtocolRequestError
-    participant p22 as TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)
-    participant p23 as TypeError (src/llm_wiki_cli/services…ontext_from_captured_read)
-    participant p24 as _render_markdown
-    participant p25 as response.get (src/llm_wiki_cli/services…knowledge_packet_response)
-    participant p26 as _packet_body
-    participant p27 as deepcopy (src/llm_wiki_cli/services…et.py:_normalized_request)
+    participant p4 as build_context_from_captured_read
+    participant p5 as _protocol_success_payload
+    participant p6 as _fit_knowledge_packet_response
+    participant p7 as packet_from_captured_response
+    participant p8 as _candidate_packet_size
+    participant p9 as _render_markdown
+    participant p10 as _build_legacy_context_from_captured_read
+    participant p11 as _build_knowledge_context_from_captured_read
+    participant p12 as _assert_selection_unchanged
+    participant p13 as _validate_protocol_request
+    participant p14 as validate_context_packet
+    participant p15 as validate_source_root
+    participant p16 as resolve_source_selection
+    participant p17 as capture_source_selection_inputs
+    participant p18 as validate_live_query_source_selection
+    participant p19 as build_source_snapshot
+    participant p20 as _guard_windows_inputs
+    participant p21 as _assert_source_unchanged
+    participant p22 as _assert_source_inputs_unchanged
+    participant p23 as _wiki_anchor
+    participant p24 as get_entry_points
+    participant p25 as read_console_scripts
+    participant p26 as resolve_call_edges
+    participant p27 as build_flow
+    participant p28 as build_data_flow_context
+    participant p29 as bool (src/llm_wiki_cli/services…y:build_qualified_context)
+    participant p30 as normalized.get (src/llm_wiki_cli/services…y:build_qualified_context)
     p0->>p1: _normalized_request
     p0->>p2: _packet_contract_for_request
     p0->>p3: capture_context_read
-    p0-->>p4: normalized.get (src/llm_wiki_cli/services…y:build_qualified_context)('knowledge_mode')
-    p0-->>p4: normalized.get (src/llm_wiki_cli/services…y:build_qualified_context)('knowledge_mode')
-    p0-->>p5: bool (src/llm_wiki_cli/services…y:build_qualified_context)(...)
-    p0-->>p6: set (src/llm_wiki_cli/services…y:build_qualified_context)(normalized[...])
-    p0->>p7: build_context_from_captured_read
-    p0->>p8: _protocol_success_payload
-    p0-->>p9: sorted (src/llm_wiki_cli/services…y:build_qualified_context)(...)
-    p0-->>p10: payload.get(…).items
-    p0-->>p11: payload.get (src/llm_wiki_cli/services…y:build_qualified_context)('source_priorities', {...})
-    p0-->>p12: isinstance (src/llm_wiki_cli/services…y:build_qualified_context)(path, str)
-    p0->>p13: _fit_knowledge_packet_response
-    p0->>p14: packet_from_captured_response
-    p1-->>p15: isinstance (src/llm_wiki_cli/services…et.py:_normalized_request)(request, Mapping)
-    p2-->>p16: request.get (src/llm_wiki_cli/services…cket_contract_for_request)('protocol')
-    p3-->>p17: isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)(read_only, bool)
-    p7-->>p18: isinstance (src/llm_wiki_cli/services…ext_from_captured_read, 2)(captured, CapturedContextRead)
-    p8-->>p19: request.get (src/llm_wiki_cli/services…_protocol_success_payload)('prefer_fresh')
-    p13->>p20: _candidate_packet_size
-    p14->>p2: _packet_contract_for_request
-    p1->>p21: ProtocolRequestError
-    p2->>p21: ProtocolRequestError
-    p3-->>p22: TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)('read_only must be a boolean')
-    p7-->>p23: TypeError (src/llm_wiki_cli/services…ontext_from_captured_read)('captured must be a CapturedContextRead')
-    p8->>p24: _render_markdown
-    p13-->>p25: response.get (src/llm_wiki_cli/services…knowledge_packet_response)('knowledge')
-    p14->>p26: _packet_body
-    p1-->>p27: deepcopy (src/llm_wiki_cli/services…et.py:_normalized_request)(dict(...))
+    p0->>p4: build_context_from_captured_read
+    p0->>p5: _protocol_success_payload
+    p0->>p6: _fit_knowledge_packet_response
+    p0->>p7: packet_from_captured_response
+    p6->>p8: _candidate_packet_size
+    p5->>p9: _render_markdown
+    p4->>p10: _build_legacy_context_from_captured_read
+    p4->>p11: _build_knowledge_context_from_captured_read
+    p7->>p12: _assert_selection_unchanged
+    p1->>p13: _validate_protocol_request
+    p7->>p14: validate_context_packet
+    p3->>p15: validate_source_root
+    p3->>p16: resolve_source_selection
+    p3->>p17: capture_source_selection_inputs
+    p3->>p18: validate_live_query_source_selection
+    p3->>p19: build_source_snapshot
+    p3->>p20: _guard_windows_inputs
+    p3->>p21: _assert_source_unchanged
+    p3->>p22: _assert_source_inputs_unchanged
+    p3->>p23: _wiki_anchor
+    p3->>p24: get_entry_points
+    p3->>p25: read_console_scripts
+    p3->>p26: resolve_call_edges
+    p3->>p27: build_flow
+    p3->>p28: build_data_flow_context
+    p0-->>p29: bool (src/llm_wiki_cli/services…y:build_qualified_context)(...)
+    p0-->>p30: normalized.get (src/llm_wiki_cli/services…y:build_qualified_context)('knowledge_mode')
 ```
 
 > Call sequence diagram shows 30 of 5424 interactions; 5394 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 10 of 1704 (1694 omitted); unresolved 7 of 1844 (1837 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1704 (1703 omitted); unresolved 1 of 1844 (1843 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/context_packet.py:_normalized_request` | 2 | - | external | 1 |
-| `src/llm_wiki_cli/services/context_packet.py:_normalized_request` | 2 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/context_packet.py:_normalized_request` | 2 | - | external | 3 |
 | `src/llm_wiki_cli/services/context_packet.py:_normalized_request` | 2 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 1 |
+| `src/llm_wiki_cli/services/context_packet.py:_normalized_request` | 2 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 9 | - | external | 2 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 9 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 9 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 1 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 12 | - | external | 11 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 12 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 12 |
-> Omission summary shows 8 of 1282 groups; 1274 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1284 groups; 1276 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

@@ -19,63 +19,77 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as run
-    participant p1 as getattr (src/llm_wiki_cli/commands/uninstall_cmd.py:run)
-    participant p2 as validate_path
-    participant p3 as str (src/llm_wiki_cli/commands/uninstall_cmd.py:run)
-    participant p4 as Path (src/llm_wiki_cli/commands/uninstall_cmd.py:run)
-    participant p5 as _preflight_hooks
-    participant p6 as _preflight_agent_schemas
-    participant p7 as _preflight_reference_skills
-    participant p8 as tuple (src/llm_wiki_cli/commands/uninstall_cmd.py:run)
-    participant p9 as _preflight_wiki_removal
-    participant p10 as _preflight_runtime_artifacts
-    participant p11 as _preflight_ci_workflow
-    participant p12 as print (src/llm_wiki_cli/commands/uninstall_cmd.py:run)
-    participant p13 as SystemExit
-    participant p14 as _remove_hooks
-    participant p15 as _clean_agent_schemas
-    participant p16 as display_project_path
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/uninstall_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
-    p0->>p2: validate_path
-    p0-->>p3: str (src/llm_wiki_cli/commands/uninstall_cmd.py:run)(wiki_dir_arg)
-    p0-->>p4: Path (src/llm_wiki_cli/commands/uninstall_cmd.py:run)(wiki_dir_arg)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/uninstall_cmd.py:run)(args, 'remove_wiki', False)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/uninstall_cmd.py:run)(args, 'dry_run', False)
-    p0->>p5: _preflight_hooks
-    p0->>p6: _preflight_agent_schemas
-    p0->>p7: _preflight_reference_skills
-    p0-->>p8: tuple (src/llm_wiki_cli/commands/uninstall_cmd.py:run)(...)
-    p0->>p9: _preflight_wiki_removal
-    p0->>p10: _preflight_runtime_artifacts
-    p0->>p11: _preflight_ci_workflow
-    p0-->>p12: print (src/llm_wiki_cli/commands/uninstall_cmd.py:run)(..., file=sys.stderr)
-    p0-->>p13: SystemExit(2)
-    p0-->>p12: print (src/llm_wiki_cli/commands/uninstall_cmd.py:run)('DRY RUN — no files will be modified:\n')
-    p0-->>p12: print (src/llm_wiki_cli/commands/uninstall_cmd.py:run)('LLM Wiki Uninstall')
-    p0-->>p12: print (src/llm_wiki_cli/commands/uninstall_cmd.py:run)(...)
-    p0-->>p12: print (src/llm_wiki_cli/commands/uninstall_cmd.py:run)('\n1. Git Hooks:')
-    p0->>p14: _remove_hooks
-    p0-->>p12: print (src/llm_wiki_cli/commands/uninstall_cmd.py:run)(' Nothing to remove.')
-    p0-->>p12: print (src/llm_wiki_cli/commands/uninstall_cmd.py:run)('\n2. Agent Constraint Blocks:')
-    p0->>p15: _clean_agent_schemas
-    p0-->>p12: print (src/llm_wiki_cli/commands/uninstall_cmd.py:run)(' Nothing to remove.')
-    p0-->>p12: print (src/llm_wiki_cli/commands/uninstall_cmd.py:run)('\n3. Wiki Directory:')
-    p0-->>p12: print (src/llm_wiki_cli/commands/uninstall_cmd.py:run)(...)
-    p0->>p16: display_project_path
-    p0-->>p12: print (src/llm_wiki_cli/commands/uninstall_cmd.py:run)(...)
-    p0->>p16: display_project_path
-    p0-->>p12: print (src/llm_wiki_cli/commands/uninstall_cmd.py:run)(...)
+    participant p1 as validate_path
+    participant p2 as _preflight_hooks
+    participant p3 as _preflight_agent_schemas
+    participant p4 as _preflight_reference_skills
+    participant p5 as _preflight_wiki_removal
+    participant p6 as _preflight_runtime_artifacts
+    participant p7 as _preflight_ci_workflow
+    participant p8 as _remove_hooks
+    participant p9 as _clean_agent_schemas
+    participant p10 as _remove_ci_workflow
+    participant p11 as _validate_hook_plan
+    participant p12 as _validate_runtime_plan
+    participant p13 as _validate_reference_plan
+    participant p14 as _remove_runtime_artifacts
+    participant p15 as _remove_wiki_dir
+    participant p16 as _remove_reference_skill
+    participant p17 as display_project_path
+    participant p18 as _confirm
+    participant p19 as _validate_schema_plan
+    participant p20 as UnsafeUninstallPathError
+    participant p21 as inspect_legacy_hooks
+    participant p22 as require_safe_schema_path
+    participant p23 as verify_reference_skill
+    participant p24 as _runtime_artifact_paths
+    participant p25 as remove_legacy_hooks
+    participant p26 as windows_object_identity
+    participant p27 as _path_contains
+    participant p28 as classify_managed_schema_block
+    participant p29 as getattr (src/llm_wiki_cli/commands/uninstall_cmd.py:run)
+    participant p30 as wiki_dir.exists
+    p0->>p1: validate_path
+    p0->>p2: _preflight_hooks
+    p0->>p3: _preflight_agent_schemas
+    p0->>p4: _preflight_reference_skills
+    p0->>p5: _preflight_wiki_removal
+    p0->>p6: _preflight_runtime_artifacts
+    p0->>p7: _preflight_ci_workflow
+    p0->>p8: _remove_hooks
+    p0->>p9: _clean_agent_schemas
+    p0->>p10: _remove_ci_workflow
+    p0->>p11: _validate_hook_plan
+    p0->>p12: _validate_runtime_plan
+    p0->>p13: _validate_reference_plan
+    p0->>p14: _remove_runtime_artifacts
+    p0->>p15: _remove_wiki_dir
+    p0->>p16: _remove_reference_skill
+    p0->>p17: display_project_path
+    p0->>p18: _confirm
+    p0->>p19: _validate_schema_plan
+    p0->>p20: UnsafeUninstallPathError
+    p2->>p21: inspect_legacy_hooks
+    p3->>p22: require_safe_schema_path
+    p4->>p23: verify_reference_skill
+    p6->>p24: _runtime_artifact_paths
+    p8->>p25: remove_legacy_hooks
+    p4->>p26: windows_object_identity
+    p6->>p27: _path_contains
+    p3->>p28: classify_managed_schema_block
+    p0-->>p29: getattr (src/llm_wiki_cli/commands/uninstall_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
+    p5-->>p30: wiki_dir.exists
 ```
 
 > Call sequence diagram shows 30 of 1155 interactions; 1125 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 19 of 538 (519 omitted); unresolved 0 of 235 (235 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 538 (537 omitted); unresolved 1 of 235 (234 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -84,12 +98,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_path` | 3 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
 | `src/llm_wiki_cli/config.py:validate_path` | 3 | - | unresolved | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 3 | - | external | 2 |
-| `src/llm_wiki_cli/commands/uninstall_cmd.py:_preflight_hooks` | 15 | [src/llm_wiki_cli/services/legacy_hooks.py](../modules/legacy_hooks.md) | internal | 1 |
+| `src/llm_wiki_cli/commands/uninstall_cmd.py:run` | 1 | - | external | 40 |
 | `src/llm_wiki_cli/services/legacy_hooks.py:inspect_legacy_hooks` | 16 | [src/llm_wiki_cli/services/legacy_hooks.py](../modules/legacy_hooks.md) | internal | 8 |
 | `src/llm_wiki_cli/services/legacy_hooks.py:_hook_directories` | 17 | - | unresolved | 9 |
 | `src/llm_wiki_cli/services/legacy_hooks.py:_hook_directories` | 17 | - | external | 7 |
 | `src/llm_wiki_cli/services/legacy_hooks.py:_hook_directories` | 17 | [src/llm_wiki_cli/services/legacy_hooks.py](../modules/legacy_hooks.md) | internal | 6 |
-> Omission summary shows 8 of 251 groups; 243 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 249 groups; 241 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

@@ -25,7 +25,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -33,75 +33,83 @@ sequenceDiagram
     participant p0 as install_ci_workflow
     participant p1 as normalize_action_ref
     participant p2 as _portable_project_path
-    participant p3 as Path.cwd().resolve
-    participant p4 as Path.cwd (src/llm_wiki_cli/services…er.py:install_ci_workflow)
-    participant p5 as Path(…).resolve (src/llm_wiki_cli/services…er.py:install_ci_workflow)
-    participant p6 as Path (src/llm_wiki_cli/services…er.py:install_ci_workflow)
-    participant p7 as InstallCiError
-    participant p8 as root.is_dir (src/llm_wiki_cli/services…er.py:install_ci_workflow)
-    participant p9 as _project_directory
-    participant p10 as classify_wiki_lifecycle
-    participant p11 as _validate_default_selection_contract
-    participant p12 as render_managed_workflow
-    participant p13 as _validate_workflow_target
-    participant p14 as target.exists (src/llm_wiki_cli/services…er.py:install_ci_workflow)
-    participant p15 as target.read_bytes
-    participant p16 as _normalize_newlines
-    participant p17 as InstallCiResult
-    participant p18 as is_unmodified_managed_workflow
-    participant p19 as write_bytes_atomic
-    participant p20 as isinstance (src/llm_wiki_cli/services…r.py:normalize_action_ref)
-    participant p21 as _without_github_expression
-    participant p22 as locate_exact_repository_path
+    participant p3 as _project_directory
+    participant p4 as classify_wiki_lifecycle
+    participant p5 as _validate_default_selection_contract
+    participant p6 as render_managed_workflow
+    participant p7 as _validate_workflow_target
+    participant p8 as is_unmodified_managed_workflow
+    participant p9 as write_bytes_atomic
+    participant p10 as InstallCiError
+    participant p11 as _normalize_newlines
+    participant p12 as InstallCiResult
+    participant p13 as _without_github_expression
+    participant p14 as locate_exact_repository_path
+    participant p15 as _validated_project_path
+    participant p16 as is_pristine_wiki_target
+    participant p17 as SyncManifest.load
+    participant p18 as resolve_source_selection
+    participant p19 as validate_persisted_source_selection_identity
+    participant p20 as require_repository_relative_path
+    participant p21 as _locate_exact_path
+    participant p22 as source_selection_identity_from_generation_inputs
+    participant p23 as source_selection_inputs_from_generation_inputs
+    participant p24 as _override_text
+    participant p25 as StorageReadSession.read
+    participant p26 as SyncManifest.from_payload
+    participant p27 as _read_config
+    participant p28 as _policy_from_content
+    participant p29 as Path.cwd (src/llm_wiki_cli/services…er.py:install_ci_workflow)
+    participant p30 as Path.cwd().resolve
     p0->>p1: normalize_action_ref
     p0->>p2: _portable_project_path
-    p0->>p2: _portable_project_path
-    p0-->>p3: Path.cwd().resolve
-    p0-->>p4: Path.cwd (src/llm_wiki_cli/services…er.py:install_ci_workflow)
-    p0-->>p5: Path(…).resolve (src/llm_wiki_cli/services…er.py:install_ci_workflow)
-    p0-->>p6: Path (src/llm_wiki_cli/services…er.py:install_ci_workflow)(project_root)
-    p0->>p7: InstallCiError
-    p0-->>p8: root.is_dir (src/llm_wiki_cli/services…er.py:install_ci_workflow)
-    p0->>p7: InstallCiError
-    p0->>p9: _project_directory
-    p0->>p9: _project_directory
-    p0->>p10: classify_wiki_lifecycle
-    p0->>p7: InstallCiError
-    p0->>p11: _validate_default_selection_contract
-    p0->>p12: render_managed_workflow
-    p0->>p13: _validate_workflow_target
-    p0-->>p14: target.exists (src/llm_wiki_cli/services…er.py:install_ci_workflow)
-    p0-->>p15: target.read_bytes
-    p0->>p7: InstallCiError
-    p0->>p16: _normalize_newlines
-    p0->>p17: InstallCiResult
-    p0->>p18: is_unmodified_managed_workflow
-    p0->>p7: InstallCiError
-    p0->>p19: write_bytes_atomic
-    p0->>p7: InstallCiError
-    p0->>p17: InstallCiResult
-    p1-->>p20: isinstance (src/llm_wiki_cli/services…r.py:normalize_action_ref)(value, str)
-    p2->>p21: _without_github_expression
-    p9->>p22: locate_exact_repository_path
+    p0->>p3: _project_directory
+    p0->>p4: classify_wiki_lifecycle
+    p0->>p5: _validate_default_selection_contract
+    p0->>p6: render_managed_workflow
+    p0->>p7: _validate_workflow_target
+    p0->>p8: is_unmodified_managed_workflow
+    p0->>p9: write_bytes_atomic
+    p0->>p10: InstallCiError
+    p0->>p11: _normalize_newlines
+    p0->>p12: InstallCiResult
+    p2->>p13: _without_github_expression
+    p3->>p14: locate_exact_repository_path
+    p2->>p15: _validated_project_path
+    p4->>p16: is_pristine_wiki_target
+    p5->>p17: SyncManifest.load
+    p5->>p18: resolve_source_selection
+    p5->>p19: validate_persisted_source_selection_identity
+    p15->>p20: require_repository_relative_path
+    p14->>p21: _locate_exact_path
+    p19->>p22: source_selection_identity_from_generation_inputs
+    p19->>p23: source_selection_inputs_from_generation_inputs
+    p18->>p24: _override_text
+    p17->>p25: StorageReadSession.read
+    p17->>p26: SyncManifest.from_payload
+    p18->>p27: _read_config
+    p18->>p28: _policy_from_content
+    p0-->>p29: Path.cwd (src/llm_wiki_cli/services…er.py:install_ci_workflow)
+    p0-->>p30: Path.cwd().resolve
 ```
 
 > Call sequence diagram shows 30 of 730 interactions; 700 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 3 of 217 (214 omitted); unresolved 5 of 173 (168 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 217 (216 omitted); unresolved 1 of 173 (172 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/ci_installer.py:normalize_action_ref` | 2 | - | external | 1 |
 | `src/llm_wiki_cli/services/ci_installer.py:normalize_action_ref` | 2 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/ci_installer.py:normalize_action_ref` | 2 | [src/llm_wiki_cli/services/ci_installer.py](../modules/ci_installer.md) | internal | 1 |
 | `src/llm_wiki_cli/services/ci_installer.py:_without_github_expression` | 8 | [src/llm_wiki_cli/services/ci_installer.py](../modules/ci_installer.md) | internal | 1 |
-| `src/llm_wiki_cli/services/ci_installer.py:_portable_project_path` | 7 | [src/llm_wiki_cli/services/ci_installer.py](../modules/ci_installer.md) | internal | 1 |
-| `src/llm_wiki_cli/services/ci_installer.py:_validated_project_path` | 10 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 11 | - | external | 7 |
 | `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 11 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 4 |
 | `src/llm_wiki_cli/services/validation.py:_syntax_key` | 13 | - | external | 6 |
-> Omission summary shows 8 of 207 groups; 199 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/validation.py:_known_syntax` | 20 | - | unresolved | 2 |
+> Omission summary shows 8 of 205 groups; 197 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

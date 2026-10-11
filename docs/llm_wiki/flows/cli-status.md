@@ -49,62 +49,77 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as run
-    participant p1 as getattr (src/llm_wiki_cli/commands/status_cmd.py:run)
-    participant p2 as validate_path
-    participant p3 as str (src/llm_wiki_cli/commands/status_cmd.py:run)
-    participant p4 as require_safe_wiki_scaffold
-    participant p5 as bool (src/llm_wiki_cli/commands/status_cmd.py:run)
-    participant p6 as validate_source_root
-    participant p7 as Path (src/llm_wiki_cli/commands/status_cmd.py:run)
-    participant p8 as print (src/llm_wiki_cli/commands/status_cmd.py:run)
-    participant p9 as display_project_path
-    participant p10 as wiki_path.exists
-    participant p11 as iter_page_kinds
-    participant p12 as _status_label
-    participant p13 as _count_surface_pages
-    participant p14 as _architecture_page_count
-    participant p15 as _print_knowledge_status
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/status_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
-    p0->>p2: validate_path
-    p0-->>p3: str (src/llm_wiki_cli/commands/status_cmd.py:run)(wiki_dir)
-    p0->>p4: require_safe_wiki_scaffold
-    p0-->>p3: str (src/llm_wiki_cli/commands/status_cmd.py:run)(exc)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/status_cmd.py:run)(args, 'src_dir', '.')
-    p0-->>p5: bool (src/llm_wiki_cli/commands/status_cmd.py:run)(getattr(...))
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/status_cmd.py:run)(args, 'allow_external_src', False)
-    p0->>p6: validate_source_root
-    p0-->>p3: str (src/llm_wiki_cli/commands/status_cmd.py:run)(source_root)
-    p0-->>p7: Path (src/llm_wiki_cli/commands/status_cmd.py:run)(wiki_dir)
-    p0-->>p7: Path (src/llm_wiki_cli/commands/status_cmd.py:run)('.git')
-    p0-->>p8: print (src/llm_wiki_cli/commands/status_cmd.py:run)('LLM Wiki Status')
-    p0-->>p8: print (src/llm_wiki_cli/commands/status_cmd.py:run)(...)
-    p0-->>p8: print (src/llm_wiki_cli/commands/status_cmd.py:run)(...)
-    p0->>p9: display_project_path
-    p0-->>p10: wiki_path.exists
-    p0-->>p8: print (src/llm_wiki_cli/commands/status_cmd.py:run)(...)
-    p0->>p9: display_project_path
-    p0->>p11: iter_page_kinds
-    p0->>p12: _status_label
-    p0->>p13: _count_surface_pages
-    p0-->>p8: print (src/llm_wiki_cli/commands/status_cmd.py:run)(...)
-    p0-->>p8: print (src/llm_wiki_cli/commands/status_cmd.py:run)(...)
-    p0->>p14: _architecture_page_count
-    p0-->>p8: print (src/llm_wiki_cli/commands/status_cmd.py:run)(...)
-    p0->>p9: display_project_path
-    p0-->>p8: print (src/llm_wiki_cli/commands/status_cmd.py:run)('Knowledge: unavailable (reason: wiki-scaffold-unavailable)')
-    p0->>p15: _print_knowledge_status
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/status_cmd.py:run)(args, 'source_selection', None)
+    participant p1 as validate_path
+    participant p2 as require_safe_wiki_scaffold
+    participant p3 as validate_source_root
+    participant p4 as _count_surface_pages
+    participant p5 as _architecture_page_count
+    participant p6 as _print_knowledge_status
+    participant p7 as inspect_config
+    participant p8 as _print_managed_lifecycle
+    participant p9 as inspect_legacy_hooks
+    participant p10 as load_state
+    participant p11 as display_project_path
+    participant p12 as iter_page_kinds
+    participant p13 as _status_label
+    participant p14 as _configured_agent
+    participant p15 as shell_quote
+    participant p16 as first_unsafe_path_component
+    participant p17 as breaker_ttl_seconds
+    participant p18 as load_snapshot_knowledge_observability
+    participant p19 as _hook_directories
+    participant p20 as knowledge_status_payload
+    participant p21 as _diagnostic_schema_target
+    participant p22 as canonical_path
+    participant p23 as verify_reference_skill
+    participant p24 as classify_lifecycle_status
+    participant p25 as windows_current_user_sid
+    participant p26 as inspect_config_path
+    participant p27 as is_managed_hook_content
+    participant p28 as _print_reference_summary
+    participant p29 as getattr (src/llm_wiki_cli/commands/status_cmd.py:run)
+    participant p30 as wiki_path.exists
+    p0->>p1: validate_path
+    p0->>p2: require_safe_wiki_scaffold
+    p0->>p3: validate_source_root
+    p0->>p4: _count_surface_pages
+    p0->>p5: _architecture_page_count
+    p0->>p6: _print_knowledge_status
+    p0->>p7: inspect_config
+    p0->>p8: _print_managed_lifecycle
+    p0->>p9: inspect_legacy_hooks
+    p0->>p10: load_state
+    p0->>p11: display_project_path
+    p0->>p12: iter_page_kinds
+    p0->>p13: _status_label
+    p0->>p14: _configured_agent
+    p0->>p15: shell_quote
+    p0->>p16: first_unsafe_path_component
+    p0->>p17: breaker_ttl_seconds
+    p6->>p18: load_snapshot_knowledge_observability
+    p9->>p19: _hook_directories
+    p6->>p20: knowledge_status_payload
+    p8->>p21: _diagnostic_schema_target
+    p4->>p22: canonical_path
+    p8->>p23: verify_reference_skill
+    p8->>p24: classify_lifecycle_status
+    p3->>p25: windows_current_user_sid
+    p7->>p26: inspect_config_path
+    p9->>p27: is_managed_hook_content
+    p8->>p28: _print_reference_summary
+    p0-->>p29: getattr (src/llm_wiki_cli/commands/status_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
+    p0-->>p30: wiki_path.exists
 ```
 
 > Call sequence diagram shows 30 of 2089 interactions; 2059 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 18 of 716 (698 omitted); unresolved 1 of 525 (524 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 716 (715 omitted); unresolved 1 of 525 (524 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -113,12 +128,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_path` | 3 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
 | `src/llm_wiki_cli/config.py:validate_path` | 3 | - | unresolved | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 3 | - | external | 2 |
+| `src/llm_wiki_cli/commands/status_cmd.py:run` | 1 | - | external | 43 |
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 12 | - | external | 3 |
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 12 | [src/llm_wiki_cli/services/wiki_surface.py](../modules/wiki_surface.md) | internal | 1 |
 | `src/llm_wiki_cli/services/wiki_surface.py:iter_directory_kinds` | 15 | - | external | 1 |
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 12 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 18 | - | external | 20 |
-> Omission summary shows 8 of 536 groups; 528 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 529 groups; 521 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

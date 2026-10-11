@@ -6,81 +6,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as source_plugin_tree_baseline
-    participant p1 as Path (src/llm_wiki_cli/services…urce_plugin_tree_baseline)
-    participant p2 as os.path.lexists (src/llm_wiki_cli/services…urce_plugin_tree_baseline)
-    participant p3 as TreeBaseline
-    participant p4 as _hash_labeled_hashes
-    participant p5 as _lstat
-    participant p6 as _assert_safe_directory
-    participant p7 as sorted (src/llm_wiki_cli/services…urce_plugin_tree_baseline)
-    participant p8 as path.relative_to(…).as_posix
-    participant p9 as path.relative_to
-    participant p10 as store.rglob
-    participant p11 as DocumentationPolicyError
-    participant p12 as capture_tree_baseline
-    participant p13 as file_hashes.update
-    participant p14 as store_baseline.file_hashes.items
-    participant p15 as _assert_safe_regular_file
-    participant p16 as _hash_file
-    participant p17 as len (src/llm_wiki_cli/services…urce_plugin_tree_baseline)
-    participant p18 as dict
-    participant p19 as file_hashes.items (src/llm_wiki_cli/services…urce_plugin_tree_baseline)
-    participant p20 as hashlib.sha256 (src/llm_wiki_cli/services…y.py:_hash_labeled_hashes)
-    p0-->>p1: Path (src/llm_wiki_cli/services…urce_plugin_tree_baseline)(root)
-    p0-->>p2: os.path.lexists (src/llm_wiki_cli/services…urce_plugin_tree_baseline)(plugin_home)
-    p0->>p3: TreeBaseline
-    p0->>p4: _hash_labeled_hashes
-    p0->>p5: _lstat
-    p0->>p6: _assert_safe_directory
-    p0-->>p2: os.path.lexists (src/llm_wiki_cli/services…urce_plugin_tree_baseline)(store)
-    p0-->>p7: sorted (src/llm_wiki_cli/services…urce_plugin_tree_baseline)(...)
-    p0-->>p8: path.relative_to(…).as_posix
-    p0-->>p9: path.relative_to(store)
-    p0-->>p10: store.rglob('*.py')
-    p0-->>p9: path.relative_to(store)
-    p0->>p11: DocumentationPolicyError
-    p0->>p11: DocumentationPolicyError
-    p0->>p12: capture_tree_baseline
-    p0-->>p13: file_hashes.update(...)
-    p0-->>p14: store_baseline.file_hashes.items
-    p0-->>p2: os.path.lexists (src/llm_wiki_cli/services…urce_plugin_tree_baseline)(lock)
-    p0->>p5: _lstat
-    p0->>p15: _assert_safe_regular_file
-    p0->>p11: DocumentationPolicyError
-    p0->>p16: _hash_file
-    p0-->>p17: len (src/llm_wiki_cli/services…urce_plugin_tree_baseline)(file_hashes)
-    p0->>p11: DocumentationPolicyError
-    p0->>p3: TreeBaseline
-    p0->>p4: _hash_labeled_hashes
-    p0-->>p18: dict(sorted(...))
-    p0-->>p7: sorted (src/llm_wiki_cli/services…urce_plugin_tree_baseline)(file_hashes.items(...))
-    p0-->>p19: file_hashes.items (src/llm_wiki_cli/services…urce_plugin_tree_baseline)
-    p4-->>p20: hashlib.sha256 (src/llm_wiki_cli/services…y.py:_hash_labeled_hashes)
+    participant p1 as _lstat
+    participant p2 as _assert_safe_directory
+    participant p3 as capture_tree_baseline
+    participant p4 as TreeBaseline
+    participant p5 as _hash_labeled_hashes
+    participant p6 as DocumentationPolicyError
+    participant p7 as _assert_safe_regular_file
+    participant p8 as _hash_file
+    participant p9 as _resolve_existing_directory
+    participant p10 as _walk_regular_files
+    participant p11 as _resolve_path
+    participant p12 as _guard_baseline_directory
+    participant p13 as _hash_windows_file
+    participant p14 as _assert_same_file_identity
+    participant p15 as windows_object_identity
+    participant p16 as guard_windows_directory_chain
+    participant p17 as open_windows_readonly_file
+    participant p18 as _assert_stable_windows_path_handle_metadata
+    participant p19 as _assert_stable_file_metadata
+    participant p20 as windows_object_identity_from_values
+    participant p21 as _windows_path_handle_metadata
+    participant p22 as _open_windows_readonly_file_handle
+    participant p23 as _open_windows_directory_guard
+    participant p24 as create_private_windows_directory
+    participant p25 as _is_windows_reparse_point
+    participant p26 as fresh_no_follow_stat
+    participant p27 as _stable_metadata_signature
+    participant p28 as WindowsDirectoryGuardError
+    participant p29 as Path (src/llm_wiki_cli/services…urce_plugin_tree_baseline)
+    participant p30 as path.relative_to(…).as_posix
+    p0->>p1: _lstat
+    p0->>p2: _assert_safe_directory
+    p0->>p3: capture_tree_baseline
+    p0->>p4: TreeBaseline
+    p0->>p5: _hash_labeled_hashes
+    p0->>p6: DocumentationPolicyError
+    p0->>p7: _assert_safe_regular_file
+    p0->>p8: _hash_file
+    p3->>p9: _resolve_existing_directory
+    p3->>p10: _walk_regular_files
+    p9->>p11: _resolve_path
+    p10->>p12: _guard_baseline_directory
+    p8->>p13: _hash_windows_file
+    p9->>p14: _assert_same_file_identity
+    p14->>p15: windows_object_identity
+    p12->>p16: guard_windows_directory_chain
+    p13->>p17: open_windows_readonly_file
+    p13->>p18: _assert_stable_windows_path_handle_metadata
+    p13->>p19: _assert_stable_file_metadata
+    p15->>p20: windows_object_identity_from_values
+    p18->>p21: _windows_path_handle_metadata
+    p17->>p22: _open_windows_readonly_file_handle
+    p16->>p23: _open_windows_directory_guard
+    p16->>p24: create_private_windows_directory
+    p2->>p25: _is_windows_reparse_point
+    p10->>p26: fresh_no_follow_stat
+    p14->>p27: _stable_metadata_signature
+    p16->>p28: WindowsDirectoryGuardError
+    p0-->>p29: Path (src/llm_wiki_cli/services…urce_plugin_tree_baseline)(root)
+    p0-->>p30: path.relative_to(…).as_posix
 ```
 
 > Call sequence diagram shows 30 of 338 interactions; 308 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 9 of 137 (128 omitted); unresolved 7 of 49 (42 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 137 (136 omitted); unresolved 1 of 49 (48 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/documentation_policy.py:_hash_labeled_hashes` | 5 | - | external | 1 |
+| `src/llm_wiki_cli/services/documentation_policy.py:source_plugin_tree_baseline` | 1 | - | external | 7 |
+| `src/llm_wiki_cli/services/documentation_policy.py:_hash_labeled_hashes` | 5 | - | external | 2 |
 | `src/llm_wiki_cli/services/documentation_policy.py:_hash_labeled_hashes` | 5 | - | unresolved | 9 |
 | `src/llm_wiki_cli/services/documentation_policy.py:_lstat` | 17 | - | external | 1 |
 | `src/llm_wiki_cli/services/documentation_policy.py:_lstat` | 17 | [src/llm_wiki_cli/services/documentation_policy.py](../modules/documentation_policy.md) | internal | 1 |
 | `src/llm_wiki_cli/services/documentation_policy.py:_assert_safe_directory` | 20 | - | external | 2 |
-| `src/llm_wiki_cli/services/documentation_policy.py:_assert_safe_directory` | 20 | [src/llm_wiki_cli/services/documentation_policy.py](../modules/documentation_policy.md) | internal | 4 |
+| `src/llm_wiki_cli/services/documentation_policy.py:_assert_safe_directory` | 20 | [src/llm_wiki_cli/services/documentation_policy.py](../modules/documentation_policy.md) | internal | 3 |
 | `src/llm_wiki_cli/services/documentation_policy.py:_is_windows_reparse_point` | 23 | - | external | 5 |
-| `src/llm_wiki_cli/services/documentation_policy.py:capture_tree_baseline` | 40 | - | unresolved | 1 |
-> Omission summary shows 8 of 62 groups; 54 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 63 groups; 55 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

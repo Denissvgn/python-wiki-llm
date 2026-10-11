@@ -6,75 +6,86 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as supplied_paths_from_unified_diff
-    participant p1 as isinstance (src/llm_wiki_cli/services…d_paths_from_unified_diff)
+    participant p1 as _diff_metadata_path
     participant p2 as DocumentationQueryError
-    participant p3 as value.encode
-    participant p4 as len (src/llm_wiki_cli/services…d_paths_from_unified_diff)
-    participant p5 as set
-    participant p6 as value.splitlines
-    participant p7 as line.startswith
-    participant p8 as shlex.split (src/llm_wiki_cli/services…d_paths_from_unified_diff)
-    participant p9 as tuple (src/llm_wiki_cli/services…d_paths_from_unified_diff)
-    participant p10 as _diff_metadata_path
-    participant p11 as any (src/llm_wiki_cli/services…d_paths_from_unified_diff)
-    participant p12 as str
-    participant p13 as selected.update
-    participant p14 as line[…].split
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…d_paths_from_unified_diff)(value, str)
+    participant p3 as normalize_supplied_paths
+    participant p4 as _portable_supplied_path
+    participant p5 as _supplied_path_values
+    participant p6 as require_portable_relative_path
+    participant p7 as _default_path_error
+    participant p8 as _check_path_collision
+    participant p9 as require_portable_path_component
+    participant p10 as _syntax_key
+    participant p11 as _known_syntax
+    participant p12 as _remember_syntax
+    participant p13 as SharedValidationError
+    participant p14 as portable_path_key
+    participant p15 as isinstance (src/llm_wiki_cli/services…d_paths_from_unified_diff)
+    participant p16 as value.encode
+    participant p17 as len (src/llm_wiki_cli/services…d_paths_from_unified_diff)
+    participant p18 as set
+    participant p19 as value.splitlines
+    participant p20 as line.startswith
+    participant p21 as shlex.split (src/llm_wiki_cli/services…d_paths_from_unified_diff)
+    participant p22 as tuple (src/llm_wiki_cli/services…d_paths_from_unified_diff)
+    participant p23 as any (src/llm_wiki_cli/services…d_paths_from_unified_diff)
+    participant p24 as str
+    participant p25 as selected.update
+    p0->>p1: _diff_metadata_path
     p0->>p2: DocumentationQueryError
-    p0-->>p3: value.encode('utf-8')
-    p0->>p2: DocumentationQueryError
-    p0-->>p4: len (src/llm_wiki_cli/services…d_paths_from_unified_diff)(encoded)
-    p0->>p2: DocumentationQueryError
-    p0-->>p5: set
-    p0-->>p6: value.splitlines
-    p0-->>p7: line.startswith('diff --git ')
-    p0->>p2: DocumentationQueryError
-    p0-->>p8: shlex.split (src/llm_wiki_cli/services…d_paths_from_unified_diff)(..., posix=True)
-    p0-->>p4: len (src/llm_wiki_cli/services…d_paths_from_unified_diff)('diff --git ')
-    p0->>p2: DocumentationQueryError
-    p0-->>p4: len (src/llm_wiki_cli/services…d_paths_from_unified_diff)(parts)
-    p0->>p2: DocumentationQueryError
-    p0-->>p9: tuple (src/llm_wiki_cli/services…d_paths_from_unified_diff)(...)
-    p0->>p10: _diff_metadata_path
-    p0-->>p11: any (src/llm_wiki_cli/services…d_paths_from_unified_diff)(...)
-    p0->>p2: DocumentationQueryError
-    p0-->>p12: str(parsed_paths[...])
-    p0-->>p12: str(parsed_paths[...])
-    p0-->>p13: selected.update(block_paths)
-    p0-->>p7: line.startswith('@@')
-    p0->>p2: DocumentationQueryError
-    p0-->>p7: line.startswith('--- ')
-    p0->>p2: DocumentationQueryError
-    p0->>p10: _diff_metadata_path
-    p0-->>p14: line[…].split('\t', 1)
-    p0-->>p7: line.startswith('+++ ')
-    p0->>p2: DocumentationQueryError
+    p0->>p3: normalize_supplied_paths
+    p3->>p4: _portable_supplied_path
+    p3->>p5: _supplied_path_values
+    p4->>p6: require_portable_relative_path
+    p6->>p7: _default_path_error
+    p6->>p8: _check_path_collision
+    p6->>p9: require_portable_path_component
+    p6->>p10: _syntax_key
+    p6->>p11: _known_syntax
+    p6->>p12: _remember_syntax
+    p7->>p13: SharedValidationError
+    p8->>p14: portable_path_key
+    p0-->>p15: isinstance (src/llm_wiki_cli/services…d_paths_from_unified_diff)(value, str)
+    p0-->>p16: value.encode('utf-8')
+    p0-->>p17: len (src/llm_wiki_cli/services…d_paths_from_unified_diff)(encoded)
+    p0-->>p18: set
+    p0-->>p19: value.splitlines
+    p0-->>p20: line.startswith('diff --git ')
+    p0-->>p21: shlex.split (src/llm_wiki_cli/services…d_paths_from_unified_diff)(..., posix=True)
+    p0-->>p17: len (src/llm_wiki_cli/services…d_paths_from_unified_diff)('diff --git ')
+    p0-->>p17: len (src/llm_wiki_cli/services…d_paths_from_unified_diff)(parts)
+    p0-->>p22: tuple (src/llm_wiki_cli/services…d_paths_from_unified_diff)(...)
+    p0-->>p23: any (src/llm_wiki_cli/services…d_paths_from_unified_diff)(...)
+    p0-->>p24: str(parsed_paths[...])
+    p0-->>p24: str(parsed_paths[...])
+    p0-->>p25: selected.update(block_paths)
+    p0-->>p20: line.startswith('@@')
+    p0-->>p20: line.startswith('--- ')
 ```
 
 > Call sequence diagram shows 30 of 117 interactions; 87 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 10 of 36 (26 omitted); unresolved 8 of 31 (23 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 10 of 36 (26 omitted); unresolved 6 of 31 (25 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/documentation_query_builder.py:supplied_paths_from_unified_diff` | 1 | [src/llm_wiki_cli/services/documentation_queries.py](../modules/documentation_queries.md) | internal | 13 |
 | `src/llm_wiki_cli/services/documentation_query_builder.py:_diff_metadata_path` | 18 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/documentation_query_builder.py:_diff_metadata_path` | 18 | - | external | 2 |
 | `src/llm_wiki_cli/services/documentation_query_builder.py:_diff_metadata_path` | 18 | [src/llm_wiki_cli/services/documentation_queries.py](../modules/documentation_queries.md) | internal | 3 |
 | `src/llm_wiki_cli/services/documentation_query_builder.py:_diff_metadata_path` | 18 | [src/llm_wiki_cli/services/documentation_query_builder.py](../modules/documentation_query_builder.md) | internal | 1 |
-| `src/llm_wiki_cli/services/documentation_query_builder.py:normalize_supplied_paths` | 26 | [src/llm_wiki_cli/services/documentation_query_builder.py](../modules/documentation_query_builder.md) | internal | 2 |
 | `src/llm_wiki_cli/services/documentation_query_builder.py:_portable_supplied_path` | 27 | [src/llm_wiki_cli/services/documentation_queries.py](../modules/documentation_queries.md) | internal | 1 |
-| `src/llm_wiki_cli/services/documentation_query_builder.py:_portable_supplied_path` | 27 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 29 | - | external | 4 |
-> Omission summary shows 8 of 27 groups; 19 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 29 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 7 |
+> Omission summary shows 8 of 24 groups; 16 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
