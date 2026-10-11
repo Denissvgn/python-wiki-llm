@@ -75,7 +75,7 @@ class FlowOverview:
 def select_flow_overview(
     flow: Mapping[str, Any], interactions: Sequence[Mapping[str, Any]], *, limit: int = 30,
 ) -> FlowOverview:
-    """Balance depth and actual-parent siblings without rewriting call evidence."""
+    """Select representative internal continuations and captured boundaries."""
     if type(limit) is not int or not 0 <= limit <= _INTERACTION_LIMIT:
         raise ValueError("overview interaction limit must be an integer between 0 and 30")
     steps = flow.get("steps", [])
@@ -127,13 +127,47 @@ def select_flow_overview(
     eligible = [record for record in records if record["parent_state"] in {"captured", "trace"}
                 and record["target_coherent"] and record["kind"] in _CALL_KINDS]
     eligible.sort(key=lambda record: (record["depth"], record["sibling_ordinal"], record["step_index"]))
+    selected = eligible[:limit]
+    if len(eligible) > limit and any(record["kind"] == "internal" for record in eligible):
+        # Only actual coherent child occurrences justify expansion priority.
+        expanded = {record["parent_step_index"] for record in eligible
+                    if record["kind"] == "internal"}
+        internal = sorted((record for record in eligible if record["kind"] == "internal"),
+            key=lambda record: (record["depth"] > 1, record["step_index"] not in expanded,
+                                record["depth"], record["sibling_ordinal"], record["step_index"]))
+        representatives, repeated = [], []
+        seen = set()
+        for record in internal:
+            callee = record["callee"]
+            coordinate = (callee.get("file"), callee.get("symbol"))
+            # Unknown identities never share a representative by guessed name.
+            exact = all(isinstance(value, str) for value in coordinate)
+            if exact and coordinate in seen:
+                repeated.append(record)
+            else:
+                representatives.append(record)
+                if exact:
+                    seen.add(coordinate)
+        boundaries = [record for record in eligible if record["kind"] != "internal"]
+        examples = [next(record for record in boundaries if record["kind"] == kind)
+                    for kind in ("external", "unresolved")
+                    if any(record["kind"] == kind for record in boundaries)]
+        examples = examples[:limit // 3]
+        selected = representatives[:limit - len(examples)] + examples
+        selected_indexes = {record["step_index"] for record in selected}
+        for record in [*boundaries, *repeated]:
+            if len(selected) == limit:
+                break
+            if record["step_index"] not in selected_indexes:
+                selected.append(record)
+                selected_indexes.add(record["step_index"])
     coverage = flow.get("coverage")
     if coverage is not None and not isinstance(coverage, Mapping):
         raise ValueError("overview upstream coverage must be an object")
     truncated = flow.get("truncated", False)
     if type(truncated) is not bool:
         raise ValueError("overview upstream truncation must be boolean")
-    return FlowOverview(tuple(records), tuple(record["step_index"] for record in eligible[:limit]),
+    return FlowOverview(tuple(records), tuple(record["step_index"] for record in selected),
                         limit, coverage, truncated)
 
 

@@ -126,9 +126,13 @@ dependency architecture, and manifest files. User-flow pages under `flows/` are
 generated from detected entry points with a call sequence, generated static
 `## Data flow` section, boundary-effects table, and editable `## Behavior`; use
 `--skip-flows` to omit them or `--skip-data-flow` to keep flow pages without the
-generated data-flow section. Large generated call-sequence diagrams are capped
-to the first 30 interactions and include an omitted-interaction note so Mermaid
+generated data-flow section. Large generated call-sequence diagrams select up to
+30 representative captured interactions and include an omitted-interaction note so Mermaid
 output stays readable on large repositories.
+Selection favors resolved internal continuations and distinct target coordinates,
+with captured boundary examples. Repeated sites remain in the underlying trace;
+the diagram reports display omissions separately from traversal limits and is
+not runtime execution order.
 Sequence participants distinguish same-named functions in different modules
 and calls through different receivers. A delegated call such as
 `service.check_wiki()` stays distinct from a `check_wiki` wrapper; genuine

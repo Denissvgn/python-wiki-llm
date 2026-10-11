@@ -29,6 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Generated call overviews show representative resolved continuations and
+  boundary examples, keeping deeper stages visible within existing diagram limits.
+
 - Advisory queues retain captured semantic review targets on unadopted native
   wikis after sync, with informational coverage gaps and explicit review limits.
 

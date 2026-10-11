@@ -3042,7 +3042,8 @@ def _generate_flow_md(
     lines.append("## Call sequence")
     lines.append("")
     lines.append("> Static overview in presentation order, not runtime execution order. "
-                 "Arrows retain captured callers; siblings are shown before deeper helper detail.")
+                 "Arrows retain captured callers; representative internal continuations "
+                 "and boundary examples precede repeated helper detail.")
     lines.append("")
     lines.append(
         "<!-- Auto-generated from static call edges. Dashed arrows are external "
