@@ -77,7 +77,11 @@ Inspect exact source and semantic prose before using the status/acknowledgment
 route below. Python executable syntax changes are scoped observations, separate
 from source-byte and structural freshness; unchanged syntax proves neither
 unchanged dependencies nor runtime behavior. Unsupported evidence stays
-unavailable. Unadopted wikis retain their existing format and review limits.
+unavailable. On coherent unadopted native wikis, the queue surfaces captured
+source-backed semantic sections as bounded informational coverage gaps. Inspect
+those exact targets against source; structural freshness cannot discharge their
+untracked review. Corrected prose remains untracked until explicit adoption and
+review. Unadopted wikis retain their existing format and review limits.
 
 Review an exact record's source and semantic section, then run the final owning
 sync after any prose edit. Capture its current basis before acknowledgment:

@@ -29,6 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Advisory queues retain captured semantic review targets on unadopted native
+  wikis after sync, with informational coverage gaps and explicit review limits.
+
 - Ordinary sync repairs source-derived generated member tables and missing
   sections even when source bytes are unchanged. Authored cells and custom
   sections are retained; ambiguous attribution stops before page writes.

@@ -316,6 +316,18 @@ def build_maintenance_status(
     if state is None:
         if marker is not None:
             raise ValueError("Adopted maintenance marker has no durable owner")
+        if live and capture is not None:
+            base["coverage"] = {
+                "source_backed_semantic_total": capture.source_backed_semantic_total,
+                "tracked_semantic_total": 0,
+                "untracked_semantic_total": capture.source_backed_semantic_total,
+                "issues": deepcopy(list(capture.issues)),
+                "untracked_targets": [
+                    deepcopy(value["target"])
+                    for value in capture.by_owner.values()
+                    if value["target_presence"] == "present"
+                ],
+            }
         return MaintenanceStatusReport(base, {}, {})
     owner, guard = (
         validate_maintenance_state(state),

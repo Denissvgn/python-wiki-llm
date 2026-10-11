@@ -428,7 +428,9 @@ def test_actual_queue_custody_reaches_api_cli_and_local_mcp_without_writes(tmp_p
         assert "Source/prose correctness is not established" in text
         assert custody["review_route"]["instruction"] in text and custody["limitation"] in text
         if variant == "legacy" and stage in {"clean", "synced"}:
-            assert response["total"] == 0
+            item = next(i for i in response["items"] if i["path"] == "entities/Harbor.md")
+            assert item["classification"] == "informational"
+            assert item["coverage_gaps"] and not item.get("record_ids")
             assert BEFORE_PROSE in (project.wiki / "entities/Harbor.md").read_text()
         return response
 

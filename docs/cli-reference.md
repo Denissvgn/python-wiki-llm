@@ -2009,6 +2009,14 @@ Inspect the affected source and semantic prose; use explicit
 [ordinary review tracking](maintenance.md) when durable review is needed.
 An empty queue does not establish ordinary-review completion.
 
+On a coherent unadopted native wiki, captured source-backed semantic sections
+appear as informational coverage gaps, including after sync makes structural
+freshness current. Each item's `coverage_gaps` identifies the exact untracked
+section; `coverage_gap_bounds` reports omitted details. These candidates need
+source/prose inspection and remain untracked even after a prose correction.
+Durable pending and acknowledgment history require explicit ordinary-review
+adoption.
+
 ## `maintenance`
 
 Ordinary review tracking is optional and independent of human governance and
