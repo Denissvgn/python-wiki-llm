@@ -705,6 +705,7 @@ def test_compact_schema_has_exact_managed_reference_routes(
 ) -> None:
     content = build_compact_schema_content(agent, "docs/llm_wiki")
     topics = (
+        "development-workflow",
         "context-query",
         "extractors-dependencies",
         "governance",
@@ -745,7 +746,7 @@ def test_compact_schema_omits_expanded_procedural_catalogs() -> None:
     assert "edit raw knowledge JSON" not in text
     assert "not raw knowledge" in text
     assert "Governance needs owner approval/recovery" in text
-    assert "User-selected optional routes" in text
+    assert "Optional:" in text
     assert (
         "`wiki-bootstrap`, `wiki-sync`, `user-docs-author`, `usage-examples`, "
         "and `publish-docs`"

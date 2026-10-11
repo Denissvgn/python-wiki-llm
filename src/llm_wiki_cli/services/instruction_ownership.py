@@ -190,6 +190,7 @@ _SCHEMA_SOURCE = "services/schema.py"
 
 
 _TOPIC_HEADINGS: dict[str, tuple[str, str]] = {
+    "development-workflow": ("Development workflow", "development-workflow"),
     "maintenance": ("Maintenance and validation", "maintenance-and-validation"),
     "surfaces-naming": (
         "Canonical surfaces and naming",
@@ -381,6 +382,15 @@ GENERATED_SECTION_COVERAGE: tuple[GeneratedSectionCoverage, ...] = (
         InstructionOwner.KNOWLEDGE_CONSUMER,
         (_topic("context-query"),),
         _profiled_topic_routes(_BEFORE, _COMPACT_ROUTES, "context-query"),
+        retained_kernel=True,
+        profiles=_EXPANDED_ONLY,
+    ),
+    GeneratedSectionCoverage(
+        "Development workflow",
+        "## Development workflow",
+        InstructionOwner.KERNEL,
+        (_topic("development-workflow"),),
+        _profiled_topic_routes("## Development workflow", _COMPACT_ROUTES, "development-workflow"),
         retained_kernel=True,
         profiles=_EXPANDED_ONLY,
     ),
@@ -946,7 +956,7 @@ WORKFLOW_MANAGED_REFERENCE_TOPICS: dict[str, tuple[str, ...]] = {
     "doc-review": ("knowledge-consumption", "repository-handoff"),
     "impact-analysis": ("context-query", "knowledge-consumption"),
     "infra-review": ("knowledge-consumption", "repository-handoff"),
-    "native-coding": ("context-query",),
+    "native-coding": ("context-query", "development-workflow"),
     "onboarding-guide": (
         "knowledge-consumption",
         "repository-handoff",
@@ -1001,6 +1011,11 @@ MANAGED_REFERENCE_INBOUND_ROUTES: tuple[ManagedReferenceInboundRoute, ...] = (
             markdown_target=f"references/{topic}.md",
         )
         for topic in _ROUTER_TOPICS
+    ),
+    _managed_topic_route(
+        _SCHEMA_SOURCE,
+        "`{reference_root}/development-workflow.md`",
+        "development-workflow",
     ),
     _managed_topic_route(
         _SCHEMA_SOURCE,

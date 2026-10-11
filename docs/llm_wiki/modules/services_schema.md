@@ -4,6 +4,16 @@
 
 ## Description
 
+Initialized projects receive a scoped development procedure through the managed
+reference and a short default route. Expanded instructions retain the essential
+procedure when skills are disabled or unavailable. The host owns independent
+verification and completion; provider coverage does not approve the change.
+
+Every maintenance recipe preserves the chosen wiki and source-selection bindings.
+Explicit-language helper recovery omits incompatible selection flags while the
+original read retains its selection. Optional profiles, storage adoption, and
+delivery actions remain separate choices under project policy.
+
 Shared schema utilities for agent constraint blocks.
 
 Provides functions to build, strip, and replace the LLM Wiki constraint
@@ -63,9 +73,10 @@ flowchart LR
 |----------|-----------|------------|-------------|
 | `require_safe_schema_path` | `(path: str \| Path) -> Path` | — | Return a schema path only when no symlink/reparse/traversal can redirect it. |
 | `_source_selection_args` | `(source_selection: str \| Path \| None) -> str` | — | — |
-| `_sync_instructions` | `(source_selection: str \| Path \| None, skills_dir: str) -> str` | — | — |
+| `_sync_instructions` | `(source_selection: str \| Path \| None, skills_dir: str, wiki_dir: str) -> str` | — | — |
 | `_issue_reporting_instructions` | `(wiki_dir: str) -> str` | — | — |
 | `_compact_issue_reporting_instructions` | `(wiki_dir: str) -> str` | — | — |
+| `_development_instructions` | `(skills_dir: str) -> str` | — | — |
 | `_wiki_instructions` | `(wiki_dir: str, skills_dir: str, *, issue_reporting: bool = False, source_selection: str \| Path \| None = None) -> str` | — | — |
 | `_compact_wiki_instructions` | `(wiki_dir: str, skills_dir: str, *, issue_reporting: bool = False, source_selection: str \| Path \| None = None) -> str` | — | Return the always-loaded knowledge-first safety and routing kernel. |
 | `_schema_profile_marker` | `(render_profile: SchemaRenderProfile) -> str` | — | — |

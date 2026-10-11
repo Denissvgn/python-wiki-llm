@@ -104,16 +104,16 @@ flowchart LR
 
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
-| [SkillsError](../entities/SkillsError.md) | Class | 111 | `ValueError` | Raised for invalid skill list/export/install requests. |
-| [ReferenceSkillState](../entities/ReferenceSkillState.md) | Enum | 115 | `str`, `Enum` | Stable live/provisioning states for the managed reference skill. |
-| [ReferenceSkillReason](../entities/ReferenceSkillReason.md) | Enum | 126 | `str`, `Enum` | Stable lifecycle reason codes paired with :class:`ReferenceSkillState`. |
-| [BundledSkill](../entities/BundledSkill.md) | Class | 138 | — | — |
-| [SkillOperation](../entities/SkillOperation.md) | Class | 155 | — | — |
-| [SkillsReport](../entities/SkillsReport.md) | Class | 162 | — | One export/install result with requested and effective skill identities. |
-| [ReferenceSkillVerification](../entities/ReferenceSkillVerification.md) | Class | 192 | — | One read-only classification of the live managed-reference tree. |
-| [ReferenceSkillProvisionResult](../entities/ReferenceSkillProvisionResult.md) | Class | 225 | — | Safe installation attempt plus its authoritative live verification. |
-| [_SkillSelection](../entities/SkillSelection.md) | Class | 809 | — | One validated, dependency-closed skill selection. |
-| [_TreeSnapshot](../entities/TreeSnapshot.md) | Class | 976 | — | — |
+| [SkillsError](../entities/SkillsError.md) | Class | 112 | `ValueError` | Raised for invalid skill list/export/install requests. |
+| [ReferenceSkillState](../entities/ReferenceSkillState.md) | Enum | 116 | `str`, `Enum` | Stable live/provisioning states for the managed reference skill. |
+| [ReferenceSkillReason](../entities/ReferenceSkillReason.md) | Enum | 127 | `str`, `Enum` | Stable lifecycle reason codes paired with :class:`ReferenceSkillState`. |
+| [BundledSkill](../entities/BundledSkill.md) | Class | 139 | — | — |
+| [SkillOperation](../entities/SkillOperation.md) | Class | 156 | — | — |
+| [SkillsReport](../entities/SkillsReport.md) | Class | 163 | — | One export/install result with requested and effective skill identities. |
+| [ReferenceSkillVerification](../entities/ReferenceSkillVerification.md) | Class | 193 | — | One read-only classification of the live managed-reference tree. |
+| [ReferenceSkillProvisionResult](../entities/ReferenceSkillProvisionResult.md) | Class | 226 | — | Safe installation attempt plus its authoritative live verification. |
+| [_SkillSelection](../entities/SkillSelection.md) | Class | 810 | — | One validated, dependency-closed skill selection. |
+| [_TreeSnapshot](../entities/TreeSnapshot.md) | Class | 977 | — | — |
 
 ## Functions
 

@@ -32789,7 +32789,7 @@
             "src/llm_wiki_cli/services/paths.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py"
           ],
-          "step_count": 1891,
+          "step_count": 1893,
           "truncated": true
         }
       },
@@ -35367,7 +35367,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 276,
+              "line": 277,
               "step": "list_bundled_skills",
               "step_index": 4,
               "target": "skills.append"
@@ -35388,43 +35388,43 @@
             },
             {
               "kind": "unresolved_call",
-              "line": 267,
+              "line": 268,
               "step": "list_bundled_skills",
               "target": "root.is_dir"
             },
             {
               "kind": "external_call",
-              "line": 271,
+              "line": 272,
               "step": "list_bundled_skills",
               "target": "sorted"
             },
             {
               "kind": "unresolved_call",
-              "line": 271,
+              "line": 272,
               "step": "list_bundled_skills",
               "target": "root.iterdir"
             },
             {
               "kind": "unresolved_call",
-              "line": 273,
+              "line": 274,
               "step": "list_bundled_skills",
               "target": "skill_dir.is_dir"
             },
             {
               "kind": "unresolved_call",
-              "line": 273,
+              "line": 274,
               "step": "list_bundled_skills",
               "target": "manifest.is_file"
             },
             {
               "kind": "unresolved_call",
-              "line": 1344,
+              "line": 1345,
               "step": "_parse_skill_frontmatter",
               "target": "content.replace('\\r\\n', '\\n').replace('\\r', '\\n').split"
             },
             {
               "kind": "unresolved_call",
-              "line": 1344,
+              "line": 1345,
               "step": "_parse_skill_frontmatter",
               "target": "content.replace('\\r\\n', '\\n').replace"
             },
@@ -36574,7 +36574,7 @@
             "src/llm_wiki_cli/services/plugins.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py"
           ],
-          "step_count": 1686,
+          "step_count": 1688,
           "truncated": true
         }
       },
@@ -66075,5 +66075,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:1bc9d485e5eb2275324a69a9551e1570219a6a7c694f72ebc6d8996dbf02a2e8"
+  "source_hash": "sha256:01b05bd624e16fc860506356fe65e14a0228e5f26ec65aef120c5d253fc0fbf9"
 }

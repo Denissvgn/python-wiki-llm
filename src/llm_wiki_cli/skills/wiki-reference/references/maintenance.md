@@ -41,7 +41,11 @@ Classify the wiki rather than guessing a repair:
 
 If generated instructions name `--source-selection <profile>`, append that
 exact argument to every source-reading command: sync, extract, lint, ci-check,
-team check, context, migration, and helper preparation. Omit it only when the
+team check, context, migration, and automatic source-based helper preparation.
+Explicit language-specific preparation uses `--language` and must omit
+`--source-selection`; that combination is rejected. Preserve the original source
+root and helper cache, then retry the original read with its original selection
+and other options. Omit selection on source-reading commands only when the
 project has no configured profile. Never replace it with discovery or a
 broader scan during the same maintenance run.
 
@@ -111,6 +115,12 @@ it from current prose.
 class, function, module, or cross-module flow, run the full sync-then-lint
 workflow. Use the same loop for a relevant contract, dependency, entry-point,
 infrastructure-observation, or source-revision change.
+
+Complete this loop after a coherent edit batch, before relying on its changed
+knowledge and before delivery; it is not a request to synchronize after each
+keystroke. Source-only evidence does not exempt an existing affected wiki. If no
+wiki is within the task's scope, preserve the reason and maintenance status in
+the permitted handoff; creating a wiki is a separate explicit choice.
 
 1. Run the deterministic owning pass, serialized for interactive or unknown
    capacity:

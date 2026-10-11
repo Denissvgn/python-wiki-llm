@@ -110,8 +110,9 @@ def _source_selection_args(source_selection: str | Path | None) -> str:
     return f" --source-selection {shell_quote(str(source_selection))}"
 
 
-def _sync_instructions(source_selection: str | Path | None, skills_dir: str) -> str:
+def _sync_instructions(source_selection: str | Path | None, skills_dir: str, wiki_dir: str) -> str:
     source_selection_args = _source_selection_args(source_selection)
+    wiki_args = f" --src-dir . --wiki-dir {shell_quote(wiki_dir)}"
     return f"""\
 
 ## How to sync the wiki in this agent session
@@ -138,7 +139,7 @@ install Git hooks; `llm-wiki upgrade` removes unmodified legacy hooks.
    `{skills_dir}/wiki-reference/references/extractors-dependencies.md`.
 3. **To build a full update prompt manually**, run in the terminal:
    ```
-   llm-wiki generate-prompt{source_selection_args}
+   llm-wiki generate-prompt{wiki_args}{source_selection_args}
    ```
    This builds a diff + AST prompt in `.git/llm-wiki-prompt.txt`. Open that file
    and paste its contents into this chat when a reviewed prompt is useful.
@@ -151,7 +152,7 @@ bootstrap. The complete procedure and its failure branches are at
 `{skills_dir}/wiki-reference/references/maintenance.md`:
 
 ```
-llm-wiki sync --jobs 1{source_selection_args}
+llm-wiki sync --jobs 1{wiki_args}{source_selection_args}
 ```
 
 - **When to use:** after pulling new code, after a rebase, or whenever you suspect
@@ -173,11 +174,11 @@ llm-wiki sync --jobs 1{source_selection_args}
   **seed a baseline manifest** from the current source state without modifying
   pages. Subsequent runs then work incrementally.
 - Sync has a large-diff guard to prevent accidental mass rewrites. Use
-  `llm-wiki sync --force{source_selection_args}` only after confirming the broad update is expected.
+  `llm-wiki sync --force{wiki_args}{source_selection_args}` only after confirming the broad update is expected.
 - After the deterministic sync, complete the semantic pass. If canonical
-  Markdown changed, run the same owning `llm-wiki sync --jobs 1{source_selection_args}` again so the
+  Markdown changed, run the same owning `llm-wiki sync --jobs 1{wiki_args}{source_selection_args}` again so the
   surface, knowledge, Markdown, and manifest snapshot are re-anchored; then run
-  `llm-wiki lint --strict --jobs 1{source_selection_args}` and apply the review rules under "Quality
+  `llm-wiki lint --strict --jobs 1{wiki_args}{source_selection_args}` and apply the review rules under "Quality
   checks". Skip the second sync only when no canonical Markdown changed. A
   validation fix that edits Markdown restarts at the owning sync. Passing lint is not enough:
   affected pages must not retain generic `_Auto-generated from ..._` text or
@@ -212,7 +213,7 @@ _QUALITY_HINTS = """\
 _COMPACT_QUALITY_HINTS = """\
 
 ## Agent quality guidelines
-- Keep edits surgical; state uncertainty instead of guessing.
+- Keep edits surgical; state uncertainty.
 """
 
 
@@ -268,6 +269,45 @@ workaround; continue safely and mention the report at handoff.
 """
 
 
+def _development_instructions(skills_dir: str) -> str:
+    return f"""## Development workflow
+For substantive changes or investigations, use
+`{skills_dir}/wiki-reference/references/development-workflow.md` when available. This inline procedure
+also applies when skills are disabled or unavailable:
+
+- State intended behavior and independent acceptance criteria. Resolve the
+  project's actual roots, source selection, executable, helper cache, and
+  permitted actions. Inspect exact source owners and use the narrowest useful
+  evidence route above; retain unavailable, stale, ambiguous, and bounded gaps.
+- Connect each criterion to its owner, proposed change, compatibility effects,
+  assumptions, and independently specified checks. Make the authorized bounded
+  change, run those checks, and inspect actual outcomes. Provider coverage does
+  not prove behavioral correctness or completed review.
+- Establish required environment and publication inputs before affected checks.
+  Stage reviewed files only if the check requires tracked inputs and existing
+  authority/repository policy permit staging. Retain failed attempts and
+  successful corrections separately; environment failure is not passing coverage.
+- After a coherent relevant edit, follow "When you change code" below for an
+  affected in-scope wiki: sync, semantic review, final re-anchor, then validation.
+  Source-only evidence does not waive that maintenance. Without an affected wiki,
+  retain the durable reason in the permitted handoff; bootstrap is separate.
+- On saved input changes or resume, validate retained context and reconcile or
+  rebuild its current basis. Validation alone proves neither currentness nor
+  semantics. For provider self-development, pin the planning provider and freeze
+  independent expected outcomes before evaluating its replacement.
+- Hand off changes, reasons, criterion outcomes, evidence basis, knowledge status,
+  and unresolved gaps. Disclose tool discrepancies; write private reports only
+  when enabled or requested and a permitted destination is established. Keep
+  proposed lessons unconfirmed until independently supported.
+- Small mechanical work reduces retrieval/record ceremony, not applicable
+  maintenance or delivery obligations. Read-only work may mark change-dependent
+  gates not applicable with a reason. Claim completion only when every required
+  gate is satisfied. Profiles, sessions, compact delivery, task directories,
+  storage adoption, and Git actions remain explicit choices.
+
+"""
+
+
 def _wiki_instructions(
     wiki_dir: str,
     skills_dir: str,
@@ -280,6 +320,7 @@ def _wiki_instructions(
     issue_reporting_instructions = (
         _issue_reporting_instructions(wiki_dir) if issue_reporting else ""
     )
+    development_instructions = _development_instructions(skills_dir)
     return f"""You are operating within an LLM Wiki architecture. The project's persistent memory is stored in `{wiki_dir}/`.
 This expanded profile is self-contained. Managed topic paths below are optional
 detail; if skills are disabled or a topic is absent, follow the inline procedure
@@ -300,7 +341,7 @@ without installing, guessing, or treating the missing file as authority.
 - When installed, optional decision detail is at
   `{skills_dir}/wiki-reference/references/context-query.md`.
 
-## Explicit task routes
+{development_instructions}## Explicit task routes
 - Source-only task: choose request `llm-wiki-task-request/v2`, exact coordinates
   relative to the configured source root, and `options.knowledge_mode: "off"`.
   For a real `app.py:limit` declaration, save this request outside the source tree:
@@ -696,23 +737,22 @@ def _compact_wiki_instructions(
 ## Select evidence first
 - Source-only v2: exact relative selectors; `options.knowledge_mode: "off"`;
   no wiki/setup. `auto` differs.
-- Native v2: retain `required`; flat needs explicit storage adoption/recovery.
-  Reads never migrate; see query route.
-- Optional compact-v1: explicit budget/full receipt outside source/wiki/inputs.
-  Canonical default; no fit promise. Count metadata/framing/follow-ups.
+- Native v2: retain `required`; flat needs explicit adoption/recovery.
+  Reads never migrate.
+- Canonical default. Optional compact-v1: budget/full receipt outside
+  source/wiki/inputs; no fit promise; count metadata/framing/follow-ups.
 - Broad: one serialized read-only packet:
   `llm-wiki context --budget 8000 --src-dir . --wiki-dir {wiki_dir_arg} --format packet --focus changed --knowledge-mode auto --read-only{source_selection_args}`.
-  Auto uses valid knowledge; freshness ranking off.
 - Narrow: bounded API/MCP `query_documentation` (CLI `query --request FILE`):
   `concept`, `related`, `surface`, `typed`, or `impact` with `paths`/`diff`.
   `symbol`, `entrypoint`, `dependency` require `allow_full_inventory=true`.
 - Use validated context/query, not raw knowledge. Check availability/reason,
   `freshness_evaluated`, concept state/reason/live comparison, coverage/bounds/truncation,
-  ambiguity/unresolved targets. Ready/current means consumable/unchanged, not
-  true, complete, reviewed, secure or runtime-correct.
+  ambiguity/unresolved targets. Ready/current is consumable/unchanged, not
+  true/complete/reviewed/secure/runtime-correct.
   Unavailable/bounded `found: false` is not a negative fact; snapshot is not live.
-- Unavailable/incompatible/insufficient: disclose; use validated surface/Markdown,
-  then targeted source/runtime evidence. `{wiki_dir}/index.md`: navigation; native gaps remain.
+- Gaps: disclose; use validated surface/Markdown,
+  then targeted source/runtime evidence. `{wiki_dir}/index.md`: navigation.
 - Bootstrap/sync own projections; never hand-edit or use `knowledge init` for
   repair. Governance needs owner approval/recovery. Adoption marker+missing owner:
   matching complete `maintenance recover` before seeding; never recreate history.
@@ -732,6 +772,9 @@ def _compact_wiki_instructions(
 {_REPOSITORY_CONTENT_HYGIENE}
 
 ## Managed routes and completion
+- Substantive work: `{reference_root}/development-workflow.md`: criteria; scoped
+  source inspection; bounded edits; independent checks; refresh; qualified handoff.
+  Recheck basis; keep failures/gaps.
 - Queries: `{reference_root}/knowledge-consumption.md` and
   `{reference_root}/context-query.md`. Owner-authorized governance:
   `{reference_root}/governance.md`.
@@ -740,10 +783,10 @@ def _compact_wiki_instructions(
   final sync after Markdown edits, strict validation/handoff. No lint errors.
 - Semantic prose only; generated blocks are CLI-owned. Naming:
   `{reference_root}/surfaces-naming.md`.
-- Helpers/publishing/capacity:
+- Routes:
   `{reference_root}/extractors-dependencies.md`,
   `{reference_root}/publishing.md`, and
-  `{reference_root}/resources-context.md`. User-selected optional routes:
+  `{reference_root}/resources-context.md`. Optional:
   `wiki-bootstrap`, `wiki-sync`, `user-docs-author`, `usage-examples`, and
   `publish-docs`.
 - Missing topic: stop wiki mutation; restore only `wiki-reference`:
@@ -792,13 +835,13 @@ def build_schema_content(
             source_selection=source_selection,
         )
     preambles = {
-        "claude": f"# Project Wiki\n\nThis project uses an LLM Wiki at `{wiki_dir}/` for persistent architectural memory.\nFollow the scope-aware guidance below.\n\n",
-        "cursor": f"# Cursor Rules — LLM Wiki Project\n\nThis project maintains a living wiki at `{wiki_dir}/`.\nFollow the scope-aware guidance below.\n\n",
-        "copilot": f"# Copilot Instructions — LLM Wiki Project\n\nThis project uses `{wiki_dir}/` as persistent documentation.\nFollow the scope-aware guidance below.\n\n",
+        "claude": f"# Project Wiki\n\nArchitectural memory: `{wiki_dir}/`.\nFollow the scoped guidance.\n\n",
+        "cursor": f"# Cursor Rules — LLM Wiki Project\n\nArchitectural memory: `{wiki_dir}/`.\nFollow the scoped guidance.\n\n",
+        "copilot": f"# Copilot Instructions — LLM Wiki Project\n\nArchitectural memory: `{wiki_dir}/`.\nFollow the scoped guidance.\n\n",
     }
     preamble = preambles.get(
         agent,
-        f"# Agent Instructions — LLM Wiki Project\n\nThis project uses `{wiki_dir}/` for architectural memory.\n\n",
+        f"# Agent Instructions — LLM Wiki Project\n\nArchitectural memory: `{wiki_dir}/`.\n\n",
     )
     if quality_hints:
         hints = (
@@ -811,7 +854,7 @@ def build_schema_content(
     extra = (
         ""
         if render_profile is SchemaRenderProfile.COMPACT
-        else _sync_instructions(source_selection, skills_dir)
+        else _sync_instructions(source_selection, skills_dir, wiki_dir)
     )
     body = preamble + instructions + hints + extra
     return f"{CONSTRAINT_START}\n{profile_marker}\n{body.strip()}\n{CONSTRAINT_END}\n"

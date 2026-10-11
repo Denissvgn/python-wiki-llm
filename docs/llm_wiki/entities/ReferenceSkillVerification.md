@@ -1,6 +1,6 @@
 # ReferenceSkillVerification
 
-**Location:** `src/llm_wiki_cli/services/skills.py:192`
+**Location:** `src/llm_wiki_cli/services/skills.py:193`
 **Kind:** Class
 **Bases:** —
 **Module:** [skills](../modules/skills.md)

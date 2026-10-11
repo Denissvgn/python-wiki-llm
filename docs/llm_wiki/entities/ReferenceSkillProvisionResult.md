@@ -1,6 +1,6 @@
 # ReferenceSkillProvisionResult
 
-**Location:** `src/llm_wiki_cli/services/skills.py:225`
+**Location:** `src/llm_wiki_cli/services/skills.py:226`
 **Kind:** Class
 **Bases:** —
 **Module:** [skills](../modules/skills.md)

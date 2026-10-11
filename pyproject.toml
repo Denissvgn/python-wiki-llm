@@ -135,6 +135,7 @@ where = ["src"]
     "skills/wiki-reference/SKILL.md",
     "skills/wiki-reference/reference.md",
     "skills/wiki-reference/references/context-query.md",
+    "skills/wiki-reference/references/development-workflow.md",
     "skills/wiki-reference/references/extractors-dependencies.md",
     "skills/wiki-reference/references/governance.md",
     "skills/wiki-reference/references/knowledge-consumption.md",

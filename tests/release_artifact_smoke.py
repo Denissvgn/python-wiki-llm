@@ -63,6 +63,7 @@ EXPECTED_WIKI_REFERENCE_FILES = (
     "SKILL.md",
     "reference.md",
     "references/context-query.md",
+    "references/development-workflow.md",
     "references/extractors-dependencies.md",
     "references/governance.md",
     "references/knowledge-consumption.md",

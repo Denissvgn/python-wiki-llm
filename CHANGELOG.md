@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- A default development workflow in managed agent instructions and the
+  `wiki-reference` topic, with a complete inline fallback when skills are disabled
+  or unavailable and shared guidance for explicitly selected native coding.
+
 - JavaScript `.mjs` and `.cjs` coverage across discovery, extraction, source
   commitments, and static import resolution, including side-effect ESM imports
   and direct unshadowed literal CommonJS `require` calls.
@@ -16,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and extraction outcomes, preserving legacy inventory-presence semantics.
 
 ### Fixed
+
+- Expanded maintenance and prompt recipes retain configured wiki paths, and
+  helper-recovery instructions distinguish explicit language preparation from
+  source-selection planning.
 
 - Explicit relative module suffixes retain their exact identity; ambiguous
   extensionless JavaScript imports no longer produce guessed dependency edges.

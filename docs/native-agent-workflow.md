@@ -1,5 +1,19 @@
 # Native coding workflow
 
+Initialized projects receive a default development procedure through their
+managed agent instructions: define acceptance criteria, gather scoped evidence,
+inspect source, make bounded changes, verify independently, refresh affected
+knowledge, and preserve a qualified handoff. The managed
+`wiki-reference/references/development-workflow.md` topic owns that procedure;
+expanded instructions retain it when skills are disabled or unavailable.
+Package installation ships the reference; `llm-wiki init` establishes the
+project instructions, and `llm-wiki upgrade` refreshes them after a package update.
+
+The native interfaces below are explicit choices within that procedure.
+Initializing a project does not activate a workflow profile, session, storage
+adoption, or Git action. Small mechanical work can use proportionate inspection
+and checks while retaining applicable maintenance obligations.
+
 Use a provider whose CLI and Python API expose the task request, storage and
 optional delivery interfaces you select. Check `llm-wiki task-context --help`
 and `llm-wiki knowledge migrate --help` in each environment; a version number
