@@ -45,6 +45,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Invalid CI report-schema diagnostics list every supported choice, including
+  `auto` and `v4`.
+
 - Go, Rust and Haskell discovery-policy impact queries distinguish parser-owned
   file syntax/read failures from unavailable coverage and helper batch failures.
   Qualified diagnostics retain successful selected files without granting

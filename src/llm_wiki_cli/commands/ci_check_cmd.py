@@ -104,7 +104,7 @@ def run(args) -> None:
     output_format: str = getattr(args, "format", "text")
     report_schema = getattr(args, "report_schema", "auto")
     if report_schema not in {"auto", "v1", "v2", "v3", "v4"}:
-        raise RuntimeOutputError("--report-schema must be v1, v2 or v3")
+        raise RuntimeOutputError("--report-schema must be auto, v1, v2, v3 or v4")
     helper_cache_dir: str | None = getattr(args, "helper_cache_dir", None)
     include_tests = getattr(args, "include_tests", None)
     allow_external_src = bool(getattr(args, "allow_external_src", False))
