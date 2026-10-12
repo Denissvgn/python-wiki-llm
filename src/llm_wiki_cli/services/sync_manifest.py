@@ -1781,6 +1781,11 @@ def prune_manifest_for_source_selection(
         sorted(set(manifest.page_source_mappings) - set(retained_mappings))
     )
     deselected_page_set = set(deselected_pages)
+    from .source_retirement import read_entity_retirement_state, with_entity_retirement_state
+    retirement_mappings = {
+        path: owner for path, owner in read_entity_retirement_state(manifest.generation_inputs).items()
+        if owner.source_path not in deselected_source_set
+    }
     pruned = replace(
         manifest,
         sources={
@@ -1800,6 +1805,7 @@ def prune_manifest_for_source_selection(
             if page_path not in deselected_page_set
         },
         artifact_hashes=None,
+        generation_inputs=with_entity_retirement_state(manifest.generation_inputs, retirement_mappings),
     )
     pruned._validate_operational_state()
     return SourceSelectionPruneResult(

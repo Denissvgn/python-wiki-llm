@@ -230,6 +230,7 @@
     "services/site_html_check.py",
     "services/skills.py",
     "services/source_path_diagnostics.py",
+    "services/source_retirement.py",
     "services/source_selection.py",
     "services/source_snapshot.py",
     "services/storage_receipts.py",

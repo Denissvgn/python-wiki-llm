@@ -2177,14 +2177,19 @@ def _append_surface_overview(
     )
 
 
-def _append_index_entities(lines: list[str], entity_names: list[str]) -> None:
-    if not entity_names:
+def _append_index_entities(lines: list[str], entity_names: list[str], retired_entity_pages: list[str] | None = None) -> None:
+    if not entity_names and not retired_entity_pages:
         return
     lines.append(f"## {_SURFACE_LABELS[PageKind.ENTITIES]}")
     lines.append("")
     for name in sorted(entity_names):
         lines.append(f"- [{name}]({canonical_path(PageKind.ENTITIES, name)})")
     lines.append("")
+    if retired_entity_pages:
+        lines.extend(["### Retired source members", "", "Retained history; these declarations are absent from the selected source inventory.", ""])
+        for path in sorted(retired_entity_pages):
+            lines.append(f"- [{Path(path).stem}]({path})")
+        lines.append("")
 
 
 def _append_index_modules(lines: list[str], module_entries: list[dict]) -> None:
@@ -2348,6 +2353,7 @@ def _generate_index_md(
     flow_entries: list[dict] | None = None,
     architecture_entries: list[dict] | None = None,
     *,
+    retired_entity_pages: list[str] | None = None,
     api_contracts_present: bool = False,
     log_present: bool = True,
 ) -> str:
@@ -2370,7 +2376,7 @@ def _generate_index_md(
 
     _append_surface_overview(
         lines,
-        entity_count=len(entity_names),
+        entity_count=len(entity_names) + len(retired_entity_pages or []),
         module_count=len(module_entries),
         workflow_count=len(workflow_entries),
         guide_count=len(guide_entries),
@@ -2380,7 +2386,7 @@ def _generate_index_md(
         architecture_count=len(architecture_entries),
         log_present=log_present,
     )
-    _append_index_entities(lines, entity_names)
+    _append_index_entities(lines, entity_names, retired_entity_pages)
     _append_index_modules(lines, module_entries)
     _append_index_workflows(lines, workflow_entries)
     _append_index_guides(lines, guide_entries)

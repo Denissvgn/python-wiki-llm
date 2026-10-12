@@ -113,8 +113,15 @@ from .source_selection import (
     resolve_source_selection,
     validate_persisted_source_selection_identity,
 )
+from .source_retirement import (
+    ENTITY_RETIREMENT_SCHEMA_VERSION,
+    SOURCE_RETIREMENT_EXTENSION_KEY,
+    SourceRetirementError,
+    retired_entity_mappings,
+)
 from .sync_manifest import (
     MANIFEST_FILENAME,
+    ManifestPageSource,
     SyncManifest,
     SyncManifestError,
 )
@@ -1275,9 +1282,15 @@ def _check_orphan_pages(
 
 
 def _check_entity_coverage(
-    report: LintReport, wiki_path: Path, deep_inventory: dict
+    report: LintReport,
+    wiki_path: Path,
+    deep_inventory: dict,
+    *,
+    manifest: SyncManifest | None = None,
 ) -> None:
     documented_entities = _collect_documented_entities(wiki_path)
+    retired_mappings = _lint_retired_entity_mappings(report, manifest)
+    documented_entities -= {Path(path).stem for path in retired_mappings}
     code_classes = _inventory_code_classes(deep_inventory)
 
     undocumented = code_classes - documented_entities
@@ -1300,6 +1313,30 @@ def _check_entity_coverage(
                 f"Stale entity (in wiki, not in code): {name}",
                 target=name,
             )
+
+
+def _lint_retired_entity_mappings(
+    report: LintReport,
+    manifest: SyncManifest | None,
+) -> dict[str, ManifestPageSource]:
+    """Qualify retirement only from the owner's cross-bound manifest marker."""
+    if manifest is None:
+        return {}
+    try:
+        return retired_entity_mappings(manifest)
+    except SourceRetirementError as exc:
+        if not any(
+            issue.reason_code == "source-retirement-invalid"
+            for issue in report.issues
+        ):
+            _add(
+                report,
+                "knowledge_projection",
+                f"Source retirement binding is invalid: {exc}.",
+                path=MANIFEST_FILENAME,
+                reason_code="source-retirement-invalid",
+            )
+        return {}
 
 
 def _extracted_source_files(
@@ -2016,7 +2053,57 @@ def _check_knowledge_concepts(
     manifest = view.manifest_basis
     if knowledge is None or manifest is None:
         return
+    retired_mappings = _lint_retired_entity_mappings(report, manifest)
     for concept in sorted(knowledge.concepts, key=lambda item: item.locator):
+        page_path = concept.document.canonical_path
+        retired_owner = retired_mappings.get(page_path)
+        retirement = concept.extensions.get(SOURCE_RETIREMENT_EXTENSION_KEY)
+        expected_retirement = (
+            None
+            if retired_owner is None
+            else {
+                "schema_version": ENTITY_RETIREMENT_SCHEMA_VERSION,
+                "state": "source-member-removed",
+                "source_path": retired_owner.source_path,
+                "entity_name": retired_owner.entity_name,
+                "occurrence": retired_owner.occurrence,
+            }
+        )
+        if retirement != expected_retirement or (
+            retirement is None and SOURCE_RETIREMENT_EXTENSION_KEY in concept.extensions
+        ):
+            _add(
+                report,
+                "knowledge_projection",
+                (
+                    f"Source retirement projection for {concept.locator!r} "
+                    "does not match the manifest-owned binding."
+                ),
+                path=page_path,
+                target=concept.locator,
+                reason_code="source-retirement-projection-mismatch",
+            )
+        elif retired_owner is not None:
+            tombstone = manifest.tombstones[page_path]
+            provenance = (
+                "historical"
+                if tombstone.last_valid_basis is not None
+                else "unknown"
+            )
+            _diagnose(
+                report,
+                "knowledge_evidence",
+                (
+                    f"Retired source member for {concept.locator!r} is retained "
+                    f"with {provenance} source evidence; it makes no current "
+                    "structural evidence promise."
+                ),
+                path=page_path,
+                target=concept.locator,
+                severity="info",
+                reason_code=f"source-retirement-{provenance}",
+            )
+            continue
         if (
             concept.document.page_kind is PageKind.INFRASTRUCTURE
             and not _manifest_promises_infrastructure_evidence(manifest)
@@ -2447,7 +2534,9 @@ def _run_report_checks(
     with _profile_phase(profiler, "orphans"):
         _check_orphan_pages(report, wiki_path, inputs.page_index)
     with _profile_phase(profiler, "entities"):
-        _check_entity_coverage(report, wiki_path, inputs.deep_inventory)
+        _check_entity_coverage(
+            report, wiki_path, inputs.deep_inventory, manifest=inputs.manifest
+        )
     with _profile_phase(profiler, "modules"):
         _check_module_coverage(
             report,

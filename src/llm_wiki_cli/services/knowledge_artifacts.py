@@ -48,6 +48,12 @@ from .knowledge_model import (
     Origin,
 )
 from .section_ownership import SectionOwnershipError, validate_section_ownership
+from .source_retirement import (
+    ENTITY_RETIREMENT_SCHEMA_VERSION,
+    SOURCE_RETIREMENT_EXTENSION_KEY,
+    SourceRetirementError,
+    retired_entity_mappings,
+)
 from .sync_manifest import MANIFEST_FILENAME, SyncManifest, SyncManifestError
 from .storage_spool import SpooledArtifactWrite, spool_write
 from .validation import (
@@ -1230,6 +1236,36 @@ def _validate_manifest_knowledge_parity(
             f"manifest.{exc.field}",
             exc.message,
         ) from exc
+    try:
+        retired_mappings = retired_entity_mappings(manifest)
+    except SourceRetirementError as exc:
+        raise KnowledgeArtifactError(
+            "manifest.generation_inputs.entity_retirement",
+            str(exc),
+            code="source-retirement-invalid",
+        ) from exc
+    for concept in knowledge.concepts:
+        page_path = concept.document.canonical_path
+        owner = retired_mappings.get(page_path)
+        expected_retirement = (
+            None
+            if owner is None
+            else {
+                "schema_version": ENTITY_RETIREMENT_SCHEMA_VERSION,
+                "state": "source-member-removed",
+                "source_path": owner.source_path,
+                "entity_name": owner.entity_name,
+                "occurrence": owner.occurrence,
+            }
+        )
+        if concept.extensions.get(SOURCE_RETIREMENT_EXTENSION_KEY) != expected_retirement or (
+            owner is None and SOURCE_RETIREMENT_EXTENSION_KEY in concept.extensions
+        ):
+            raise KnowledgeArtifactError(
+                f"knowledge_index.concepts.{page_path}.extensions.{SOURCE_RETIREMENT_EXTENSION_KEY}",
+                "must match the manifest-owned source retirement binding",
+                code="source-retirement-projection-mismatch",
+            )
     from .implementation_evidence import validate_concept_implementation
 
     source_hashes = {path: row.get("hash") for path, row in manifest.sources.items()}

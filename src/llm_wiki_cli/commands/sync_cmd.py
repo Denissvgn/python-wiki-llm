@@ -86,6 +86,14 @@ from ..services.infrastructure_sync import (
 )
 from ..services.io import read_md, write_md
 from ..services.validation import portable_path_key
+from ..services.source_retirement import (
+    SOURCE_MEMBER_REMOVED_HEADER,
+    SourceRetirementError,
+    discover_retired_entities,
+    read_entity_retirement_state,
+    historical_entity_semantics,
+    with_entity_retirement_state,
+)
 from ..services.knowledge_artifacts import (
     ArtifactWriteState,
     KnowledgeCommitResult,
@@ -846,6 +854,9 @@ def _previous_entity_semantics(ctx: _ApplyDiffContext, path: Path) -> dict | Non
     owner = item.previous_owner
     if owner is None or owner.entity_name is None:
         return None
+    historical = historical_entity_semantics(ctx.manifest, owner)
+    if historical is not None:
+        return historical
     source = ctx.manifest.sources.get(owner.source_path, {})
     semantics = source.get("generated_semantics", {})
     if not isinstance(semantics, Mapping):
@@ -901,6 +912,17 @@ def _merge_entity_page(
             generated,
             _previous_entity_semantics(ctx, entity_path),
         )
+        if existing.startswith(SOURCE_MEMBER_REMOVED_HEADER):
+            # Unknown/custom sections remain retained authored context on exact
+            # owner revival; generated sections still come from the new source.
+            from ..services.markdown_sections import parse_markdown_document
+            generated_doc = parse_markdown_document(generated, "revived-generated")
+            old_doc = parse_markdown_document(existing, "revived-retained")
+            known = {section.title.casefold() for section in generated_doc.sections if section.level == 2}
+            extra = [old_doc.normalized_markdown[section.start:section.end] for section in old_doc.sections if section.level == 2 and section.title.casefold() not in known]
+            if extra:
+                markdown = merge_result.text.rstrip() + "\n\n" + "\n\n".join(section.rstrip() for section in extra) + "\n"
+                merge_result = replace(merge_result, text=markdown, preserved=merge_result.preserved + len(extra))
         result.preserved_semantic += merge_result.preserved
     return merge_result
 
@@ -2765,6 +2787,7 @@ def _apply_sync_changes(
                 infrastructure_plan,
             )
         ),
+        retired_entity_pages=list(read_entity_retirement_state(surface_plan.generation_inputs)),
     )
     _record_page_write_state(result, index_state)
 
@@ -3686,6 +3709,30 @@ def _plan_source_page_transitions(
         moved_entities=diff.moved_entities,
         deleted_source_paths=deleted_sources,
     )
+    retired = discover_retired_entities(manifest, inventory)
+    repairs = {item.path: item for item in plan.retained_page_repairs}
+    from ..services.sync_transitions import RetainedPageRepair
+    from ..services.knowledge_storage import MAX_EXPANDED_BYTES
+    from ..services.knowledge_storage_io import StorageReadSession
+    live_paths = {item.final_path for item in plan.transitions}
+    outgoing_paths = {item.old_path for item in plan.transitions if item.previous_owner != item.owner}
+    with StorageReadSession(wiki_dir).phase() as reader:
+        for path in sorted(retired):
+            if path in live_paths or path in outgoing_paths or not (wiki_dir / path).exists():
+                continue
+            content = reader.read(path, MAX_EXPANDED_BYTES)
+            try:
+                original = content.decode("utf-8")
+            except UnicodeDecodeError:
+                try:
+                    original = content.decode("cp1252")
+                except UnicodeDecodeError as exc:
+                    raise SourceRetirementError(f"Retained page encoding is unavailable: {path!r}") from exc
+            text = repairs[path].text if path in repairs else original
+            if not text.startswith(SOURCE_MEMBER_REMOVED_HEADER):
+                text = SOURCE_MEMBER_REMOVED_HEADER + text
+                repairs[path] = RetainedPageRepair(path, content, text, f"retirement-{len(repairs):06d}", "source member retirement")
+    plan = replace(plan, retained_page_repairs=tuple(repairs.values()))
     _preflight_page_transition_governance(wiki_dir, plan, diff)
     return plan
 
@@ -3746,6 +3793,13 @@ def _prepare_sync_run(
     source_snapshot = extracted.source_snapshot
     inventory = inventory_result.inventory
     source_content_hashes = source_snapshot.hashes_for(inventory)
+    captured_prior_sources = set(source_snapshot.hashes_for()) & set(baseline_manifest.sources)
+    unobserved = sorted(captured_prior_sources - set(inventory))
+    if unobserved:
+        raise SourceRetirementError(
+            f"Selected source is still captured but has no documentable inventory: {unobserved[0]!r}. "
+            "Resolve parser/coverage or empty-module classification before retiring its pages."
+        )
     repair_only = manifest is not None and bool(_invalid_manifest_hash_paths(manifest))
     maps = (
         _SyncPageMaps(
@@ -3794,6 +3848,21 @@ def _prepare_sync_run(
         maps,
         source_content_hashes,
     )
+    retirement_mappings = discover_retired_entities(manifest, inventory)
+    # Membership is qualified by prior source coordinates before any unchanged
+    # fast path. Absent physical pages do not acquire invented retained content.
+    current_entity_paths = {portable_path_key(canonical_path(PageKind.ENTITIES, name)) for name in maps.entity_occurrence_page_cache.values()}
+    retirement_mappings = {
+        path: owner for path, owner in retirement_mappings.items()
+        if (options.wiki_dir / path).exists()
+        and portable_path_key(path) not in current_entity_paths
+        and not (owner.entity_name in diff.moved_entities and diff.moved_entities[owner.entity_name][0] == owner.source_path)
+    }
+    retained_semantics = {
+        path: baseline for path, owner in retirement_mappings.items()
+        if (baseline := historical_entity_semantics(manifest, owner)) is not None
+    }
+    generation_inputs = with_entity_retirement_state(generation_inputs, retirement_mappings, generated_semantics=retained_semantics)
     missing_pages = (
         find_missing_source_pages(
             options.wiki_dir, manifest, inventory,
@@ -3817,6 +3886,10 @@ def _prepare_sync_run(
             maps.module_page_map, maps.entity_occurrence_page_cache,
             module_renderer=_generate_module_md, entity_renderer=_generate_entity_md,
         )
+        if any(item.reason == "source member retirement" for item in generated_plan.retained_page_repairs):
+            # Page application must run for recovery/header repair even when
+            # source bytes and the already committed retirement marker match.
+            diff.retirement_repairs = True
     surface_plan = _build_surface_initialization_plan(
         options,
         manifest,
@@ -4528,6 +4601,7 @@ def _apply_prepared_sync(
                 options.wiki_dir,
                 prepared.infrastructure_plan,
             ),
+            retired_entity_pages=list(read_entity_retirement_state(prepared.surface_plan.generation_inputs)),
         )
     _record_page_write_state(result, index_state)
     if _applied_sync_has_changes(options, prepared, result):
@@ -4949,7 +5023,7 @@ def _run_prepared_sync(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> 
             return
         _enforce_sync_write_safety(options, prepared)
         _execute_prepared_sync(options, prepared)
-    except (SyncOwnershipError, sync_analysis_cache.SyncAnalysisMutationError) as exc:
+    except (SyncOwnershipError, SourceRetirementError, sync_analysis_cache.SyncAnalysisMutationError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(2)
 
@@ -4975,6 +5049,7 @@ def _run_sync_options(options, write_basis=None) -> None:
         GovernanceError,
         InfrastructureSyncError,
         SyncOwnershipError,
+        SourceRetirementError,
         SyncRuntimeRefreshError,
         sync_analysis_cache.SyncAnalysisMutationError,
     ) as exc:
@@ -5168,6 +5243,7 @@ def _rebuild_index(
     workflow_entries: list[dict] | None = None,
     flow_entries: list[dict] | None = None,
     infra_entries: list[dict] | None = None,
+    retired_entity_pages: list[str] | None = None,
 ) -> str:
     """Regenerate index.md from the live inventory."""
     if entity_page_cache is None:
@@ -5223,6 +5299,7 @@ def _rebuild_index(
     new_index = _generate_index_md(
         all_entity_names,
         module_entries,
+        retired_entity_pages=retired_entity_pages,
         workflow_entries=workflow_entries or None,
         guide_entries=guide_entries or None,
         infra_entries=infra_entries or None,

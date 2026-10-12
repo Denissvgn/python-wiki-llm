@@ -76,6 +76,12 @@ from .contracts import (
     TYPED_GRAPH_EXTENSION_KEY,
 )
 from .section_ownership import observe_page_sections, section_ownership_extension
+from .source_retirement import (
+    ENTITY_RETIREMENT_SCHEMA_VERSION,
+    SOURCE_RETIREMENT_EXTENSION_KEY,
+    SourceRetirementError,
+    retired_entity_mappings,
+)
 from .sync_manifest import (
     EVIDENCE_NOT_RECORDED,
     MANIFEST_REPAIR_UNAVAILABLE,
@@ -424,6 +430,22 @@ def _build_knowledge_generation_plan(
          and manifest.sources.get(mapping.source_path, {}).get("hash") == source_hashes[mapping.source_path]},
         producer=envelope.bundle.producer, source_content_hashes=source_hashes,
     )
+    try:
+        retired_mappings = retired_entity_mappings(manifest)
+    except SourceRetirementError as exc:
+        raise KnowledgeGenerationError(
+            "manifest_generation_inputs.entity_retirement", str(exc)
+        ) from exc
+    for page_path, owner in retired_mappings.items():
+        concept_implementations.setdefault(page_path, {})[
+            SOURCE_RETIREMENT_EXTENSION_KEY
+        ] = {
+            "schema_version": ENTITY_RETIREMENT_SCHEMA_VERSION,
+            "state": "source-member-removed",
+            "source_path": owner.source_path,
+            "entity_name": owner.entity_name,
+            "occurrence": owner.occurrence,
+        }
     knowledge = build_knowledge_index(
         KnowledgeIndexInputs(
             envelope=envelope,
@@ -791,6 +813,12 @@ def _reconcile_active_structural_evidence(
     tombstone.  No evidence is inferred from page text.
     """
 
+    try:
+        retired_mappings = retired_entity_mappings(manifest)
+    except SourceRetirementError as exc:
+        raise KnowledgeGenerationError(
+            "manifest_generation_inputs.entity_retirement", str(exc)
+        ) from exc
     mappings = {
         path: mapping
         for path, mapping in manifest.page_source_mappings.items()
@@ -810,7 +838,9 @@ def _reconcile_active_structural_evidence(
     for page_path in active_page_paths:
         mapping = mappings.get(page_path)
         has_live_source = (
-            mapping is not None and mapping.source_path in manifest.sources
+            mapping is not None
+            and mapping.source_path in manifest.sources
+            and page_path not in retired_mappings
         )
         if force_unknown:
             reason = (

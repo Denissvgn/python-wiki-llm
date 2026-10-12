@@ -152,6 +152,7 @@ class SyncDiff:
     # Apply-only output work; it does not reclassify unchanged source files.
     missing_pages: dict[str, ManifestPageSource] = field(default_factory=dict)
     generated_page_repairs: dict[str, ManifestPageSource] = field(default_factory=dict)
+    retirement_repairs: bool = False
 
     @property
     def entity_page_renames(self) -> dict[tuple[str, str, int], tuple[str, str]]:
@@ -172,6 +173,7 @@ class SyncDiff:
             or self.generated_page_repairs
             or self.missing_pages
             or self.renamed_module_pages
+            or self.retirement_repairs
         )
 
 

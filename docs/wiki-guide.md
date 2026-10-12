@@ -35,6 +35,20 @@ canonical wiki surface registry:
 
 ### Generated state and content ownership
 
+When a declaration disappears from a source module that remains in the selected
+inventory, ordinary sync retains its entity page as source history. The index
+lists it under **Retired source members**, and native reads carry the explicit
+`llm-wiki/source-retirement` qualification. Historical evidence stays historical;
+unknown provenance stays unknown. This source observation does not author a
+concept lifecycle change or a human review.
+
+Retained manifest ownership lets ordinary sync recover a previously unqualified
+removed-member page. Reappearance at the exact same source coordinate can revive
+its page and authored context; an unrelated owner cannot claim the occupied path.
+Ambiguous duplicate removal and captured sources without documentable inventory
+require resolved ownership or extraction coverage before page writes. A stale
+Markdown header alone does not establish retirement authority.
+
 The wiki also contains `.llm-wiki-manifest.json`, the operational source,
 evidence, and artifact-commit state used by incremental sync and strict
 linting; `.llm-wiki-surface.json`, the deterministic machine-readable index of
