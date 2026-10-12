@@ -2133,3 +2133,21 @@ CI command and service invalid-schema diagnostics now list every supported choic
 - Moved entities: none
 
 Symptom discovery now connects bounded nominal families in captured explanatory prose and definition descriptions. Exact identities, original citations and lexical-only qualifications remain separate from these navigation leads.
+
+## 2026-10-12
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:b9a09f1a39081dcd6286c8b4c1b63a779f2906054a0fbd095d59602c9b2817f7`
+- Pages created: 0
+- Pages updated: 1
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1588
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none
+
+Flow call/data inventories and untouched default Behavior placeholders now use inventory weight for lexical discovery. Authored behavior, exact identities, captured trace citations and bounded-scan qualifications remain intact.

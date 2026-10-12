@@ -34,6 +34,15 @@ lexical leads retain their no-live-comparison qualification. The bounded family
 rules do not establish semantic equivalence, source correctness or general
 language comprehension.
 
+Flow Call sequence and Data flow sections, including nested step/call tables,
+receive inventory weight. The complete untouched default Behavior placeholder
+also receives inventory weight; authored additions keep the semantic weight.
+Other page kinds keep their existing section treatment. Trace text stays
+searchable with its original citations and scan bounds. This is a lexical
+weighting rule, without source-owner inference, kind quotas or native fact claims.
+The configuration identity records this treatment independently of the
+compatible lexical-v2 result shape and unchanged legacy modes.
+
 ## Imports
 
 | Source | Symbols |

@@ -26,11 +26,18 @@ Read [`src/llm_wiki_cli/services/search_service.py:search_records`](../../../src
 
 | Mode | Source to read | Matching contract |
 | --- | --- | --- |
-| `ranked` (default), `ranked-v2` | [`src/llm_wiki_cli/services/search_lexical.py:rank_pages`](../../../src/llm_wiki_cli/services/search_lexical.py#L94-L216) ([module](../modules/search_lexical.md)) | Lexical-v2 ranking over captured candidate text: exact page identity and defined-symbol precedence, weighted sections, informative terms, and a qualified long-query fallback. |
+| `ranked` (default), `ranked-v2` | [`src/llm_wiki_cli/services/search_lexical.py:rank_pages`](../../../src/llm_wiki_cli/services/search_lexical.py#L213) ([module](../modules/search_lexical.md)) | Lexical-v2 ranking over captured candidate text: exact page identity and defined-symbol precedence, weighted sections, informative terms, and a qualified long-query fallback. |
 | `ranked-v1` | [`src/llm_wiki_cli/services/search_rank.py:rank_pages`](../../../src/llm_wiki_cli/services/search_rank.py#L34-L171) ([module](../modules/search_rank.md)) | Legacy lexical-v1 scoring with identity, symbol, term, phrase, and local-link signals. |
 | `substring` | `search_service.py:search_records`, lines 56–76 | Case-insensitive literal content matching in input order, with snippets and result bounds. |
 
 The default lexical results are discovery candidates: their provenance says live comparison was not performed, and dispatch marks them `definitive_answer=False`. Neither ranking nor explicit static source indexing establishes runtime behavior.
+
+Flow Call sequence and Data flow sections use inventory weight, including nested
+step/call tables. Only the complete untouched default Behavior placeholder is
+discounted; authored Behavior keeps its semantic weight. Generated trace detail
+remains searchable and cited. This limits scaffolding dominance without choosing
+an owner by name or imposing a page-kind quota; broad vocabulary can still leave
+the intended primary owner or flow outside the result bound.
 
 ## 4. Results and output
 
