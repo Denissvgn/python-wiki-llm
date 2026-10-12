@@ -287,7 +287,7 @@ def _add_task_context_command(subparsers):
     parser.add_argument("--allow-external-src", action="store_true")
     parser.add_argument("--allow-full-inventory", action="store_true", help="Permit explicit requests for a full source scan")
     parser.add_argument("--output", help="Write the selected context view to this file")
-    parser.add_argument("--view", choices=["canonical", "compact-v1"], default="canonical",
+    parser.add_argument("--view", choices=["canonical", "compact-v1", "compact-v2"], default="canonical",
                         help="Explicit presentation; canonical remains the default")
     parser.add_argument("--view-budget-tokens", type=int,
                         help="Separate compact text budget within the host ceiling")

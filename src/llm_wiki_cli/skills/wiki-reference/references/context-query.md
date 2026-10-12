@@ -113,6 +113,17 @@ compact minimum can still fail to fit. No 1,000-token fit or fixed saving is
 promised. Canonical failure produces no receipt; compact-only cannot-fit returns
 its counted diagnostic and preserves a valid canonical receipt when available.
 
+Choose `--view compact-v2` for self-contained readable JSON with complete
+selected facts, citations, coverage, gaps and limitations. Use the same explicit
+view budget and disjoint canonical receipt path. Python/session `view_options`
+select `llm-wiki-task-view-request/v2`; validation/expansion remain bound to the
+original canonical text and request. The readable body may exceed compact-v1's
+encoded size. Its budget still covers emitted view text rather than host framing.
+MCP retains identity/base/state and validation qualifications in its smaller v2
+envelope; `include_metadata: true` returns full telemetry. V1 and Python session
+metadata retain their existing shape. Count setup, transport and any necessary
+follow-up messages; never infer a universal fit or saving.
+
 Python uses `build_compact_task_context(..., view_options={"schema_version":
 "llm-wiki-task-view-request/v1", "budget_tokens": N})`, then validates/expands
 against that exact request and canonical text. Session `read_compact` and MCP

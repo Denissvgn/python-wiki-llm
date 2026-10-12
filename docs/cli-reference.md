@@ -1043,6 +1043,21 @@ selection, tokenizer and output paths distinct. `--view-budget-tokens` chooses
 its separate presentation budget; no fixed token saving or small-budget fit is
 promised. Include the selected view once in the coding host.
 
+Use `--view compact-v2` for readable JSON containing complete selected facts,
+citations, requirements, coverage, gaps and limitations. It requires the same
+explicit view budget and canonical receipt destination. Python and session
+calls select it with `schema_version: "llm-wiki-task-view-request/v2"` in
+`view_options`. Validation and expansion require the original canonical text,
+request and view options. The body is self-contained and may be larger than
+compact-v1's encoded body. Canonical delivery remains the default.
+
+MCP `read_compact_context_session` with these v2 options retains identity,
+conditional base, state, validation scope and limitations in its smaller default
+envelope. Set `include_metadata: true` for full work/reuse telemetry; v1 retains
+its full envelope. Python session replies retain full metadata. Count host
+framing, setup and any required receipt/metadata follow-ups in addition to the
+view budget; no complete-host token cap is implied by `--view-budget-tokens`.
+
 Choose `knowledge_mode: "off"` only when no native evidence is required; this
 route works without a wiki. Native v2 requirements need explicitly adopted
 sharded or packed knowledge. Keep `required` mode and the native requirements

@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Opt-in `compact-v2` task delivery exposes complete selected evidence as
+  readable JSON, with canonical receipts and separately counted view budgets.
+  MCP retains delivery qualifications while offering detailed telemetry through
+  `include_metadata: true`.
+
 - Versioned, bounded static-analysis capture can reuse inventory and page maps
   when full graph observations exceed the cache budget. Partial hits preserve
   extraction sidecars and rebuild graph projections with their coverage intact.

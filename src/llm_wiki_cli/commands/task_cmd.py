@@ -94,13 +94,14 @@ def run(args):
     from ..services.token_counting import LocalTokenizerCounter
 
     try:
-        compact = getattr(args, "view", "canonical") == "compact-v1"
+        view = getattr(args, "view", "canonical")
+        compact = view in ("compact-v1", "compact-v2")
         outputs = _compact_outputs(args) if compact else None
         if not compact and (
             getattr(args, "view_budget_tokens", None) is not None
             or getattr(args, "canonical_output", None) is not None
         ):
-            raise ValueError("Compact artifact options require --view compact-v1")
+            raise ValueError("Compact artifact options require a compact --view")
         request = load_request(args.request)
         policy = api.WorkflowPolicy(read_scope="full-inventory" if args.allow_full_inventory else "selected")
         profile = api.load_workflow_profile(args.profile, policy=policy) if args.profile else None
@@ -111,7 +112,7 @@ def run(args):
             "helper_cache_dir": args.helper_cache_dir}
         result = (
             api.build_compact_task_context(request,
-                view_options={"schema_version": "llm-wiki-task-view-request/v1",
+                view_options={"schema_version": "llm-wiki-task-view-request/v2" if view == "compact-v2" else "llm-wiki-task-view-request/v1",
                               "budget_tokens": args.view_budget_tokens}, **options)
             if compact else api.build_task_context(request, **options)
         )
