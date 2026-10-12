@@ -51,6 +51,52 @@ def test_same_terms_in_prose_receive_more_weight_than_generated_inventory():
     assert result["results"][0]["id"] == "prose"
 
 
+@pytest.mark.parametrize("heading", ["Call sequence", "Data flow"])
+def test_flow_trace_and_nested_data_have_inventory_weight_without_rewriting_evidence(heading):
+    body = "Amber boundary mismatch.\n\n### Call data\nAmber boundary mismatch.\n"
+    trace = page("trace", f"# Page\n\n## {heading}\n{body}", kind="flows", title="Page")
+    authored = page("authored", "# Page\n\n## Behavior\nAmber boundary mismatch.\n", kind="flows", title="Page")
+    result = rank_pages([trace, authored], "amber boundary mismatch")
+    assert result["results"][0]["id"] == "authored"
+    match = next(r for r in result["results"] if r["id"] == "trace")
+    assert match["provenance"]["content_sha256"] == hashlib.sha256(trace["content"].encode()).hexdigest()
+    assert "Amber boundary mismatch" in match["snippet"]
+    assert any(heading in section for section in match["matched_sections"])
+    assert rank_pages([trace, authored], trace["uri"])["results"][0]["id"] == "trace"
+
+
+def test_only_complete_default_flow_behavior_is_discounted():
+    from llm_wiki_cli.services.search_lexical import _fields
+    placeholder = ("This flow starts at `dispatch` and is classified as `api`. "
+        "The generated call and data-flow sections are bounded static projections; "
+        "runtime conditions and side effects require source-level confirmation.")
+    def behavior_weight(content, kind="flows"):
+        fields = _fields(page("dispatch", "# Dispatch\n\n## Behavior\n" + content + "\n", kind=kind))[0]
+        return next(f["weight"] for f in fields if f["heading"][-1:] == ["Behavior"])
+    assert behavior_weight(placeholder) == .45
+    assert behavior_weight(placeholder + "\nAdmission rejects oversized requests.") == 3.0
+    assert behavior_weight("```text\n" + placeholder + "\n```") == 3.0
+    assert behavior_weight(placeholder, "guides") == 3.0
+    assert behavior_weight("Source conditions require confirmation after admission.") == 3.0
+
+
+def test_nonflow_call_sequence_keeps_authored_section_weight():
+    from llm_wiki_cli.services.search_lexical import _fields
+    guide = page("guide", "# Guide\n\n## Call sequence\nAmber boundary.\n", kind="guides")
+    fields = _fields(guide)[0]
+    assert next(f["weight"] for f in fields if f["heading"][-1:] == ["Call sequence"]) == 1.0
+
+
+def test_generated_trace_population_cannot_crowd_out_matching_authored_owner():
+    owner = page("opaque", "# Page\n\n## Description\nRepeated amber objects preserve boundary evidence.\n", title="Page")
+    traces = [page(f"route_{i}", "# Page\n\n## Call sequence\nRepeated amber objects preserve boundary evidence.\n"
+        "\n## Data flow\n### Call data\nRepeated amber objects preserve boundary evidence.\n", kind="flows", title="Page") for i in range(12)]
+    results = rank_pages([*traces, owner], "repeated amber objects boundary evidence", limit=5)
+    assert results["results"][0]["id"] == "opaque"
+    assert results["scanned"]["pages"] == 13
+    assert results["total"] == 13
+
+
 def test_long_query_fallback_is_explicit_and_does_not_answer_unknown_behavior():
     owner = page("owner", "# Page\n\n## Notes\nThe amber boundary has a limit.\n")
     result = rank_pages([owner], "amber boundary vanished output confusing state")
@@ -184,7 +230,7 @@ def test_word_forms_retrieve_captured_section_without_rewriting_evidence(base, q
     match = result["results"][0]
     assert match["path"] == owner["path"]
     assert match["provenance"]["content_sha256"] == hashlib.sha256(content.encode()).hexdigest()
-    assert match["provenance"]["configuration"] == "idf-sections-prose-families-links/v2"
+    assert match["provenance"]["configuration"] == "idf-sections-prose-families-traces-links/v2"
     assert "live comparison not performed" in match["provenance"]["qualification"]
     assert match["matched_section_locations"][0]["heading_path"] == ["Payload", "Notes"]
     assert owner == original

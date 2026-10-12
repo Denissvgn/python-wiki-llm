@@ -45,6 +45,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Symptom search weights flow call/data inventories and untouched default
+  Behavior placeholders as captured scaffolding, preserving authored behavior,
+  searchable trace details, and exact identity precedence.
+
 - Symptom discovery connects nominal word families such as serialization and
   serialized in captured explanatory prose, while keeping exact identities and
   generated identifiers literal.

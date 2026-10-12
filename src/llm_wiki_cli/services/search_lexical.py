@@ -17,10 +17,16 @@ from .wiki_media import mask_fenced_code_blocks
 from .search_rank import MAX_SEARCH_BYTES, MAX_SEARCH_PAGES, _STOP_WORDS, _WORDS
 
 RANKING_VERSION = "llm-wiki-search/lexical-v2"
-CONFIGURATION_ID = "idf-sections-prose-families-links/v2"
+CONFIGURATION_ID = "idf-sections-prose-families-traces-links/v2"
 _SEMANTIC = frozenset({"description", "behavior", "notes", "usage", "troubleshooting"})
 _DEFINITIONS = frozenset({"functions", "methods", "classes"})
 _INVENTORY = frozenset({"imports", "relationships", "modules", "entities", "touches", "sequence", "surface overview"})
+_FLOW_INVENTORY = frozenset({"call sequence", "data flow"})
+_FLOW_PLACEHOLDER = re.compile(
+    r"This flow starts at `[^`\n]+` and is classified as `[^`\n]+`\. "
+    r"The generated call and data-flow sections are bounded static projections; "
+    r"runtime conditions and side effects require source-level confirmation\."
+)
 _LINK = re.compile(r"\]\(([^\s)]+)\)")
 _SYMBOL = re.compile(r"[\w.]+\Z", re.UNICODE)
 
@@ -97,6 +103,12 @@ def _fields(page):
         owner = role_heading
         weight = 3.0 if owner in _SEMANTIC else 1.8 if owner in _DEFINITIONS else .45 if owner in _INVENTORY else 1.0
         body = document.normalized_markdown[section.body_start:end]
+        if page["kind"] in {"flow", "flows"} and (
+            owner in _FLOW_INVENTORY
+            or (owner == "behavior" and _FLOW_PLACEHOLDER.fullmatch(body.strip()))
+        ):
+            # Captured trace detail remains searchable, but is not authored prose.
+            weight = .45
         words = Counter(_tokens(body))
         if owner in _SEMANTIC:
             words.update(_prose_aliases(body))
