@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-10-13
+
+This release broadens JavaScript and YAML coverage, adds a portable default
+development workflow, and improves bounded task delivery and symptom discovery.
+Synchronization preserves more source-backed context while reporting extraction
+and cache limitations explicitly.
+
 ### Added
 
 - Structured YAML coverage for Compose and existing infrastructure/runtime
@@ -106,6 +113,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Explicit relative module suffixes retain their exact identity; ambiguous
   extensionless JavaScript imports no longer produce guessed dependency edges.
+
+### Compatibility
+
+- Python 3.10+ and existing required runtime dependencies remain supported.
+  Canonical task-context defaults and public API argument shapes are retained;
+  `compact-v2` remains opt-in.
+- Ranked discovery keeps exact identity precedence and lexical qualifications.
+  Result ordering and scores may change; `ranked-v1` and substring modes retain
+  their existing matching contracts.
+- Existing native storage formats remain supported. Extraction and captured
+  call overviews describe bounded static observations, with unavailable or
+  ambiguous coverage kept explicit.
 
 ## [2.4.0] - 2026-10-10
 
@@ -1374,7 +1393,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.4.0...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.5.0...HEAD
+[2.5.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.3.2...v2.4.0
 [2.3.2]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.3.1...v2.3.2
 [2.3.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.3.0...v2.3.1
