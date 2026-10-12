@@ -2115,3 +2115,21 @@ Maintenance guidance now uses CI report schema v4 for console-only output across
 - Moved entities: none
 
 CI command and service invalid-schema diagnostics now list every supported choice. Early rejection and the separate native compatibility boundary remain intact.
+
+## 2026-10-12
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:e1db9ff801a4d30941076f1c11759e60468e1bde9ba78e5b4a4cd6b7c81ec074`
+- Pages created: 0
+- Pages updated: 1
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1588
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none
+
+Symptom discovery now connects bounded nominal families in captured explanatory prose and definition descriptions. Exact identities, original citations and lexical-only qualifications remain separate from these navigation leads.

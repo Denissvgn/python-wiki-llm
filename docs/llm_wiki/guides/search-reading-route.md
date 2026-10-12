@@ -69,3 +69,10 @@ For a supported bounded graph query, read
 Its result is a bounded static query, not an observed search execution. This guide
 and the generated diagram provide complementary source orientation; neither
 establishes runtime execution order, dynamic completeness or semantic correctness.
+
+Captured explanatory prose can connect approximate nominal word families, such
+as verification and verified. The same expansion does not create defined-symbol
+identities from generated names or signatures. Treat the result as a discovery
+lead, inspect its cited original section, and resolve an exact owner before
+using native evidence. Unmatched vocabulary and competing traces can still
+leave the intended owner outside the bounded result list.

@@ -21,6 +21,19 @@ discovery and does not fabricate a target text-match location. Source-augmented
 records preserve separate original-wiki and indexed-text hashes. No recursive
 lookup, source indexing, execution or truth judgment follows from a link.
 
+Bounded ASCII nominal families are added from captured explanatory sections and
+formal definition-table Description cells. For example, normalization can help
+discovery for normalizing, and verification for verified. Generated names and
+signatures retain their original tokens; defined symbols, paths, URIs and page
+identities keep literal precedence. The prose-family configuration identity
+records this treatment separately from the unchanged legacy ranker.
+
+These extra discovery tokens do not rewrite indexed Markdown or its content
+hash. Returned section locations still cite the original normalized text, and
+lexical leads retain their no-live-comparison qualification. The bounded family
+rules do not establish semantic equivalence, source correctness or general
+language comprehension.
+
 ## Imports
 
 | Source | Symbols |
@@ -77,6 +90,7 @@ flowchart LR
 | `_normal` | `(text)` | — | — |
 | `_word_form` | `(word)` | — | Approximate English word families for discovery, never identity matching. |
 | `_tokens` | `(text)` | — | — |
+| `_prose_aliases` | `(text)` | — | Bounded nominal families in explanatory text, never identifier aliases. |
 | `_fields` | `(page)` | — | Disjoint captured spans; child sections do not multiply parent evidence. |
 | `_identity_tier` | `(page, needle, definitions)` | — | — |
 | `_linked_candidates` | `(documents, strict, terms)` | — | One-hop leads from matched diagnostic prose, never source correctness. |
