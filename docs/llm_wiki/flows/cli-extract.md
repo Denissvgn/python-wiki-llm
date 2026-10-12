@@ -110,9 +110,9 @@ sequenceDiagram
     p0-->>p30: message.startswith('No files found for package')
 ```
 
-> Call sequence diagram shows 30 of 3123 interactions; 3093 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3122 interactions; 3092 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1054 (1053 omitted); unresolved 1 of 1294 (1293 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1053 (1052 omitted); unresolved 1 of 1294 (1293 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -208,38 +208,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2413 | `getattr(args, 'src_dir', '.')` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2414 | `getattr(args, 'changed', False)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2415 | `getattr(args, 'summary', False)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2416 | `getattr(args, 'deep', False)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2417 | `getattr(args, 'paths', None)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2418 | `getattr(args, 'package', None)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2419 | `getattr(args, 'include_empty', False)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2420 | `getattr(args, 'output', None)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2421 | `getattr(args, 'read_only', False)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2422 | `getattr(args, 'allow_external_src', False)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2423 | `getattr(args, 'helper_cache_dir', None)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2416 | `getattr(args, 'src_dir', '.')` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2417 | `getattr(args, 'changed', False)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2418 | `getattr(args, 'summary', False)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2419 | `getattr(args, 'deep', False)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2420 | `getattr(args, 'paths', None)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2421 | `getattr(args, 'package', None)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2422 | `getattr(args, 'include_empty', False)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2423 | `getattr(args, 'output', None)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2424 | `getattr(args, 'read_only', False)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2425 | `getattr(args, 'allow_external_src', False)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2426 | `getattr(args, 'helper_cache_dir', None)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 2429 |
-| output | `print` | `run` | 2433 |
-| output | `print` | `run` | 2435 |
-| output | `print` | `run` | 2437 |
-| output | `print` | `run` | 2463 |
-| output | `print` | `run` | 2465 |
-| output | `print` | `run` | 2470 |
-| output | `print` | `run` | 2474 |
+| output | `print` | `run` | 2432 |
+| output | `print` | `run` | 2436 |
+| output | `print` | `run` | 2438 |
+| output | `print` | `run` | 2440 |
+| output | `print` | `run` | 2466 |
+| output | `print` | `run` | 2468 |
+| output | `print` | `run` | 2473 |
+| output | `print` | `run` | 2477 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `run` | `getattr` | 2413 |
-| external_call | `run` | `getattr` | 2414 |
-| external_call | `run` | `getattr` | 2415 |
 | external_call | `run` | `getattr` | 2416 |
 | external_call | `run` | `getattr` | 2417 |
 | external_call | `run` | `getattr` | 2418 |
@@ -248,6 +245,9 @@ flowchart LR
 | external_call | `run` | `getattr` | 2421 |
 | external_call | `run` | `getattr` | 2422 |
 | external_call | `run` | `getattr` | 2423 |
+| external_call | `run` | `getattr` | 2424 |
+| external_call | `run` | `getattr` | 2425 |
+| external_call | `run` | `getattr` | 2426 |
 | step_limit | `run` | `first 12 steps` | 0 |
 
 ## Behavior

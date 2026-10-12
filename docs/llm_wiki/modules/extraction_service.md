@@ -10,11 +10,12 @@ safe inventory-cache entries, schedules only declared parallel-safe work, and
 merges deterministic per-language results. Callers receive both the inventory
 and explicit extractor status, cache, plugin, and source-snapshot metadata.
 
-Opt-in path diagnostics pass the request to the built-in Python and JavaScript
-extractors and carry their attributable file outcomes through extraction and
+Opt-in path diagnostics pass the request to the built-in Python, JavaScript,
+Go, Rust and Haskell extractors and carry their attributable file outcomes through extraction and
 inventory results. Inventory membership remains separate: a missing entry with
 no reported outcome is unavailable, and a failed extractor batch retains its
-batch scope. Legacy calls and trusted extractors without these observations
+batch scope. Completed native diagnostic chunks survive a later batch failure;
+unrequested paths in a supplied full snapshot are neither parsed nor reported. Legacy calls and trusted extractors without these observations
 keep their existing behavior; missing inventory alone never proves a parser
 failure.
 

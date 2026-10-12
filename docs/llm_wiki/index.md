@@ -7,7 +7,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 | Surface | Count | Start here |
 |---|---:|---|
 | Entities | 663 | [Open section](#entities) |
-| Modules | 243 | [Open section](#modules) |
+| Modules | 244 | [Open section](#modules) |
 | Workflows | 215 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 465 | [Open section](#entry-point-flows) |
@@ -823,6 +823,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [metrics_cmd](modules/metrics_cmd.md) - `src/llm_wiki_cli/commands/metrics_cmd.py`
 - [migrate_cmd](modules/migrate_cmd.md) - Legacy wiki migration command.
 - [module_maps](modules/module_maps.md) - Pure per-module dependency mini-map summaries.
+- [native_diagnostics](modules/native_diagnostics.md) - Owned per-file diagnostics for the bundled Go, Rust and Haskell helpers.
 - [native_inspection](modules/native_inspection.md) - One bounded concept inspection over one captured native read view.
 - [obsidian](modules/obsidian.md) - Obsidian mirror export support for LLM Wiki.
 - [obsidian_cmd](modules/obsidian_cmd.md) - Commands for exporting LLM Wiki into an Obsidian-friendly mirror.

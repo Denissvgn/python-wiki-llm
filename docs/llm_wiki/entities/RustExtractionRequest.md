@@ -11,6 +11,8 @@
 
 Internal request object for Rust extraction orchestration.
 
+The optional `diagnostics` flag selects attributable per-file outcomes for the exact source-file request. It leaves the ordinary inventory protocol unchanged. Prepared helper selection remains explicit; analysis does not prepare missing toolchains.
+
 ## Attributes
 
 | Name | Type | Default | Description |
@@ -20,6 +22,7 @@ Internal request object for Rust extraction orchestration.
 | `deep` | `bool` | `False` | — |
 | `source_files` | `list[str] \| None` | `None` | — |
 | `helper_cache_dir` | `str \| None` | `None` | — |
+| `diagnostics` | `bool` | `False` | — |
 
 ## Methods
 
@@ -59,7 +62,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [rust_extractor](../modules/rust_extractor.md) | 0 | `deep`, `helper_cache_dir`, `only_files`, `source_files`, `src_dir` |
+| [rust_extractor](../modules/rust_extractor.md) | 0 | `deep`, `diagnostics`, `helper_cache_dir`, `only_files`, `source_files`, `src_dir` |
 
 ### References
 

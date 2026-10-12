@@ -6,12 +6,15 @@
 
 Haskell source extractor backed by a prepared helper binary.
 
+An explicit diagnostic request enables the bundled native helper response, validates its selected-path attribution through `native_diagnostics`, and exposes `last_path_outcomes` alongside the inventory. Exact path arguments preserve commas and spaces in filenames. File parse/read failures are distinct from missing helpers and failed batches; no unavailable or failed outcome supplies a parsed module record.
+
 ## Imports
 
 | Source | Symbols |
 |--------|---------|
 | `..services.extractor_helpers` | `ENV_EXTRACTOR_TIMEOUT`, `extractor_timeout_seconds`, `get_prepared_binary`, `missing_helper_message` |
-| `.common` | `chunk_source_files_for_cli`, `discover_source_files`, `filter_bundled_inventory` |
+| `.common` | `discover_source_files`, `filter_bundled_inventory` |
+| `.native_diagnostics` | `load_native_chunks`, `path_outcome` |
 | `__future__` | `annotations` |
 | `dataclasses` | `dataclass` |
 | `json` | `json` |
@@ -26,16 +29,20 @@ Haskell source extractor backed by a prepared helper binary.
 flowchart LR
     n0["src/llm_wiki_cli/extractors/common.py"]
     n1["src/llm_wiki_cli/extractors/haskell_extractor.py"]
-    n2["src/llm_wiki_cli/services/extraction_service.py"]
-    n3["src/llm_wiki_cli/services/extractor_helpers.py"]
+    n2["src/llm_wiki_cli/extractors/native_diagnostics.py"]
+    n3["src/llm_wiki_cli/services/extraction_service.py"]
+    n4["src/llm_wiki_cli/services/extractor_helpers.py"]
     n1 --> n0
-    n1 --> n3
+    n1 --> n2
+    n1 --> n4
     n2 --> n0
-    n2 --> n1
+    n3 --> n0
+    n3 --> n1
     click n0 "../modules/common.md"
     click n1 "../modules/haskell_extractor.md"
-    click n2 "../modules/extraction_service.md"
-    click n3 "../modules/extractor_helpers.md"
+    click n2 "../modules/native_diagnostics.md"
+    click n3 "../modules/extraction_service.md"
+    click n4 "../modules/extractor_helpers.md"
 ```
 
 ### Internal neighbors
@@ -44,6 +51,7 @@ flowchart LR
 |---|---|
 | Inbound | [extraction_service](../modules/extraction_service.md) |
 | Outbound | [common](../modules/common.md) |
+| Outbound | [native_diagnostics](../modules/native_diagnostics.md) |
 | Outbound | [extractor_helpers](../modules/extractor_helpers.md) |
 
 ## Classes
@@ -51,7 +59,7 @@ flowchart LR
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
 | [HaskellExtractionRequest](../entities/HaskellExtractionRequest.md) | 27 | — | Internal request object for Haskell extraction orchestration. |
-| [HaskellExtractor](../entities/HaskellExtractor.md) | 37 | — | Extractor for Haskell source files using a prepared helper binary. |
+| [HaskellExtractor](../entities/HaskellExtractor.md) | 38 | — | Extractor for Haskell source files using a prepared helper binary. |
 
 ## Functions
 

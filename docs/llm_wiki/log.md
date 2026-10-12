@@ -2077,3 +2077,21 @@ context while removed declarations become history. Scoped diagnostic retries and
 manifest-selected live reads preserve the distinction between valid emptiness,
 syntax failure, unavailable coverage and module aliases. Cached qualifications
 remain attributable or are rebuilt through the owning parser route.
+
+## 2026-10-12
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:5318d01f6d42af8f50fe6e41db8914019bef59bd9fa4978a913e64811398b116`
+- Pages created: 1
+- Pages updated: 22
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1568
+- Pages deprecated: 0
+- Semantic fields preserved: 3
+- Moved entities: none
+
+Go, Rust and Haskell diagnostic reads now retain exact parser-owned file outcomes through a shared native response boundary. Syntax/read failures, unavailable helpers and failed batches stay distinct; partial coverage cannot create module or member-retirement authority.

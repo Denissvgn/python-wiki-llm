@@ -15,6 +15,8 @@ statuses, the effective job plan, cache statistics, plugin producer metadata,
 the exact source snapshot, and optional observation maps. The `failed`
 property gives callers a single fail-closed check across extractor statuses.
 
+The `failed` property covers extractor statuses. A successful diagnostic helper batch may still report file-scoped syntax/read failures, so consumers making source or member-retirement decisions inspect the exact path outcome and its parsed record. Batch failure, unavailable coverage and omitted outcomes remain separate from valid empty records.
+
 ## Attributes
 
 | Name | Type | Default | Description |

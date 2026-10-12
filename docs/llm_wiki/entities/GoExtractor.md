@@ -1,6 +1,6 @@
 # GoExtractor
 
-**Location:** `src/llm_wiki_cli/extractors/go_extractor.py:56`
+**Location:** `src/llm_wiki_cli/extractors/go_extractor.py:57`
 **Kind:** Class
 **Bases:** —
 **Module:** [go_extractor](../modules/go_extractor.md)
@@ -12,6 +12,8 @@ Extractor for Go source files using a prepared helper binary.
 Implements :class:`~llm_wiki_cli.extractors.ExtractorProtocol`.
 
 Each returned file entry includes ``"language": "go"``.
+
+Diagnostic requests use the shared native response validator and reset `last_path_outcomes` for each extraction. Parsed files carry source-relative inventory entries; syntax and read failures carry file scope without records. Missing helpers are unavailable at batch scope. A failed or invalid later chunk preserves completed diagnostic chunks and marks the remaining chunks unattempted; owning consumers still see the failed batch status.
 
 ## Attributes
 

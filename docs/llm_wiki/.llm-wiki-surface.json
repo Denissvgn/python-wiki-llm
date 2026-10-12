@@ -25,11 +25,11 @@
       "infrastructure": 2,
       "load-order": 1,
       "log": 1,
-      "modules": 243,
+      "modules": 244,
       "workflows": 215
     },
     "dependency_architecture": 2,
-    "total": 1603
+    "total": 1604
   },
   "dependency_pages": {
     "count": 2,
@@ -9455,7 +9455,7 @@
             "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_cli/services/concept_identity.py"
           ],
-          "step_count": 3464,
+          "step_count": 3463,
           "truncated": true
         }
       },
@@ -10527,7 +10527,7 @@
             "src/llm_wiki_cli/extractors/python_bindings.py",
             "src/llm_wiki_cli/services/yaml_syntax.py"
           ],
-          "step_count": 3060,
+          "step_count": 3059,
           "truncated": true
         }
       },
@@ -32447,7 +32447,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2429,
+              "line": 2432,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32455,7 +32455,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2433,
+              "line": 2436,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32463,7 +32463,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2435,
+              "line": 2438,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32471,7 +32471,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2437,
+              "line": 2440,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32479,7 +32479,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2463,
+              "line": 2466,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32487,7 +32487,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2465,
+              "line": 2468,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32495,7 +32495,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2470,
+              "line": 2473,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32503,31 +32503,13 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2474,
+              "line": 2477,
               "step": "run",
               "step_index": 1,
               "target": "print"
             }
           ],
           "gaps": [
-            {
-              "kind": "external_call",
-              "line": 2413,
-              "step": "run",
-              "target": "getattr"
-            },
-            {
-              "kind": "external_call",
-              "line": 2414,
-              "step": "run",
-              "target": "getattr"
-            },
-            {
-              "kind": "external_call",
-              "line": 2415,
-              "step": "run",
-              "target": "getattr"
-            },
             {
               "kind": "external_call",
               "line": 2416,
@@ -32573,6 +32555,24 @@
             {
               "kind": "external_call",
               "line": 2423,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 2424,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 2425,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 2426,
               "step": "run",
               "target": "getattr"
             },
@@ -32624,7 +32624,7 @@
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/wiki_write_basis.py"
           ],
-          "step_count": 3124,
+          "step_count": 3123,
           "truncated": true
         }
       },
@@ -34137,7 +34137,7 @@
             "src/llm_wiki_cli/services/infrastructure_sync.py",
             "src/llm_wiki_cli/services/knowledge_index.py"
           ],
-          "step_count": 4019,
+          "step_count": 4018,
           "truncated": true
         }
       },
@@ -36307,7 +36307,7 @@
             "src/llm_wiki_cli/services/source_retirement.py",
             "src/llm_wiki_cli/services/python_imports.py"
           ],
-          "step_count": 2420,
+          "step_count": 2419,
           "truncated": true
         }
       },
@@ -39648,6 +39648,7 @@
         "modules/metrics_cmd.md",
         "modules/migrate_cmd.md",
         "modules/module_maps.md",
+        "modules/native_diagnostics.md",
         "modules/native_inspection.md",
         "modules/obsidian.md",
         "modules/obsidian_cmd.md",
@@ -49963,7 +49964,8 @@
         "modules/extraction_service.md",
         "modules/extractor_helpers.md",
         "modules/go_calls.md",
-        "modules/go_extractor.md"
+        "modules/go_extractor.md",
+        "modules/native_diagnostics.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/extractors/go_extractor.py",
@@ -49980,7 +49982,8 @@
         "modules/common.md",
         "modules/extraction_service.md",
         "modules/extractor_helpers.md",
-        "modules/haskell_extractor.md"
+        "modules/haskell_extractor.md",
+        "modules/native_diagnostics.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/extractors/haskell_extractor.py",
@@ -51197,6 +51200,22 @@
       "title": "module_maps Module"
     },
     {
+      "canonical_path": "modules/native_diagnostics.md",
+      "id": "native_diagnostics",
+      "kind": "modules",
+      "mcp_uri": "llm-wiki://modules/native_diagnostics",
+      "outgoing_internal_links": [
+        "modules/common.md",
+        "modules/go_extractor.md",
+        "modules/haskell_extractor.md",
+        "modules/native_diagnostics.md",
+        "modules/rust_extractor.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/extractors/native_diagnostics.py",
+      "title": "native_diagnostics Module"
+    },
+    {
       "canonical_path": "modules/native_inspection.md",
       "id": "native_inspection",
       "kind": "modules",
@@ -51843,6 +51862,7 @@
         "modules/common.md",
         "modules/extraction_service.md",
         "modules/extractor_helpers.md",
+        "modules/native_diagnostics.md",
         "modules/rust_extractor.md"
       ],
       "role": "semantic",
@@ -66427,6 +66447,7 @@
         "modules/metrics_cmd.md",
         "modules/migrate_cmd.md",
         "modules/module_maps.md",
+        "modules/native_diagnostics.md",
         "modules/native_inspection.md",
         "modules/obsidian.md",
         "modules/obsidian_cmd.md",
@@ -66682,6 +66703,7 @@
         "modules/metrics_cmd.md",
         "modules/migrate_cmd.md",
         "modules/module_maps.md",
+        "modules/native_diagnostics.md",
         "modules/native_inspection.md",
         "modules/obsidian.md",
         "modules/obsidian_cmd.md",
@@ -66793,5 +66815,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:53aca4b4077ea6b416e3140ab956bb9b375d21f41eb150c67db8c3c04bdee808"
+  "source_hash": "sha256:8920f2280a656d2f37644d884bf52811db3312aa1196711a05fa937614c1979a"
 }

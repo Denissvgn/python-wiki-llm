@@ -14,6 +14,8 @@ and optional prebuilt snapshot with depth, file narrowing, cache, worker,
 helper, plugin, and source-selection controls. Construction normalizes mutable
 inputs so the extraction planner receives a stable request.
 
+`capture_path_outcomes` enables attributable diagnostics for built-in Python, JavaScript/TypeScript, Go, Rust and Haskell providers. Diagnostic extraction bypasses plain inventory-cache hits; retained qualified sync analysis remains committed to the source/provider basis and missing qualification requires a scoped live retry.
+
 ## Attributes
 
 | Name | Type | Default | Description |
