@@ -29,6 +29,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Symptom discovery matches approximate English word forms and surfaces
+  explicitly linked implementation pages from relevant diagnostic prose,
+  preserving exact identity precedence and qualified evidence.
+
 - Generated call overviews show representative resolved continuations and
   boundary examples, keeping deeper stages visible within existing diagram limits.
 

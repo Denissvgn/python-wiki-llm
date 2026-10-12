@@ -14,10 +14,10 @@ from urllib.parse import unquote, urlsplit
 
 from .markdown_sections import parse_markdown_document, semantic_table_key, split_table_row
 from .wiki_media import mask_fenced_code_blocks
-from .search_rank import MAX_SEARCH_BYTES, MAX_SEARCH_PAGES, _tokens
+from .search_rank import MAX_SEARCH_BYTES, MAX_SEARCH_PAGES, _STOP_WORDS, _WORDS
 
 RANKING_VERSION = "llm-wiki-search/lexical-v2"
-CONFIGURATION_ID = "idf-sections-a/v1"
+CONFIGURATION_ID = "idf-sections-word-forms-links/v1"
 _SEMANTIC = frozenset({"description", "behavior", "notes", "usage", "troubleshooting"})
 _DEFINITIONS = frozenset({"functions", "methods", "classes"})
 _INVENTORY = frozenset({"imports", "relationships", "modules", "entities", "touches", "sequence", "surface overview"})
@@ -27,6 +27,37 @@ _SYMBOL = re.compile(r"[\w.]+\Z", re.UNICODE)
 
 def _normal(text):
     return unicodedata.normalize("NFKC", text).strip().casefold()
+
+
+def _word_form(word):
+    """Approximate English word families for discovery, never identity matching."""
+    if not word.isascii() or not word.isalpha() or len(word) < 4:
+        return word
+    if word.endswith("ies") and len(word) > 4:
+        word = word[:-3] + "y"
+    elif word.endswith(("ches", "shes", "sses", "xes", "zes")):
+        word = word[:-2]
+    elif word.endswith("s") and not word.endswith(("ss", "us")):
+        word = word[:-1]
+    if word.endswith("ied") and len(word) > 5:
+        word = word[:-3] + "y"
+    elif word.endswith("ing") and len(word) > 5:
+        word = word[:-3]
+        if len(word) > 3 and word[-1] == word[-2] and word[-1] in "bdfgmnprt":
+            word = word[:-1]
+    elif word.endswith("ed") and len(word) > 4:
+        word = word[:-2]
+        if len(word) > 3 and word[-1] == word[-2] and word[-1] in "bdfgmnprt":
+            word = word[:-1]
+    if len(word) > 4 and word.endswith(("e", "y")):
+        word = word[:-1]
+    return word
+
+
+def _tokens(text):
+    text = unicodedata.normalize("NFKC", text)
+    text = re.sub(r"([a-z])([A-Z])", r"\1 \2", text).casefold()
+    return [_word_form(word) for word in _WORDS.findall(text) if word not in _STOP_WORDS]
 
 
 def _fields(page):
@@ -89,6 +120,59 @@ def _identity_tier(page, needle, definitions):
     if needle in definitions:
         return 1, ["defined-symbol"]
     return 0, []
+
+
+def _linked_candidates(documents, strict, terms):
+    """One-hop leads from matched diagnostic prose, never source correctness."""
+    counts = Counter(document[0]["path"] for document in documents)
+    targets = {document[0]["path"]: document for document in documents
+               if counts[document[0]["path"]] == 1}
+    suggestions = {}
+    for tier, score, result in strict:
+        if tier or result["kind"] not in {"guide", "guides"}:
+            continue
+        donor = targets.get(result["path"])
+        if donor is None:
+            continue
+        for field in donor[1]:
+            if len(terms & field["words"].keys()) < 2:
+                continue
+            headings = [part.casefold() for part in field["heading"]]
+            if not any(part in _SEMANTIC for part in headings):
+                continue
+            span = donor[6][field["start"]:field["end"]]
+            for link in _LINK.findall(mask_fenced_code_blocks(span)):
+                try:
+                    parsed = urlsplit(link)
+                except ValueError:
+                    continue
+                if parsed.scheme or parsed.netloc or not parsed.path:
+                    continue
+                path = posixpath.normpath(posixpath.join(posixpath.dirname(result["path"]), unquote(parsed.path)))
+                target = targets.get(path)
+                if (path.startswith(("../", "/")) or target is None
+                        or target[0]["kind"] not in {"module", "modules", "entity", "entities"}):
+                    continue
+                value = score * .5
+                prior = suggestions.get(path)
+                evidence = {"path": result["path"], "content_sha256": donor[7],
+                            "section_locator": field.get("locator"), "target_path": path}
+                if prior is None or (value, result["path"]) > (prior[0], prior[1]["path"]):
+                    suggestions[path] = (value, evidence)
+    linked = []
+    for path, (score, evidence) in sorted(suggestions.items()):
+        page, _, _, _, _, _, content, digest = targets[path]
+        result = deepcopy({key: value for key, value in page.items() if key != "content"})
+        source_index = page.get("indexing") or page.get("source_index")
+        wiki_hash = (source_index.get("original_wiki_content_sha256", source_index.get("wiki_content_sha256", digest))
+                     if isinstance(source_index, Mapping) else digest)
+        result.update(score=round(score, 6), reasons=["linked-semantic-candidate:" + evidence["path"]],
+            snippet=re.sub(r"\s+", " ", content[:250]).strip(), matched_sections=[], matched_section_locations=[],
+            linked_evidence=[evidence], provenance={"content_sha256": wiki_hash, "indexed_content_sha256": digest,
+                "ranking": RANKING_VERSION, "configuration": CONFIGURATION_ID,
+                "qualification": "linked-discovery-candidate; live comparison not performed"})
+        linked.append((0, score, result))
+    return linked
 
 
 def rank_pages(pages, query: str, *, limit=20, max_pages=MAX_SEARCH_PAGES, max_bytes=MAX_SEARCH_BYTES) -> dict:
@@ -203,6 +287,19 @@ def rank_pages(pages, query: str, *, limit=20, max_pages=MAX_SEARCH_PAGES, max_b
         (strict if strong else relaxed).append((tier, score, result))
     # Fallback only supplements a sparse strict list; it never changes identity order.
     matches = strict + (relaxed if len(strict) < 3 else [])
+    by_path = {item[2]["path"]: index for index, item in enumerate(matches)}
+    for item in _linked_candidates(documents, strict, terms):
+        position = by_path.get(item[2]["path"])
+        if position is None:
+            by_path[item[2]["path"]] = len(matches)
+            matches.append(item)
+            continue
+        current = matches[position]
+        if current[0] == 0:
+            current[2]["linked_evidence"] = item[2]["linked_evidence"]
+            current[2]["reasons"].extend(item[2]["reasons"])
+            if item[1] > current[1]:
+                matches[position] = (0, item[1], {**current[2], "score": item[2]["score"]})
     matches.sort(key=lambda item: (-item[0], -item[1], item[2]["path"].casefold(), item[2]["path"]))
     identity = hashlib.sha256()
     for path, digest in sorted(identities):

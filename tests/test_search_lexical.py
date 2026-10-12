@@ -169,3 +169,78 @@ def test_fenced_or_noncanonical_table_cannot_claim_a_defined_symbol():
     noncanonical = page("reference", "## Functions\n| Reference | Kind |\n|---|---|\n| `assemble` | call |\n")
     for match in rank_pages([fenced, noncanonical], "assemble")["results"]:
         assert "defined-symbol" not in match["reasons"]
+
+
+@pytest.mark.parametrize("base,query", [
+    ("rename", "renaming"), ("delete", "deleted"), ("verify", "verifying"),
+    ("verify", "verified"), ("expire", "expiry"), ("stop", "stopping"),
+    ("process", "processes"), ("status", "statuses"), ("retry", "retrying"),
+])
+def test_word_forms_retrieve_captured_section_without_rewriting_evidence(base, query):
+    content = f"# Payload\n\n## Notes\n{base.capitalize()} payload envelope safely.\n"
+    owner = page("worker", content)
+    original = deepcopy(owner)
+    result = rank_pages([page("other", "## Notes\nDiagnostic clock samples.\n"), owner], query + " payload envelope")
+    match = result["results"][0]
+    assert match["path"] == owner["path"]
+    assert match["provenance"]["content_sha256"] == hashlib.sha256(content.encode()).hexdigest()
+    assert match["provenance"]["configuration"] == "idf-sections-word-forms-links/v1"
+    assert "live comparison not performed" in match["provenance"]["qualification"]
+    assert match["matched_section_locations"][0]["heading_path"] == ["Payload", "Notes"]
+    assert owner == original
+
+
+def test_word_family_discovery_does_not_replace_exact_symbol_or_page_identity():
+    exact = page("object", "## Functions\n| Function | Signature | Description |\n|---|---|---|\n| `rename` | `rename()` | Renames payloads. |\n")
+    related = page("renaming", "## Notes\nRename rename rename payload envelopes.\n")
+    assert rank_pages([related, exact], "rename")["results"][0]["id"] == "object"
+    assert rank_pages([related, exact], "renaming")["results"][0]["id"] == "renaming"
+    assert not any("defined-symbol" in row["reasons"] for row in rank_pages([exact], "renamed")["results"])
+
+
+def test_word_form_matching_is_approximate_navigation_not_a_semantic_answer():
+    owner = page("retention", "## Notes\nDeletion retains referenced payloads.\n")
+    assert rank_pages([owner], "radiation dosage orbital navigation")["results"] == []
+    result = rank_pages([owner], "deleted referenced payloads")
+    assert result["results"] and not {"answer", "correct", "verified"} & result.keys()
+    assert "lexical-discovery-candidate" in result["results"][0]["provenance"]["qualification"]
+
+
+def test_strong_diagnostic_prose_links_retrieve_only_captured_implementation_targets():
+    guide = page("diagnosis", "# Diagnosis\n\n## Troubleshooting\nAmber checkpoint fingerprint differs. Inspect [owner](../modules/opaque.md).\n", kind="guides")
+    owner = page("opaque", "# Opaque\n\n## Description\nValidate boundary admission.\n")
+    original = deepcopy([guide, owner])
+    result = rank_pages([guide, owner], "amber checkpoint fingerprint")
+    linked = next(row for row in result["results"] if row["path"] == owner["path"])
+    assert linked["matched_sections"] == [] and linked["matched_section_locations"] == []
+    assert linked["linked_evidence"] == [{
+        "path": guide["path"], "content_sha256": hashlib.sha256(guide["content"].encode()).hexdigest(),
+        "section_locator": "llm-wiki://guides/diagnosis#section/Diagnosis~1/Troubleshooting~1", "target_path": owner["path"],
+    }]
+    assert linked["provenance"]["qualification"] == "linked-discovery-candidate; live comparison not performed"
+    assert [guide, owner] == original
+    assert rank_pages([guide], "amber checkpoint fingerprint")["total"] == 1
+
+
+@pytest.mark.parametrize("body", [
+    "## Imports\nAmber checkpoint fingerprint [owner](../modules/opaque.md).",
+    "## Troubleshooting\nAmber checkpoint fingerprint.\n```md\n[owner](../modules/opaque.md)\n```",
+    "## Troubleshooting\nAmber checkpoint fingerprint [owner](https://remote.invalid/modules/opaque.md).",
+    "## Troubleshooting\nAmber checkpoint fingerprint [owner](../../../modules/opaque.md).",
+])
+def test_inventory_fenced_external_or_escaping_links_do_not_invent_candidates(body):
+    guide = page("diagnosis", body, kind="guides")
+    owner = page("opaque", "# Opaque\nValidate admission boundary.")
+    assert not any(row["path"] == owner["path"] for row in rank_pages([owner, guide], "amber checkpoint fingerprint")["results"])
+
+
+def test_linked_candidates_keep_exact_identity_precedence_and_indexing_hash_custody():
+    guide = page("guide", "## Troubleshooting\nAmber checkpoint fingerprint [owner](../modules/opaque.md).", kind="guides")
+    raw = "# Opaque\nAdmission boundary.\n"
+    indexed = raw + "\n## Selected source indexing evidence\nStatic declaration.\n"
+    owner = page("opaque", indexed, indexing={"original_wiki_content_sha256":hashlib.sha256(raw.encode()).hexdigest()})
+    linked = next(row for row in rank_pages([guide, owner], "amber checkpoint fingerprint")["results"] if row["id"]=="opaque")
+    assert linked["provenance"]["content_sha256"] == hashlib.sha256(raw.encode()).hexdigest()
+    assert linked["provenance"]["indexed_content_sha256"] == hashlib.sha256(indexed.encode()).hexdigest()
+    exact = page("amber checkpoint fingerprint", "Nothing here.")
+    assert rank_pages([guide,owner,exact], "amber checkpoint fingerprint")["results"][0]["id"]==exact["id"]

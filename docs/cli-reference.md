@@ -1943,6 +1943,15 @@ of UTF-8 content, with 1–100 returned results. Exceeding a corpus limit fails
 explicitly; narrow `--kind` or choose a smaller wiki. Search is read-only and
 does not require embeddings or a model service.
 
+Lexical-v2 uses approximate English word families for discovery while preserving
+literal page and symbol identity checks. Strong matches in diagnostic guide
+sections can also surface explicitly linked module/entity pages already in the
+captured corpus. These one-hop leads report `linked_evidence` with the guide's
+hash, section locator and target path. A link-derived candidate without its own
+text match has no fabricated matched-section location; its provenance identifies
+linked discovery. Links do not trigger network reads, source indexing or recursive
+traversal. Inspect exact source before treating any candidate as an explanation.
+
 The query must contain a non-whitespace character. Nonblank queries retain
 their original whitespace, including in substring mode. `--limit` accepts a
 positive integer, defaults to 20, and caps the returned results at 100 even when
