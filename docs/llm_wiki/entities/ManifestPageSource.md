@@ -35,14 +35,16 @@ Last observed source coordinate for one module or entity page.
 flowchart LR
     n0["ManifestPageSource (src/llm_wiki_cli/services/sync_manifest.py)"]
     n1["src/llm_wiki_cli/services/knowledge_index.py"]
-    n2["src/llm_wiki_cli/services/sync_analysis.py"]
-    n3["plan_generated_source_repairs (src/llm_wiki_cli/services/sync_generated_sections.py)"]
-    n4["_legacy_operational_state (src/llm_wiki_cli/services/sync_manifest.py)"]
-    n5["_put_page_mapping (src/llm_wiki_cli/services/sync_manifest.py)"]
-    n6["ManifestPageSource.from_payload (src/llm_wiki_cli/services/sync_manifest.py)"]
-    n7["SyncManifest._validate_basis_mapping (src/llm_wiki_cli/services/sync_manifest.py)"]
-    n8["SyncManifest.build_from_inventory (src/llm_wiki_cli/services/sync_manifest.py)"]
-    n9["_current_pages (src/llm_wiki_cli/services/sync_transitions.py)"]
+    n2["_lint_retired_entity_mappings (src/llm_wiki_cli/services/lint_service.py)"]
+    n3["_check_duplicate_removal_custody (src/llm_wiki_cli/services/source_retirement.py)"]
+    n4["discover_retired_entities (src/llm_wiki_cli/services/source_retirement.py)"]
+    n5["entity_owner_present (src/llm_wiki_cli/services/source_retirement.py)"]
+    n6["historical_entity_semantics (src/llm_wiki_cli/services/source_retirement.py)"]
+    n7["read_entity_retirement_state (src/llm_wiki_cli/services/source_retirement.py)"]
+    n8["retired_entity_mappings (src/llm_wiki_cli/services/source_retirement.py)"]
+    n9["with_entity_retirement_state (src/llm_wiki_cli/services/source_retirement.py)"]
+    n10["src/llm_wiki_cli/services/sync_analysis.py"]
+    n11["plan_generated_source_repairs (src/llm_wiki_cli/services/sync_generated_sections.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -52,16 +54,20 @@ flowchart LR
     n7 --> n0
     n8 --> n0
     n9 --> n0
+    n10 --> n0
+    n11 --> n0
     click n0 "../modules/sync_manifest.md"
     click n1 "../modules/knowledge_index.md"
-    click n2 "../modules/sync_analysis.md"
-    click n3 "../modules/sync_generated_sections.md"
-    click n4 "../modules/sync_manifest.md"
-    click n5 "../modules/sync_manifest.md"
-    click n6 "../modules/sync_manifest.md"
-    click n7 "../modules/sync_manifest.md"
-    click n8 "../modules/sync_manifest.md"
-    click n9 "../modules/sync_transitions.md"
+    click n2 "../modules/lint_service.md"
+    click n3 "../modules/source_retirement.md"
+    click n4 "../modules/source_retirement.md"
+    click n5 "../modules/source_retirement.md"
+    click n6 "../modules/source_retirement.md"
+    click n7 "../modules/source_retirement.md"
+    click n8 "../modules/source_retirement.md"
+    click n9 "../modules/source_retirement.md"
+    click n10 "../modules/sync_analysis.md"
+    click n11 "../modules/sync_generated_sections.md"
 ```
 
 ### Summary
@@ -75,16 +81,16 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `knowledge_index` | import | [knowledge_index](../modules/knowledge_index.md) | — |
+| `_lint_retired_entity_mappings` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `_check_duplicate_removal_custody` | call | [source_retirement](../modules/source_retirement.md) | 1 |
+| `discover_retired_entities` | call | [source_retirement](../modules/source_retirement.md) | 1 |
+| `discover_retired_entities` | type_reference | [source_retirement](../modules/source_retirement.md) | — |
+| `entity_owner_present` | type_reference | [source_retirement](../modules/source_retirement.md) | — |
+| `historical_entity_semantics` | type_reference | [source_retirement](../modules/source_retirement.md) | — |
+| `read_entity_retirement_state` | type_reference | [source_retirement](../modules/source_retirement.md) | — |
+| `retired_entity_mappings` | type_reference | [source_retirement](../modules/source_retirement.md) | — |
+| `with_entity_retirement_state` | type_reference | [source_retirement](../modules/source_retirement.md) | — |
 | `sync_analysis` | import | [sync_analysis](../modules/sync_analysis.md) | — |
 | `plan_generated_source_repairs` | type_reference | [sync_generated_sections](../modules/sync_generated_sections.md) | — |
-| `_legacy_operational_state` | call | [sync_manifest](../modules/sync_manifest.md) | 3 |
-| `_legacy_operational_state` | type_reference | [sync_manifest](../modules/sync_manifest.md) | — |
-| `_put_page_mapping` | type_reference | [sync_manifest](../modules/sync_manifest.md) | — |
-| `ManifestPageSource.from_payload` | call | [sync_manifest](../modules/sync_manifest.md) | 1 |
-| `ManifestPageSource.from_payload` | type_reference | [sync_manifest](../modules/sync_manifest.md) | — |
-| `SyncManifest._validate_basis_mapping` | type_reference | [sync_manifest](../modules/sync_manifest.md) | — |
-| `SyncManifest.build_from_inventory` | call | [sync_manifest](../modules/sync_manifest.md) | 2 |
-| `_current_pages` | call | [sync_transitions](../modules/sync_transitions.md) | 2 |
-| `_current_pages` | type_reference | [sync_transitions](../modules/sync_transitions.md) | — |
 
-> References: showing 12 of 17 logical references; 5 omitted by the 12-row generated summary limit.
+> References: showing 12 of 26 logical references; 14 omitted by the 12-row generated summary limit.

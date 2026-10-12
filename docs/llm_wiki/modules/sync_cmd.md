@@ -4,7 +4,7 @@
 
 ## Description
 
-Incremental wiki sync — update only pages whose source has changed.
+Plans incremental source and retained-page updates and commits a coherent wiki snapshot.
 
 Workflow:
     1. Classify the wiki lifecycle, loading a managed manifest, safely seeding a
@@ -13,7 +13,7 @@ Workflow:
     2. Hash every source file in the current AST inventory.
     3. Compute a diff: new / changed / unchanged / removed files, moved classes.
     4. Apply changes surgically: regenerate pages for new/changed files, add a
-       deprecation warning to pages whose source was removed, skip everything else.
+       deprecation warning to removed-source pages, and qualify removed members in surviving modules.
     5. Rebuild index.md and append a log entry if anything changed.
     6. Save the updated manifest.
 
@@ -37,6 +37,18 @@ Ordinary sync preflights retained source-derived sections against the active
 renderer even when source hashes match. Repairs are apply-only output work and
 use verified retained-page transitions; semantic ambiguity stops before writes.
 A committed wiki projection cannot establish generated correctness by itself.
+
+The ordinary plan also discovers source-member retirements before its unchanged
+shortcut, including prior unqualified tombstones. Guarded retained-page repairs
+prefix a history qualification while preserving content and durable originals.
+The generated index distinguishes retired source members from live declarations.
+Live moves consume their previous page ownership; exact reappearance clears the
+retirement marker and regenerates current structure. Selection pruning removes
+retirement records with deselected ownership.
+
+A previously owned source that remains captured but produces no inventory entry
+stops the plan before writes. Inventory absence does not establish a missing
+file or a confirmed removed declaration.
 
 ## Imports
 
@@ -62,20 +74,23 @@ A committed wiki projection cannot establish generated correctness by itself.
 | `..services.knowledge_governance` | `GOVERNANCE_FILENAME`, `GovernanceError`, `load_governance`, `ConceptGovernanceReference`, `natural_key_for`, `reconcile_concepts` |
 | `..services.knowledge_model` | `PAGE_KIND_TO_CONCEPT_KIND` |
 | `..services.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeKnowledgeInputs`, `CommittedKnowledgeState`, `capture_committed_knowledge`, `collect_runtime_repository_evidence`, `committed_governance_bundle_id`, `committed_runtime_provenance`, `finalize_runtime_knowledge`, `runtime_generation_options`, `runtime_graph_analyzer_limitations`, `runtime_generation_options_hash`, `runtime_source_snapshot_hash` |
+| `..services.knowledge_storage` | `MAX_EXPANDED_BYTES` |
+| `..services.knowledge_storage_io` | `StorageReadSession` |
 | `..services.maintenance_protocol` | `unlink_maintenance_page`, `guard_maintenance_owner`, `maintenance_write_operation`, `MaintenanceProtocolError` |
-| `..services.markdown_sections` | `format_table_row`, `is_placeholder_description`, `is_table_separator`, `normalize_markdown`, `preserve_index_custom_sections`, `preserve_level_two_section_exact`, `preserve_table_description_cells`, `replace_section_body`, `section_body`, `section_bounds`, `semantic_table_key`, `should_preserve_semantic_value`, `split_table_row`, `table_description_cells`, `trim_blank_lines` |
+| `..services.markdown_sections` | `format_table_row`, `is_placeholder_description`, `is_table_separator`, `normalize_markdown`, `preserve_index_custom_sections`, `preserve_level_two_section_exact`, `preserve_table_description_cells`, `replace_section_body`, `section_body`, `section_bounds`, `semantic_table_key`, `should_preserve_semantic_value`, `split_table_row`, `table_description_cells`, `trim_blank_lines`, `parse_markdown_document` |
 | `..services.module_maps` | `build_module_dependency_maps` |
 | `..services.paths` | `is_test_source_path`, `portable_source_root_label` |
 | `..services.plugins` | `runtime_plugin_fallback_root`, `runtime_project_plugins_enabled` |
 | `..services.progress` | `observed_phase`, `record_counts` |
 | `..services.section_ownership` | `SemanticMergeResult`, `merge_entity_semantics`, `merge_module_semantics`, `merge_semantic_markdown`, `replace_generated_section` |
+| `..services.source_retirement` | `SOURCE_MEMBER_REMOVED_HEADER`, `SourceRetirementError`, `discover_retired_entities`, `read_entity_retirement_state`, `historical_entity_semantics`, `with_entity_retirement_state` |
 | `..services.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `path_is_selected`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `..services.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `source_snapshot_matches_current_files`, `format_unsupported_source_summary`, `unsupported_source_summary` |
 | `..services.sync_analysis` | `SyncDiff`, `SyncOwnershipError`, `compute_sync_diff` |
 | `..services.sync_generated_sections` | `plan_generated_source_repairs` |
 | `..services.sync_manifest` | `EVIDENCE_NOT_RECORDED`, `LEGACY_EVIDENCE_UNAVAILABLE`, `MANIFEST_FILENAME`, `MANIFEST_REPAIR_UNAVAILABLE`, `MANIFEST_STATE_UNAVAILABLE`, `MANIFEST_VERSION`, `SourceSelectionPruneResult`, `SyncManifest`, `prune_manifest_for_source_selection`, `retained_concept_page_paths` |
 | `..services.sync_transition_execution` | `PageTransitionExecution`, `assert_no_pending_page_moves` |
-| `..services.sync_transitions` | `PageTransitionPlan`, `find_missing_source_pages`, `plan_page_transitions` |
+| `..services.sync_transitions` | `PageTransitionPlan`, `find_missing_source_pages`, `plan_page_transitions`, `RetainedPageRepair` |
 | `..services.validation` | `portable_path_key`, `resolve_portable_workspace_path` |
 | `..services.wiki_lifecycle` | `WikiLifecycleState`, `bootstrap_guidance`, `classify_wiki_lifecycle`, `migration_guidance` |
 | `..services.wiki_surface` | `PageKind`, `WikiSurfaceError`, `canonical_path`, `collect_wiki_pages`, `mcp_uri` |
@@ -114,28 +129,28 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (2) |
-| Outbound | `src` (39) |
+| Outbound | `src` (42) |
 
-> All 41 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 44 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [GeneratedSurfacePruneError](../entities/GeneratedSurfacePruneError.md) | 284 | `ValueError` | A stale generated page cannot be removed without explicit authority. |
-| [SyncRuntimeRefreshError](../entities/SyncRuntimeRefreshError.md) | 288 | `ValueError` | A runtime-basis transition cannot be applied in the requested mode. |
-| [SyncResult](../entities/SyncResult.md) | 620 | — | — |
-| [_ApplyDiffContext](../entities/ApplyDiffContext.md) | 659 | — | — |
-| [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 681 | — | — |
-| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1686 | — | — |
-| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1712 | — | — |
-| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1719 | — | — |
-| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1725 | — | — |
-| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1731 | — | — |
-| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1747 | — | — |
-| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1790 | — | — |
-| [_ReusedSync](../entities/ReusedSync.md) | 1820 | — | — |
-| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1826 | — | Prior ownership proof and generated pages that cross the live boundary. |
+| [GeneratedSurfacePruneError](../entities/GeneratedSurfacePruneError.md) | 292 | `ValueError` | A stale generated page cannot be removed without explicit authority. |
+| [SyncRuntimeRefreshError](../entities/SyncRuntimeRefreshError.md) | 296 | `ValueError` | A runtime-basis transition cannot be applied in the requested mode. |
+| [SyncResult](../entities/SyncResult.md) | 628 | — | — |
+| [_ApplyDiffContext](../entities/ApplyDiffContext.md) | 667 | — | — |
+| [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 689 | — | — |
+| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1708 | — | — |
+| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1734 | — | — |
+| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1741 | — | — |
+| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1747 | — | — |
+| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1753 | — | — |
+| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1769 | — | — |
+| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1812 | — | — |
+| [_ReusedSync](../entities/ReusedSync.md) | 1842 | — | — |
+| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1848 | — | Prior ownership proof and generated pages that cross the live boundary. |
 
 ## Functions
 
@@ -281,7 +296,7 @@ flowchart LR
 | `_initialization_flow_entries` | `(options: _SyncRunOptions, graph_observations: _RuntimeGraphObservations, plan: _SurfaceInitializationPlan) -> list[dict]` | — | Retain prior rich flow metadata unless flow initialization replaces it. |
 | `_sync_infrastructure_index_entries` | `(wiki_dir: Path, plan: InfrastructureSyncPlan) -> list[dict]` | — | — |
 | `_initialization_infrastructure_index_entries` | `(wiki_dir: Path, plan: InfrastructureSyncPlan) -> list[dict]` | — | Retain the persisted infrastructure metadata while source work is deferred. |
-| `_rebuild_index` | `(wiki_dir: Path, inventory: dict, src_dir: str, *, entity_page_cache: dict[tuple[str, str], str] \| None = None, entity_occurrence_page_cache: dict[tuple[str, str, int], str] \| None = None, module_page_map: dict[str, str] \| None = None, preserve_semantic: bool = True, workflow_entries: list[dict] \| None = None, flow_entries: list[dict] \| None = None, infra_entries: list[dict] \| None = None) -> str` | — | Regenerate index.md from the live inventory. |
+| `_rebuild_index` | `(wiki_dir: Path, inventory: dict, src_dir: str, *, entity_page_cache: dict[tuple[str, str], str] \| None = None, entity_occurrence_page_cache: dict[tuple[str, str, int], str] \| None = None, module_page_map: dict[str, str] \| None = None, preserve_semantic: bool = True, workflow_entries: list[dict] \| None = None, flow_entries: list[dict] \| None = None, infra_entries: list[dict] \| None = None, retired_entity_pages: list[str] \| None = None) -> str` | — | Regenerate index.md from the live inventory. |
 | `_rebuild_surface_only_index` | `(wiki_dir: Path, manifest: SyncManifest, *, preserve_semantic: bool = True, workflow_entries: list[dict] \| None = None, flow_entries: list[dict] \| None = None, infra_entries: list[dict] \| None = None, log_present: bool \| None = None) -> str` | — | Re-index only pages already present during source-deferred backfill. |
 | `_list_existing_pages` | `(directory: Path, extra_key: str) -> list[dict]` | — | Return a list of ``{"name": stem}`` dicts for every .md file in *directory*. |
 | `_markdown_title` | `(path: Path) -> str` | — | — |

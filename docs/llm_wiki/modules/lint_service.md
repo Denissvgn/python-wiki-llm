@@ -10,6 +10,12 @@ generated-knowledge checks, then renders the same findings as text, Markdown,
 or structured data. Strict mode adds managed-wiki completeness and freshness
 requirements without changing the underlying issue model.
 
+Strict validation treats only committed, source-bound retired members as retained
+history rather than live entity coverage or current-evidence promises. Their
+history qualification remains informational, including unknown provenance.
+Unmarked pages, forged headers and malformed bindings retain blocking findings;
+retired pages must still be correctly linked and committed.
+
 ## Imports
 
 | Source | Symbols |
@@ -41,10 +47,11 @@ requirements without changing the underlying issue model.
 | `.metrics` | `record_validation_event` |
 | `.plugins` | `PluginError`, `iter_components`, `load_entry_point`, `runtime_plugin_fallback_root`, `runtime_project_plugins_enabled` |
 | `.progress` | `phase` |
+| `.source_retirement` | `ENTITY_RETIREMENT_SCHEMA_VERSION`, `SOURCE_RETIREMENT_EXTENSION_KEY`, `SourceRetirementError`, `retired_entity_mappings` |
 | `.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs`, `format_unsupported_source_summary`, `unsupported_source_label`, `unsupported_source_summary` |
 | `.sync_analysis` | `compute_sync_diff` |
-| `.sync_manifest` | `MANIFEST_FILENAME`, `SyncManifest`, `SyncManifestError` |
+| `.sync_manifest` | `MANIFEST_FILENAME`, `ManifestPageSource`, `SyncManifest`, `SyncManifestError` |
 | `.team` | `TeamConfigError`, `TeamPolicyContext`, `build_team_issues`, `resolve_team_policy`, `team_config_issue` |
 | `.validation` | `path_is_in_top_level_directory` |
 | `.verification_contracts` | `VERIFICATION_RECEIPT_FILENAME`, `VerificationResult`, `load_verification_receipt` |
@@ -82,22 +89,22 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (8) |
-| Outbound | `src` (37) |
+| Outbound | `src` (38) |
 
-> All 44 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 45 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_LintProfiler](../entities/LintProfiler.md) | 193 | — | — |
-| [LintIssue](../entities/LintIssue.md) | 232 | — | — |
-| [KnowledgeLintSummary](../entities/KnowledgeLintSummary.md) | 243 | `KnowledgeAggregateSummary` | Aggregate strict-lint knowledge status without exposing evidence. |
-| [LintReport](../entities/LintReport.md) | 281 | — | — |
-| [_WikiPageIndex](../entities/WikiPageIndex.md) | 322 | — | — |
-| [_LintInputs](../entities/LintInputs.md) | 329 | — | — |
-| [_LintPreflight](../entities/LintPreflight.md) | 343 | — | — |
-| [_KnowledgeLintState](../entities/KnowledgeLintState.md) | 350 | — | — |
+| [_LintProfiler](../entities/LintProfiler.md) | 200 | — | — |
+| [LintIssue](../entities/LintIssue.md) | 239 | — | — |
+| [KnowledgeLintSummary](../entities/KnowledgeLintSummary.md) | 250 | `KnowledgeAggregateSummary` | Aggregate strict-lint knowledge status without exposing evidence. |
+| [LintReport](../entities/LintReport.md) | 288 | — | — |
+| [_WikiPageIndex](../entities/WikiPageIndex.md) | 329 | — | — |
+| [_LintInputs](../entities/LintInputs.md) | 336 | — | — |
+| [_LintPreflight](../entities/LintPreflight.md) | 350 | — | — |
+| [_KnowledgeLintState](../entities/KnowledgeLintState.md) | 357 | — | — |
 
 ## Functions
 
@@ -139,7 +146,8 @@ flowchart LR
 | `_diagnose_generated_diagram_bloat` | `(report: LintReport, rel: str, heading: str, block: list[str]) -> None` | — | — |
 | `_check_generated_diagrams` | `(report: LintReport, wiki_path: Path, page_index: _WikiPageIndex) -> None` | — | — |
 | `_check_orphan_pages` | `(report: LintReport, wiki_path: Path, page_index: _WikiPageIndex) -> None` | — | — |
-| `_check_entity_coverage` | `(report: LintReport, wiki_path: Path, deep_inventory: dict) -> None` | — | — |
+| `_check_entity_coverage` | `(report: LintReport, wiki_path: Path, deep_inventory: dict, *, manifest: SyncManifest \| None = None) -> None` | — | — |
+| `_lint_retired_entity_mappings` | `(report: LintReport, manifest: SyncManifest \| None) -> dict[str, ManifestPageSource]` | — | Qualify retirement only from the owner's cross-bound manifest marker. |
 | `_extracted_source_files` | `(source_snapshot: SourceSnapshot, statuses: Mapping[str, ExtractorStatus]) -> set[str]` | — | Project-source files whose language the extractor actually ran on. |
 | `_check_module_coverage` | `(report: LintReport, wiki_path: Path, deep_inventory: dict, source_snapshot: SourceSnapshot, statuses: Mapping[str, ExtractorStatus]) -> None` | — | — |
 | `_check_workflow_coverage` | `(report: LintReport, wiki_path: Path, deep_inventory: dict, page_index: _WikiPageIndex) -> None` | — | — |

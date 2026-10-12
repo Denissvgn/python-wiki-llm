@@ -1,6 +1,6 @@
 # PageTransitionPlan
 
-**Location:** `src/llm_wiki_cli/services/sync_transitions.py:67`
+**Location:** `src/llm_wiki_cli/services/sync_transitions.py:68`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_transitions](../modules/sync_transitions.md)

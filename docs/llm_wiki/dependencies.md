@@ -19,7 +19,7 @@ flowchart TD
 > These groups reach each other only from inside functions or under `TYPE_CHECKING`, so nothing is imported while they load and their order is well defined. They are listed because they are cyclic on paper, not because they need fixing.
 
 - [knowledge_cmd](modules/knowledge_cmd.md) ⇄ [knowledge_storage_cmd](modules/knowledge_storage_cmd.md)
-- [config](modules/config.md) ⇄ [common](modules/common.md) ⇄ [go_extractor](modules/go_extractor.md) ⇄ [haskell_extractor](modules/haskell_extractor.md) ⇄ [python_extractor](modules/python_extractor.md) ⇄ [rust_extractor](modules/rust_extractor.md) ⇄ [analysis_capture](modules/analysis_capture.md) ⇄ [api_contracts](modules/api_contracts.md) ⇄ [bootstrap_runtime](modules/bootstrap_runtime.md) ⇄ [services_dependencies](modules/services_dependencies.md) ⇄ [dependency_versions](modules/dependency_versions.md) ⇄ [diagrams](modules/diagrams.md) ⇄ [entrypoints](modules/entrypoints.md) ⇄ [extraction_service](modules/extraction_service.md) ⇄ [extractor_helpers](modules/extractor_helpers.md) ⇄ [filesystem_guard](modules/filesystem_guard.md) ⇄ [implementation_evidence](modules/implementation_evidence.md) ⇄ [imports](modules/imports.md) ⇄ [infrastructure_inventory](modules/infrastructure_inventory.md) ⇄ [infrastructure_sync](modules/infrastructure_sync.md) ⇄ [inventory_cache](modules/inventory_cache.md) ⇄ [io](modules/io.md) ⇄ [knowledge_artifacts](modules/knowledge_artifacts.md) ⇄ [knowledge_envelope](modules/knowledge_envelope.md) ⇄ [knowledge_freshness](modules/knowledge_freshness.md) ⇄ [knowledge_generation](modules/knowledge_generation.md) ⇄ [knowledge_governance](modules/knowledge_governance.md) ⇄ [knowledge_index](modules/knowledge_index.md) ⇄ [knowledge_links](modules/knowledge_links.md) ⇄ [knowledge_model](modules/knowledge_model.md) ⇄ [knowledge_orchestration](modules/knowledge_orchestration.md) ⇄ [knowledge_packs](modules/knowledge_packs.md) ⇄ [knowledge_reuse](modules/knowledge_reuse.md) ⇄ [knowledge_storage](modules/knowledge_storage.md) ⇄ [knowledge_storage_io](modules/knowledge_storage_io.md) ⇄ [maintenance_evidence](modules/maintenance_evidence.md) ⇄ [maintenance_projection](modules/maintenance_projection.md) ⇄ [maintenance_protocol](modules/maintenance_protocol.md) ⇄ [maintenance_shapes](modules/maintenance_shapes.md) ⇄ [maintenance_state](modules/maintenance_state.md) ⇄ [manifest_storage](modules/manifest_storage.md) ⇄ [module_maps](modules/module_maps.md) ⇄ [packages](modules/packages.md) ⇄ [plugins](modules/plugins.md) ⇄ [python_calls](modules/python_calls.md) ⇄ [python_implementation](modules/python_implementation.md) ⇄ [python_observations](modules/python_observations.md) ⇄ [relationships](modules/relationships.md) ⇄ [rendering_lifecycle](modules/rendering_lifecycle.md) ⇄ [services_schema](modules/services_schema.md) ⇄ [skills](modules/skills.md) ⇄ [source_selection](modules/source_selection.md) ⇄ [source_snapshot](modules/source_snapshot.md) ⇄ [storage_spool](modules/storage_spool.md) ⇄ [sync_analysis](modules/sync_analysis.md) ⇄ [sync_analysis_cache](modules/sync_analysis_cache.md) ⇄ [sync_manifest](modules/sync_manifest.md) ⇄ [sync_transitions](modules/sync_transitions.md) ⇄ [wiki_lifecycle](modules/wiki_lifecycle.md) ⇄ [wiki_surface_index](modules/wiki_surface_index.md) ⇄ [wiki_write_basis](modules/wiki_write_basis.md)
+- [config](modules/config.md) ⇄ [common](modules/common.md) ⇄ [go_extractor](modules/go_extractor.md) ⇄ [haskell_extractor](modules/haskell_extractor.md) ⇄ [python_extractor](modules/python_extractor.md) ⇄ [rust_extractor](modules/rust_extractor.md) ⇄ [analysis_capture](modules/analysis_capture.md) ⇄ [api_contracts](modules/api_contracts.md) ⇄ [bootstrap_runtime](modules/bootstrap_runtime.md) ⇄ [services_dependencies](modules/services_dependencies.md) ⇄ [dependency_versions](modules/dependency_versions.md) ⇄ [diagrams](modules/diagrams.md) ⇄ [entrypoints](modules/entrypoints.md) ⇄ [extraction_service](modules/extraction_service.md) ⇄ [extractor_helpers](modules/extractor_helpers.md) ⇄ [filesystem_guard](modules/filesystem_guard.md) ⇄ [implementation_evidence](modules/implementation_evidence.md) ⇄ [imports](modules/imports.md) ⇄ [infrastructure_inventory](modules/infrastructure_inventory.md) ⇄ [infrastructure_sync](modules/infrastructure_sync.md) ⇄ [inventory_cache](modules/inventory_cache.md) ⇄ [io](modules/io.md) ⇄ [knowledge_artifacts](modules/knowledge_artifacts.md) ⇄ [knowledge_envelope](modules/knowledge_envelope.md) ⇄ [knowledge_freshness](modules/knowledge_freshness.md) ⇄ [knowledge_generation](modules/knowledge_generation.md) ⇄ [knowledge_governance](modules/knowledge_governance.md) ⇄ [knowledge_index](modules/knowledge_index.md) ⇄ [knowledge_links](modules/knowledge_links.md) ⇄ [knowledge_model](modules/knowledge_model.md) ⇄ [knowledge_orchestration](modules/knowledge_orchestration.md) ⇄ [knowledge_packs](modules/knowledge_packs.md) ⇄ [knowledge_reuse](modules/knowledge_reuse.md) ⇄ [knowledge_storage](modules/knowledge_storage.md) ⇄ [knowledge_storage_io](modules/knowledge_storage_io.md) ⇄ [maintenance_evidence](modules/maintenance_evidence.md) ⇄ [maintenance_projection](modules/maintenance_projection.md) ⇄ [maintenance_protocol](modules/maintenance_protocol.md) ⇄ [maintenance_shapes](modules/maintenance_shapes.md) ⇄ [maintenance_state](modules/maintenance_state.md) ⇄ [manifest_storage](modules/manifest_storage.md) ⇄ [module_maps](modules/module_maps.md) ⇄ [packages](modules/packages.md) ⇄ [plugins](modules/plugins.md) ⇄ [python_calls](modules/python_calls.md) ⇄ [python_implementation](modules/python_implementation.md) ⇄ [python_observations](modules/python_observations.md) ⇄ [relationships](modules/relationships.md) ⇄ [rendering_lifecycle](modules/rendering_lifecycle.md) ⇄ [services_schema](modules/services_schema.md) ⇄ [skills](modules/skills.md) ⇄ [source_retirement](modules/source_retirement.md) ⇄ [source_selection](modules/source_selection.md) ⇄ [source_snapshot](modules/source_snapshot.md) ⇄ [storage_spool](modules/storage_spool.md) ⇄ [sync_analysis](modules/sync_analysis.md) ⇄ [sync_analysis_cache](modules/sync_analysis_cache.md) ⇄ [sync_manifest](modules/sync_manifest.md) ⇄ [sync_transitions](modules/sync_transitions.md) ⇄ [wiki_lifecycle](modules/wiki_lifecycle.md) ⇄ [wiki_surface_index](modules/wiki_surface_index.md) ⇄ [wiki_write_basis](modules/wiki_write_basis.md)
 - [calibration___init__](modules/calibration___init__.md) ⇄ [broker](modules/broker.md) ⇄ [calibration_contracts](modules/calibration_contracts.md) ⇄ [controller](modules/controller.md) ⇄ [host_broker](modules/host_broker.md) ⇄ [documentation_run___init__](modules/documentation_run___init__.md) ⇄ [documentation_run_contracts](modules/documentation_run_contracts.md) ⇄ [documentation_run_dependencies](modules/documentation_run_dependencies.md) ⇄ [export](modules/export.md) ⇄ [integrity](modules/integrity.md) ⇄ [packet](modules/packet.md) ⇄ [prepare](modules/prepare.md) ⇄ [record](modules/record.md) ⇄ [refresh](modules/refresh.md) ⇄ [documentation_run_schema](modules/documentation_run_schema.md) ⇄ [verify](modules/verify.md) ⇄ [workspace](modules/workspace.md)
 - [ci_report](modules/ci_report.md) ⇄ [doctor_service](modules/doctor_service.md) ⇄ [health_policy](modules/health_policy.md)
 - [context_budget](modules/context_budget.md) ⇄ [context_packet](modules/context_packet.md) ⇄ [context_service](modules/context_service.md) ⇄ [documentation_queries](modules/documentation_queries.md) ⇄ [documentation_query_builder](modules/documentation_query_builder.md) ⇄ [knowledge_consumption](modules/knowledge_consumption.md) ⇄ [knowledge_observability](modules/knowledge_observability.md) ⇄ [knowledge_verification](modules/knowledge_verification.md) ⇄ [maintenance_service](modules/maintenance_service.md) ⇄ [maintenance_status](modules/maintenance_status.md)
@@ -30,22 +30,22 @@ flowchart TD
 
 | Module | Fan-in | Fan-out |
 |--------|--------|---------|
-| [validation](modules/validation.md) | 66 | 0 |
+| [validation](modules/validation.md) | 67 | 0 |
 | [config](modules/config.md) | 59 | 3 |
 | [source_snapshot](modules/source_snapshot.md) | 48 | 7 |
 | [io](modules/io.md) | 44 | 2 |
 | [services_contracts](modules/services_contracts.md) | 43 | 0 |
-| [sync_manifest](modules/sync_manifest.md) | 38 | 7 |
-| [wiki_surface](modules/wiki_surface.md) | 38 | 1 |
-| [knowledge_storage](modules/knowledge_storage.md) | 35 | 8 |
+| [sync_manifest](modules/sync_manifest.md) | 39 | 8 |
+| [wiki_surface](modules/wiki_surface.md) | 39 | 1 |
+| [knowledge_storage](modules/knowledge_storage.md) | 36 | 8 |
 | [source_selection](modules/source_selection.md) | 33 | 2 |
 | [knowledge_model](modules/knowledge_model.md) | 32 | 13 |
-| [knowledge_evidence](modules/knowledge_evidence.md) | 30 | 1 |
-| [knowledge_artifacts](modules/knowledge_artifacts.md) | 27 | 27 |
+| [knowledge_evidence](modules/knowledge_evidence.md) | 31 | 1 |
+| [knowledge_artifacts](modules/knowledge_artifacts.md) | 27 | 28 |
 | [filesystem_guard](modules/filesystem_guard.md) | 26 | 1 |
 | [knowledge_envelope](modules/knowledge_envelope.md) | 25 | 5 |
+| [knowledge_storage_io](modules/knowledge_storage_io.md) | 25 | 4 |
 | [wiki_surface_index](modules/wiki_surface_index.md) | 25 | 5 |
-| [knowledge_storage_io](modules/knowledge_storage_io.md) | 24 | 4 |
 | [extraction_service](modules/extraction_service.md) | 23 | 30 |
 | [knowledge_governance](modules/knowledge_governance.md) | 22 | 10 |
 | [knowledge_consumption](modules/knowledge_consumption.md) | 21 | 8 |
@@ -93,7 +93,7 @@ flowchart TD
 | [imports](modules/imports.md) | 8 | 5 |
 | [infrastructure_inventory](modules/infrastructure_inventory.md) | 8 | 3 |
 | [knowledge_reuse](modules/knowledge_reuse.md) | 8 | 13 |
-| [lint_service](modules/lint_service.md) | 8 | 37 |
+| [lint_service](modules/lint_service.md) | 8 | 38 |
 | [maintenance_status](modules/maintenance_status.md) | 8 | 9 |
 | [api](modules/api.md) | 7 | 48 |
 | [integrity](modules/integrity.md) | 7 | 7 |
@@ -106,7 +106,8 @@ flowchart TD
 | [knowledge_verification](modules/knowledge_verification.md) | 6 | 4 |
 | [manifest_storage](modules/manifest_storage.md) | 6 | 6 |
 | [python_imports](modules/python_imports.md) | 6 | 1 |
-| [sync_transitions](modules/sync_transitions.md) | 6 | 9 |
+| [source_retirement](modules/source_retirement.md) | 6 | 5 |
+| [sync_transitions](modules/sync_transitions.md) | 6 | 10 |
 | [context_budget](modules/context_budget.md) | 5 | 8 |
 | [refresh](modules/refresh.md) | 5 | 9 |
 | [knowledge_projection](modules/knowledge_projection.md) | 5 | 14 |
@@ -125,6 +126,7 @@ flowchart TD
 | [redaction](modules/redaction.md) | 4 | 0 |
 | [rendering_lifecycle](modules/rendering_lifecycle.md) | 4 | 2 |
 | [runtime_output](modules/runtime_output.md) | 4 | 0 |
+| [sync_analysis](modules/sync_analysis.md) | 4 | 4 |
 | [task_context](modules/task_context.md) | 4 | 21 |
 | [team](modules/team.md) | 4 | 12 |
 | [yaml_syntax](modules/yaml_syntax.md) | 4 | 0 |
@@ -150,7 +152,6 @@ flowchart TD
 | [maintenance_queue](modules/maintenance_queue.md) | 3 | 7 |
 | [maintenance_service](modules/maintenance_service.md) | 3 | 22 |
 | [search_rank](modules/search_rank.md) | 3 | 0 |
-| [sync_analysis](modules/sync_analysis.md) | 3 | 4 |
 | [sync_analysis_cache](modules/sync_analysis_cache.md) | 3 | 15 |
 | [task_compact](modules/task_compact.md) | 3 | 7 |
 | [docs_cmd](modules/docs_cmd.md) | 2 | 5 |
@@ -160,7 +161,7 @@ flowchart TD
 | [maintenance_cmd](modules/maintenance_cmd.md) | 2 | 2 |
 | [migrate_cmd](modules/migrate_cmd.md) | 2 | 22 |
 | [release_cmd](modules/release_cmd.md) | 2 | 1 |
-| [sync_cmd](modules/sync_cmd.md) | 2 | 39 |
+| [sync_cmd](modules/sync_cmd.md) | 2 | 42 |
 | [trigger_cmd](modules/trigger_cmd.md) | 2 | 12 |
 | [python_contracts](modules/python_contracts.md) | 2 | 0 |
 | [broker](modules/broker.md) | 2 | 5 |
@@ -174,7 +175,7 @@ flowchart TD
 | [health_details](modules/health_details.md) | 2 | 10 |
 | [health_policy](modules/health_policy.md) | 2 | 2 |
 | [helper_preparation](modules/helper_preparation.md) | 2 | 2 |
-| [knowledge_generation](modules/knowledge_generation.md) | 2 | 20 |
+| [knowledge_generation](modules/knowledge_generation.md) | 2 | 21 |
 | [knowledge_links](modules/knowledge_links.md) | 2 | 4 |
 | [knowledge_storage_diagnostics](modules/knowledge_storage_diagnostics.md) | 2 | 13 |
 | [knowledge_storage_lifecycle](modules/knowledge_storage_lifecycle.md) | 2 | 17 |

@@ -2,7 +2,7 @@
 
 **Entry point:** `build_knowledge_generation_plan` (`api`)
 **Source:** [knowledge_generation](../modules/knowledge_generation.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 33 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 34 more
 
 **Complete modules touched:**
 
@@ -38,6 +38,7 @@
 - [progress](../modules/progress.md)
 - [python_implementation](../modules/python_implementation.md)
 - [section_ownership](../modules/section_ownership.md)
+- [source_retirement](../modules/source_retirement.md)
 - [storage_spool](../modules/storage_spool.md)
 - [sync_manifest](../modules/sync_manifest.md)
 - [validation](../modules/validation.md)
@@ -114,9 +115,9 @@ sequenceDiagram
     p0-->>p30: Path(…).absolute
 ```
 
-> Call sequence diagram shows 30 of 4605 interactions; 4575 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4662 interactions; 4632 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1460 (1459 omitted); unresolved 1 of 1054 (1053 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1487 (1486 omitted); unresolved 1 of 1068 (1067 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -130,7 +131,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_generation.py:_validated_inventory` | 15 | [src/llm_wiki_cli/services/knowledge_generation.py](../modules/knowledge_generation.md) | internal | 6 |
 | `src/llm_wiki_cli/services/knowledge_generation.py:_validated_inventory` | 15 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/knowledge_generation.py:_validated_source_hashes` | 32 | [src/llm_wiki_cli/services/knowledge_generation.py](../modules/knowledge_generation.md) | internal | 2 |
-> Omission summary shows 8 of 1095 groups; 1087 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1104 groups; 1096 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -189,9 +190,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_knowledge_generation_plan | isinstance (src/llm_wiki_cli/services…wledge_generation_plan, 1) | 186 | `isinstance(inputs, KnowledgeGenerationInputs)` |
-| build_knowledge_generation_plan | TypeError (src/llm_wiki_cli/services…knowledge_generation_plan) | 187 | `TypeError('inputs must be a KnowledgeGenerationInputs')` |
-| build_knowledge_generation_plan | _knowledge_validation_operation | 189 | `_knowledge_validation_operation(...)` |
+| build_knowledge_generation_plan | isinstance (src/llm_wiki_cli/services…wledge_generation_plan, 1) | 192 | `isinstance(inputs, KnowledgeGenerationInputs)` |
+| build_knowledge_generation_plan | TypeError (src/llm_wiki_cli/services…knowledge_generation_plan) | 193 | `TypeError('inputs must be a KnowledgeGenerationInputs')` |
+| build_knowledge_generation_plan | _knowledge_validation_operation | 195 | `_knowledge_validation_operation(...)` |
 | _knowledge_validation_operation | isinstance (src/llm_wiki_cli/services…edge_validation_operation) | 330 | `isinstance(wiki_root, Path)` |
 | _knowledge_validation_operation | wiki_root.is_absolute | 330 | `wiki_root.is_absolute(data not statically known)` |
 | _knowledge_validation_operation | TypeError (src/llm_wiki_cli/services…edge_validation_operation) | 331 | `TypeError('validation operation requires an absolute wiki root')` |
@@ -199,7 +200,7 @@ flowchart LR
 | _knowledge_validation_operation | _INDEX_VALIDATION_OPERATION.set | 333 | `_INDEX_VALIDATION_OPERATION.set(operation)` |
 | _knowledge_validation_operation | object.__setattr__ (src/llm_wiki_cli/services…edge_validation_operation) | 337 | `object.__setattr__(operation, '_active', False)` |
 | _knowledge_validation_operation | _INDEX_VALIDATION_OPERATION.reset | 338 | `_INDEX_VALIDATION_OPERATION.reset(token)` |
-| build_knowledge_generation_plan | Path(…).absolute | 189 | `Path(inputs.wiki_dir).absolute(data not statically known)` |
+| build_knowledge_generation_plan | Path(…).absolute | 195 | `Path(inputs.wiki_dir).absolute(data not statically known)` |
 
 ### Boundary effects
 
@@ -209,14 +210,14 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_knowledge_generation_plan` | `isinstance` | 186 |
-| external_call | `build_knowledge_generation_plan` | `TypeError` | 187 |
+| external_call | `build_knowledge_generation_plan` | `isinstance` | 192 |
+| external_call | `build_knowledge_generation_plan` | `TypeError` | 193 |
 | external_call | `_knowledge_validation_operation` | `isinstance` | 330 |
 | unresolved_call | `_knowledge_validation_operation` | `wiki_root.is_absolute` | 330 |
 | external_call | `_knowledge_validation_operation` | `TypeError` | 331 |
 | external_call | `_knowledge_validation_operation` | `object.__setattr__` | 337 |
 | unresolved_call | `_knowledge_validation_operation` | `_INDEX_VALIDATION_OPERATION.reset` | 338 |
-| unresolved_call | `build_knowledge_generation_plan` | `Path(inputs.wiki_dir).absolute` | 189 |
+| unresolved_call | `build_knowledge_generation_plan` | `Path(inputs.wiki_dir).absolute` | 195 |
 | step_limit | `build_knowledge_generation_plan` | `first 12 steps` | 0 |
 | truncated_flow | `build_knowledge_generation_plan` | `depth limit` | 0 |
 

@@ -34,9 +34,9 @@ flowchart LR
     n9["src/llm_wiki_cli/services/knowledge_index.py"]
     n10["src/llm_wiki_cli/services/knowledge_links.py"]
     n11["src/llm_wiki_cli/services/knowledge_storage_lifecycle.py"]
-    n12["src/llm_wiki_cli/services/sync_transitions.py"]
-    n13["_entry_for (src/llm_wiki_cli/services/wiki_surface.py)"]
-    n14["_validate_page_id (src/llm_wiki_cli/services/wiki_surface.py)"]
+    n12["src/llm_wiki_cli/services/source_retirement.py"]
+    n13["src/llm_wiki_cli/services/sync_transitions.py"]
+    n14["_entry_for (src/llm_wiki_cli/services/wiki_surface.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -62,8 +62,8 @@ flowchart LR
     click n9 "../modules/knowledge_index.md"
     click n10 "../modules/knowledge_links.md"
     click n11 "../modules/knowledge_storage_lifecycle.md"
-    click n12 "../modules/sync_transitions.md"
-    click n13 "../modules/wiki_surface.md"
+    click n12 "../modules/source_retirement.md"
+    click n13 "../modules/sync_transitions.md"
     click n14 "../modules/wiki_surface.md"
 ```
 
@@ -93,8 +93,8 @@ flowchart LR
 | `knowledge_index` | import | [knowledge_index](../modules/knowledge_index.md) | — |
 | `knowledge_links` | import | [knowledge_links](../modules/knowledge_links.md) | — |
 | `knowledge_storage_lifecycle` | import | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | — |
+| `source_retirement` | import | [source_retirement](../modules/source_retirement.md) | — |
 | `sync_transitions` | import | [sync_transitions](../modules/sync_transitions.md) | — |
 | `_entry_for` | call | [wiki_surface](../modules/wiki_surface.md) | 1 |
-| `_validate_page_id` | call | [wiki_surface](../modules/wiki_surface.md) | 3 |
 
-> References: showing 12 of 16 logical references; 4 omitted by the 12-row generated summary limit.
+> References: showing 12 of 17 logical references; 5 omitted by the 12-row generated summary limit.

@@ -1,6 +1,6 @@
 # PageTransitionError
 
-**Location:** `src/llm_wiki_cli/services/sync_transitions.py:22`
+**Location:** `src/llm_wiki_cli/services/sync_transitions.py:23`
 **Kind:** Class
 **Bases:** `SyncOwnershipError`
 **Module:** [sync_transitions](../modules/sync_transitions.md)

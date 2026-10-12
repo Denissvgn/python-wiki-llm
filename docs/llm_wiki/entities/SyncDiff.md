@@ -26,6 +26,7 @@ Categorised difference between a persisted manifest and live inventory.
 | `renamed_entity_occurrences` | `dict[tuple[str, str, int], tuple[str, str]]` | `field(default_factory=dict)` | — |
 | `missing_pages` | `dict[str, ManifestPageSource]` | `field(default_factory=dict)` | — |
 | `generated_page_repairs` | `dict[str, ManifestPageSource]` | `field(default_factory=dict)` | — |
+| `retirement_repairs` | `bool` | `False` | — |
 
 ## Methods
 
@@ -83,7 +84,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [sync_analysis](../modules/sync_analysis.md) | 2 | `changed_files`, `generated_page_repairs`, `metadata_only_files`, `missing_pages`, `moved_entities`, `new_files`, `removed_files`, `renamed_entity_occurrences`, `renamed_entity_pages`, `renamed_module_pages`, `unchanged_files` |
+| [sync_analysis](../modules/sync_analysis.md) | 2 | `changed_files`, `generated_page_repairs`, `metadata_only_files`, `missing_pages`, `moved_entities`, `new_files`, `removed_files`, `renamed_entity_occurrences`, `renamed_entity_pages`, `renamed_module_pages`, `retirement_repairs`, `unchanged_files` |
 
 ### References
 

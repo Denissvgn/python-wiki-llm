@@ -2021,3 +2021,31 @@ scalar text preserved. Named CI/deployment formats include action metadata,
 GitLab CI, CircleCI, Azure Pipelines, Kustomize, Helm charts and Ansible playbooks.
 The selected integration actions have source-backed infrastructure pages;
 unknown formats and unrendered templates retain explicit qualifications.
+
+## 2026-10-12
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:c57c00a085cd5b44b291bf4a9b14abe58683f8818c86b7ccb6ebcd5285600454`
+- Pages created: 7
+- Pages updated: 114
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1467
+- Pages deprecated: 0
+- Semantic fields preserved: 7
+- Moved entities: none
+- Flow pages initialized: 0 (none)
+- Workflow pages created: 5
+- Dependency pages initialized: 0
+- Surface policy updated: no
+
+### Source-member retirement
+
+Ordinary sync retains removed entity pages with exact historical ownership,
+qualified native projections and authored context. Unchanged recovery can use
+previously retained tombstones, while exact owner revival restores live source
+structure. Ambiguous custody and captured sources without inventory remain
+explicit preflight gaps.

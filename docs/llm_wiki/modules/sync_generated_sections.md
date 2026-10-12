@@ -57,6 +57,8 @@ flowchart LR
     n8["src/llm_wiki_cli/services/sync_transitions.py"]
     n9["src/llm_wiki_cli/services/wiki_surface.py"]
     n0 --> n1
+    n0 --> n2
+    n0 --> n3
     n0 --> n4
     n0 --> n5
     n0 --> n6

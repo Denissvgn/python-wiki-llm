@@ -92,17 +92,17 @@ flowchart LR
 |-------|------|-------|-------------|
 | [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 737 | — | — |
 | [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 1015 | — | — |
-| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3141 | — | — |
-| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4434 | — | — |
-| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4460 | — | — |
-| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4473 | — | — |
-| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4480 | — | — |
-| [_WorkflowResult](../entities/WorkflowResult.md) | 4488 | — | — |
-| [_FlowResult](../entities/FlowResult.md) | 4494 | — | — |
-| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4505 | — | — |
-| [_DependencyResult](../entities/DependencyResult.md) | 4516 | — | — |
-| [_ApiContractResult](../entities/ApiContractResult.md) | 4524 | — | — |
-| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4531 | — | — |
+| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3147 | — | — |
+| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4440 | — | — |
+| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4466 | — | — |
+| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4479 | — | — |
+| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4486 | — | — |
+| [_WorkflowResult](../entities/WorkflowResult.md) | 4494 | — | — |
+| [_FlowResult](../entities/FlowResult.md) | 4500 | — | — |
+| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4511 | — | — |
+| [_DependencyResult](../entities/DependencyResult.md) | 4522 | — | — |
+| [_ApiContractResult](../entities/ApiContractResult.md) | 4530 | — | — |
+| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4537 | — | — |
 
 ## Functions
 
@@ -188,7 +188,7 @@ flowchart LR
 | `_overview_target` | `(count: int, heading: str) -> str` | — | — |
 | `_overview_row` | `(label: str, count: int, target: str) -> str` | — | — |
 | `_append_surface_overview` | `(lines: list[str], *, entity_count: int, module_count: int, workflow_count: int, guide_count: int, flow_count: int, infrastructure_count: int, api_contracts_present: bool, architecture_count: int, log_present: bool) -> None` | — | — |
-| `_append_index_entities` | `(lines: list[str], entity_names: list[str]) -> None` | — | — |
+| `_append_index_entities` | `(lines: list[str], entity_names: list[str], retired_entity_pages: list[str] \| None = None) -> None` | — | — |
 | `_append_index_modules` | `(lines: list[str], module_entries: list[dict]) -> None` | — | — |
 | `_append_index_workflows` | `(lines: list[str], workflow_entries: list[dict] \| None) -> None` | — | — |
 | `_append_index_guides` | `(lines: list[str], guide_entries: list[dict] \| None) -> None` | — | — |
@@ -199,7 +199,7 @@ flowchart LR
 | `_architecture_order` | `(entry: dict) -> int` | — | — |
 | `_append_index_architecture` | `(lines: list[str], architecture_entries: list[dict] \| None) -> None` | — | Append the dependency architecture section linking top-level analysis pages. |
 | `_append_index_log` | `(lines: list[str], *, log_present: bool) -> None` | — | — |
-| `_generate_index_md` | `(entity_names: list[str], module_entries: list[dict], workflow_entries: list[dict] \| None = None, guide_entries: list[dict] \| None = None, infra_entries: list[dict] \| None = None, flow_entries: list[dict] \| None = None, architecture_entries: list[dict] \| None = None, *, api_contracts_present: bool = False, log_present: bool = True) -> str` | — | Generate the full index.md content. |
+| `_generate_index_md` | `(entity_names: list[str], module_entries: list[dict], workflow_entries: list[dict] \| None = None, guide_entries: list[dict] \| None = None, infra_entries: list[dict] \| None = None, flow_entries: list[dict] \| None = None, architecture_entries: list[dict] \| None = None, *, retired_entity_pages: list[str] \| None = None, api_contracts_present: bool = False, log_present: bool = True) -> str` | — | Generate the full index.md content. |
 | `_workflow_module_refs` | `(wf: dict, module_page_map: Mapping[str, str] \| None = None) -> list[tuple[str, str]]` | — | Return ``(label, page_stem)`` pairs for workflow module links. |
 | `_generate_workflow_md` | `(name: str, wf: dict, module_page_map: Mapping[str, str] \| None = None) -> str` | — | Generate a workflow page from call-graph data. |
 | `_flow_module_refs` | `(flow: dict, module_page_map: Mapping[str, str] \| None = None) -> list[tuple[str, str]]` | — | Return sorted ``(label, page_stem)`` pairs for a flow's touched modules. |

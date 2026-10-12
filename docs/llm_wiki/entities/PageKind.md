@@ -108,4 +108,4 @@ flowchart LR
 | `knowledge_generation` | import | [knowledge_generation](../modules/knowledge_generation.md) | — |
 | `_surface_pages` | call | [knowledge_index](../modules/knowledge_index.md) | 1 |
 
-> References: showing 12 of 36 logical references; 24 omitted by the 12-row generated summary limit.
+> References: showing 12 of 37 logical references; 25 omitted by the 12-row generated summary limit.

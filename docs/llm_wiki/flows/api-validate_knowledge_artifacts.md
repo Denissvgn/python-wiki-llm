@@ -2,7 +2,7 @@
 
 **Entry point:** `validate_knowledge_artifacts` (`api`)
 **Source:** [knowledge_artifacts](../modules/knowledge_artifacts.md)
-**Modules touched:** [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [filesystem_guard](../modules/filesystem_guard.md), and 26 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [filesystem_guard](../modules/filesystem_guard.md), and 27 more
 
 **Complete modules touched:**
 
@@ -32,6 +32,7 @@
 - [manifest_storage](../modules/manifest_storage.md)
 - [progress](../modules/progress.md)
 - [section_ownership](../modules/section_ownership.md)
+- [source_retirement](../modules/source_retirement.md)
 - [sync_manifest](../modules/sync_manifest.md)
 - [validation](../modules/validation.md)
 - [wiki_media](../modules/wiki_media.md)
@@ -107,9 +108,9 @@ sequenceDiagram
     p0-->>p30: Path(…).resolve
 ```
 
-> Call sequence diagram shows 30 of 2194 interactions; 2164 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2253 interactions; 2223 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 605 (604 omitted); unresolved 1 of 363 (362 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 632 (631 omitted); unresolved 1 of 376 (375 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -123,7 +124,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_artifacts.py:_reject_json_constant` | 11 | [src/llm_wiki_cli/services/knowledge_artifacts.py](../modules/knowledge_artifacts.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_artifacts.py:_validate_surface_payload` | 17 | [src/llm_wiki_cli/services/knowledge_artifacts.py](../modules/knowledge_artifacts.md) | internal | 8 |
 | `src/llm_wiki_cli/services/knowledge_artifacts.py:_validate_utf8_json` | 18 | - | external | 5 |
-> Omission summary shows 8 of 496 groups; 488 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 510 groups; 502 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -188,17 +189,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_knowledge_artifacts | validate_surface_index_bytes | 294 | `validate_surface_index_bytes(surface_index_bytes)` |
-| validate_surface_index_bytes | _decode_json_object | 257 | `_decode_json_object(surface_index_bytes, 'surface_index_bytes')` |
-| _decode_json_object | isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object) | 924 | `isinstance(content, bytes)` |
-| _decode_json_object | KnowledgeArtifactError | 925 | `KnowledgeArtifactError(field, 'must be bytes')` |
-| _decode_json_object | content.decode | 927 | `content.decode('utf-8')` |
-| _decode_json_object | KnowledgeArtifactError | 929 | `KnowledgeArtifactError(field, 'must be valid UTF-8')` |
-| _decode_json_object | json.loads (src/llm_wiki_cli/services…ts.py:_decode_json_object) | 931 | `json.loads(text, object_pairs_hook=..., parse_constant=...)` |
-| _decode_json_object | _unique_json_object | 933 | `_unique_json_object(pairs, field)` |
-| _unique_json_object | KnowledgeArtifactError | 952 | `KnowledgeArtifactError(field, ...)` |
-| _decode_json_object | _reject_json_constant | 934 | `_reject_json_constant(value, field)` |
-| _reject_json_constant | KnowledgeArtifactError | 958 | `KnowledgeArtifactError(field, ...)` |
+| validate_knowledge_artifacts | validate_surface_index_bytes | 300 | `validate_surface_index_bytes(surface_index_bytes)` |
+| validate_surface_index_bytes | _decode_json_object | 263 | `_decode_json_object(surface_index_bytes, 'surface_index_bytes')` |
+| _decode_json_object | isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object) | 930 | `isinstance(content, bytes)` |
+| _decode_json_object | KnowledgeArtifactError | 931 | `KnowledgeArtifactError(field, 'must be bytes')` |
+| _decode_json_object | content.decode | 933 | `content.decode('utf-8')` |
+| _decode_json_object | KnowledgeArtifactError | 935 | `KnowledgeArtifactError(field, 'must be valid UTF-8')` |
+| _decode_json_object | json.loads (src/llm_wiki_cli/services…ts.py:_decode_json_object) | 937 | `json.loads(text, object_pairs_hook=..., parse_constant=...)` |
+| _decode_json_object | _unique_json_object | 939 | `_unique_json_object(pairs, field)` |
+| _unique_json_object | KnowledgeArtifactError | 958 | `KnowledgeArtifactError(field, ...)` |
+| _decode_json_object | _reject_json_constant | 940 | `_reject_json_constant(value, field)` |
+| _reject_json_constant | KnowledgeArtifactError | 964 | `KnowledgeArtifactError(field, ...)` |
 
 ### Boundary effects
 
@@ -208,9 +209,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_decode_json_object` | `isinstance` | 924 |
-| unresolved_call | `_decode_json_object` | `content.decode` | 927 |
-| external_call | `_decode_json_object` | `json.loads` | 931 |
+| external_call | `_decode_json_object` | `isinstance` | 930 |
+| unresolved_call | `_decode_json_object` | `content.decode` | 933 |
+| external_call | `_decode_json_object` | `json.loads` | 937 |
 | step_limit | `validate_knowledge_artifacts` | `first 12 steps` | 0 |
 | truncated_flow | `validate_knowledge_artifacts` | `depth limit` | 0 |
 

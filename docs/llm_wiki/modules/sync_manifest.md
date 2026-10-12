@@ -6,6 +6,12 @@
 
 Persistent sync state with explicit versioned maintenance adoption.
 
+Removed-member mappings and historical tombstones outlive current source
+membership. The `entity_retirement` generation input records their qualified
+presentation and retained generated defaults without changing the manifest's
+source-evidence schema or human lifecycle. Source-selection pruning removes the
+matching retirement records before ownership preflight.
+
 ## Imports
 
 | Source | Symbols |
@@ -14,6 +20,7 @@ Persistent sync state with explicit versioned maintenance adoption.
 | `.io` | `write_json_atomic` |
 | `.knowledge_evidence` | `ENTITY_OBSERVATION_SCOPE`, `MODULE_OBSERVATION_SCOPE`, `ConceptObservationBasis`, `formatted_json_text`, `hash_file`, `is_valid_sha256`, `semantic_hash_for_file` |
 | `.knowledge_reuse` | `REUSE_INPUT_KEY`, `validate_reuse_commitment` |
+| `.source_retirement` | `read_entity_retirement_state`, `with_entity_retirement_state` |
 | `.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `path_is_selected`, `source_selection_identity_from_generation_inputs`, `source_selection_inputs_from_generation_inputs` |
 | `.source_snapshot` | `SourceSnapshot` |
 | `.validation` | `portable_page_component`, `portable_path_key`, `require_exact_fields`, `require_mapping`, `require_repository_relative_path` |
@@ -45,10 +52,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (38) |
-| Outbound | `src` (7) |
+| Inbound | `src` (39) |
+| Outbound | `src` (8) |
 
-> All 45 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 46 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

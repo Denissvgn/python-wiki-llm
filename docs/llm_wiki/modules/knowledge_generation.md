@@ -21,6 +21,11 @@ hashes, links and resulting commitments. A changed basis or explicit full
 rebuild materializes the graph normally; reuse does not establish semantic
 correctness or widen source coverage.
 
+Validated retired-member mappings retain tombstones even during forced unknown
+reconciliation. Their namespaced concept extension is derived from the committed
+retirement marker. No current source baseline is minted for a retired owner;
+producer incompatibility can still downgrade historical provenance explicitly.
+
 ## Imports
 
 | Source | Symbols |
@@ -41,6 +46,7 @@ correctness or widen source coverage.
 | `.maintenance_projection` | `project_maintenance_knowledge` |
 | `.progress` | `observed_phase`, `record_counts` |
 | `.section_ownership` | `observe_page_sections`, `section_ownership_extension` |
+| `.source_retirement` | `ENTITY_RETIREMENT_SCHEMA_VERSION`, `SOURCE_RETIREMENT_EXTENSION_KEY`, `SourceRetirementError`, `retired_entity_mappings` |
 | `.sync_analysis_cache` | `EXTENSION` |
 | `.sync_manifest` | `EVIDENCE_NOT_RECORDED`, `MANIFEST_REPAIR_UNAVAILABLE`, `PRODUCER_BASIS_INCOMPATIBLE`, `TOMBSTONE_UNKNOWN_PROVENANCE`, `ManifestEvidenceBaseline`, `ManifestTombstone`, `SyncManifest`, `SyncManifestError` |
 | `.sync_transitions` | `PageTransitionPlan` |
@@ -71,16 +77,16 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (2) |
-| Outbound | `src` (20) |
+| Outbound | `src` (21) |
 
-> All 21 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 22 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [KnowledgeGenerationError](../entities/KnowledgeGenerationError.md) | 92 | `ValueError` | Field-specific failure at the shared generation-planning boundary. |
-| [KnowledgeGenerationInputs](../entities/KnowledgeGenerationInputs.md) | 102 | — | Complete already-evaluated inputs for one generated artifact set. |
+| [KnowledgeGenerationError](../entities/KnowledgeGenerationError.md) | 98 | `ValueError` | Field-specific failure at the shared generation-planning boundary. |
+| [KnowledgeGenerationInputs](../entities/KnowledgeGenerationInputs.md) | 108 | — | Complete already-evaluated inputs for one generated artifact set. |
 
 ## Functions
 

@@ -14,6 +14,11 @@ unchanged. The receipt is rechecked after parity evaluation so callback or
 validator changes cannot publish under stale authority. Standalone reads do
 not possess writer receipts and validate their actual captured bytes.
 
+Retirement projections must exactly match the validated manifest marker,
+source-page mapping and tombstone. Missing, forged, null or mismatched extensions
+fail artifact validation, so ordinary native reads and storage audits cannot
+silently accept a different retirement claim.
+
 ## Imports
 
 | Source | Symbols |
@@ -40,6 +45,7 @@ not possess writer receipts and validate their actual captured bytes.
 | `.manifest_storage` | `build_manifest_store`, `current_manifest_format` |
 | `.progress` | `observed_phase` |
 | `.section_ownership` | `SectionOwnershipError`, `validate_section_ownership` |
+| `.source_retirement` | `ENTITY_RETIREMENT_SCHEMA_VERSION`, `SOURCE_RETIREMENT_EXTENSION_KEY`, `SourceRetirementError`, `retired_entity_mappings` |
 | `.storage_spool` | `SpooledArtifactWrite`, `spool_write` |
 | `.sync_manifest` | `MANIFEST_FILENAME`, `SyncManifest`, `SyncManifestError` |
 | `.validation` | `is_portable_relative_path`, `require_exact_fields`, `require_nonnegative_int` |
@@ -74,22 +80,22 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (27) |
-| Outbound | `src` (27) |
+| Outbound | `src` (28) |
 
-> All 51 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 52 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
-| [KnowledgeArtifactError](../entities/KnowledgeArtifactError.md) | Class | 79 | `ValueError` | Field-specific failure while planning a generated artifact commit. |
-| [ArtifactWriteState](../entities/ArtifactWriteState.md) | Enum | 89 | `str`, `Enum` | User-facing state for one planned artifact replacement. |
-| [CommitStage](../entities/CommitStage.md) | Enum | 97 | `str`, `Enum` | Fault-injection points reached after each successful atomic replacement. |
-| [PlannedArtifactWrite](../entities/PlannedArtifactWrite.md) | Class | 108 | — | One exact-byte action in a knowledge artifact commit. |
-| [ValidatedKnowledgeArtifacts](../entities/ValidatedKnowledgeArtifacts.md) | Class | 121 | — | Validated canonical projections and their exact-byte commitments. |
-| [_ArtifactValidation](../entities/ArtifactValidation.md) | Class | 138 | — | — |
-| [KnowledgeCommitPlan](../entities/KnowledgeCommitPlan.md) | Class | 195 | — | A fully validated, immutable three-artifact commit plan. |
-| [KnowledgeCommitResult](../entities/KnowledgeCommitResult.md) | Class | 222 | — | Outcome of a real or dry-run commit. |
+| [KnowledgeArtifactError](../entities/KnowledgeArtifactError.md) | Class | 85 | `ValueError` | Field-specific failure while planning a generated artifact commit. |
+| [ArtifactWriteState](../entities/ArtifactWriteState.md) | Enum | 95 | `str`, `Enum` | User-facing state for one planned artifact replacement. |
+| [CommitStage](../entities/CommitStage.md) | Enum | 103 | `str`, `Enum` | Fault-injection points reached after each successful atomic replacement. |
+| [PlannedArtifactWrite](../entities/PlannedArtifactWrite.md) | Class | 114 | — | One exact-byte action in a knowledge artifact commit. |
+| [ValidatedKnowledgeArtifacts](../entities/ValidatedKnowledgeArtifacts.md) | Class | 127 | — | Validated canonical projections and their exact-byte commitments. |
+| [_ArtifactValidation](../entities/ArtifactValidation.md) | Class | 144 | — | — |
+| [KnowledgeCommitPlan](../entities/KnowledgeCommitPlan.md) | Class | 201 | — | A fully validated, immutable three-artifact commit plan. |
+| [KnowledgeCommitResult](../entities/KnowledgeCommitResult.md) | Class | 228 | — | Outcome of a real or dry-run commit. |
 
 ## Functions
 

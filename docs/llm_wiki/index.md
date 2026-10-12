@@ -6,9 +6,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 662 | [Open section](#entities) |
-| Modules | 242 | [Open section](#modules) |
-| Workflows | 209 | [Open section](#workflows) |
+| Entities | 663 | [Open section](#entities) |
+| Modules | 243 | [Open section](#modules) |
+| Workflows | 214 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 465 | [Open section](#entry-point-flows) |
 | Infrastructure | 2 | [Open section](#infrastructure) |
@@ -571,6 +571,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [SourceCleanupOutcome](entities/SourceCleanupOutcome.md)
 - [SourceFile](entities/SourceFile.md)
 - [SourceFileIntegrity](entities/SourceFileIntegrity.md)
+- [SourceRetirementError](entities/SourceRetirementError.md)
 - [SourceSelectionError](entities/SourceSelectionError.md)
 - [SourceSelectionOptions](entities/SourceSelectionOptions.md)
 - [SourceSelectionPin](entities/SourceSelectionPin.md)
@@ -878,6 +879,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [skills](modules/skills.md) - Bundled agent skill management for LLM Wiki.
 - [skills_cmd](modules/skills_cmd.md) - Commands for listing, exporting, and installing bundled agent skills.
 - [source_path_diagnostics](modules/source_path_diagnostics.md) - Supplied-path facts derived from captured discovery policy and extraction.
+- [source_retirement](modules/source_retirement.md) - Source-owned member retirement, separate from authored concept lifecycle.
 - [source_selection](modules/source_selection.md) - Canonical repository source-selection policy and provenance helpers.
 - [source_snapshot](modules/source_snapshot.md) - Shared source-tree discovery for inventory, Docker, and package scans.
 - [src_main](modules/src_main.md) - `integrations/obsidian/llm-wiki/src/main.ts`
@@ -994,6 +996,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [captured_query_service](workflows/captured_query_service.md) - entry: `context_packet._captured_query_service`
 - [captured_semantic_sections](workflows/captured_semantic_sections.md) - entry: `maintenance_evidence.captured_semantic_sections`
 - [check_data_flow_diagnostics](workflows/check_data_flow_diagnostics.md) - entry: `lint_service._check_data_flow_diagnostics`
+- [check_duplicate_removal_custody](workflows/check_duplicate_removal_custody.md) - entry: `source_retirement._check_duplicate_removal_custody`
 - [check_site_mirror](workflows/check_site_mirror.md) - entry: `site_export.check_site_mirror`
 - [check_sync_manifest](workflows/check_sync_manifest.md) - entry: `lint_service._check_sync_manifest`
 - [check_team_conventions](workflows/check_team_conventions.md) - entry: `team.check_team_conventions`
@@ -1011,6 +1014,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [current_markdown](workflows/current_markdown.md) - entry: `knowledge_loader._current_markdown`
 - [deprecate_removed_files](workflows/deprecate_removed_files.md) - entry: `sync_cmd._deprecate_removed_files`
 - [discover_infrastructure_plan](workflows/discover_infrastructure_plan.md) - entry: `sync_cmd._discover_infrastructure_plan`
+- [discover_retired_entities](workflows/discover_retired_entities.md) - entry: `source_retirement.discover_retired_entities`
 - [doctor_cmd_flow](workflows/doctor_cmd_flow.md) - entry: `doctor_cmd.run`
 - [ensure_legacy_gitignore](workflows/ensure_legacy_gitignore.md) - entry: `migrate_cmd._ensure_legacy_gitignore`
 - [expand_storage_receipt](workflows/expand_storage_receipt.md) - entry: `storage_receipts.expand_storage_receipt`
@@ -1054,6 +1058,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [observe_requirement](workflows/observe_requirement.md) - entry: `task_evidence.observe_requirement`
 - [parse_knowledge_index](workflows/parse_knowledge_index.md) - entry: `knowledge_model.parse_knowledge_index`
 - [persist_report](workflows/persist_report.md) - entry: `ci_check_cmd._persist_report`
+- [plan_page_transitions](workflows/plan_page_transitions.md) - entry: `sync_transitions.plan_page_transitions`
+- [plan_source_page_transitions](workflows/plan_source_page_transitions.md) - entry: `sync_cmd._plan_source_page_transitions`
 - [plan_source_read](workflows/plan_source_read.md) - entry: `task_context.plan_source_read`
 - [planned_generated_surface_prune](workflows/planned_generated_surface_prune.md) - entry: `sync_cmd._planned_generated_surface_prune`
 - [planned_write](workflows/planned_write.md) - entry: `knowledge_artifacts._planned_write`
@@ -1078,6 +1084,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [prune_storage](workflows/prune_storage.md) - entry: `knowledge_storage_lifecycle._prune_storage`
 - [qualify_infrastructure_page_drift](workflows/qualify_infrastructure_page_drift.md) - entry: `sync_cmd._qualify_infrastructure_page_drift`
 - [query_cmd_flow](workflows/query_cmd_flow.md) - entry: `query_cmd.run`
+- [read_entity_retirement_state](workflows/read_entity_retirement_state.md) - entry: `source_retirement.read_entity_retirement_state`
 - [read_manifest_header](workflows/read_manifest_header.md) - entry: `manifest_storage.read_manifest_header`
 - [read_once](workflows/read_once.md) - entry: `task_context._read_once`
 - [rebuild_surface_only_index](workflows/rebuild_surface_only_index.md) - entry: `sync_cmd._rebuild_surface_only_index`
