@@ -19,7 +19,11 @@ with_sdk = sys.argv[2] == "mcp"
 fixture_clock = Path(sys.argv[5])
 assert fixture_clock.is_file(), "fixture clock is missing from the frozen harness"
 assert Path(api.__file__).resolve().is_relative_to(Path(sys.prefix).resolve())
-consumer = Path.cwd() / ("native-mcp" if with_sdk else "native-base")
+consumer = Path.cwd() / "native-consumer"
+# Cache commitments bind the source root. Both isolated installations must
+# replay the same coordinate while starting from fresh tutorial content.
+if consumer.exists():
+    shutil.rmtree(consumer)
 shutil.copytree(
     tutorial / "project",
     consumer,
