@@ -12,6 +12,7 @@ Composes explicit task requirements on one captured source/wiki basis. Exact dec
 |--------|---------|
 | `.` | `context_packet`, `context_service` |
 | `..config` | `DEFAULT_WIKI_DIR`, `validate_path`, `validate_source_root` |
+| `.analysis_capture` | `validate_analysis_diagnostics` |
 | `.change_selection` | `select_changes` |
 | `.context_budget` | `_accounted_render`, `fit_payload`, `validate_request` |
 | `.documentation_query_builder` | `build_documentation_query_service_from_view`, `normalize_supplied_paths` |
@@ -56,9 +57,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (4) |
-| Outbound | `src` (20) |
+| Outbound | `src` (21) |
 
-> All 23 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 24 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

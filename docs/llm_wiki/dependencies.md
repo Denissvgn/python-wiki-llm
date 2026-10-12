@@ -86,6 +86,7 @@ flowchart TD
 | [request_json](modules/request_json.md) | 9 | 0 |
 | [skills](modules/skills.md) | 9 | 2 |
 | [workflow_profile](modules/workflow_profile.md) | 9 | 1 |
+| [analysis_capture](modules/analysis_capture.md) | 8 | 4 |
 | [concept_identity](modules/concept_identity.md) | 8 | 2 |
 | [workspace](modules/workspace.md) | 8 | 3 |
 | [entrypoints](modules/entrypoints.md) | 8 | 4 |
@@ -94,13 +95,12 @@ flowchart TD
 | [knowledge_reuse](modules/knowledge_reuse.md) | 8 | 13 |
 | [lint_service](modules/lint_service.md) | 8 | 37 |
 | [maintenance_status](modules/maintenance_status.md) | 8 | 9 |
+| [api](modules/api.md) | 7 | 48 |
 | [integrity](modules/integrity.md) | 7 | 7 |
 | [infrastructure_sync](modules/infrastructure_sync.md) | 7 | 4 |
 | [maintenance_projection](modules/maintenance_projection.md) | 7 | 3 |
 | [wiki_lifecycle](modules/wiki_lifecycle.md) | 7 | 8 |
 | [wiki_write_basis](modules/wiki_write_basis.md) | 7 | 1 |
-| [api](modules/api.md) | 6 | 47 |
-| [analysis_capture](modules/analysis_capture.md) | 6 | 4 |
 | [api_contracts](modules/api_contracts.md) | 6 | 4 |
 | [data_flow](modules/data_flow.md) | 6 | 1 |
 | [knowledge_verification](modules/knowledge_verification.md) | 6 | 4 |
@@ -125,7 +125,7 @@ flowchart TD
 | [redaction](modules/redaction.md) | 4 | 0 |
 | [rendering_lifecycle](modules/rendering_lifecycle.md) | 4 | 2 |
 | [runtime_output](modules/runtime_output.md) | 4 | 0 |
-| [task_context](modules/task_context.md) | 4 | 20 |
+| [task_context](modules/task_context.md) | 4 | 21 |
 | [team](modules/team.md) | 4 | 12 |
 | [api_types](modules/api_types.md) | 3 | 0 |
 | [generate_prompt_cmd](modules/generate_prompt_cmd.md) | 3 | 13 |
@@ -199,7 +199,7 @@ flowchart TD
 | [api_diff_cmd](modules/api_diff_cmd.md) | 1 | 2 |
 | [bump_cmd](modules/bump_cmd.md) | 1 | 1 |
 | [ci_check_cmd](modules/ci_check_cmd.md) | 1 | 10 |
-| [doctor_cmd](modules/doctor_cmd.md) | 1 | 4 |
+| [doctor_cmd](modules/doctor_cmd.md) | 1 | 5 |
 | [hook_cmd](modules/hook_cmd.md) | 1 | 1 |
 | [install_cmd](modules/install_cmd.md) | 1 | 3 |
 | [knowledge_storage_cmd](modules/knowledge_storage_cmd.md) | 1 | 7 |

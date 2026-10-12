@@ -11,6 +11,11 @@ coverage retains inventory, page maps, detector inputs, implementation observati
 and the complete extraction sidecars, while explicitly omitting graph observations.
 Unavailable sidecars remain unavailable rather than becoming complete-empty data.
 
+When input classification or registered implementation files prevent an owned
+analysis basis, the cache remains unqualified and emits the bounded analysis
+input diagnostic with its review route. That informational record cannot
+authorize reuse or synthesize a producer identity.
+
 Capture first considers full coverage, then inventory coverage when graph data
 exceeds the budget. The complete selected payload must fit the unchanged 64 MiB
 physical and decoded JSON limit. Compact UTF-8 JSON is uncompressed; bounded
@@ -31,7 +36,7 @@ failures. Cache saving follows successful owning publication and remains advisor
 | Source | Symbols |
 |--------|---------|
 | `..config` | `EXTRACTOR_REGISTRY` |
-| `.analysis_capture` | `capture_analysis`, `capture_operation` |
+| `.analysis_capture` | `capture_analysis`, `capture_operation`, `analysis_diagnostics` |
 | `.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY` |
 | `.extraction_service` | `InventoryResult`, `ExtractorStatus` |
 | `.inventory_cache` | `InventoryCacheStats`, `prepare_cache_options` |

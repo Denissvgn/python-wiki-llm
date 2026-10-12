@@ -96,13 +96,13 @@ flowchart LR
 | [ExtractorStatus](../entities/ExtractorStatus.md) | 140 | — | — |
 | [InventoryRequest](../entities/InventoryRequest.md) | 148 | — | — |
 | [InventoryResult](../entities/InventoryResult.md) | 175 | — | — |
-| [ExtractPayloadResult](../entities/ExtractPayloadResult.md) | 210 | — | — |
-| [ExtractorFailureError](../entities/ExtractorFailureError.md) | 230 | `RuntimeError` | Raised when one or more extractors fail during payload construction. |
-| [_ExtractionPlan](../entities/ExtractionPlan.md) | 255 | — | — |
-| [_ExtractionOutcome](../entities/ExtractionOutcome.md) | 268 | — | — |
-| [_InventoryBuildContext](../entities/InventoryBuildContext.md) | 281 | — | — |
-| [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 303 | — | — |
-| [_ComposeParserState](../entities/ComposeParserState.md) | 3277 | — | — |
+| [ExtractPayloadResult](../entities/ExtractPayloadResult.md) | 216 | — | — |
+| [ExtractorFailureError](../entities/ExtractorFailureError.md) | 236 | `RuntimeError` | Raised when one or more extractors fail during payload construction. |
+| [_ExtractionPlan](../entities/ExtractionPlan.md) | 261 | — | — |
+| [_ExtractionOutcome](../entities/ExtractionOutcome.md) | 274 | — | — |
+| [_InventoryBuildContext](../entities/InventoryBuildContext.md) | 287 | — | — |
+| [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 309 | — | — |
+| [_ComposeParserState](../entities/ComposeParserState.md) | 3283 | — | — |
 
 ## Functions
 

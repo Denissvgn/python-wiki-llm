@@ -39,6 +39,7 @@ property gives callers a single fail-closed check across extractor statuses.
 
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
+| `analysis_input_status` | `()` | `@property` | — |
 | `job_plan` | `() -> ExtractionJobPlan` | `@property` | — |
 | `failed` | `() -> list[ExtractorStatus]` | `@property` | — |
 
@@ -91,7 +92,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [extraction_service](../modules/extraction_service.md) | 2 | `analysis_components`, `cache_stats`, `data_effect_observations`, `extraction_job_plan`, `extractor_registry`, `implementation_observations`, `import_observations`, `inventory`, `path_outcomes`, `plugin_components`, `plugin_lock_hash`, `plugin_lock_path` |
+| [extraction_service](../modules/extraction_service.md) | 3 | `analysis_components`, `cache_stats`, `data_effect_observations`, `extraction_job_plan`, `extractor_registry`, `implementation_observations`, `import_observations`, `inventory`, `path_outcomes`, `plugin_components`, `plugin_lock_hash`, `plugin_lock_path` |
 
 ### References
 

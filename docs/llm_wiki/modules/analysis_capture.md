@@ -6,6 +6,20 @@
 
 Operation-owned capture of installed analysis implementation and runtimes.
 
+`analysis_input_status` checks the installed provider's Python/helper census and
+registered implementation files. Its bounded relative paths, counts, omissions
+and registry-review route describe classification/file gaps; readiness does not
+establish runtime/helper readiness or analysis authority. No target source is
+inventoried or executed and no file is automatically classified.
+
+Unclassified inputs keep the issued component map empty. Separately frozen
+diagnostics are available through `analysis_diagnostics`, and never participate
+in producer identity or compatibility. Missing registered inputs retain unknown
+authority. Census changes and removed required files are checked before an
+operation-cached capture can be reused. Deliberately classified consumer files
+preserve observation identities; changed shared/extractor inputs invalidate
+their commitments. Final publication guards still own mutable-input checks.
+
 ## Imports
 
 | Source | Symbols |
@@ -16,6 +30,7 @@ Operation-owned capture of installed analysis implementation and runtimes.
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
 | `contextvars` | `ContextVar` |
+| `copy` | `deepcopy` |
 | `dataclasses` | `replace` |
 | `functools` | `wraps` |
 | `hashlib` | `hashlib` |
@@ -31,82 +46,40 @@ Operation-owned capture of installed analysis implementation and runtimes.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/services/analysis_capture.py"]
-    n1["src/llm_wiki_cli/services/analysis_compatibility.py"]
-    n2["src/llm_wiki_cli/services/extraction_service.py"]
-    n3["src/llm_wiki_cli/services/extractor_helpers.py"]
-    n4["src/llm_wiki_cli/services/immutable.py"]
-    n5["src/llm_wiki_cli/services/inventory_cache.py"]
-    n6["src/llm_wiki_cli/services/knowledge_envelope.py"]
-    n7["src/llm_wiki_cli/services/knowledge_maintenance.py"]
-    n8["src/llm_wiki_cli/services/knowledge_orchestration.py"]
-    n9["src/llm_wiki_cli/services/python_implementation.py"]
-    n10["src/llm_wiki_cli/services/sync_analysis_cache.py"]
+    n0["src"]
+    n1["src/llm_wiki_cli/services/analysis_capture.py"]
     n0 --> n1
-    n0 --> n3
-    n0 --> n4
-    n0 --> n6
-    n2 --> n0
-    n2 --> n5
-    n2 --> n9
-    n3 --> n5
-    n5 --> n0
-    n5 --> n1
-    n7 --> n0
-    n7 --> n1
-    n7 --> n3
-    n7 --> n6
-    n7 --> n8
-    n8 --> n0
-    n8 --> n1
-    n8 --> n4
-    n8 --> n6
-    n8 --> n9
-    n8 --> n10
-    n9 --> n0
-    n10 --> n0
-    n10 --> n2
-    n10 --> n5
-    n10 --> n6
-    click n0 "../modules/analysis_capture.md"
-    click n1 "../modules/analysis_compatibility.md"
-    click n2 "../modules/extraction_service.md"
-    click n3 "../modules/extractor_helpers.md"
-    click n4 "../modules/immutable.md"
-    click n5 "../modules/inventory_cache.md"
-    click n6 "../modules/knowledge_envelope.md"
-    click n7 "../modules/knowledge_maintenance.md"
-    click n8 "../modules/knowledge_orchestration.md"
-    click n9 "../modules/python_implementation.md"
-    click n10 "../modules/sync_analysis_cache.md"
+    n1 --> n0
+    click n1 "../modules/analysis_capture.md"
 ```
+
+> Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [extraction_service](../modules/extraction_service.md) |
-| Inbound | [inventory_cache](../modules/inventory_cache.md) |
-| Inbound | [knowledge_maintenance](../modules/knowledge_maintenance.md) |
-| Inbound | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
-| Inbound | [python_implementation](../modules/python_implementation.md) |
-| Inbound | [sync_analysis_cache](../modules/sync_analysis_cache.md) |
-| Outbound | [analysis_compatibility](../modules/analysis_compatibility.md) |
-| Outbound | [extractor_helpers](../modules/extractor_helpers.md) |
-| Outbound | [immutable](../modules/immutable.md) |
-| Outbound | [knowledge_envelope](../modules/knowledge_envelope.md) |
+| Inbound | `src` (8) |
+| Outbound | `src` (4) |
+
+> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_CapturedAnalysis](../entities/CapturedAnalysis.md) | 21 | `FrozenDict` | — |
+| [_CapturedAnalysis](../entities/CapturedAnalysis.md) | 22 | `FrozenDict` | — |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `_issued` | `(values)` | — | — |
+| `_issued` | `(values, diagnostics = None)` | — | — |
+| `analysis_diagnostics` | `(captured)` | — | Return informational owner-captured diagnostics, never producer identity. |
+| `_input_rows` | `(root, rules)` | — | — |
+| `_status` | `(rows, *, limit = 20, reason = None)` | — | — |
+| `analysis_input_status` | `(*, package_root = None, limit = 20)` | — | Read installed provider classification; never inventory target source or execute it. |
+| `validate_analysis_diagnostics` | `(value)` | — | Validate bounded informational task diagnostics without reading installed files. |
 | `capture_operation` | `(function)` | — | — |
 | `registry` | `(root: Path \| None = None) -> dict` | — | — |
 | `implementation_hash` | `(root: Path, paths: list[str]) -> str` | — | — |

@@ -1,6 +1,6 @@
 # _CapturedAnalysis
 
-**Location:** `src/llm_wiki_cli/services/analysis_capture.py:21`
+**Location:** `src/llm_wiki_cli/services/analysis_capture.py:22`
 **Kind:** Class
 **Bases:** `FrozenDict`
 **Module:** [analysis_capture](../modules/analysis_capture.md)
@@ -11,13 +11,16 @@ _Auto-generated from `_CapturedAnalysis` in `src/llm_wiki_cli/services/analysis_
 
 ## Attributes
 
-*No annotated attributes found.*
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| `_diagnostics` | `dict \| None` | *required* | — |
 
 ## Methods
 
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
-| `__init__` | `(values, token)` | — | — |
+| `__init__` | `(values, token, diagnostics = None)` | — | — |
+| `__setattr__` | `(name, value)` | — | — |
 | `__deepcopy__` | `(memo)` | — | — |
 
 ## Relationships
@@ -42,7 +45,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [analysis_capture](../modules/analysis_capture.md) | 2 | — |
+| [analysis_capture](../modules/analysis_capture.md) | 3 | `_diagnostics` |
 
 ### Structure
 

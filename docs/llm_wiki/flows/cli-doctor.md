@@ -2,11 +2,13 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [doctor_cmd](../modules/doctor_cmd.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [capability_diagnostics](../modules/capability_diagnostics.md), [common](../modules/common.md), [config](../modules/config.md), and 38 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [capability_diagnostics](../modules/capability_diagnostics.md), and 40 more
 
 **Complete modules touched:**
 
+- [analysis_capture](../modules/analysis_capture.md)
 - [analysis_compatibility](../modules/analysis_compatibility.md)
+- [api](../modules/api.md)
 - [capability_diagnostics](../modules/capability_diagnostics.md)
 - [common](../modules/common.md)
 - [config](../modules/config.md)
@@ -57,85 +59,85 @@
 ```mermaid
 sequenceDiagram
     participant p0 as run
-    participant p1 as build_capability_doctor
-    participant p2 as extraction_job_request_from_args
-    participant p3 as render_capability_doctor
-    participant p4 as render_doctor_text
-    participant p5 as build_doctor_report
-    participant p6 as build_capability_diagnostics
-    participant p7 as _render_doctor_payload
-    participant p8 as validate_source_root
-    participant p9 as build_source_snapshot
-    participant p10 as resolve_helper_cache_root
-    participant p11 as get_prepared_typescript_root
-    participant p12 as get_prepared_binary
-    participant p13 as helper_preparation_argv
-    participant p14 as build_report
-    participant p15 as detailed_health_rows
-    participant p16 as compose_doctor_report
-    participant p17 as read_lock
-    participant p18 as validate_plugin
-    participant p19 as plugin_store
-    participant p20 as validate_path
-    participant p21 as _validate_capture_options
-    participant p22 as lock_path
-    participant p23 as _manifest_root
-    participant p24 as _manifest_current
-    participant p25 as _ensure_no_reserved_plugin_sources
-    participant p26 as _resolve_snapshot_selection
-    participant p27 as _normalize_only_files
-    participant p28 as _new_lint_report
+    participant p1 as get_analysis_input_status
+    participant p2 as build_capability_doctor
+    participant p3 as extraction_job_request_from_args
+    participant p4 as render_capability_doctor
+    participant p5 as render_doctor_text
+    participant p6 as build_doctor_report
+    participant p7 as analysis_input_status
+    participant p8 as build_capability_diagnostics
+    participant p9 as _render_doctor_payload
+    participant p10 as validate_source_root
+    participant p11 as build_source_snapshot
+    participant p12 as resolve_helper_cache_root
+    participant p13 as get_prepared_typescript_root
+    participant p14 as get_prepared_binary
+    participant p15 as helper_preparation_argv
+    participant p16 as build_report
+    participant p17 as detailed_health_rows
+    participant p18 as compose_doctor_report
+    participant p19 as read_lock
+    participant p20 as validate_plugin
+    participant p21 as plugin_store
+    participant p22 as validate_path
+    participant p23 as _validate_capture_options
+    participant p24 as lock_path
+    participant p25 as _manifest_root
+    participant p26 as _manifest_current
+    participant p27 as _ensure_no_reserved_plugin_sources
+    participant p28 as _resolve_snapshot_selection
     participant p29 as getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)
     participant p30 as report.to_payload (src/llm_wiki_cli/commands/doctor_cmd.py:run)
-    p0->>p1: build_capability_doctor
-    p0->>p2: extraction_job_request_from_args
-    p0->>p3: render_capability_doctor
-    p0->>p4: render_doctor_text
-    p0->>p5: build_doctor_report
-    p1->>p6: build_capability_diagnostics
-    p3->>p7: _render_doctor_payload
-    p6->>p8: validate_source_root
-    p6->>p9: build_source_snapshot
-    p6->>p10: resolve_helper_cache_root
-    p6->>p11: get_prepared_typescript_root
-    p6->>p12: get_prepared_binary
-    p6->>p13: helper_preparation_argv
-    p5->>p14: build_report
-    p7->>p15: detailed_health_rows
-    p5->>p16: compose_doctor_report
-    p6->>p17: read_lock
-    p6->>p18: validate_plugin
-    p6->>p19: plugin_store
-    p8->>p20: validate_path
-    p9->>p21: _validate_capture_options
-    p17->>p22: lock_path
-    p18->>p23: _manifest_root
-    p11->>p24: _manifest_current
-    p18->>p25: _ensure_no_reserved_plugin_sources
-    p9->>p26: _resolve_snapshot_selection
-    p9->>p27: _normalize_only_files
-    p14->>p28: _new_lint_report
+    p0->>p1: get_analysis_input_status
+    p0->>p2: build_capability_doctor
+    p0->>p3: extraction_job_request_from_args
+    p0->>p4: render_capability_doctor
+    p0->>p5: render_doctor_text
+    p0->>p6: build_doctor_report
+    p1->>p7: analysis_input_status
+    p2->>p8: build_capability_diagnostics
+    p4->>p9: _render_doctor_payload
+    p8->>p10: validate_source_root
+    p8->>p11: build_source_snapshot
+    p8->>p12: resolve_helper_cache_root
+    p8->>p13: get_prepared_typescript_root
+    p8->>p14: get_prepared_binary
+    p8->>p15: helper_preparation_argv
+    p6->>p16: build_report
+    p9->>p17: detailed_health_rows
+    p6->>p18: compose_doctor_report
+    p8->>p19: read_lock
+    p8->>p20: validate_plugin
+    p8->>p21: plugin_store
+    p10->>p22: validate_path
+    p11->>p23: _validate_capture_options
+    p19->>p24: lock_path
+    p20->>p25: _manifest_root
+    p13->>p26: _manifest_current
+    p20->>p27: _ensure_no_reserved_plugin_sources
+    p11->>p28: _resolve_snapshot_selection
     p0-->>p29: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'report_schema', 'auto')
     p0-->>p30: report.to_payload (src/llm_wiki_cli/commands/doctor_cmd.py:run)(report_schema=report_schema)
 ```
 
-> Call sequence diagram shows 30 of 1348 interactions; 1318 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1411 interactions; 1381 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 404 (403 omitted); unresolved 1 of 412 (411 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 435 (434 omitted); unresolved 1 of 437 (436 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/commands/doctor_cmd.py:run` | 1 | - | external | 22 |
-| `src/llm_wiki_cli/config.py:validate_path` | 9 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
-| `src/llm_wiki_cli/config.py:validate_path` | 9 | - | unresolved | 3 |
-| `src/llm_wiki_cli/config.py:validate_path` | 9 | - | external | 2 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 8 | - | unresolved | 5 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 8 | - | external | 11 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 8 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 6 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 8 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
-> Omission summary shows 8 of 365 groups; 357 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/commands/doctor_cmd.py:run` | 1 | - | external | 27 |
+| `src/llm_wiki_cli/services/analysis_capture.py:analysis_input_status` | 6 | - | external | 8 |
+| `src/llm_wiki_cli/services/analysis_capture.py:analysis_input_status` | 6 | - | unresolved | 7 |
+| `src/llm_wiki_cli/services/analysis_capture.py:analysis_input_status` | 6 | [src/llm_wiki_cli/services/analysis_capture.py](../modules/analysis_capture.md) | internal | 5 |
+| `src/llm_wiki_cli/services/analysis_capture.py:registry` | 12 | - | external | 2 |
+| `src/llm_wiki_cli/services/analysis_capture.py:registry` | 12 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/analysis_capture.py:_input_rows` | 17 | - | unresolved | 12 |
+| `src/llm_wiki_cli/services/analysis_capture.py:_input_rows` | 17 | - | external | 6 |
+> Omission summary shows 8 of 374 groups; 366 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -147,49 +149,43 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 flowchart LR
     s1["1. run"]
     s2["2. getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)"]
-    s3["3. ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)"]
-    s4["4. getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)"]
-    s5["5. ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)"]
-    s6["6. build_capability_doctor"]
-    s7["7. build_capability_diagnostics"]
-    s8["8. validate_source_root"]
-    s9["9. validate_path"]
-    s10["10. PathValidationError"]
-    s11["11. (…).resolve (src/llm_wiki_cli/config.py:validate_path)"]
-    s12["12. Path.cwd (src/llm_wiki_cli/config.py:validate_path)"]
+    s3["3. getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)"]
+    s4["4. ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)"]
+    s5["5. get_analysis_input_status"]
+    s6["6. analysis_input_status"]
+    s7["7. type (src/llm_wiki_cli/services….py:analysis_input_status)"]
+    s8["8. ValueError (src/llm_wiki_cli/services….py:analysis_input_status)"]
+    s9["9. Path (src/llm_wiki_cli/services….py:analysis_input_status)"]
+    s10["10. Path(…).resolve (src/llm_wiki_cli/services….py:analysis_input_status)"]
+    s11["11. Path (src/llm_wiki_cli/services….py:analysis_input_status)"]
+    s12["12. registry"]
     s1 -. "getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'report_schema', 'auto')" .-> s2
-    s1 -. "ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)('--report-schema must be v1 or v3')" .-> s3
-    s1 -. "getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'capabilities', False)" .-> s4
-    s1 -. "ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)('--capabilities and --report-schema are mutually exclusive')" .-> s5
-    s1 -->|"build_capability_doctor(…)"| s6
-    s6 -->|"build_capability_diagnostics(src_dir, **=...)"| s7
-    s7 -->|"validate_source_root(str(...), '--src-dir', allow_external=allow_external_src)"| s8
-    s8 -->|"validate_path(path, label)"| s9
-    s9 -->|"PathValidationError(...)"| s10
-    s9 -. "(…).resolve (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s11
-    s9 -. "Path.cwd (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s12
+    s1 -. "getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'analysis_inputs', False)" .-> s3
+    s1 -. "ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)('--analysis-inputs and --report-schema are mutually exclusive')" .-> s4
+    s1 -->|"get_analysis_input_status(data not statically known)"| s5
+    s5 -->|"analysis_input_status(limit=limit)"| s6
+    s6 -. "type (src/llm_wiki_cli/services….py:analysis_input_status)(limit)" .-> s7
+    s6 -. "ValueError (src/llm_wiki_cli/services….py:analysis_input_status)('analysis input path limit must be an integer from 1 to 100')" .-> s8
+    s6 -. "Path (src/llm_wiki_cli/services….py:analysis_input_status)(package_root)" .-> s9
+    s6 -. "Path(…).resolve (src/llm_wiki_cli/services….py:analysis_input_status)(data not statically known)" .-> s10
+    s6 -. "Path (src/llm_wiki_cli/services….py:analysis_input_status)(__file__)" .-> s11
+    s6 -->|"registry(root)"| s12
     b0["output print"]
     s1 -. "output print" .-> b0
     b1["output print"]
     s1 -. "output print" .-> b1
     b2["output print"]
     s1 -. "output print" .-> b2
-    b3["mutation argv.append"]
-    s6 -. "mutation argv.append" .-> b3
-    b4["mutation argv.extend"]
-    s6 -. "mutation argv.extend" .-> b4
-    b5["mutation argv.extend"]
-    s6 -. "mutation argv.extend" .-> b5
-    b6["mutation providers.append"]
-    s7 -. "mutation providers.append" .-> b6
-    b7["mutation plugin_states.append"]
-    s7 -. "mutation plugin_states.append" .-> b7
+    b3["output print"]
+    s1 -. "output print" .-> b3
+    b4["mutation rows.append"]
+    s6 -. "mutation rows.append" .-> b4
+    b5["filesystem_read path.read_text"]
+    s12 -. "filesystem_read path.read_text" .-> b5
     click s1 "../modules/doctor_cmd.md"
-    click s6 "../modules/capability_diagnostics.md"
-    click s7 "../modules/capability_diagnostics.md"
-    click s8 "../modules/config.md"
-    click s9 "../modules/config.md"
-    click s10 "../modules/config.md"
+    click s5 "../modules/api.md"
+    click s6 "../modules/analysis_capture.md"
+    click s12 "../modules/analysis_capture.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
     class b1 boundary
@@ -197,66 +193,62 @@ flowchart LR
     class b3 boundary
     class b4 boundary
     class b5 boundary
-    class b6 boundary
-    class b7 boundary
 ```
 
 ### Step data
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `run` | `args` | `DEFAULT_WIKI_DIR` | - | `none` |
+| `run` | `args` | `DEFAULT_WIKI_DIR` | - | `none`, `none` |
+| `getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)` | - | - | - | - |
 | `getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)` | - | - | - | - |
 | `ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)` | - | - | - | - |
-| `getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)` | - | - | - | - |
-| `ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)` | - | - | - | - |
-| `build_capability_doctor` | `wiki_dir`, `src_dir`, `kwargs` | `sys`, `DOCTOR_CAPABILITY_VERSION` | - | `{...}` |
-| `build_capability_diagnostics` | `src_dir`, `helper_cache_dir`, `source_selection`, `allow_external_src`, `include_tests` | `helpers`, `_LANGUAGE_LABELS`, `sys`, `helpers`, `LANGUAGE_EXTENSIONS`, `sys` | `tools[...]` | `{...}` |
-| `validate_source_root` | `path: str`, `label: str`, `allow_external: bool` | `sys`, `os`, `WindowsSecurityGuardError`, `sys` | - | `validate_path(...)`, `resolved` |
-| `validate_path` | `path: str`, `label: str` | - | - | `resolved` |
-| `PathValidationError` | - | - | - | - |
-| `(…).resolve (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
+| `get_analysis_input_status` | `limit: int` | - | - | `analysis_input_status(...)` |
+| `analysis_input_status` | `package_root`, `limit` | - | - | `_status(...)`, `_status(...)`, `_status(...)` |
+| `type (src/llm_wiki_cli/services….py:analysis_input_status)` | - | - | - | - |
+| `ValueError (src/llm_wiki_cli/services….py:analysis_input_status)` | - | - | - | - |
+| `Path (src/llm_wiki_cli/services….py:analysis_input_status)` | - | - | - | - |
+| `Path(…).resolve (src/llm_wiki_cli/services….py:analysis_input_status)` | - | - | - | - |
+| `Path (src/llm_wiki_cli/services….py:analysis_input_status)` | - | - | - | - |
+| `registry` | `root: Path \| None` | `REGISTRY_PATH` | - | `value` |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | run | getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 13 | `getattr(args, 'report_schema', 'auto')` |
-| run | ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 15 | `ValueError('--report-schema must be v1 or v3')` |
-| run | getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 16 | `getattr(args, 'capabilities', False)` |
-| run | ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 18 | `ValueError('--capabilities and --report-schema are mutually exclusive')` |
-| run | build_capability_doctor | 21 | `build_capability_doctor(args.wiki_dir, args.src_dir, strict=args.strict, allow_external_src=args.allow_external_src, helper_cache_dir=args.helper_cache_dir, source_selection=args.source_selection, include_tests=args.include_tests, parallel_jobs=args.jobs, job_request=extraction_job_request_from_args(...))` |
-| build_capability_doctor | build_capability_diagnostics | 236 | `build_capability_diagnostics(src_dir, **=...)` |
-| build_capability_diagnostics | validate_source_root | 41 | `validate_source_root(str(...), '--src-dir', allow_external=allow_external_src)` |
-| validate_source_root | validate_path | 160 | `validate_path(path, label)` |
-| validate_path | PathValidationError | 134 | `PathValidationError(...)` |
-| validate_path | (…).resolve (src/llm_wiki_cli/config.py:validate_path) | 135 | `(Path.cwd() / path).resolve(data not statically known)` |
-| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 135 | `Path.cwd(data not statically known)` |
+| run | getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 14 | `getattr(args, 'analysis_inputs', False)` |
+| run | ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 16 | `ValueError('--analysis-inputs and --report-schema are mutually exclusive')` |
+| run | get_analysis_input_status | 19 | `get_analysis_input_status(data not statically known)` |
+| get_analysis_input_status | analysis_input_status | 1844 | `analysis_input_status(limit=limit)` |
+| analysis_input_status | type (src/llm_wiki_cli/services….py:analysis_input_status) | 97 | `type(limit)` |
+| analysis_input_status | ValueError (src/llm_wiki_cli/services….py:analysis_input_status) | 98 | `ValueError('analysis input path limit must be an integer from 1 to 100')` |
+| analysis_input_status | Path (src/llm_wiki_cli/services….py:analysis_input_status) | 99 | `Path(package_root)` |
+| analysis_input_status | Path(…).resolve (src/llm_wiki_cli/services….py:analysis_input_status) | 99 | `Path(__file__).resolve(data not statically known)` |
+| analysis_input_status | Path (src/llm_wiki_cli/services….py:analysis_input_status) | 99 | `Path(__file__)` |
+| analysis_input_status | registry | 101 | `registry(root)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 26 |
-| output | `print` | `run` | 45 |
-| output | `print` | `run` | 47 |
-| mutation | `argv.append` | `build_capability_doctor` | 270 |
-| mutation | `argv.extend` | `build_capability_doctor` | 272 |
-| mutation | `argv.extend` | `build_capability_doctor` | 274 |
-| mutation | `providers.append` | `build_capability_diagnostics` | 126 |
-| mutation | `plugin_states.append` | `build_capability_diagnostics` | 193 |
+| output | `print` | `run` | 20 |
+| output | `print` | `run` | 36 |
+| output | `print` | `run` | 55 |
+| output | `print` | `run` | 57 |
+| mutation | `rows.append` | `analysis_input_status` | 110 |
+| filesystem_read | `path.read_text` | `registry` | 170 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `run` | `getattr` | 13 |
-| external_call | `run` | `ValueError` | 15 |
-| external_call | `run` | `getattr` | 16 |
-| external_call | `run` | `ValueError` | 18 |
-| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 135 |
-| external_call | `validate_path` | `Path.cwd` | 135 |
+| external_call | `run` | `getattr` | 14 |
+| external_call | `run` | `ValueError` | 16 |
+| external_call | `analysis_input_status` | `type` | 97 |
+| external_call | `analysis_input_status` | `ValueError` | 98 |
+| unresolved_call | `analysis_input_status` | `Path(__file__).resolve` | 99 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

@@ -8,9 +8,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 |---|---:|---|
 | Entities | 662 | [Open section](#entities) |
 | Modules | 240 | [Open section](#modules) |
-| Workflows | 207 | [Open section](#workflows) |
+| Workflows | 208 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
-| Entry-point flows | 464 | [Open section](#entry-point-flows) |
+| Entry-point flows | 465 | [Open section](#entry-point-flows) |
 | Infrastructure | 0 | No pages |
 | HTTP API contracts | 0 | No pages |
 | Dependency architecture | 2 | [Open section](#dependency-architecture) |
@@ -1124,6 +1124,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [validate_obsidian_export_source_selection](workflows/validate_obsidian_export_source_selection.md) - entry: `obsidian.validate_obsidian_export_source_selection`
 - [validate_scoped_bindings](workflows/validate_scoped_bindings.md) - entry: `task_context_v2.validate_scoped_bindings`
 - [validate_selected_record](workflows/validate_selected_record.md) - entry: `knowledge_storage._validate_selected_record`
+- [validate_task_claims](workflows/validate_task_claims.md) - entry: `task_context._validate_task_claims`
 - [validate_task_context](workflows/validate_task_context.md) - entry: `task_context.validate_task_context`
 - [validate_task_implementations](workflows/validate_task_implementations.md) - entry: `task_implementation.validate_task_implementations`
 - [validated_prompt_snapshot](workflows/validated_prompt_snapshot.md) - entry: `generate_prompt_cmd._validated_prompt_snapshot`
@@ -1284,6 +1285,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-formatted_json_text](flows/api-formatted_json_text.md) - entry: `formatted_json_text`
 - [api-fresh_no_follow_stat](flows/api-fresh_no_follow_stat.md) - entry: `fresh_no_follow_stat`
 - [api-generated_semantics_for_file](flows/api-generated_semantics_for_file.md) - entry: `generated_semantics_for_file`
+- [api-get_analysis_input_status](flows/api-get_analysis_input_status.md) - entry: `get_analysis_input_status`
 - [api-get_calibration_run_status-api](flows/api-get_calibration_run_status-api.md) - entry: `get_calibration_run_status`
 - [api-get_calibration_run_status-controller](flows/api-get_calibration_run_status-controller.md) - entry: `get_calibration_run_status`
 - [api-get_concept](flows/api-get_concept.md) - entry: `get_concept`

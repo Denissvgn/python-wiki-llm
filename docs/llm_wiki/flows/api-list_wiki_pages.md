@@ -158,7 +158,7 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | list_wiki_pages | _validate_wiki_dir | 1814 | `_validate_wiki_dir(wiki_dir)` |
-| _validate_wiki_dir | validate_path | 3222 | `validate_path(wiki_dir, '--wiki-dir')` |
+| _validate_wiki_dir | validate_path | 3230 | `validate_path(wiki_dir, '--wiki-dir')` |
 | validate_path | PathValidationError | 134 | `PathValidationError(...)` |
 | validate_path | (…).resolve | 135 | `(Path.cwd() / path).resolve(data not statically known)` |
 | validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 135 | `Path.cwd(data not statically known)` |
