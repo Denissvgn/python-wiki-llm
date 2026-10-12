@@ -25,11 +25,11 @@
       "infrastructure": 0,
       "load-order": 1,
       "log": 1,
-      "modules": 239,
+      "modules": 240,
       "workflows": 207
     },
     "dependency_architecture": 2,
-    "total": 1587
+    "total": 1588
   },
   "dependency_pages": {
     "count": 2,
@@ -9856,13 +9856,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 169,
+              "line": 172,
               "step": "_validated",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 176,
+              "line": 179,
               "step": "_validated",
               "target": "isinstance"
             },
@@ -9904,9 +9904,10 @@
             "src/llm_wiki_cli/services/context_packet.py",
             "src/llm_wiki_cli/services/task_implementation.py",
             "src/llm_wiki_cli/services/task_context_v2.py",
+            "src/llm_wiki_cli/services/task_compact_readable.py",
             "src/llm_wiki_cli/services/context_budget.py"
           ],
-          "step_count": 278,
+          "step_count": 282,
           "truncated": true
         }
       },
@@ -21629,13 +21630,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 169,
+              "line": 172,
               "step": "_validated",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 176,
+              "line": 179,
               "step": "_validated",
               "target": "isinstance"
             },
@@ -21696,9 +21697,10 @@
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/concept_identity.py",
             "src/llm_wiki_cli/services/maintenance_status.py",
+            "src/llm_wiki_cli/services/task_compact_readable.py",
             "src/llm_wiki_cli/services/context_budget.py"
           ],
-          "step_count": 841,
+          "step_count": 843,
           "truncated": true
         }
       },
@@ -28366,13 +28368,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 169,
+              "line": 172,
               "step": "_validated",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 176,
+              "line": 179,
               "step": "_validated",
               "target": "isinstance"
             },
@@ -28428,9 +28430,10 @@
             "src/llm_wiki_cli/services/validation.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/maintenance_status.py",
+            "src/llm_wiki_cli/services/task_compact_readable.py",
             "src/llm_wiki_cli/services/context_budget.py"
           ],
-          "step_count": 596,
+          "step_count": 598,
           "truncated": true
         }
       },
@@ -35820,7 +35823,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 126,
+              "line": 127,
               "step": "run",
               "step_index": 1,
               "target": "sys.stderr.write"
@@ -35828,7 +35831,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 128,
+              "line": 129,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -35836,7 +35839,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 147,
+              "line": 148,
               "step": "run",
               "step_index": 1,
               "target": "seen.add"
@@ -35844,7 +35847,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 162,
+              "line": 163,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -39542,6 +39545,7 @@
         "modules/task_cmd.md",
         "modules/task_compact.md",
         "modules/task_compact_delivery.md",
+        "modules/task_compact_readable.md",
         "modules/task_context.md",
         "modules/task_context_v2.md",
         "modules/task_contract.md",
@@ -52298,6 +52302,7 @@
         "modules/request_json.md",
         "modules/task_compact.md",
         "modules/task_compact_delivery.md",
+        "modules/task_compact_readable.md",
         "modules/task_context.md",
         "modules/task_contract.md",
         "modules/workflow_profile.md"
@@ -52322,6 +52327,20 @@
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/task_compact_delivery.py",
       "title": "task_compact_delivery Module"
+    },
+    {
+      "canonical_path": "modules/task_compact_readable.md",
+      "id": "task_compact_readable",
+      "kind": "modules",
+      "mcp_uri": "llm-wiki://modules/task_compact_readable",
+      "outgoing_internal_links": [
+        "modules/mcp_server.md",
+        "modules/task_compact.md",
+        "modules/task_compact_readable.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/task_compact_readable.py",
+      "title": "task_compact_readable Module"
     },
     {
       "canonical_path": "modules/task_context.md",
@@ -58975,6 +58994,7 @@
         "modules/context_packet.md",
         "modules/documentation_query_builder.md",
         "modules/task_compact.md",
+        "modules/task_compact_readable.md",
         "modules/task_context.md",
         "modules/task_context_v2.md",
         "modules/task_contract.md",
@@ -61815,6 +61835,7 @@
         "modules/packet_field_policy.md",
         "modules/storage_receipts.md",
         "modules/task_compact.md",
+        "modules/task_compact_readable.md",
         "modules/task_context.md",
         "modules/task_context_v2.md",
         "modules/task_contract.md",
@@ -63281,6 +63302,7 @@
         "modules/maintenance_status.md",
         "modules/storage_receipts.md",
         "modules/task_compact.md",
+        "modules/task_compact_readable.md",
         "modules/task_context.md",
         "modules/task_context_v2.md",
         "modules/task_contract.md",
@@ -65980,6 +66002,7 @@
         "modules/task_cmd.md",
         "modules/task_compact.md",
         "modules/task_compact_delivery.md",
+        "modules/task_compact_readable.md",
         "modules/task_context.md",
         "modules/task_context_v2.md",
         "modules/task_contract.md",
@@ -66231,6 +66254,7 @@
         "modules/task_cmd.md",
         "modules/task_compact.md",
         "modules/task_compact_delivery.md",
+        "modules/task_compact_readable.md",
         "modules/task_context.md",
         "modules/task_context_v2.md",
         "modules/task_contract.md",
@@ -66263,5 +66287,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:059f151c8f2bf80844a6b83ed0233143eaef6d9e162dd9cfd688f1bdec03ebf3"
+  "source_hash": "sha256:824b54c2a02e1fd37cd7d9658b57901f90fc8205e152641b3b7723939fb66aad"
 }

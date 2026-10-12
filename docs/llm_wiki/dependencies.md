@@ -151,7 +151,7 @@ flowchart TD
 | [search_rank](modules/search_rank.md) | 3 | 0 |
 | [sync_analysis](modules/sync_analysis.md) | 3 | 4 |
 | [sync_analysis_cache](modules/sync_analysis_cache.md) | 3 | 15 |
-| [task_compact](modules/task_compact.md) | 3 | 6 |
+| [task_compact](modules/task_compact.md) | 3 | 7 |
 | [docs_cmd](modules/docs_cmd.md) | 2 | 5 |
 | [init_cmd](modules/init_cmd.md) | 2 | 9 |
 | [install_ci_cmd](modules/install_ci_cmd.md) | 2 | 2 |
@@ -192,6 +192,7 @@ flowchart TD
 | [site_html_check](modules/site_html_check.md) | 2 | 1 |
 | [storage_receipts](modules/storage_receipts.md) | 2 | 3 |
 | [storage_sort](modules/storage_sort.md) | 2 | 1 |
+| [task_compact_readable](modules/task_compact_readable.md) | 2 | 0 |
 | [task_evidence](modules/task_evidence.md) | 2 | 5 |
 | [task_implementation](modules/task_implementation.md) | 2 | 5 |
 | [versioning](modules/versioning.md) | 2 | 0 |
@@ -239,7 +240,7 @@ flowchart TD
 | [knowledge_stream_audit](modules/knowledge_stream_audit.md) | 1 | 13 |
 | [lockfile](modules/lockfile.md) | 1 | 0 |
 | [maintenance_shapes](modules/maintenance_shapes.md) | 1 | 2 |
-| [mcp_server](modules/mcp_server.md) | 1 | 24 |
+| [mcp_server](modules/mcp_server.md) | 1 | 25 |
 | [native_inspection](modules/native_inspection.md) | 1 | 5 |
 | [obsidian](modules/obsidian.md) | 1 | 11 |
 | [packages](modules/packages.md) | 1 | 3 |

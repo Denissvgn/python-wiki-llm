@@ -2,7 +2,7 @@
 
 **Entry point:** `validate_compact_task_context` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [change_selection](../modules/change_selection.md), [context_budget](../modules/context_budget.md), [context_packet](../modules/context_packet.md), and 17 more
+**Modules touched:** [api](../modules/api.md), [change_selection](../modules/change_selection.md), [context_budget](../modules/context_budget.md), [context_packet](../modules/context_packet.md), and 18 more
 
 **Complete modules touched:**
 
@@ -19,6 +19,7 @@
 - [maintenance_status](../modules/maintenance_status.md)
 - [storage_receipts](../modules/storage_receipts.md)
 - [task_compact](../modules/task_compact.md)
+- [task_compact_readable](../modules/task_compact_readable.md)
 - [task_context](../modules/task_context.md)
 - [task_context_v2](../modules/task_context_v2.md)
 - [task_contract](../modules/task_contract.md)
@@ -60,10 +61,10 @@ sequenceDiagram
     participant p22 as validate_scoped_bindings
     participant p23 as TaskCompactError
     participant p24 as canonical_json
-    participant p25 as _accounted_render
-    participant p26 as CompactTaskContext
-    participant p27 as _CheckedCounter
-    participant p28 as _encode_limits
+    participant p25 as readable_projection
+    participant p26 as _accounted_render
+    participant p27 as CompactTaskContext
+    participant p28 as _CheckedCounter
     participant p29 as isinstance (src/llm_wiki_cli/services…date_compact_task_context)
     participant p30 as canonical_json(…).decode (src/llm_wiki_cli/services…date_compact_task_context)
     p0->>p1: validate_compact_task_context (src/llm_wiki_cli/services/task_compact.py)
@@ -90,17 +91,17 @@ sequenceDiagram
     p9->>p22: validate_scoped_bindings
     p1->>p23: TaskCompactError
     p1->>p24: canonical_json
-    p2->>p25: _accounted_render
-    p2->>p26: CompactTaskContext
-    p3->>p27: _CheckedCounter
-    p5->>p28: _encode_limits
+    p2->>p25: readable_projection
+    p2->>p26: _accounted_render
+    p2->>p27: CompactTaskContext
+    p3->>p28: _CheckedCounter
     p1-->>p29: isinstance (src/llm_wiki_cli/services…date_compact_task_context)(compact_text, str)
     p1-->>p30: canonical_json(…).decode (src/llm_wiki_cli/services…date_compact_task_context)('utf-8')
 ```
 
-> Call sequence diagram shows 30 of 595 interactions; 565 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 597 interactions; 567 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 301 (300 omitted); unresolved 1 of 143 (142 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 302 (301 omitted); unresolved 1 of 143 (142 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -114,7 +115,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 9 | - | external | 10 |
 | `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 9 | [src/llm_wiki_cli/services/workflow_profile.py](../modules/workflow_profile.md) | internal | 16 |
 | `src/llm_wiki_cli/services/workflow_profile.py:bounded_text` | 21 | - | external | 2 |
-> Omission summary shows 8 of 86 groups; 78 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 87 groups; 79 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -176,7 +177,7 @@ flowchart LR
 |---|---|---|---|---|
 | `validate_compact_task_context (src/llm_wiki_cli/api.py)` | `compact_text: str`, `canonical_text: str`, `request: Mapping[str, Any]`, `view_options: Mapping[str, Any]`, `profile: WorkflowProfile \| Mapping[str, Any] \| None`, `policy: WorkflowPolicy \| None`, `counter: TokenCounter \| None` | - | - | `validate(...)` |
 | `validate_compact_task_context (src/llm_wiki_cli/services/task_compact.py)` | `compact_text`, `canonical_text`, `request`, `view_options`, `profile`, `policy`, `counter` | `_pairs`, `_constant` | - | `deepcopy(...)` |
-| `render_compact_task_context` | `canonical_text`, `request`, `view_options`, `profile`, `policy`, `counter` | - | - | `CompactTaskContext(...)`, `CompactTaskContext(...)` |
+| `render_compact_task_context` | `canonical_text`, `request`, `view_options`, `profile`, `policy`, `counter` | `VIEW_REQUEST_SCHEMA_V2`, `COMPACT_SCHEMA_V2`, `COMPACT_SCHEMA`, `COMPACT_SCHEMA_V2` | - | `CompactTaskContext(...)`, `CompactTaskContext(...)` |
 | `_validated` | `canonical_text`, `request`, `profile`, `policy`, `counter` | `TaskContext`, `TASK_REQUEST_SCHEMA_V2` | - | `(...)` |
 | `isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated)` | - | - | - | - |
 | `TaskCompactError` | - | - | - | - |
@@ -192,13 +193,13 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | validate_compact_task_context (src/llm_wiki_cli/api.py) | validate_compact_task_context (src/llm_wiki_cli/services/task_compact.py) | 1463 | `validate(compact_text, canonical_text, request, view_options=view_options, profile=profile, policy=policy, counter=counter)` |
-| validate_compact_task_context (src/llm_wiki_cli/services/task_compact.py) | render_compact_task_context | 553 | `render_compact_task_context(canonical_text, request, view_options=view_options, profile=profile, policy=policy, counter=counter)` |
-| render_compact_task_context | _validated | 473 | `_validated(canonical_text, request, profile, policy, counter)` |
-| _validated | isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated) | 169 | `isinstance(canonical_text, TaskContext)` |
-| _validated | TaskCompactError | 171 | `TaskCompactError('canonical-unavailable', 'An unsuccessful canonical result has no compact context')` |
-| _validated | isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated) | 176 | `isinstance(canonical_text, str)` |
-| _validated | TaskCompactError | 177 | `TaskCompactError('canonical-invalid', 'Canonical context must be original text')` |
-| _validated | normalize_task_request | 180 | `normalize_task_request(request, profile=profile, policy=policy)` |
+| validate_compact_task_context (src/llm_wiki_cli/services/task_compact.py) | render_compact_task_context | 561 | `render_compact_task_context(canonical_text, request, view_options=view_options, profile=profile, policy=policy, counter=counter)` |
+| render_compact_task_context | _validated | 476 | `_validated(canonical_text, request, profile, policy, counter)` |
+| _validated | isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated) | 172 | `isinstance(canonical_text, TaskContext)` |
+| _validated | TaskCompactError | 174 | `TaskCompactError('canonical-unavailable', 'An unsuccessful canonical result has no compact context')` |
+| _validated | isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated) | 179 | `isinstance(canonical_text, str)` |
+| _validated | TaskCompactError | 180 | `TaskCompactError('canonical-invalid', 'Canonical context must be original text')` |
+| _validated | normalize_task_request | 183 | `normalize_task_request(request, profile=profile, policy=policy)` |
 | normalize_task_request | exact_fields | 53 | `exact_fields(request, {...}, 'request')` |
 | exact_fields | isinstance (src/llm_wiki_cli/services…w_profile.py:exact_fields) | 67 | `isinstance(value, Mapping)` |
 | exact_fields | any (src/llm_wiki_cli/services…w_profile.py:exact_fields) | 67 | `any(...)` |
@@ -216,8 +217,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_validated` | `isinstance` | 169 |
-| external_call | `_validated` | `isinstance` | 176 |
+| external_call | `_validated` | `isinstance` | 172 |
+| external_call | `_validated` | `isinstance` | 179 |
 | external_call | `exact_fields` | `isinstance` | 67 |
 | external_call | `exact_fields` | `any` | 67 |
 | step_limit | `validate_compact_task_context` | `first 12 steps` | 0 |

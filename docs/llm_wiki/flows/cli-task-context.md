@@ -223,7 +223,7 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | run | getattr (src/llm_wiki_cli/commands/task_cmd.py:run) | 97 | `getattr(args, 'view', 'canonical')` |
-| run | _compact_outputs | 98 | `_compact_outputs(args)` |
+| run | _compact_outputs | 99 | `_compact_outputs(args)` |
 | _compact_outputs | getattr (src/llm_wiki_cli/commands…k_cmd.py:_compact_outputs) | 38 | `getattr(args, 'canonical_output', None)` |
 | _compact_outputs | ValueError (src/llm_wiki_cli/commands…k_cmd.py:_compact_outputs) | 39 | `ValueError('Compact delivery requires --canonical-output')` |
 | _compact_outputs | getattr (src/llm_wiki_cli/commands…k_cmd.py:_compact_outputs) | 40 | `getattr(args, 'view_budget_tokens', None)` |
@@ -238,10 +238,10 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `sys.stderr.write` | `run` | 126 |
-| output | `print` | `run` | 128 |
-| mutation | `seen.add` | `run` | 147 |
-| output | `print` | `run` | 162 |
+| output | `sys.stderr.write` | `run` | 127 |
+| output | `print` | `run` | 129 |
+| mutation | `seen.add` | `run` | 148 |
+| output | `print` | `run` | 163 |
 | mutation | `paths.append` | `_compact_outputs` | 52 |
 | mutation | `result.append` | `_compact_outputs` | 71 |
 | mutation | `pending_parts.pop` | `first_unsafe_path_component` | 71 |

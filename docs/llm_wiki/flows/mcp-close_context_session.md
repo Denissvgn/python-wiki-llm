@@ -69,7 +69,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| close_context_session | _native_tool_call | 1689 | `_native_tool_call(service.close_context_session, session_id)` |
+| close_context_session | _native_tool_call | 1695 | `_native_tool_call(service.close_context_session, session_id)` |
 | _native_tool_call | callback | 1354 | `callback(..., **=kwargs)` |
 | _native_tool_call | str | 1362 | `str(exc)` |
 | _native_tool_call | CallToolResult | 1366 | `CallToolResult(isError=True, content=[...], structuredContent=failure)` |

@@ -2,7 +2,7 @@
 
 **Entry point:** `render_compact_task_context` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [change_selection](../modules/change_selection.md), [concept_identity](../modules/concept_identity.md), [context_budget](../modules/context_budget.md), and 22 more
+**Modules touched:** [api](../modules/api.md), [change_selection](../modules/change_selection.md), [concept_identity](../modules/concept_identity.md), [context_budget](../modules/context_budget.md), and 23 more
 
 **Complete modules touched:**
 
@@ -23,6 +23,7 @@
 - [packet_field_policy](../modules/packet_field_policy.md)
 - [storage_receipts](../modules/storage_receipts.md)
 - [task_compact](../modules/task_compact.md)
+- [task_compact_readable](../modules/task_compact_readable.md)
 - [task_context](../modules/task_context.md)
 - [task_context_v2](../modules/task_context_v2.md)
 - [task_contract](../modules/task_contract.md)
@@ -103,9 +104,9 @@ sequenceDiagram
     p4-->>p30: facts[…][…].items
 ```
 
-> Call sequence diagram shows 30 of 840 interactions; 810 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 842 interactions; 812 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 419 (418 omitted); unresolved 1 of 198 (197 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 420 (419 omitted); unresolved 1 of 198 (197 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -119,7 +120,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 8 | - | external | 10 |
 | `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 8 | [src/llm_wiki_cli/services/workflow_profile.py](../modules/workflow_profile.md) | internal | 16 |
 | `src/llm_wiki_cli/services/workflow_profile.py:bounded_text` | 20 | - | external | 2 |
-> Omission summary shows 8 of 153 groups; 145 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 155 groups; 147 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -179,7 +180,7 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `render_compact_task_context (src/llm_wiki_cli/api.py)` | `canonical_text: str`, `request: Mapping[str, Any]`, `view_options: Mapping[str, Any]`, `profile: WorkflowProfile \| Mapping[str, Any] \| None`, `policy: WorkflowPolicy \| None`, `counter: TokenCounter \| None` | - | - | `render(...)` |
-| `render_compact_task_context (src/llm_wiki_cli/services/task_compact.py)` | `canonical_text`, `request`, `view_options`, `profile`, `policy`, `counter` | - | - | `CompactTaskContext(...)`, `CompactTaskContext(...)` |
+| `render_compact_task_context (src/llm_wiki_cli/services/task_compact.py)` | `canonical_text`, `request`, `view_options`, `profile`, `policy`, `counter` | `VIEW_REQUEST_SCHEMA_V2`, `COMPACT_SCHEMA_V2`, `COMPACT_SCHEMA`, `COMPACT_SCHEMA_V2` | - | `CompactTaskContext(...)`, `CompactTaskContext(...)` |
 | `_validated` | `canonical_text`, `request`, `profile`, `policy`, `counter` | `TaskContext`, `TASK_REQUEST_SCHEMA_V2` | - | `(...)` |
 | `isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated)` | - | - | - | - |
 | `TaskCompactError` | - | - | - | - |
@@ -196,12 +197,12 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | render_compact_task_context (src/llm_wiki_cli/api.py) | render_compact_task_context (src/llm_wiki_cli/services/task_compact.py) | 1450 | `render(canonical_text, request, view_options=view_options, profile=profile, policy=policy, counter=counter)` |
-| render_compact_task_context (src/llm_wiki_cli/services/task_compact.py) | _validated | 473 | `_validated(canonical_text, request, profile, policy, counter)` |
-| _validated | isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated) | 169 | `isinstance(canonical_text, TaskContext)` |
-| _validated | TaskCompactError | 171 | `TaskCompactError('canonical-unavailable', 'An unsuccessful canonical result has no compact context')` |
-| _validated | isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated) | 176 | `isinstance(canonical_text, str)` |
-| _validated | TaskCompactError | 177 | `TaskCompactError('canonical-invalid', 'Canonical context must be original text')` |
-| _validated | normalize_task_request | 180 | `normalize_task_request(request, profile=profile, policy=policy)` |
+| render_compact_task_context (src/llm_wiki_cli/services/task_compact.py) | _validated | 476 | `_validated(canonical_text, request, profile, policy, counter)` |
+| _validated | isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated) | 172 | `isinstance(canonical_text, TaskContext)` |
+| _validated | TaskCompactError | 174 | `TaskCompactError('canonical-unavailable', 'An unsuccessful canonical result has no compact context')` |
+| _validated | isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated) | 179 | `isinstance(canonical_text, str)` |
+| _validated | TaskCompactError | 180 | `TaskCompactError('canonical-invalid', 'Canonical context must be original text')` |
+| _validated | normalize_task_request | 183 | `normalize_task_request(request, profile=profile, policy=policy)` |
 | normalize_task_request | exact_fields | 53 | `exact_fields(request, {...}, 'request')` |
 | exact_fields | isinstance (src/llm_wiki_cli/services…w_profile.py:exact_fields) | 67 | `isinstance(value, Mapping)` |
 | exact_fields | any (src/llm_wiki_cli/services…w_profile.py:exact_fields) | 67 | `any(...)` |
@@ -220,8 +221,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_validated` | `isinstance` | 169 |
-| external_call | `_validated` | `isinstance` | 176 |
+| external_call | `_validated` | `isinstance` | 172 |
+| external_call | `_validated` | `isinstance` | 179 |
 | external_call | `exact_fields` | `isinstance` | 67 |
 | external_call | `exact_fields` | `any` | 67 |
 | step_limit | `render_compact_task_context` | `first 12 steps` | 0 |

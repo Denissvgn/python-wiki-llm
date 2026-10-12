@@ -1,6 +1,6 @@
 # CompactTaskContext
 
-**Location:** `src/llm_wiki_cli/services/task_compact.py:82`
+**Location:** `src/llm_wiki_cli/services/task_compact.py:85`
 **Kind:** Class
 **Bases:** —
 **Module:** [task_compact](../modules/task_compact.md)

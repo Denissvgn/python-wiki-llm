@@ -33,6 +33,7 @@ origin validation; stdio remains the default.
 | `.legacy_hooks` | `LegacyHookError`, `inspect_legacy_hooks` |
 | `.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `resolve_source_selection` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
+| `.task_compact_readable` | `readable_session_metadata` |
 | `.token_counting` | `TokenCounter`, `LocalTokenizerCounter` |
 | `.validation` | `posix_path_text`, `require_portable_relative_path` |
 | `.workflow_profile` | `WorkflowPolicy`, `WorkflowProfile`, `canonical_json`, `canonical_json` |
@@ -74,7 +75,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (1) |
-| Outbound | `src` (24) |
+| Outbound | `src` (25) |
 
 ### External packages
 
@@ -82,7 +83,7 @@ flowchart LR
 |---|---:|---:|
 | python | 3 | 2 |
 
-> All 25 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 26 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

@@ -1952,3 +1952,19 @@ use guarded retained-page plans and their existing explicit recovery boundary.
 - Semantic fields preserved: 0
 - Moved entities: none
 - Generated surface pages retired: 1
+
+## 2026-10-12
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:32ae2b7ef6106ac55f2b5e077f3e1ebcb699dc791875fe89bcdfda505fdeb105`
+- Pages created: 1
+- Pages updated: 13
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1561
+- Pages deprecated: 0
+- Semantic fields preserved: 3
+- Moved entities: none

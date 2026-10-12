@@ -7,7 +7,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 | Surface | Count | Start here |
 |---|---:|---|
 | Entities | 662 | [Open section](#entities) |
-| Modules | 239 | [Open section](#modules) |
+| Modules | 240 | [Open section](#modules) |
 | Workflows | 207 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 464 | [Open section](#entry-point-flows) |
@@ -897,6 +897,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [task_cmd](modules/task_cmd.md) - CLI for explicit task-context requests and canonical counted output.
 - [task_compact](modules/task_compact.md) - Pure, canonical-bound task presentation with separately counted view budgets.
 - [task_compact_delivery](modules/task_compact_delivery.md) - One-shot compact delivery through the owned, locked task read lifecycle.
+- [task_compact_readable](modules/task_compact_readable.md) - Self-contained readable task evidence without observation/default codecs.
 - [task_context](modules/task_context.md) - Bounded task-context composition over existing capture, query and v3 owners.
 - [task_context_v2](modules/task_context_v2.md) - Explicit task v2: selected native storage plus independently captured source.
 - [task_contract](modules/task_contract.md) - Versioned task requests, exact coordinates and immutable result envelopes.
