@@ -2169,3 +2169,19 @@ Flow call/data inventories and untouched default Behavior placeholders now use i
 - Moved entities: none
 
 Lexical discovery now uses section-local relevance and coherent explanatory coverage, with qualified one-hop leads from formal function descriptions to uniquely declared flows. Literal identities, captured citations and scan limits remain intact.
+
+## 2026-10-13
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.5.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:12dfafc9136fb1cb645c7acfa56965a04b7f9cbfd637506412f8cb52df83658b`
+- Pages created: 0
+- Pages updated: 124
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1515
+- Pages deprecated: 0
+- Semantic fields preserved: 144
+- Moved entities: none
