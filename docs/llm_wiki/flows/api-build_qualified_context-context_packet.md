@@ -2,7 +2,7 @@
 
 **Entry point:** `build_qualified_context` (`api`)
 **Source:** [context_packet](../modules/context_packet.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), and 62 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), and 63 more
 
 **Complete modules touched:**
 
@@ -62,6 +62,7 @@
 - [python_imports](../modules/python_imports.md)
 - [section_ownership](../modules/section_ownership.md)
 - [services_dependencies](../modules/services_dependencies.md)
+- [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
@@ -102,13 +103,13 @@ sequenceDiagram
     participant p19 as build_source_snapshot
     participant p20 as _guard_windows_inputs
     participant p21 as _assert_source_unchanged
-    participant p22 as _assert_source_inputs_unchanged
-    participant p23 as _wiki_anchor
-    participant p24 as get_entry_points
-    participant p25 as read_console_scripts
-    participant p26 as resolve_call_edges
-    participant p27 as build_flow
-    participant p28 as build_data_flow_context
+    participant p22 as retained_empty_module_paths_from_wiki
+    participant p23 as _assert_source_inputs_unchanged
+    participant p24 as _wiki_anchor
+    participant p25 as get_entry_points
+    participant p26 as read_console_scripts
+    participant p27 as resolve_call_edges
+    participant p28 as build_flow
     participant p29 as bool (src/llm_wiki_cli/services…y:build_qualified_context)
     participant p30 as normalized.get (src/llm_wiki_cli/services…y:build_qualified_context)
     p0->>p1: _normalized_request
@@ -132,20 +133,20 @@ sequenceDiagram
     p3->>p19: build_source_snapshot
     p3->>p20: _guard_windows_inputs
     p3->>p21: _assert_source_unchanged
-    p3->>p22: _assert_source_inputs_unchanged
-    p3->>p23: _wiki_anchor
-    p3->>p24: get_entry_points
-    p3->>p25: read_console_scripts
-    p3->>p26: resolve_call_edges
-    p3->>p27: build_flow
-    p3->>p28: build_data_flow_context
+    p3->>p22: retained_empty_module_paths_from_wiki
+    p3->>p23: _assert_source_inputs_unchanged
+    p3->>p24: _wiki_anchor
+    p3->>p25: get_entry_points
+    p3->>p26: read_console_scripts
+    p3->>p27: resolve_call_edges
+    p3->>p28: build_flow
     p0-->>p29: bool (src/llm_wiki_cli/services…y:build_qualified_context)(...)
     p0-->>p30: normalized.get (src/llm_wiki_cli/services…y:build_qualified_context)('knowledge_mode')
 ```
 
-> Call sequence diagram shows 30 of 5489 interactions; 5459 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 5498 interactions; 5468 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1724 (1723 omitted); unresolved 1 of 1879 (1878 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1726 (1725 omitted); unresolved 1 of 1882 (1881 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -159,7 +160,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 9 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 1 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 12 | - | external | 11 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 12 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 12 |
-> Omission summary shows 8 of 1293 groups; 1285 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1298 groups; 1290 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -220,17 +221,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_qualified_context | _normalized_request | 1431 | `_normalized_request(...)` |
-| _normalized_request | isinstance (src/llm_wiki_cli/services…et.py:_normalized_request) | 1961 | `isinstance(request, Mapping)` |
-| _normalized_request | ProtocolRequestError | 1962 | `context_service.ProtocolRequestError('Request must be a JSON object.', 'request')` |
-| _normalized_request | deepcopy (src/llm_wiki_cli/services…et.py:_normalized_request) | 1966 | `deepcopy(dict(...))` |
-| _normalized_request | dict (src/llm_wiki_cli/services…et.py:_normalized_request) | 1966 | `dict(request)` |
-| _normalized_request | candidate.setdefault | 1967 | `candidate.setdefault('protocol', ...)` |
-| _normalized_request | candidate.setdefault | 1975 | `candidate.setdefault('filters', {...})` |
-| _normalized_request | _validate_protocol_request | 1976 | `context_service._validate_protocol_request(candidate)` |
-| _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 1104 | `isinstance(data, dict)` |
-| _validate_protocol_request | data.get (src/llm_wiki_cli/services…validate_protocol_request) | 1104 | `data.get('protocol')` |
-| _validate_protocol_request | _validate_protocol_request_impl | 1106 | `_validate_protocol_request_impl(data)` |
+| build_qualified_context | _normalized_request | 1435 | `_normalized_request(...)` |
+| _normalized_request | isinstance (src/llm_wiki_cli/services…et.py:_normalized_request) | 1965 | `isinstance(request, Mapping)` |
+| _normalized_request | ProtocolRequestError | 1966 | `context_service.ProtocolRequestError('Request must be a JSON object.', 'request')` |
+| _normalized_request | deepcopy (src/llm_wiki_cli/services…et.py:_normalized_request) | 1970 | `deepcopy(dict(...))` |
+| _normalized_request | dict (src/llm_wiki_cli/services…et.py:_normalized_request) | 1970 | `dict(request)` |
+| _normalized_request | candidate.setdefault | 1971 | `candidate.setdefault('protocol', ...)` |
+| _normalized_request | candidate.setdefault | 1979 | `candidate.setdefault('filters', {...})` |
+| _normalized_request | _validate_protocol_request | 1980 | `context_service._validate_protocol_request(candidate)` |
+| _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 1110 | `isinstance(data, dict)` |
+| _validate_protocol_request | data.get (src/llm_wiki_cli/services…validate_protocol_request) | 1110 | `data.get('protocol')` |
+| _validate_protocol_request | _validate_protocol_request_impl | 1112 | `_validate_protocol_request_impl(data)` |
 
 ### Boundary effects
 
@@ -240,12 +241,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_normalized_request` | `isinstance` | 1961 |
-| external_call | `_normalized_request` | `deepcopy` | 1966 |
-| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1967 |
-| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1975 |
-| external_call | `_validate_protocol_request` | `isinstance` | 1104 |
-| unresolved_call | `_validate_protocol_request` | `data.get` | 1104 |
+| external_call | `_normalized_request` | `isinstance` | 1965 |
+| external_call | `_normalized_request` | `deepcopy` | 1970 |
+| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1971 |
+| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1979 |
+| external_call | `_validate_protocol_request` | `isinstance` | 1110 |
+| unresolved_call | `_validate_protocol_request` | `data.get` | 1110 |
 | step_limit | `build_qualified_context` | `first 12 steps` | 0 |
 | truncated_flow | `build_qualified_context` | `depth limit` | 0 |
 

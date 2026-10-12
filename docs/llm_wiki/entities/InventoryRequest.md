@@ -36,6 +36,7 @@ inputs so the extraction planner receives a stable request.
 | `source_plugins_only` | `bool` | `False` | — |
 | `capture_implementation_observations` | `bool` | `False` | — |
 | `capture_path_outcomes` | `bool` | `False` | — |
+| `retain_empty_paths` | `tuple[str, ...]` | `()` | — |
 
 ## Methods
 

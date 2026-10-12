@@ -12,6 +12,11 @@ policy of its own: callers supply the already approved source/wiki roots and
 the explicit source-plugin trust decision.  Artifact metadata is never used to
 select plugins.
 
+Live inventory collection carries the configured manifest's retained empty
+source paths into the parser request. This preserves current module observations
+without discovering every unowned empty file. Parsing failures and unavailable
+coverage retain their explicit states rather than being presented as emptiness.
+
 ## Imports
 
 | Source | Symbols |
@@ -34,6 +39,7 @@ select plugins.
 | `.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeKnowledgeInputs`, `RuntimeLiveEvaluationInputs`, `build_runtime_live_evaluation`, `collect_runtime_repository_evidence`, `finalize_runtime_knowledge`, `runtime_generation_options` |
 | `.maintenance_protocol` | `load_adoption_marker`, `maintenance_write_operation`, `guard_maintenance_owner`, `ADOPTION_FILENAME` |
 | `.paths` | `is_test_source_path` |
+| `.source_retirement` | `retained_empty_module_paths` |
 | `.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `source_selection_identity_from_generation_inputs`, `source_selection_inputs_from_generation_inputs`, `validate_persisted_source_selection_identity` |
 | `.source_snapshot` | `SourceSnapshot`, `SourceSnapshotError`, `build_source_snapshot`, `capture_source_selection_inputs` |
 | `.sync_manifest` | `LEGACY_MANIFEST_VERSION`, `MANIFEST_FILENAME`, `MANIFEST_VERSION`, `SyncManifest` |
@@ -70,9 +76,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (2) |
-| Outbound | `src` (25) |
+| Outbound | `src` (26) |
 
-> All 27 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 28 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -92,7 +98,8 @@ flowchart LR
 | `evaluate_documentation_native_freshness` | `(*, knowledge: KnowledgeIndex, manifest: SyncManifest, source_root: str \| Path, trust_source_plugins: bool = False, helper_cache_dir: str \| Path \| None = None, source_selection: str \| Path \| None = None) -> DocumentationNativeFreshness` | — | Evaluate one validated v5 snapshot against live standalone defaults. |
 | `refresh_documentation_native_projection` | `(*, source_root: str \| Path, wiki_root: str \| Path, trust_source_plugins: bool = False, helper_cache_dir: str \| Path \| None = None, source_selection: str \| Path \| None = None, fault_injector: Callable[[CommitStage], None] \| None = None) -> DocumentationNativeRefresh` | — | — |
 | `_refresh_documentation_native_projection` | `(*, source_root: str \| Path, wiki_root: str \| Path, trust_source_plugins: bool, helper_cache_dir: str \| Path \| None, source_selection: str \| Path \| None, fault_injector: Callable[[CommitStage], None] \| None) -> DocumentationNativeRefresh` | — | Recompute the native trio without mutating canonical Markdown. |
-| `_collect_runtime` | `(*, source_root: str \| Path, trust_source_plugins: bool, helper_cache_dir: str \| Path \| None, source_selection: str \| Path \| None, generation_input_paths: tuple[str, ...] = (), source_snapshot: SourceSnapshot \| None = None) -> _DocumentationNativeRuntime` | — | — |
+| `_retained_empty_paths` | `(manifest)` | — | — |
+| `_collect_runtime` | `(*, source_root: str \| Path, trust_source_plugins: bool, helper_cache_dir: str \| Path \| None, source_selection: str \| Path \| None, generation_input_paths: tuple[str, ...] = (), source_snapshot: SourceSnapshot \| None = None, retain_empty_paths: tuple[str, ...] = ()) -> _DocumentationNativeRuntime` | — | — |
 | `_evaluate_runtime_surface` | `(*, source_root: Path, wiki_root: Path, runtime: _DocumentationNativeRuntime, trust_source_plugins: bool, manifest: SyncManifest, page_maps: _DocumentationPageMaps, generation_options: Mapping[str, object]) -> SurfaceIndexEvaluation` | — | — |
 | `_runtime_flow_entries` | `(*, source_root: Path, runtime: _DocumentationNativeRuntime, trust_source_plugins: bool, manifest: SyncManifest, generation_options: Mapping[str, object]) -> list[dict[str, Any]]` | — | — |
 | `_runtime_api_contracts` | `(*, source_root: Path, inventory: Mapping[str, Mapping[str, Any]], manifest: SyncManifest, source_snapshot: SourceSnapshot) -> Mapping[str, Any]` | — | — |

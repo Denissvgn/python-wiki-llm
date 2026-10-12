@@ -31,6 +31,13 @@ reported as zero or complete. Source, wiki and provider mutations reject matched
 reuse. Fixed capture reasons and byte counts expose ineligible contexts and budget
 failures. Cache saving follows successful owning publication and remains advisory.
 
+Authenticated captures retain per-path outcomes for qualified empty records.
+A retained empty model without its attributable cached outcome triggers narrow
+re-extraction. Missing or malformed diagnostic data never becomes a complete
+empty result. Full graph shortcuts are abandoned when qualification changes the
+cached inventory; ordinary page-map and graph builders receive the rebuilt
+module records.
+
 ## Imports
 
 | Source | Symbols |

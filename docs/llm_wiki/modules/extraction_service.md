@@ -26,6 +26,12 @@ Unsupported build shapes and multi-document inputs are qualified before page
 rendering. Generated YAML text is quoted and normalized to keep source scalars
 from introducing Markdown structure.
 
+`retain_empty_paths` selects previously retained source modules without widening
+ordinary empty-file discovery. Python and TypeScript return their parsed module
+records for those exact paths and capture attributable outcomes. Supplied source
+snapshots still honor `only_files`; unrequested files are not parsed during a
+narrow qualification. Failed and unavailable paths remain qualified gaps.
+
 ## Imports
 
 | Source | Symbols |
@@ -104,13 +110,13 @@ flowchart LR
 |-------|------|-------|-------------|
 | [ExtractorStatus](../entities/ExtractorStatus.md) | 141 | — | — |
 | [InventoryRequest](../entities/InventoryRequest.md) | 149 | — | — |
-| [InventoryResult](../entities/InventoryResult.md) | 176 | — | — |
-| [ExtractPayloadResult](../entities/ExtractPayloadResult.md) | 217 | — | — |
-| [ExtractorFailureError](../entities/ExtractorFailureError.md) | 237 | `RuntimeError` | Raised when one or more extractors fail during payload construction. |
-| [_ExtractionPlan](../entities/ExtractionPlan.md) | 262 | — | — |
-| [_ExtractionOutcome](../entities/ExtractionOutcome.md) | 275 | — | — |
-| [_InventoryBuildContext](../entities/InventoryBuildContext.md) | 288 | — | — |
-| [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 310 | — | — |
+| [InventoryResult](../entities/InventoryResult.md) | 180 | — | — |
+| [ExtractPayloadResult](../entities/ExtractPayloadResult.md) | 221 | — | — |
+| [ExtractorFailureError](../entities/ExtractorFailureError.md) | 241 | `RuntimeError` | Raised when one or more extractors fail during payload construction. |
+| [_ExtractionPlan](../entities/ExtractionPlan.md) | 266 | — | — |
+| [_ExtractionOutcome](../entities/ExtractionOutcome.md) | 279 | — | — |
+| [_InventoryBuildContext](../entities/InventoryBuildContext.md) | 292 | — | — |
+| [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 314 | — | — |
 
 ## Functions
 

@@ -26,13 +26,14 @@ Each returned file entry includes ``"language": "typescript"`` for
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
 | `__init__` | `() -> None` | — | — |
-| `extract` | `(src_dir: str, only_files: list[str] \| None = None, deep: bool = False, source_files: list[str] \| None = None, helper_cache_dir: str \| None = None, diagnostics: bool = False) -> dict` | — | Scan *src_dir* for TypeScript files and return an inventory dict. |
+| `extract` | `(src_dir: str, only_files: list[str] \| None = None, deep: bool = False, source_files: list[str] \| None = None, helper_cache_dir: str \| None = None, diagnostics: bool = False, include_empty: bool = False, retain_empty_paths: tuple[str, ...] = ()) -> dict` | — | Scan *src_dir* for TypeScript files and return an inventory dict. |
 | `_record_unattempted_chunks` | `(chunks: list[list[str]]) -> None` | — | — |
+| `_diagnostic_arguments` | `(diagnostics: bool, include_empty: bool, retain_empty_paths: tuple[str, ...]) -> list[str]` | — | — |
 | `_resolve_source_files` | `(src_dir: str, only_files: list[str] \| None, source_files: list[str] \| None) -> list[str]` | — | — |
 | `_toolchain_root` | `(src_dir: str, helper_cache_dir: str \| None = None) -> Path \| None` | — | — |
 | `_build_command` | `(src_dir: str, source_files: list[str], deep: bool, helper_root: Path) -> list[str]` | — | — |
 | `_run_node_extractor` | `(cmd: list[str], helper_root: Path) -> subprocess.CompletedProcess \| None` | — | — |
-| `_load_inventory` | `(result: subprocess.CompletedProcess, *, diagnostics: bool = False, paths: list[str] \| None = None) -> dict` | — | — |
+| `_load_inventory` | `(result: subprocess.CompletedProcess, *, diagnostics: bool = False, paths: list[str] \| None = None, src_dir: str \| None = None) -> dict` | — | — |
 | `_normalize_inventory` | `(src_dir: str, inventory: dict, helper_root: Path) -> dict` | — | — |
 
 ## Relationships
@@ -44,4 +45,4 @@ Each returned file entry includes ``"language": "typescript"`` for
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [ts_extractor](../modules/ts_extractor.md) | 9 | `last_error` |
+| [ts_extractor](../modules/ts_extractor.md) | 10 | `last_error` |

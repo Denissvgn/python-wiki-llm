@@ -12,6 +12,11 @@ presentation and retained generated defaults without changing the manifest's
 source-evidence schema or human lifecycle. Source-selection pruning removes the
 matching retirement records before ownership preflight.
 
+A parser-retained empty module has `empty_module: true` in its source record,
+with the current content hash and normal module evidence baseline. This keeps a
+physically surviving parsed module distinct from an absent source. The marker
+also selects exact retention paths for future lint and live native reads.
+
 ## Imports
 
 | Source | Symbols |

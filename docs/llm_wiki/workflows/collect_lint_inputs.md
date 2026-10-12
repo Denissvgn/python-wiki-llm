@@ -1,7 +1,7 @@
 # collect_lint_inputs
 
 **Entry point:** `lint_service._collect_lint_inputs`
-**Modules involved:** [common](../modules/common.md), [extraction_service](../modules/extraction_service.md), [infrastructure_inventory](../modules/infrastructure_inventory.md), [lint_service](../modules/lint_service.md), [source_snapshot](../modules/source_snapshot.md)
+**Modules involved:** [common](../modules/common.md), [extraction_service](../modules/extraction_service.md), [infrastructure_inventory](../modules/infrastructure_inventory.md), [lint_service](../modules/lint_service.md), [source_retirement](../modules/source_retirement.md), [source_snapshot](../modules/source_snapshot.md)
 
 ## Sequence
 
@@ -9,9 +9,10 @@
 1. `common.normalize_include_tests`
 2. `source_snapshot.build_source_snapshot`
 3. `extraction_service.get_inventory_result`
-4. `source_snapshot.unsupported_source_summary`
-5. `extraction_service.get_docker_inventory`
-6. `infrastructure_inventory.get_yaml_infrastructure_inventory`
+4. `source_retirement.retained_empty_module_paths`
+5. `source_snapshot.unsupported_source_summary`
+6. `extraction_service.get_docker_inventory`
+7. `infrastructure_inventory.get_yaml_infrastructure_inventory`
 
 ## Touches
 
@@ -19,6 +20,7 @@
 - [extraction_service](../modules/extraction_service.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [lint_service](../modules/lint_service.md)
+- [source_retirement](../modules/source_retirement.md)
 - [source_snapshot](../modules/source_snapshot.md)
 
 ## Behavior

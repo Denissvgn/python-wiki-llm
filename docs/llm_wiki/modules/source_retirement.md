@@ -18,8 +18,14 @@ Retained generated defaults support attribution when the exact owner revives.
 Current generated descriptions can update while authored descriptions, cells and
 custom context survive. Duplicate suffix removal requires a distinguishable,
 unchanged surviving prefix under recorded defaults and full entity observations;
-ambiguous shifts stop before writes. Captured sources without documentable
-inventory remain an explicit parser/coverage/empty-module gap.
+ambiguous shifts stop before writes. Captured sources without documentable inventory require parser qualification.
+A valid empty module remains a current source owner; syntax failures, aliases and
+unavailable coverage cannot establish removal authority.
+
+`retained_empty_module_paths` reads the owning source marker only to select an
+actual parser request. The marker does not mint current evidence. The source
+module is reconstructed by its language parser, and its former members retain
+the independent historical retirement policy.
 
 ## Imports
 
@@ -40,88 +46,23 @@ inventory remain an explicit parser/coverage/empty-module gap.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/commands/sync_cmd.py"]
-    n1["src/llm_wiki_cli/services/knowledge_artifacts.py"]
-    n2["src/llm_wiki_cli/services/knowledge_evidence.py"]
-    n3["src/llm_wiki_cli/services/knowledge_generation.py"]
-    n4["src/llm_wiki_cli/services/lint_service.py"]
-    n5["src/llm_wiki_cli/services/source_retirement.py"]
-    n6["src/llm_wiki_cli/services/sync_analysis.py"]
-    n7["src/llm_wiki_cli/services/sync_manifest.py"]
-    n8["src/llm_wiki_cli/services/sync_transitions.py"]
-    n9["src/llm_wiki_cli/services/validation.py"]
-    n10["src/llm_wiki_cli/services/wiki_surface.py"]
+    n0["src"]
+    n1["src/llm_wiki_cli/services/source_retirement.py"]
     n0 --> n1
-    n0 --> n2
-    n0 --> n5
-    n0 --> n6
-    n0 --> n7
-    n0 --> n8
-    n0 --> n9
-    n0 --> n10
-    n1 --> n2
-    n1 --> n5
-    n1 --> n7
-    n1 --> n9
-    n1 --> n10
-    n2 --> n9
-    n3 --> n1
-    n3 --> n2
-    n3 --> n5
-    n3 --> n7
-    n3 --> n8
-    n3 --> n10
-    n4 --> n1
-    n4 --> n5
-    n4 --> n6
-    n4 --> n7
-    n4 --> n9
-    n4 --> n10
-    n5 --> n2
-    n5 --> n6
-    n5 --> n7
-    n5 --> n9
-    n5 --> n10
-    n6 --> n2
-    n6 --> n7
-    n6 --> n9
-    n7 --> n2
-    n7 --> n5
-    n7 --> n9
-    n8 --> n5
-    n8 --> n6
-    n8 --> n7
-    n8 --> n9
-    n8 --> n10
-    n10 --> n9
-    click n0 "../modules/sync_cmd.md"
-    click n1 "../modules/knowledge_artifacts.md"
-    click n2 "../modules/knowledge_evidence.md"
-    click n3 "../modules/knowledge_generation.md"
-    click n4 "../modules/lint_service.md"
-    click n5 "../modules/source_retirement.md"
-    click n6 "../modules/sync_analysis.md"
-    click n7 "../modules/sync_manifest.md"
-    click n8 "../modules/sync_transitions.md"
-    click n9 "../modules/validation.md"
-    click n10 "../modules/wiki_surface.md"
+    n1 --> n0
+    click n1 "../modules/source_retirement.md"
 ```
+
+> Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [sync_cmd](../modules/sync_cmd.md) |
-| Inbound | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
-| Inbound | [knowledge_generation](../modules/knowledge_generation.md) |
-| Inbound | [lint_service](../modules/lint_service.md) |
-| Inbound | [sync_manifest](../modules/sync_manifest.md) |
-| Inbound | [sync_transitions](../modules/sync_transitions.md) |
-| Outbound | [knowledge_evidence](../modules/knowledge_evidence.md) |
-| Outbound | [sync_analysis](../modules/sync_analysis.md) |
-| Outbound | [sync_manifest](../modules/sync_manifest.md) |
-| Outbound | [validation](../modules/validation.md) |
-| Outbound | [wiki_surface](../modules/wiki_surface.md) |
+| Inbound | `src` (9) |
+| Outbound | `src` (5) |
+
+> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -133,6 +74,8 @@ flowchart LR
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
+| `retained_empty_module_paths` | `(manifest: SyncManifest \| None) -> tuple[str, ...]` | — | Return source paths whose last owning run retained a parser-empty module. |
+| `retained_empty_module_paths_from_wiki` | `(wiki_dir) -> tuple[str, ...]` | — | Read only the configured manifest to select parser retention, not evidence. |
 | `read_entity_retirement_state` | `(generation_inputs: Mapping[str, object]) -> dict[str, ManifestPageSource]` | — | Decode exact machine records without deriving ownership from Markdown. |
 | `entity_owner_present` | `(owner: ManifestPageSource, sources: Mapping[str, Mapping]) -> bool` | — | Compare the exact declaration occurrence with captured source membership. |
 | `retired_entity_mappings` | `(manifest: SyncManifest) -> dict[str, ManifestPageSource]` | — | Validate committed retirements against mappings and historical tombstones. |

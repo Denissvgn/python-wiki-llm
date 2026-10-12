@@ -47,15 +47,16 @@ retirement marker and regenerates current structure. Selection pruning removes
 retirement records with deselected ownership.
 
 A previously owned source that remains captured but produces no inventory entry
-stops the plan before writes. Inventory absence does not establish a missing
-file or a confirmed removed declaration.
+receives a narrow parser qualification. Valid emptiness retains the actual
+module record and source commitment; failed or unavailable classification stops
+before writes. Inventory absence alone never establishes a missing file.
 
 ## Imports
 
 | Source | Symbols |
 |--------|---------|
 | `..` | `__version__` |
-| `..config` | `validate_path`, `validate_source_root` |
+| `..config` | `validate_path`, `validate_source_root`, `EXTRACTOR_REGISTRY` |
 | `..services` | `knowledge_reuse`, `sync_analysis_cache` |
 | `..services.api_contracts` | `ApiContractError`, `attach_routes_to_entry_points`, `build_api_contracts`, `link_entry_point_flows`, `load_openapi_document`, `render_api_contracts_markdown` |
 | `..services.bootstrap_runtime` | `_build_entity_relationship_summary_map`, `_build_relationships`, `_generate_dependencies_md`, `_generate_entity_md`, `_generate_flow_md`, `_generate_index_md`, `_generate_load_order_md`, `_generate_module_md`, `_generate_workflow_md`, `_generate_infrastructure_md`, `_generated_diagram_style`, `_module_name_from_path`, `_page_name_for_module`, `_source_snapshot_log_lines`, `build_entity_occurrence_page_map`, `build_entity_page_map`, `build_module_page_map` |
@@ -70,7 +71,7 @@ file or a confirmed removed declaration.
 | `..services.io` | `read_md`, `write_md` |
 | `..services.knowledge_artifacts` | `ArtifactWriteState`, `KnowledgeCommitResult` |
 | `..services.knowledge_envelope` | `RepositoryEvidence`, `build_repository_record` |
-| `..services.knowledge_evidence` | `hash_file`, `is_valid_sha256`, `semantic_hash_for_file` |
+| `..services.knowledge_evidence` | `hash_file`, `is_valid_sha256`, `semantic_hash_for_file`, `module_observation_hash` |
 | `..services.knowledge_governance` | `GOVERNANCE_FILENAME`, `GovernanceError`, `load_governance`, `ConceptGovernanceReference`, `natural_key_for`, `reconcile_concepts` |
 | `..services.knowledge_model` | `PAGE_KIND_TO_CONCEPT_KIND` |
 | `..services.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeKnowledgeInputs`, `CommittedKnowledgeState`, `capture_committed_knowledge`, `collect_runtime_repository_evidence`, `committed_governance_bundle_id`, `committed_runtime_provenance`, `finalize_runtime_knowledge`, `runtime_generation_options`, `runtime_graph_analyzer_limitations`, `runtime_generation_options_hash`, `runtime_source_snapshot_hash` |
@@ -240,6 +241,7 @@ flowchart LR
 | `_load_or_seed_manifest` | `(options: _SyncRunOptions) -> tuple[Optional['SyncManifest'], bool]` | — | — |
 | `_validate_persisted_source_selection` | `(options: _SyncRunOptions, manifest: SyncManifest \| None) -> None` | — | — |
 | `_extract_current_inventory` | `(options: _SyncRunOptions, *, source_snapshot: SourceSnapshot \| None = None) -> _ExtractedSyncInventory` | — | — |
+| `_qualify_surviving_module_inventory` | `(options, snapshot, manifest, result)` | — | Resolve prior-owned sparse paths through attributable parser observations. |
 | `_prepare_sync_page_maps` | `(inventory: dict) -> _SyncPageMaps` | `@observed_phase('page_maps')` | — |
 | `_compute_sync_diff` | `(manifest: 'SyncManifest', inventory: dict, options: _SyncRunOptions, page_maps: _SyncPageMaps, source_content_hashes: Mapping[str, str]) -> 'SyncDiff'` | — | — |
 | `_generator_refresh_diff` | `(diff: 'SyncDiff', inventory: Mapping[str, Mapping]) -> 'SyncDiff'` | — | Return an apply-only diff that regenerates every live managed concept page. |

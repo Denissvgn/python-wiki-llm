@@ -16,6 +16,11 @@ history qualification remains informational, including unknown provenance.
 Unmarked pages, forged headers and malformed bindings retain blocking findings;
 retired pages must still be correctly linked and committed.
 
+Live inventory collection carries the configured manifest's retained empty
+source paths into the parser request. This preserves current module observations
+without discovering every unowned empty file. Parsing failures and unavailable
+coverage retain their explicit states rather than being presented as emptiness.
+
 ## Imports
 
 | Source | Symbols |
@@ -47,7 +52,7 @@ retired pages must still be correctly linked and committed.
 | `.metrics` | `record_validation_event` |
 | `.plugins` | `PluginError`, `iter_components`, `load_entry_point`, `runtime_plugin_fallback_root`, `runtime_project_plugins_enabled` |
 | `.progress` | `phase` |
-| `.source_retirement` | `ENTITY_RETIREMENT_SCHEMA_VERSION`, `SOURCE_RETIREMENT_EXTENSION_KEY`, `SourceRetirementError`, `retired_entity_mappings` |
+| `.source_retirement` | `ENTITY_RETIREMENT_SCHEMA_VERSION`, `SOURCE_RETIREMENT_EXTENSION_KEY`, `SourceRetirementError`, `retired_entity_mappings`, `retained_empty_module_paths` |
 | `.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs`, `format_unsupported_source_summary`, `unsupported_source_label`, `unsupported_source_summary` |
 | `.sync_analysis` | `compute_sync_diff` |
@@ -97,14 +102,14 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_LintProfiler](../entities/LintProfiler.md) | 200 | — | — |
-| [LintIssue](../entities/LintIssue.md) | 239 | — | — |
-| [KnowledgeLintSummary](../entities/KnowledgeLintSummary.md) | 250 | `KnowledgeAggregateSummary` | Aggregate strict-lint knowledge status without exposing evidence. |
-| [LintReport](../entities/LintReport.md) | 288 | — | — |
-| [_WikiPageIndex](../entities/WikiPageIndex.md) | 329 | — | — |
-| [_LintInputs](../entities/LintInputs.md) | 336 | — | — |
-| [_LintPreflight](../entities/LintPreflight.md) | 350 | — | — |
-| [_KnowledgeLintState](../entities/KnowledgeLintState.md) | 357 | — | — |
+| [_LintProfiler](../entities/LintProfiler.md) | 201 | — | — |
+| [LintIssue](../entities/LintIssue.md) | 240 | — | — |
+| [KnowledgeLintSummary](../entities/KnowledgeLintSummary.md) | 251 | `KnowledgeAggregateSummary` | Aggregate strict-lint knowledge status without exposing evidence. |
+| [LintReport](../entities/LintReport.md) | 289 | — | — |
+| [_WikiPageIndex](../entities/WikiPageIndex.md) | 330 | — | — |
+| [_LintInputs](../entities/LintInputs.md) | 337 | — | — |
+| [_LintPreflight](../entities/LintPreflight.md) | 351 | — | — |
+| [_KnowledgeLintState](../entities/KnowledgeLintState.md) | 358 | — | — |
 
 ## Functions
 

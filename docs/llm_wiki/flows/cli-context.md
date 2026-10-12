@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [context_service](../modules/context_service.md)
-**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), [config](../modules/config.md), and 32 more
+**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), [config](../modules/config.md), and 33 more
 
 **Complete modules touched:**
 
@@ -34,6 +34,7 @@
 - [maintenance_status](../modules/maintenance_status.md)
 - [plugins](../modules/plugins.md)
 - [services_dependencies](../modules/services_dependencies.md)
+- [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
@@ -113,7 +114,7 @@ sequenceDiagram
     p1-->>p30: request.get (src/llm_wiki_cli/services…_service.py:_run_protocol)('knowledge_mode')
 ```
 
-> Call sequence diagram shows 30 of 1364 interactions; 1334 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1368 interactions; 1338 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 1 of 460 (459 omitted); unresolved 1 of 421 (420 omitted). These counts cover the captured static trace.
 
@@ -129,7 +130,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 12 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 15 | - | external | 11 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 15 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 12 |
-> Omission summary shows 8 of 259 groups; 251 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 263 groups; 255 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -216,40 +217,40 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run (src/llm_wiki_cli/services/context_service.py) | getattr (src/llm_wiki_cli/services/context_service.py:run) | 3580 | `getattr(args, 'request', None)` |
-| run (src/llm_wiki_cli/services/context_service.py) | _run_protocol | 3581 | `_run_protocol(args)` |
-| _run_protocol | getattr (src/llm_wiki_cli/services…_service.py:_run_protocol) | 3418 | `getattr(args, 'output', None)` |
-| _run_protocol | _read_protocol_request | 3421 | `_read_protocol_request(args.request)` |
-| _read_protocol_request | sys.stdin.read | 1086 | `sys.stdin.read(data not statically known)` |
-| _read_protocol_request | Path(…).read_text | 1088 | `Path(source).read_text(encoding='utf-8')` |
-| _read_protocol_request | Path (src/llm_wiki_cli/services…py:_read_protocol_request) | 1088 | `Path(source)` |
-| _read_protocol_request | ProtocolRequestError | 1091 | `ProtocolRequestError(..., 'request')` |
-| _read_protocol_request | json.loads | 1094 | `json.loads(raw)` |
-| _read_protocol_request | ProtocolRequestError | 1096 | `ProtocolRequestError(..., 'request')` |
-| _read_protocol_request | _validate_protocol_request | 1098 | `_validate_protocol_request(data)` |
+| run (src/llm_wiki_cli/services/context_service.py) | getattr (src/llm_wiki_cli/services/context_service.py:run) | 3590 | `getattr(args, 'request', None)` |
+| run (src/llm_wiki_cli/services/context_service.py) | _run_protocol | 3591 | `_run_protocol(args)` |
+| _run_protocol | getattr (src/llm_wiki_cli/services…_service.py:_run_protocol) | 3428 | `getattr(args, 'output', None)` |
+| _run_protocol | _read_protocol_request | 3431 | `_read_protocol_request(args.request)` |
+| _read_protocol_request | sys.stdin.read | 1092 | `sys.stdin.read(data not statically known)` |
+| _read_protocol_request | Path(…).read_text | 1094 | `Path(source).read_text(encoding='utf-8')` |
+| _read_protocol_request | Path (src/llm_wiki_cli/services…py:_read_protocol_request) | 1094 | `Path(source)` |
+| _read_protocol_request | ProtocolRequestError | 1097 | `ProtocolRequestError(..., 'request')` |
+| _read_protocol_request | json.loads | 1100 | `json.loads(raw)` |
+| _read_protocol_request | ProtocolRequestError | 1102 | `ProtocolRequestError(..., 'request')` |
+| _read_protocol_request | _validate_protocol_request | 1104 | `_validate_protocol_request(data)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 3597 |
-| output | `print` | `run` | 3600 |
-| output | `print` | `run` | 3644 |
-| output | `print` | `run` | 3647 |
+| output | `print` | `run` | 3607 |
+| output | `print` | `run` | 3610 |
 | output | `print` | `run` | 3654 |
-| output | `print` | `run` | 3656 |
-| output | `print` | `run` | 3665 |
-| output | `print` | `run` | 3667 |
+| output | `print` | `run` | 3657 |
+| output | `print` | `run` | 3664 |
+| output | `print` | `run` | 3666 |
+| output | `print` | `run` | 3675 |
+| output | `print` | `run` | 3677 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `run` | `getattr` | 3580 |
-| external_call | `_run_protocol` | `getattr` | 3418 |
-| external_call | `_read_protocol_request` | `sys.stdin.read` | 1086 |
-| unresolved_call | `_read_protocol_request` | `Path(source).read_text` | 1088 |
-| external_call | `_read_protocol_request` | `json.loads` | 1094 |
+| external_call | `run` | `getattr` | 3590 |
+| external_call | `_run_protocol` | `getattr` | 3428 |
+| external_call | `_read_protocol_request` | `sys.stdin.read` | 1092 |
+| unresolved_call | `_read_protocol_request` | `Path(source).read_text` | 1094 |
+| external_call | `_read_protocol_request` | `json.loads` | 1100 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

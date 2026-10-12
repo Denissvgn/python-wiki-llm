@@ -153,32 +153,32 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| prune_manifest_for_source_selection | isinstance (src/llm_wiki_cli/services…fest_for_source_selection) | 1740 | `isinstance(manifest, SyncManifest)` |
-| prune_manifest_for_source_selection | SyncManifestError | 1741 | `SyncManifestError('manifest', 'must be a SyncManifest')` |
-| prune_manifest_for_source_selection | SourceSelectionPruneResult | 1743 | `SourceSelectionPruneResult(manifest, (...), (...))` |
-| prune_manifest_for_source_selection | SyncManifestError | 1752 | `SyncManifestError('source_selection', 'source snapshot must match the pruning selection policy')` |
-| prune_manifest_for_source_selection | set (src/llm_wiki_cli/services…fest_for_source_selection) | 1764 | `set(manifest.sources)` |
-| prune_manifest_for_source_selection | source_paths.update | 1765 | `source_paths.update(...)` |
-| prune_manifest_for_source_selection | manifest.page_source_mappings.values | 1766 | `manifest.page_source_mappings.values(data not statically known)` |
-| prune_manifest_for_source_selection | tuple (src/llm_wiki_cli/services…fest_for_source_selection) | 1768 | `tuple(sorted(...))` |
-| prune_manifest_for_source_selection | sorted (src/llm_wiki_cli/services…fest_for_source_selection) | 1769 | `sorted(...)` |
-| prune_manifest_for_source_selection | is_selected | 1769 | `is_selected(path)` |
-| prune_manifest_for_source_selection | SourceSelectionPruneResult | 1772 | `SourceSelectionPruneResult(manifest, (...), (...))` |
+| prune_manifest_for_source_selection | isinstance (src/llm_wiki_cli/services…fest_for_source_selection) | 1742 | `isinstance(manifest, SyncManifest)` |
+| prune_manifest_for_source_selection | SyncManifestError | 1743 | `SyncManifestError('manifest', 'must be a SyncManifest')` |
+| prune_manifest_for_source_selection | SourceSelectionPruneResult | 1745 | `SourceSelectionPruneResult(manifest, (...), (...))` |
+| prune_manifest_for_source_selection | SyncManifestError | 1754 | `SyncManifestError('source_selection', 'source snapshot must match the pruning selection policy')` |
+| prune_manifest_for_source_selection | set (src/llm_wiki_cli/services…fest_for_source_selection) | 1766 | `set(manifest.sources)` |
+| prune_manifest_for_source_selection | source_paths.update | 1767 | `source_paths.update(...)` |
+| prune_manifest_for_source_selection | manifest.page_source_mappings.values | 1768 | `manifest.page_source_mappings.values(data not statically known)` |
+| prune_manifest_for_source_selection | tuple (src/llm_wiki_cli/services…fest_for_source_selection) | 1770 | `tuple(sorted(...))` |
+| prune_manifest_for_source_selection | sorted (src/llm_wiki_cli/services…fest_for_source_selection) | 1771 | `sorted(...)` |
+| prune_manifest_for_source_selection | is_selected | 1771 | `is_selected(path)` |
+| prune_manifest_for_source_selection | SourceSelectionPruneResult | 1774 | `SourceSelectionPruneResult(manifest, (...), (...))` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `source_paths.update` | `prune_manifest_for_source_selection` | 1765 |
+| mutation | `source_paths.update` | `prune_manifest_for_source_selection` | 1767 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `prune_manifest_for_source_selection` | `isinstance` | 1740 |
-| unresolved_call | `prune_manifest_for_source_selection` | `manifest.page_source_mappings.values` | 1766 |
-| external_call | `prune_manifest_for_source_selection` | `sorted` | 1769 |
-| unresolved_call | `prune_manifest_for_source_selection` | `is_selected` | 1769 |
+| external_call | `prune_manifest_for_source_selection` | `isinstance` | 1742 |
+| unresolved_call | `prune_manifest_for_source_selection` | `manifest.page_source_mappings.values` | 1768 |
+| external_call | `prune_manifest_for_source_selection` | `sorted` | 1771 |
+| unresolved_call | `prune_manifest_for_source_selection` | `is_selected` | 1771 |
 | step_limit | `prune_manifest_for_source_selection` | `first 12 steps` | 0 |
 | truncated_flow | `prune_manifest_for_source_selection` | `depth limit` | 0 |
 

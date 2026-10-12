@@ -1,6 +1,6 @@
 # LintReport
 
-**Location:** `src/llm_wiki_cli/services/lint_service.py:288`
+**Location:** `src/llm_wiki_cli/services/lint_service.py:289`
 **Kind:** Class
 **Bases:** —
 **Module:** [lint_service](../modules/lint_service.md)

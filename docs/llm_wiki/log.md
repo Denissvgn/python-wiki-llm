@@ -2049,3 +2049,31 @@ qualified native projections and authored context. Unchanged recovery can use
 previously retained tombstones, while exact owner revival restores live source
 structure. Ambiguous custody and captured sources without inventory remain
 explicit preflight gaps.
+
+## 2026-10-12
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:d669c4f38255ce3193d137d4e3836b535bb27fb179b3222e531628869f450d1f`
+- Pages created: 1
+- Pages updated: 82
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1508
+- Pages deprecated: 0
+- Semantic fields preserved: 12
+- Moved entities: none
+- Flow pages initialized: 0 (none)
+- Workflow pages created: 1
+- Dependency pages initialized: 0
+- Surface policy updated: no
+
+### Qualified surviving empty modules
+
+Parser-owned empty modules retain current source commitments and authored module
+context while removed declarations become history. Scoped diagnostic retries and
+manifest-selected live reads preserve the distinction between valid emptiness,
+syntax failure, unavailable coverage and module aliases. Cached qualifications
+remain attributable or are rebuilt through the owning parser route.

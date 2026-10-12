@@ -143,9 +143,9 @@ sequenceDiagram
     p3-->>p30: write_basis.assert_current
 ```
 
-> Call sequence diagram shows 30 of 5671 interactions; 5641 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 5724 interactions; 5694 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1955 (1954 omitted); unresolved 1 of 1766 (1765 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1971 (1970 omitted); unresolved 1 of 1793 (1792 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -159,7 +159,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/commands/sync_cmd.py:_sync_run_options_from_args` | 2 | [src/llm_wiki_cli/services/inventory_cache.py](../modules/inventory_cache.md) | internal | 1 |
 | `src/llm_wiki_cli/services/extraction_jobs.py:extraction_job_request_from_args` | 28 | - | external | 5 |
 | `src/llm_wiki_cli/services/extraction_jobs.py:extraction_job_request_from_args` | 28 | [src/llm_wiki_cli/services/extraction_jobs.py](../modules/extraction_jobs.md) | internal | 1 |
-> Omission summary shows 8 of 1260 groups; 1252 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1270 groups; 1262 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -232,7 +232,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | _sync_run_options_from_args | 5032 | `_sync_run_options_from_args(args)` |
+| run | _sync_run_options_from_args | 5089 | `_sync_run_options_from_args(args)` |
 | _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2404 | `getattr(args, 'src_dir', '.')` |
 | _sync_run_options_from_args | Path (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2405 | `Path(getattr(...))` |
 | _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2405 | `getattr(args, 'wiki_dir', 'docs/llm_wiki')` |
@@ -248,7 +248,7 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 5039 |
+| output | `print` | `run` | 5096 |
 | output | `print` | `_sync_run_options_from_args` | 2425 |
 | output | `print` | `_sync_run_options_from_args` | 2431 |
 | output | `print` | `_sync_run_options_from_args` | 2437 |
@@ -275,5 +275,6 @@ consistent generated state so repeating the same command converges to no work.
 
 Removed declarations in surviving documentable modules are retained as qualified
 source history. Exact recorded owner revival can restore live generation without
-inventing lifecycle or approval. Parser/coverage gaps and ambiguous duplicate
-custody stop before writes rather than being interpreted as source removal.
+inventing lifecycle or approval. Previously owned empty modules receive scoped parser qualification; their
+module page remains current while removed declarations become retained history.
+Parser/coverage gaps and ambiguous duplicate custody still stop before writes.

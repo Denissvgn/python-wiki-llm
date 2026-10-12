@@ -120,9 +120,9 @@ sequenceDiagram
     p0-->>p30: committed_state.require_for(inputs.target_wiki_dir)
 ```
 
-> Call sequence diagram shows 30 of 3799 interactions; 3769 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3800 interactions; 3770 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1214 (1213 omitted); unresolved 1 of 859 (858 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1214 (1213 omitted); unresolved 1 of 860 (859 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

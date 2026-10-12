@@ -8,7 +8,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 |---|---:|---|
 | Entities | 663 | [Open section](#entities) |
 | Modules | 243 | [Open section](#modules) |
-| Workflows | 214 | [Open section](#workflows) |
+| Workflows | 215 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 465 | [Open section](#entry-point-flows) |
 | Infrastructure | 2 | [Open section](#infrastructure) |
@@ -1083,6 +1083,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [prune_backup](workflows/prune_backup.md) - entry: `knowledge_storage_lifecycle._prune_backup`
 - [prune_storage](workflows/prune_storage.md) - entry: `knowledge_storage_lifecycle._prune_storage`
 - [qualify_infrastructure_page_drift](workflows/qualify_infrastructure_page_drift.md) - entry: `sync_cmd._qualify_infrastructure_page_drift`
+- [qualify_surviving_module_inventory](workflows/qualify_surviving_module_inventory.md) - entry: `sync_cmd._qualify_surviving_module_inventory`
 - [query_cmd_flow](workflows/query_cmd_flow.md) - entry: `query_cmd.run`
 - [read_entity_retirement_state](workflows/read_entity_retirement_state.md) - entry: `source_retirement.read_entity_retirement_state`
 - [read_manifest_header](workflows/read_manifest_header.md) - entry: `manifest_storage.read_manifest_header`

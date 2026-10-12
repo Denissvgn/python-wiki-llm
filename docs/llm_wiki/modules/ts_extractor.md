@@ -15,6 +15,12 @@ Requirements
 * Node.js (``node``) on PATH.
 * TypeScript dependencies prepared with ``llm-wiki prepare-extractors``.
 
+The diagnostic helper can return parser-produced empty records through explicit
+retention arguments. Syntax diagnostics reject recovered partial ASTs before
+inventory emission. Absolute helper record paths are joined with relative path
+outcomes under the actual source root; aliases outside that root cannot claim
+an empty source record.
+
 ## Imports
 
 | Source | Symbols |

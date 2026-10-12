@@ -2,7 +2,7 @@
 
 **Entry point:** `build_context` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), and 42 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), and 43 more
 
 **Complete modules touched:**
 
@@ -43,6 +43,7 @@
 - [python_implementation](../modules/python_implementation.md)
 - [python_imports](../modules/python_imports.md)
 - [services_dependencies](../modules/services_dependencies.md)
+- [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
@@ -81,14 +82,14 @@ sequenceDiagram
     participant p18 as capture_source_selection_inputs
     participant p19 as validate_live_query_source_selection
     participant p20 as build_source_snapshot
-    participant p21 as _normalise_protocol_focus
-    participant p22 as _normalise_protocol_filters
-    participant p23 as _apply_protocol_filters
-    participant p24 as _capture_protocol_enrichment_session
-    participant p25 as _context_freshness_rank_by_source
-    participant p26 as _context_enrichment_from_session
-    participant p27 as _selected_git_changed_files
-    participant p28 as _build_import_graph
+    participant p21 as retained_empty_module_paths_from_wiki
+    participant p22 as _normalise_protocol_focus
+    participant p23 as _normalise_protocol_filters
+    participant p24 as _apply_protocol_filters
+    participant p25 as _capture_protocol_enrichment_session
+    participant p26 as _context_freshness_rank_by_source
+    participant p27 as _context_enrichment_from_session
+    participant p28 as _selected_git_changed_files
     participant p29 as str (src/llm_wiki_cli/api.py:build_context)
     participant p30 as validated.get
     p0->>p1: _normalize_optional_knowledge_mode
@@ -111,21 +112,21 @@ sequenceDiagram
     p12->>p18: capture_source_selection_inputs
     p12->>p19: validate_live_query_source_selection
     p12->>p20: build_source_snapshot
-    p13->>p21: _normalise_protocol_focus
-    p13->>p22: _normalise_protocol_filters
-    p12->>p23: _apply_protocol_filters
-    p12->>p24: _capture_protocol_enrichment_session
-    p12->>p25: _context_freshness_rank_by_source
-    p12->>p26: _context_enrichment_from_session
-    p12->>p27: _selected_git_changed_files
-    p12->>p28: _build_import_graph
+    p12->>p21: retained_empty_module_paths_from_wiki
+    p13->>p22: _normalise_protocol_focus
+    p13->>p23: _normalise_protocol_filters
+    p12->>p24: _apply_protocol_filters
+    p12->>p25: _capture_protocol_enrichment_session
+    p12->>p26: _context_freshness_rank_by_source
+    p12->>p27: _context_enrichment_from_session
+    p12->>p28: _selected_git_changed_files
     p0-->>p29: str (src/llm_wiki_cli/api.py:build_context)(exc)
     p0-->>p30: validated.get(KNOWLEDGE_MODE_REQUEST_FIELD)
 ```
 
-> Call sequence diagram shows 30 of 2173 interactions; 2143 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2182 interactions; 2152 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 735 (734 omitted); unresolved 1 of 797 (796 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 737 (736 omitted); unresolved 1 of 800 (799 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -139,7 +140,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 11 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 14 | - | external | 11 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 14 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 10 |
-> Omission summary shows 8 of 480 groups; 472 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 485 groups; 477 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -210,7 +211,7 @@ flowchart LR
 | _normalize_optional_knowledge_mode | InvalidRequestError | 399 | `InvalidRequestError(..., code='invalid-request', details={...})` |
 | _normalize_optional_knowledge_mode | cast (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 404 | `cast(KnowledgeMode, value)` |
 | build_context | _validate_protocol_request | 1256 | `context_cmd._validate_protocol_request(request)` |
-| _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 1104 | `isinstance(data, dict)` |
+| _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 1110 | `isinstance(data, dict)` |
 
 ### Boundary effects
 
@@ -224,7 +225,7 @@ flowchart LR
 | external_call | `_normalize_optional_knowledge_mode` | `isinstance` | 397 |
 | unresolved_call | `_normalize_optional_knowledge_mode` | `', '.join` | 398 |
 | external_call | `_normalize_optional_knowledge_mode` | `cast` | 404 |
-| external_call | `_validate_protocol_request` | `isinstance` | 1104 |
+| external_call | `_validate_protocol_request` | `isinstance` | 1110 |
 | step_limit | `build_context` | `first 12 steps` | 0 |
 | truncated_flow | `build_context` | `depth limit` | 0 |
 

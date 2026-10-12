@@ -2,7 +2,7 @@
 
 **Entry point:** `build_budgeted_context` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 57 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 58 more
 
 **Complete modules touched:**
 
@@ -56,6 +56,7 @@
 - [python_implementation](../modules/python_implementation.md)
 - [python_imports](../modules/python_imports.md)
 - [services_dependencies](../modules/services_dependencies.md)
+- [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
@@ -100,10 +101,10 @@ sequenceDiagram
     participant p22 as validate_changes
     participant p23 as _guard_windows_inputs
     participant p24 as _assert_source_unchanged
-    participant p25 as _assert_source_inputs_unchanged
-    participant p26 as _wiki_anchor
-    participant p27 as get_entry_points
-    participant p28 as read_console_scripts
+    participant p25 as retained_empty_module_paths_from_wiki
+    participant p26 as _assert_source_inputs_unchanged
+    participant p27 as _wiki_anchor
+    participant p28 as get_entry_points
     participant p29 as ValueError (src/llm_wiki_cli/services…py:build_budgeted_context)
     participant p30 as request.get (src/llm_wiki_cli/services…py:build_budgeted_context)
     p0->>p1: build_budgeted_context (src/llm_wiki_cli/services/context_budget.py)
@@ -130,17 +131,17 @@ sequenceDiagram
     p2->>p22: validate_changes
     p3->>p23: _guard_windows_inputs
     p3->>p24: _assert_source_unchanged
-    p3->>p25: _assert_source_inputs_unchanged
-    p3->>p26: _wiki_anchor
-    p3->>p27: get_entry_points
-    p3->>p28: read_console_scripts
+    p3->>p25: retained_empty_module_paths_from_wiki
+    p3->>p26: _assert_source_inputs_unchanged
+    p3->>p27: _wiki_anchor
+    p3->>p28: get_entry_points
     p1-->>p29: ValueError (src/llm_wiki_cli/services…py:build_budgeted_context)('Exact mode requires an explicit trusted counter or --tokenizer FILE')
     p1-->>p30: request.get (src/llm_wiki_cli/services…py:build_budgeted_context)('counter_id')
 ```
 
-> Call sequence diagram shows 30 of 3391 interactions; 3361 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3400 interactions; 3370 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1203 (1202 omitted); unresolved 1 of 1095 (1094 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1205 (1204 omitted); unresolved 1 of 1098 (1097 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -154,7 +155,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 21 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 1 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 24 | - | external | 11 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 24 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 12 |
-> Omission summary shows 8 of 805 groups; 797 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 810 groups; 802 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

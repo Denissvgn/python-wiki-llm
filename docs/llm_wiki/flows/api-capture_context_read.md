@@ -87,27 +87,27 @@ sequenceDiagram
     participant p5 as build_source_snapshot
     participant p6 as _guard_windows_inputs
     participant p7 as _assert_source_unchanged
-    participant p8 as _assert_source_inputs_unchanged
-    participant p9 as _wiki_anchor
-    participant p10 as get_entry_points
-    participant p11 as read_console_scripts
-    participant p12 as resolve_call_edges
-    participant p13 as build_flow
-    participant p14 as build_data_flow_context
-    participant p15 as analyze_data_flow
-    participant p16 as evaluate_surface_index
-    participant p17 as _build_context_knowledge_view
-    participant p18 as analyze_dependencies
-    participant p19 as _assert_wiki_unchanged
-    participant p20 as _selected_git_changed_files
-    participant p21 as _freeze_json
-    participant p22 as attach_maintenance_status
-    participant p23 as validate_path
-    participant p24 as ContextPacketUnavailableError
-    participant p25 as ProtocolRequestError
-    participant p26 as _source_anchor
-    participant p27 as _extractor_failure_message
-    participant p28 as runtime_plugin_fallback_root
+    participant p8 as retained_empty_module_paths_from_wiki
+    participant p9 as _assert_source_inputs_unchanged
+    participant p10 as _wiki_anchor
+    participant p11 as get_entry_points
+    participant p12 as read_console_scripts
+    participant p13 as resolve_call_edges
+    participant p14 as build_flow
+    participant p15 as build_data_flow_context
+    participant p16 as analyze_data_flow
+    participant p17 as evaluate_surface_index
+    participant p18 as _build_context_knowledge_view
+    participant p19 as analyze_dependencies
+    participant p20 as _assert_wiki_unchanged
+    participant p21 as _selected_git_changed_files
+    participant p22 as _freeze_json
+    participant p23 as attach_maintenance_status
+    participant p24 as validate_path
+    participant p25 as ContextPacketUnavailableError
+    participant p26 as ProtocolRequestError
+    participant p27 as _source_anchor
+    participant p28 as _extractor_failure_message
     participant p29 as isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)
     participant p30 as source_root.is_dir (src/llm_wiki_cli/services…t.py:capture_context_read)
     p0->>p1: validate_source_root
@@ -117,34 +117,34 @@ sequenceDiagram
     p0->>p5: build_source_snapshot
     p0->>p6: _guard_windows_inputs
     p0->>p7: _assert_source_unchanged
-    p0->>p8: _assert_source_inputs_unchanged
-    p0->>p9: _wiki_anchor
-    p0->>p10: get_entry_points
-    p0->>p11: read_console_scripts
-    p0->>p12: resolve_call_edges
-    p0->>p13: build_flow
-    p0->>p14: build_data_flow_context
-    p0->>p15: analyze_data_flow
-    p0->>p16: evaluate_surface_index
-    p0->>p17: _build_context_knowledge_view
-    p0->>p18: analyze_dependencies
-    p0->>p19: _assert_wiki_unchanged
-    p0->>p20: _selected_git_changed_files
-    p0->>p21: _freeze_json
-    p0->>p22: attach_maintenance_status
-    p0->>p23: validate_path
-    p0->>p24: ContextPacketUnavailableError
-    p0->>p25: ProtocolRequestError
-    p0->>p26: _source_anchor
-    p0->>p27: _extractor_failure_message
-    p0->>p28: runtime_plugin_fallback_root
+    p0->>p8: retained_empty_module_paths_from_wiki
+    p0->>p9: _assert_source_inputs_unchanged
+    p0->>p10: _wiki_anchor
+    p0->>p11: get_entry_points
+    p0->>p12: read_console_scripts
+    p0->>p13: resolve_call_edges
+    p0->>p14: build_flow
+    p0->>p15: build_data_flow_context
+    p0->>p16: analyze_data_flow
+    p0->>p17: evaluate_surface_index
+    p0->>p18: _build_context_knowledge_view
+    p0->>p19: analyze_dependencies
+    p0->>p20: _assert_wiki_unchanged
+    p0->>p21: _selected_git_changed_files
+    p0->>p22: _freeze_json
+    p0->>p23: attach_maintenance_status
+    p0->>p24: validate_path
+    p0->>p25: ContextPacketUnavailableError
+    p0->>p26: ProtocolRequestError
+    p0->>p27: _source_anchor
+    p0->>p28: _extractor_failure_message
     p0-->>p29: isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)(read_only, bool)
     p0-->>p30: source_root.is_dir (src/llm_wiki_cli/services…t.py:capture_context_read)
 ```
 
-> Call sequence diagram shows 30 of 5299 interactions; 5269 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 5308 interactions; 5278 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1701 (1700 omitted); unresolved 1 of 1719 (1718 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1703 (1702 omitted); unresolved 1 of 1722 (1721 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -158,7 +158,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_source_root` | 14 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 14 | - | external | 11 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 14 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
-> Omission summary shows 8 of 1318 groups; 1310 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1324 groups; 1316 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -198,7 +198,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `capture_context_read` | `src_dir: str`, `wiki_dir: str`, `allow_external_src: bool`, `read_only: bool`, `job_request: ExtractionJobRequest \| None`, `plan_reporter: Callable[[ExtractionJobPlan], None] \| None`, `source_selection: str \| Path \| None`, `allow_selection_mismatch: bool` | `PathValidationError`, `DocumentationQueryError`, `context_service`, `os`, `InventoryResult`, `SourceSnapshot`, `DocumentationQueryError`, `DocumentationQueryError` | `capture_options[...]`, `capture_options[...]`, `capture_options[...]`, `capture_options[...]`, `capture_options[...]`, `wiki_options[...]`, `wiki_options[...]`, `wiki_check_options[...]` | `captured` |
+| `capture_context_read` | `src_dir: str`, `wiki_dir: str`, `allow_external_src: bool`, `read_only: bool`, `job_request: ExtractionJobRequest \| None`, `plan_reporter: Callable[[ExtractionJobPlan], None] \| None`, `source_selection: str \| Path \| None`, `allow_selection_mismatch: bool` | `PathValidationError`, `DocumentationQueryError`, `context_service`, `os`, `InventoryResult`, `SourceSnapshot`, `DocumentationQueryError`, `DocumentationQueryError` | `capture_options[...]`, `capture_options[...]`, `capture_options[...]`, `capture_options[...]`, `capture_options[...]`, `helper_options[...]`, `wiki_options[...]`, `wiki_options[...]` | `captured` |
 | `isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)` | - | - | - | - |
 | `TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)` | - | - | - | - |
 | `isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)` | - | - | - | - |

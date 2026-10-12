@@ -2,7 +2,7 @@
 
 **Entry point:** `build_qualified_context` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [change_selection](../modules/change_selection.md), and 56 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [change_selection](../modules/change_selection.md), and 57 more
 
 **Complete modules touched:**
 
@@ -56,6 +56,7 @@
 - [python_implementation](../modules/python_implementation.md)
 - [python_imports](../modules/python_imports.md)
 - [services_dependencies](../modules/services_dependencies.md)
+- [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
@@ -101,8 +102,8 @@ sequenceDiagram
     participant p24 as build_source_snapshot
     participant p25 as _guard_windows_inputs
     participant p26 as _assert_source_unchanged
-    participant p27 as _assert_source_inputs_unchanged
-    participant p28 as _wiki_anchor
+    participant p27 as retained_empty_module_paths_from_wiki
+    participant p28 as _assert_source_inputs_unchanged
     participant p29 as isinstance (src/llm_wiki_cli/api.py:build_qualified_context)
     participant p30 as request.get (src/llm_wiki_cli/api.py:build_qualified_context)
     p0->>p1: _normalize_optional_knowledge_mode
@@ -131,15 +132,15 @@ sequenceDiagram
     p8->>p24: build_source_snapshot
     p8->>p25: _guard_windows_inputs
     p8->>p26: _assert_source_unchanged
-    p8->>p27: _assert_source_inputs_unchanged
-    p8->>p28: _wiki_anchor
+    p8->>p27: retained_empty_module_paths_from_wiki
+    p8->>p28: _assert_source_inputs_unchanged
     p0-->>p29: isinstance (src/llm_wiki_cli/api.py:build_qualified_context)(supplied_protocol, str)
     p0-->>p30: request.get (src/llm_wiki_cli/api.py:build_qualified_context)('protocol')
 ```
 
-> Call sequence diagram shows 30 of 3838 interactions; 3808 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3847 interactions; 3817 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1273 (1272 omitted); unresolved 1 of 1337 (1336 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1275 (1274 omitted); unresolved 1 of 1340 (1339 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -153,7 +154,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/context_packet.py:_normalized_request` | 13 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 1 |
 | `src/llm_wiki_cli/services/context_packet.py:_normalized_request` | 13 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 20 | - | external | 2 |
-> Omission summary shows 8 of 860 groups; 852 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 865 groups; 857 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

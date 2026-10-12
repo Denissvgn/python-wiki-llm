@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [task_cmd](../modules/task_cmd.md)
-**Modules touched:** [api](../modules/api.md), [change_selection](../modules/change_selection.md), [config](../modules/config.md), [context_budget](../modules/context_budget.md), and 43 more
+**Modules touched:** [api](../modules/api.md), [change_selection](../modules/change_selection.md), [config](../modules/config.md), [context_budget](../modules/context_budget.md), and 44 more
 
 **Complete modules touched:**
 
@@ -38,6 +38,7 @@
 - [search_service](../modules/search_service.md)
 - [section_ownership](../modules/section_ownership.md)
 - [services_dependencies](../modules/services_dependencies.md)
+- [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [storage_receipts](../modules/storage_receipts.md)
@@ -124,7 +125,7 @@ sequenceDiagram
     p0-->>p30: result.to_payload
 ```
 
-> Call sequence diagram shows 30 of 1423 interactions; 1393 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1424 interactions; 1394 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 1 of 595 (594 omitted); unresolved 1 of 343 (342 omitted). These counts cover the captured static trace.
 
@@ -140,7 +141,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 12 | - | unresolved | 5 |
 | `src/llm_wiki_cli/commands/task_cmd.py:_compact_outputs` | 3 | [src/llm_wiki_cli/commands/task_cmd.py](../modules/task_cmd.md) | internal | 5 |
 | `src/llm_wiki_cli/commands/task_cmd.py:_compact_outputs` | 3 | - | unresolved | 12 |
-> Omission summary shows 8 of 302 groups; 294 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 303 groups; 295 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

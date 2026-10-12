@@ -150,9 +150,9 @@ sequenceDiagram
     p2-->>p30: lines.append(...)
 ```
 
-> Call sequence diagram shows 30 of 4270 interactions; 4240 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4280 interactions; 4250 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1364 (1363 omitted); unresolved 1 of 1457 (1456 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1366 (1365 omitted); unresolved 1 of 1460 (1459 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -166,7 +166,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_path` | 21 | - | unresolved | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 21 | - | external | 2 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 20 | - | unresolved | 5 |
-> Omission summary shows 8 of 1078 groups; 1070 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1085 groups; 1077 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -222,7 +222,7 @@ flowchart LR
 | `isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit)` | - | - | - | - |
 | `isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit)` | - | - | - | - |
 | `ValueError (src/llm_wiki_cli/services…e.py:validate_queue_limit)` | - | - | - | - |
-| `capture_context_read` | `src_dir: str`, `wiki_dir: str`, `allow_external_src: bool`, `read_only: bool`, `job_request: ExtractionJobRequest \| None`, `plan_reporter: Callable[[ExtractionJobPlan], None] \| None`, `source_selection: str \| Path \| None`, `allow_selection_mismatch: bool` | `PathValidationError`, `DocumentationQueryError`, `context_service`, `os`, `InventoryResult`, `SourceSnapshot`, `DocumentationQueryError`, `DocumentationQueryError` | `capture_options[...]`, `capture_options[...]`, `capture_options[...]`, `capture_options[...]`, `capture_options[...]`, `wiki_options[...]`, `wiki_options[...]`, `wiki_check_options[...]` | `captured` |
+| `capture_context_read` | `src_dir: str`, `wiki_dir: str`, `allow_external_src: bool`, `read_only: bool`, `job_request: ExtractionJobRequest \| None`, `plan_reporter: Callable[[ExtractionJobPlan], None] \| None`, `source_selection: str \| Path \| None`, `allow_selection_mismatch: bool` | `PathValidationError`, `DocumentationQueryError`, `context_service`, `os`, `InventoryResult`, `SourceSnapshot`, `DocumentationQueryError`, `DocumentationQueryError` | `capture_options[...]`, `capture_options[...]`, `capture_options[...]`, `capture_options[...]`, `capture_options[...]`, `helper_options[...]`, `wiki_options[...]`, `wiki_options[...]` | `captured` |
 | `isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)` | - | - | - | - |
 | `TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)` | - | - | - | - |
 | `isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)` | - | - | - | - |

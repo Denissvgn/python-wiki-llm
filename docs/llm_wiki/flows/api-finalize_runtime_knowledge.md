@@ -119,9 +119,9 @@ sequenceDiagram
     p0-->>p30: committed_state.require_for (src/llm_wiki_cli/services…inalize_runtime_knowledge)(inputs.target_wiki_dir)
 ```
 
-> Call sequence diagram shows 30 of 3491 interactions; 3461 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3492 interactions; 3462 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1132 (1131 omitted); unresolved 1 of 770 (769 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1132 (1131 omitted); unresolved 1 of 771 (770 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

@@ -59,7 +59,7 @@ flowchart TD
 | [documentation_query_builder](modules/documentation_query_builder.md) | 14 | 19 |
 | [implementation_evidence](modules/implementation_evidence.md) | 14 | 2 |
 | [knowledge_observability](modules/knowledge_observability.md) | 14 | 10 |
-| [context_packet](modules/context_packet.md) | 13 | 31 |
+| [context_packet](modules/context_packet.md) | 13 | 32 |
 | [services_dependencies](modules/services_dependencies.md) | 13 | 8 |
 | [immutable](modules/immutable.md) | 13 | 0 |
 | [knowledge_graph](modules/knowledge_graph.md) | 13 | 6 |
@@ -78,13 +78,14 @@ flowchart TD
 | [python_implementation](modules/python_implementation.md) | 10 | 1 |
 | [services_schema](modules/services_schema.md) | 10 | 4 |
 | [change_selection](modules/change_selection.md) | 9 | 2 |
-| [context_service](modules/context_service.md) | 9 | 30 |
+| [context_service](modules/context_service.md) | 9 | 31 |
 | [documentation_queries](modules/documentation_queries.md) | 9 | 9 |
 | [inventory_cache](modules/inventory_cache.md) | 9 | 10 |
 | [knowledge_freshness](modules/knowledge_freshness.md) | 9 | 8 |
 | [knowledge_orchestration](modules/knowledge_orchestration.md) | 9 | 26 |
 | [request_json](modules/request_json.md) | 9 | 0 |
 | [skills](modules/skills.md) | 9 | 2 |
+| [source_retirement](modules/source_retirement.md) | 9 | 5 |
 | [workflow_profile](modules/workflow_profile.md) | 9 | 1 |
 | [analysis_capture](modules/analysis_capture.md) | 8 | 4 |
 | [concept_identity](modules/concept_identity.md) | 8 | 2 |
@@ -106,7 +107,6 @@ flowchart TD
 | [knowledge_verification](modules/knowledge_verification.md) | 6 | 4 |
 | [manifest_storage](modules/manifest_storage.md) | 6 | 6 |
 | [python_imports](modules/python_imports.md) | 6 | 1 |
-| [source_retirement](modules/source_retirement.md) | 6 | 5 |
 | [sync_transitions](modules/sync_transitions.md) | 6 | 10 |
 | [context_budget](modules/context_budget.md) | 5 | 8 |
 | [refresh](modules/refresh.md) | 5 | 9 |
@@ -168,7 +168,7 @@ flowchart TD
 | [ci_installer](modules/ci_installer.md) | 2 | 5 |
 | [context_session](modules/context_session.md) | 2 | 10 |
 | [diagrams](modules/diagrams.md) | 2 | 2 |
-| [documentation_native](modules/documentation_native.md) | 2 | 25 |
+| [documentation_native](modules/documentation_native.md) | 2 | 26 |
 | [packet](modules/packet.md) | 2 | 5 |
 | [verify](modules/verify.md) | 2 | 9 |
 | [go_calls](modules/go_calls.md) | 2 | 0 |
