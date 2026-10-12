@@ -286,3 +286,9 @@ flowchart LR
 ## Behavior
 
 Runs strict validation unconditionally and emits text, Markdown or JSON to the console. By default it attempts a Markdown report, or uses an explicit `--report` destination; `--no-report` suppresses that artifact without disabling checks. A selected report is attempted even when validation finds issues. Blocking check findings or a required explicit report-write failure cause a nonzero exit; local metrics remain best effort.
+
+For console-only JSON, the maintenance recipe selects report schema v4. It
+supports flat and migrated native snapshots, retaining the chosen comparison
+policy and separate check/command exits. Automatic schema selection follows the
+comparison metadata; physical layout alone cannot qualify a legacy schema.
+Older envelopes do not provide a reason to replace the chosen native policy.

@@ -2095,3 +2095,5 @@ remain attributable or are rebuilt through the owning parser route.
 - Moved entities: none
 
 Go, Rust and Haskell diagnostic reads now retain exact parser-owned file outcomes through a shared native response boundary. Syntax/read failures, unavailable helpers and failed batches stay distinct; partial coverage cannot create module or member-retirement authority.
+
+Maintenance guidance now uses CI report schema v4 for console-only output across flat and migrated native wikis. Report-write authority and comparison policy remain separate; older envelopes are qualified by metadata rather than physical layout.
