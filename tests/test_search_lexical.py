@@ -184,7 +184,7 @@ def test_word_forms_retrieve_captured_section_without_rewriting_evidence(base, q
     match = result["results"][0]
     assert match["path"] == owner["path"]
     assert match["provenance"]["content_sha256"] == hashlib.sha256(content.encode()).hexdigest()
-    assert match["provenance"]["configuration"] == "idf-sections-word-forms-links/v1"
+    assert match["provenance"]["configuration"] == "idf-sections-prose-families-links/v2"
     assert "live comparison not performed" in match["provenance"]["qualification"]
     assert match["matched_section_locations"][0]["heading_path"] == ["Payload", "Notes"]
     assert owner == original
@@ -196,6 +196,49 @@ def test_word_family_discovery_does_not_replace_exact_symbol_or_page_identity():
     assert rank_pages([related, exact], "rename")["results"][0]["id"] == "object"
     assert rank_pages([related, exact], "renaming")["results"][0]["id"] == "renaming"
     assert not any("defined-symbol" in row["reasons"] for row in rank_pages([exact], "renamed")["results"])
+
+
+@pytest.mark.parametrize("noun,query", [
+    ("serialization", "serialized"), ("serialisation", "serialised"),
+    ("serializations", "serializing"), ("normalization", "normalizing"),
+    ("classification", "classifies"), ("verification", "verifying"),
+    ("identification", "identified"), ("modification", "modified"),
+    ("simplification", "simplifies"), ("notification", "notified"),
+])
+def test_nominal_prose_family_retains_original_text_and_source_qualification(noun, query):
+    content = f"# Engine\n\n## Description\n{noun.capitalize()} preserves the record boundary.\n"
+    owner = page("engine", content)
+    original = deepcopy(owner)
+    result = rank_pages([owner], query)
+    match = result["results"][0]
+    assert match["path"] == owner["path"]
+    assert match["provenance"]["content_sha256"] == hashlib.sha256(content.encode()).hexdigest()
+    assert "defined-symbol" not in match["reasons"]
+    assert match["matched_section_locations"][0]["heading_path"] == ["Engine", "Description"]
+    assert "live comparison not performed" in match["provenance"]["qualification"]
+    assert owner == original
+
+
+@pytest.mark.parametrize("body", [
+    "## Imports\nSerialization helpers.",
+    "## Functions\n| Function | Signature | Description |\n|---|---|---|\n| `serialization` | `serialization(value)` | Boundary operation. |",
+    "## Description\n`serialization` is an identifier.",
+    "## Description\n```text\nSerialization\n```",
+    "## Description\nSérialization is an unrelated Unicode word.",
+])
+def test_nominal_expansion_does_not_promote_inventory_identifiers_or_code(body):
+    assert rank_pages([page("engine", body)], "serialized")["results"] == []
+
+
+def test_definition_description_prose_expands_without_aliasing_the_defined_symbol():
+    owner = page("engine", "## Functions\n| Function | Signature | Description |\n|---|---|---|\n| `snapshot` | `snapshot(value)` | Canonical serialization. |\n")
+    exact = page("serialized", "## Description\nUnrelated operation.\n")
+    result = rank_pages([owner, exact], "serialized")
+    assert result["results"][0]["path"] == exact["path"]
+    derived = next(row for row in result["results"] if row["path"] == owner["path"])
+    assert "defined-symbol" not in derived["reasons"]
+    assert derived["matched_sections"] == [["Functions"]]
+    assert rank_pages([owner], "snapshot")["results"][0]["reasons"][0] == "defined-symbol"
 
 
 def test_word_form_matching_is_approximate_navigation_not_a_semantic_answer():

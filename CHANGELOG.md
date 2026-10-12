@@ -45,6 +45,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Symptom discovery connects nominal word families such as serialization and
+  serialized in captured explanatory prose, while keeping exact identities and
+  generated identifiers literal.
+
 - Invalid CI report-schema diagnostics list every supported choice, including
   `auto` and `v4`.
 

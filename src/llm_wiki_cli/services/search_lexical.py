@@ -17,7 +17,7 @@ from .wiki_media import mask_fenced_code_blocks
 from .search_rank import MAX_SEARCH_BYTES, MAX_SEARCH_PAGES, _STOP_WORDS, _WORDS
 
 RANKING_VERSION = "llm-wiki-search/lexical-v2"
-CONFIGURATION_ID = "idf-sections-word-forms-links/v1"
+CONFIGURATION_ID = "idf-sections-prose-families-links/v2"
 _SEMANTIC = frozenset({"description", "behavior", "notes", "usage", "troubleshooting"})
 _DEFINITIONS = frozenset({"functions", "methods", "classes"})
 _INVENTORY = frozenset({"imports", "relationships", "modules", "entities", "touches", "sequence", "surface overview"})
@@ -60,6 +60,25 @@ def _tokens(text):
     return [_word_form(word) for word in _WORDS.findall(text) if word not in _STOP_WORDS]
 
 
+def _prose_aliases(text):
+    """Bounded nominal families in explanatory text, never identifier aliases."""
+    text = re.sub(r"`[^`\n]*`", "", mask_fenced_code_blocks(text))
+    aliases = Counter()
+    for word in _WORDS.findall(_normal(text)):
+        if not word.isascii() or not word.isalpha():
+            continue
+        noun = word[:-1] if word.endswith(("izations", "isations", "ifications")) else word
+        if noun.endswith(("ization", "isation")) and len(noun) > 8:
+            alias = _word_form(noun[:-5] + "e")
+        elif noun.endswith("ification") and len(noun) > 10:
+            alias = _word_form(noun[:-7] + "y")
+        else:
+            continue
+        if alias != _word_form(word):
+            aliases[alias] += 1
+    return aliases
+
+
 def _fields(page):
     """Disjoint captured spans; child sections do not multiply parent evidence."""
     content = page["content"]
@@ -79,6 +98,8 @@ def _fields(page):
         weight = 3.0 if owner in _SEMANTIC else 1.8 if owner in _DEFINITIONS else .45 if owner in _INVENTORY else 1.0
         body = document.normalized_markdown[section.body_start:end]
         words = Counter(_tokens(body))
+        if owner in _SEMANTIC:
+            words.update(_prose_aliases(body))
         fields.append({"heading": list(section.heading_path), "start": section.body_start,
                        "end": end, "weight": weight, "words": words,
                        "locator": section.locator, "ordinal": section.ordinal,
@@ -98,6 +119,8 @@ def _fields(page):
                     header = names
                     continue
                 if header is not None and len(cells) == len(header):
+                    if "description" in header:
+                        words.update(_prose_aliases(cells[header.index("description")]))
                     name = semantic_table_key(cells[0])
                     if _SYMBOL.fullmatch(name):
                         definitions.add(_normal(name))
