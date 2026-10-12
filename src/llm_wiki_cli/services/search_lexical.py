@@ -17,7 +17,7 @@ from .wiki_media import mask_fenced_code_blocks
 from .search_rank import MAX_SEARCH_BYTES, MAX_SEARCH_PAGES, _STOP_WORDS, _WORDS
 
 RANKING_VERSION = "llm-wiki-search/lexical-v2"
-CONFIGURATION_ID = "idf-sections-prose-families-traces-links/v2"
+CONFIGURATION_ID = "idf-sections-local-prose-entry-links/v2"
 _SEMANTIC = frozenset({"description", "behavior", "notes", "usage", "troubleshooting"})
 _DEFINITIONS = frozenset({"functions", "methods", "classes"})
 _INVENTORY = frozenset({"imports", "relationships", "modules", "entities", "touches", "sequence", "surface overview"})
@@ -29,6 +29,8 @@ _FLOW_PLACEHOLDER = re.compile(
 )
 _LINK = re.compile(r"\]\(([^\s)]+)\)")
 _SYMBOL = re.compile(r"[\w.]+\Z", re.UNICODE)
+_ENTRY_POINT = re.compile(r"^\*\*Entry point:\*\* `([^`\n]+)` \(`[^`\n]+`\)\s*$", re.MULTILINE)
+_ENTRY_SOURCE = re.compile(r"^\*\*Source:\*\* \[[^\]\n]+\]\(([^\s)]+)\)\s*$", re.MULTILINE)
 
 
 def _normal(text):
@@ -210,6 +212,88 @@ def _linked_candidates(documents, strict, terms):
     return linked
 
 
+def _function_descriptions(document):
+    """Read literal formal rows, preserving their original section citations."""
+    rows = []
+    for field in document[1]:
+        if not field["heading"] or field["heading"][-1].casefold() != "functions":
+            continue
+        header = None
+        for line in mask_fenced_code_blocks(document[6][field["start"]:field["end"]]).splitlines():
+            cells = split_table_row(line)
+            if not cells:
+                header = None
+                continue
+            names = [cell.strip().casefold() for cell in cells]
+            if names[0] in {"name", "function"} and {"signature", "description"} <= set(names):
+                header = names
+                continue
+            if header is not None and len(cells) == len(header):
+                symbol = semantic_table_key(cells[0])
+                if _SYMBOL.fullmatch(symbol):
+                    rows.append((symbol, cells[header.index("description")], field))
+    return rows
+
+
+def _entry_candidates(documents, strict, terms, weights, average_length):
+    """One-hop lexical leads from formal descriptions to explicitly declared flows."""
+    counts = Counter(document[0]["path"] for document in documents)
+    targets = {document[0]["path"]: document for document in documents if counts[document[0]["path"]] == 1}
+    declared = {}
+    for target in targets.values():
+        page, fields = target[:2]
+        if page["kind"] not in {"flow", "flows"}:
+            continue
+        preamble = mask_fenced_code_blocks("\n".join(target[6][field["start"]:field["end"]] for field in fields if len(field["heading"]) <= 1))
+        entries, sources = _ENTRY_POINT.findall(preamble), _ENTRY_SOURCE.findall(preamble)
+        if len(entries) != 1 or len(sources) != 1 or not _SYMBOL.fullmatch(entries[0]):
+            continue
+        try:
+            source = urlsplit(sources[0])
+        except ValueError:
+            continue
+        if source.scheme or source.netloc or source.fragment or source.query or not source.path:
+            continue
+        path = posixpath.normpath(posixpath.join(posixpath.dirname(page["path"]), unquote(source.path)))
+        donor = targets.get(path)
+        if path.startswith(("../", "/")) or donor is None or donor[0]["kind"] not in {"module", "modules"}:
+            continue
+        declared.setdefault((path, _normal(entries[0])), []).append(target)
+    families = {term: {term, *_prose_aliases(term)} for term in terms}
+    linked = []
+    for tier, _, result in strict:
+        donor = targets.get(result["path"])
+        if tier or donor is None or result["kind"] not in {"module", "modules"}:
+            continue
+        rows = _function_descriptions(donor)
+        occurrences = Counter(_normal(row[0]) for row in rows)
+        for symbol, prose, field in rows:
+            destinations = declared.get((result["path"], _normal(symbol)), [])
+            if occurrences[_normal(symbol)] != 1 or len(destinations) != 1:
+                continue
+            words = set(_tokens(prose)) | _prose_aliases(prose).keys()
+            hits = {term for term in terms if families[term] & words}
+            coverage = sum(weights[t] for t in hits) / max(1e-12, sum(weights.values()))
+            if len(hits) < 2 or coverage < .45:
+                continue
+            target = destinations[0]
+            page, digest = target[0], target[7]
+            normalization = .35 + .65 * len(_tokens(prose)) / max(1, average_length)
+            value = 3 * 2.2 / (1 + 1.2 * normalization) * sum(weights[t] for t in hits) + 8 * coverage
+            source_index = page.get("indexing") or page.get("source_index")
+            wiki_hash = (source_index.get("original_wiki_content_sha256", source_index.get("wiki_content_sha256", digest))
+                         if isinstance(source_index, Mapping) else digest)
+            match = deepcopy({key: val for key, val in page.items() if key != "content"})
+            match.update(score=round(value, 6), reasons=["declared-entry-description-candidate:" + result["path"]],
+                snippet=re.sub(r"\s+", " ", target[6][:250]).strip(), matched_sections=[], matched_section_locations=[],
+                linked_evidence=[{"path": result["path"], "content_sha256": donor[7], "section_locator": field.get("locator"),
+                    "defined_symbol": symbol, "target_path": page["path"], "description": prose}],
+                provenance={"content_sha256": wiki_hash, "indexed_content_sha256": digest, "ranking": RANKING_VERSION,
+                    "configuration": CONFIGURATION_ID, "qualification": "declared-entry-description-candidate; live comparison not performed"})
+            linked.append((0, value, match))
+    return linked
+
+
 def rank_pages(pages, query: str, *, limit=20, max_pages=MAX_SEARCH_PAGES, max_bytes=MAX_SEARCH_BYTES) -> dict:
     """Rank only supplied captured text within honest, fail-closed work bounds."""
     if not isinstance(query, str) or not query.strip() or len(query) > 4096:
@@ -253,7 +337,8 @@ def rank_pages(pages, query: str, *, limit=20, max_pages=MAX_SEARCH_PAGES, max_b
     count = len(documents)
     weights = {term: math.log1p((count + 1) / (frequency[term] + 1)) for term in terms}
     total_weight = sum(weights.values())
-    average_length = sum(sum(document[2].values()) for document in documents) / max(1, count)
+    field_count = sum(len(document[1]) for document in documents)
+    average_length = sum(sum(document[2].values()) for document in documents) / max(1, field_count)
     strict, relaxed = [], []
     for page, fields, words, title, path, definitions, content, digest in documents:
         matched = terms & (words.keys() | title | path)
@@ -264,21 +349,28 @@ def rank_pages(pages, query: str, *, limit=20, max_pages=MAX_SEARCH_PAGES, max_b
         fallback = not strong and len(terms) >= 4 and len(matched) >= 2 and coverage >= .15
         if not strong and not fallback:
             continue
-        length = sum(words.values())
-        normalization = .35 + .65 * length / max(1, average_length)
         score = 0.0
+        strongest = {}
+        semantic_coverage = 0.0
         section_matches = []
         for field in fields:
             hits = matched & field["words"].keys()
             if not hits:
                 continue
-            value = sum(weights[term] * (field["words"][term] * 2.2)
-                        / (field["words"][term] + 1.2 * normalization) for term in hits) * field["weight"]
-            score += value
+            normalization = .35 + .65 * sum(field["words"].values()) / max(1, average_length)
+            contributions = {term: weights[term] * (field["words"][term] * 2.2)
+                / (field["words"][term] + 1.2 * normalization) * field["weight"] for term in hits}
+            value = sum(contributions.values())
+            for term, contribution in contributions.items():
+                strongest[term] = max(strongest.get(term, 0.0), contribution)
+            if field["weight"] == 3.0 and total_weight:
+                semantic_coverage = max(semantic_coverage, field["weight"] * sum(weights[t] for t in hits) / total_weight)
             section_matches.append((value, field, hits))
+        score += sum(strongest.values())
         score += 5 * sum(weights[term] for term in terms & title)
         score += 3 * sum(weights[term] for term in terms & path)
         score += 8 * coverage
+        score += 8 * semantic_coverage
         score += min(.25, math.log1p(inbound[page["path"]]) / 20)
         phrase = needle in _normal(content)
         if phrase:
@@ -323,7 +415,7 @@ def rank_pages(pages, query: str, *, limit=20, max_pages=MAX_SEARCH_PAGES, max_b
     # Fallback only supplements a sparse strict list; it never changes identity order.
     matches = strict + (relaxed if len(strict) < 3 else [])
     by_path = {item[2]["path"]: index for index, item in enumerate(matches)}
-    for item in _linked_candidates(documents, strict, terms):
+    for item in _linked_candidates(documents, strict, terms) + _entry_candidates(documents, strict, terms, weights, average_length):
         position = by_path.get(item[2]["path"])
         if position is None:
             by_path[item[2]["path"]] = len(matches)

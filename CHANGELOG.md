@@ -45,6 +45,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Symptom discovery uses section-local relevance and coherent explanatory
+  coverage, and can expose an explicitly declared flow from a matching formal
+  function description with captured lexical evidence.
+
 - Symptom search weights flow call/data inventories and untouched default
   Behavior placeholders as captured scaffolding, preserving authored behavior,
   searchable trace details, and exact identity precedence.

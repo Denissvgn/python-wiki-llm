@@ -97,6 +97,90 @@ def test_generated_trace_population_cannot_crowd_out_matching_authored_owner():
     assert results["total"] == 13
 
 
+def described_module(*, kind="modules", duplicate=False, fenced=False):
+    table = ("| Function | Signature | Description |\n|---|---|---|\n"
+             "| `submit` | `(value)` | Serialize records with a trailing newline. |\n")
+    if duplicate:
+        table += "| `submit` | `(other)` | Serialize records with a trailing newline. |\n"
+    if fenced:
+        table = "```text\n" + table + "```\n"
+    return page("owner", "# Page\n\n## Functions\n" + table, kind=kind, title="Page")
+
+
+def declared_flow(name="opaque", *, source="../modules/owner.md", entry="submit", fenced=False, extra="", **metadata):
+    declaration = f"**Entry point:** `{entry}` (`api`)\n**Source:** [owner]({source})\n"
+    if fenced:
+        declaration = "```text\n" + declaration + "```\n"
+    return page(name, "# Page\n\n" + declaration + extra, kind="flows", title="Page", **metadata)
+
+
+def test_formal_description_can_discover_an_explicit_flow_without_fabricating_target_matches():
+    owner, target = described_module(), declared_flow()
+    frozen = deepcopy([owner, target])
+    result = rank_pages([owner, target], "record serialization trailing newline")
+    match = next(r for r in result["results"] if r["path"] == target["path"])
+    assert "declared-entry-description-candidate" in match["provenance"]["qualification"]
+    assert match["matched_section_locations"] == []
+    assert match["linked_evidence"][0]["path"] == owner["path"]
+    assert match["linked_evidence"][0]["defined_symbol"] == "submit"
+    assert match["linked_evidence"][0]["description"] == "Serialize records with a trailing newline."
+    assert match["linked_evidence"][0]["section_locator"]
+    assert match["linked_evidence"][0]["content_sha256"] == hashlib.sha256(owner["content"].encode()).hexdigest()
+    assert match["provenance"]["content_sha256"] == hashlib.sha256(target["content"].encode()).hexdigest()
+    assert [owner, target] == frozen
+    assert rank_pages([owner, target], "submit")["results"][0]["path"] == owner["path"]
+    assert rank_pages([owner, target], target["uri"])["results"][0]["path"] == target["path"]
+
+
+@pytest.mark.parametrize("treatment", ["external", "escaping", "fragment", "wrong-symbol", "fenced-declaration",
+    "fenced-table", "duplicate-definition", "duplicate-flow", "duplicate-path", "guide-table", "duplicate-source"])
+def test_entry_description_leads_require_unique_literal_captured_declarations(treatment):
+    owner, target = described_module(), declared_flow()
+    extra = []
+    if treatment == "external":
+        target = declared_flow(source="https://example.com/modules/owner.md")
+    if treatment == "escaping":
+        target = declared_flow(source="../../modules/owner.md")
+    if treatment == "fragment":
+        target = declared_flow(source="../modules/owner.md#example")
+    if treatment == "wrong-symbol":
+        target = declared_flow(entry="submitter")
+    if treatment == "fenced-declaration":
+        target = declared_flow(fenced=True)
+    if treatment == "fenced-table":
+        owner = described_module(fenced=True)
+    if treatment == "duplicate-definition":
+        owner = described_module(duplicate=True)
+    if treatment == "duplicate-flow":
+        extra = [declared_flow("second")]
+    if treatment == "duplicate-path":
+        extra = [deepcopy(target)]
+    if treatment == "guide-table":
+        owner = described_module(kind="guides")
+        target = declared_flow(source="../guides/owner.md")
+    if treatment == "duplicate-source":
+        target = declared_flow(extra="**Source:** [owner](../modules/owner.md)\n")
+    results = rank_pages([owner, target, *extra], "record serialization trailing newline")["results"]
+    assert not any(any(reason.startswith("declared-entry-description-candidate:") for reason in r["reasons"]) for r in results)
+
+
+def test_unrelated_inventory_does_not_penalize_matching_authored_description():
+    prose = "# Page\n\n## Description\nAmber boundary mismatch rejects duplicate records.\n"
+    short = page("short", prose, title="Page")
+    long = page("long", prose + "\n## Imports\n" + "unrelated scaffolding " * 5000, title="Page")
+    results = rank_pages([short, long], "amber boundary mismatch")["results"]
+    assert len(results) == 2
+    assert results[0]["score"] == results[1]["score"]
+
+
+def test_repeating_a_term_in_more_sections_does_not_multiply_its_score():
+    prose = "# Page\n\n## Notes\nAmber boundary mismatch.\n"
+    single = page("single", prose, title="Page")
+    repeated = page("repeated", prose + "\n## Usage\nAmber boundary mismatch.\n", title="Page")
+    results = rank_pages([single, repeated], "amber boundary mismatch")["results"]
+    assert results[0]["score"] == results[1]["score"]
+
+
 def test_long_query_fallback_is_explicit_and_does_not_answer_unknown_behavior():
     owner = page("owner", "# Page\n\n## Notes\nThe amber boundary has a limit.\n")
     result = rank_pages([owner], "amber boundary vanished output confusing state")
@@ -230,7 +314,7 @@ def test_word_forms_retrieve_captured_section_without_rewriting_evidence(base, q
     match = result["results"][0]
     assert match["path"] == owner["path"]
     assert match["provenance"]["content_sha256"] == hashlib.sha256(content.encode()).hexdigest()
-    assert match["provenance"]["configuration"] == "idf-sections-prose-families-traces-links/v2"
+    assert match["provenance"]["configuration"] == "idf-sections-local-prose-entry-links/v2"
     assert "live comparison not performed" in match["provenance"]["qualification"]
     assert match["matched_section_locations"][0]["heading_path"] == ["Payload", "Notes"]
     assert owner == original
