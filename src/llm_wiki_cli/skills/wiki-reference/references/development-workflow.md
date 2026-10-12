@@ -1,5 +1,12 @@
 # Development workflow
 
+## Contents
+
+- [Frame and ground the change](#frame-and-ground-the-change)
+- [Change and verify independently](#change-and-verify-independently)
+- [Retain the reason and refresh knowledge](#retain-the-reason-and-refresh-knowledge)
+- [Deliver and improve the next task](#deliver-and-improve-the-next-task)
+
 Read this topic for substantive code changes or investigations to connect the
 request, scoped evidence, independent verification, and durable project knowledge.
 It owns the development procedure, not its specialist operations. It does not

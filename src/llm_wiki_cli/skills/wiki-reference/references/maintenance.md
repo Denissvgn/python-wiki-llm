@@ -147,9 +147,19 @@ the permitted handoff; creating a wiki is a separate explicit choice.
 
    Use `--progress always --progress-format json` for machine-readable progress
    events on stderr. Result JSON stays on stdout. For console-only CI, use
-   `ci-check --no-report --format json --report-schema v2`; v2 separates check
-   outcomes from required report-write failures. Select an explicit writable
-   `--cache-dir` when repository metadata is read-only.
+   `ci-check --no-report --format json --report-schema v4`; v4 supports both flat
+   and migrated native wikis, preserves native comparison details, and separates
+   check outcomes from required report-write failures. `--no-report` disables
+   only the Markdown report file; integrity failures still return nonzero. If a
+   report file is required, retain its authorized destination instead.
+
+   Automatic schema selection emits v1 for legacy comparison metadata and v4
+   for native comparison metadata. Flat storage can already carry native
+   metadata, so storage layout alone does not make v2/v3 compatible. Use those
+   older schemas only for a compatible legacy consumer; keep the chosen
+   comparison policy rather than switching to `exact-v1` just to render an older
+   report. Schema selection grants no report/cache write authority. Select an
+   explicit writable `--cache-dir` when repository metadata is read-only.
 
 2. Inspect the sync plan and every affected canonical page. Treat its reported
    `CREATE`, `UPDATE`, `METADATA`, `SKIP`, `DEPRECATE`, `RENAME`, `MOVE`, and
