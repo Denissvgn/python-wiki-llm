@@ -112,9 +112,9 @@ sequenceDiagram
     p1-->>p30: Path(…).expanduser
 ```
 
-> Call sequence diagram shows 30 of 1261 interactions; 1231 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1272 interactions; 1242 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 510 (509 omitted); unresolved 1 of 359 (358 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 516 (515 omitted); unresolved 1 of 363 (362 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -243,3 +243,10 @@ flowchart LR
 ## Behavior
 
 This flow starts at `run` and is classified as `cli`. The generated call and data-flow sections are bounded static projections; runtime conditions and side effects require source-level confirmation.
+
+The command validates the query options and configured roots, then delegates to
+the shared search service. Default ranked discovery scores captured canonical
+text with section-local relevance and qualified one-hop declaration leads.
+Literal identities retain precedence; a declared flow link establishes neither
+runtime invocation nor source correctness. Legacy ranked and substring modes
+keep their separate matching contracts. Source-text indexing remains explicit.

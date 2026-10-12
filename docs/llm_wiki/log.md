@@ -2151,3 +2151,21 @@ Symptom discovery now connects bounded nominal families in captured explanatory 
 - Moved entities: none
 
 Flow call/data inventories and untouched default Behavior placeholders now use inventory weight for lexical discovery. Authored behavior, exact identities, captured trace citations and bounded-scan qualifications remain intact.
+
+## 2026-10-13
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:2db88b2bf9b1812eade53ab07c0416d52cee6b1eb6dbf22756b4f22fd2c20be0`
+- Pages created: 0
+- Pages updated: 3
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1586
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none
+
+Lexical discovery now uses section-local relevance and coherent explanatory coverage, with qualified one-hop leads from formal function descriptions to uniquely declared flows. Literal identities, captured citations and scan limits remain intact.

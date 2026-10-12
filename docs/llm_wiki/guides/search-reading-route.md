@@ -26,7 +26,7 @@ Read [`src/llm_wiki_cli/services/search_service.py:search_records`](../../../src
 
 | Mode | Source to read | Matching contract |
 | --- | --- | --- |
-| `ranked` (default), `ranked-v2` | [`src/llm_wiki_cli/services/search_lexical.py:rank_pages`](../../../src/llm_wiki_cli/services/search_lexical.py#L213) ([module](../modules/search_lexical.md)) | Lexical-v2 ranking over captured candidate text: exact page identity and defined-symbol precedence, weighted sections, informative terms, and a qualified long-query fallback. |
+| `ranked` (default), `ranked-v2` | [`src/llm_wiki_cli/services/search_lexical.py:rank_pages`](../../../src/llm_wiki_cli/services/search_lexical.py#L297) ([module](../modules/search_lexical.md)) | Lexical-v2 ranking over captured candidate text: exact page identity and defined-symbol precedence, weighted sections, informative terms, and a qualified long-query fallback. |
 | `ranked-v1` | [`src/llm_wiki_cli/services/search_rank.py:rank_pages`](../../../src/llm_wiki_cli/services/search_rank.py#L34-L171) ([module](../modules/search_rank.md)) | Legacy lexical-v1 scoring with identity, symbol, term, phrase, and local-link signals. |
 | `substring` | `search_service.py:search_records`, lines 56–76 | Case-insensitive literal content matching in input order, with snippets and result bounds. |
 
@@ -38,6 +38,14 @@ discounted; authored Behavior keeps its semantic weight. Generated trace detail
 remains searchable and cited. This limits scaffolding dominance without choosing
 an owner by name or imposing a page-kind quota; broad vocabulary can still leave
 the intended primary owner or flow outside the result bound.
+
+Read section-local normalization, strongest-per-term contributions and coherent
+explanatory coverage before interpreting scores. An unrelated large inventory
+does not dilute a short explanation. A matched formal function description can
+also surface the uniquely captured flow declaring that literal entry and module
+Source link. This one-hop declaration lead retains donor row text, hash and
+section locator; it does not create a target text-match location, infer a source
+owner or establish a runtime call. Fenced or ambiguous declarations are skipped.
 
 ## 4. Results and output
 

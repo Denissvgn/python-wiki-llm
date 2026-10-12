@@ -35346,7 +35346,7 @@
             "src/llm_wiki_cli/services/section_ownership.py",
             "src/llm_wiki_cli/services/workflow_profile.py"
           ],
-          "step_count": 1262,
+          "step_count": 1273,
           "truncated": true
         }
       },
@@ -66815,5 +66815,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:57a86c40a1d8123efe35f3f3ed32814606e3aaa5c8a9882bba2d00725d2e3e0c"
+  "source_hash": "sha256:03bfc6072c21bbff9343da79b8708598587c2a98a061e1f18fb306b03236db1f"
 }

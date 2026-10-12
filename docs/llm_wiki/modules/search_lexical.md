@@ -43,6 +43,23 @@ weighting rule, without source-owner inference, kind quotas or native fact claim
 The configuration identity records this treatment independently of the
 compatible lexical-v2 result shape and unchanged legacy modes.
 
+Frequency normalization uses each captured section's length. Each term contributes
+its strongest section value, and coherent explanatory coverage receives the
+existing semantic weight. A large unrelated inventory no longer dilutes a short
+explanation; distributing common words across more sections cannot multiply their
+contribution. Whole-page title/path signals and literal identity tiers remain
+separate from this section-local treatment.
+
+A matching formal Functions Description row can supply a one-hop lead to a
+uniquely captured flow whose preamble explicitly declares that literal entry
+symbol and a local Source link to the module. At least two query terms and 45%
+weighted coverage must match the row; bounded nominal families apply to that
+description comparison in either direction. Duplicate definitions/declarations,
+fenced examples, external or escaping links and guide tables do not qualify.
+These leads retain the donor section, row text and captured hash, plus the target
+hash. A link-only result has no invented target match location. The declaration
+is a lexical association, without a runtime call or source-correctness claim.
+
 ## Imports
 
 | Source | Symbols |
@@ -103,4 +120,6 @@ flowchart LR
 | `_fields` | `(page)` | — | Disjoint captured spans; child sections do not multiply parent evidence. |
 | `_identity_tier` | `(page, needle, definitions)` | — | — |
 | `_linked_candidates` | `(documents, strict, terms)` | — | One-hop leads from matched diagnostic prose, never source correctness. |
+| `_function_descriptions` | `(document)` | — | Read literal formal rows, preserving their original section citations. |
+| `_entry_candidates` | `(documents, strict, terms, weights, average_length)` | — | One-hop lexical leads from formal descriptions to explicitly declared flows. |
 | `rank_pages` | `(pages, query: str, *, limit = 20, max_pages = MAX_SEARCH_PAGES, max_bytes = MAX_SEARCH_BYTES) -> dict` | — | Rank only supplied captured text within honest, fail-closed work bounds. |
