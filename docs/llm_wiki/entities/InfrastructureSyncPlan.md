@@ -1,6 +1,6 @@
 # InfrastructureSyncPlan
 
-**Location:** `src/llm_wiki_cli/services/infrastructure_sync.py:543`
+**Location:** `src/llm_wiki_cli/services/infrastructure_sync.py:551`
 **Kind:** Class
 **Bases:** —
 **Module:** [infrastructure_sync](../modules/infrastructure_sync.md)

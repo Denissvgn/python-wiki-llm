@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [doctor_cmd](../modules/doctor_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [capability_diagnostics](../modules/capability_diagnostics.md), and 40 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [capability_diagnostics](../modules/capability_diagnostics.md), and 42 more
 
 **Complete modules touched:**
 
@@ -50,6 +50,8 @@
 - [validation](../modules/validation.md)
 - [wiki_lifecycle](../modules/wiki_lifecycle.md)
 - [wiki_media](../modules/wiki_media.md)
+- [yaml_formats](../modules/yaml_formats.md)
+- [yaml_syntax](../modules/yaml_syntax.md)
 
 ## Call sequence
 
@@ -121,9 +123,9 @@ sequenceDiagram
     p0-->>p30: report.to_payload (src/llm_wiki_cli/commands/doctor_cmd.py:run)(report_schema=report_schema)
 ```
 
-> Call sequence diagram shows 30 of 1411 interactions; 1381 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1415 interactions; 1385 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 435 (434 omitted); unresolved 1 of 437 (436 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 436 (435 omitted); unresolved 1 of 437 (436 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -137,7 +139,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/analysis_capture.py:registry` | 12 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/analysis_capture.py:_input_rows` | 17 | - | unresolved | 12 |
 | `src/llm_wiki_cli/services/analysis_capture.py:_input_rows` | 17 | - | external | 6 |
-> Omission summary shows 8 of 374 groups; 366 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 377 groups; 369 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

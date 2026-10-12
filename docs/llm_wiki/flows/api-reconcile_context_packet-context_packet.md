@@ -2,7 +2,7 @@
 
 **Entry point:** `reconcile_context_packet` (`api`)
 **Source:** [context_packet](../modules/context_packet.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), and 53 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), and 55 more
 
 **Complete modules touched:**
 
@@ -63,6 +63,8 @@
 - [wiki_media](../modules/wiki_media.md)
 - [wiki_surface](../modules/wiki_surface.md)
 - [wiki_surface_index](../modules/wiki_surface_index.md)
+- [yaml_formats](../modules/yaml_formats.md)
+- [yaml_syntax](../modules/yaml_syntax.md)
 
 ## Call sequence
 
@@ -134,9 +136,9 @@ sequenceDiagram
     p0-->>p30: validation.packet.to_payload
 ```
 
-> Call sequence diagram shows 30 of 4070 interactions; 4040 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4094 interactions; 4064 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1350 (1349 omitted); unresolved 1 of 1357 (1356 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1365 (1364 omitted); unresolved 1 of 1368 (1367 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -150,7 +152,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/context_packet.py:_strict_json_payload` | 16 | - | external | 2 |
 | `src/llm_wiki_cli/services/context_packet.py:_validate_json_tree` | 23 | - | external | 1 |
 | `src/llm_wiki_cli/services/context_packet.py:_validate_json_tree` | 23 | - | unresolved | 1 |
-> Omission summary shows 8 of 887 groups; 879 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 902 groups; 894 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

@@ -93,16 +93,16 @@ flowchart LR
 | [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 737 | — | — |
 | [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 1015 | — | — |
 | [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3141 | — | — |
-| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4390 | — | — |
-| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4416 | — | — |
-| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4429 | — | — |
-| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4436 | — | — |
-| [_WorkflowResult](../entities/WorkflowResult.md) | 4444 | — | — |
-| [_FlowResult](../entities/FlowResult.md) | 4450 | — | — |
-| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4461 | — | — |
-| [_DependencyResult](../entities/DependencyResult.md) | 4472 | — | — |
-| [_ApiContractResult](../entities/ApiContractResult.md) | 4480 | — | — |
-| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4487 | — | — |
+| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4434 | — | — |
+| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4460 | — | — |
+| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4473 | — | — |
+| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4480 | — | — |
+| [_WorkflowResult](../entities/WorkflowResult.md) | 4488 | — | — |
+| [_FlowResult](../entities/FlowResult.md) | 4494 | — | — |
+| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4505 | — | — |
+| [_DependencyResult](../entities/DependencyResult.md) | 4516 | — | — |
+| [_ApiContractResult](../entities/ApiContractResult.md) | 4524 | — | — |
+| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4531 | — | — |
 
 ## Functions
 
@@ -245,6 +245,9 @@ flowchart LR
 | `_generate_infrastructure_md` | `(filename: str, info: dict, module_links: Mapping[str, str] \| set[str] \| None = None, unsupported_sources: dict[str, dict[str, object]] \| None = None) -> str` | — | Generate a wiki page for any supported infrastructure inventory entry. |
 | `_with_infrastructure_notes_placeholder` | `(markdown: str) -> str` | — | Append the sole supported semantic surface to generated infra pages. |
 | `_append_infrastructure_advisories` | `(lines: list[str], advisories: list[str]) -> None` | — | — |
+| `_generate_yaml_format_md` | `(filename: str, info: dict) -> str` | — | Render named structural summaries without exposing arbitrary config values. |
+| `_infrastructure_label` | `(value: object) -> str` | — | Keep a source label on one line with Markdown punctuation inert. |
+| `_infrastructure_code` | `(value: object) -> str` | — | Quote a single line of source text, including embedded backticks. |
 | `_generate_github_actions_md` | `(filename: str, info: dict) -> str` | — | Generate markdown for a GitHub Actions workflow file. |
 | `_generate_kubernetes_md` | `(filename: str, info: dict) -> str` | — | Generate markdown for a Kubernetes manifest file. |
 | `_format_resource_map` | `(values: Mapping[str, str]) -> str` | — | — |

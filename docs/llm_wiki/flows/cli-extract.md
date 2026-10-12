@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [extraction_service](../modules/extraction_service.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api_contracts](../modules/api_contracts.md), [common](../modules/common.md), and 28 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api_contracts](../modules/api_contracts.md), [common](../modules/common.md), and 29 more
 
 **Complete modules touched:**
 
@@ -38,6 +38,7 @@
 - [source_snapshot](../modules/source_snapshot.md)
 - [validation](../modules/validation.md)
 - [wiki_write_basis](../modules/wiki_write_basis.md)
+- [yaml_syntax](../modules/yaml_syntax.md)
 
 ## Call sequence
 
@@ -109,9 +110,9 @@ sequenceDiagram
     p0-->>p30: message.startswith('No files found for package')
 ```
 
-> Call sequence diagram shows 30 of 3106 interactions; 3076 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3121 interactions; 3091 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1028 (1027 omitted); unresolved 1 of 1306 (1305 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1052 (1051 omitted); unresolved 1 of 1294 (1293 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -125,7 +126,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_source_root` | 23 | - | external | 11 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 23 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 6 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 23 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
-> Omission summary shows 8 of 699 groups; 691 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 702 groups; 694 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -207,36 +208,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2396 | `getattr(args, 'src_dir', '.')` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2397 | `getattr(args, 'changed', False)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2398 | `getattr(args, 'summary', False)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2399 | `getattr(args, 'deep', False)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2400 | `getattr(args, 'paths', None)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2401 | `getattr(args, 'package', None)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2402 | `getattr(args, 'include_empty', False)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2403 | `getattr(args, 'output', None)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2404 | `getattr(args, 'read_only', False)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2405 | `getattr(args, 'allow_external_src', False)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2406 | `getattr(args, 'helper_cache_dir', None)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2397 | `getattr(args, 'src_dir', '.')` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2398 | `getattr(args, 'changed', False)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2399 | `getattr(args, 'summary', False)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2400 | `getattr(args, 'deep', False)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2401 | `getattr(args, 'paths', None)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2402 | `getattr(args, 'package', None)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2403 | `getattr(args, 'include_empty', False)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2404 | `getattr(args, 'output', None)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2405 | `getattr(args, 'read_only', False)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2406 | `getattr(args, 'allow_external_src', False)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2407 | `getattr(args, 'helper_cache_dir', None)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 2412 |
-| output | `print` | `run` | 2416 |
-| output | `print` | `run` | 2418 |
-| output | `print` | `run` | 2420 |
-| output | `print` | `run` | 2446 |
-| output | `print` | `run` | 2448 |
-| output | `print` | `run` | 2453 |
-| output | `print` | `run` | 2457 |
+| output | `print` | `run` | 2413 |
+| output | `print` | `run` | 2417 |
+| output | `print` | `run` | 2419 |
+| output | `print` | `run` | 2421 |
+| output | `print` | `run` | 2447 |
+| output | `print` | `run` | 2449 |
+| output | `print` | `run` | 2454 |
+| output | `print` | `run` | 2458 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `run` | `getattr` | 2396 |
 | external_call | `run` | `getattr` | 2397 |
 | external_call | `run` | `getattr` | 2398 |
 | external_call | `run` | `getattr` | 2399 |
@@ -247,6 +247,7 @@ flowchart LR
 | external_call | `run` | `getattr` | 2404 |
 | external_call | `run` | `getattr` | 2405 |
 | external_call | `run` | `getattr` | 2406 |
+| external_call | `run` | `getattr` | 2407 |
 | step_limit | `run` | `first 12 steps` | 0 |
 
 ## Behavior

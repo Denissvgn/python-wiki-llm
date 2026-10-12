@@ -11,6 +11,11 @@ The persisted state records repository-relative source/page mappings and binds
 each rendered observation to both the exact source bytes and the normalized
 parser result.  It contains no timestamps, absolute paths, or source literals.
 
+Unrecognized YAML remains a discovery record. A rejected syntax stream instead
+carries `invalid-yaml` and bounded parser advisories; successful named-format
+observations use the same content/observation hashes, page collision handling
+and sole authored `Notes` surface as other infrastructure families.
+
 ## Imports
 
 | Source | Symbols |
@@ -19,6 +24,7 @@ parser result.  It contains no timestamps, absolute paths, or source literals.
 | `.knowledge_evidence` | `ConceptObservationBasis`, `build_infrastructure_observation_basis`, `hash_json`, `is_valid_sha256` |
 | `.source_snapshot` | `SourceSnapshot` |
 | `.validation` | `is_portable_relative_path` |
+| `.yaml_syntax` | `load_yaml_documents` |
 | `__future__` | `annotations` |
 | `copy` | `deepcopy` |
 | `dataclasses` | `dataclass`, `field` |
@@ -30,95 +36,30 @@ parser result.  It contains no timestamps, absolute paths, or source literals.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/commands/sync_cmd.py"]
-    n1["src/llm_wiki_cli/services/bootstrap_runtime.py"]
-    n2["src/llm_wiki_cli/services/canonical_pages.py"]
-    n3["src/llm_wiki_cli/services/infrastructure_inventory.py"]
-    n4["src/llm_wiki_cli/services/infrastructure_sync.py"]
-    n5["src/llm_wiki_cli/services/knowledge_artifacts.py"]
-    n6["src/llm_wiki_cli/services/knowledge_evidence.py"]
-    n7["src/llm_wiki_cli/services/knowledge_generation.py"]
-    n8["src/llm_wiki_cli/services/knowledge_orchestration.py"]
-    n9["src/llm_wiki_cli/services/lint_service.py"]
-    n10["src/llm_wiki_cli/services/source_snapshot.py"]
-    n11["src/llm_wiki_cli/services/validation.py"]
+    n0["src"]
+    n1["src/llm_wiki_cli/services/infrastructure_sync.py"]
     n0 --> n1
-    n0 --> n3
-    n0 --> n4
-    n0 --> n5
-    n0 --> n6
-    n0 --> n8
-    n0 --> n10
-    n0 --> n11
-    n1 --> n3
-    n1 --> n4
-    n1 --> n5
-    n1 --> n8
-    n1 --> n10
-    n1 --> n11
-    n2 --> n1
-    n2 --> n4
-    n3 --> n10
-    n4 --> n3
-    n4 --> n6
-    n4 --> n10
-    n4 --> n11
-    n5 --> n4
-    n5 --> n6
-    n5 --> n11
-    n6 --> n11
-    n7 --> n4
-    n7 --> n5
-    n7 --> n6
-    n8 --> n4
-    n8 --> n5
-    n8 --> n6
-    n8 --> n7
-    n8 --> n10
-    n9 --> n1
-    n9 --> n3
-    n9 --> n4
-    n9 --> n5
-    n9 --> n8
-    n9 --> n10
-    n9 --> n11
-    n10 --> n11
-    click n0 "../modules/sync_cmd.md"
-    click n1 "../modules/bootstrap_runtime.md"
-    click n2 "../modules/canonical_pages.md"
-    click n3 "../modules/infrastructure_inventory.md"
-    click n4 "../modules/infrastructure_sync.md"
-    click n5 "../modules/knowledge_artifacts.md"
-    click n6 "../modules/knowledge_evidence.md"
-    click n7 "../modules/knowledge_generation.md"
-    click n8 "../modules/knowledge_orchestration.md"
-    click n9 "../modules/lint_service.md"
-    click n10 "../modules/source_snapshot.md"
-    click n11 "../modules/validation.md"
+    n1 --> n0
+    click n1 "../modules/infrastructure_sync.md"
 ```
+
+> Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [sync_cmd](../modules/sync_cmd.md) |
-| Inbound | [bootstrap_runtime](../modules/bootstrap_runtime.md) |
-| Inbound | [canonical_pages](../modules/canonical_pages.md) |
-| Inbound | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
-| Inbound | [knowledge_generation](../modules/knowledge_generation.md) |
-| Inbound | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
-| Inbound | [lint_service](../modules/lint_service.md) |
-| Outbound | [infrastructure_inventory](../modules/infrastructure_inventory.md) |
-| Outbound | [knowledge_evidence](../modules/knowledge_evidence.md) |
-| Outbound | [source_snapshot](../modules/source_snapshot.md) |
-| Outbound | [validation](../modules/validation.md) |
+| Inbound | `src` (7) |
+| Outbound | `src` (5) |
+
+> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
 | [InfrastructureSyncError](../entities/InfrastructureSyncError.md) | 33 | `ValueError` | Persisted infrastructure state is unsafe or internally inconsistent. |
-| [InfrastructureSyncPlan](../entities/InfrastructureSyncPlan.md) | 543 | — | One immutable infrastructure regeneration plan. |
+| [InfrastructureSyncPlan](../entities/InfrastructureSyncPlan.md) | 551 | — | One immutable infrastructure regeneration plan. |
 
 ## Functions
 

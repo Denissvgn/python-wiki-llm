@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [bootstrap_runtime](../modules/bootstrap_runtime.md)
-**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [bootstrap_service](../modules/bootstrap_service.md), [common](../modules/common.md), and 38 more
+**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [bootstrap_service](../modules/bootstrap_service.md), [common](../modules/common.md), and 40 more
 
 **Complete modules touched:**
 
@@ -48,6 +48,8 @@
 - [wiki_surface](../modules/wiki_surface.md)
 - [wiki_surface_index](../modules/wiki_surface_index.md)
 - [wiki_write_basis](../modules/wiki_write_basis.md)
+- [yaml_formats](../modules/yaml_formats.md)
+- [yaml_syntax](../modules/yaml_syntax.md)
 
 ## Call sequence
 
@@ -119,9 +121,9 @@ sequenceDiagram
     p4-->>p30: (…).resolve
 ```
 
-> Call sequence diagram shows 30 of 2913 interactions; 2883 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2916 interactions; 2886 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 962 (961 omitted); unresolved 1 of 884 (883 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 959 (958 omitted); unresolved 1 of 886 (885 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -135,7 +137,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_source_root` | 13 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 13 | - | external | 11 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 25 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 2 |
-> Omission summary shows 8 of 630 groups; 622 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 633 groups; 625 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -200,9 +202,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | _bootstrap_run_options_from_args | 6451 | `_bootstrap_run_options_from_args(args)` |
-| _bootstrap_run_options_from_args | Path (src/llm_wiki_cli/services…rap_run_options_from_args) | 4525 | `Path(args.wiki_dir)` |
-| _bootstrap_run_options_from_args | validate_path | 4526 | `validate_path(str(...), '--wiki-dir')` |
+| run | _bootstrap_run_options_from_args | 6495 | `_bootstrap_run_options_from_args(args)` |
+| _bootstrap_run_options_from_args | Path (src/llm_wiki_cli/services…rap_run_options_from_args) | 4569 | `Path(args.wiki_dir)` |
+| _bootstrap_run_options_from_args | validate_path | 4570 | `validate_path(str(...), '--wiki-dir')` |
 | validate_path | PathValidationError | 134 | `PathValidationError(...)` |
 | validate_path | (…).resolve | 135 | `(Path.cwd() / path).resolve(data not statically known)` |
 | validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 135 | `Path.cwd(data not statically known)` |
@@ -210,13 +212,13 @@ flowchart LR
 | validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd(data not statically known)` |
 | validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 138 | `resolved.relative_to(cwd)` |
 | validate_path | PathValidationError | 140 | `PathValidationError(...)` |
-| _bootstrap_run_options_from_args | str (src/llm_wiki_cli/services…rap_run_options_from_args) | 4526 | `str(wiki_dir)` |
+| _bootstrap_run_options_from_args | str (src/llm_wiki_cli/services…rap_run_options_from_args) | 4570 | `str(wiki_dir)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 6457 |
+| output | `print` | `run` | 6501 |
 
 ### Static analysis gaps
 

@@ -2,7 +2,7 @@
 
 **Entry point:** `capture_context_read` (`api`)
 **Source:** [context_packet](../modules/context_packet.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [common](../modules/common.md), [config](../modules/config.md), and 58 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [common](../modules/common.md), [config](../modules/config.md), and 60 more
 
 **Complete modules touched:**
 
@@ -68,6 +68,8 @@
 - [wiki_media](../modules/wiki_media.md)
 - [wiki_surface](../modules/wiki_surface.md)
 - [wiki_surface_index](../modules/wiki_surface_index.md)
+- [yaml_formats](../modules/yaml_formats.md)
+- [yaml_syntax](../modules/yaml_syntax.md)
 
 ## Call sequence
 
@@ -139,9 +141,9 @@ sequenceDiagram
     p0-->>p30: source_root.is_dir (src/llm_wiki_cli/services…t.py:capture_context_read)
 ```
 
-> Call sequence diagram shows 30 of 5277 interactions; 5247 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 5293 interactions; 5263 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1669 (1668 omitted); unresolved 1 of 1719 (1718 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1700 (1699 omitted); unresolved 1 of 1717 (1716 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -155,7 +157,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_source_root` | 14 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 14 | - | external | 11 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 14 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
-> Omission summary shows 8 of 1326 groups; 1318 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1317 groups; 1309 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

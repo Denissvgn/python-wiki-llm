@@ -46,7 +46,7 @@ flowchart TD
 | [knowledge_envelope](modules/knowledge_envelope.md) | 25 | 5 |
 | [wiki_surface_index](modules/wiki_surface_index.md) | 25 | 5 |
 | [knowledge_storage_io](modules/knowledge_storage_io.md) | 24 | 4 |
-| [extraction_service](modules/extraction_service.md) | 23 | 29 |
+| [extraction_service](modules/extraction_service.md) | 23 | 30 |
 | [knowledge_governance](modules/knowledge_governance.md) | 22 | 10 |
 | [knowledge_consumption](modules/knowledge_consumption.md) | 21 | 8 |
 | [common](modules/common.md) | 19 | 1 |
@@ -91,13 +91,13 @@ flowchart TD
 | [workspace](modules/workspace.md) | 8 | 3 |
 | [entrypoints](modules/entrypoints.md) | 8 | 4 |
 | [imports](modules/imports.md) | 8 | 5 |
-| [infrastructure_inventory](modules/infrastructure_inventory.md) | 8 | 1 |
+| [infrastructure_inventory](modules/infrastructure_inventory.md) | 8 | 3 |
 | [knowledge_reuse](modules/knowledge_reuse.md) | 8 | 13 |
 | [lint_service](modules/lint_service.md) | 8 | 37 |
 | [maintenance_status](modules/maintenance_status.md) | 8 | 9 |
 | [api](modules/api.md) | 7 | 48 |
 | [integrity](modules/integrity.md) | 7 | 7 |
-| [infrastructure_sync](modules/infrastructure_sync.md) | 7 | 4 |
+| [infrastructure_sync](modules/infrastructure_sync.md) | 7 | 5 |
 | [maintenance_projection](modules/maintenance_projection.md) | 7 | 3 |
 | [wiki_lifecycle](modules/wiki_lifecycle.md) | 7 | 8 |
 | [wiki_write_basis](modules/wiki_write_basis.md) | 7 | 1 |
@@ -127,6 +127,7 @@ flowchart TD
 | [runtime_output](modules/runtime_output.md) | 4 | 0 |
 | [task_context](modules/task_context.md) | 4 | 21 |
 | [team](modules/team.md) | 4 | 12 |
+| [yaml_syntax](modules/yaml_syntax.md) | 4 | 0 |
 | [api_types](modules/api_types.md) | 3 | 0 |
 | [generate_prompt_cmd](modules/generate_prompt_cmd.md) | 3 | 13 |
 | [python_bindings](modules/python_bindings.md) | 3 | 0 |
@@ -257,6 +258,7 @@ flowchart TD
 | [task_context_v2](modules/task_context_v2.md) | 1 | 27 |
 | [wiki_git_policy](modules/wiki_git_policy.md) | 1 | 0 |
 | [wiki_scaffold](modules/wiki_scaffold.md) | 1 | 0 |
+| [yaml_formats](modules/yaml_formats.md) | 1 | 1 |
 | [render_summary](modules/render_summary.md) | 0 | 3 |
 | [esbuild.config](modules/esbuild.config.md) | 0 | 0 |
 | [llm-wiki_main](modules/llm-wiki_main.md) | 0 | 0 |

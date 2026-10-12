@@ -18,6 +18,14 @@ batch scope. Legacy calls and trusted extractors without these observations
 keep their existing behavior; missing inventory alone never proves a parser
 failure.
 
+Dockerfile observations keep their dedicated parser. Compose uses the shared
+bounded YAML composer, preserving nested maps, lists and multiline scalar text.
+Content discovery requires mapped services with Compose-specific fields;
+conventional filenames can retain empty typed models with explicit advisories.
+Unsupported build shapes and multi-document inputs are qualified before page
+rendering. Generated YAML text is quoted and normalized to keep source scalars
+from introducing Markdown structure.
+
 ## Imports
 
 | Source | Symbols |
@@ -51,6 +59,7 @@ failure.
 | `.resource_diagnostics` | `format_resource_failure` |
 | `.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `path_is_selected`, `resolve_source_selection`, `selection_may_contain_path` |
 | `.source_snapshot` | `SourceFile`, `SourceSnapshot`, `SourceSnapshotError`, `build_source_snapshot`, `format_unsupported_source_summary`, `unsupported_source_summary`, `SourceSnapshotMutationError` |
+| `.yaml_syntax` | `load_yaml_documents` |
 | `__future__` | `annotations` |
 | `concurrent.futures` | `ThreadPoolExecutor` |
 | `copy` | `deepcopy` |
@@ -85,24 +94,23 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (23) |
-| Outbound | `src` (29) |
+| Outbound | `src` (30) |
 
-> All 52 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 53 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ExtractorStatus](../entities/ExtractorStatus.md) | 140 | — | — |
-| [InventoryRequest](../entities/InventoryRequest.md) | 148 | — | — |
-| [InventoryResult](../entities/InventoryResult.md) | 175 | — | — |
-| [ExtractPayloadResult](../entities/ExtractPayloadResult.md) | 216 | — | — |
-| [ExtractorFailureError](../entities/ExtractorFailureError.md) | 236 | `RuntimeError` | Raised when one or more extractors fail during payload construction. |
-| [_ExtractionPlan](../entities/ExtractionPlan.md) | 261 | — | — |
-| [_ExtractionOutcome](../entities/ExtractionOutcome.md) | 274 | — | — |
-| [_InventoryBuildContext](../entities/InventoryBuildContext.md) | 287 | — | — |
-| [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 309 | — | — |
-| [_ComposeParserState](../entities/ComposeParserState.md) | 3283 | — | — |
+| [ExtractorStatus](../entities/ExtractorStatus.md) | 141 | — | — |
+| [InventoryRequest](../entities/InventoryRequest.md) | 149 | — | — |
+| [InventoryResult](../entities/InventoryResult.md) | 176 | — | — |
+| [ExtractPayloadResult](../entities/ExtractPayloadResult.md) | 217 | — | — |
+| [ExtractorFailureError](../entities/ExtractorFailureError.md) | 237 | `RuntimeError` | Raised when one or more extractors fail during payload construction. |
+| [_ExtractionPlan](../entities/ExtractionPlan.md) | 262 | — | — |
+| [_ExtractionOutcome](../entities/ExtractionOutcome.md) | 275 | — | — |
+| [_InventoryBuildContext](../entities/InventoryBuildContext.md) | 288 | — | — |
+| [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 310 | — | — |
 
 ## Functions
 
@@ -202,16 +210,7 @@ flowchart LR
 | `resolve_call_edges` | `(inventory: dict) -> list[dict]` | — | Resolve captured ``calls`` records into caller→callee edges. |
 | `_parse_dockerfile` | `(text: str) -> dict` | — | Parse a Dockerfile into a structured dict (line-based, no external deps). |
 | `_parse_inline_yaml_list` | `(value: str) -> list[str] \| None` | — | Parse an inline YAML list like ``["CMD", "curl", "-f", "http://..."]``. |
-| `_strip_yaml_quotes` | `(value: str) -> str` | — | Remove surrounding YAML quotes from a value. |
-| `_compose_path_parent` | `(state: _ComposeParserState, path: list[str], *, create: bool = False)` | — | Return ``(parent_dict, final_key)`` for a nested service path. |
-| `_start_compose_top_level_section` | `(state: _ComposeParserState, stripped: str, indent: int) -> bool` | — | — |
-| `_start_compose_service` | `(state: _ComposeParserState, stripped: str, indent: int) -> bool` | — | — |
-| `_compose_service_depth` | `(indent: int) -> int` | — | — |
-| `_append_compose_list_item` | `(state: _ComposeParserState, stripped: str) -> None` | — | — |
-| `_assign_compose_value` | `(parent: dict, final_key: str, value: str) -> None` | — | — |
-| `_set_compose_service_key` | `(state: _ComposeParserState, stripped: str, depth: int) -> None` | — | — |
-| `_parse_compose_service_line` | `(state: _ComposeParserState, stripped: str, indent: int) -> None` | — | — |
-| `_collect_compose_section_name` | `(names: list[str], stripped: str, indent: int) -> None` | — | — |
-| `_parse_compose` | `(text: str) -> dict` | — | Parse a docker-compose YAML file using line-based parsing (no PyYAML). |
+| `_parse_compose` | `(text: str) -> dict` | — | Parse one Compose document while preserving nested YAML structures. |
+| `_valid_compose_document` | `(document: object) -> bool` | — | — |
 | `_looks_like_compose` | `(text: str) -> bool` | — | Return True if the file content appears to be a docker-compose file. |
 | `get_docker_inventory` | `(src_dir: str \| Path, *, source_snapshot: SourceSnapshot \| None = None) -> dict` | — | Discover and parse Dockerfiles and Compose files in the source tree. |

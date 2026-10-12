@@ -2,7 +2,7 @@
 
 **Entry point:** `acknowledge_maintenance` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 56 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 58 more
 
 **Complete modules touched:**
 
@@ -66,6 +66,8 @@
 - [wiki_surface](../modules/wiki_surface.md)
 - [wiki_surface_index](../modules/wiki_surface_index.md)
 - [wiki_write_basis](../modules/wiki_write_basis.md)
+- [yaml_formats](../modules/yaml_formats.md)
+- [yaml_syntax](../modules/yaml_syntax.md)
 
 ## Call sequence
 
@@ -137,9 +139,9 @@ sequenceDiagram
     p0-->>p30: core.validate_schema (src/llm_wiki_cli/api.py:acknowledge_maintenance)('maintenance-event-v1', {...})
 ```
 
-> Call sequence diagram shows 30 of 2803 interactions; 2773 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2807 interactions; 2777 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 944 (943 omitted); unresolved 1 of 676 (675 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 945 (944 omitted); unresolved 1 of 676 (675 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -153,7 +155,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/api.py:acknowledge_maintenance` | 1 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/maintenance_state.py:_identity` | 18 | - | external | 2 |
 | `src/llm_wiki_cli/services/maintenance_state.py:_identity` | 18 | [src/llm_wiki_cli/services/maintenance_shapes.py](../modules/maintenance_shapes.md) | internal | 2 |
-> Omission summary shows 8 of 658 groups; 650 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 661 groups; 653 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

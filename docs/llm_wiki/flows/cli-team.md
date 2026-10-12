@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [team_cmd](../modules/team_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 35 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 37 more
 
 **Complete modules touched:**
 
@@ -44,6 +44,8 @@
 - [team_cmd](../modules/team_cmd.md)
 - [validation](../modules/validation.md)
 - [wiki_write_basis](../modules/wiki_write_basis.md)
+- [yaml_formats](../modules/yaml_formats.md)
+- [yaml_syntax](../modules/yaml_syntax.md)
 
 ## Call sequence
 
@@ -78,9 +80,9 @@ sequenceDiagram
     participant p23 as load_team_config
     participant p24 as _parse_compose
     participant p25 as parse_github_actions_workflow
-    participant p26 as parse_kubernetes_manifest
-    participant p27 as check_plugin_requirements
-    participant p28 as parse_runtime_config_yaml
+    participant p26 as check_plugin_requirements
+    participant p27 as _looks_like_compose
+    participant p28 as check_team_conventions
     participant p29 as getattr (src/llm_wiki_cli/commands/team_cmd.py:run)
     participant p30 as path.exists (src/llm_wiki_cli/commands/team_cmd.py:_run_init)
     p0->>p1: _run_init
@@ -108,16 +110,16 @@ sequenceDiagram
     p7->>p23: load_team_config
     p14->>p24: _parse_compose
     p15->>p25: parse_github_actions_workflow
-    p15->>p26: parse_kubernetes_manifest
-    p16->>p27: check_plugin_requirements
-    p15->>p28: parse_runtime_config_yaml
+    p16->>p26: check_plugin_requirements
+    p14->>p27: _looks_like_compose
+    p16->>p28: check_team_conventions
     p0-->>p29: getattr (src/llm_wiki_cli/commands/team_cmd.py:run)(args, 'team_action', None)
     p1-->>p30: path.exists (src/llm_wiki_cli/commands/team_cmd.py:_run_init)
 ```
 
-> Call sequence diagram shows 30 of 2396 interactions; 2366 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2412 interactions; 2382 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 654 (653 omitted); unresolved 1 of 819 (818 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 685 (684 omitted); unresolved 1 of 817 (816 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -131,7 +133,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/team.py:team_config_path` | 13 | - | external | 1 |
 | `src/llm_wiki_cli/services/team.py:write_default_team_config` | 17 | [src/llm_wiki_cli/services/team.py](../modules/team.md) | internal | 2 |
 | `src/llm_wiki_cli/services/io.py:write_json_atomic` | 19 | - | external | 1 |
-> Omission summary shows 8 of 622 groups; 614 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 613 groups; 605 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

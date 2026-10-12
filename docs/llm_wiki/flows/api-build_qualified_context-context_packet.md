@@ -2,7 +2,7 @@
 
 **Entry point:** `build_qualified_context` (`api`)
 **Source:** [context_packet](../modules/context_packet.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), and 60 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), and 62 more
 
 **Complete modules touched:**
 
@@ -70,6 +70,8 @@
 - [wiki_media](../modules/wiki_media.md)
 - [wiki_surface](../modules/wiki_surface.md)
 - [wiki_surface_index](../modules/wiki_surface_index.md)
+- [yaml_formats](../modules/yaml_formats.md)
+- [yaml_syntax](../modules/yaml_syntax.md)
 
 ## Call sequence
 
@@ -141,9 +143,9 @@ sequenceDiagram
     p0-->>p30: normalized.get (src/llm_wiki_cli/services…y:build_qualified_context)('knowledge_mode')
 ```
 
-> Call sequence diagram shows 30 of 5424 interactions; 5394 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 5489 interactions; 5459 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1704 (1703 omitted); unresolved 1 of 1844 (1843 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1724 (1723 omitted); unresolved 1 of 1879 (1878 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -157,7 +159,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 9 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 1 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 12 | - | external | 11 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 12 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 12 |
-> Omission summary shows 8 of 1284 groups; 1276 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1293 groups; 1285 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

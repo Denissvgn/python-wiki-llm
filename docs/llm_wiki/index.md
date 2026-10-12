@@ -7,11 +7,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 | Surface | Count | Start here |
 |---|---:|---|
 | Entities | 662 | [Open section](#entities) |
-| Modules | 240 | [Open section](#modules) |
-| Workflows | 208 | [Open section](#workflows) |
+| Modules | 242 | [Open section](#modules) |
+| Workflows | 209 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 465 | [Open section](#entry-point-flows) |
-| Infrastructure | 0 | No pages |
+| Infrastructure | 2 | [Open section](#infrastructure) |
 | HTTP API contracts | 0 | No pages |
 | Dependency architecture | 2 | [Open section](#dependency-architecture) |
 | Log | 1 | [Open log](log.md) |
@@ -78,7 +78,6 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [ComparisonPolicy](entities/ComparisonPolicy.md)
 - [CompatibilityModule](entities/CompatibilityModule.md)
 - [ComponentVisitor](entities/ComponentVisitor.md)
-- [ComposeParserState](entities/ComposeParserState.md)
 - [ComputedFreshness](entities/ComputedFreshness.md)
 - [ConceptAllocation](entities/ConceptAllocation.md)
 - [ConceptFacets](entities/ConceptFacets.md)
@@ -288,6 +287,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [IntegrityDifference](entities/IntegrityDifference.md)
 - [InvalidRequestError](entities/InvalidRequestError.md)
 - [InvalidSurfaceJson](entities/InvalidSurfaceJson.md)
+- [InvalidYaml](entities/InvalidYaml.md)
 - [InventoryBuildContext](entities/InventoryBuildContext.md)
 - [InventoryCache](entities/InventoryCache.md)
 - [InventoryCacheOptions](entities/InventoryCacheOptions.md)
@@ -762,7 +762,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [impact](modules/impact.md) - Deterministic advisory change impact and bounded CI presentations.
 - [implementation_evidence](modules/implementation_evidence.md) - Pure, bounded persistence and comparison of captured implementation syntax.
 - [imports](modules/imports.md) - `src/llm_wiki_cli/services/imports.py`
-- [infrastructure_inventory](modules/infrastructure_inventory.md) - Inventory helpers for non-Docker infrastructure YAML files.
+- [infrastructure_inventory](modules/infrastructure_inventory.md) - Structured observations for recognized infrastructure YAML formats.
 - [infrastructure_sync](modules/infrastructure_sync.md) - Deterministic infrastructure discovery and incremental sync planning.
 - [init_cmd](modules/init_cmd.md) - `src/llm_wiki_cli/commands/init_cmd.py`
 - [install_ci_cmd](modules/install_ci_cmd.md) - CLI adapter for installing the portable LLM Wiki integrity workflow.
@@ -923,6 +923,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [wiki_write_basis](modules/wiki_write_basis.md) - Operation-local compare-and-swap hooks for adopted wiki writes.
 - [workflow_profile](modules/workflow_profile.md) - Explicit workflow settings constrained by immutable host read ceilings.
 - [workspace](modules/workspace.md) - Documentation-run workspace services.
+- [yaml_formats](modules/yaml_formats.md) - Conservative summaries for named CI, packaging, and automation YAML formats.
+- [yaml_syntax](modules/yaml_syntax.md) - Bounded YAML composition for static configuration observations.
 
 ## Workflows
 
@@ -1022,6 +1024,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [generated_sections_match](workflows/generated_sections_match.md) - entry: `sync_analysis_cache.generated_sections_match`
 - [get_knowledge_coverage](workflows/get_knowledge_coverage.md) - entry: `api.get_knowledge_coverage`
 - [get_maintenance_status_authority](workflows/get_maintenance_status_authority.md) - entry: `maintenance_service.get_maintenance_status_authority`
+- [get_yaml_infrastructure_inventory](workflows/get_yaml_infrastructure_inventory.md) - entry: `infrastructure_inventory.get_yaml_infrastructure_inventory`
 - [guard_maintenance_owner](workflows/guard_maintenance_owner.md) - entry: `maintenance_protocol.guard_maintenance_owner`
 - [impact_query](workflows/impact_query.md) - entry: `api._impact_query`
 - [index_needs_context](workflows/index_needs_context.md) - entry: `documentation_worklist._index_needs_context`
@@ -1629,6 +1632,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [process-knowledge_maintenance](flows/process-knowledge_maintenance.md) - entry: `main`
 - [process-llm-wiki](flows/process-llm-wiki.md) - entry: `main`
 - [process-render_summary](flows/process-render_summary.md) - entry: `main`
+
+## Infrastructure
+
+- [github action: action.yml](infrastructure/integrations_github-action_action_yml.md) - yaml_format
+- [github action: action.yml](infrastructure/integrations_wiki-integrity_action_yml.md) - yaml_format
 
 ## Dependency Architecture
 

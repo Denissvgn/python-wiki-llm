@@ -21,6 +21,10 @@ classification as ordinary Go files. Snapshot inventory selection still omits
 excluded files, while supplied-path diagnostics can retain the exclusion reason.
 Classification does not prepare or execute extractor helpers.
 
+Infrastructure candidates include `.yml`, `.yaml` and the extensionless
+`Kustomization` filename under the same selection and ignore boundary. Candidate
+presence means captured input, not recognition as a supported format.
+
 ## Imports
 
 | Source | Symbols |

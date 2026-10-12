@@ -2,7 +2,7 @@
 
 **Entry point:** `adopt_maintenance` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 56 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 58 more
 
 **Complete modules touched:**
 
@@ -66,6 +66,8 @@
 - [wiki_surface](../modules/wiki_surface.md)
 - [wiki_surface_index](../modules/wiki_surface_index.md)
 - [wiki_write_basis](../modules/wiki_write_basis.md)
+- [yaml_formats](../modules/yaml_formats.md)
+- [yaml_syntax](../modules/yaml_syntax.md)
 
 ## Call sequence
 
@@ -137,9 +139,9 @@ sequenceDiagram
     p1-->>p30: view.manifest_basis.with_maintenance_state(state)
 ```
 
-> Call sequence diagram shows 30 of 3058 interactions; 3028 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3062 interactions; 3032 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1047 (1046 omitted); unresolved 1 of 715 (714 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1048 (1047 omitted); unresolved 1 of 715 (714 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -153,7 +155,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 6 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 6 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/maintenance_service.py:adopt_maintenance_authority` | 5 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 1 |
-> Omission summary shows 8 of 723 groups; 715 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 726 groups; 718 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

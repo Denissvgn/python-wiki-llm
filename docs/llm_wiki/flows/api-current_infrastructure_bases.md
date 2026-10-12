@@ -159,9 +159,9 @@ flowchart LR
 | current_infrastructure_bases | build_infrastructure_page_map | 296 | `build_infrastructure_page_map(inventory)` |
 | build_infrastructure_page_map | sorted (src/llm_wiki_cli/services…d_infrastructure_page_map) | 42 | `sorted(source_paths)` |
 | build_infrastructure_page_map | infrastructure_page_name | 45 | `infrastructure_page_name(source_path)` |
-| infrastructure_page_name | source_path.replace(…).replace(…).replace | 28 | `source_path.replace('\\', '/').replace('/', '_').replace('.', '_')` |
-| infrastructure_page_name | source_path.replace(…).replace | 28 | `source_path.replace('\\', '/').replace('/', '_')` |
-| infrastructure_page_name | source_path.replace | 28 | `source_path.replace('\\', '/')` |
+| infrastructure_page_name | source_path.replace(…).replace(…).replace | 31 | `source_path.replace('\\', '/').replace('/', '_').replace('.', '_')` |
+| infrastructure_page_name | source_path.replace(…).replace | 31 | `source_path.replace('\\', '/').replace('/', '_')` |
+| infrastructure_page_name | source_path.replace | 31 | `source_path.replace('\\', '/')` |
 | build_infrastructure_page_map | by_stem.setdefault(…).append | 46 | `by_stem.setdefault(stem, []).append(source_path)` |
 | build_infrastructure_page_map | by_stem.setdefault | 46 | `by_stem.setdefault(stem, [...])` |
 | build_infrastructure_page_map | sorted (src/llm_wiki_cli/services…d_infrastructure_page_map) | 48 | `sorted(by_stem.items(...))` |
@@ -177,9 +177,9 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `build_infrastructure_page_map` | `sorted` | 42 |
-| unresolved_call | `infrastructure_page_name` | `source_path.replace('\\', '/').replace('/', '_').replace` | 28 |
-| unresolved_call | `infrastructure_page_name` | `source_path.replace('\\', '/').replace` | 28 |
-| unresolved_call | `infrastructure_page_name` | `source_path.replace` | 28 |
+| unresolved_call | `infrastructure_page_name` | `source_path.replace('\\', '/').replace('/', '_').replace` | 31 |
+| unresolved_call | `infrastructure_page_name` | `source_path.replace('\\', '/').replace` | 31 |
+| unresolved_call | `infrastructure_page_name` | `source_path.replace` | 31 |
 | unresolved_call | `build_infrastructure_page_map` | `by_stem.setdefault(stem, []).append` | 46 |
 | unresolved_call | `build_infrastructure_page_map` | `by_stem.setdefault` | 46 |
 | external_call | `build_infrastructure_page_map` | `sorted` | 48 |

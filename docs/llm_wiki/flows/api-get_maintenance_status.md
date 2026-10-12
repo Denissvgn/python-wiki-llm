@@ -2,7 +2,7 @@
 
 **Entry point:** `get_maintenance_status` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), and 54 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), and 56 more
 
 **Complete modules touched:**
 
@@ -64,6 +64,8 @@
 - [wiki_media](../modules/wiki_media.md)
 - [wiki_surface](../modules/wiki_surface.md)
 - [wiki_surface_index](../modules/wiki_surface_index.md)
+- [yaml_formats](../modules/yaml_formats.md)
+- [yaml_syntax](../modules/yaml_syntax.md)
 
 ## Call sequence
 
@@ -135,9 +137,9 @@ sequenceDiagram
     p1-->>p30: prior.assert_current
 ```
 
-> Call sequence diagram shows 30 of 2382 interactions; 2352 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2386 interactions; 2356 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 798 (797 omitted); unresolved 1 of 569 (568 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 799 (798 omitted); unresolved 1 of 569 (568 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -151,7 +153,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/maintenance_state.py:_identity` | 15 | [src/llm_wiki_cli/services/maintenance_shapes.py](../modules/maintenance_shapes.md) | internal | 1 |
 | `src/llm_wiki_cli/services/maintenance_shapes.py:require` | 18 | [src/llm_wiki_cli/services/maintenance_shapes.py](../modules/maintenance_shapes.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 21 | - | external | 4 |
-> Omission summary shows 8 of 565 groups; 557 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 568 groups; 560 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

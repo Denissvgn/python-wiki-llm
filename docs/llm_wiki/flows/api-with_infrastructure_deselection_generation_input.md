@@ -52,9 +52,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| with_infrastructure_deselection_generation_input | deepcopy | 771 | `deepcopy(dict(...))` |
-| with_infrastructure_deselection_generation_input | dict | 771 | `dict(generation_inputs)` |
-| with_infrastructure_deselection_generation_input | deepcopy | 773 | `deepcopy(plan.deselection_only_state)` |
+| with_infrastructure_deselection_generation_input | deepcopy | 779 | `deepcopy(dict(...))` |
+| with_infrastructure_deselection_generation_input | dict | 779 | `dict(generation_inputs)` |
+| with_infrastructure_deselection_generation_input | deepcopy | 781 | `deepcopy(plan.deselection_only_state)` |
 
 ### Boundary effects
 
@@ -64,8 +64,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `with_infrastructure_deselection_generation_input` | `deepcopy` | 771 |
-| external_call | `with_infrastructure_deselection_generation_input` | `deepcopy` | 773 |
+| external_call | `with_infrastructure_deselection_generation_input` | `deepcopy` | 779 |
+| external_call | `with_infrastructure_deselection_generation_input` | `deepcopy` | 781 |
 
 ## Behavior
 

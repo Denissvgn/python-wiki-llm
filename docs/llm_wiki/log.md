@@ -1988,3 +1988,36 @@ use guarded retained-page plans and their existing explicit recovery boundary.
 - Workflow pages created: 1
 - Dependency pages initialized: 0
 - Surface policy updated: no
+
+## 2026-10-12
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:7cfb4daad3634f8a59a64418b55676bb5b26fdc42a9dd772f4266d9062c8d055`
+- Pages created: 6
+- Pages updated: 64
+- Pages metadata-only: 2
+- Pages skipped (unchanged): 1513
+- Pages deprecated: 0
+- Semantic fields preserved: 6
+- Moved entities: none
+- Flow pages initialized: 0 (none)
+- Workflow pages created: 1
+- Dependency pages initialized: 0
+- Surface policy updated: no
+- Infrastructure added: 2
+- Infrastructure changed: 0
+- Infrastructure moved: 0
+- Infrastructure removed: 0
+- Unsupported infrastructure YAML: 0
+
+### Structured YAML coverage
+
+Compose and infrastructure observations now share bounded node composition with
+scalar text preserved. Named CI/deployment formats include action metadata,
+GitLab CI, CircleCI, Azure Pipelines, Kustomize, Helm charts and Ansible playbooks.
+The selected integration actions have source-backed infrastructure pages;
+unknown formats and unrendered templates retain explicit qualifications.

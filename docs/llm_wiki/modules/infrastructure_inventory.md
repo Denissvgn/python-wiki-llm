@@ -4,15 +4,26 @@
 
 ## Description
 
-Inventory helpers for non-Docker infrastructure YAML files.
+Structured observations for recognized infrastructure YAML formats.
+
+The YAML path shares bounded node composition with Compose. It preserves scalar
+lexemes and selects workflows, named CI/deployment formats, recognizable
+Kubernetes resources and targeted runtime families from the captured candidates.
+Kustomize routing precedes Kubernetes content detection. Kubernetes Lists and
+CronJobs expose only supported resource fields; mixed streams and unrendered
+templates retain qualifications without concrete resource observations.
+Arbitrary YAML stays outside the inventory and is retained in discovery diagnostics.
 
 ## Imports
 
 | Source | Symbols |
 |--------|---------|
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot` |
+| `.yaml_formats` | `parse_extended_yaml` |
+| `.yaml_syntax` | `load_yaml_documents`, `yaml_mapping`, `yaml_scalar` |
 | `__future__` | `annotations` |
 | `pathlib` | `Path` |
+| `re` | `re` |
 | `typing` | `Iterable` |
 
 ## Local dependency map
@@ -30,6 +41,8 @@ flowchart LR
     n7["src/llm_wiki_cli/services/lint_service.py"]
     n8["src/llm_wiki_cli/services/source_snapshot.py"]
     n9["src/llm_wiki_cli/services/team.py"]
+    n10["src/llm_wiki_cli/services/yaml_formats.py"]
+    n11["src/llm_wiki_cli/services/yaml_syntax.py"]
     n0 --> n2
     n0 --> n5
     n0 --> n6
@@ -47,8 +60,11 @@ flowchart LR
     n4 --> n5
     n4 --> n8
     n5 --> n8
+    n5 --> n10
+    n5 --> n11
     n6 --> n5
     n6 --> n8
+    n6 --> n11
     n7 --> n2
     n7 --> n5
     n7 --> n6
@@ -57,6 +73,7 @@ flowchart LR
     n9 --> n2
     n9 --> n5
     n9 --> n8
+    n10 --> n11
     click n0 "../modules/sync_cmd.md"
     click n1 "../modules/team_cmd.md"
     click n2 "../modules/bootstrap_runtime.md"
@@ -67,6 +84,8 @@ flowchart LR
     click n7 "../modules/lint_service.md"
     click n8 "../modules/source_snapshot.md"
     click n9 "../modules/team.md"
+    click n10 "../modules/yaml_formats.md"
+    click n11 "../modules/yaml_syntax.md"
 ```
 
 ### Internal neighbors
@@ -82,6 +101,8 @@ flowchart LR
 | Inbound | [lint_service](../modules/lint_service.md) |
 | Inbound | [team](../modules/team.md) |
 | Outbound | [source_snapshot](../modules/source_snapshot.md) |
+| Outbound | [yaml_formats](../modules/yaml_formats.md) |
+| Outbound | [yaml_syntax](../modules/yaml_syntax.md) |
 
 ## Functions
 
@@ -89,55 +110,29 @@ flowchart LR
 |----------|-----------|------------|-------------|
 | `infrastructure_page_name` | `(source_path: str) -> str` | — | Return the canonical infrastructure page stem for *source_path*. |
 | `infrastructure_display_label` | `(source_path: str, info: dict) -> str` | — | Return a human-friendly index label for an infrastructure entry. |
-| `get_yaml_infrastructure_inventory` | `(src_dir: str \| Path, *, source_snapshot: SourceSnapshot \| None = None) -> dict[str, dict]` | — | Discover targeted infrastructure and runtime/config YAML files. |
+| `get_yaml_infrastructure_inventory` | `(src_dir: str \| Path, *, source_snapshot: SourceSnapshot \| None = None) -> dict[str, dict]` | — | Discover recognized infrastructure and runtime/config YAML files. |
 | `parse_runtime_config_yaml` | `(rel_path: str, text: str) -> dict \| None` | — | Parse recognized runtime/config YAML families into documentation models. |
-| `parse_prometheus_config` | `(text: str) -> dict` | — | Parse Prometheus scrape configuration into a compact model. |
-| `parse_prometheus_rules` | `(text: str) -> dict` | — | Parse Prometheus recording/alerting rule groups. |
-| `parse_grafana_provisioning` | `(text: str, rel_path: str) -> dict` | — | Parse Grafana provisioning datasource or dashboard files. |
-| `parse_promtail_config` | `(text: str) -> dict` | — | Parse Promtail client and scrape configuration. |
-| `parse_loki_config` | `(text: str) -> dict` | — | Parse Loki local runtime configuration. |
-| `parse_envoy_config` | `(text: str) -> dict` | — | Parse Envoy listener, cluster, and admin port summaries. |
-| `parse_buf_config` | `(text: str, rel_path: str) -> dict` | — | Parse Buf module or generation configuration. |
-| `parse_model_service_config` | `(text: str, rel_path: str) -> dict` | — | Parse service-local model runtime settings. |
-| `parse_github_actions_workflow` | `(text: str) -> dict` | — | Parse a GitHub Actions workflow into a compact documentation model. |
-| `parse_kubernetes_manifest` | `(text: str) -> dict` | — | Parse one Kubernetes YAML file into resource summaries. |
+| `parse_prometheus_config` | `(text: str) -> dict` | — | Observe Prometheus scrape configuration without evaluating it. |
+| `parse_prometheus_rules` | `(text: str) -> dict` | — | Observe Prometheus recording/alerting rule groups. |
+| `parse_grafana_provisioning` | `(text: str, rel_path: str) -> dict` | — | Observe Grafana provisioning datasource or dashboard files. |
+| `parse_promtail_config` | `(text: str) -> dict` | — | Observe Promtail client and scrape configuration. |
+| `parse_loki_config` | `(text: str) -> dict` | — | Observe Loki server and schema settings. |
+| `parse_envoy_config` | `(text: str) -> dict` | — | Observe Envoy listener, cluster, and admin port summaries. |
+| `parse_buf_config` | `(text: str, rel_path: str) -> dict` | — | Observe Buf module or generation configuration. |
+| `parse_model_service_config` | `(text: str, rel_path: str) -> dict` | — | Observe service-local model runtime settings. |
+| `parse_github_actions_workflow` | `(text: str) -> dict` | — | Observe GitHub Actions workflow triggers, jobs, and direct steps. |
+| `parse_kubernetes_manifest` | `(text: str) -> dict` | — | Observe an entirely Kubernetes stream, including Lists and CronJobs. |
 | `_is_github_actions_path` | `(rel_path: str) -> bool` | — | — |
 | `_is_kubernetes_path` | `(rel_path: str) -> bool` | — | — |
-| `_is_prometheus_config` | `(rel_path: str, lines: list[tuple[int, str]]) -> bool` | — | — |
-| `_is_prometheus_rules` | `(rel_path: str, lines: list[tuple[int, str]]) -> bool` | — | — |
-| `_is_grafana_provisioning` | `(rel_path: str) -> bool` | — | — |
-| `_is_promtail_config` | `(rel_path: str, lines: list[tuple[int, str]]) -> bool` | — | — |
-| `_is_loki_config` | `(rel_path: str, lines: list[tuple[int, str]]) -> bool` | — | — |
-| `_is_envoy_config` | `(rel_path: str, lines: list[tuple[int, str]]) -> bool` | — | — |
-| `_is_buf_config` | `(rel_path: str) -> bool` | — | — |
-| `_is_model_service_config` | `(rel_path: str, lines: list[tuple[int, str]]) -> bool` | — | — |
-| `_has_key` | `(lines: Iterable[tuple[int, str]], key: str) -> bool` | — | — |
-| `_has_top_level_key` | `(lines: Iterable[tuple[int, str]], key: str) -> bool` | — | — |
-| `_section_ranges` | `(lines: list[tuple[int, str]], section_key: str) -> Iterable[tuple[int, int, int]]` | — | — |
+| `_is_kubernetes_document` | `(document: object) -> bool` | — | — |
+| `_kubernetes_leaves` | `(document: object) -> list[dict] \| None` | — | — |
+| `_kubernetes_resource` | `(document: dict) -> dict` | — | — |
+| `_single_mapping` | `(text: str) -> tuple[dict, list[str]]` | — | — |
+| `_list` | `(value: object) -> list` | — | — |
+| `_mappings` | `(value: object) -> list[dict]` | — | — |
+| `_strings` | `(value: object) -> list[str]` | — | — |
+| `_named_items` | `(value: object, key: str = 'name') -> list[str]` | — | — |
+| `_scalar_mapping` | `(value: object) -> dict[str, str]` | — | — |
+| `_recursive_scalars` | `(value: object, key: str) -> list[str]` | — | — |
+| `_first_scalar` | `(value: object, key: str) -> str` | — | — |
 | `_unique_values` | `(values: Iterable[str]) -> list[str]` | — | — |
-| `_collect_list_values` | `(lines: list[tuple[int, str]], section_key: str) -> list[str]` | — | — |
-| `_collect_named_items` | `(lines: list[tuple[int, str]], section_key: str) -> list[str]` | — | — |
-| `_collect_field_values` | `(lines: list[tuple[int, str]], section_key: str, field_key: str) -> list[str]` | — | — |
-| `_collect_values_after_key` | `(lines: list[tuple[int, str]], section_key: str, field_key: str) -> list[str]` | — | — |
-| `_first_value_for_key` | `(lines: Iterable[tuple[int, str]], key: str) -> str` | — | — |
-| `_yaml_lines` | `(text: str) -> list[tuple[int, str]]` | — | — |
-| `_mapping_key` | `(stripped: str) -> bool` | — | — |
-| `_split_key_value` | `(stripped: str) -> tuple[str, str]` | — | — |
-| `_scalar_after_colon` | `(stripped: str) -> str` | — | — |
-| `_parse_scalar` | `(value: str) -> str` | — | — |
-| `_strip_inline_comment` | `(value: str) -> str` | — | — |
-| `_parse_string_list` | `(value: str) -> list[str]` | — | — |
-| `_parse_github_triggers` | `(lines: list[tuple[int, str]], start_index: int) -> list[str]` | — | — |
-| `_new_actions_step` | `() -> dict[str, str]` | — | — |
-| `_parse_actions_step_line` | `(lines: list[tuple[int, str]], index: int, current_job: dict, current_step: dict \| None) -> tuple[dict \| None, int]` | — | — |
-| `_assign_step_value` | `(step: dict[str, str], key: str, value: str, lines: list[tuple[int, str]], index: int) -> int` | — | — |
-| `_collect_block_scalar` | `(lines: list[tuple[int, str]], start_index: int) -> tuple[str, int]` | — | — |
-| `_split_yaml_documents` | `(text: str) -> list[str]` | — | — |
-| `_parse_kubernetes_document` | `(text: str) -> dict \| None` | — | — |
-| `_top_level_value` | `(lines: Iterable[tuple[int, str]], key: str) -> str` | — | — |
-| `_fill_kubernetes_metadata` | `(lines: list[tuple[int, str]], resource: dict) -> None` | — | — |
-| `_fill_kubernetes_spec` | `(lines: list[tuple[int, str]], resource: dict) -> None` | — | — |
-| `_collect_mapping` | `(lines: list[tuple[int, str]], start_index: int) -> dict[str, str]` | — | — |
-| `_collect_containers` | `(lines: list[tuple[int, str]], start_index: int) -> list[dict]` | — | — |
-| `_collect_service_ports` | `(lines: list[tuple[int, str]], start_index: int) -> list[dict]` | — | — |
-| `_assign_service_port_value` | `(port: dict[str, str], key: str, value: str) -> None` | — | — |
