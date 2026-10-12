@@ -8,7 +8,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 |---|---:|---|
 | Entities | 662 | [Open section](#entities) |
 | Modules | 239 | [Open section](#modules) |
-| Workflows | 208 | [Open section](#workflows) |
+| Workflows | 207 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 464 | [Open section](#entry-point-flows) |
 | Infrastructure | 0 | No pages |
@@ -1013,7 +1013,6 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [expand_storage_receipt](workflows/expand_storage_receipt.md) - entry: `storage_receipts.expand_storage_receipt`
 - [export_knowledge_v1](workflows/export_knowledge_v1.md) - entry: `knowledge_storage_lifecycle.export_knowledge_v1`
 - [extract_bootstrap_inventory](workflows/extract_bootstrap_inventory.md) - entry: `bootstrap_runtime._extract_bootstrap_inventory`
-- [fields](workflows/fields.md) - entry: `search_lexical._fields`
 - [finalize_bootstrap_artifacts](workflows/finalize_bootstrap_artifacts.md) - entry: `bootstrap_runtime._finalize_bootstrap_artifacts`
 - [finalize_prepared_sync](workflows/finalize_prepared_sync.md) - entry: `sync_cmd._finalize_prepared_sync`
 - [fresh_inventory_source_files](workflows/fresh_inventory_source_files.md) - entry: `extraction_service._fresh_inventory_source_files`
