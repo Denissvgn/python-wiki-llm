@@ -1836,6 +1836,14 @@ def list_wiki_pages(wiki_dir: str = DEFAULT_WIKI_DIR) -> WikiPagesResult:
     }
 
 
+@_api_boundary
+def get_analysis_input_status(*, limit: int = 20) -> dict[str, Any]:
+    """Read bounded installed-provider census diagnostics, without source execution."""
+    from .services.analysis_capture import analysis_input_status
+
+    return analysis_input_status(limit=limit)
+
+
 @overload
 def doctor(
     src_dir: str = ".", *, wiki_dir: str = DEFAULT_WIKI_DIR, strict: bool = False,
@@ -3731,6 +3739,7 @@ __all__ = [
     "dispatch_calibration_agent",
     "dispatch_p0_calibration_agent",
     "doctor",
+    "get_analysis_input_status",
     "explain_evidence",
     "export_documentation_run",
     "extract_source",

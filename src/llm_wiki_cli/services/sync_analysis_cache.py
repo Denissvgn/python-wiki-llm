@@ -7,7 +7,7 @@ from pathlib import Path
 import json
 
 from ..config import EXTRACTOR_REGISTRY
-from .analysis_capture import capture_analysis, capture_operation
+from .analysis_capture import capture_analysis, capture_operation, analysis_diagnostics
 from .inventory_cache import InventoryCacheStats, prepare_cache_options
 from .io import first_unsafe_path_component, write_bytes_atomic
 from .knowledge_evidence import canonical_json_bytes, hash_json
@@ -52,6 +52,9 @@ def input_key(options, snapshot, manifest, generation_inputs, *, explain=False):
     }
     implementation = implementation_hash()
     if not active <= set(analysis):
+        diagnostic = analysis_diagnostics(analysis)
+        if diagnostic is not None:
+            print("Analysis input preflight: " + json.dumps(diagnostic, ensure_ascii=True, sort_keys=True), flush=True)
         return skipped("unqualified-analysis")
     if implementation is None:
         return skipped("unqualified-implementation")

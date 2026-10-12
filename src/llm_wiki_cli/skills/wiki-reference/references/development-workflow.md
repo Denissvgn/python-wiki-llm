@@ -52,6 +52,17 @@ prerequisite is an environment failure, not a product defect or passing coverage
 Use [Extractors and dependencies](extractors-dependencies.md) for helper recovery.
 Retain the original failure and successful corrective reruns separately.
 
+Before qualifying measurements, run `llm-wiki doctor --analysis-inputs --format json`
+and retain its result. This read-only check covers the installed provider's
+Python/helper census and registered implementation files, not project source,
+runtime/helper readiness or semantic correctness. An unavailable result leaves
+measurement qualification pending. For provider source additions, review
+`services/analysis_contracts.json`: presentation/consumer files belong in the
+census; observation code also needs its correct producer input lists. Classify
+deliberately, rerun the preflight and affected checks, and retain the failed
+attempt. Never automatically register files or infer producer trust from a
+passing census. Other projects' application files are outside this registry.
+
 If a check inspects tracked publication inputs, stage the exact reviewed candidate
 only when existing authority and [Repository handoff](repository-handoff.md)
 permit it. Keep private records outside that candidate. Update independently

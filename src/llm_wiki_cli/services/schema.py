@@ -287,6 +287,14 @@ also applies when skills are disabled or unavailable:
   Stage reviewed files only if the check requires tracked inputs and existing
   authority/repository policy permit staging. Retain failed attempts and
   successful corrections separately; environment failure is not passing coverage.
+- Before qualifying measurements, run `llm-wiki doctor --analysis-inputs --format json`.
+  It checks installed-provider classification/files, not project source or runtime
+  readiness. An unavailable result keeps qualification pending. For provider
+  additions, review `services/analysis_contracts.json`: classify consumer files in
+  the census and observation changes in their producer input lists deliberately.
+  Rerun preflight/affected checks and retain failures; never automatically register
+  files or infer producer trust. Application files in other projects are outside
+  this registry.
 - After a coherent relevant edit, follow "When you change code" below for an
   affected in-scope wiki: sync, semantic review, final re-anchor, then validation.
   Source-only evidence does not waive that maintenance. Without an affected wiki,
@@ -775,6 +783,9 @@ def _compact_wiki_instructions(
 - Substantive work: `{reference_root}/development-workflow.md`: criteria; scoped
   source inspection; bounded edits; independent checks; refresh; qualified handoff.
   Recheck basis; keep failures/gaps.
+- Before qualifying measurements: `llm-wiki doctor --analysis-inputs --format json`.
+  Check installed-provider census/files; unavailable keeps qualification pending.
+  Review census/producer lists deliberately; never auto-classify or infer trust.
 - Queries: `{reference_root}/knowledge-consumption.md` and
   `{reference_root}/context-query.md`. Owner-authorized governance:
   `{reference_root}/governance.md`.

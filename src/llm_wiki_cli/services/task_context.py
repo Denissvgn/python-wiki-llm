@@ -485,7 +485,11 @@ def _validate_task_claims(payload, normalized, settings):
         raise ValueError("capture paths differ from the declared selectors")
     work = payload["work"]
     _result_fields(work, {"captures", "source_files", "source_bytes", "queries", "capture_retries",
-                         "scope", "source_byte_measure"}, "work")
+                         "scope", "source_byte_measure"} | ({"analysis_input_status"} if "analysis_input_status" in work else set()), "work")
+    if "analysis_input_status" in work:
+        from .analysis_capture import validate_analysis_diagnostics
+
+        validate_analysis_diagnostics(work["analysis_input_status"])
     for field, maximum in (("captures", 1), ("source_files", settings["max_files"]),
                            ("source_bytes", settings["max_source_bytes"]),
                            ("queries", settings["max_read_rounds"]), ("capture_retries", settings["max_retries"])):

@@ -198,6 +198,12 @@ class InventoryResult:
     path_outcomes: dict = field(default_factory=dict)
 
     @property
+    def analysis_input_status(self):
+        from .analysis_capture import analysis_diagnostics
+
+        return analysis_diagnostics(self.analysis_components)
+
+    @property
     def job_plan(self) -> ExtractionJobPlan:
         return self.extraction_job_plan
 

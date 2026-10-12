@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Read-only `doctor --analysis-inputs` and `get_analysis_input_status` report
+  bounded installed-provider classification/file gaps and their review route.
+  Capture, cache and canonical task diagnostics explain unavailable analysis
+  while preserving unknown producer authority.
+
 - Opt-in `compact-v2` task delivery exposes complete selected evidence as
   readable JSON, with canonical receipts and separately counted view budgets.
   MCP retains delivery qualifications while offering detailed telemetry through

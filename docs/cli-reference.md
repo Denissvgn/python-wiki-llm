@@ -1076,6 +1076,24 @@ See [workflow recipes and limits](native-agent-workflow.md).
 
 ## Codebase source integration
 
+`llm-wiki doctor --analysis-inputs --format json` checks the installed provider's
+Python/helper classification and registered implementation files without
+scanning application source, executing code or preparing helpers. Python callers
+use `api.get_analysis_input_status(limit=20)`. The report lists bounded relative
+paths, reason, omitted counts and the registry-review route; exit 0 means the
+census/files are ready and exit 2 means unavailable. This mode is exclusive with
+`--capabilities` and explicit `--report-schema` selection. It does not establish
+runtime/helper readiness, semantic correctness or producer authority.
+
+Provider source additions require deliberate review of
+`services/analysis_contracts.json`: classify presentation/consumer files in the
+census and observation changes in their correct producer input lists. Missing
+or unclassified inputs retain unavailable analysis. Inventory results expose
+`analysis_input_status`; affected canonical task v2 results include it in `work`
+and sync-cache misses emit the bounded diagnostic. Compact callers can inspect
+the host-owned canonical receipt. Healthy task output retains its existing
+shape; diagnostics provide information without changing source/review claims.
+
 For research or indexing systems that need codebase evidence without adopting
 the maintained wiki format, prefer the read-only source-adapter commands:
 

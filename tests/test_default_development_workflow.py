@@ -52,8 +52,10 @@ def test_default_workflow_installation_and_upgrade_preserve_project_policy(tmp_p
         for obligation in [b"independent acceptance criteria", b"run those checks", b"reconcile or", b"every required", b"environment failure"]:
             assert obligation in content
         assert not reference.exists()
+        assert b"doctor --analysis-inputs --format json" in content
     else:
         assert verify_reference_skill(agent=agent).state is ReferenceSkillState.CURRENT
+        assert "doctor --analysis-inputs --format json" in (reference / "references/development-workflow.md").read_text()
         # Simulate the previous exact tree; upgrade must recover the new topic.
         (reference / "references/development-workflow.md").unlink()
         assert verify_reference_skill(agent=agent).state is ReferenceSkillState.INCOMPLETE
