@@ -1,5 +1,6 @@
 module Json
     ( renderInventoryJson
+    , renderDiagnosticsJson
     ) where
 
 import Data.Char (ord)
@@ -19,6 +20,24 @@ renderInventoryJson inventory =
     "{" ++ intercalate "," (map renderFile sortedInventory) ++ "}"
   where
     sortedInventory = sortOn fst inventory
+
+renderDiagnosticsJson :: Inventory -> [(FilePath, String, String)] -> String
+renderDiagnosticsJson inventory failures =
+    "{" ++ intercalate ","
+        [ renderField ("schema_version", jsonString "llm-wiki-native-diagnostics/v1")
+        , renderField ("language", jsonString "haskell")
+        , renderField ("inventory", renderInventoryJson inventory)
+        , renderField ("outcomes", "{" ++ intercalate "," (map renderOutcome (sortOn first outcomes)) ++ "}")
+        ] ++ "}"
+  where
+    outcomes = [(path, "extracted", "inventory-entry") | (path, _) <- inventory]
+        ++ [(path, "failed", reason) | (path, reason, _) <- failures]
+    first (path, _, _) = path
+    renderOutcome (path, state, reason) = jsonString path ++ ":{" ++ intercalate ","
+        [ renderField ("extraction_state", jsonString state)
+        , renderField ("reason", jsonString reason)
+        , renderField ("failure_scope", jsonString "file")
+        ] ++ "}"
 
 renderFile :: (FilePath, FileEntry) -> String
 renderFile (path, entry) =

@@ -364,7 +364,7 @@ def _run_extraction_plan(
         )
         return _ExtractionOutcome(
             plan.language, "failed", plan.files_found,
-            extracted if plan.kwargs.get("diagnostics") else {}, message,
+            extracted if (plan.kwargs.get("diagnostics") or getattr(plan.kwargs.get("src_dir"), "diagnostics", False)) else {}, message,
             path_outcomes=getattr(extractor, "last_path_outcomes", None),
         )
 
@@ -595,12 +595,12 @@ def _inventory_path_outcomes(context, inventory, outcomes_by_language) -> dict:
         reported = outcome.path_outcomes or {} if outcome is not None else {}
         for source in sources:
             path = source.rel_path
+            if context.request.only_files is not None and path not in context.request.only_files:
+                continue
             if path in reported:
                 result[path] = dict(reported[path])
             elif path in inventory:
                 result[path] = {"extraction_state": "extracted", "reason": "inventory-entry"}
-            elif path in reported:
-                result[path] = dict(reported[path])
             elif outcome is not None and outcome.state == "failed":
                 result[path] = {"extraction_state": "failed", "reason": "extractor-batch-failed", "failure_scope": "extractor-batch"}
             else:
@@ -1234,6 +1234,7 @@ def _build_builtin_extraction_kwargs(
                 only_files=context.request.only_files,
                 deep=context.request.deep,
                 source_files=fresh_source_files,
+                diagnostics=context.request.capture_path_outcomes,
                 helper_cache_dir=_inventory_helper_cache_dir(context.request),
                 include_tests=context.request.include_tests,
                 defer_receiver_attachment=True,
@@ -1246,6 +1247,7 @@ def _build_builtin_extraction_kwargs(
                 only_files=context.request.only_files,
                 deep=context.request.deep,
                 source_files=fresh_source_files,
+                diagnostics=context.request.capture_path_outcomes,
                 helper_cache_dir=_inventory_helper_cache_dir(context.request),
             ),
         }
@@ -1256,6 +1258,7 @@ def _build_builtin_extraction_kwargs(
                 only_files=context.request.only_files,
                 deep=context.request.deep,
                 source_files=fresh_source_files,
+                diagnostics=context.request.capture_path_outcomes,
                 helper_cache_dir=_inventory_helper_cache_dir(context.request),
             ),
         }

@@ -58,6 +58,14 @@ between an empty module and a missing source. Analysis caches retain attributabl
 outcomes; missing qualifications are rebuilt through the same scoped parser
 route. This does not add every otherwise-undocumented empty file to the wiki.
 
+Discovery-policy impact queries report Go, Rust and Haskell parse and read
+failures at the selected file boundary. Successful parsed records remain
+available alongside failed files; missing helpers, invalid helper responses,
+and process failures retain their separate coverage or batch qualifications.
+An omitted outcome remains unavailable and cannot establish an empty module or
+authorize source-member retirement. Ordinary extraction keeps its inventory
+format; these diagnostics are an opt-in analysis contract.
+
 The wiki also contains `.llm-wiki-manifest.json`, the operational source,
 evidence, and artifact-commit state used by incremental sync and strict
 linting; `.llm-wiki-surface.json`, the deterministic machine-readable index of

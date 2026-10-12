@@ -69,6 +69,7 @@
     "extractors/fastapi_contracts.py",
     "extractors/go_extractor.py",
     "extractors/haskell_extractor.py",
+    "extractors/native_diagnostics.py",
     "extractors/python_bindings.py",
     "extractors/python_contracts.py",
     "extractors/python_extractor.py",
@@ -316,6 +317,7 @@
       "extractors/go_extractor.py",
       "extractors/go_scripts/go.mod",
       "extractors/go_scripts/main.go",
+      "extractors/native_diagnostics.py",
       "services/extractor_helpers.py",
       "services/go_calls.py"
     ],
@@ -327,6 +329,7 @@
       "extractors/haskell_scripts/Main.hs",
       "extractors/haskell_scripts/Parser.hs",
       "extractors/haskell_scripts/Paths.hs",
+      "extractors/native_diagnostics.py",
       "services/extractor_helpers.py"
     ],
     "infrastructure": [
@@ -350,6 +353,7 @@
     ],
     "rust": [
       "extractors/common.py",
+      "extractors/native_diagnostics.py",
       "extractors/rust_extractor.py",
       "extractors/rust_scripts/Cargo.lock",
       "extractors/rust_scripts/Cargo.toml",

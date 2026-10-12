@@ -45,6 +45,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Go, Rust and Haskell discovery-policy impact queries distinguish parser-owned
+  file syntax/read failures from unavailable coverage and helper batch failures.
+  Qualified diagnostics retain successful selected files without granting
+  failed files inventory or retirement authority.
+
 - Surviving empty modules retain parser-qualified module records, source
   commitments and authored context while removed members become history.
   Scoped diagnostics and cache recovery distinguish valid emptiness from
