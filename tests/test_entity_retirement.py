@@ -460,7 +460,6 @@ def test_failed_source_parse_cannot_authorize_member_retirement(tmp_path, monkey
 
     with pytest.raises(SystemExit) as caught:
         _sync(wiki)
-
     assert caught.value.code != 0
     assert _snapshot(wiki) == before
     assert SOURCE_MEMBER_REMOVED_HEADER not in (wiki / "entities/Draft.md").read_text(
@@ -814,24 +813,19 @@ def test_valid_comment_only_source_requires_explicit_empty_module_classification
     project, wiki = _bootstrap_project(
         tmp_path, monkeypatch, {"model.py": _draft_source("Original draft.")}
     )
-    before = _snapshot(wiki)
     (project / "pkg/model.py").write_text(
         "# The selected file is valid Python and still exists.\n", encoding="utf-8"
     )
     capsys.readouterr()
 
-    with pytest.raises(SystemExit) as caught:
-        _sync(wiki)
-
-    assert caught.value.code != 0
+    _sync(wiki)
     captured = capsys.readouterr()
-    assert "Selected source is still captured" in captured.err
-    assert "pkg/model.py" in captured.err
-    assert "parser/coverage or empty-module classification" in captured.err
-    assert "Sync complete:" not in captured.out
-    assert "Wiki is up to date." not in captured.out
-    assert _snapshot(wiki) == before
-    assert not _retirement_pages(SyncManifest.load(wiki))
+    assert "Qualifying surviving module inputs: 1 path(s)." in captured.out
+    manifest = SyncManifest.load(wiki)
+    assert manifest.sources["pkg/model.py"]["entities"] == []
+    assert "entities/Draft.md" in _retirement_pages(manifest)
+    assert "modules/model.md" in manifest.evidence_baselines
+    _assert_converged(wiki)
 
 
 def test_cp1252_authored_markdown_survives_retirement_as_text(tmp_path, monkeypatch):

@@ -2559,6 +2559,60 @@ def _extract_current_inventory(
     )
 
 
+def _qualify_surviving_module_inventory(options, snapshot, manifest, result):
+    """Resolve prior-owned sparse paths through attributable parser observations."""
+    from ..config import EXTRACTOR_REGISTRY
+    from ..services.knowledge_evidence import module_observation_hash
+
+    captured = snapshot.hashes_for()
+    prior = set(manifest.sources) & set(captured)
+    languages = {item.rel_path: language for language, files in snapshot.files_by_language.items() for item in files}
+    missing = prior - set(result.inventory)
+    changed = {
+        path for path in prior
+        if languages.get(path) in {"python", "typescript"}
+        and manifest.sources[path].get("hash") != captured[path]
+        and (
+            manifest.sources[path].get("empty_module") is True
+            or Counter(manifest.sources[path].get("entities", [])) != Counter(cls["name"] for cls in result.inventory.get(path, {}).get("classes", []))
+        )
+    }
+    unqualified_cached = {path for path, data in result.inventory.items() if data.get("empty_module") is True and result.path_outcomes.get(path, {}).get("retained_empty") is not True}
+    paths = sorted(missing | changed | unqualified_cached)
+    if not paths:
+        return result
+    print(f"Qualifying surviving module inputs: {len(paths)} path(s).")
+    retry = get_inventory_result(
+        options.src_dir, deep=True, only_files=paths, source_snapshot=snapshot,
+        include_empty=True, capture_path_outcomes=True,
+        helper_cache_dir=options.helper_cache_dir, include_tests=options.include_tests,
+        include_plugins=options.include_plugins, parallel_jobs=options.parallel_jobs,
+        capture_data_effect_observations=True, capture_import_observations=True,
+        capture_implementation_observations=True,
+    )
+    inventory = dict(result.inventory)
+    outcomes = dict(result.path_outcomes)
+    for path in paths:
+        outcome = retry.path_outcomes.get(path, {})
+        record = retry.inventory.get(path)
+        language = languages.get(path, "")
+        status = retry.statuses.get(language)
+        builtin = retry.extractor_registry.get(language) == EXTRACTOR_REGISTRY.get(language) and language in EXTRACTOR_REGISTRY
+        extracted = outcome.get("extraction_state") == "extracted" and outcome.get("reason") == "inventory-entry"
+        empty = extracted and outcome.get("retained_empty") is True
+        if (
+            status is None or status.state != "ok" or not builtin
+            or not isinstance(record, dict) or not (empty or extracted)
+            or (empty and (record.get("empty_module") is not True or record.get("classes") != [] or record.get("functions") != []))
+            or module_observation_hash(record, inventory_complete=True) is None
+        ):
+            reason = outcome.get("reason", "outcome-not-reported")
+            raise SourceRetirementError(f"Selected source is still captured but its module classification is unqualified: {path!r} [reason={reason}]. Resolve parser/coverage before retiring its pages.")
+        inventory[path] = record
+        outcomes[path] = dict(outcome)
+    return replace(result, inventory=inventory, path_outcomes=outcomes)
+
+
 @observed_phase("page_maps")
 def _prepare_sync_page_maps(inventory: dict) -> _SyncPageMaps:
     print("Preparing sync page maps...", flush=True)
@@ -3791,6 +3845,9 @@ def _prepare_sync_run(
     )
     inventory_result = extracted.result
     source_snapshot = extracted.source_snapshot
+    inventory_result = _qualify_surviving_module_inventory(options, source_snapshot, baseline_manifest, inventory_result)
+    if inventory_result.inventory != extracted.result.inventory:
+        cached_analysis = None
     inventory = inventory_result.inventory
     source_content_hashes = source_snapshot.hashes_for(inventory)
     captured_prior_sources = set(source_snapshot.hashes_for()) & set(baseline_manifest.sources)

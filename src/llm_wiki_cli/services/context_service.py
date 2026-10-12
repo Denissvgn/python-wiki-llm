@@ -242,6 +242,7 @@ def get_inventory(
     source_snapshot: SourceSnapshot | None = None,
     helper_cache_dir: str | None = None,
     capture_implementation_observations: bool = False,
+    retain_empty_paths: tuple[str, ...] = (),
 ) -> dict: ...
 
 
@@ -258,6 +259,7 @@ def get_inventory(
     source_snapshot: SourceSnapshot | None = None,
     helper_cache_dir: str | None = None,
     capture_implementation_observations: bool = False,
+    retain_empty_paths: tuple[str, ...] = (),
 ) -> InventoryResult: ...
 
 
@@ -274,6 +276,7 @@ def get_inventory(
     source_snapshot: SourceSnapshot | None = None,
     helper_cache_dir: str | None = None,
     capture_implementation_observations: bool = False,
+    retain_empty_paths: tuple[str, ...] = (),
 ) -> dict | InventoryResult: ...
 
 
@@ -289,6 +292,7 @@ def get_inventory(
     source_snapshot: SourceSnapshot | None = None,
     helper_cache_dir: str | None = None,
     capture_implementation_observations: bool = False,
+    retain_empty_paths: tuple[str, ...] = (),
 ) -> dict | InventoryResult:
     """Build command inventory, optionally returning extraction metadata."""
     if not isinstance(capture_implementation_observations, bool):
@@ -307,6 +311,8 @@ def get_inventory(
         inventory_options["include_plugins"] = False
     if capture_implementation_observations:
         inventory_options["capture_implementation_observations"] = True
+    if retain_empty_paths:
+        inventory_options["retain_empty_paths"] = retain_empty_paths
     inventory_result = get_inventory_result(
         src_dir,
         **inventory_options,
@@ -3082,8 +3088,12 @@ def _build_context_impl(
         expected_selection_inputs=selection_inputs,
     )
 
+    from .source_retirement import retained_empty_module_paths_from_wiki
+    empty_paths = retained_empty_module_paths_from_wiki(wiki_root)
+    empty_options: dict[str, Any] = {"retain_empty_paths": empty_paths} if empty_paths else {}
     collected_inventory = get_inventory(
         str(src_root),
+        **empty_options,
         deep=True,
         return_result=True,
         job_request=job_request,

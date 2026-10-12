@@ -24,6 +24,29 @@ class SourceRetirementError(ValueError):
     """A retirement record cannot be reconciled with authoritative ownership."""
 
 
+def retained_empty_module_paths(manifest: SyncManifest | None) -> tuple[str, ...]:
+    """Return source paths whose last owning run retained a parser-empty module."""
+    if manifest is None:
+        return ()
+    result = []
+    for path, source in manifest.sources.items():
+        if "empty_module" not in source:
+            continue
+        if source["empty_module"] is not True or source.get("entities") != []:
+            raise SourceRetirementError(f"Invalid empty module source commitment: {path!r}")
+        result.append(path)
+    return tuple(sorted(result))
+
+
+def retained_empty_module_paths_from_wiki(wiki_dir) -> tuple[str, ...]:
+    """Read only the configured manifest to select parser retention, not evidence."""
+    try:
+        manifest = SyncManifest.load(wiki_dir)
+    except FileNotFoundError:
+        return ()
+    return retained_empty_module_paths(manifest)
+
+
 def read_entity_retirement_state(generation_inputs: Mapping[str, object]) -> dict[str, ManifestPageSource]:
     """Decode exact machine records without deriving ownership from Markdown."""
     if ENTITY_RETIREMENT_INPUT_KEY not in generation_inputs:

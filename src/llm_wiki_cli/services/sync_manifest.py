@@ -1562,6 +1562,8 @@ class SyncManifest:
                 "entity_page_occurrences": entity_page_occurrences,
                 "module_page": module_page,
             }
+            if file_data.get("empty_module") is True:
+                sources[filepath]["empty_module"] = True
 
         _validate_reason(unknown_evidence_reason, "unknown_evidence_reason")
         provided = dict(evidence_baselines or {})

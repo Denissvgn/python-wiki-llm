@@ -31,6 +31,8 @@ const srcDirPosix = srcDir.split(path.sep).join("/");
 const onlyFilesArg = getArg("--only-files", null);
 const deep = args.includes("--deep");
 const diagnostics = args.includes("--diagnostics-v1");
+const includeEmpty = diagnostics && args.includes("--include-empty-v1");
+const retainedEmptyFiles = new Set(diagnostics ? JSON.parse(getArg("--retain-empty-files-v1", "[]")) : []);
 const outcomes = {};
 const extensionsArg = getArg("--extensions", ".ts,.tsx");
 const extensions = extensionsArg.split(",").map((e) => e.trim());
@@ -751,12 +753,14 @@ function extractFile(sourceFile) {
   }
 
   // Only include files that have something worth tracking
-  if (
+  const documentable = (
     fileEntry.classes.length > 0 ||
     fileEntry.functions.length > 0 ||
     hasDocumentableModuleSignals(fileEntry, moduleDocstring) || fileEntry.import_gaps?.length
-  ) {
-    return [filePath, fileEntry];
+  );
+  if (documentable || includeEmpty || retainedEmptyFiles.has(relativePathFromSrc(filePath))) {
+    if (!documentable) fileEntry.empty_module = true;
+    return [filePath, fileEntry, Boolean(documentable)];
   }
   if (deep) {
     process.stderr.write(
@@ -789,9 +793,11 @@ for (const sourceFile of project.getSourceFiles()) {
     }
     const result = extractFile(sourceFile);
     if (result) {
-      const [filePath, fileEntry] = result;
+      const [filePath, fileEntry, documentable] = result;
       inventory[filePath] = fileEntry;
-      outcomes[relativePathFromSrc(fp)] = { extraction_state: "extracted", reason: "inventory-entry" };
+      outcomes[relativePathFromSrc(fp)] = documentable
+        ? { extraction_state: "extracted", reason: "inventory-entry" }
+        : { extraction_state: "extracted", reason: "inventory-entry", retained_empty: true };
     } else {
       outcomes[relativePathFromSrc(fp)] = { extraction_state: "no-documentable-content", reason: "no-documentable-content" };
     }

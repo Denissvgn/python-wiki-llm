@@ -118,6 +118,7 @@ from .source_retirement import (
     SOURCE_RETIREMENT_EXTENSION_KEY,
     SourceRetirementError,
     retired_entity_mappings,
+    retained_empty_module_paths,
 )
 from .sync_manifest import (
     MANIFEST_FILENAME,
@@ -918,6 +919,7 @@ def _collect_lint_inputs(
                 plan_reporter=plan_reporter,
                 include_plugins=include_plugins,
                 source_plugins_only=source_plugins_only,
+                retain_empty_paths=retained_empty_module_paths(manifest),
             )
         report.extraction_job_plan = inventory_result.extraction_job_plan
         if cache_options is not None and cache_options.stats_enabled:

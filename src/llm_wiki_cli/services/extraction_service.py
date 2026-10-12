@@ -165,8 +165,12 @@ class InventoryRequest:
     source_plugins_only: bool = False
     capture_implementation_observations: bool = False
     capture_path_outcomes: bool = False
+    retain_empty_paths: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
+        object.__setattr__(self, "retain_empty_paths", tuple(self.retain_empty_paths))
+        if self.retain_empty_paths:
+            object.__setattr__(self, "capture_path_outcomes", True)
         object.__setattr__(
             self, "include_tests", normalize_include_tests(self.include_tests)
         )
@@ -426,6 +430,7 @@ _LEGACY_INVENTORY_REQUEST_FIELDS = (
     "source_plugins_only",
     "capture_implementation_observations",
     "capture_path_outcomes",
+    "retain_empty_paths",
 )
 
 
@@ -590,7 +595,9 @@ def _inventory_path_outcomes(context, inventory, outcomes_by_language) -> dict:
         reported = outcome.path_outcomes or {} if outcome is not None else {}
         for source in sources:
             path = source.rel_path
-            if path in inventory:
+            if path in reported:
+                result[path] = dict(reported[path])
+            elif path in inventory:
                 result[path] = {"extraction_state": "extracted", "reason": "inventory-entry"}
             elif path in reported:
                 result[path] = dict(reported[path])
@@ -1033,6 +1040,9 @@ def _plan_language_extraction(
     extensions = LANGUAGE_EXTENSIONS.get(language)
     if extensions is not None:
         source_files = context.source_snapshot.language_paths(language)
+        if context.request.only_files is not None:
+            requested = set(context.request.only_files)
+            source_files = [path for path in source_files if path in requested]
     elif context.source_snapshot.source_selection_policy is not None:
         source_files = sorted(context.source_snapshot.selected_regular_paths)
         if context.request.only_files is not None:
@@ -1197,6 +1207,8 @@ def _build_extraction_kwargs(
             kwargs["defer_inventory_model_kinds"] = True
             if context.request.capture_path_outcomes:
                 kwargs["diagnostics"] = True
+            if context.request.retain_empty_paths:
+                kwargs["retain_empty_paths"] = context.request.retain_empty_paths
         if is_builtin and context.request.capture_data_effect_observations:
             kwargs["capture_data_effect_observations"] = (
                 context.request.capture_data_effect_observations
@@ -1255,6 +1267,10 @@ def _build_builtin_extraction_kwargs(
     }
     if language == "typescript":
         kwargs["helper_cache_dir"] = _inventory_helper_cache_dir(context.request)
+        if context.request.include_empty and context.request.capture_path_outcomes:
+            kwargs["include_empty"] = True
+        if context.request.retain_empty_paths:
+            kwargs["retain_empty_paths"] = context.request.retain_empty_paths
         if context.request.capture_path_outcomes:
             kwargs["diagnostics"] = True
     return kwargs

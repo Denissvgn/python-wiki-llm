@@ -45,9 +45,18 @@ concept lifecycle change or a human review.
 Retained manifest ownership lets ordinary sync recover a previously unqualified
 removed-member page. Reappearance at the exact same source coordinate can revive
 its page and authored context; an unrelated owner cannot claim the occupied path.
-Ambiguous duplicate removal and captured sources without documentable inventory
-require resolved ownership or extraction coverage before page writes. A stale
-Markdown header alone does not establish retirement authority.
+Ambiguous duplicate removal requires resolved ownership before page writes.
+Previously documented sources with no documentable inventory receive a narrow
+parser qualification: a valid empty module retains its module page and source
+commitment while its removed members become history. Python aliases, parse
+failures and unavailable coverage stop that transition. A stale Markdown header
+alone does not establish retirement authority.
+
+Retained empty modules remain explicit in the owning manifest. Lint and live
+native reads request those exact parser records, preserving the distinction
+between an empty module and a missing source. Analysis caches retain attributable
+outcomes; missing qualifications are rebuilt through the same scoped parser
+route. This does not add every otherwise-undocumented empty file to the wiki.
 
 The wiki also contains `.llm-wiki-manifest.json`, the operational source,
 evidence, and artifact-commit state used by incremental sync and strict

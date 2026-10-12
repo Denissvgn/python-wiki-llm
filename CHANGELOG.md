@@ -45,6 +45,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Surviving empty modules retain parser-qualified module records, source
+  commitments and authored context while removed members become history.
+  Scoped diagnostics and cache recovery distinguish valid emptiness from
+  syntax failures, unavailable coverage and Python module aliases.
+
 - Ordinary sync qualifies removed entities inside surviving source modules,
   retaining historical ownership, evidence and authored context. Exact owner
   revival restores live generation; ambiguous duplicate removal and captured

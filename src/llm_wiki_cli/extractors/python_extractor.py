@@ -1423,6 +1423,7 @@ def _scan_python_files(
     implementation_observations: dict[str, dict] | None = None,
     implementation_analysis_hash: str | None = None,
     path_outcomes: dict[str, dict] | None = None,
+    retain_empty_paths: tuple[str, ...] = (),
 ) -> dict:
     """Scan Python files under *src_dir* and return a raw inventory dict.
 
@@ -1551,21 +1552,25 @@ def _scan_python_files(
                 for value in python_bindings.module.values()
             )
         )
-        has_content = (
+        documentable = (
             declares_symbols
             or ((module_calls or has_import_bindings) and not is_module_alias)
-            or include_empty
         )
+        has_content = documentable or ((include_empty or rel.as_posix() in retain_empty_paths) and not is_module_alias)
         if path_outcomes is not None:
             path_outcomes[rel.as_posix()] = {
                 "extraction_state": "extracted" if has_content else "no-documentable-content",
-                "reason": "inventory-entry" if has_content else "no-documentable-content",
+                "reason": "inventory-entry" if has_content else ("module-alias" if is_module_alias else "no-documentable-content"),
             }
+            if has_content and not documentable:
+                path_outcomes[rel.as_posix()]["retained_empty"] = True
         if has_content:
             file_entry: dict[str, object] = {
                 "classes": visitor.classes,
                 "functions": visitor.functions,
             }
+            if not documentable:
+                file_entry["empty_module"] = True
 
             if visitor.constants:
                 file_entry["constants"] = visitor.constants
@@ -1661,6 +1666,7 @@ class PythonExtractor:
         capture_implementation_observations: bool = False,
         implementation_analysis_hash: str | None = None,
         diagnostics: bool = False,
+        retain_empty_paths: tuple[str, ...] = (),
     ) -> dict:
         """Scan *src_dir* for Python files and return an inventory dict.
 
@@ -1693,6 +1699,7 @@ class PythonExtractor:
             implementation_observations=implementations,
             implementation_analysis_hash=implementation_analysis_hash,
             path_outcomes=self.last_path_outcomes,
+            retain_empty_paths=retain_empty_paths,
         )
         for entry in inventory.values():
             entry["language"] = "python"
