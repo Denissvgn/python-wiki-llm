@@ -1016,7 +1016,7 @@ def _record_infrastructure_candidates(
         _append_sorted(buckets.dockerfile_candidates, source_file)
     if _is_compose_candidate(resolved):
         _append_sorted(buckets.compose_candidates, source_file)
-    if resolved.suffix.lower() in {".yml", ".yaml"}:
+    if resolved.suffix.lower() in {".yml", ".yaml"} or resolved.name == "Kustomization":
         _append_sorted(buckets.yaml_candidates, source_file)
 
 

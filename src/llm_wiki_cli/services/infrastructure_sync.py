@@ -333,15 +333,23 @@ def _unsupported_yaml_records(
     inventory: Mapping[str, Mapping[str, object]],
 ) -> tuple[dict[str, object], ...]:
     supported = set(inventory)
-    return tuple(
-        {
+    from .yaml_syntax import load_yaml_documents
+
+    records = []
+    candidates = {item.rel_path: item for item in snapshot.yaml_candidates}
+    for path in _yaml_candidates(snapshot):
+        if path in supported:
+            continue
+        _, advisories = load_yaml_documents(candidates[path].abs_path.read_text(errors="replace"))
+        record: dict[str, object] = {
             "path": path,
             "source_content_hash": _source_hash(snapshot, path),
-            "reason": "unrecognized-yaml",
+            "reason": "invalid-yaml" if advisories else "unrecognized-yaml",
         }
-        for path in _yaml_candidates(snapshot)
-        if path not in supported
-    )
+        if advisories:
+            record["advisories"] = advisories
+        records.append(record)
+    return tuple(records)
 
 
 def _move_key(record: Mapping[str, object]) -> tuple[object, ...]:

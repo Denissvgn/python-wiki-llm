@@ -262,7 +262,9 @@
     "services/wiki_surface.py",
     "services/wiki_surface_index.py",
     "services/wiki_write_basis.py",
-    "services/workflow_profile.py"
+    "services/workflow_profile.py",
+    "services/yaml_formats.py",
+    "services/yaml_syntax.py"
   ],
   "contract": "structural-observations/v1",
   "executors": {
@@ -328,7 +330,9 @@
     ],
     "infrastructure": [
       "services/infrastructure_inventory.py",
-      "services/infrastructure_sync.py"
+      "services/infrastructure_sync.py",
+      "services/yaml_formats.py",
+      "services/yaml_syntax.py"
     ],
     "python": [
       "extractors/common.py",

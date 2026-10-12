@@ -92,7 +92,7 @@ def _write_fixture(project: Path) -> None:
     alternate = project / "alternate" / "deployment.yaml"
     alternate.parent.mkdir()
     alternate.write_text(
-        "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: unsupported\n",
+        "database:\n  host: localhost\n",
         encoding="utf-8",
     )
 
@@ -113,6 +113,109 @@ def _wiki_bytes(wiki: Path) -> dict[str, bytes]:
         for path in sorted(wiki.rglob("*"))
         if path.is_file()
     }
+
+
+def test_extended_yaml_pages_preserve_notes_selection_and_live_basis(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    project = tmp_path / "project"
+    project.mkdir()
+    (project / "app.py").write_text("def main():\n    return 1\n")
+    cases = {
+        "action.yml": "name: Pilot\ninputs: {token: {default: NEVER_COPY}}\nruns: {using: composite, steps: [{name: Build, run: echo NEVER_COPY, shell: bash}]}\n",
+        ".gitlab-ci.yml": "stages: [build]\ncompile: {script: echo NEVER_COPY}\n",
+        ".circleci/config.yml": "version: 2.1\njobs: {build: {steps: [checkout]}}\nworkflows: {ci: {jobs: [build]}}\n",
+        "azure-pipelines.yml": "trigger: [main]\njobs: [{job: Build, steps: [{script: echo NEVER_COPY}]}]\n",
+        "kustomization.yaml": "apiVersion: kustomize.config.k8s.io/v1beta1\nkind: Kustomization\nresources: [deployment.yaml]\n",
+        "overlay/Kustomization": "resources: [../deployment.yaml]\n",
+        "Chart.yaml": "apiVersion: v2\nname: pilot\nversion: 1.0.0\n",
+        "playbook.yml": "- name: Deploy\n  hosts: web\n  tasks: [{name: Copy, copy: {content: NEVER_COPY, dest: /tmp/file}}]\n",
+    }
+    for path, text in cases.items():
+        target = project / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(text)
+    (project / "excluded.yaml").write_text("kind: Service\napiVersion: v1\n")
+    selection = project / "selection.json"
+    selection.write_text(json.dumps({
+        "schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+        "include": ["app.py", *cases], "exclude": [],
+    }))
+    wiki = project / "wiki"
+    monkeypatch.chdir(project)
+    bootstrap_cmd.run(_bootstrap_args(project, wiki, source_selection="selection.json"))
+    state = _manifest(wiki)["generation_inputs"]["infrastructure"]
+    assert set(state["sources"]) == set(cases)
+    assert state["discovery"]["unsupported_yaml"] == []
+    page = wiki / state["sources"]["action.yml"]["page_path"]
+    before = page.read_text()
+    assert "github_action" in before and "Build" in before
+    assert "NEVER_COPY" not in "\n".join(p.read_text() for p in (wiki / "infrastructure").glob("*.md"))
+    page.write_text(before.replace("_Add reviewed operational context here; generated sections are replaced from source observations._", "Retain this operational decision."))
+    sync_cmd.run(_sync_args(project, wiki, source_selection="selection.json", no_plugins=True))
+    old_hash = state["sources"]["action.yml"]["source_content_hash"]
+    (project / "action.yml").write_text(cases["action.yml"].replace("Build", "Publish"))
+    stale = lint_cmd.build_report(str(wiki), str(project), strict=True, source_selection="selection.json", knowledge_drift_report=True)
+    assert any(item.category == "knowledge_freshness" and "source-changed" in item.message for item in stale.diagnostics)
+    sync_cmd.run(_sync_args(project, wiki, source_selection="selection.json", no_plugins=True))
+    after = page.read_text()
+    assert "Publish" in after and "Retain this operational decision." in after
+    current = _manifest(wiki)["generation_inputs"]["infrastructure"]
+    assert current["sources"]["action.yml"]["source_content_hash"] != old_hash
+    report = lint_cmd.build_report(str(wiki), str(project), strict=True, source_selection="selection.json", knowledge_drift_report=True)
+    assert not any(item.category == "knowledge_freshness" and "source-changed" in item.message for item in report.diagnostics)
+
+
+def test_yaml_qualifications_are_visible_without_renderer_failures(tmp_path: Path) -> None:
+    from llm_wiki_cli.services.bootstrap_runtime import _generate_infrastructure_md
+    from llm_wiki_cli.services.extraction_service import _parse_compose
+    from llm_wiki_cli.services.infrastructure_inventory import parse_github_actions_workflow
+
+    malformed = _parse_compose("services: {web: {image: nginx, build: [broken]}}")
+    assert malformed["services"] == {} and malformed["advisories"]
+    assert "## Advisories" in _generate_infrastructure_md("compose.yml", malformed)
+    workflow = parse_github_actions_workflow(
+        "name: |\n  CI\n  <script>bad</script>\non: push\njobs:\n  check:\n    steps:\n      - name: |\n          <b>label</b>\n        run: |\n          echo ok\n          # Injected heading\n"
+    )
+    rendered = _generate_infrastructure_md(".github/workflows/ci.yml", workflow)
+    assert "\n# Injected heading" not in rendered
+    assert "\n<script>" not in rendered and "- <b>" not in rendered
+    assert "echo ok # Injected heading" in rendered
+    (tmp_path / "infra.yaml").write_text("apiVersion: kustomize.config.k8s.io/v1beta1\nkind: Kustomization\nmetadata: {name: overlay}\nresources: [service.yaml]\n")
+    (tmp_path / "generic.yaml").write_text("apiVersion: 1\nkind: Custom\nmetadata: {name: example}\n")
+    (tmp_path / "broken.yaml").write_text("key: [\n")
+    snapshot = build_source_snapshot(tmp_path)
+    inventory = get_yaml_infrastructure_inventory(tmp_path, source_snapshot=snapshot)
+    assert inventory == {}
+    plan = build_infrastructure_sync_plan(snapshot, inventory)
+    invalid = next(item for item in plan.unsupported_yaml if item["path"] == "broken.yaml")
+    assert invalid["reason"] == "invalid-yaml" and invalid["advisories"]
+
+
+@pytest.mark.parametrize(
+    "filename,text",
+    [
+        ("compose.yml", "services:\n  api:\n    image: nginx\n    command: |\n      echo first\n      # Injected\n"),
+        ("prometheus.yml", "scrape_configs:\n  - job_name: |\n      api\n      # Injected\n"),
+        ("service.yaml", 'apiVersion: v1\nkind: Service\nmetadata: {name: "api\\n# Injected"}\n'),
+    ],
+)
+def test_yaml_multiline_values_remain_inert_in_pages_and_index(tmp_path, filename, text):
+    from llm_wiki_cli.services.bootstrap_runtime import _append_index_infrastructure, _generate_infrastructure_md
+    from llm_wiki_cli.services.infrastructure_inventory import infrastructure_display_label
+
+    (tmp_path / filename).write_text(text)
+    snapshot = build_source_snapshot(tmp_path)
+    inventory = {
+        **get_docker_inventory(tmp_path, source_snapshot=snapshot),
+        **get_yaml_infrastructure_inventory(tmp_path, source_snapshot=snapshot),
+    }
+    info = inventory[filename]
+    page = _generate_infrastructure_md(filename, info)
+    assert "\n# Injected" not in page
+    lines: list[str] = []
+    _append_index_infrastructure(lines, [{"name": "example", "label": infrastructure_display_label(filename, info), "type": info["type"]}])
+    assert "\n# Injected" not in "\n".join(lines)
 
 
 def test_sync_regenerates_all_infrastructure_families_and_preserves_only_notes(
@@ -358,7 +461,7 @@ def test_infrastructure_native_evidence_and_strict_freshness_are_live(
     dockerfile.write_text("FROM python:3.12\nEXPOSE 8000\n", encoding="utf-8")
     unsupported = project / "alternate.yaml"
     unsupported.write_text(
-        "apiVersion: v1\nkind: Service\n",
+        "database:\n  host: localhost\n",
         encoding="utf-8",
     )
     wiki = project / "docs" / "llm_wiki"
@@ -595,7 +698,7 @@ def test_infrastructure_plan_distinguishes_empty_unsupported_and_large_change(
     unsupported = tmp_path / "unsupported"
     unsupported.mkdir()
     (unsupported / "deployment.yaml").write_text(
-        "apiVersion: v1\nkind: Service\n",
+        "database:\n  host: localhost\n",
         encoding="utf-8",
     )
     unsupported_snapshot = build_source_snapshot(unsupported)

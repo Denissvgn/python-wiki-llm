@@ -90,8 +90,8 @@ for [Obsidian](docs/cli-reference.md#obsidian) or a
 | Go | `go/ast` | prepared helper binary |
 | Rust | `syn` | prepared helper binary |
 | Haskell | GHC parser, syntax-only inventory | prepared helper binary |
-| Docker / Compose | built-in parsers | none |
-| Runtime/config YAML | targeted built-in parsers | none |
+| Docker / Compose | Dockerfile parser / bounded YAML parser | included with the package |
+| Infrastructure / runtime YAML | structured format summaries | included with the package |
 | OpenAPI 3.0/3.1 JSON / YAML | `json` / PyYAML safe loader | included with the package |
 
 Discovery honors `.gitignore`. Use a

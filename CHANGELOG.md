@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Structured YAML coverage for Compose and existing infrastructure/runtime
+  families, plus action metadata, GitLab CI, CircleCI, Azure Pipelines, Kustomize,
+  Helm chart metadata and Ansible playbooks. Kubernetes discovery recognizes
+  content outside `k8s/`, resource lists and CronJob containers; bounded parsing
+  reports malformed, ambiguous and unsupported inputs.
+
 - Read-only `doctor --analysis-inputs` and `get_analysis_input_status` report
   bounded installed-provider classification/file gaps and their review route.
   Capture, cache and canonical task diagnostics explain unavailable analysis

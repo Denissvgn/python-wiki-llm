@@ -106,6 +106,7 @@ from .source_snapshot import (
     format_unsupported_source_summary,
     unsupported_source_summary,
 )
+from .yaml_syntax import load_yaml_documents
 
 # ── Extractor loader ─────────────────────────────────────────────────
 
@@ -3279,228 +3280,83 @@ def _parse_inline_yaml_list(value: str) -> list[str] | None:
     return None
 
 
-@dataclass
-class _ComposeParserState:
-    services: dict[str, dict] = field(default_factory=dict)
-    networks: list[str] = field(default_factory=list)
-    named_volumes: list[str] = field(default_factory=list)
-    current_top: str = ""
-    current_service: str = ""
-    key_stack: list[str] = field(default_factory=list)
-
-
-def _strip_yaml_quotes(value: str) -> str:
-    """Remove surrounding YAML quotes from a value."""
-    if len(value) >= 2 and value[0] == value[-1] and value[0] in ('"', "'"):
-        return value[1:-1]
-    return value
-
-
-def _compose_path_parent(
-    state: _ComposeParserState,
-    path: list[str],
-    *,
-    create: bool = False,
-):
-    """Return ``(parent_dict, final_key)`` for a nested service path."""
-    if not state.current_service or not path:
-        return None, None
-
-    target = state.services[state.current_service]
-    for part in path[:-1]:
-        if part not in target:
-            if create:
-                target[part] = {}
-            else:
-                return None, None
-
-        child = target[part]
-        if isinstance(child, list) and not child:
-            target[part] = {}
-            child = target[part]
-        if not isinstance(child, dict):
-            return None, None
-        target = child
-
-    return target, path[-1]
-
-
-def _start_compose_top_level_section(
-    state: _ComposeParserState,
-    stripped: str,
-    indent: int,
-) -> bool:
-    if indent != 0 or ":" not in stripped:
-        return False
-    state.current_top = stripped.split(":", 1)[0].strip()
-    state.current_service = ""
-    state.key_stack = []
-    return True
-
-
-def _start_compose_service(
-    state: _ComposeParserState,
-    stripped: str,
-    indent: int,
-) -> bool:
-    if indent != 2 or ":" not in stripped or stripped.startswith("-"):
-        return False
-    state.current_service = stripped.split(":", 1)[0].strip()
-    state.services.setdefault(state.current_service, {})
-    state.key_stack = []
-    return True
-
-
-def _compose_service_depth(indent: int) -> int:
-    return (indent - 4) // 2
-
-
-def _append_compose_list_item(state: _ComposeParserState, stripped: str) -> None:
-    if not state.key_stack:
-        return
-
-    parent, final_key = _compose_path_parent(state, state.key_stack)
-    if parent is None or final_key is None:
-        return
-
-    existing = parent.get(final_key)
-    if isinstance(existing, list):
-        existing.append(_strip_yaml_quotes(stripped[2:].strip()))
-
-
-def _assign_compose_value(parent: dict, final_key: str, value: str) -> None:
-    if value:
-        inline = _parse_inline_yaml_list(value)
-        parent[final_key] = inline if inline is not None else _strip_yaml_quotes(value)
-    elif final_key not in parent:
-        parent[final_key] = []
-
-
-def _set_compose_service_key(
-    state: _ComposeParserState,
-    stripped: str,
-    depth: int,
-) -> None:
-    if ":" not in stripped:
-        return
-
-    key, _, value = stripped.partition(":")
-    key = key.strip()
-    value = value.strip()
-    state.key_stack = state.key_stack[:depth] + [key]
-
-    parent, final_key = _compose_path_parent(state, list(state.key_stack), create=True)
-    if parent is not None and final_key is not None:
-        _assign_compose_value(parent, final_key, value)
-
-
-def _parse_compose_service_line(
-    state: _ComposeParserState,
-    stripped: str,
-    indent: int,
-) -> None:
-    if _start_compose_service(state, stripped, indent):
-        return
-
-    if not state.current_service:
-        return
-
-    depth = _compose_service_depth(indent)
-    if depth < 0:
-        return
-
-    state.key_stack = state.key_stack[:depth]
-    if stripped.startswith("- "):
-        _append_compose_list_item(state, stripped)
-    else:
-        _set_compose_service_key(state, stripped, depth)
-
-
-def _collect_compose_section_name(names: list[str], stripped: str, indent: int) -> None:
-    if indent == 2 and ":" in stripped:
-        names.append(stripped.split(":", 1)[0].strip())
-
-
 def _parse_compose(text: str) -> dict:
-    """Parse a docker-compose YAML file using line-based parsing (no PyYAML).
-
-    Handles the most common patterns: top-level keys (services, networks,
-    volumes) and nested mappings under each service (environment, build,
-    deploy, healthcheck, depends_on) at arbitrary depth.  Complex YAML
-    features (anchors, merge keys, multi-line block scalars) are best-effort.
-    """
-    state = _ComposeParserState()
-
-    for raw_line in text.splitlines():
-        stripped = raw_line.strip()
-        if not stripped or stripped.startswith("#"):
-            continue
-
-        indent = len(raw_line) - len(raw_line.lstrip())
-
-        if _start_compose_top_level_section(state, stripped, indent):
-            continue
-
-        if state.current_top == "services":
-            _parse_compose_service_line(state, stripped, indent)
-            continue
-
-        if state.current_top == "networks":
-            _collect_compose_section_name(state.networks, stripped, indent)
-            continue
-
-        if state.current_top == "volumes":
-            _collect_compose_section_name(state.named_volumes, stripped, indent)
-            continue
-
-    return {
+    """Parse one Compose document while preserving nested YAML structures."""
+    result: dict = {
         "type": "compose",
-        "services": state.services,
-        "networks": state.networks,
-        "volumes": state.named_volumes,
+        "services": {},
+        "networks": [],
+        "volumes": [],
     }
+    documents, advisories = load_yaml_documents(text)
+    if advisories:
+        result["advisories"] = advisories
+        return result
+    if not documents:
+        return result
+    document = documents[0]
+    if len(documents) != 1 or not _valid_compose_document(document):
+        result["advisories"] = [
+            "Compose requires one mapping document with mapping sections and services."
+        ]
+        return result
+    assert isinstance(document, dict)
+    result["services"] = document.get("services") or {}
+    result["networks"] = list(document.get("networks") or {})
+    result["volumes"] = list(document.get("volumes") or {})
+    return result
+
+
+def _valid_compose_document(document: object) -> bool:
+    if not isinstance(document, dict):
+        return False
+    for section in ("services", "networks", "volumes"):
+        value = document.get(section, {})
+        if value == "":
+            continue
+        if not isinstance(value, dict):
+            return False
+    services = document.get("services") or {}
+    return all(
+        isinstance(service, dict)
+        and isinstance(service.get("build", ""), (str, dict))
+        for service in services.values()
+    )
 
 
 def _looks_like_compose(text: str) -> bool:
     """Return True if the file content appears to be a docker-compose file.
 
-    Checks for a ``services:`` top-level key at indent 0 AND at least one
+    Checks for a ``services`` top-level mapping AND at least one mapped
     service containing a compose-specific key (``image``, ``build``,
     ``ports``, ``depends_on``, ``container_name``, ``environment``,
     ``volumes``, ``command``, ``healthcheck``).  This avoids false positives
     from non-compose YAML files that happen to have a ``services:`` key.
     """
-    _COMPOSE_SERVICE_KEYS = {
-        "image:",
-        "build:",
-        "ports:",
-        "depends_on:",
-        "container_name:",
-        "environment:",
-        "volumes:",
-        "command:",
-        "healthcheck:",
-        "restart:",
-        "networks:",
-        "deploy:",
-        "profiles:",
+    compose_service_keys = {
+        "image",
+        "build",
+        "ports",
+        "depends_on",
+        "container_name",
+        "environment",
+        "volumes",
+        "command",
+        "healthcheck",
+        "restart",
+        "networks",
+        "deploy",
+        "profiles",
     }
-    in_services = False
-    for line in text.splitlines():
-        stripped = line.strip()
-        if not stripped or stripped.startswith("#"):
-            continue
-        if line.startswith("services:") or line.startswith("services :"):
-            in_services = True
-            continue
-        # Another top-level key ends the services block
-        if in_services and not line[0].isspace():
-            in_services = False
-        if in_services:
-            for ck in _COMPOSE_SERVICE_KEYS:
-                if ck in stripped:
-                    return True
-    return False
+    documents, advisories = load_yaml_documents(text)
+    if advisories or len(documents) != 1:
+        return False
+    document = documents[0]
+    if not _valid_compose_document(document):
+        return False
+    assert isinstance(document, dict)
+    services = document.get("services") or {}
+    return any(compose_service_keys.intersection(service) for service in services.values())
 
 
 def get_docker_inventory(

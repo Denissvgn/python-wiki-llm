@@ -44,15 +44,17 @@ honors ignored/excluded directories:
 |---|---|
 | Dockerfile | `Dockerfile`, `Dockerfile.*`, and `*.dockerfile` anywhere below the source root |
 | Compose | `docker-compose*.yml`/`.yaml`, `compose*.yml`/`.yaml`, plus any scanned YAML whose content has a recognizable top-level Compose `services` shape |
-| GitHub Actions | `.github/workflows/**/*.yml` and `.github/workflows/**/*.yaml` only |
-| Kubernetes | `k8s/**/*.yml` and `k8s/**/*.yaml` only |
+| GitHub Actions | `.github/workflows/**/*.yml`/`.yaml`; composite, JavaScript and Docker `action.yml`/`action.yaml` metadata |
+| Kubernetes | `k8s/**/*.yml`/`.yaml` or recognizable resource content in selected YAML, including resource lists and CronJobs |
+| CI and deployment YAML | Named GitLab CI, CircleCI, Azure Pipelines, Kustomize, Helm chart metadata and Ansible playbook shapes |
 | Targeted runtime/config YAML | Recognized Prometheus, Prometheus rules, Grafana provisioning, Promtail, Loki, Envoy, Buf, and service-local model config shapes |
 
-Generic YAML and Kubernetes-looking YAML in alternate roots such as `deploy/`,
-`manifests/`, or `charts/` do not become Kubernetes pages. Helm templates,
-anchors/merge keys, custom tags, and other complex YAML may exceed the
-line-oriented parsers even inside a supported root. Disclose those paths as
-unsupported or bounded coverage.
+Generic YAML and Helm templates do not become Kubernetes pages. The bounded
+structured parser supports flow collections, alternate indentation, block
+scalars and nonrecursive anchors/merge keys. Custom tags, duplicate keys,
+mixed resource streams and over-budget inputs produce qualifications; disclose
+those paths as unsupported or bounded coverage. Summary fields do not establish
+schema validity or full security coverage.
 
 ## Page-visible fields versus raw-source checks
 
@@ -186,8 +188,8 @@ Include a coverage row for every supported or candidate artifact:
 
 | Artifact/path | Discovery | Evidence basis | Outcome | Limitation |
 |---|---|---|---|---|
-| `k8s/deployment.yaml` | supported `k8s/` root | current raw source | zero findings | line-oriented page parser used only for orientation |
-| `deploy/api.yaml` | alternate YAML root | raw candidate only | unsupported discovery | no Kubernetes page expected |
+| `k8s/deployment.yaml` | supported `k8s/` root | current raw source | zero findings | bounded page parser used only for orientation |
+| `deploy/api.yaml` | recognizable resource content | current bounded page observation | page-screened only | current raw source still required for omitted controls |
 | current generated pages | source/page mapping plus source/observation hashes | current bounded page observation | page-screened only | raw-source-only fields not assessed |
 
 Only the first row can support “zero findings.” “Zero discovered artifacts,”
@@ -201,5 +203,5 @@ Zero pages by itself supports none of them.
 | No `infrastructure/` pages at all | No supported files, unsupported discovery, or parser limitation | Inspect persisted discovery status and current raw roots; choose one explicit outcome instead of “clean.” |
 | Kubernetes/Actions findings feel thin | Pages omit security context/permissions and other controls | Read current raw YAML; page silence is not “nothing to find.” |
 | Compose page shows a literal secret | A value may have been captured into the generated page | Flag the key, redact the value everywhere, and confirm/remediate in current raw source. |
-| Alternate-directory Kubernetes YAML has no page | Only the `k8s/` root is recognized as Kubernetes | Record unsupported discovery and review raw source or use an authorized dedicated extractor. |
+| Alternate-directory Kubernetes YAML has no page | Excluded source, unrecognized shape, template or parser qualification | Inspect selection and diagnostics; review permitted raw source or use an authorized dedicated extractor. |
 | A dedicated extractor disagrees with pages | Pages and extraction have different source basis or coverage | Prefer the fresh exact-scope result, record both bases, and do not merge them into a stronger claim. |
