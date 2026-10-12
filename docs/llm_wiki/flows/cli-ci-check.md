@@ -196,7 +196,7 @@ flowchart LR
     s1 -. "getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)" .-> s6
     s1 -. "getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'format', 'text')" .-> s7
     s1 -. "getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'report_schema', 'auto')" .-> s8
-    s1 -->|"RuntimeOutputError('--report-schema must be v1, v2 or v3')"| s9
+    s1 -->|"RuntimeOutputError('--report-schema must be auto, v1, v2, v3 or v4')"| s9
     s1 -. "getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'helper_cache_dir', None)" .-> s10
     s1 -. "getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'include_tests', None)" .-> s11
     s1 -. "bool (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(getattr(...))" .-> s12
@@ -252,7 +252,7 @@ flowchart LR
 | run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 103 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
 | run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 104 | `getattr(args, 'format', 'text')` |
 | run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 105 | `getattr(args, 'report_schema', 'auto')` |
-| run | RuntimeOutputError | 107 | `RuntimeOutputError('--report-schema must be v1, v2 or v3')` |
+| run | RuntimeOutputError | 107 | `RuntimeOutputError('--report-schema must be auto, v1, v2, v3 or v4')` |
 | run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 108 | `getattr(args, 'helper_cache_dir', None)` |
 | run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 109 | `getattr(args, 'include_tests', None)` |
 | run | bool (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 110 | `bool(getattr(...))` |

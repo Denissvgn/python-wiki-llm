@@ -2097,3 +2097,21 @@ remain attributable or are rebuilt through the owning parser route.
 Go, Rust and Haskell diagnostic reads now retain exact parser-owned file outcomes through a shared native response boundary. Syntax/read failures, unavailable helpers and failed batches stay distinct; partial coverage cannot create module or member-retirement authority.
 
 Maintenance guidance now uses CI report schema v4 for console-only output across flat and migrated native wikis. Report-write authority and comparison policy remain separate; older envelopes are qualified by metadata rather than physical layout.
+
+## 2026-10-12
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:bed26ef7efdb6da2cac7919b039983bbcc88b480ca6dae96d570ceecb4d588ef`
+- Pages created: 0
+- Pages updated: 1
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1588
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none
+
+CI command and service invalid-schema diagnostics now list every supported choice. Early rejection and the separate native compatibility boundary remain intact.
