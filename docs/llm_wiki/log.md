@@ -2203,3 +2203,27 @@ Lexical discovery now uses section-local relevance and coherent explanatory cove
 - Moved entities: none
 
 Analysis-input doctor diagnostics now honor text and JSON output with the same classification scope, bounded path counts, corrective route and readiness exit policy.
+
+## 2026-10-13
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.5.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:67e8b571e92774642e17286b5fc620ff93f80ddaf3bf4bfefdfa6e394336c10b`
+- Pages created: 0
+- Pages updated: 13
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1577
+- Pages deprecated: 0
+- Semantic fields preserved: 4
+- Moved entities: none
+
+## 2026-10-13 — Sync preview cache commitment
+
+Sync preview keeps requested cache eligibility separate from disabled extraction
+cache I/O, preserving projected artifact commitments without destination probes
+or cache publication. Apply still owns publication and advisory cache saving.
+The compact instruction kernel retains its provider census route and existing
+authority, evidence and maintenance guidance within its bounded presentation.

@@ -38,6 +38,13 @@ empty result. Full graph shortcuts are abandoned when qualification changes the
 cached inventory; ordinary page-map and graph builders receive the rebuilt
 module records.
 
+Sync preview separates requested cache eligibility from extraction-cache I/O.
+It plans the same analysis commitment as apply for unchanged available inputs,
+while resolving the requested destination without probes, directory creation,
+cache reads or writes. Explicit cache disabling remains disabled. Publication
+and advisory cache saving still require a successful owning apply; preview
+does not establish destination writability or durable capture.
+
 ## Imports
 
 | Source | Symbols |
@@ -46,7 +53,7 @@ module records.
 | `.analysis_capture` | `capture_analysis`, `capture_operation`, `analysis_diagnostics` |
 | `.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY` |
 | `.extraction_service` | `InventoryResult`, `ExtractorStatus` |
-| `.inventory_cache` | `InventoryCacheStats`, `prepare_cache_options` |
+| `.inventory_cache` | `InventoryCacheStats`, `prepare_cache_options`, `resolve_inventory_cache_path` |
 | `.io` | `first_unsafe_path_component`, `write_bytes_atomic` |
 | `.knowledge_envelope` | `hash_inventory`, `INVENTORY_HASH_EXTENSION` |
 | `.knowledge_evidence` | `canonical_json_bytes`, `hash_json`, `sha256_bytes` |
@@ -97,7 +104,7 @@ flowchart LR
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
 | `input_key` | `(options, snapshot, manifest, generation_inputs, *, explain = False)` | `@capture_operation` | Bind source bytes, policy, schema, producer, helpers and generation options. |
-| `cache_destination` | `(options)` | — | Return the bounded eligibility label independently of capture content. |
+| `cache_destination` | `(options, *, capture = False)` | — | Return the bounded eligibility label independently of capture content. |
 | `cache_path` | `(options)` | — | — |
 | `report_capture` | `(options, status, reason, *, payload_bytes = None, over_budget = False)` | — | Emit fixed vocabulary and counts, never source content or unbounded paths. |
 | `payload_size` | `(payload)` | — | Count the exact writer encoding up to the budget, without retaining it. |
