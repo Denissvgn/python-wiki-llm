@@ -167,7 +167,7 @@ def load(options, snapshot, manifest, generation_inputs, state):
                     else:
                         payload = candidate
                         reason = "committed-inputs-match"
-            except (OSError, ValueError, KeyError, TypeError):
+            except (OSError, ValueError, KeyError, TypeError, RecursionError):
                 reason = "cache-unavailable-or-corrupt"
         if payload is not None and not generated_sections_match(options.wiki_dir, artifacts):
             payload = None

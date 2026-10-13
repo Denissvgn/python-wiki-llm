@@ -124,15 +124,23 @@ def test_changed_invocation_inputs_cannot_reuse_analysis(primed, monkeypatch, ch
     assert reached or change == "selection"  # Persisted selection may reject before extraction.
 
 
-@pytest.mark.parametrize("change", ["missing", "truncated", "forged", "redirected", "deep-nesting"])
-def test_missing_or_corrupted_cache_is_only_a_fallback(primed, monkeypatch, change):
+@pytest.mark.parametrize("change", ["missing", "truncated", "forged", "redirected", "deep-nesting", "decoder-recursion"])
+def test_missing_or_corrupted_cache_is_only_a_fallback(primed, monkeypatch, capsys, change):
     path = Path("cache", sync_analysis_cache.FILENAME)
     if change == "missing":
         path.unlink()
     elif change == "truncated":
         path.write_text("{")
-    elif change == "deep-nesting":
+    elif change in {"deep-nesting", "decoder-recursion"}:
         path.write_text("[" * 2000 + "0" + "]" * 2000)
+        if change == "decoder-recursion":
+            malformed = path.read_bytes()
+            decode = json.loads
+            def bounded_decode(data, *args, **kwargs):
+                if data == malformed:
+                    raise RecursionError("JSON decoder nesting limit reached")
+                return decode(data, *args, **kwargs)
+            monkeypatch.setattr(json, "loads", bounded_decode)
     elif change == "forged":
         data = json.loads(path.read_text())
         data["inventory"]["app.py"]["functions"][0]["name"] = "invented"
@@ -146,6 +154,8 @@ def test_missing_or_corrupted_cache_is_only_a_fallback(primed, monkeypatch, chan
     with patch.object(sync_cmd, "_extract_current_inventory", wraps=sync_cmd._extract_current_inventory) as extract:
         sync()
     assert extract.call_count == 1
+    if change == "decoder-recursion":
+        assert "reuse: miss (cache-unavailable-or-corrupt)" in capsys.readouterr().out
     assert "Fallback still preserves prose." in Path("wiki/modules/app.md").read_text()
     assert load_knowledge_state("wiki").knowledge is not None
 

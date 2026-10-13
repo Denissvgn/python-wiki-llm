@@ -52,6 +52,9 @@ and cache limitations explicitly.
 
 ### Fixed
 
+- Deeply nested advisory sync caches fall back to ordinary regeneration when
+  JSON decoding or commitment encoding reaches the runtime recursion limit.
+
 - Sync previews retain the requested analysis-cache commitment without probing
   or writing cache destinations, keeping generated artifact bytes aligned with
   apply when the same source and settings remain available.
