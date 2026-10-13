@@ -1728,6 +1728,7 @@ class _SyncRunOptions:
     source_selection: str | Path | None
     rebuild_knowledge: bool = False
     knowledge_format: str | None = None
+    capture_cache_options: InventoryCacheOptions | None = None
 
 
 @dataclass(frozen=True)
@@ -2406,6 +2407,7 @@ def _sync_run_options_from_args(args) -> _SyncRunOptions:
     dry_run = bool(getattr(args, "dry_run", False))
     include_plugins = not bool(getattr(args, "no_plugins", False))
     cache_options = _cache_options_from_args(args)
+    capture_cache_options = cache_options
     if dry_run:
         cache_options = InventoryCacheOptions(enabled=False)
     cache_stats_enabled = bool(getattr(args, "cache_stats", False))
@@ -2454,6 +2456,7 @@ def _sync_run_options_from_args(args) -> _SyncRunOptions:
         rebuild_knowledge=bool(getattr(args, "rebuild_knowledge", False)),
         knowledge_format=getattr(args, "knowledge_format", None),
         cache_options=cache_options,
+        capture_cache_options=capture_cache_options,
         cache_stats_enabled=cache_stats_enabled,
         parallel_jobs=parallel_jobs,
         job_request=job_request,

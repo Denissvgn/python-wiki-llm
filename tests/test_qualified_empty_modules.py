@@ -5,6 +5,7 @@ from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 import json
+import os
 
 import pytest
 
@@ -19,7 +20,7 @@ from tests.test_sync_page_transitions import _bootstrap_project, _draft_source, 
 from tests.test_entity_retirement import _snapshot, _assert_retired
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-HELPERS = str(PROJECT_ROOT / '.git/llm-wiki-extractors')
+HELPERS = os.environ.get('LLM_WIKI_CACHE_DIR', str(PROJECT_ROOT / '.git/llm-wiki-extractors'))
 
 
 @pytest.mark.parametrize('body', ['', '# valid comment only\n', '"""Module description only."""\n'])
@@ -97,7 +98,8 @@ def test_unqualified_retry_cannot_promote_a_record(tmp_path, monkeypatch, qualif
 
 
 @pytest.mark.parametrize('suffix', ['.ts', '.js', '.mjs', '.cjs'])
-def test_real_typescript_family_empty_and_partial_syntax_are_distinct(tmp_path, suffix):
+def test_real_typescript_family_empty_and_partial_syntax_are_distinct(tmp_path, suffix, require_prepared_diagnostics_helper):
+    require_prepared_diagnostics_helper('typescript')
     source = tmp_path / ('module' + suffix)
     source.write_text('// empty\n')
     result = get_inventory_result(str(tmp_path), deep=True, include_empty=True, capture_path_outcomes=True, helper_cache_dir=HELPERS)
@@ -111,7 +113,8 @@ def test_real_typescript_family_empty_and_partial_syntax_are_distinct(tmp_path, 
 
 
 @pytest.mark.parametrize('suffix,valid,invalid', [('.go', 'package pilot\n', 'package\n'), ('.rs', '// valid empty\n', 'pub struct {\n')])
-def test_real_go_rust_empty_records_and_unqualified_failure(tmp_path, suffix, valid, invalid):
+def test_real_go_rust_empty_records_and_unqualified_failure(tmp_path, suffix, valid, invalid, require_prepared_diagnostics_helper):
+    require_prepared_diagnostics_helper('go' if suffix == '.go' else 'rust')
     source = tmp_path / ('module' + suffix)
     source.write_text(valid)
     result = get_inventory_result(str(tmp_path), deep=True, capture_path_outcomes=True, helper_cache_dir=HELPERS)
@@ -177,7 +180,8 @@ def test_missing_cache_empty_outcomes_are_rebuilt_by_exact_retry(tmp_path, monke
 
 
 @pytest.mark.parametrize('suffix', ['.ts', '.js', '.mjs', '.cjs'])
-def test_typescript_empty_owning_transition_and_strict_live_reader(tmp_path, monkeypatch, suffix):
+def test_typescript_empty_owning_transition_and_strict_live_reader(tmp_path, monkeypatch, suffix, require_prepared_diagnostics_helper):
+    require_prepared_diagnostics_helper('typescript')
     from llm_wiki_cli import api
     name = 'model' + suffix
     monkeypatch.setenv('LLM_WIKI_CACHE_DIR', HELPERS)

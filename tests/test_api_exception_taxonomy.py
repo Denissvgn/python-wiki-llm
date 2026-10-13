@@ -23,6 +23,7 @@ _PUBLIC_FUNCTION_NAMES = (
     "expand_compact_task_context",
     "adopt_maintenance",
     "get_maintenance_status",
+    "get_analysis_input_status",
     "acknowledge_maintenance",
     "recover_maintenance",
     "admit_calibration_run",
@@ -87,6 +88,7 @@ _INVALID_REQUEST_FAILURES = frozenset(
         "expand_compact_task_context",
         "adopt_maintenance",
         "get_maintenance_status",
+        "get_analysis_input_status",
         "acknowledge_maintenance",
         "recover_maintenance",
         "build_budgeted_context",
@@ -246,6 +248,7 @@ def _failure_cases(tmp_path: Path):
     query_service = cast(DocumentationGraphQueryService, _FailingQueryService())
 
     return {
+        "get_analysis_input_status": lambda: api.get_analysis_input_status(limit=0),
         "build_compact_task_context": lambda: api.build_compact_task_context({}, view_options={}),
         "render_compact_task_context": lambda: api.render_compact_task_context("", {}, view_options={}),
         "validate_compact_task_context": lambda: api.validate_compact_task_context("", "", {}, view_options={}),

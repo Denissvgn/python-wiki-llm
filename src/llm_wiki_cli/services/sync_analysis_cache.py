@@ -8,7 +8,7 @@ import json
 
 from ..config import EXTRACTOR_REGISTRY
 from .analysis_capture import capture_analysis, capture_operation, analysis_diagnostics
-from .inventory_cache import InventoryCacheStats, prepare_cache_options
+from .inventory_cache import InventoryCacheStats, prepare_cache_options, resolve_inventory_cache_path
 from .io import first_unsafe_path_component, write_bytes_atomic
 from .knowledge_evidence import canonical_json_bytes, hash_json
 from .knowledge_reuse import implementation_hash, REUSE_INPUT_KEY
@@ -73,11 +73,25 @@ def input_key(options, snapshot, manifest, generation_inputs, *, explain=False):
     }
 
 
-def cache_destination(options):
+def cache_destination(options, *, capture=False):
     """Return the bounded eligibility label independently of capture content."""
-    if not options.cache_options.enabled:
+    # Preview disables extraction cache I/O, but plans the same commitment as
+    # apply. This selection only resolves eligibility; saving remains gated by
+    # the owning command's successful non-preview publication.
+    requested = (getattr(options, "capture_cache_options", None) if capture else None) or options.cache_options
+    if not requested.enabled:
         return None, "disabled"
-    cache_options = prepare_cache_options(options.src_dir, options.cache_options)
+    if capture and not options.cache_options.enabled:
+        # No destination probes, directories or cache reads during preview.
+        try:
+            path = resolve_inventory_cache_path(options.src_dir, requested.cache_dir)
+        except (OSError, ValueError, RuntimeError):
+            return None, "failed"
+        if path is None:
+            return None, "unconfigured"
+        path = path.with_name(FILENAME)
+        return (None, "redirected") if first_unsafe_path_component(path) is not None else (path, "eligible")
+    cache_options = prepare_cache_options(options.src_dir, requested)
     destination = cache_options.destination if cache_options is not None else None
     if destination is None or destination.path is None:
         return None, "failed" if destination is not None and destination.status == "failed" else "unconfigured"
@@ -95,7 +109,7 @@ def cache_path(options):
 
 def report_capture(options, status, reason, *, payload_bytes=None, over_budget=False):
     """Emit fixed vocabulary and counts, never source content or unbounded paths."""
-    destination = cache_destination(options)[1]
+    destination = cache_destination(options, capture=True)[1]
     size = "unavailable" if payload_bytes is None else str(payload_bytes)
     if over_budget:
         size = f">{MAX_BYTES}"
@@ -167,7 +181,7 @@ def load(options, snapshot, manifest, generation_inputs, state):
 
 def build_payload(options, prepared, surface):
     result = prepared.inventory_result
-    destination = cache_destination(options)[1]
+    destination = cache_destination(options, capture=True)[1]
     if destination != "eligible":
         report_capture(options, "skipped", "destination-" + destination)
         return None

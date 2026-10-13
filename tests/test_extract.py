@@ -5101,6 +5101,7 @@ class TestSilentDropReduction:
                 "classes": [],
                 "functions": [],
                 "language": "python",
+                "empty_module": True,
             }
         }
 

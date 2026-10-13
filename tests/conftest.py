@@ -349,6 +349,30 @@ def assert_helper_recovery(request, monkeypatch):
 
 
 @pytest.fixture
+def require_prepared_diagnostics_helper():
+    """Optional core controls are mandatory in their prepared toolchain owner."""
+    from llm_wiki_cli.services.extractor_helpers import (
+        get_prepared_binary, typescript_dependencies_ready,
+    )
+
+    def require(language):
+        root = Path(__file__).resolve().parents[1]
+        cache = os.environ.get("LLM_WIKI_CACHE_DIR", str(root / ".git/llm-wiki-extractors"))
+        ready = (
+            typescript_dependencies_ready(root, cache)
+            if language == "typescript"
+            else get_prepared_binary(language, root, cache) is not None
+        )
+        if not ready:
+            if os.environ.get("LLM_WIKI_REQUIRE_NATIVE_DIAGNOSTICS") == "1":
+                pytest.fail(f"prepared {language} helper is required in the owner lane")
+            pytest.skip(f"Prepared {language} helper required; owned by toolchains")
+        return cache
+
+    return require
+
+
+@pytest.fixture
 def tmp_project(tmp_path):
     """Create a temporary project directory with git init and sample Python files."""
     proj = tmp_path / "project"

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from dataclasses import replace
@@ -22,13 +23,12 @@ from llm_wiki_cli.extractors.haskell_extractor import (
 from llm_wiki_cli.extractors.rust_extractor import RustExtractionRequest, RustExtractor
 from llm_wiki_cli.services import mcp_server, sync_analysis_cache
 from llm_wiki_cli.services.extraction_service import get_inventory_result
-from llm_wiki_cli.services.extractor_helpers import get_prepared_binary
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 from llm_wiki_cli.services.sync_manifest import SyncManifest
 from tests.test_entity_retirement import _snapshot
 
 ROOT = Path(__file__).resolve().parents[1]
-HELPERS = str(ROOT / ".git/llm-wiki-extractors")
+HELPERS = os.environ.get("LLM_WIKI_CACHE_DIR", str(ROOT / ".git/llm-wiki-extractors"))
 PROVIDERS = {
     "go": (
         GoExtractor,
@@ -58,11 +58,9 @@ PROVIDERS = {
 
 
 @pytest.fixture(params=PROVIDERS)
-def provider(request):
+def provider(request, require_prepared_diagnostics_helper):
     language = request.param
-    assert get_prepared_binary(language, ROOT, HELPERS) is not None, (
-        f"prepare {language} before running the native acceptance suite"
-    )
+    require_prepared_diagnostics_helper(language)
     return language, PROVIDERS[language]
 
 

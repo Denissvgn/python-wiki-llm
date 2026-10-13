@@ -52,6 +52,10 @@ and cache limitations explicitly.
 
 ### Fixed
 
+- Sync previews retain the requested analysis-cache commitment without probing
+  or writing cache destinations, keeping generated artifact bytes aligned with
+  apply when the same source and settings remain available.
+
 - Analysis-input doctor diagnostics honor default/explicit text output while
   preserving structured JSON, readiness exits and classification-only scope.
 

@@ -152,6 +152,12 @@ def test_selected_native_mutation_aborts_readable_publication(project, capsys):
 
 
 def test_actual_mcp_v2_metadata_toggle_keeps_qualifications_and_receipts(project):
+    import importlib.util
+    import os
+    if importlib.util.find_spec("mcp") is None:
+        if os.environ.get("LLM_WIKI_REQUIRE_MCP_SDK") == "1":
+            pytest.fail("MCP SDK is required in the owner lane")
+        pytest.skip("MCP SDK is not installed.")
     from mcp.types import CallToolResult, TextContent
 
     request, original = project

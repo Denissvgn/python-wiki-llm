@@ -831,14 +831,18 @@ def test_changed_source_sync_commits_only_expected_modeled_changes(
     assert {
         key: value
         for key, value in after.knowledge.extensions.items()
-        if key not in modeled_extension_keys
+        if key not in modeled_extension_keys | {"llm-wiki/sync-analysis-v2"}
     } == {
         key: value
         for key, value in before.knowledge.extensions.items()
-        if key not in modeled_extension_keys
+        if key not in modeled_extension_keys | {"llm-wiki/sync-analysis-v2"}
     }
     assert modeled_extension_keys <= set(before.knowledge.extensions)
     assert modeled_extension_keys <= set(after.knowledge.extensions)
+    capture = after.knowledge.extensions["llm-wiki/sync-analysis-v2"]
+    assert capture["schema_version"] == "llm-wiki-sync-analysis/v2"
+    assert capture["coverage"] == "full"
+    assert capture != before.knowledge.extensions.get("llm-wiki/sync-analysis-v2")
     assert all(
         after.knowledge.extensions[key] != before.knowledge.extensions[key]
         for key in modeled_extension_keys
@@ -1124,10 +1128,12 @@ def test_normal_sync_dry_run_writes_nothing_and_reports_three_artifacts(
     assert load_knowledge_state(wiki_dir).status is KnowledgeLoadState.VALID
 
 
+@pytest.mark.parametrize("cache_mode", ["implicit", "explicit", "disabled"])
 def test_clean_git_sync_dry_run_matches_apply_artifact_bytes(
     knowledge_command_project,
     monkeypatch,
     capsys,
+    cache_mode,
 ):
     project, wiki_dir = knowledge_command_project
     capsys.readouterr()
@@ -1185,13 +1191,27 @@ def test_clean_git_sync_dry_run_matches_apply_artifact_bytes(
 
     monkeypatch.setattr(sync_cmd, "finalize_runtime_knowledge", capture_plan)
 
-    sync_cmd.run(_sync_args(project, wiki_dir, dry_run=True))
+    from llm_wiki_cli.services import sync_analysis_cache
+    cache_dir = project.parent / "preview-cache"
+    cache_args = (
+        {"cache_dir": str(cache_dir)} if cache_mode == "explicit"
+        else {"no_cache": True} if cache_mode == "disabled"
+        else {}
+    )
+    real_prepare = sync_analysis_cache.prepare_cache_options
+    monkeypatch.setattr(
+        sync_analysis_cache, "prepare_cache_options",
+        lambda *a, **kw: pytest.fail("preview probed or prepared a cache destination"),
+    )
+    sync_cmd.run(_sync_args(project, wiki_dir, dry_run=True, **cache_args))
+    assert not cache_dir.exists()
+    monkeypatch.setattr(sync_analysis_cache, "prepare_cache_options", real_prepare)
     assert len(captured) == 1
     assert captured[0][0] is True
     assert captured[0][1] is WorkingTreeState.CLEAN
     capsys.readouterr()
 
-    sync_cmd.run(_sync_args(project, wiki_dir))
+    sync_cmd.run(_sync_args(project, wiki_dir, **cache_args))
 
     assert len(captured) == 2
     assert captured[1][0] is False
