@@ -356,13 +356,15 @@ jobs:
           --cov-report=term-missing
           --cov-fail-under=87
 
-      - name: Check review snapshot capture on native Windows
+      - name: Check release corrections on native Windows
         if: ${{ matrix.lane == 'core-windows-3.13' }}
         env:
           PYTHONUTF8: "1"
           PYTHONIOENCODING: "utf-8"
         run: >-
-          python -m pytest tests/test_wiki_review_snapshot.py -q
+          python -m pytest tests/test_wiki_review_snapshot.py
+          tests/test_default_development_workflow.py
+          tests/test_storage_lock_diagnostics.py -q
           -p no:cacheprovider --strict-config --strict-markers -W error
           -o xfail_strict=true
 
