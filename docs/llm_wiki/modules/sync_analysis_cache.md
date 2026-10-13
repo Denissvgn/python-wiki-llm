@@ -45,6 +45,13 @@ cache reads or writes. Explicit cache disabling remains disabled. Publication
 and advisory cache saving still require a successful owning apply; preview
 does not establish destination writability or durable capture.
 
+Malformed advisory payloads, including runtime recursion exhaustion during JSON
+decoding or commitment encoding, are discarded with the bounded corrupt-cache
+reason. Ordinary source extraction and publication still perform their normal
+authentication and preservation checks. Decoder nesting behavior differs across
+Python versions; successful parsing on one runtime cannot make an unauthenticated
+payload reusable or make cache availability mandatory.
+
 ## Imports
 
 | Source | Symbols |
