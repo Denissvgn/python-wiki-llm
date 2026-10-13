@@ -175,9 +175,12 @@ def test_preflight_ready_default_text_and_explicit_formats_keep_qualification(mo
 
 def test_preflight_unavailable_text_retains_bounds_next_action_and_escaped_paths(package, monkeypatch, capsys):
     root, _, _ = package
-    for name in ["line\nbreak.py", "second.py", "third.py"]:
+    for name in ["first.py", "second.py", "third.py"]:
         (root / name).write_text("pass\n")
     expected = capture.analysis_input_status(package_root=root, limit=1)
+    # Exercise a captured control character without requiring a filename that
+    # Windows forbids; rendering must escape it on every platform.
+    expected["paths"][0]["path"] = "line\nbreak.py"
     monkeypatch.setattr(api, "get_analysis_input_status", lambda: expected)
     monkeypatch.setattr(doctor_cmd, "build_doctor_report", lambda *a, **k: pytest.fail("scanned source"))
     with pytest.raises(SystemExit) as error:
