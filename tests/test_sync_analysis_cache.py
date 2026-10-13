@@ -261,7 +261,8 @@ def test_oversized_capture_still_completes_required_writes(primed, monkeypatch, 
     assert build_report("wiki", "src", strict=True).passed
 
 
-def test_oversized_cache_rejected_before_content_read(primed, monkeypatch):
+@pytest.mark.parametrize("read_mode", ["native", "stream"])
+def test_oversized_cache_rejected_before_content_read(primed, monkeypatch, read_mode):
     cache = Path("cache", sync_analysis_cache.FILENAME)
     with cache.open("wb") as handle:
         handle.truncate(sync_analysis_cache.MAX_BYTES + 1)
@@ -269,15 +270,42 @@ def test_oversized_cache_rejected_before_content_read(primed, monkeypatch):
     from llm_wiki_cli.services import knowledge_storage_io
     import os
     identity = cache.stat()
-    if not hasattr(os, "pread"):
-        pytest.skip("descriptor read interception requires pread")
-    original = os.pread
-    def guarded(fd, *args):
+    def is_oversized_cache(fd):
         current = os.fstat(fd)
-        if (current.st_dev, current.st_ino) == (identity.st_dev, identity.st_ino):
+        return (current.st_dev, current.st_ino) == (identity.st_dev, identity.st_ino)
+
+    if read_mode == "stream":
+        monkeypatch.delattr(knowledge_storage_io.os, "pread", raising=False)
+    if hasattr(os, "pread"):
+        original = os.pread
+        def guarded(fd, *args):
+            if is_oversized_cache(fd):
+                pytest.fail("oversized cache contents were read")
+            return original(fd, *args)
+        monkeypatch.setattr(knowledge_storage_io.os, "pread", guarded)
+
+    class UnreadableCacheStream:
+        def __init__(self, stream):
+            self.stream = stream
+
+        def __getattr__(self, name):
+            return getattr(self.stream, name)
+
+        def __enter__(self):
+            self.stream.__enter__()
+            return self
+
+        def __exit__(self, *args):
+            return self.stream.__exit__(*args)
+
+        def read(self, *args):
             pytest.fail("oversized cache contents were read")
-        return original(fd, *args)
-    monkeypatch.setattr(knowledge_storage_io.os, "pread", guarded)
+
+    fdopen = os.fdopen
+    def guard_stream(fd, *args, **kwargs):
+        stream = fdopen(fd, *args, **kwargs)
+        return UnreadableCacheStream(stream) if is_oversized_cache(fd) else stream
+    monkeypatch.setattr(knowledge_storage_io.os, "fdopen", guard_stream)
     with patch.object(sync_cmd, "_extract_current_inventory", wraps=sync_cmd._extract_current_inventory) as extract:
         sync()
     assert extract.call_count == 1

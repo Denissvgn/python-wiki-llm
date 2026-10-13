@@ -187,7 +187,7 @@ def test_dry_run_and_failed_finalization_keep_recovery_contract(project, monkeyp
     from tests.test_sync_transition_execution import _assert_originals
 
     recovery, _ = _assert_originals(
-        Path("wiki"), {str(p.relative_to("wiki")): value for p, value in before.items()}
+        Path("wiki"), {p.relative_to("wiki").as_posix(): value for p, value in before.items()}
     )
     after = snapshots()
     with pytest.raises(SystemExit):

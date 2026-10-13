@@ -35,7 +35,7 @@ def test_default_workflow_installation_and_upgrade_preserve_project_policy(tmp_p
     schema.parent.mkdir(parents=True, exist_ok=True)
     prefix = b"# Preserve this project convention.\r\n\r\n"
     schema.write_bytes(prefix)
-    init_cmd.run(SimpleNamespace(agent=agent, wiki_dir=wiki, no_skills=no_skills, source_selection=str(selection)))
+    init_cmd.run(SimpleNamespace(agent=agent, wiki_dir=wiki, no_skills=no_skills, source_selection=selection.as_posix()))
     content = schema.read_bytes()
     assert content.startswith(prefix)
     expected_profile = b"expanded_inline" if no_skills else b"compact"
@@ -63,7 +63,7 @@ def test_default_workflow_installation_and_upgrade_preserve_project_policy(tmp_p
     upgraded = schema.read_bytes()
     assert upgraded.startswith(prefix)
     assert b"profile=" + expected_profile in upgraded
-    assert read_config(wiki)["source_selection"] == str(selection)
+    assert read_config(wiki)["source_selection"] == selection.as_posix()
     if not no_skills:
         assert verify_reference_skill(agent=agent).state is ReferenceSkillState.CURRENT
     else:
