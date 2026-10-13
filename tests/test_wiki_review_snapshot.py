@@ -13,6 +13,7 @@ import pytest
 
 SCRIPT = Path(__file__).parents[1] / ".github/scripts/capture-llm-wiki-review-snapshot.py"
 spec = importlib.util.spec_from_file_location("review_snapshot", SCRIPT)
+assert spec is not None and spec.loader is not None
 snapshot = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(snapshot)
 
@@ -79,7 +80,10 @@ def test_complete_snapshot_retains_untracked_packs_without_publishing_private_fi
     with tarfile.open(archive) as bundle:
         assert set(bundle.getnames()) == {"index.md", "new.pack"}
         for row in payload["entries"]:
-            raw = bundle.extractfile(row["path"]).read()
+            stream = bundle.extractfile(row["path"])
+            assert stream is not None
+            with stream:
+                raw = stream.read()
             assert raw == (wiki / row["path"]).read_bytes()
             assert len(raw) == row["bytes"]
             assert hashlib.sha256(raw).hexdigest() == row["sha256"]
