@@ -26,6 +26,8 @@ EXPECTED_EVIDENCE = [
     "${{ runner.temp }}/llm-wiki-convergence-evidence/wiki-diff.patch",
     "${{ runner.temp }}/llm-wiki-convergence-evidence/sync.log",
     "${{ runner.temp }}/llm-wiki-convergence-evidence/convergence-result.json",
+    "${{ runner.temp }}/llm-wiki-convergence-evidence/wiki-review-snapshot.tar",
+    "${{ runner.temp }}/llm-wiki-convergence-evidence/wiki-review-snapshot.json",
 ]
 
 
@@ -299,6 +301,14 @@ def test_convergence_upload_is_always_a_pinned_fixed_allowlist() -> None:
     assert upload["with"]["retention-days"] == 14
     assert "*" not in upload["with"]["path"]
     assert "?" not in upload["with"]["path"]
+
+    capture = job["steps"][-2]
+    assert capture["name"] == "Retain complete writer output for review"
+    assert capture["if"] == upload["if"]
+    assert "capture-llm-wiki-review-snapshot.py" in capture["run"]
+    for binding in ("${{ github.sha }}", "${{ github.run_id }}", "${{ github.run_attempt }}"):
+        assert binding in capture["run"]
+    assert job["permissions"] == {"contents": "read"}
 
 
 def test_convergence_wrapper_mode_prefers_the_frozen_archive(
