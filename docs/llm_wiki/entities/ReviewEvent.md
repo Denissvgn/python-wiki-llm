@@ -1,6 +1,6 @@
 # ReviewEvent
 
-**Location:** `src/llm_wiki_cli/services/knowledge_governance.py:239`
+**Location:** `src/llm_wiki_cli/services/knowledge_governance.py:240`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_governance](../modules/knowledge_governance.md)

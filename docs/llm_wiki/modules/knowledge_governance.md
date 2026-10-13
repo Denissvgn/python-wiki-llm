@@ -22,6 +22,13 @@ page names and headings that discuss credentials. Actor and method metadata
 retain their credential-field safeguards. Natural-key construction delegates
 to the shared identity service while preserving governance error diagnostics.
 
+Failed mutation-lock opens report `lock-open-failed`, the actual resolved native
+filesystem destination, errno and any Windows error number, and a cause bounded
+to 256 characters with explicit truncation. JSON quoting preserves separators
+and escapes control characters. These diagnostics retain the original exception
+chain and governance error code; they do not store paths in the ledger or relax
+symbolic-link, reparse-point, hardlink or concurrent-owner refusal.
+
 ## Imports
 
 | Source | Symbols |
@@ -43,6 +50,7 @@ to the shared identity service while preserving governance error diagnostics.
 | `dataclasses` | `dataclass`, `field`, `replace` |
 | `datetime` | `datetime`, `timezone` |
 | `enum` | `Enum` |
+| `errno` | `errno` |
 | `fcntl` | `fcntl`, `fcntl` |
 | `json` | `json` |
 | `msvcrt` | `msvcrt`, `msvcrt` |
@@ -82,21 +90,21 @@ flowchart LR
 
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
-| [GovernanceError](../entities/GovernanceError.md) | Class | 112 | `ValueError` | A field-specific governance validation or mutation failure. |
-| [GovernanceConflictError](../entities/GovernanceConflictError.md) | Class | 128 | `GovernanceError` | Raised when optimistic concurrency detects a changed ledger. |
-| [GovernanceWriteStage](../entities/GovernanceWriteStage.md) | Enum | 135 | `str`, `Enum` | Fault-injection points for the durable ledger replacement. |
-| [GovernanceActor](../entities/GovernanceActor.md) | Class | 144 | — | Explicit event author; never inferred from Git metadata. |
-| [GovernanceAllocation](../entities/GovernanceAllocation.md) | Class | 155 | — | One authoritative stable concept allocation. |
-| [GovernanceAlias](../entities/GovernanceAlias.md) | Class | 172 | — | A historical locator or natural key owned by one UID. |
-| [LifecycleEvent](../entities/LifecycleEvent.md) | Class | 192 | — | One predecessor-linked lifecycle transition. |
-| [ReviewEvidence](../entities/ReviewEvidence.md) | Class | 221 | — | The explicit evidence basis to which a review was authored. |
-| [ReviewEvent](../entities/ReviewEvent.md) | Class | 239 | — | One section-scoped, digest-bound human review event. |
-| [GovernanceLedger](../entities/GovernanceLedger.md) | Class | 265 | — | Validated non-rebuildable governance authority. |
-| [GovernanceLoadResult](../entities/GovernanceLoadResult.md) | Class | 323 | — | — |
-| [GovernanceWriteResult](../entities/GovernanceWriteResult.md) | Class | 330 | — | — |
-| [ConceptGovernanceReference](../entities/ConceptGovernanceReference.md) | Class | 338 | — | Current generated concept coordinates used for reconciliation. |
-| [ReviewValidity](../entities/ReviewValidity.md) | Class | 347 | — | Computed review validity; this is never persisted in the ledger. |
-| [FaultInjector](../entities/FaultInjector.md) | Type alias | 359 | `Callable[[GovernanceWriteStage], None]` | — |
+| [GovernanceError](../entities/GovernanceError.md) | Class | 113 | `ValueError` | A field-specific governance validation or mutation failure. |
+| [GovernanceConflictError](../entities/GovernanceConflictError.md) | Class | 129 | `GovernanceError` | Raised when optimistic concurrency detects a changed ledger. |
+| [GovernanceWriteStage](../entities/GovernanceWriteStage.md) | Enum | 136 | `str`, `Enum` | Fault-injection points for the durable ledger replacement. |
+| [GovernanceActor](../entities/GovernanceActor.md) | Class | 145 | — | Explicit event author; never inferred from Git metadata. |
+| [GovernanceAllocation](../entities/GovernanceAllocation.md) | Class | 156 | — | One authoritative stable concept allocation. |
+| [GovernanceAlias](../entities/GovernanceAlias.md) | Class | 173 | — | A historical locator or natural key owned by one UID. |
+| [LifecycleEvent](../entities/LifecycleEvent.md) | Class | 193 | — | One predecessor-linked lifecycle transition. |
+| [ReviewEvidence](../entities/ReviewEvidence.md) | Class | 222 | — | The explicit evidence basis to which a review was authored. |
+| [ReviewEvent](../entities/ReviewEvent.md) | Class | 240 | — | One section-scoped, digest-bound human review event. |
+| [GovernanceLedger](../entities/GovernanceLedger.md) | Class | 266 | — | Validated non-rebuildable governance authority. |
+| [GovernanceLoadResult](../entities/GovernanceLoadResult.md) | Class | 324 | — | — |
+| [GovernanceWriteResult](../entities/GovernanceWriteResult.md) | Class | 331 | — | — |
+| [ConceptGovernanceReference](../entities/ConceptGovernanceReference.md) | Class | 339 | — | Current generated concept coordinates used for reconciliation. |
+| [ReviewValidity](../entities/ReviewValidity.md) | Class | 348 | — | Computed review validity; this is never persisted in the ledger. |
+| [FaultInjector](../entities/FaultInjector.md) | Type alias | 360 | `Callable[[GovernanceWriteStage], None]` | — |
 
 ## Functions
 
@@ -110,6 +118,7 @@ flowchart LR
 | `_read_governance_bytes` | `(path: Path, *, missing_ok: bool) -> bytes \| None` | — | Read at most one bounded regular ledger without following its leaf. |
 | `load_governance` | `(wiki_dir: str \| Path, *, expected_bundle_id: str \| None = None) -> GovernanceLoadResult` | — | Load one canonical regular-file ledger and reject duplicate JSON keys. |
 | `save_governance` | `(wiki_dir: str \| Path, ledger: GovernanceLedger, *, expected_hash: str \| None \| object = _MISSING, fault_injector: FaultInjector \| None = None) -> GovernanceWriteResult` | — | Durably replace a ledger after an optional compare-and-swap check. |
+| `_lock_open_diagnostic` | `(lock_path: os.PathLike[str], error: OSError) -> str` | — | Render the native lock destination and bounded filesystem cause. |
 | `governance_lock` | `(wiki_dir: str \| Path, *, _lock_filename: str = GOVERNANCE_LOCK_FILENAME) -> Iterator[None]` | `@contextmanager` | Hold the dedicated non-blocking governance mutation lock. |
 | `reconcile_concepts` | `(ledger: GovernanceLedger, concepts: Sequence[ConceptGovernanceReference], *, moves: Mapping[str, str] \| None = None) -> GovernanceLedger` | — | Carry supported moves and allocate only genuinely new concepts. |
 | `move_concept` | `(ledger: GovernanceLedger, uid: str, *, locator: str, natural_key: str, concept_kind: str \| None = None) -> GovernanceLedger` | — | Explicitly move an ambiguously changed concept and retain both aliases. |

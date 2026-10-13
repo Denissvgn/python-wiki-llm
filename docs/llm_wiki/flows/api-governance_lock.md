@@ -15,72 +15,74 @@ sequenceDiagram
     participant p1 as GovernanceError
     participant p2 as first_unsafe_path_component
     participant p3 as _governance_lock_root
-    participant p4 as GovernanceConflictError
-    participant p5 as Path (src/llm_wiki_cli/services…ernance.py:governance_lock)
-    participant p6 as lock_root.mkdir
-    participant p7 as getattr (src/llm_wiki_cli/services…ernance.py:governance_lock)
-    participant p8 as os.open
-    participant p9 as os.fstat
-    participant p10 as stat.S_ISREG
-    participant p11 as os.write
-    participant p12 as os.fsync
-    participant p13 as os.fdopen
-    participant p14 as os.close
-    participant p15 as descriptor.seek
-    participant p16 as msvcrt.locking
-    participant p17 as descriptor.fileno
-    participant p18 as fcntl.flock
-    participant p19 as descriptor.close
-    participant p20 as Path (src/llm_wiki_cli/services…irst_unsafe_path_component)
-    participant p21 as wiki_dir.resolve
-    participant p22 as os.fspath
-    participant p23 as git.lstat
-    participant p24 as getattr (src/llm_wiki_cli/services…e.py:_governance_lock_root)
+    participant p4 as _lock_open_diagnostic
+    participant p5 as GovernanceConflictError
+    participant p6 as Path (src/llm_wiki_cli/services…ernance.py:governance_lock)
+    participant p7 as lock_root.mkdir
+    participant p8 as getattr (src/llm_wiki_cli/services…ernance.py:governance_lock)
+    participant p9 as os.open
+    participant p10 as os.fstat
+    participant p11 as stat.S_ISREG
+    participant p12 as os.write
+    participant p13 as os.fsync
+    participant p14 as os.fdopen
+    participant p15 as os.close
+    participant p16 as descriptor.seek
+    participant p17 as msvcrt.locking
+    participant p18 as descriptor.fileno
+    participant p19 as fcntl.flock
+    participant p20 as descriptor.close
+    participant p21 as Path (src/llm_wiki_cli/services…irst_unsafe_path_component)
+    participant p22 as wiki_dir.resolve
+    participant p23 as type
+    participant p24 as os.fspath (src/llm_wiki_cli/services…irst_unsafe_path_component)
+    participant p25 as git.lstat
     p0->>p1: GovernanceError
     p0->>p2: first_unsafe_path_component
     p0->>p3: _governance_lock_root
-    p0->>p4: GovernanceConflictError
-    p0-->>p5: Path (src/llm_wiki_cli/services…ernance.py:governance_lock)(wiki_dir)
-    p0-->>p6: lock_root.mkdir(parents=True, exist_ok=True)
-    p0-->>p7: getattr (src/llm_wiki_cli/services…ernance.py:governance_lock)(os, 'O_CLOEXEC', 0)
-    p0-->>p7: getattr (src/llm_wiki_cli/services…ernance.py:governance_lock)(os, 'O_NOFOLLOW', 0)
-    p0-->>p8: os.open(lock_path, flags, 384)
-    p0-->>p9: os.fstat(file_descriptor)
-    p0-->>p10: stat.S_ISREG(metadata.st_mode)
-    p0-->>p11: os.write(file_descriptor, b'\x00')
-    p0-->>p12: os.fsync(file_descriptor)
-    p0-->>p13: os.fdopen(file_descriptor, 'r+', encoding='utf-8')
-    p0-->>p14: os.close(file_descriptor)
-    p0-->>p15: descriptor.seek(0)
-    p0-->>p16: msvcrt.locking(descriptor.fileno(...), msvcrt.LK_NBLCK, 1)
-    p0-->>p17: descriptor.fileno
-    p0-->>p18: fcntl.flock(descriptor, ...)
-    p0-->>p15: descriptor.seek(0)
-    p0-->>p16: msvcrt.locking(descriptor.fileno(...), msvcrt.LK_UNLCK, 1)
-    p0-->>p17: descriptor.fileno
-    p0-->>p18: fcntl.flock(descriptor, fcntl.LOCK_UN)
-    p0-->>p19: descriptor.close
-    p2-->>p20: Path (src/llm_wiki_cli/services…irst_unsafe_path_component)(os.fspath(...))
-    p3-->>p21: wiki_dir.resolve(strict=False)
-    p2-->>p22: os.fspath(path)
-    p3-->>p23: git.lstat
-    p2-->>p20: Path (src/llm_wiki_cli/services…irst_unsafe_path_component)(os.path.abspath(...))
-    p3-->>p24: getattr (src/llm_wiki_cli/services…e.py:_governance_lock_root)(metadata, 'st_file_attributes', 0)
+    p0->>p4: _lock_open_diagnostic
+    p0->>p5: GovernanceConflictError
+    p0-->>p6: Path (src/llm_wiki_cli/services…ernance.py:governance_lock)(wiki_dir)
+    p0-->>p7: lock_root.mkdir(parents=True, exist_ok=True)
+    p0-->>p8: getattr (src/llm_wiki_cli/services…ernance.py:governance_lock)(os, 'O_CLOEXEC', 0)
+    p0-->>p8: getattr (src/llm_wiki_cli/services…ernance.py:governance_lock)(os, 'O_NOFOLLOW', 0)
+    p0-->>p9: os.open(lock_path, flags, 384)
+    p0-->>p10: os.fstat(file_descriptor)
+    p0-->>p11: stat.S_ISREG(metadata.st_mode)
+    p0-->>p12: os.write(file_descriptor, b'\x00')
+    p0-->>p13: os.fsync(file_descriptor)
+    p0-->>p14: os.fdopen(file_descriptor, 'r+', encoding='utf-8')
+    p0-->>p15: os.close(file_descriptor)
+    p0-->>p16: descriptor.seek(0)
+    p0-->>p17: msvcrt.locking(descriptor.fileno(...), msvcrt.LK_NBLCK, 1)
+    p0-->>p18: descriptor.fileno
+    p0-->>p19: fcntl.flock(descriptor, ...)
+    p0-->>p16: descriptor.seek(0)
+    p0-->>p17: msvcrt.locking(descriptor.fileno(...), msvcrt.LK_UNLCK, 1)
+    p0-->>p18: descriptor.fileno
+    p0-->>p19: fcntl.flock(descriptor, fcntl.LOCK_UN)
+    p0-->>p20: descriptor.close
+    p2-->>p21: Path (src/llm_wiki_cli/services…irst_unsafe_path_component)(os.fspath(...))
+    p3-->>p22: wiki_dir.resolve(strict=False)
+    p4-->>p23: type(error)
+    p2-->>p24: os.fspath (src/llm_wiki_cli/services…irst_unsafe_path_component)(path)
+    p3-->>p25: git.lstat
 ```
 
-> Call sequence diagram shows 30 of 61 interactions; 31 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 68 interactions; 38 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 18 of 39 (21 omitted); unresolved 8 of 13 (5 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 17 of 45 (28 omitted); unresolved 8 of 13 (5 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 4 | - | external | 17 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 4 | - | external | 18 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 4 | - | unresolved | 5 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:governance_lock` | 1 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 4 |
-| `src/llm_wiki_cli/services/knowledge_governance.py:_governance_lock_root` | 31 | - | external | 4 |
+| `src/llm_wiki_cli/services/knowledge_governance.py:_governance_lock_root` | 31 | - | external | 5 |
 | `src/llm_wiki_cli/services/knowledge_governance.py:governance_lock` | 1 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
+| `src/llm_wiki_cli/services/knowledge_governance.py:_lock_open_diagnostic` | 46 | - | external | 5 |
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
@@ -93,7 +95,7 @@ flowchart LR
     s3["3. Path (src/llm_wiki_cli/services…ernance.py:governance_lock)"]
     s4["4. first_unsafe_path_component"]
     s5["5. Path (src/llm_wiki_cli/services…irst_unsafe_path_component)"]
-    s6["6. os.fspath"]
+    s6["6. os.fspath (src/llm_wiki_cli/services…irst_unsafe_path_component)"]
     s7["7. Path (src/llm_wiki_cli/services…irst_unsafe_path_component)"]
     s8["8. os.path.abspath"]
     s9["9. lexical.is_absolute"]
@@ -104,7 +106,7 @@ flowchart LR
     s1 -. "Path (src/llm_wiki_cli/services…ernance.py:governance_lock)(wiki_dir)" .-> s3
     s1 -->|"first_unsafe_path_component(root)"| s4
     s4 -. "Path (src/llm_wiki_cli/services…irst_unsafe_path_component)(os.fspath(...))" .-> s5
-    s4 -. "os.fspath(path)" .-> s6
+    s4 -. "os.fspath (src/llm_wiki_cli/services…irst_unsafe_path_component)(path)" .-> s6
     s4 -. "Path (src/llm_wiki_cli/services…irst_unsafe_path_component)(os.path.abspath(...))" .-> s7
     s4 -. "os.path.abspath(lexical)" .-> s8
     s4 -. "lexical.is_absolute(data not statically known)" .-> s9
@@ -129,7 +131,7 @@ flowchart LR
 | `Path (src/llm_wiki_cli/services…ernance.py:governance_lock)` | - | - | - | - |
 | `first_unsafe_path_component` | `path: str \| Path`, `trusted_symlink_uids: Set[int] \| None`, `trusted_symlink_owner: Callable[[Path], bool] \| None` | `stat`, `os` | - | `lexical`, `None`, `current`, `current`, `current`, `current`, `current`, `None` |
 | `Path (src/llm_wiki_cli/services…irst_unsafe_path_component)` | - | - | - | - |
-| `os.fspath` | - | - | - | - |
+| `os.fspath (src/llm_wiki_cli/services…irst_unsafe_path_component)` | - | - | - | - |
 | `Path (src/llm_wiki_cli/services…irst_unsafe_path_component)` | - | - | - | - |
 | `os.path.abspath` | - | - | - | - |
 | `lexical.is_absolute` | - | - | - | - |
@@ -141,11 +143,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| governance_lock | GovernanceError | 862 | `GovernanceError('lock', 'unknown mutation lock')` |
-| governance_lock | Path (src/llm_wiki_cli/services…ernance.py:governance_lock) | 863 | `Path(wiki_dir)` |
-| governance_lock | first_unsafe_path_component | 864 | `first_unsafe_path_component(root)` |
+| governance_lock | GovernanceError | 882 | `GovernanceError('lock', 'unknown mutation lock')` |
+| governance_lock | Path (src/llm_wiki_cli/services…ernance.py:governance_lock) | 883 | `Path(wiki_dir)` |
+| governance_lock | first_unsafe_path_component | 884 | `first_unsafe_path_component(root)` |
 | first_unsafe_path_component | Path (src/llm_wiki_cli/services…irst_unsafe_path_component) | 51 | `Path(os.fspath(...))` |
-| first_unsafe_path_component | os.fspath | 51 | `os.fspath(path)` |
+| first_unsafe_path_component | os.fspath (src/llm_wiki_cli/services…irst_unsafe_path_component) | 51 | `os.fspath(path)` |
 | first_unsafe_path_component | Path (src/llm_wiki_cli/services…irst_unsafe_path_component) | 59 | `Path(os.path.abspath(...))` |
 | first_unsafe_path_component | os.path.abspath | 59 | `os.path.abspath(lexical)` |
 | first_unsafe_path_component | lexical.is_absolute | 60 | `lexical.is_absolute(data not statically known)` |
@@ -171,4 +173,13 @@ flowchart LR
 
 ## Behavior
 
-This flow starts at `governance_lock` and is classified as `api`. The generated call and data-flow sections are bounded static projections; runtime conditions and side effects require source-level confirmation.
+The mutation body runs only after a safe regular-file lock has been acquired.
+Symbolic-link, reparse-point and hardlink refusals remain separate from competing
+owner conflicts. A failed open raises the existing governance error and retains
+its original filesystem exception; it does not retry or choose another lock.
+
+The open-failure message identifies `lock-open-failed`, the resolved native lock
+path, errno and any Windows error number, and the bounded cause. JSON quoting
+preserves filesystem spelling and escapes control characters. The cause is
+limited to 256 characters and discloses truncation. CLI text and JSON error routes
+retain failure status; read-only storage diagnostics acquire no mutation lock.

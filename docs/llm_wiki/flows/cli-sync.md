@@ -143,9 +143,9 @@ sequenceDiagram
     p3-->>p30: write_basis.assert_current
 ```
 
-> Call sequence diagram shows 30 of 5728 interactions; 5698 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 5735 interactions; 5705 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1972 (1971 omitted); unresolved 1 of 1794 (1793 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1978 (1977 omitted); unresolved 1 of 1794 (1793 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -159,7 +159,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/commands/sync_cmd.py:_sync_run_options_from_args` | 2 | [src/llm_wiki_cli/services/inventory_cache.py](../modules/inventory_cache.md) | internal | 1 |
 | `src/llm_wiki_cli/services/extraction_jobs.py:extraction_job_request_from_args` | 28 | - | external | 5 |
 | `src/llm_wiki_cli/services/extraction_jobs.py:extraction_job_request_from_args` | 28 | [src/llm_wiki_cli/services/extraction_jobs.py](../modules/extraction_jobs.md) | internal | 1 |
-> Omission summary shows 8 of 1271 groups; 1263 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1272 groups; 1264 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

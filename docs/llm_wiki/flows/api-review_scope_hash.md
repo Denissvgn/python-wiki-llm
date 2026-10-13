@@ -162,14 +162,14 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| review_scope_hash | _section_locator | 1549 | `_section_locator(section_locator, 'section_locator')` |
-| _section_locator | isinstance (src/llm_wiki_cli/services…nance.py:_section_locator) | 3318 | `isinstance(value, str)` |
-| _section_locator | value.startswith (src/llm_wiki_cli/services…nance.py:_section_locator) | 3319 | `value.startswith('llm-wiki://')` |
-| _section_locator | value.strip (src/llm_wiki_cli/services…nance.py:_section_locator) | 3322 | `value.strip(data not statically known)` |
-| _section_locator | GovernanceError | 3324 | `GovernanceError(path, 'must be an exact llm-wiki section locator')` |
-| _section_locator | value.partition | 3328 | `value.partition('#section/')` |
-| _section_locator | GovernanceError | 3330 | `GovernanceError(path, 'must contain a section coordinate')` |
-| _section_locator | validate_locator | 3332 | `validate_locator(page_locator)` |
+| review_scope_hash | _section_locator | 1569 | `_section_locator(section_locator, 'section_locator')` |
+| _section_locator | isinstance (src/llm_wiki_cli/services…nance.py:_section_locator) | 3338 | `isinstance(value, str)` |
+| _section_locator | value.startswith (src/llm_wiki_cli/services…nance.py:_section_locator) | 3339 | `value.startswith('llm-wiki://')` |
+| _section_locator | value.strip (src/llm_wiki_cli/services…nance.py:_section_locator) | 3342 | `value.strip(data not statically known)` |
+| _section_locator | GovernanceError | 3344 | `GovernanceError(path, 'must be an exact llm-wiki section locator')` |
+| _section_locator | value.partition | 3348 | `value.partition('#section/')` |
+| _section_locator | GovernanceError | 3350 | `GovernanceError(path, 'must contain a section coordinate')` |
+| _section_locator | validate_locator | 3352 | `validate_locator(page_locator)` |
 | validate_locator | _machine_text | 438 | `_machine_text(value, 'locator', maximum=_MAX_NATURAL_KEY_LENGTH)` |
 | _machine_text | isinstance (src/llm_wiki_cli/services…identity.py:_machine_text) | 942 | `isinstance(value, str)` |
 | _machine_text | ConceptIdentityError | 943 | `ConceptIdentityError(field, 'must be a non-empty string')` |
@@ -182,10 +182,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_section_locator` | `isinstance` | 3318 |
-| unresolved_call | `_section_locator` | `value.startswith` | 3319 |
-| unresolved_call | `_section_locator` | `value.strip` | 3322 |
-| unresolved_call | `_section_locator` | `value.partition` | 3328 |
+| external_call | `_section_locator` | `isinstance` | 3338 |
+| unresolved_call | `_section_locator` | `value.startswith` | 3339 |
+| unresolved_call | `_section_locator` | `value.strip` | 3342 |
+| unresolved_call | `_section_locator` | `value.partition` | 3348 |
 | external_call | `_machine_text` | `isinstance` | 942 |
 | step_limit | `review_scope_hash` | `first 12 steps` | 0 |
 | truncated_flow | `review_scope_hash` | `depth limit` | 0 |

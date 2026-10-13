@@ -112,7 +112,7 @@ sequenceDiagram
     p5-->>p30: Path(…).expanduser().resolve (src/llm_wiki_cli/services…_run_options_from_request)
 ```
 
-> Call sequence diagram shows 30 of 1055 interactions; 1025 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1056 interactions; 1026 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 1 of 317 (316 omitted); unresolved 1 of 244 (243 omitted). These counts cover the captured static trace.
 

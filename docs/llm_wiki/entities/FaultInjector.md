@@ -1,6 +1,6 @@
 # FaultInjector
 
-**Location:** `src/llm_wiki_cli/services/knowledge_governance.py:359`
+**Location:** `src/llm_wiki_cli/services/knowledge_governance.py:360`
 **Kind:** Type alias
 **Bases:** —
 **Module:** [knowledge_governance](../modules/knowledge_governance.md)

@@ -173,12 +173,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| reconcile_concepts | validate_governance_ledger | 942 | `validate_governance_ledger(ledger)` |
-| validate_governance_ledger | isinstance (src/llm_wiki_cli/services…alidate_governance_ledger) | 525 | `isinstance(ledger, GovernanceLedger)` |
-| validate_governance_ledger | TypeError | 526 | `TypeError('ledger must be a GovernanceLedger')` |
-| validate_governance_ledger | GovernanceError | 528 | `GovernanceError('schema_version', ..., code='governance-version-unsupported')` |
-| validate_governance_ledger | _bundle_id | 533 | `_bundle_id(ledger.bundle_id, 'bundle_id')` |
-| _bundle_id | validate_bundle_id | 3367 | `validate_bundle_id(value)` |
+| reconcile_concepts | validate_governance_ledger | 962 | `validate_governance_ledger(ledger)` |
+| validate_governance_ledger | isinstance (src/llm_wiki_cli/services…alidate_governance_ledger) | 526 | `isinstance(ledger, GovernanceLedger)` |
+| validate_governance_ledger | TypeError | 527 | `TypeError('ledger must be a GovernanceLedger')` |
+| validate_governance_ledger | GovernanceError | 529 | `GovernanceError('schema_version', ..., code='governance-version-unsupported')` |
+| validate_governance_ledger | _bundle_id | 534 | `_bundle_id(ledger.bundle_id, 'bundle_id')` |
+| _bundle_id | validate_bundle_id | 3387 | `validate_bundle_id(value)` |
 | validate_bundle_id | _machine_text | 289 | `_machine_text(value, 'bundle_id', maximum=_MAX_BUNDLE_ID_LENGTH)` |
 | _machine_text | isinstance (src/llm_wiki_cli/services…identity.py:_machine_text) | 942 | `isinstance(value, str)` |
 | _machine_text | ConceptIdentityError | 943 | `ConceptIdentityError(field, 'must be a non-empty string')` |
@@ -189,16 +189,16 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `aliases.pop` | `reconcile_concepts` | 1022 |
-| mutation | `by_locator.pop` | `reconcile_concepts` | 1040 |
-| mutation | `by_natural_key.pop` | `reconcile_concepts` | 1050 |
+| mutation | `aliases.pop` | `reconcile_concepts` | 1042 |
+| mutation | `by_locator.pop` | `reconcile_concepts` | 1060 |
+| mutation | `by_natural_key.pop` | `reconcile_concepts` | 1070 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `validate_governance_ledger` | `isinstance` | 525 |
-| external_call | `validate_governance_ledger` | `TypeError` | 526 |
+| external_call | `validate_governance_ledger` | `isinstance` | 526 |
+| external_call | `validate_governance_ledger` | `TypeError` | 527 |
 | external_call | `_machine_text` | `isinstance` | 942 |
 | step_limit | `reconcile_concepts` | `first 12 steps` | 0 |
 | truncated_flow | `reconcile_concepts` | `depth limit` | 0 |

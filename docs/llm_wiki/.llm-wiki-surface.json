@@ -163,7 +163,7 @@
             "src/llm_wiki_cli/services/knowledge_reuse.py",
             "src/llm_wiki_cli/services/canonical_json.py"
           ],
-          "step_count": 2828,
+          "step_count": 2835,
           "truncated": true
         }
       },
@@ -184,13 +184,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 525,
+              "line": 526,
               "step": "validate_governance_ledger",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 526,
+              "line": 527,
               "step": "validate_governance_ledger",
               "target": "TypeError"
             },
@@ -344,13 +344,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 525,
+              "line": 526,
               "step": "validate_governance_ledger",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 526,
+              "line": 527,
               "step": "validate_governance_ledger",
               "target": "TypeError"
             },
@@ -652,7 +652,7 @@
             "src/llm_wiki_cli/services/canonical_json.py",
             "src/llm_wiki_cli/services/wiki_write_basis.py"
           ],
-          "step_count": 3083,
+          "step_count": 3090,
           "truncated": true
         }
       },
@@ -673,7 +673,7 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 3281,
+              "line": 3301,
               "step": "_alias_type",
               "target": "isinstance"
             },
@@ -930,7 +930,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1748,
+              "line": 1768,
               "step": "apply_governance_projection",
               "step_index": 1,
               "target": "review_items.append"
@@ -938,7 +938,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1773,
+              "line": 1793,
               "step": "apply_governance_projection",
               "step_index": 1,
               "target": "projected_concepts.append"
@@ -946,7 +946,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1631,
+              "line": 1651,
               "step": "strip_governance_projection",
               "step_index": 6,
               "target": "extensions.pop"
@@ -954,7 +954,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1632,
+              "line": 1652,
               "step": "strip_governance_projection",
               "step_index": 6,
               "target": "concepts.append"
@@ -962,7 +962,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1640,
+              "line": 1660,
               "step": "strip_governance_projection",
               "step_index": 6,
               "target": "extensions.pop"
@@ -970,7 +970,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1669,
+              "line": 1689,
               "step": "strip_governance_projection",
               "step_index": 6,
               "target": "snapshot_extensions.pop"
@@ -979,31 +979,31 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 2558,
+              "line": 2578,
               "step": "_event_limit",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 2559,
+              "line": 2579,
               "step": "_event_limit",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1626,
+              "line": 1646,
               "step": "strip_governance_projection",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1627,
+              "line": 1647,
               "step": "strip_governance_projection",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 1633,
+              "line": 1653,
               "step": "strip_governance_projection",
               "target": "replace"
             },
@@ -1647,49 +1647,49 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 1420,
+              "line": 1440,
               "step": "authored_event_time",
               "target": "datetime.now"
             },
             {
               "kind": "external_call",
-              "line": 1421,
+              "line": 1441,
               "step": "authored_event_time",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1424,
+              "line": 1444,
               "step": "authored_event_time",
               "target": "datetime.fromisoformat"
             },
             {
               "kind": "unresolved_call",
-              "line": 1424,
+              "line": 1444,
               "step": "authored_event_time",
               "target": "raw.replace"
             },
             {
               "kind": "external_call",
-              "line": 1430,
+              "line": 1450,
               "step": "authored_event_time",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 1437,
+              "line": 1457,
               "step": "authored_event_time",
               "target": "parsed.utcoffset"
             },
             {
               "kind": "unresolved_call",
-              "line": 1439,
+              "line": 1459,
               "step": "authored_event_time",
               "target": "parsed.astimezone"
             },
             {
               "kind": "unresolved_call",
-              "line": 1441,
+              "line": 1461,
               "step": "authored_event_time",
               "target": "utc.isoformat(timespec='microseconds').replace"
             },
@@ -1896,7 +1896,7 @@
             "src/llm_wiki_cli/services/paths.py",
             "src/llm_wiki_cli/services/wiki_surface_index.py"
           ],
-          "step_count": 1056,
+          "step_count": 1057,
           "truncated": true
         }
       },
@@ -6682,7 +6682,7 @@
             "src/llm_wiki_cli/services/knowledge_evidence.py",
             "src/llm_wiki_cli/services/wiki_write_basis.py"
           ],
-          "step_count": 803,
+          "step_count": 810,
           "truncated": true
         }
       },
@@ -7777,7 +7777,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1483,
+              "line": 1503,
               "step": "concept_references_from_knowledge",
               "step_index": 1,
               "target": "references.append"
@@ -7786,19 +7786,19 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 1474,
+              "line": 1494,
               "step": "concept_references_from_knowledge",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1475,
+              "line": 1495,
               "step": "concept_references_from_knowledge",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 1480,
+              "line": 1500,
               "step": "concept_references_from_knowledge",
               "target": "isinstance"
             },
@@ -8209,13 +8209,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 525,
+              "line": 526,
               "step": "validate_governance_ledger",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 526,
+              "line": 527,
               "step": "validate_governance_ledger",
               "target": "TypeError"
             },
@@ -8273,19 +8273,19 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 1505,
+              "line": 1525,
               "step": "current_review_evidence",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1506,
+              "line": 1526,
               "step": "current_review_evidence",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 2902,
+              "line": 2922,
               "step": "_review_evidence",
               "target": "isinstance"
             },
@@ -9573,7 +9573,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1587,
+              "line": 1607,
               "step": "evaluate_review_event",
               "step_index": 1,
               "target": "reasons.append"
@@ -9581,7 +9581,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1590,
+              "line": 1610,
               "step": "evaluate_review_event",
               "step_index": 1,
               "target": "reasons.append"
@@ -9589,7 +9589,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1594,
+              "line": 1614,
               "step": "evaluate_review_event",
               "step_index": 1,
               "target": "reasons.append"
@@ -9597,7 +9597,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1596,
+              "line": 1616,
               "step": "evaluate_review_event",
               "step_index": 1,
               "target": "reasons.append"
@@ -9605,7 +9605,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1600,
+              "line": 1620,
               "step": "evaluate_review_event",
               "step_index": 1,
               "target": "reasons.append"
@@ -9613,7 +9613,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1605,
+              "line": 1625,
               "step": "evaluate_review_event",
               "step_index": 1,
               "target": "reasons.append"
@@ -9622,13 +9622,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 525,
+              "line": 526,
               "step": "validate_governance_ledger",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 526,
+              "line": 527,
               "step": "validate_governance_ledger",
               "target": "TypeError"
             },
@@ -10703,7 +10703,7 @@
             "src/llm_wiki_cli/services/knowledge_links.py",
             "src/llm_wiki_cli/services/maintenance_evidence.py"
           ],
-          "step_count": 3493,
+          "step_count": 3500,
           "truncated": true
         }
       },
@@ -11886,7 +11886,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1933,
+              "line": 1953,
               "step": "validate_governance_projection",
               "step_index": 2,
               "target": "declared_limits.add"
@@ -11894,7 +11894,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1940,
+              "line": 1960,
               "step": "validate_governance_projection",
               "step_index": 2,
               "target": "seen_uids.add"
@@ -11902,7 +11902,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1955,
+              "line": 1975,
               "step": "validate_governance_projection",
               "step_index": 2,
               "target": "successor_pairs.add"
@@ -11911,37 +11911,37 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 1828,
+              "line": 1848,
               "step": "validate_governance_projection",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1829,
+              "line": 1849,
               "step": "validate_governance_projection",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 1830,
+              "line": 1850,
               "step": "validate_governance_projection",
               "target": "knowledge.extensions.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 1831,
+              "line": 1851,
               "step": "validate_governance_projection",
               "target": "knowledge.bundle.snapshot.extensions.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 1835,
+              "line": 1855,
               "step": "validate_governance_projection",
               "target": "concept.extensions.get"
             },
             {
               "kind": "external_call",
-              "line": 1839,
+              "line": 1859,
               "step": "validate_governance_projection",
               "target": "any"
             },
@@ -12001,7 +12001,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1933,
+              "line": 1953,
               "step": "validate_governance_projection",
               "step_index": 2,
               "target": "declared_limits.add"
@@ -12009,7 +12009,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1940,
+              "line": 1960,
               "step": "validate_governance_projection",
               "step_index": 2,
               "target": "seen_uids.add"
@@ -12017,7 +12017,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1955,
+              "line": 1975,
               "step": "validate_governance_projection",
               "step_index": 2,
               "target": "successor_pairs.add"
@@ -12026,37 +12026,37 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 1828,
+              "line": 1848,
               "step": "validate_governance_projection",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1829,
+              "line": 1849,
               "step": "validate_governance_projection",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 1830,
+              "line": 1850,
               "step": "validate_governance_projection",
               "target": "knowledge.extensions.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 1831,
+              "line": 1851,
               "step": "validate_governance_projection",
               "target": "knowledge.bundle.snapshot.extensions.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 1835,
+              "line": 1855,
               "step": "validate_governance_projection",
               "target": "concept.extensions.get"
             },
             {
               "kind": "external_call",
-              "line": 1839,
+              "line": 1859,
               "step": "validate_governance_projection",
               "target": "any"
             },
@@ -12164,7 +12164,7 @@
             "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_cli/services/io.py"
           ],
-          "step_count": 62,
+          "step_count": 69,
           "truncated": false
         }
       },
@@ -14442,13 +14442,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 525,
+              "line": 526,
               "step": "validate_governance_ledger",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 526,
+              "line": 527,
               "step": "validate_governance_ledger",
               "target": "TypeError"
             },
@@ -16465,7 +16465,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1177,
+              "line": 1197,
               "step": "move_concept",
               "step_index": 1,
               "target": "aliases.pop"
@@ -16474,13 +16474,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 525,
+              "line": 526,
               "step": "validate_governance_ledger",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 526,
+              "line": 527,
               "step": "validate_governance_ledger",
               "target": "TypeError"
             },
@@ -20292,7 +20292,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1022,
+              "line": 1042,
               "step": "reconcile_concepts",
               "step_index": 1,
               "target": "aliases.pop"
@@ -20300,7 +20300,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1040,
+              "line": 1060,
               "step": "reconcile_concepts",
               "step_index": 1,
               "target": "by_locator.pop"
@@ -20308,7 +20308,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1050,
+              "line": 1070,
               "step": "reconcile_concepts",
               "step_index": 1,
               "target": "by_natural_key.pop"
@@ -20317,13 +20317,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 525,
+              "line": 526,
               "step": "validate_governance_ledger",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 526,
+              "line": 527,
               "step": "validate_governance_ledger",
               "target": "TypeError"
             },
@@ -21066,7 +21066,7 @@
             "src/llm_wiki_cli/extractors/common.py",
             "src/llm_wiki_cli/services/wiki_write_basis.py"
           ],
-          "step_count": 1800,
+          "step_count": 1807,
           "truncated": true
         }
       },
@@ -21309,7 +21309,7 @@
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4601,
+          "step_count": 4608,
           "truncated": true
         }
       },
@@ -24613,25 +24613,25 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 3318,
+              "line": 3338,
               "step": "_section_locator",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 3319,
+              "line": 3339,
               "step": "_section_locator",
               "target": "value.startswith"
             },
             {
               "kind": "unresolved_call",
-              "line": 3322,
+              "line": 3342,
               "step": "_section_locator",
               "target": "value.strip"
             },
             {
               "kind": "unresolved_call",
-              "line": 3328,
+              "line": 3348,
               "step": "_section_locator",
               "target": "value.partition"
             },
@@ -24961,7 +24961,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4372,
+          "step_count": 4373,
           "truncated": true
         }
       },
@@ -25415,13 +25415,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 525,
+              "line": 526,
               "step": "validate_governance_ledger",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 526,
+              "line": 527,
               "step": "validate_governance_ledger",
               "target": "TypeError"
             },
@@ -26577,13 +26577,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 525,
+              "line": 526,
               "step": "validate_governance_ledger",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 526,
+              "line": 527,
               "step": "validate_governance_ledger",
               "target": "TypeError"
             },
@@ -27226,7 +27226,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1631,
+              "line": 1651,
               "step": "strip_governance_projection",
               "step_index": 1,
               "target": "extensions.pop"
@@ -27234,7 +27234,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1632,
+              "line": 1652,
               "step": "strip_governance_projection",
               "step_index": 1,
               "target": "concepts.append"
@@ -27242,7 +27242,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1640,
+              "line": 1660,
               "step": "strip_governance_projection",
               "step_index": 1,
               "target": "extensions.pop"
@@ -27250,7 +27250,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1669,
+              "line": 1689,
               "step": "strip_governance_projection",
               "step_index": 1,
               "target": "snapshot_extensions.pop"
@@ -27259,31 +27259,31 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 1626,
+              "line": 1646,
               "step": "strip_governance_projection",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1627,
+              "line": 1647,
               "step": "strip_governance_projection",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 1633,
+              "line": 1653,
               "step": "strip_governance_projection",
               "target": "replace"
             },
             {
               "kind": "unresolved_call",
-              "line": 1641,
+              "line": 1661,
               "step": "strip_governance_projection",
               "target": "extensions.get"
             },
             {
               "kind": "external_call",
-              "line": 1642,
+              "line": 1662,
               "step": "strip_governance_projection",
               "target": "isinstance"
             },
@@ -28966,13 +28966,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 525,
+              "line": 526,
               "step": "validate_governance_ledger",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 526,
+              "line": 527,
               "step": "validate_governance_ledger",
               "target": "TypeError"
             },
@@ -29036,7 +29036,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1933,
+              "line": 1953,
               "step": "validate_governance_projection",
               "step_index": 1,
               "target": "declared_limits.add"
@@ -29044,7 +29044,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1940,
+              "line": 1960,
               "step": "validate_governance_projection",
               "step_index": 1,
               "target": "seen_uids.add"
@@ -29052,7 +29052,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 1955,
+              "line": 1975,
               "step": "validate_governance_projection",
               "step_index": 1,
               "target": "successor_pairs.add"
@@ -29061,37 +29061,37 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 1828,
+              "line": 1848,
               "step": "validate_governance_projection",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1829,
+              "line": 1849,
               "step": "validate_governance_projection",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 1830,
+              "line": 1850,
               "step": "validate_governance_projection",
               "target": "knowledge.extensions.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 1831,
+              "line": 1851,
               "step": "validate_governance_projection",
               "target": "knowledge.bundle.snapshot.extensions.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 1835,
+              "line": 1855,
               "step": "validate_governance_projection",
               "target": "concept.extensions.get"
             },
             {
               "kind": "external_call",
-              "line": 1839,
+              "line": 1859,
               "step": "validate_governance_projection",
               "target": "any"
             },
@@ -31660,7 +31660,7 @@
             "src/llm_wiki_cli/services/wiki_media.py",
             "src/llm_wiki_cli/services/knowledge_envelope.py"
           ],
-          "step_count": 2918,
+          "step_count": 2925,
           "truncated": true
         }
       },
@@ -33385,7 +33385,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4372,
+          "step_count": 4373,
           "truncated": true
         }
       },
@@ -33730,7 +33730,7 @@
             "src/llm_wiki_cli/services/maintenance_queue.py",
             "src/llm_wiki_cli/services/request_json.py"
           ],
-          "step_count": 2352,
+          "step_count": 2359,
           "truncated": true
         }
       },
@@ -35972,7 +35972,7 @@
             "src/llm_wiki_cli/services/data_flow.py",
             "src/llm_wiki_cli/services/wiki_surface_index.py"
           ],
-          "step_count": 5729,
+          "step_count": 5736,
           "truncated": true
         }
       },
@@ -66815,5 +66815,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:eca01d35af263dd5f0a94ec76aaae8ccd3d0acaf720e216361bf962585d23bd4"
+  "source_hash": "sha256:07e0cc92e28085cdc0bbb806cd99fa0f88a79822ab2f73daae4366ed84bf31a5"
 }

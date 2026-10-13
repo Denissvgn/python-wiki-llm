@@ -2291,3 +2291,19 @@ authority, evidence and maintenance guidance within its bounded presentation.
 - Pages deprecated: 0
 - Semantic fields preserved: 1
 - Moved entities: none
+
+## 2026-10-13
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.5.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:f33c5610efa81605d8eccc7b425695934096b06eb44d0447d86e1d9c63da9ece`
+- Pages created: 0
+- Pages updated: 53
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1536
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none
