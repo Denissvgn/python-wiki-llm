@@ -16,11 +16,13 @@ MAX_CONTENT_BYTES = 512 * 1024 * 1024
 MAX_FILE_BYTES = 64 * 1024 * 1024
 MAX_FILES = 20_000
 MAX_ARCHIVE_BYTES = 600 * 1024 * 1024
+PATH_DESCRIPTOR_CTIME_COMPARABLE = os.name != "nt"
 
 
-def identity(value):
+def identity(value, *, include_ctime=True):
     return (value.st_dev, value.st_ino, value.st_mode, value.st_nlink,
-            value.st_size, value.st_mtime_ns, value.st_ctime_ns)
+            value.st_size, value.st_mtime_ns,
+            value.st_ctime_ns if include_ctime else None)
 
 
 def git(root: Path, *args: str) -> bytes:
@@ -115,7 +117,12 @@ def capture(root: Path, evidence: Path, candidate: str, run_id: int, attempt: in
                 descriptor = os.open(path, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0))
                 with os.fdopen(descriptor, "rb") as stream:
                     opened = os.fstat(stream.fileno())
-                    if identity(opened) != identity(observed):
+                    # Windows 3.13 lstat reports creation time as ctime;
+                    # fstat reports metadata-change time. Keep strict ctime
+                    # comparisons within each API below, rather than comparing
+                    # those two different meanings across APIs.
+                    comparable = PATH_DESCRIPTOR_CTIME_COMPARABLE
+                    if identity(opened, include_ctime=comparable) != identity(observed, include_ctime=comparable):
                         raise ValueError("wiki member changed before capture")
                     raw = stream.read(observed.st_size + 1)
                     after = os.fstat(stream.fileno())

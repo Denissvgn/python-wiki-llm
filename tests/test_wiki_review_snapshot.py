@@ -7,6 +7,7 @@ import importlib.util
 import json
 from pathlib import Path
 import tarfile
+from types import SimpleNamespace
 
 import pytest
 
@@ -90,6 +91,40 @@ def test_complete_snapshot_retains_untracked_packs_without_publishing_private_fi
     assert json.loads((evidence / "convergence-result.json").read_text()) == result
     assert git(root, "status", "--porcelain=v1") == before
     assert payload["workflow_run_id"] == 123 and payload["candidate_sha"] == sha
+
+
+@pytest.mark.parametrize("change", ["none", "descriptor", "path"])
+def test_distinct_windows_ctime_semantics_preserve_change_detection(source, monkeypatch, change):
+    root, wiki, evidence = source
+    sha, _ = evidence_for(root, evidence)
+    original_fstat = snapshot.os.fstat
+    calls = {}
+
+    def descriptor_stat(fd):
+        value = original_fstat(fd)
+        key = (value.st_dev, value.st_ino)
+        calls[key] = calls.get(key, 0) + 1
+        attributes = {name: getattr(value, name) for name in (
+            "st_dev", "st_ino", "st_mode", "st_nlink", "st_size", "st_mtime_ns", "st_ctime_ns",
+        )}
+        # Model Windows descriptor metadata time, distinct from pathname birth
+        # time, on every host. A genuine mutation must still be refused.
+        attributes["st_ctime_ns"] += 1
+        if calls[key] == 2 and change == "descriptor":
+            attributes["st_ctime_ns"] += 1
+        if calls[key] == 2 and change == "path":
+            member = wiki / "index.md"
+            member.write_bytes(member.read_bytes() + b"changed")
+        return SimpleNamespace(**attributes)
+
+    monkeypatch.setattr(snapshot, "PATH_DESCRIPTOR_CTIME_COMPARABLE", False)
+    monkeypatch.setattr(snapshot.os, "fstat", descriptor_stat)
+    if change == "none":
+        assert snapshot.capture(root, evidence, sha, 123, 1)["entries"]
+    else:
+        with pytest.raises(ValueError, match="changed during capture"):
+            snapshot.capture(root, evidence, sha, 123, 1)
+        assert not (evidence / "wiki-review-snapshot.tar").exists()
 
 
 @pytest.mark.parametrize("fault", ["source-change", "failed-sync", "changed-capture", "occupied", "size", "symlink", "wrong-candidate", "partial-evidence"])
