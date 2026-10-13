@@ -60,7 +60,7 @@ prerequisite is an environment failure, not a product defect or passing coverage
 Use [Extractors and dependencies](extractors-dependencies.md) for helper recovery.
 Retain the original failure and successful corrective reruns separately.
 
-### Select checks from contracts and environments
+## Select checks from contracts and environments
 
 Discover supported environments and existing verification commands from the
 project's instructions, declared interfaces, packaging, CI and relevant source.
