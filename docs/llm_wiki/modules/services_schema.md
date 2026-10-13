@@ -14,6 +14,13 @@ Explicit-language helper recovery omits incompatible selection flags while the
 original read retains its selection. Optional profiles, storage adoption, and
 delivery actions remain separate choices under project policy.
 
+The compact profile preserves the explicit correctness clauses recognized by
+instruction ownership, alongside packaged routes to further detail. Continuation
+whitespace within list items can be condensed without changing those clauses or
+their routes. Measurements count the actual rendered text for each target and
+option combination; concise formatting does not relax authority, evidence,
+semantic ownership, or maintenance obligations.
+
 Shared schema utilities for agent constraint blocks.
 
 Provides functions to build, strip, and replace the LLM Wiki constraint

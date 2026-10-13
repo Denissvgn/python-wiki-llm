@@ -2227,3 +2227,19 @@ cache I/O, preserving projected artifact commitments without destination probes
 or cache publication. Apply still owns publication and advisory cache saving.
 The compact instruction kernel retains its provider census route and existing
 authority, evidence and maintenance guidance within its bounded presentation.
+
+## 2026-10-13
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.5.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:e7d734ddb8ab536addb25162ddb10e0bad39d40cc1c69b7306788a9fa8ca7d5b`
+- Pages created: 0
+- Pages updated: 0
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1589
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none
