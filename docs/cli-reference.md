@@ -1085,6 +1085,11 @@ census/files are ready and exit 2 means unavailable. This mode is exclusive with
 `--capabilities` and explicit `--report-schema` selection. It does not establish
 runtime/helper readiness, semantic correctness or producer authority.
 
+The default and `--format text` show a readable summary with the same status,
+path and omission counts, corrective route and qualifications. Use `--format
+json` for the structured report and its schema; output format does not change
+the readiness exit policy or read scope.
+
 Provider source additions require deliberate review of
 `services/analysis_contracts.json`: classify presentation/consumer files in the
 census and observation changes in their correct producer input lists. Missing

@@ -52,6 +52,9 @@ and cache limitations explicitly.
 
 ### Fixed
 
+- Analysis-input doctor diagnostics honor default/explicit text output while
+  preserving structured JSON, readiness exits and classification-only scope.
+
 - Symptom discovery uses section-local relevance and coherent explanatory
   coverage, and can expose an explicitly declared flow from a matching formal
   function description with captured lexical evidence.

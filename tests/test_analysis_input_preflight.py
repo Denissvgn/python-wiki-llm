@@ -157,6 +157,40 @@ def test_cli_preflight_bypasses_project_inventory_and_has_failure_exit(package, 
     assert json.loads(capsys.readouterr().out)["paths"][0]["path"] == "added.py"
 
 
+@pytest.mark.parametrize("format_args", [{}, {"format": "text"}, {"format": "json"}])
+def test_preflight_ready_default_text_and_explicit_formats_keep_qualification(monkeypatch, capsys, format_args):
+    expected = api.get_analysis_input_status()
+    monkeypatch.setattr(api, "get_analysis_input_status", lambda: expected)
+    monkeypatch.setattr(doctor_cmd, "build_doctor_report", lambda *a, **k: pytest.fail("scanned source"))
+    doctor_cmd.run(SimpleNamespace(analysis_inputs=True, report_schema="auto", **format_args))
+    output = capsys.readouterr().out
+    if format_args.get("format") == "json":
+        assert json.loads(output) == expected
+    else:
+        assert output.startswith("Analysis inputs: ready\n")
+        assert "Paths: 0 of 0; omitted: 0" in output
+        assert "Registry: services/analysis_contracts.json" in output
+        assert expected["qualification"] in output
+
+
+def test_preflight_unavailable_text_retains_bounds_next_action_and_escaped_paths(package, monkeypatch, capsys):
+    root, _, _ = package
+    for name in ["line\nbreak.py", "second.py", "third.py"]:
+        (root / name).write_text("pass\n")
+    expected = capture.analysis_input_status(package_root=root, limit=1)
+    monkeypatch.setattr(api, "get_analysis_input_status", lambda: expected)
+    monkeypatch.setattr(doctor_cmd, "build_doctor_report", lambda *a, **k: pytest.fail("scanned source"))
+    with pytest.raises(SystemExit) as error:
+        doctor_cmd.run(SimpleNamespace(analysis_inputs=True, report_schema="auto", format="text"))
+    assert error.value.code == 2
+    output = capsys.readouterr().out
+    assert output.startswith("Analysis inputs: unavailable\n")
+    assert "Paths: 1 of 3; omitted: 2" in output
+    assert '"line\\nbreak.py"' in output and "line\nbreak.py" not in output
+    assert expected["reason"] in output and expected["next_action"] in output
+    assert expected["qualification"] in output
+
+
 def test_inventory_and_task_callers_receive_diagnostic_without_trusted_components(package, tmp_path, monkeypatch):
     root, _, entries = package
     (root / "added.py").write_text("pass\n")
