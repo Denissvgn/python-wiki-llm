@@ -10,8 +10,12 @@ unsupported-input, and plugin diagnostics while retaining the detailed health
 sections and explicit preparation commands.
 
 `--analysis-inputs` instead runs the installed-provider census/file preflight,
-without inspecting project source or knowledge health. It returns the bounded
-JSON diagnostic with exit 0 for ready coverage and exit 2 for unavailable inputs.
+without inspecting project source or knowledge health. It renders a bounded
+text summary by default or with `--format text`, and retains the structured
+diagnostic with `--format json`. Both formats preserve the reported path and
+omission counts, corrective route and qualifications. Text paths are quoted
+with escaped control characters. Exit 0 means ready coverage and exit 2 means
+unavailable inputs; choosing a format does not change this policy.
 It is exclusive with capability and explicit health-schema selection. A ready
 census is independent of runtime/helper preparation and semantic correctness.
 
@@ -77,4 +81,5 @@ flowchart LR
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
+| `_render_analysis_input_text` | `(report) -> str` | — | Readable classification diagnostics with unchanged scope and work bounds. |
 | `run` | `(args) -> None` | — | — |

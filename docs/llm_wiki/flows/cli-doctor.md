@@ -67,29 +67,29 @@ sequenceDiagram
     participant p3 as extraction_job_request_from_args
     participant p4 as render_capability_doctor
     participant p5 as render_doctor_text
-    participant p6 as build_doctor_report
-    participant p7 as analysis_input_status
-    participant p8 as build_capability_diagnostics
-    participant p9 as _render_doctor_payload
-    participant p10 as validate_source_root
-    participant p11 as build_source_snapshot
-    participant p12 as resolve_helper_cache_root
-    participant p13 as get_prepared_typescript_root
-    participant p14 as get_prepared_binary
-    participant p15 as helper_preparation_argv
-    participant p16 as build_report
-    participant p17 as detailed_health_rows
-    participant p18 as compose_doctor_report
-    participant p19 as read_lock
-    participant p20 as validate_plugin
-    participant p21 as plugin_store
-    participant p22 as validate_path
-    participant p23 as _validate_capture_options
-    participant p24 as lock_path
-    participant p25 as _manifest_root
-    participant p26 as _manifest_current
-    participant p27 as _ensure_no_reserved_plugin_sources
-    participant p28 as _resolve_snapshot_selection
+    participant p6 as _render_analysis_input_text
+    participant p7 as build_doctor_report
+    participant p8 as analysis_input_status
+    participant p9 as build_capability_diagnostics
+    participant p10 as _render_doctor_payload
+    participant p11 as validate_source_root
+    participant p12 as build_source_snapshot
+    participant p13 as resolve_helper_cache_root
+    participant p14 as get_prepared_typescript_root
+    participant p15 as get_prepared_binary
+    participant p16 as helper_preparation_argv
+    participant p17 as build_report
+    participant p18 as detailed_health_rows
+    participant p19 as compose_doctor_report
+    participant p20 as read_lock
+    participant p21 as validate_plugin
+    participant p22 as plugin_store
+    participant p23 as validate_path
+    participant p24 as _validate_capture_options
+    participant p25 as lock_path
+    participant p26 as _manifest_root
+    participant p27 as _manifest_current
+    participant p28 as _ensure_no_reserved_plugin_sources
     participant p29 as getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)
     participant p30 as report.to_payload (src/llm_wiki_cli/commands/doctor_cmd.py:run)
     p0->>p1: get_analysis_input_status
@@ -97,42 +97,42 @@ sequenceDiagram
     p0->>p3: extraction_job_request_from_args
     p0->>p4: render_capability_doctor
     p0->>p5: render_doctor_text
-    p0->>p6: build_doctor_report
-    p1->>p7: analysis_input_status
-    p2->>p8: build_capability_diagnostics
-    p4->>p9: _render_doctor_payload
-    p8->>p10: validate_source_root
-    p8->>p11: build_source_snapshot
-    p8->>p12: resolve_helper_cache_root
-    p8->>p13: get_prepared_typescript_root
-    p8->>p14: get_prepared_binary
-    p8->>p15: helper_preparation_argv
-    p6->>p16: build_report
-    p9->>p17: detailed_health_rows
-    p6->>p18: compose_doctor_report
-    p8->>p19: read_lock
-    p8->>p20: validate_plugin
-    p8->>p21: plugin_store
-    p10->>p22: validate_path
-    p11->>p23: _validate_capture_options
-    p19->>p24: lock_path
-    p20->>p25: _manifest_root
-    p13->>p26: _manifest_current
-    p20->>p27: _ensure_no_reserved_plugin_sources
-    p11->>p28: _resolve_snapshot_selection
+    p0->>p6: _render_analysis_input_text
+    p0->>p7: build_doctor_report
+    p1->>p8: analysis_input_status
+    p2->>p9: build_capability_diagnostics
+    p4->>p10: _render_doctor_payload
+    p9->>p11: validate_source_root
+    p9->>p12: build_source_snapshot
+    p9->>p13: resolve_helper_cache_root
+    p9->>p14: get_prepared_typescript_root
+    p9->>p15: get_prepared_binary
+    p9->>p16: helper_preparation_argv
+    p7->>p17: build_report
+    p10->>p18: detailed_health_rows
+    p7->>p19: compose_doctor_report
+    p9->>p20: read_lock
+    p9->>p21: validate_plugin
+    p9->>p22: plugin_store
+    p11->>p23: validate_path
+    p12->>p24: _validate_capture_options
+    p20->>p25: lock_path
+    p21->>p26: _manifest_root
+    p14->>p27: _manifest_current
+    p21->>p28: _ensure_no_reserved_plugin_sources
     p0-->>p29: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'report_schema', 'auto')
     p0-->>p30: report.to_payload (src/llm_wiki_cli/commands/doctor_cmd.py:run)(report_schema=report_schema)
 ```
 
-> Call sequence diagram shows 30 of 1424 interactions; 1394 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1432 interactions; 1402 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 439 (438 omitted); unresolved 1 of 440 (439 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 441 (440 omitted); unresolved 1 of 445 (444 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/commands/doctor_cmd.py:run` | 1 | - | external | 27 |
+| `src/llm_wiki_cli/commands/doctor_cmd.py:run` | 1 | - | external | 28 |
 | `src/llm_wiki_cli/services/analysis_capture.py:analysis_input_status` | 6 | - | external | 8 |
 | `src/llm_wiki_cli/services/analysis_capture.py:analysis_input_status` | 6 | - | unresolved | 7 |
 | `src/llm_wiki_cli/services/analysis_capture.py:analysis_input_status` | 6 | [src/llm_wiki_cli/services/analysis_capture.py](../modules/analysis_capture.md) | internal | 5 |
@@ -140,7 +140,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/analysis_capture.py:registry` | 12 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/analysis_capture.py:_input_rows` | 17 | - | unresolved | 12 |
 | `src/llm_wiki_cli/services/analysis_capture.py:_input_rows` | 17 | - | external | 6 |
-> Omission summary shows 8 of 381 groups; 373 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 383 groups; 375 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -219,10 +219,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 13 | `getattr(args, 'report_schema', 'auto')` |
-| run | getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 14 | `getattr(args, 'analysis_inputs', False)` |
-| run | ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 16 | `ValueError('--analysis-inputs and --report-schema are mutually exclusive')` |
-| run | get_analysis_input_status | 19 | `get_analysis_input_status(data not statically known)` |
+| run | getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 28 | `getattr(args, 'report_schema', 'auto')` |
+| run | getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 29 | `getattr(args, 'analysis_inputs', False)` |
+| run | ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 31 | `ValueError('--analysis-inputs and --report-schema are mutually exclusive')` |
+| run | get_analysis_input_status | 34 | `get_analysis_input_status(data not statically known)` |
 | get_analysis_input_status | analysis_input_status | 1844 | `analysis_input_status(limit=limit)` |
 | analysis_input_status | type (src/llm_wiki_cli/services….py:analysis_input_status) | 97 | `type(limit)` |
 | analysis_input_status | ValueError (src/llm_wiki_cli/services….py:analysis_input_status) | 98 | `ValueError('analysis input path limit must be an integer from 1 to 100')` |
@@ -235,10 +235,10 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 20 |
-| output | `print` | `run` | 36 |
-| output | `print` | `run` | 55 |
-| output | `print` | `run` | 57 |
+| output | `print` | `run` | 35 |
+| output | `print` | `run` | 52 |
+| output | `print` | `run` | 71 |
+| output | `print` | `run` | 73 |
 | mutation | `rows.append` | `analysis_input_status` | 110 |
 | filesystem_read | `path.read_text` | `registry` | 170 |
 
@@ -246,9 +246,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `run` | `getattr` | 13 |
-| external_call | `run` | `getattr` | 14 |
-| external_call | `run` | `ValueError` | 16 |
+| external_call | `run` | `getattr` | 28 |
+| external_call | `run` | `getattr` | 29 |
+| external_call | `run` | `ValueError` | 31 |
 | external_call | `analysis_input_status` | `type` | 97 |
 | external_call | `analysis_input_status` | `ValueError` | 98 |
 | unresolved_call | `analysis_input_status` | `Path(__file__).resolve` | 99 |

@@ -32275,7 +32275,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 20,
+              "line": 35,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32283,7 +32283,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 36,
+              "line": 52,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32291,7 +32291,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 55,
+              "line": 71,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32299,7 +32299,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 57,
+              "line": 73,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32324,19 +32324,19 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 13,
+              "line": 28,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 14,
+              "line": 29,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 16,
+              "line": 31,
               "step": "run",
               "target": "ValueError"
             },
@@ -32426,7 +32426,7 @@
             "src/llm_wiki_cli/services/extraction_jobs.py",
             "src/llm_wiki_cli/services/health_summary.py"
           ],
-          "step_count": 1425,
+          "step_count": 1433,
           "truncated": true
         }
       },
@@ -66815,5 +66815,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:03bfc6072c21bbff9343da79b8708598587c2a98a061e1f18fb306b03236db1f"
+  "source_hash": "sha256:053f5519a1984ecd426080202f599c2ad45d5c5d897682ed1f069557b6c1b9eb"
 }

@@ -2185,3 +2185,21 @@ Lexical discovery now uses section-local relevance and coherent explanatory cove
 - Pages deprecated: 0
 - Semantic fields preserved: 144
 - Moved entities: none
+
+## 2026-10-13
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.5.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:75a79225d71a5b8fb7ba355d83a7aac74e506e15437e318bff6b756d6f6a7d57`
+- Pages created: 0
+- Pages updated: 2
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1587
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none
+
+Analysis-input doctor diagnostics now honor text and JSON output with the same classification scope, bounded path counts, corrective route and readiness exit policy.
