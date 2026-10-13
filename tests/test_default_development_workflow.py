@@ -8,7 +8,7 @@ import shlex
 import shutil
 import subprocess
 import sys
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from types import SimpleNamespace
 
 import pytest
@@ -17,12 +17,13 @@ from llm_wiki_cli import api, cli
 from llm_wiki_cli.commands import init_cmd, upgrade_cmd, uninstall_cmd
 from llm_wiki_cli.config import read_config
 from llm_wiki_cli.services.schema import SCHEMA_FILENAMES, SchemaRenderProfile, build_schema_content
-from llm_wiki_cli.services.skills import ReferenceSkillState, skills_install_dir, verify_reference_skill
+from llm_wiki_cli.services.skills import BUNDLED_SKILLS_ROOT, ReferenceSkillState, skills_install_dir, verify_reference_skill
 
 
 @pytest.mark.parametrize("agent", ["generic", "claude", "cursor", "copilot", "aider", "opencode"])
 @pytest.mark.parametrize("no_skills", [False, True])
-def test_default_workflow_installation_and_upgrade_preserve_project_policy(tmp_path, monkeypatch, agent, no_skills):
+@pytest.mark.parametrize("path_flavor", [PurePosixPath, PureWindowsPath], ids=["posix-input", "windows-input"])
+def test_default_workflow_installation_and_upgrade_preserve_project_policy(tmp_path, monkeypatch, agent, no_skills, path_flavor):
     monkeypatch.chdir(tmp_path)
     wiki = "knowledge/project notes"
     source = tmp_path / "src"
@@ -35,7 +36,10 @@ def test_default_workflow_installation_and_upgrade_preserve_project_policy(tmp_p
     schema.parent.mkdir(parents=True, exist_ok=True)
     prefix = b"# Preserve this project convention.\r\n\r\n"
     schema.write_bytes(prefix)
-    init_cmd.run(SimpleNamespace(agent=agent, wiki_dir=wiki, no_skills=no_skills, source_selection=selection.as_posix()))
+    # The source-selection wire contract is POSIX, independently of the host
+    # and the caller's path flavor. Keep actual filesystem paths native.
+    wire_selection = path_flavor("config", "public sources.json").as_posix()
+    init_cmd.run(SimpleNamespace(agent=agent, wiki_dir=wiki, no_skills=no_skills, source_selection=wire_selection))
     content = schema.read_bytes()
     assert content.startswith(prefix)
     expected_profile = b"expanded_inline" if no_skills else b"compact"
@@ -55,7 +59,9 @@ def test_default_workflow_installation_and_upgrade_preserve_project_policy(tmp_p
         assert b"doctor --analysis-inputs --format json" in content
     else:
         assert verify_reference_skill(agent=agent).state is ReferenceSkillState.CURRENT
-        assert "doctor --analysis-inputs --format json" in (reference / "references/development-workflow.md").read_text()
+        topic = reference / "references/development-workflow.md"
+        assert topic.read_bytes() == (BUNDLED_SKILLS_ROOT / "wiki-reference/references/development-workflow.md").read_bytes()
+        assert "doctor --analysis-inputs --format json" in topic.read_text()
         # Simulate the previous exact tree; upgrade must recover the new topic.
         (reference / "references/development-workflow.md").unlink()
         assert verify_reference_skill(agent=agent).state is ReferenceSkillState.INCOMPLETE
@@ -66,8 +72,10 @@ def test_default_workflow_installation_and_upgrade_preserve_project_policy(tmp_p
     assert read_config(wiki)["source_selection"] == selection.as_posix()
     if not no_skills:
         assert verify_reference_skill(agent=agent).state is ReferenceSkillState.CURRENT
+        assert (reference / "references/development-workflow.md").read_bytes() == (BUNDLED_SKILLS_ROOT / "wiki-reference/references/development-workflow.md").read_bytes()
     else:
         assert not reference.exists()
+        assert upgraded == content
 
 
 @pytest.mark.parametrize("agent", list(SCHEMA_FILENAMES))

@@ -287,6 +287,28 @@ also applies when skills are disabled or unavailable:
   Stage reviewed files only if the check requires tracked inputs and existing
   authority/repository policy permit staging. Retain failed attempts and
   successful corrections separately; environment failure is not passing coverage.
+- Discover supported environments and verification commands from project rules,
+  interfaces, packaging, CI and source. Use the project's own commands; do not
+  invent language/platform support, a CI provider or a mandatory matrix. Connect
+  affected criteria to independent outcomes, owners and applicable environments.
+- At changed boundaries, distinguish native paths, canonical repository paths,
+  URIs, shell arguments, serialized keys, byte streams and metadata meanings.
+  Fixtures/expectations follow the interface contract; translate only there and
+  keep rejection rules. Never replace every backslash in native paths or assume
+  equally named metadata fields mean the same across APIs. Preserve change checks.
+- Run a small discriminating check before broad suites. Path flavors and forced
+  faults exercise assumptions locally; they do not certify native behavior.
+  Verify relevant declared native environments with existing runners/commands;
+  missing access leaves applicable gates pending, not passed by local success.
+- Audit conditional checks on the actual candidate. Missing applicable capability
+  needs a verification owner and successful evidence in its capable environment.
+  Missing optimization must not skip a supported fallback; explain inapplicable
+  cases without blanket skips. Before sync/qualified extraction, check prepared
+  helper identity and active runtime with the same cache base. Do not manufacture
+  runtime compatibility; use authorized setup or keep the prerequisite unresolved.
+- Classify retained failures as environment, fixture, product or workflow before
+  correction; verify an independent discriminating case and affected required
+  gates on the actual candidate. Keep failed attempts and source/evidence identities.
 - Before qualifying measurements, run `llm-wiki doctor --analysis-inputs --format json`.
   It checks installed-provider classification/files, not project source or runtime
   readiness. An unavailable result keeps qualification pending. For provider
