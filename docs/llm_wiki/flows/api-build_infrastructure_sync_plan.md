@@ -2,7 +2,7 @@
 
 **Entry point:** `build_infrastructure_sync_plan` (`api`)
 **Source:** [infrastructure_sync](../modules/infrastructure_sync.md)
-**Modules touched:** [infrastructure_inventory](../modules/infrastructure_inventory.md), [infrastructure_sync](../modules/infrastructure_sync.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 1 more
+**Modules touched:** [infrastructure_inventory](../modules/infrastructure_inventory.md), [infrastructure_sync](../modules/infrastructure_sync.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 2 more
 
 **Complete modules touched:**
 
@@ -10,85 +10,95 @@
 - [infrastructure_sync](../modules/infrastructure_sync.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [validation](../modules/validation.md)
+- [yaml_syntax](../modules/yaml_syntax.md)
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as build_infrastructure_sync_plan
-    participant p1 as deepcopy (src/llm_wiki_cli/services…_infrastructure_sync_plan)
-    participant p2 as dict (src/llm_wiki_cli/services…_infrastructure_sync_plan)
-    participant p3 as sorted (src/llm_wiki_cli/services…_infrastructure_sync_plan)
-    participant p4 as inventory.items
-    participant p5 as build_infrastructure_page_map
-    participant p6 as _prior_infrastructure_state
-    participant p7 as _record_mapping
-    participant p8 as prior_state.get (src/llm_wiki_cli/services…_infrastructure_sync_plan)
-    participant p9 as raw_prior_sources.items
-    participant p10 as snapshot.path_is_effectively_selected (src/llm_wiki_cli/services…_infrastructure_sync_plan)
-    participant p11 as _selected_prior_tombstones
-    participant p12 as deselected_records.update
-    participant p13 as _deselection_only_state
-    participant p14 as _source_record
-    participant p15 as normalized_inventory.items
-    participant p16 as set (src/llm_wiki_cli/services…_infrastructure_sync_plan)
-    participant p17 as _detect_moves
-    participant p18 as moved.values
-    participant p19 as _unsupported_yaml_records
-    participant p20 as _candidate_roots
-    participant p21 as tombstones.pop
-    p0-->>p1: deepcopy (src/llm_wiki_cli/services…_infrastructure_sync_plan)(dict(...))
-    p0-->>p2: dict (src/llm_wiki_cli/services…_infrastructure_sync_plan)(info)
-    p0-->>p3: sorted (src/llm_wiki_cli/services…_infrastructure_sync_plan)(inventory.items(...))
-    p0-->>p4: inventory.items
-    p0->>p5: build_infrastructure_page_map
-    p0->>p6: _prior_infrastructure_state
-    p0->>p7: _record_mapping
-    p0-->>p8: prior_state.get (src/llm_wiki_cli/services…_infrastructure_sync_plan)('sources')
-    p0->>p7: _record_mapping
-    p0-->>p8: prior_state.get (src/llm_wiki_cli/services…_infrastructure_sync_plan)('tombstones')
-    p0-->>p9: raw_prior_sources.items
-    p0-->>p10: snapshot.path_is_effectively_selected (src/llm_wiki_cli/services…_infrastructure_sync_plan)(source_path)
-    p0->>p11: _selected_prior_tombstones
-    p0-->>p12: deselected_records.update(...)
-    p0-->>p9: raw_prior_sources.items
-    p0-->>p10: snapshot.path_is_effectively_selected (src/llm_wiki_cli/services…_infrastructure_sync_plan)(source_path)
-    p0->>p13: _deselection_only_state
-    p0-->>p1: deepcopy (src/llm_wiki_cli/services…_infrastructure_sync_plan)(selected_prior_tombstones)
-    p0->>p14: _source_record
-    p0-->>p15: normalized_inventory.items
-    p0-->>p16: set (src/llm_wiki_cli/services…_infrastructure_sync_plan)(prior_sources)
-    p0-->>p16: set (src/llm_wiki_cli/services…_infrastructure_sync_plan)(current_sources)
-    p0->>p17: _detect_moves
-    p0-->>p16: set (src/llm_wiki_cli/services…_infrastructure_sync_plan)(moved)
-    p0-->>p16: set (src/llm_wiki_cli/services…_infrastructure_sync_plan)(moved.values(...))
-    p0-->>p18: moved.values
-    p0->>p19: _unsupported_yaml_records
-    p0->>p20: _candidate_roots
-    p0-->>p21: tombstones.pop(source_path, None)
-    p0-->>p3: sorted (src/llm_wiki_cli/services…_infrastructure_sync_plan)(...)
+    participant p1 as build_infrastructure_page_map
+    participant p2 as _prior_infrastructure_state
+    participant p3 as _record_mapping
+    participant p4 as _deselection_only_state
+    participant p5 as _source_record
+    participant p6 as _detect_moves
+    participant p7 as _unsupported_yaml_records
+    participant p8 as _candidate_roots
+    participant p9 as _selected_prior_tombstones
+    participant p10 as _tombstone
+    participant p11 as _yaml_candidates
+    participant p12 as _discovery_status
+    participant p13 as InfrastructureSyncPlan
+    participant p14 as _source_hash
+    participant p15 as _observation_hash
+    participant p16 as load_yaml_documents
+    participant p17 as _valid_repository_path
+    participant p18 as _pruned_prior_discovery
+    participant p19 as hash_json
+    participant p20 as canonical_json_bytes
+    participant p21 as is_portable_relative_path
+    participant p22 as _check_events
+    participant p23 as _convert_node
+    participant p24 as require_portable_relative_path
+    participant p25 as _convert_mapping
+    participant p26 as _default_path_error
+    participant p27 as _check_path_collision
+    participant p28 as require_portable_path_component
+    participant p29 as deepcopy (src/llm_wiki_cli/services…_infrastructure_sync_plan)
+    participant p30 as inventory.items
+    p0->>p1: build_infrastructure_page_map
+    p0->>p2: _prior_infrastructure_state
+    p0->>p3: _record_mapping
+    p0->>p4: _deselection_only_state
+    p0->>p5: _source_record
+    p0->>p6: _detect_moves
+    p0->>p7: _unsupported_yaml_records
+    p0->>p8: _candidate_roots
+    p0->>p9: _selected_prior_tombstones
+    p0->>p10: _tombstone
+    p0->>p11: _yaml_candidates
+    p0->>p12: _discovery_status
+    p0->>p13: InfrastructureSyncPlan
+    p5->>p14: _source_hash
+    p5->>p15: _observation_hash
+    p7->>p16: load_yaml_documents
+    p3->>p17: _valid_repository_path
+    p4->>p18: _pruned_prior_discovery
+    p1->>p19: hash_json
+    p19->>p20: canonical_json_bytes
+    p17->>p21: is_portable_relative_path
+    p16->>p22: _check_events
+    p16->>p23: _convert_node
+    p21->>p24: require_portable_relative_path
+    p23->>p25: _convert_mapping
+    p24->>p26: _default_path_error
+    p24->>p27: _check_path_collision
+    p24->>p28: require_portable_path_component
+    p0-->>p29: deepcopy (src/llm_wiki_cli/services…_infrastructure_sync_plan)(dict(...))
+    p0-->>p30: inventory.items
 ```
 
-> Call sequence diagram shows 30 of 284 interactions; 254 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 334 interactions; 304 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 9 of 119 (110 omitted); unresolved 11 of 88 (77 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 140 (139 omitted); unresolved 1 of 96 (95 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/infrastructure_sync.py:build_infrastructure_sync_plan` | 1 | - | external | 28 |
 | `src/llm_wiki_cli/services/infrastructure_sync.py:build_infrastructure_page_map` | 6 | - | external | 3 |
 | `src/llm_wiki_cli/services/infrastructure_sync.py:build_infrastructure_page_map` | 6 | [src/llm_wiki_cli/services/infrastructure_inventory.py](../modules/infrastructure_inventory.md) | internal | 1 |
 | `src/llm_wiki_cli/services/infrastructure_inventory.py:infrastructure_page_name` | 8 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/infrastructure_sync.py:build_infrastructure_page_map` | 6 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/infrastructure_sync.py:build_infrastructure_page_map` | 6 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:hash_json` | 18 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 2 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:hash_json` | 18 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:sha256_bytes` | 19 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:sha256_bytes` | 19 | - | external | 1 |
-> Omission summary shows 8 of 69 groups; 61 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 76 groups; 68 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -154,36 +164,36 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_infrastructure_sync_plan | deepcopy (src/llm_wiki_cli/services…_infrastructure_sync_plan) | 628 | `deepcopy(dict(...))` |
-| build_infrastructure_sync_plan | dict (src/llm_wiki_cli/services…_infrastructure_sync_plan) | 628 | `dict(info)` |
-| build_infrastructure_sync_plan | sorted (src/llm_wiki_cli/services…_infrastructure_sync_plan) | 629 | `sorted(inventory.items(...))` |
-| build_infrastructure_sync_plan | inventory.items | 629 | `inventory.items(data not statically known)` |
-| build_infrastructure_sync_plan | build_infrastructure_page_map | 631 | `build_infrastructure_page_map(normalized_inventory)` |
+| build_infrastructure_sync_plan | deepcopy (src/llm_wiki_cli/services…_infrastructure_sync_plan) | 636 | `deepcopy(dict(...))` |
+| build_infrastructure_sync_plan | dict (src/llm_wiki_cli/services…_infrastructure_sync_plan) | 636 | `dict(info)` |
+| build_infrastructure_sync_plan | sorted (src/llm_wiki_cli/services…_infrastructure_sync_plan) | 637 | `sorted(inventory.items(...))` |
+| build_infrastructure_sync_plan | inventory.items | 637 | `inventory.items(data not statically known)` |
+| build_infrastructure_sync_plan | build_infrastructure_page_map | 639 | `build_infrastructure_page_map(normalized_inventory)` |
 | build_infrastructure_page_map | sorted (src/llm_wiki_cli/services…d_infrastructure_page_map) | 42 | `sorted(source_paths)` |
 | build_infrastructure_page_map | infrastructure_page_name | 45 | `infrastructure_page_name(source_path)` |
-| infrastructure_page_name | source_path.replace(…).replace(…).replace | 28 | `source_path.replace('\\', '/').replace('/', '_').replace('.', '_')` |
-| infrastructure_page_name | source_path.replace(…).replace | 28 | `source_path.replace('\\', '/').replace('/', '_')` |
-| infrastructure_page_name | source_path.replace | 28 | `source_path.replace('\\', '/')` |
+| infrastructure_page_name | source_path.replace(…).replace(…).replace | 31 | `source_path.replace('\\', '/').replace('/', '_').replace('.', '_')` |
+| infrastructure_page_name | source_path.replace(…).replace | 31 | `source_path.replace('\\', '/').replace('/', '_')` |
+| infrastructure_page_name | source_path.replace | 31 | `source_path.replace('\\', '/')` |
 | build_infrastructure_page_map | by_stem.setdefault(…).append | 46 | `by_stem.setdefault(stem, []).append(source_path)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `deselected_records.update` | `build_infrastructure_sync_plan` | 655 |
-| mutation | `tombstones.pop` | `build_infrastructure_sync_plan` | 697 |
+| mutation | `deselected_records.update` | `build_infrastructure_sync_plan` | 663 |
+| mutation | `tombstones.pop` | `build_infrastructure_sync_plan` | 705 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_infrastructure_sync_plan` | `deepcopy` | 628 |
-| external_call | `build_infrastructure_sync_plan` | `sorted` | 629 |
-| unresolved_call | `build_infrastructure_sync_plan` | `inventory.items` | 629 |
+| external_call | `build_infrastructure_sync_plan` | `deepcopy` | 636 |
+| external_call | `build_infrastructure_sync_plan` | `sorted` | 637 |
+| unresolved_call | `build_infrastructure_sync_plan` | `inventory.items` | 637 |
 | external_call | `build_infrastructure_page_map` | `sorted` | 42 |
-| unresolved_call | `infrastructure_page_name` | `source_path.replace('\\', '/').replace('/', '_').replace` | 28 |
-| unresolved_call | `infrastructure_page_name` | `source_path.replace('\\', '/').replace` | 28 |
-| unresolved_call | `infrastructure_page_name` | `source_path.replace` | 28 |
+| unresolved_call | `infrastructure_page_name` | `source_path.replace('\\', '/').replace('/', '_').replace` | 31 |
+| unresolved_call | `infrastructure_page_name` | `source_path.replace('\\', '/').replace` | 31 |
+| unresolved_call | `infrastructure_page_name` | `source_path.replace` | 31 |
 | unresolved_call | `build_infrastructure_page_map` | `by_stem.setdefault(stem, []).append` | 46 |
 | step_limit | `build_infrastructure_sync_plan` | `first 12 steps` | 0 |
 | truncated_flow | `build_infrastructure_sync_plan` | `depth limit` | 0 |

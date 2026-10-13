@@ -6,7 +6,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -15,79 +15,82 @@ sequenceDiagram
     participant p1 as _validate_inventory_complete
     participant p2 as normalize_entity_observation
     participant p3 as _hash_normalized_observation
-    participant p4 as require_bool
-    participant p5 as _validate_entity_coordinate
-    participant p6 as hash_json
-    participant p7 as TypeError
-    participant p8 as _normalize_entity_observation
-    participant p9 as isinstance (src/llm_wiki_cli/services…alidation.py:require_bool)
-    participant p10 as require_nonempty_text
-    participant p11 as _inventory_language
-    participant p12 as sha256_bytes
-    participant p13 as ValueError
-    participant p14 as isinstance (src/llm_wiki_cli/services…malize_entity_observation)
-    participant p15 as canonical_json_bytes
-    participant p16 as require_positive_int
-    participant p17 as _record_array
-    participant p18 as _record_name
-    participant p19 as _InventoryNormalizationError
-    participant p20 as _validate_entity_record
-    participant p21 as _structural_copy
-    participant p22 as isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)
-    participant p23 as require_nonnegative_int
-    participant p24 as isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)
-    participant p25 as _validate_module_entity_record
-    participant p26 as set
-    participant p27 as hashlib.sha256(…).hexdigest
+    participant p4 as _validate_entity_coordinate
+    participant p5 as hash_json
+    participant p6 as _normalize_entity_observation
+    participant p7 as require_nonempty_text
+    participant p8 as _inventory_language
+    participant p9 as canonical_json_bytes
+    participant p10 as require_positive_int
+    participant p11 as _record_array
+    participant p12 as _record_name
+    participant p13 as _validate_entity_record
+    participant p14 as _structural_copy
+    participant p15 as require_nonnegative_int
+    participant p16 as _validate_module_entity_record
+    participant p17 as _optional_record_array
+    participant p18 as _validate_optional_json_array
+    participant p19 as _validate_optional_mapping
+    participant p20 as _validate_optional_record_array
+    participant p21 as _validate_optional_booleans
+    participant p22 as _validate_callable_record
+    participant p23 as require_mapping_list
+    participant p24 as _validate_optional_strings
+    participant p25 as _validate_optional_string_array
+    participant p26 as require_bool
+    participant p27 as sha256_bytes
+    participant p28 as _InventoryNormalizationError
+    participant p29 as TypeError
+    participant p30 as hashlib.sha256(…).hexdigest
     p0->>p1: _validate_inventory_complete
     p0->>p2: normalize_entity_observation
     p0->>p3: _hash_normalized_observation
-    p1->>p4: require_bool
-    p2->>p5: _validate_entity_coordinate
-    p3->>p6: hash_json
-    p1-->>p7: TypeError('inventory_complete must be a boolean')
-    p2->>p8: _normalize_entity_observation
-    p4-->>p9: isinstance (src/llm_wiki_cli/services…alidation.py:require_bool)(value, bool)
-    p5->>p10: require_nonempty_text
-    p8->>p11: _inventory_language
-    p6->>p12: sha256_bytes
-    p5-->>p13: ValueError('entity_name must be a non-empty string')
-    p8-->>p14: isinstance (src/llm_wiki_cli/services…malize_entity_observation)(file_data, Mapping)
-    p6->>p15: canonical_json_bytes
-    p5->>p16: require_positive_int
-    p8->>p17: _record_array
-    p5-->>p13: ValueError('occurrence must be a positive integer')
-    p8->>p18: _record_name
-    p8->>p19: _InventoryNormalizationError
-    p8->>p20: _validate_entity_record
-    p8->>p21: _structural_copy
-    p10-->>p22: isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)(value, str)
-    p16->>p23: require_nonnegative_int
-    p11-->>p24: isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)(file_data, Mapping)
-    p17->>p19: _InventoryNormalizationError
-    p18->>p10: require_nonempty_text
-    p20->>p25: _validate_module_entity_record
-    p21-->>p26: set
-    p12-->>p27: hashlib.sha256(…).hexdigest
+    p2->>p4: _validate_entity_coordinate
+    p3->>p5: hash_json
+    p2->>p6: _normalize_entity_observation
+    p4->>p7: require_nonempty_text
+    p6->>p8: _inventory_language
+    p5->>p9: canonical_json_bytes
+    p4->>p10: require_positive_int
+    p6->>p11: _record_array
+    p6->>p12: _record_name
+    p6->>p13: _validate_entity_record
+    p6->>p14: _structural_copy
+    p10->>p15: require_nonnegative_int
+    p13->>p16: _validate_module_entity_record
+    p13->>p17: _optional_record_array
+    p13->>p18: _validate_optional_json_array
+    p13->>p19: _validate_optional_mapping
+    p13->>p20: _validate_optional_record_array
+    p13->>p21: _validate_optional_booleans
+    p13->>p22: _validate_callable_record
+    p17->>p23: require_mapping_list
+    p16->>p24: _validate_optional_strings
+    p16->>p25: _validate_optional_string_array
+    p1->>p26: require_bool
+    p5->>p27: sha256_bytes
+    p6->>p28: _InventoryNormalizationError
+    p1-->>p29: TypeError('inventory_complete must be a boolean')
+    p27-->>p30: hashlib.sha256(…).hexdigest
 ```
 
 > Call sequence diagram shows 30 of 115 interactions; 85 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 8 of 27 (19 omitted); unresolved 1 of 11 (10 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 27 (26 omitted); unresolved 1 of 11 (10 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/validation.py:require_bool` | 3 | - | external | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 8 | - | external | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 8 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 8 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:contains_control_character` | 11 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:_validate_entity_coordinate` | 7 | - | external | 2 |
 | `src/llm_wiki_cli/services/validation.py:require_nonnegative_int` | 15 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_int` | 16 | - | external | 2 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:_inventory_language` | 21 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 3 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:_inventory_language` | 21 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:_inventory_language` | 21 | - | external | 1 |
-> Omission summary shows 8 of 38 groups; 30 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 42 groups; 34 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

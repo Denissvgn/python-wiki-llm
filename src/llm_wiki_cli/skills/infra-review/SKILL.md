@@ -79,15 +79,14 @@ suggested `reports/` path never authorizes repository creation or publication.
    boundary is:
 
    - Dockerfile name patterns and Compose name/content patterns are recursive;
-   - GitHub Actions YAML is recognized only below `.github/workflows/`;
-   - Kubernetes YAML is recognized only below `k8s/`;
-   - other YAML is included only for the targeted runtime/config families
+   - GitHub workflows use `.github/workflows/`; action metadata uses `action.yml`/`action.yaml`;
+   - Kubernetes uses `k8s/` or recognizable resource content in selected YAML;
+   - other YAML is included for the named CI, deployment and runtime/config families
      documented in [reference.md](reference.md).
 
-   Kubernetes-looking files under `deploy/`, `manifests/`, `charts/`, or other
-   alternate directories are unsupported by Kubernetes page discovery unless
-   they also match another recognized family. List them as unsupported
-   discovery, not as zero findings. Also record unreadable, ignored, templated,
+   Selected resource YAML under alternate roots such as `deploy/` or `manifests/`
+   can produce Kubernetes pages. Generic or templated YAML still needs explicit
+   unsupported discovery, not zero findings. Also record unreadable, ignored, templated,
    or parser-advisory YAML explicitly.
 
 3. **Review Dockerfile and Compose artifacts.** Use pages to screen only the

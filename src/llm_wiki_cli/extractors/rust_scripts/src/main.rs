@@ -314,12 +314,12 @@ struct ExtractedImpl {
     methods: Vec<MethodInfo>,
 }
 
-fn extract_file(path: &Path, deep: bool) -> Option<(FileEntry, Vec<ExtractedImpl>)> {
+fn extract_file(path: &Path, deep: bool) -> Result<(FileEntry, Vec<ExtractedImpl>), &'static str> {
     let source = match fs::read_to_string(path) {
         Ok(s) => s,
         Err(e) => {
             eprintln!("Warning: could not read {}: {}", path.display(), e);
-            return None;
+            return Err("read-error");
         }
     };
 
@@ -327,7 +327,7 @@ fn extract_file(path: &Path, deep: bool) -> Option<(FileEntry, Vec<ExtractedImpl
         Ok(f) => f,
         Err(e) => {
             eprintln!("Warning: could not parse {}: {}", path.display(), e);
-            return None;
+            return Err("syntax-error");
         }
     };
 
@@ -581,7 +581,7 @@ fn extract_file(path: &Path, deep: bool) -> Option<(FileEntry, Vec<ExtractedImpl
         }
     }
 
-    Some((entry, impls))
+    Ok((entry, impls))
 }
 
 /// Recursively extract use paths into ImportInfo entries.
@@ -643,6 +643,8 @@ struct Args {
     src_dir: String,
     only_files: Option<Vec<String>>,
     deep: bool,
+    diagnostics: bool,
+    requested: Vec<String>,
 }
 
 fn parse_args() -> Args {
@@ -650,6 +652,8 @@ fn parse_args() -> Args {
     let mut src_dir = ".".to_string();
     let mut only_files: Option<Vec<String>> = None;
     let mut deep = false;
+    let mut diagnostics = false;
+    let mut requested = Vec::new();
     let mut i = 1;
     while i < args.len() {
         match args[i].as_str() {
@@ -671,6 +675,12 @@ fn parse_args() -> Args {
                     );
                 }
             }
+            "--diagnostics-v1" => diagnostics = true,
+            "--file-v1" => {
+                i += 1;
+                if i >= args.len() { eprintln!("--file-v1 requires a path"); std::process::exit(1); }
+                requested.push(args[i].clone());
+            }
             "--deep" => {
                 deep = true;
             }
@@ -682,6 +692,8 @@ fn parse_args() -> Args {
         src_dir,
         only_files,
         deep,
+        diagnostics,
+        requested,
     }
 }
 
@@ -691,8 +703,10 @@ fn main() {
     let args = parse_args();
     let root = Path::new(&args.src_dir);
 
+    if !args.requested.is_empty() && !args.diagnostics { eprintln!("--file-v1 requires --diagnostics-v1"); std::process::exit(1); }
+    let selected = if args.requested.is_empty() { args.only_files.as_ref() } else { Some(&args.requested) };
     // Collect files.
-    let files: Vec<PathBuf> = if let Some(ref only) = args.only_files {
+    let files: Vec<PathBuf> = if let Some(only) = selected {
         let mut out = Vec::new();
         for f in only {
             let p = if Path::new(f).is_absolute() {
@@ -704,10 +718,10 @@ fn main() {
                 Ok(r) => r,
                 Err(_) => continue,
             };
-            if has_excluded_dir(rel) {
+            if has_excluded_dir(rel) || rel.components().any(|p| matches!(p, std::path::Component::ParentDir)) {
                 continue;
             }
-            if p.exists() && p.extension().is_some_and(|e| e == "rs") {
+            if (p.exists() || args.diagnostics) && p.extension().is_some_and(|e| e == "rs") {
                 out.push(p);
             }
         }
@@ -720,20 +734,21 @@ fn main() {
     let mut inventory: BTreeMap<String, FileEntry> = BTreeMap::new();
     let mut all_impls: Vec<(String, ExtractedImpl)> = Vec::new(); // (rel_path, impl)
 
+    let mut outcomes: BTreeMap<String, serde_json::Value> = BTreeMap::new();
     for file in &files {
-        let (entry, impls) = match extract_file(file, args.deep) {
-            Some(v) => v,
-            None => continue,
-        };
         let rel = match file.strip_prefix(root) {
-            Ok(r) => r.to_string_lossy().to_string(),
-            Err(_) => file.to_string_lossy().to_string(),
+            Ok(r) => r.to_string_lossy().to_string().replace('\\', "/"),
+            Err(_) => continue,
         };
-        // Normalize path separators.
-        let rel = rel.replace('\\', "/");
-        for imp in impls {
-            all_impls.push((rel.clone(), imp));
-        }
+        let (entry, impls) = match extract_file(file, args.deep) {
+            Ok(v) => v,
+            Err(reason) => {
+                outcomes.insert(rel, serde_json::json!({"extraction_state":"failed", "reason":reason, "failure_scope":"file"}));
+                continue;
+            }
+        };
+        outcomes.insert(rel.clone(), serde_json::json!({"extraction_state":"extracted", "reason":"inventory-entry", "failure_scope":"file"}));
+        for imp in impls { all_impls.push((rel.clone(), imp)); }
         inventory.insert(rel, entry);
     }
 
@@ -795,7 +810,10 @@ fn main() {
     // Output JSON.
     let stdout = std::io::stdout();
     let mut handle = stdout.lock();
-    if let Err(e) = serde_json::to_writer_pretty(&mut handle, &inventory) {
+    let result = if args.diagnostics {
+        serde_json::to_writer_pretty(&mut handle, &serde_json::json!({"schema_version":"llm-wiki-native-diagnostics/v1", "language":"rust", "inventory":inventory, "outcomes":outcomes}))
+    } else { serde_json::to_writer_pretty(&mut handle, &inventory) };
+    if let Err(e) = result {
         eprintln!("Error encoding JSON: {}", e);
         std::process::exit(1);
     }

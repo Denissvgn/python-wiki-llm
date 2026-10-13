@@ -58,6 +58,7 @@ EXPECTED_CURRENT_SECTIONS = {
     SchemaRenderProfile.EXPANDED_INLINE: (
         ("Preamble/markers", None),
         ("Before you start", "## Before you start"),
+        ("Development workflow", "## Development workflow"),
         ("Explicit task routes", "## Explicit task routes"),
         ("Helper recovery", "## Helper recovery"),
         ("Repository delivery preflight", "## Repository delivery preflight"),
@@ -674,6 +675,7 @@ def test_correctness_destinations_are_ready_without_retiring_inline_kernel_rules
 
 def test_managed_reference_inbound_inventory_is_explicit_and_exhaustive():
     expected_topics = {
+        "development-workflow",
         "context-query",
         "extractors-dependencies",
         "governance",
@@ -747,7 +749,7 @@ def test_reference_router_markdown_link_and_real_heading_anchors_resolve():
         for item in MANAGED_REFERENCE_INBOUND_ROUTES
         if item.source_path == "skills/wiki-reference/SKILL.md"
     }
-    assert len(router_routes) == 9
+    assert len(router_routes) == 10
     for target, route in router_routes.items():
         assert target is not None
         assert any(link.target_path == target and link.anchor is None for link in links)
@@ -773,6 +775,7 @@ def test_active_routes_never_require_the_compatibility_index():
 
     expected_topics_by_profile = {
         SchemaRenderProfile.COMPACT: {
+            "development-workflow",
             "context-query",
             "extractors-dependencies",
             "governance",
@@ -784,6 +787,7 @@ def test_active_routes_never_require_the_compatibility_index():
             "surfaces-naming",
         },
         SchemaRenderProfile.EXPANDED_INLINE: {
+            "development-workflow",
             "context-query",
             "extractors-dependencies",
             "knowledge-consumption",

@@ -14,76 +14,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as projection_concept_summary
-    participant p1 as isinstance (src/llm_wiki_cli/services…rojection_concept_summary)
-    participant p2 as TypeError
-    participant p3 as _validate_projection_structure
-    participant p4 as _projection_concept_summary_unchecked
-    participant p5 as isinstance (src/llm_wiki_cli/services…date_projection_structure)
-    participant p6 as projection.concept_for_path
-    participant p7 as KnowledgeProjectionError
-    participant p8 as _mapping
-    participant p9 as concept.get
-    participant p10 as _require_sha256
-    participant p11 as _require_mapping
-    participant p12 as _validate_projection_diagnostics
-    participant p13 as _validate_projection_bundle
-    participant p14 as concepts.items
+    participant p1 as _validate_projection_structure
+    participant p2 as _projection_concept_summary_unchecked
+    participant p3 as _require_sha256
+    participant p4 as _require_mapping
+    participant p5 as _validate_projection_diagnostics
+    participant p6 as _validate_projection_bundle
+    participant p7 as _require_canonical_path
+    participant p8 as _validate_projection_concept
+    participant p9 as _validate_projection_relationships
+    participant p10 as _json_copy
+    participant p11 as require_sha256
+    participant p12 as _require_exact_fields
+    participant p13 as _require_relative_path
+    participant p14 as validate_bundle_id
     participant p15 as _shape_error
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…rojection_concept_summary)(projection, KnowledgeProjection)
-    p0-->>p2: TypeError('projection must be a KnowledgeProjection')
-    p0->>p3: _validate_projection_structure
-    p0->>p4: _projection_concept_summary_unchecked
-    p3-->>p5: isinstance (src/llm_wiki_cli/services…date_projection_structure)(projection, KnowledgeProjection)
-    p4-->>p6: projection.concept_for_path(canonical_path)
-    p3->>p7: KnowledgeProjectionError
-    p4->>p7: KnowledgeProjectionError
-    p3->>p7: KnowledgeProjectionError
-    p4->>p8: _mapping
-    p3-->>p5: isinstance (src/llm_wiki_cli/services…date_projection_structure)(projection.profile, KnowledgeProjectionProfile)
-    p4-->>p9: concept.get('identity')
-    p3->>p7: KnowledgeProjectionError
-    p4->>p8: _mapping
-    p3->>p10: _require_sha256
-    p4-->>p9: concept.get('lifecycle')
-    p3->>p11: _require_mapping
-    p4->>p8: _mapping
-    p3->>p11: _require_mapping
-    p4-->>p9: concept.get('evidence')
-    p3->>p12: _validate_projection_diagnostics
-    p4->>p8: _mapping
-    p3->>p13: _validate_projection_bundle
-    p4-->>p9: concept.get('freshness')
-    p3-->>p14: concepts.items
-    p4->>p8: _mapping
-    p3-->>p5: isinstance (src/llm_wiki_cli/services…date_projection_structure)(raw_path, str)
-    p4-->>p9: concept.get('review')
-    p3->>p15: _shape_error
-    p4->>p8: _mapping
+    participant p16 as _validate_concept_kind
+    participant p17 as _validate_projection_identity
+    participant p18 as validate_configured_public_identity
+    participant p19 as _validate_projection_lifecycle
+    participant p20 as _validate_projection_evidence
+    participant p21 as _validate_projection_freshness
+    participant p22 as _validate_projection_relationship
+    participant p23 as _require_positive_int
+    participant p24 as _require_enum
+    participant p25 as _validate_projection_review
+    participant p26 as _validate_projection_machine_check
+    participant p27 as _validate_projection_producer
+    participant p28 as _validate_safe_json_value
+    participant p29 as isinstance (src/llm_wiki_cli/services…rojection_concept_summary)
+    participant p30 as projection.concept_for_path
+    p0->>p1: _validate_projection_structure
+    p0->>p2: _projection_concept_summary_unchecked
+    p1->>p3: _require_sha256
+    p1->>p4: _require_mapping
+    p1->>p5: _validate_projection_diagnostics
+    p1->>p6: _validate_projection_bundle
+    p1->>p7: _require_canonical_path
+    p1->>p8: _validate_projection_concept
+    p1->>p9: _validate_projection_relationships
+    p2->>p10: _json_copy
+    p3->>p11: require_sha256
+    p6->>p12: _require_exact_fields
+    p7->>p13: _require_relative_path
+    p6->>p14: validate_bundle_id
+    p5->>p15: _shape_error
+    p8->>p16: _validate_concept_kind
+    p8->>p17: _validate_projection_identity
+    p6->>p18: validate_configured_public_identity
+    p8->>p19: _validate_projection_lifecycle
+    p8->>p20: _validate_projection_evidence
+    p8->>p21: _validate_projection_freshness
+    p9->>p22: _validate_projection_relationship
+    p5->>p23: _require_positive_int
+    p6->>p24: _require_enum
+    p8->>p25: _validate_projection_review
+    p8->>p26: _validate_projection_machine_check
+    p6->>p27: _validate_projection_producer
+    p6->>p28: _validate_safe_json_value
+    p0-->>p29: isinstance (src/llm_wiki_cli/services…rojection_concept_summary)(projection, KnowledgeProjection)
+    p2-->>p30: projection.concept_for_path(canonical_path)
 ```
 
 > Call sequence diagram shows 30 of 626 interactions; 596 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 5 of 161 (156 omitted); unresolved 7 of 117 (110 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 161 (160 omitted); unresolved 1 of 117 (116 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_projection.py:_require_sha256` | 10 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/knowledge_projection.py:projection_concept_summary` | 1 | - | external | 1 |
+| `src/llm_wiki_cli/services/knowledge_projection.py:_validate_projection_structure` | 4 | - | external | 6 |
+| `src/llm_wiki_cli/services/knowledge_projection.py:_validate_projection_structure` | 4 | [src/llm_wiki_cli/services/knowledge_projection.py](../modules/knowledge_projection.md) | internal | 13 |
 | `src/llm_wiki_cli/services/validation.py:require_sha256` | 11 | - | external | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_sha256` | 11 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_trimmed_text` | 13 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 14 | - | external | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 14 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 14 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_sha256` | 11 | - | unresolved | 1 |
-> Omission summary shows 8 of 127 groups; 119 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 125 groups; 117 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

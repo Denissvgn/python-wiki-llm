@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from ..extractors.common import TYPESCRIPT_FAMILY_EXTENSIONS
+
 import re
 import subprocess
 import sys
@@ -49,7 +51,7 @@ _DEPENDENCY_FILES = {
     "Gemfile",
     "Gemfile.lock",
 }
-_SOURCE_EXTS = (".py", ".ts", ".tsx", ".js", ".jsx", ".go", ".rs")
+_SOURCE_EXTS = (".py", *TYPESCRIPT_FAMILY_EXTENSIONS, ".go", ".rs")
 
 
 def _git_diff(src_dir: str = ".") -> str:

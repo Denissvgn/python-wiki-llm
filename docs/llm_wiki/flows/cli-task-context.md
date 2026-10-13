@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [task_cmd](../modules/task_cmd.md)
-**Modules touched:** [api](../modules/api.md), [change_selection](../modules/change_selection.md), [config](../modules/config.md), [context_budget](../modules/context_budget.md), and 43 more
+**Modules touched:** [api](../modules/api.md), [change_selection](../modules/change_selection.md), [config](../modules/config.md), [context_budget](../modules/context_budget.md), and 44 more
 
 **Complete modules touched:**
 
@@ -38,6 +38,7 @@
 - [search_service](../modules/search_service.md)
 - [section_ownership](../modules/section_ownership.md)
 - [services_dependencies](../modules/services_dependencies.md)
+- [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [storage_receipts](../modules/storage_receipts.md)
@@ -56,82 +57,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as run
-    participant p1 as getattr (src/llm_wiki_cli/commands/task_cmd.py:run)
-    participant p2 as _compact_outputs
-    participant p3 as ValueError (src/llm_wiki_cli/commands/task_cmd.py:run)
-    participant p4 as load_request
-    participant p5 as WorkflowPolicy
-    participant p6 as load_workflow_profile
-    participant p7 as LocalTokenizerCounter
-    participant p8 as build_compact_task_context (src/llm_wiki_cli/api.py)
-    participant p9 as build_task_context (src/llm_wiki_cli/api.py)
-    participant p10 as isinstance (src/llm_wiki_cli/commands/task_cmd.py:run)
-    participant p11 as _publish_compact_outputs
-    participant p12 as sys.stderr.write
-    participant p13 as print
-    participant p14 as json.dumps (src/llm_wiki_cli/commands/task_cmd.py:run)
-    participant p15 as result.to_payload
-    participant p16 as SystemExit
-    participant p17 as write_utf8_stdout
-    participant p18 as write_text_output
-    participant p19 as set (src/llm_wiki_cli/commands/task_cmd.py:run)
-    participant p20 as id
-    participant p21 as seen.add
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/task_cmd.py:run)(args, 'view', 'canonical')
-    p0->>p2: _compact_outputs
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/task_cmd.py:run)(args, 'view_budget_tokens', None)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/task_cmd.py:run)(args, 'canonical_output', None)
-    p0-->>p3: ValueError (src/llm_wiki_cli/commands/task_cmd.py:run)('Compact artifact options require --view compact-v1')
-    p0->>p4: load_request
-    p0->>p5: WorkflowPolicy
-    p0->>p6: load_workflow_profile
-    p0->>p7: LocalTokenizerCounter
-    p0->>p8: build_compact_task_context (src/llm_wiki_cli/api.py)
-    p0->>p9: build_task_context (src/llm_wiki_cli/api.py)
-    p0-->>p10: isinstance (src/llm_wiki_cli/commands/task_cmd.py:run)(result, api.CompactTaskContext)
-    p0-->>p10: isinstance (src/llm_wiki_cli/commands/task_cmd.py:run)(result, api.CompactTaskContext)
-    p0->>p11: _publish_compact_outputs
-    p0-->>p12: sys.stderr.write(result.diagnostic_rendered)
-    p0-->>p13: print(json.dumps(...), file=sys.stderr)
-    p0-->>p14: json.dumps (src/llm_wiki_cli/commands/task_cmd.py:run)(result.to_payload(...), sort_keys=True)
-    p0-->>p15: result.to_payload
-    p0-->>p16: SystemExit(3)
-    p0->>p11: _publish_compact_outputs
-    p0->>p17: write_utf8_stdout
-    p0->>p18: write_text_output
-    p0->>p17: write_utf8_stdout
-    p0-->>p10: isinstance (src/llm_wiki_cli/commands/task_cmd.py:run)(exc, (...))
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/task_cmd.py:run)(exc, 'details', None)
-    p0-->>p19: set (src/llm_wiki_cli/commands/task_cmd.py:run)
-    p0-->>p20: id(cause)
-    p0-->>p21: seen.add(id(...))
-    p0-->>p20: id(cause)
-    p0-->>p10: isinstance (src/llm_wiki_cli/commands/task_cmd.py:run)(cause, KnowledgeStorageError)
+    participant p1 as _compact_outputs
+    participant p2 as load_request
+    participant p3 as load_workflow_profile
+    participant p4 as build_compact_task_context (src/llm_wiki_cli/api.py)
+    participant p5 as build_task_context (src/llm_wiki_cli/api.py)
+    participant p6 as _publish_compact_outputs
+    participant p7 as write_text_output
+    participant p8 as WorkflowPolicy
+    participant p9 as LocalTokenizerCounter
+    participant p10 as write_utf8_stdout
+    participant p11 as load_profile
+    participant p12 as build_compact_task_context (src/llm_wiki_cli/services/task_compact_delivery.py)
+    participant p13 as build_task_context (src/llm_wiki_cli/services/task_context.py)
+    participant p14 as _write_utf8_text
+    participant p15 as _safe_absolute
+    participant p16 as ensure_guarded_directory
+    participant p17 as atomic_write_guarded_bytes
+    participant p18 as read_guarded
+    participant p19 as _validate_range
+    participant p20 as normalize_profile
+    participant p21 as build_task_read
+    participant p22 as _absolute_path
+    participant p23 as guard_windows_directory_chain
+    participant p24 as write_bytes_atomic
+    participant p25 as open_windows_readonly_file
+    participant p26 as _assert_windows_file_binding
+    participant p27 as _atomic_write_guarded_bytes_windows
+    participant p28 as _atomic_write_private_bytes_posix
+    participant p29 as getattr (src/llm_wiki_cli/commands/task_cmd.py:run)
+    participant p30 as result.to_payload
+    p0->>p1: _compact_outputs
+    p0->>p2: load_request
+    p0->>p3: load_workflow_profile
+    p0->>p4: build_compact_task_context (src/llm_wiki_cli/api.py)
+    p0->>p5: build_task_context (src/llm_wiki_cli/api.py)
+    p0->>p6: _publish_compact_outputs
+    p0->>p7: write_text_output
+    p0->>p8: WorkflowPolicy
+    p0->>p9: LocalTokenizerCounter
+    p0->>p10: write_utf8_stdout
+    p3->>p11: load_profile
+    p4->>p12: build_compact_task_context (src/llm_wiki_cli/services/task_compact_delivery.py)
+    p5->>p13: build_task_context (src/llm_wiki_cli/services/task_context.py)
+    p7->>p14: _write_utf8_text
+    p1->>p15: _safe_absolute
+    p6->>p16: ensure_guarded_directory
+    p6->>p17: atomic_write_guarded_bytes
+    p1->>p18: read_guarded
+    p18->>p19: _validate_range
+    p11->>p20: normalize_profile
+    p13->>p21: build_task_read
+    p18->>p22: _absolute_path
+    p18->>p23: guard_windows_directory_chain
+    p14->>p24: write_bytes_atomic
+    p18->>p25: open_windows_readonly_file
+    p18->>p26: _assert_windows_file_binding
+    p17->>p27: _atomic_write_guarded_bytes_windows
+    p17->>p28: _atomic_write_private_bytes_posix
+    p0-->>p29: getattr (src/llm_wiki_cli/commands/task_cmd.py:run)(args, 'view', 'canonical')
+    p0-->>p30: result.to_payload
 ```
 
-> Call sequence diagram shows 30 of 1423 interactions; 1393 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1424 interactions; 1394 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 16 of 595 (579 omitted); unresolved 2 of 343 (341 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 595 (594 omitted); unresolved 1 of 343 (342 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/commands/task_cmd.py:_compact_outputs` | 3 | - | external | 13 |
-| `src/llm_wiki_cli/commands/task_cmd.py:_compact_outputs` | 3 | [src/llm_wiki_cli/commands/task_cmd.py](../modules/task_cmd.md) | internal | 6 |
 | `src/llm_wiki_cli/commands/task_cmd.py:_safe_absolute` | 9 | - | unresolved | 2 |
 | `src/llm_wiki_cli/commands/task_cmd.py:_safe_absolute` | 9 | - | external | 2 |
 | `src/llm_wiki_cli/commands/task_cmd.py:_safe_absolute` | 9 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 12 | - | external | 20 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 12 | - | unresolved | 5 |
+| `src/llm_wiki_cli/commands/task_cmd.py:_compact_outputs` | 3 | [src/llm_wiki_cli/commands/task_cmd.py](../modules/task_cmd.md) | internal | 5 |
 | `src/llm_wiki_cli/commands/task_cmd.py:_compact_outputs` | 3 | - | unresolved | 12 |
-> Omission summary shows 8 of 309 groups; 301 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 303 groups; 295 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -214,7 +224,7 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | run | getattr (src/llm_wiki_cli/commands/task_cmd.py:run) | 97 | `getattr(args, 'view', 'canonical')` |
-| run | _compact_outputs | 98 | `_compact_outputs(args)` |
+| run | _compact_outputs | 99 | `_compact_outputs(args)` |
 | _compact_outputs | getattr (src/llm_wiki_cli/commands…k_cmd.py:_compact_outputs) | 38 | `getattr(args, 'canonical_output', None)` |
 | _compact_outputs | ValueError (src/llm_wiki_cli/commands…k_cmd.py:_compact_outputs) | 39 | `ValueError('Compact delivery requires --canonical-output')` |
 | _compact_outputs | getattr (src/llm_wiki_cli/commands…k_cmd.py:_compact_outputs) | 40 | `getattr(args, 'view_budget_tokens', None)` |
@@ -229,10 +239,10 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `sys.stderr.write` | `run` | 126 |
-| output | `print` | `run` | 128 |
-| mutation | `seen.add` | `run` | 147 |
-| output | `print` | `run` | 162 |
+| output | `sys.stderr.write` | `run` | 127 |
+| output | `print` | `run` | 129 |
+| mutation | `seen.add` | `run` | 148 |
+| output | `print` | `run` | 163 |
 | mutation | `paths.append` | `_compact_outputs` | 52 |
 | mutation | `result.append` | `_compact_outputs` | 71 |
 | mutation | `pending_parts.pop` | `first_unsafe_path_component` | 71 |

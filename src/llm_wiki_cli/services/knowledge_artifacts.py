@@ -48,6 +48,12 @@ from .knowledge_model import (
     Origin,
 )
 from .section_ownership import SectionOwnershipError, validate_section_ownership
+from .source_retirement import (
+    ENTITY_RETIREMENT_SCHEMA_VERSION,
+    SOURCE_RETIREMENT_EXTENSION_KEY,
+    SourceRetirementError,
+    retired_entity_mappings,
+)
 from .sync_manifest import MANIFEST_FILENAME, SyncManifest, SyncManifestError
 from .storage_spool import SpooledArtifactWrite, spool_write
 from .validation import (
@@ -287,6 +293,7 @@ def validate_knowledge_artifacts(
     wiki_dir: str | Path | None = None,
     _validation_receipt: object | None = None,
     _receipt_wiki_root: Path | None = None,
+    _storage_validation_receipt: object | None = None,
 ) -> ValidatedKnowledgeArtifacts:
     """Validate canonical projections, cross-artifact parity, and manifest basis."""
 
@@ -301,9 +308,20 @@ def validate_knowledge_artifacts(
         receipt_model = _require_validation_receipt(_validation_receipt, _receipt_wiki_root, knowledge_index_bytes)
         knowledge_payload = _model_to_payload(receipt_model)
     else:
-        if _receipt_wiki_root is not None:
+        if _receipt_wiki_root is not None and _storage_validation_receipt is None:
             raise KnowledgeArtifactError("knowledge_index_bytes.receipt", "receipt root requires a receipt")
         knowledge_payload = _decode_json_object(knowledge_index_bytes, "knowledge_index_bytes")
+    storage_receipt_model = None
+    if _storage_validation_receipt is not None:
+        from .knowledge_index import _require_validation_receipt, _ValidatedIndexReceipt
+        if (_validation_receipt is not None or _receipt_wiki_root is None
+                or not isinstance(_storage_validation_receipt, _ValidatedIndexReceipt)
+                or (wiki_dir is not None and Path(wiki_dir).resolve() != _receipt_wiki_root)
+                or knowledge_payload.get("schema_version") not in (STORE_SCHEMA, *PACKED_SCHEMAS)):
+            raise KnowledgeArtifactError("knowledge_index_bytes.receipt", "storage receipt requires its active storage writer and root")
+        storage_receipt_model = _require_validation_receipt(
+            _storage_validation_receipt, _receipt_wiki_root, _storage_validation_receipt.content,
+        )
     schema_version = knowledge_payload.get("schema_version")
     storage_objects: Mapping[str, bytes] = freeze(dict(manifest.storage_objects))
     storage_statistics: Mapping[str, Any] = freeze({})
@@ -367,7 +385,12 @@ def validate_knowledge_artifacts(
             else:
                 knowledge, expected_knowledge_bytes = _validated_index_serialization(knowledge_payload)
         else:
-            knowledge = validate_knowledge_index(knowledge_payload)
+            if storage_receipt_model is not None:
+                if logical_digest(knowledge_payload) != logical_digest(_model_to_payload(storage_receipt_model)):
+                    raise KnowledgeStorageError("knowledge", "storage differs from its validated logical model")
+                knowledge = storage_receipt_model
+            else:
+                knowledge = validate_knowledge_index(knowledge_payload)
             if logical_digest(_model_to_payload(knowledge)) != store_reader.root["logical_hash"]:
                 raise KnowledgeStorageError("knowledge", "logical records are not canonical native v1 values")
             expected_knowledge_bytes = knowledge_index_bytes
@@ -474,6 +497,11 @@ def validate_knowledge_artifacts(
         from .knowledge_index import _require_validation_receipt
         assert _receipt_wiki_root is not None
         _require_validation_receipt(_validation_receipt, _receipt_wiki_root, knowledge_index_bytes)
+    if _storage_validation_receipt is not None:
+        from .knowledge_index import _require_validation_receipt, _ValidatedIndexReceipt
+        assert _receipt_wiki_root is not None
+        assert isinstance(_storage_validation_receipt, _ValidatedIndexReceipt)
+        _require_validation_receipt(_storage_validation_receipt, _receipt_wiki_root, _storage_validation_receipt.content)
     validated = ValidatedKnowledgeArtifacts(
         surface_payload=freeze(surface_payload),
         knowledge=knowledge,
@@ -564,10 +592,15 @@ def build_knowledge_commit_plan(
         raise KnowledgeArtifactError("knowledge_index", "supply exactly one logical model or canonical byte input")
     prepared_store = None
     validation_receipt = None
+    storage_validation_receipt = None
     receipt_root = root.absolute()
     if knowledge_index is not None:
         if knowledge_format != "v1":
             try:
+                from .knowledge_index import _has_validation_operation, _validated_index_receipt
+                if _has_validation_operation(receipt_root):
+                    storage_validation_receipt = _validated_index_receipt(knowledge_index, receipt_root)
+                    knowledge_index = storage_validation_receipt.model
                 prepared_store = build_storage(_model_to_payload(knowledge_index), knowledge_format, prior=prior, objects=spool)
                 knowledge_index_bytes = prepared_store.root_bytes
             except KnowledgeStorageError as exc:
@@ -586,7 +619,8 @@ def build_knowledge_commit_plan(
         manifest=manifest,
         object_reader=(None if prepared_store is None else lambda path, _: prepared_store.objects[path]),
         _validation_receipt=validation_receipt,
-        _receipt_wiki_root=receipt_root if validation_receipt is not None else None,
+        _receipt_wiki_root=receipt_root if validation_receipt is not None or storage_validation_receipt is not None else None,
+        _storage_validation_receipt=storage_validation_receipt,
     )
     objects: tuple[PlannedArtifactWrite | SpooledArtifactWrite, ...] = ()
     knowledge_hash = validated.knowledge_index_hash
@@ -1202,6 +1236,36 @@ def _validate_manifest_knowledge_parity(
             f"manifest.{exc.field}",
             exc.message,
         ) from exc
+    try:
+        retired_mappings = retired_entity_mappings(manifest)
+    except SourceRetirementError as exc:
+        raise KnowledgeArtifactError(
+            "manifest.generation_inputs.entity_retirement",
+            str(exc),
+            code="source-retirement-invalid",
+        ) from exc
+    for concept in knowledge.concepts:
+        page_path = concept.document.canonical_path
+        owner = retired_mappings.get(page_path)
+        expected_retirement = (
+            None
+            if owner is None
+            else {
+                "schema_version": ENTITY_RETIREMENT_SCHEMA_VERSION,
+                "state": "source-member-removed",
+                "source_path": owner.source_path,
+                "entity_name": owner.entity_name,
+                "occurrence": owner.occurrence,
+            }
+        )
+        if concept.extensions.get(SOURCE_RETIREMENT_EXTENSION_KEY) != expected_retirement or (
+            owner is None and SOURCE_RETIREMENT_EXTENSION_KEY in concept.extensions
+        ):
+            raise KnowledgeArtifactError(
+                f"knowledge_index.concepts.{page_path}.extensions.{SOURCE_RETIREMENT_EXTENSION_KEY}",
+                "must match the manifest-owned source retirement binding",
+                code="source-retirement-projection-mismatch",
+            )
     from .implementation_evidence import validate_concept_implementation
 
     source_hashes = {path: row.get("hash") for path, row in manifest.sources.items()}

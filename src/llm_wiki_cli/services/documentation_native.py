@@ -217,6 +217,7 @@ def evaluate_documentation_native_freshness(
         helper_cache_dir=helper_cache_dir,
         source_selection=source_selection,
         generation_input_paths=generation_input_paths,
+        retain_empty_paths=_retained_empty_paths(manifest),
         source_snapshot=source_snapshot,
     )
     try:
@@ -362,6 +363,7 @@ def _refresh_documentation_native_projection(
         helper_cache_dir=helper_cache_dir,
         source_selection=source_selection,
         generation_input_paths=generation_input_paths,
+        retain_empty_paths=_retained_empty_paths(manifest),
         source_snapshot=source_snapshot,
     )
     page_maps = _page_maps(runtime.inventory)
@@ -467,6 +469,11 @@ def _refresh_documentation_native_projection(
     )
 
 
+def _retained_empty_paths(manifest):
+    from .source_retirement import retained_empty_module_paths
+    return retained_empty_module_paths(manifest)
+
+
 def _collect_runtime(
     *,
     source_root: str | Path,
@@ -475,6 +482,7 @@ def _collect_runtime(
     source_selection: str | Path | None,
     generation_input_paths: tuple[str, ...] = (),
     source_snapshot: SourceSnapshot | None = None,
+    retain_empty_paths: tuple[str, ...] = (),
 ) -> _DocumentationNativeRuntime:
     source = _validated_directory(source_root, "source_root")
     if not isinstance(trust_source_plugins, bool):
@@ -517,6 +525,7 @@ def _collect_runtime(
                 include_plugins=trust_source_plugins,
                 source_plugins_only=trust_source_plugins,
                 capture_implementation_observations=True,
+                retain_empty_paths=retain_empty_paths,
             )
         )
     except (OSError, TypeError, UnicodeError, ValueError) as exc:

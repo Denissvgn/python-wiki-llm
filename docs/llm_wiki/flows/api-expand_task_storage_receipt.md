@@ -14,77 +14,88 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as expand_task_storage_receipt
     participant p1 as expand_storage_receipt
-    participant p2 as isinstance (src/llm_wiki_cli/services…py:expand_storage_receipt)
-    participant p3 as ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt)
-    participant p4 as receipt.get (src/llm_wiki_cli/services…py:expand_storage_receipt)
-    participant p5 as required.update
-    participant p6 as set
-    participant p7 as len (src/llm_wiki_cli/services…py:expand_storage_receipt)
-    participant p8 as receipt.items (src/llm_wiki_cli/services…py:expand_storage_receipt)
-    participant p9 as result.update
-    participant p10 as type (src/llm_wiki_cli/services…py:expand_storage_receipt)
-    participant p11 as _decode_hash
-    participant p12 as commitment.startswith (src/llm_wiki_cli/services…py:expand_storage_receipt)
-    participant p13 as _hash (src/llm_wiki_cli/services/storage_receipts.py)
-    participant p14 as _file_path
-    participant p15 as is_portable_relative_path
-    participant p16 as result[…].append (src/llm_wiki_cli/services…py:expand_storage_receipt)
+    participant p2 as _decode_hash
+    participant p3 as is_portable_relative_path
+    participant p4 as index_page_path
+    participant p5 as canonical_bytes
+    participant p6 as compact_storage_receipt
+    participant p7 as require_portable_relative_path
+    participant p8 as _hash (src/llm_wiki_cli/services/knowledge_storage.py)
+    participant p9 as _encode_hash
+    participant p10 as _default_path_error
+    participant p11 as _fail
+    participant p12 as _check_path_collision
+    participant p13 as require_portable_path_component
+    participant p14 as _hash (src/llm_wiki_cli/services/storage_receipts.py)
+    participant p15 as _file_path
+    participant p16 as pack_path
+    participant p17 as KnowledgeStorageError
+    participant p18 as _syntax_key
+    participant p19 as _known_syntax
+    participant p20 as _remember_syntax
+    participant p21 as SharedValidationError
+    participant p22 as portable_path_key
+    participant p23 as isinstance (src/llm_wiki_cli/services…py:expand_storage_receipt)
+    participant p24 as receipt.get (src/llm_wiki_cli/services…py:expand_storage_receipt)
+    participant p25 as ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt)
+    participant p26 as required.update
+    participant p27 as set
     p0->>p1: expand_storage_receipt
-    p1-->>p2: isinstance (src/llm_wiki_cli/services…py:expand_storage_receipt)(receipt, Mapping)
-    p1-->>p3: ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt)('storage receipt must be an object')
-    p1-->>p4: receipt.get (src/llm_wiki_cli/services…py:expand_storage_receipt)('schema_version')
-    p1-->>p4: receipt.get (src/llm_wiki_cli/services…py:expand_storage_receipt)('layout')
-    p1-->>p3: ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt)('expansion requires a compact version-3 receipt')
-    p1-->>p4: receipt.get (src/llm_wiki_cli/services…py:expand_storage_receipt)('storage_format')
-    p1-->>p5: required.update({...})
-    p1-->>p6: set(receipt)
-    p1-->>p3: ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt)('invalid compact receipt fields')
-    p1-->>p2: isinstance (src/llm_wiki_cli/services…py:expand_storage_receipt)(files, list)
-    p1-->>p7: len (src/llm_wiki_cli/services…py:expand_storage_receipt)(files)
-    p1-->>p3: ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt)('invalid compact receipt file table')
-    p1-->>p8: receipt.items (src/llm_wiki_cli/services…py:expand_storage_receipt)
-    p1-->>p9: result.update(layout='expanded-v1', inputs=[...])
-    p1-->>p2: isinstance (src/llm_wiki_cli/services…py:expand_storage_receipt)(row, list)
-    p1-->>p7: len (src/llm_wiki_cli/services…py:expand_storage_receipt)(row)
-    p1-->>p10: type (src/llm_wiki_cli/services…py:expand_storage_receipt)(row[...])
-    p1-->>p7: len (src/llm_wiki_cli/services…py:expand_storage_receipt)(row)
-    p1-->>p10: type (src/llm_wiki_cli/services…py:expand_storage_receipt)(...)
-    p1-->>p3: ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt)('invalid compact receipt file row')
-    p1->>p11: _decode_hash
-    p1-->>p2: isinstance (src/llm_wiki_cli/services…py:expand_storage_receipt)(commitment, str)
-    p1-->>p12: commitment.startswith (src/llm_wiki_cli/services…py:expand_storage_receipt)('sha256:')
-    p1-->>p3: ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt)('invalid compact root binding')
-    p1->>p13: _hash (src/llm_wiki_cli/services/storage_receipts.py)
-    p1->>p14: _file_path
-    p1->>p15: is_portable_relative_path
-    p1-->>p3: ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt)('invalid compact receipt path')
-    p1-->>p16: result[…].append (src/llm_wiki_cli/services…py:expand_storage_receipt)({...})
+    p1->>p2: _decode_hash
+    p1->>p3: is_portable_relative_path
+    p1->>p4: index_page_path
+    p1->>p5: canonical_bytes
+    p1->>p6: compact_storage_receipt
+    p3->>p7: require_portable_relative_path
+    p4->>p8: _hash (src/llm_wiki_cli/services/knowledge_storage.py)
+    p2->>p9: _encode_hash
+    p7->>p10: _default_path_error
+    p8->>p11: _fail
+    p7->>p12: _check_path_collision
+    p7->>p13: require_portable_path_component
+    p1->>p14: _hash (src/llm_wiki_cli/services/storage_receipts.py)
+    p1->>p15: _file_path
+    p1->>p16: pack_path
+    p5->>p17: KnowledgeStorageError
+    p7->>p18: _syntax_key
+    p7->>p19: _known_syntax
+    p7->>p20: _remember_syntax
+    p10->>p21: SharedValidationError
+    p12->>p22: portable_path_key
+    p1-->>p23: isinstance (src/llm_wiki_cli/services…py:expand_storage_receipt)(receipt, Mapping)
+    p1-->>p24: receipt.get (src/llm_wiki_cli/services…py:expand_storage_receipt)('schema_version')
+    p1-->>p25: ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt)('storage receipt must be an object')
+    p1-->>p24: receipt.get (src/llm_wiki_cli/services…py:expand_storage_receipt)('layout')
+    p1-->>p25: ValueError (src/llm_wiki_cli/services…py:expand_storage_receipt)('expansion requires a compact version-3 receipt')
+    p1-->>p24: receipt.get (src/llm_wiki_cli/services…py:expand_storage_receipt)('storage_format')
+    p1-->>p26: required.update({...})
+    p1-->>p27: set(receipt)
 ```
 
 > Call sequence diagram shows 30 of 165 interactions; 135 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 17 of 73 (56 omitted); unresolved 8 of 44 (36 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 4 of 73 (69 omitted); unresolved 4 of 44 (40 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/storage_receipts.py:expand_storage_receipt` | 2 | - | external | 32 |
+| `src/llm_wiki_cli/services/storage_receipts.py:expand_storage_receipt` | 2 | - | unresolved | 6 |
 | `src/llm_wiki_cli/services/storage_receipts.py:_decode_hash` | 23 | - | external | 5 |
 | `src/llm_wiki_cli/services/storage_receipts.py:_decode_hash` | 23 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/storage_receipts.py:_decode_hash` | 23 | [src/llm_wiki_cli/services/storage_receipts.py](../modules/storage_receipts.md) | internal | 1 |
 | `src/llm_wiki_cli/services/storage_receipts.py:_encode_hash` | 29 | - | external | 4 |
 | `src/llm_wiki_cli/services/storage_receipts.py:_encode_hash` | 29 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/storage_receipts.py:_encode_hash` | 29 | [src/llm_wiki_cli/services/storage_receipts.py](../modules/storage_receipts.md) | internal | 1 |
 | `src/llm_wiki_cli/services/storage_receipts.py:_hash` | 33 | - | external | 2 |
-| `src/llm_wiki_cli/services/storage_receipts.py:_hash` | 33 | - | unresolved | 1 |
-> Omission summary shows 8 of 41 groups; 33 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 34 groups; 26 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow

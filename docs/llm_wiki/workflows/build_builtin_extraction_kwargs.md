@@ -19,4 +19,4 @@
 
 ## Behavior
 
-This workflow starts at `extraction_service._build_builtin_extraction_kwargs`. The generated sequence is a bounded static projection; runtime ordering, branching, and side effects require source-level confirmation.
+Builds the language-specific request from the selected source snapshot and current inventory controls. Native Go, Rust and Haskell request objects receive `capture_path_outcomes` as their opt-in diagnostics flag; Python and JavaScript/TypeScript receive their own diagnostic arguments. Exact source-file selection and helper-cache binding pass through unchanged. Diagnostic extraction requires fresh parser outcomes rather than assuming plain inventory-cache membership is parse qualification.

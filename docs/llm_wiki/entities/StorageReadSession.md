@@ -34,18 +34,18 @@ Retains request-owned observations of complete files and pack ranges. It counts 
 ```mermaid
 flowchart LR
     n0["StorageReadSession (src/llm_wiki_cli/services/knowledge_storage_io.py)"]
-    n1["validate_knowledge_artifacts (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n2["preflight (src/llm_wiki_cli/services/knowledge_maintenance.py)"]
-    n3["capture_knowledge_slice (src/llm_wiki_cli/services/knowledge_storage_access.py)"]
-    n4["_committed_inputs (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
-    n5["_recover_knowledge_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
-    n6["restore_pruned_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
-    n7["capture_discovery (src/llm_wiki_cli/services/search_discovery_capture.py)"]
-    n8["search_prevalidated_roots (src/llm_wiki_cli/services/search_service.py)"]
-    n9["capture_source_index (src/llm_wiki_cli/services/search_source.py)"]
-    n10["captured_manifest (src/llm_wiki_cli/services/search_source.py)"]
-    n11["SyncManifest.load (src/llm_wiki_cli/services/sync_manifest.py)"]
-    n12["PageTransitionExecution.__init__ (src/llm_wiki_cli/services/sync_transition_execution.py)"]
+    n1["_plan_source_page_transitions (src/llm_wiki_cli/commands/sync_cmd.py)"]
+    n2["validate_knowledge_artifacts (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n3["preflight (src/llm_wiki_cli/services/knowledge_maintenance.py)"]
+    n4["capture_knowledge_slice (src/llm_wiki_cli/services/knowledge_storage_access.py)"]
+    n5["_committed_inputs (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
+    n6["_recover_knowledge_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
+    n7["restore_pruned_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
+    n8["capture_discovery (src/llm_wiki_cli/services/search_discovery_capture.py)"]
+    n9["search_prevalidated_roots (src/llm_wiki_cli/services/search_service.py)"]
+    n10["capture_source_index (src/llm_wiki_cli/services/search_source.py)"]
+    n11["captured_manifest (src/llm_wiki_cli/services/search_source.py)"]
+    n12["plan_generated_source_repairs (src/llm_wiki_cli/services/sync_generated_sections.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -59,18 +59,18 @@ flowchart LR
     n11 --> n0
     n12 --> n0
     click n0 "../modules/knowledge_storage_io.md"
-    click n1 "../modules/knowledge_artifacts.md"
-    click n2 "../modules/knowledge_maintenance.md"
-    click n3 "../modules/knowledge_storage_access.md"
-    click n4 "../modules/knowledge_storage_lifecycle.md"
+    click n1 "../modules/sync_cmd.md"
+    click n2 "../modules/knowledge_artifacts.md"
+    click n3 "../modules/knowledge_maintenance.md"
+    click n4 "../modules/knowledge_storage_access.md"
     click n5 "../modules/knowledge_storage_lifecycle.md"
     click n6 "../modules/knowledge_storage_lifecycle.md"
-    click n7 "../modules/search_discovery_capture.md"
-    click n8 "../modules/search_service.md"
-    click n9 "../modules/search_source.md"
+    click n7 "../modules/knowledge_storage_lifecycle.md"
+    click n8 "../modules/search_discovery_capture.md"
+    click n9 "../modules/search_service.md"
     click n10 "../modules/search_source.md"
-    click n11 "../modules/sync_manifest.md"
-    click n12 "../modules/sync_transition_execution.md"
+    click n11 "../modules/search_source.md"
+    click n12 "../modules/sync_generated_sections.md"
 ```
 
 ### Summary
@@ -83,6 +83,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `_plan_source_page_transitions` | call | [sync_cmd](../modules/sync_cmd.md) | 1 |
 | `validate_knowledge_artifacts` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 2 |
 | `preflight` | call | [knowledge_maintenance](../modules/knowledge_maintenance.md) | 1 |
 | `capture_knowledge_slice` | call | [knowledge_storage_access](../modules/knowledge_storage_access.md) | 1 |
@@ -93,7 +94,6 @@ flowchart LR
 | `search_prevalidated_roots` | call | [search_service](../modules/search_service.md) | 2 |
 | `capture_source_index` | type_reference | [search_source](../modules/search_source.md) | — |
 | `captured_manifest` | type_reference | [search_source](../modules/search_source.md) | — |
-| `SyncManifest.load` | call | [sync_manifest](../modules/sync_manifest.md) | 1 |
-| `PageTransitionExecution.__init__` | call | [sync_transition_execution](../modules/sync_transition_execution.md) | 1 |
+| `plan_generated_source_repairs` | call | [sync_generated_sections](../modules/sync_generated_sections.md) | 1 |
 
-> References: showing 12 of 15 logical references; 3 omitted by the 12-row generated summary limit.
+> References: showing 12 of 17 logical references; 5 omitted by the 12-row generated summary limit.

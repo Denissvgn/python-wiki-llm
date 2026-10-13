@@ -524,6 +524,132 @@
     },
     {
       "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_batch_failure_is_not_reported_as_file_parse_failure",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_bounds_and_cli_mcp_match_api",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_cached_module_edits_are_reextracted[cjs]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_cached_module_edits_are_reextracted[mjs]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_chunk_failure_preserves_success_and_unattempted_paths",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_discovery_keeps_bundle_and_worktree_out_of_inventory",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_dynamic_and_shadowed_require_are_explicit_without_invented_edges",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_exact_esm_side_effect_and_commonjs_dependencies",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_invalid_policy_and_symlinks_fail_before_extraction",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_local_require_bindings_never_claim_module_edges[const require = () => null;]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_local_require_bindings_never_claim_module_edges[const { value: require } = object;]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_local_require_bindings_never_claim_module_edges[if (false) { var require; }]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_local_require_bindings_never_claim_module_edges[require = replacement;]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_local_require_bindings_never_claim_module_edges[try {} catch (require) { require('./helper.mjs'); }]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_missing_helper_and_batch_failure_are_attributable",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_module_edits_invalidate_captured_source[cjs]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_module_edits_invalidate_captured_source[mjs]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_module_extensions_match_broad_and_targeted_inventory",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_path_outcomes_are_distinct_and_present_keeps_inventory_meaning",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_profile_exclusion_is_not_a_missing_file",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_query_aborts_when_source_changes_during_diagnostic_read",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
       "node_id": "tests/test_lint.py::TestLintDependencyCoverage::test_typescript_src_lib_alias_resolves_under_root_lib_ignore",
       "owner_lane": "toolchains",
       "reason": "Node.js/ts-morph dependencies not installed"
@@ -542,6 +668,114 @@
     },
     {
       "lane": "core-macos-3.14",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_full_snapshot_selected_retry_never_reports_unrequested_paths[go]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared go helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_full_snapshot_selected_retry_never_reports_unrequested_paths[haskell]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared haskell helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_full_snapshot_selected_retry_never_reports_unrequested_paths[rust]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared rust helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_missing_cached_qualification_rebuilds_selected_native_paths[go]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared go helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_missing_cached_qualification_rebuilds_selected_native_paths[haskell]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared haskell helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_missing_cached_qualification_rebuilds_selected_native_paths[rust]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared rust helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_partial_syntax_failure_blocks_retirement_and_cache_authority[go]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared go helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_partial_syntax_failure_blocks_retirement_and_cache_authority[haskell]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared haskell helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_partial_syntax_failure_blocks_retirement_and_cache_authority[rust]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared rust helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_public_impact_api_cli_mcp_preserve_native_failure_scope[go]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared go helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_public_impact_api_cli_mcp_preserve_native_failure_scope[haskell]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared haskell helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_public_impact_api_cli_mcp_preserve_native_failure_scope[rust]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared rust helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_real_read_errors_are_file_scoped_not_empty_or_batch[go]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared go helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_real_read_errors_are_file_scoped_not_empty_or_batch[haskell]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared haskell helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_real_read_errors_are_file_scoped_not_empty_or_batch[rust]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared rust helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_real_selected_success_empty_and_syntax_are_distinct[go]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared go helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_real_selected_success_empty_and_syntax_are_distinct[haskell]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared haskell helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_real_selected_success_empty_and_syntax_are_distinct[rust]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared rust helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-macos-3.14",
       "node_id": "tests/test_protected_artifacts.py::test_native_windows_reopen_rejects_hard_linked_artifact",
       "owner_lane": "security-windows-2025",
       "reason": "native Windows protected-tree checks"
@@ -557,6 +791,66 @@
       "node_id": "tests/test_protected_artifacts.py::test_native_windows_reopens_store_with_lock_and_artifact",
       "owner_lane": "security-windows-2025",
       "reason": "native Windows protected-tree checks"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_qualified_empty_modules.py::test_real_go_rust_empty_records_and_unqualified_failure[.go-package pilot\\n-package\\n]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared go helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_qualified_empty_modules.py::test_real_go_rust_empty_records_and_unqualified_failure[.rs-// valid empty\\n-pub struct {\\n]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared rust helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_qualified_empty_modules.py::test_real_typescript_family_empty_and_partial_syntax_are_distinct[.cjs]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared typescript helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_qualified_empty_modules.py::test_real_typescript_family_empty_and_partial_syntax_are_distinct[.js]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared typescript helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_qualified_empty_modules.py::test_real_typescript_family_empty_and_partial_syntax_are_distinct[.mjs]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared typescript helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_qualified_empty_modules.py::test_real_typescript_family_empty_and_partial_syntax_are_distinct[.ts]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared typescript helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_qualified_empty_modules.py::test_typescript_empty_owning_transition_and_strict_live_reader[.cjs]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared typescript helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_qualified_empty_modules.py::test_typescript_empty_owning_transition_and_strict_live_reader[.js]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared typescript helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_qualified_empty_modules.py::test_typescript_empty_owning_transition_and_strict_live_reader[.mjs]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared typescript helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_qualified_empty_modules.py::test_typescript_empty_owning_transition_and_strict_live_reader[.ts]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared typescript helper required; owned by toolchains"
     },
     {
       "lane": "core-macos-3.14",
@@ -719,6 +1013,12 @@
       "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_type_alias",
       "owner_lane": "toolchains",
       "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_task_compact_readable.py::test_actual_mcp_v2_metadata_toggle_keeps_qualifications_and_receipts",
+      "owner_lane": "mcp-3.13",
+      "reason": "MCP SDK is not installed."
     },
     {
       "lane": "core-macos-3.14",
@@ -1556,6 +1856,132 @@
     },
     {
       "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_batch_failure_is_not_reported_as_file_parse_failure",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_bounds_and_cli_mcp_match_api",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_cached_module_edits_are_reextracted[cjs]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_cached_module_edits_are_reextracted[mjs]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_chunk_failure_preserves_success_and_unattempted_paths",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_discovery_keeps_bundle_and_worktree_out_of_inventory",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_dynamic_and_shadowed_require_are_explicit_without_invented_edges",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_exact_esm_side_effect_and_commonjs_dependencies",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_invalid_policy_and_symlinks_fail_before_extraction",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_local_require_bindings_never_claim_module_edges[const require = () => null;]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_local_require_bindings_never_claim_module_edges[const { value: require } = object;]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_local_require_bindings_never_claim_module_edges[if (false) { var require; }]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_local_require_bindings_never_claim_module_edges[require = replacement;]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_local_require_bindings_never_claim_module_edges[try {} catch (require) { require('./helper.mjs'); }]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_missing_helper_and_batch_failure_are_attributable",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_module_edits_invalidate_captured_source[cjs]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_module_edits_invalidate_captured_source[mjs]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_module_extensions_match_broad_and_targeted_inventory",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_path_outcomes_are_distinct_and_present_keeps_inventory_meaning",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_profile_exclusion_is_not_a_missing_file",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_query_aborts_when_source_changes_during_diagnostic_read",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
       "node_id": "tests/test_lint.py::TestLintDependencyCoverage::test_typescript_src_lib_alias_resolves_under_root_lib_ignore",
       "owner_lane": "toolchains",
       "reason": "Node.js/ts-morph dependencies not installed"
@@ -1571,6 +1997,114 @@
       "node_id": "tests/test_migrate.py::TestMigrateIntegration::test_typescript_absolute_page_names_migrate_to_relative_names",
       "owner_lane": "toolchains",
       "reason": "Node.js/ts-morph dependencies not available"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_full_snapshot_selected_retry_never_reports_unrequested_paths[go]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared go helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_full_snapshot_selected_retry_never_reports_unrequested_paths[haskell]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared haskell helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_full_snapshot_selected_retry_never_reports_unrequested_paths[rust]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared rust helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_missing_cached_qualification_rebuilds_selected_native_paths[go]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared go helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_missing_cached_qualification_rebuilds_selected_native_paths[haskell]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared haskell helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_missing_cached_qualification_rebuilds_selected_native_paths[rust]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared rust helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_partial_syntax_failure_blocks_retirement_and_cache_authority[go]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared go helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_partial_syntax_failure_blocks_retirement_and_cache_authority[haskell]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared haskell helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_partial_syntax_failure_blocks_retirement_and_cache_authority[rust]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared rust helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_public_impact_api_cli_mcp_preserve_native_failure_scope[go]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared go helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_public_impact_api_cli_mcp_preserve_native_failure_scope[haskell]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared haskell helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_public_impact_api_cli_mcp_preserve_native_failure_scope[rust]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared rust helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_real_read_errors_are_file_scoped_not_empty_or_batch[go]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared go helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_real_read_errors_are_file_scoped_not_empty_or_batch[haskell]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared haskell helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_real_read_errors_are_file_scoped_not_empty_or_batch[rust]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared rust helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_real_selected_success_empty_and_syntax_are_distinct[go]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared go helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_real_selected_success_empty_and_syntax_are_distinct[haskell]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared haskell helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_real_selected_success_empty_and_syntax_are_distinct[rust]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared rust helper required; owned by toolchains"
     },
     {
       "lane": "core-ubuntu-3.10",
@@ -1643,6 +2177,66 @@
       "node_id": "tests/test_python_constructor_bindings.py::test_review_type_alias_capability_validation_keeps_cold_warm_parity[type Alias = int]",
       "owner_lane": "core-macos-3.14",
       "reason": "Parser lacks type alias statements"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_qualified_empty_modules.py::test_real_go_rust_empty_records_and_unqualified_failure[.go-package pilot\\n-package\\n]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared go helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_qualified_empty_modules.py::test_real_go_rust_empty_records_and_unqualified_failure[.rs-// valid empty\\n-pub struct {\\n]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared rust helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_qualified_empty_modules.py::test_real_typescript_family_empty_and_partial_syntax_are_distinct[.cjs]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared typescript helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_qualified_empty_modules.py::test_real_typescript_family_empty_and_partial_syntax_are_distinct[.js]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared typescript helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_qualified_empty_modules.py::test_real_typescript_family_empty_and_partial_syntax_are_distinct[.mjs]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared typescript helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_qualified_empty_modules.py::test_real_typescript_family_empty_and_partial_syntax_are_distinct[.ts]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared typescript helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_qualified_empty_modules.py::test_typescript_empty_owning_transition_and_strict_live_reader[.cjs]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared typescript helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_qualified_empty_modules.py::test_typescript_empty_owning_transition_and_strict_live_reader[.js]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared typescript helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_qualified_empty_modules.py::test_typescript_empty_owning_transition_and_strict_live_reader[.mjs]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared typescript helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_qualified_empty_modules.py::test_typescript_empty_owning_transition_and_strict_live_reader[.ts]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared typescript helper required; owned by toolchains"
     },
     {
       "lane": "core-ubuntu-3.10",
@@ -1805,6 +2399,12 @@
       "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_type_alias",
       "owner_lane": "toolchains",
       "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_task_compact_readable.py::test_actual_mcp_v2_metadata_toggle_keeps_qualifications_and_receipts",
+      "owner_lane": "mcp-3.10",
+      "reason": "MCP SDK is not installed."
     },
     {
       "lane": "core-ubuntu-3.10",
@@ -2984,6 +3584,132 @@
     },
     {
       "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_batch_failure_is_not_reported_as_file_parse_failure",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_bounds_and_cli_mcp_match_api",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_cached_module_edits_are_reextracted[cjs]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_cached_module_edits_are_reextracted[mjs]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_chunk_failure_preserves_success_and_unattempted_paths",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_discovery_keeps_bundle_and_worktree_out_of_inventory",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_dynamic_and_shadowed_require_are_explicit_without_invented_edges",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_exact_esm_side_effect_and_commonjs_dependencies",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_invalid_policy_and_symlinks_fail_before_extraction",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_local_require_bindings_never_claim_module_edges[const require = () => null;]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_local_require_bindings_never_claim_module_edges[const { value: require } = object;]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_local_require_bindings_never_claim_module_edges[if (false) { var require; }]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_local_require_bindings_never_claim_module_edges[require = replacement;]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_local_require_bindings_never_claim_module_edges[try {} catch (require) { require('./helper.mjs'); }]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_missing_helper_and_batch_failure_are_attributable",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_module_edits_invalidate_captured_source[cjs]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_module_edits_invalidate_captured_source[mjs]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_module_extensions_match_broad_and_targeted_inventory",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_path_outcomes_are_distinct_and_present_keeps_inventory_meaning",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_profile_exclusion_is_not_a_missing_file",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_query_aborts_when_source_changes_during_diagnostic_read",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
       "node_id": "tests/test_knowledge_packs.py::test_ranges_never_follow_untrusted_links[hard]",
       "owner_lane": "core-ubuntu-3.10",
       "reason": "POSIX link setup; native Windows guard lane owns its equivalent"
@@ -3017,6 +3743,114 @@
       "node_id": "tests/test_migrate.py::TestMigrateIntegration::test_typescript_absolute_page_names_migrate_to_relative_names",
       "owner_lane": "toolchains",
       "reason": "Node.js/ts-morph dependencies not available"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_full_snapshot_selected_retry_never_reports_unrequested_paths[go]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared go helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_full_snapshot_selected_retry_never_reports_unrequested_paths[haskell]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared haskell helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_full_snapshot_selected_retry_never_reports_unrequested_paths[rust]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared rust helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_missing_cached_qualification_rebuilds_selected_native_paths[go]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared go helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_missing_cached_qualification_rebuilds_selected_native_paths[haskell]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared haskell helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_missing_cached_qualification_rebuilds_selected_native_paths[rust]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared rust helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_partial_syntax_failure_blocks_retirement_and_cache_authority[go]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared go helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_partial_syntax_failure_blocks_retirement_and_cache_authority[haskell]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared haskell helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_partial_syntax_failure_blocks_retirement_and_cache_authority[rust]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared rust helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_public_impact_api_cli_mcp_preserve_native_failure_scope[go]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared go helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_public_impact_api_cli_mcp_preserve_native_failure_scope[haskell]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared haskell helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_public_impact_api_cli_mcp_preserve_native_failure_scope[rust]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared rust helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_real_read_errors_are_file_scoped_not_empty_or_batch[go]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared go helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_real_read_errors_are_file_scoped_not_empty_or_batch[haskell]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared haskell helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_real_read_errors_are_file_scoped_not_empty_or_batch[rust]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared rust helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_real_selected_success_empty_and_syntax_are_distinct[go]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared go helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_real_selected_success_empty_and_syntax_are_distinct[haskell]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared haskell helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_native_helper_path_diagnostics.py::test_real_selected_success_empty_and_syntax_are_distinct[rust]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared rust helper required; owned by toolchains"
     },
     {
       "lane": "core-windows-3.13",
@@ -3089,6 +3923,66 @@
       "node_id": "tests/test_provisioning_failures.py::test_init_revalidates_schema_after_reference_provision[fifo]",
       "owner_lane": "core-ubuntu-3.10",
       "reason": "FIFOs are unavailable on this platform"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_qualified_empty_modules.py::test_real_go_rust_empty_records_and_unqualified_failure[.go-package pilot\\n-package\\n]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared go helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_qualified_empty_modules.py::test_real_go_rust_empty_records_and_unqualified_failure[.rs-// valid empty\\n-pub struct {\\n]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared rust helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_qualified_empty_modules.py::test_real_typescript_family_empty_and_partial_syntax_are_distinct[.cjs]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared typescript helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_qualified_empty_modules.py::test_real_typescript_family_empty_and_partial_syntax_are_distinct[.js]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared typescript helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_qualified_empty_modules.py::test_real_typescript_family_empty_and_partial_syntax_are_distinct[.mjs]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared typescript helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_qualified_empty_modules.py::test_real_typescript_family_empty_and_partial_syntax_are_distinct[.ts]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared typescript helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_qualified_empty_modules.py::test_typescript_empty_owning_transition_and_strict_live_reader[.cjs]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared typescript helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_qualified_empty_modules.py::test_typescript_empty_owning_transition_and_strict_live_reader[.js]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared typescript helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_qualified_empty_modules.py::test_typescript_empty_owning_transition_and_strict_live_reader[.mjs]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared typescript helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_qualified_empty_modules.py::test_typescript_empty_owning_transition_and_strict_live_reader[.ts]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared typescript helper required; owned by toolchains"
     },
     {
       "lane": "core-windows-3.13",
@@ -3263,6 +4157,12 @@
       "node_id": "tests/test_status.py::TestStatusHooks::test_exact_managed_hook_without_execute_bit_still_needs_cleanup",
       "owner_lane": "core-ubuntu-3.10",
       "reason": "Windows does not expose a POSIX hook execute-bit contract"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_task_compact_readable.py::test_actual_mcp_v2_metadata_toggle_keeps_qualifications_and_receipts",
+      "owner_lane": "mcp-3.13",
+      "reason": "MCP SDK is not installed."
     },
     {
       "lane": "core-windows-3.13",

@@ -1,6 +1,6 @@
 # TaskCompactError
 
-**Location:** `src/llm_wiki_cli/services/task_compact.py:75`
+**Location:** `src/llm_wiki_cli/services/task_compact.py:78`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [task_compact](../modules/task_compact.md)

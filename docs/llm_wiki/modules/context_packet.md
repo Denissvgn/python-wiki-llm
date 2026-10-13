@@ -20,6 +20,11 @@ This module is deliberately provider- and persistence-free.  It returns bytes
 in memory, never refreshes native artifacts, and keeps structural validation
 separate from live reconciliation.
 
+Live inventory collection carries the configured manifest's retained empty
+source paths into the parser request. This preserves current module observations
+without discovering every unowned empty file. Parsing failures and unavailable
+coverage retain their explicit states rather than being presented as emptiness.
+
 ## Imports
 
 | Source | Symbols |
@@ -50,6 +55,7 @@ separate from live reconciliation.
 | `.maintenance_status` | `attach_maintenance_status`, `compact_maintenance_summary`, `validate_maintenance_summary`, `validate_maintenance_summary` |
 | `.packet_field_policy` | `PUBLIC_URI_FIELDS`, `STRUCTURAL_PATH_FIELDS`, `STRING_CLASSES`, `UnclassifiedPacketField`, `classify_string`, `validate_field_coverage` |
 | `.plugins` | `runtime_plugin_fallback_root` |
+| `.source_retirement` | `retained_empty_module_paths_from_wiki` |
 | `.source_snapshot` | `directory_identity`, `SourceSnapshot`, `SourceSnapshotError`, `SourceSnapshotMutationError`, `build_source_snapshot`, `capture_source_selection_inputs`, `source_snapshot_inputs_match_current_files`, `source_snapshot_matches_current_files`, `confirmed_missing_source_paths` |
 | `.validation` | `require_repository_relative_path` |
 | `.wiki_media` | `contains_uri_authority_userinfo` |
@@ -91,9 +97,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (13) |
-| Outbound | `src` (31) |
+| Outbound | `src` (32) |
 
-> All 42 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 43 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

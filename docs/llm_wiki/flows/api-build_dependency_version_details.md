@@ -6,84 +6,85 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as build_dependency_version_details
-    participant p1 as Path(…).resolve
-    participant p2 as Path (src/llm_wiki_cli/services…ependency_version_details)
-    participant p3 as _snapshot_sources
-    participant p4 as _walk_sources
-    participant p5 as path.name.startswith
-    participant p6 as path.name.endswith
-    participant p7 as _local_project_identities
-    participant p8 as len (src/llm_wiki_cli/services…ependency_version_details)
-    participant p9 as evaluate
-    participant p10 as set (src/llm_wiki_cli/services…ependency_version_details)
-    participant p11 as reasons.add
-    participant p12 as diagnostics.append
-    participant p13 as _source_path
-    participant p14 as _deduplicate
-    participant p15 as limitations.append
-    participant p16 as any
-    participant p17 as sorted (src/llm_wiki_cli/services…ependency_version_details)
-    participant p18 as set (src/llm_wiki_cli/services…ions.py:_snapshot_sources)
-    participant p19 as os.walk
-    participant p20 as set (src/llm_wiki_cli/services…_local_project_identities)
-    participant p21 as tuple (src/llm_wiki_cli/services…_versions.py:_deduplicate)
-    participant p22 as marker.abs_path.relative_to
-    participant p23 as Path (src/llm_wiki_cli/services…versions.py:_walk_sources)
-    p0-->>p1: Path(…).resolve
-    p0-->>p2: Path (src/llm_wiki_cli/services…ependency_version_details)(project_root)
-    p0->>p3: _snapshot_sources
-    p0->>p4: _walk_sources
-    p0-->>p5: path.name.startswith('requirements')
-    p0-->>p6: path.name.endswith('.txt')
-    p0->>p7: _local_project_identities
-    p0->>p7: _local_project_identities
-    p0-->>p8: len (src/llm_wiki_cli/services…ependency_version_details)(records)
-    p0-->>p9: evaluate(path, omission_reasons)
-    p0-->>p10: set (src/llm_wiki_cli/services…ependency_version_details)(omission_reasons)
-    p0-->>p8: len (src/llm_wiki_cli/services…ependency_version_details)(omission_reasons)
-    p0-->>p11: reasons.add('unsupported-or-malformed-records')
-    p0-->>p12: diagnostics.append({...})
-    p0->>p13: _source_path
-    p0-->>p8: len (src/llm_wiki_cli/services…ependency_version_details)(records)
-    p0->>p14: _deduplicate
-    p0-->>p15: limitations.append('malformed-or-unsupported-version-records')
-    p0-->>p16: any(...)
-    p0-->>p16: any(...)
-    p0-->>p15: limitations.append('unknown-selection-without-lock-evidence')
-    p0-->>p8: len (src/llm_wiki_cli/services…ependency_version_details)(normalized)
-    p0-->>p17: sorted (src/llm_wiki_cli/services…ependency_version_details)(limitations)
-    p0-->>p17: sorted (src/llm_wiki_cli/services…ependency_version_details)(diagnostics, key=...)
-    p3-->>p18: set (src/llm_wiki_cli/services…ions.py:_snapshot_sources)
-    p4-->>p19: os.walk(root)
-    p7-->>p20: set (src/llm_wiki_cli/services…_local_project_identities)
-    p14-->>p21: tuple (src/llm_wiki_cli/services…_versions.py:_deduplicate)(...)
-    p3-->>p22: marker.abs_path.relative_to(root)
-    p4-->>p23: Path (src/llm_wiki_cli/services…versions.py:_walk_sources)(current)
+    participant p1 as _snapshot_sources
+    participant p2 as _walk_sources
+    participant p3 as _local_project_identities
+    participant p4 as _source_path
+    participant p5 as _deduplicate
+    participant p6 as is_agent_worktree_path
+    participant p7 as _load_toml
+    participant p8 as _dependency_source_names
+    participant p9 as _scope
+    participant p10 as _normal_python
+    participant p11 as _normal_rust
+    participant p12 as _normalized_rel_parts
+    participant p13 as Path (src/llm_wiki_cli/services…ependency_version_details)
+    participant p14 as Path(…).resolve
+    participant p15 as path.name.startswith
+    participant p16 as path.name.endswith
+    participant p17 as len (src/llm_wiki_cli/services…ependency_version_details)
+    participant p18 as evaluate
+    participant p19 as set (src/llm_wiki_cli/services…ependency_version_details)
+    participant p20 as reasons.add
+    participant p21 as diagnostics.append
+    participant p22 as limitations.append
+    participant p23 as any
+    participant p24 as sorted (src/llm_wiki_cli/services…ependency_version_details)
+    p0->>p1: _snapshot_sources
+    p0->>p2: _walk_sources
+    p0->>p3: _local_project_identities
+    p0->>p4: _source_path
+    p0->>p5: _deduplicate
+    p2->>p6: is_agent_worktree_path
+    p3->>p7: _load_toml
+    p1->>p8: _dependency_source_names
+    p3->>p9: _scope
+    p3->>p10: _normal_python
+    p3->>p11: _normal_rust
+    p6->>p12: _normalized_rel_parts
+    p0-->>p13: Path (src/llm_wiki_cli/services…ependency_version_details)(project_root)
+    p0-->>p14: Path(…).resolve
+    p0-->>p15: path.name.startswith('requirements')
+    p0-->>p16: path.name.endswith('.txt')
+    p0-->>p17: len (src/llm_wiki_cli/services…ependency_version_details)(records)
+    p0-->>p18: evaluate(path, omission_reasons)
+    p0-->>p19: set (src/llm_wiki_cli/services…ependency_version_details)(omission_reasons)
+    p0-->>p17: len (src/llm_wiki_cli/services…ependency_version_details)(omission_reasons)
+    p0-->>p20: reasons.add('unsupported-or-malformed-records')
+    p0-->>p21: diagnostics.append({...})
+    p0-->>p17: len (src/llm_wiki_cli/services…ependency_version_details)(records)
+    p0-->>p22: limitations.append('malformed-or-unsupported-version-records')
+    p0-->>p23: any(...)
+    p0-->>p23: any(...)
+    p0-->>p22: limitations.append('unknown-selection-without-lock-evidence')
+    p0-->>p17: len (src/llm_wiki_cli/services…ependency_version_details)(normalized)
+    p0-->>p24: sorted (src/llm_wiki_cli/services…ependency_version_details)(limitations)
+    p0-->>p24: sorted (src/llm_wiki_cli/services…ependency_version_details)(diagnostics, key=...)
 ```
 
 > Call sequence diagram shows 30 of 119 interactions; 89 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 15 of 42 (27 omitted); unresolved 9 of 58 (49 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 10 of 42 (32 omitted); unresolved 8 of 58 (50 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/dependency_versions.py:_snapshot_sources` | 4 | [src/llm_wiki_cli/services/dependency_versions.py](../modules/dependency_versions.md) | internal | 3 |
+| `src/llm_wiki_cli/services/dependency_versions.py:_snapshot_sources` | 4 | - | external | 4 |
+| `src/llm_wiki_cli/services/dependency_versions.py:_snapshot_sources` | 4 | - | unresolved | 9 |
 | `src/llm_wiki_cli/services/dependency_versions.py:_dependency_source_names` | 7 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/dependency_versions.py:_snapshot_sources` | 4 | - | unresolved | 8 |
-| `src/llm_wiki_cli/services/dependency_versions.py:_snapshot_sources` | 4 | - | external | 3 |
+| `src/llm_wiki_cli/services/dependency_versions.py:_snapshot_sources` | 4 | [src/llm_wiki_cli/services/dependency_versions.py](../modules/dependency_versions.md) | internal | 2 |
 | `src/llm_wiki_cli/services/dependency_versions.py:_source_path` | 12 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/dependency_versions.py:_walk_sources` | 25 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 1 |
-| `src/llm_wiki_cli/config.py:is_agent_worktree_path` | 28 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 1 |
+| `src/llm_wiki_cli/services/dependency_versions.py:_walk_sources` | 25 | - | external | 3 |
 | `src/llm_wiki_cli/config.py:_normalized_rel_parts` | 29 | - | external | 3 |
-> Omission summary shows 8 of 24 groups; 16 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/config.py:_normalized_rel_parts` | 29 | - | unresolved | 4 |
+> Omission summary shows 8 of 23 groups; 15 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow

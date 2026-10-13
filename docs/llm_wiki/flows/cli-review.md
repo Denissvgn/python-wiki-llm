@@ -47,76 +47,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as run
-    participant p1 as getattr (src/llm_wiki_cli/commands/review_cmd.py:run)
-    participant p2 as bool (src/llm_wiki_cli/commands/review_cmd.py:run)
-    participant p3 as validate_source_root
-    participant p4 as str (src/llm_wiki_cli/commands/review_cmd.py:run)
-    participant p5 as validate_path
-    participant p6 as _preflight_review_source_selection
-    participant p7 as Path (src/llm_wiki_cli/commands/review_cmd.py:run)
-    participant p8 as _read_patch
-    participant p9 as build_impact
+    participant p1 as validate_source_root
+    participant p2 as _preflight_review_source_selection
+    participant p3 as _read_patch
+    participant p4 as build_impact
+    participant p5 as write_text_output
+    participant p6 as render_summary
+    participant p7 as render_github
+    participant p8 as build_findings
+    participant p9 as validate_path
     participant p10 as changes_from_args
-    participant p11 as write_text_output
-    participant p12 as render_summary
-    participant p13 as json.dumps (src/llm_wiki_cli/commands/review_cmd.py:run)
-    participant p14 as print (src/llm_wiki_cli/commands/review_cmd.py:run)
-    participant p15 as render_github
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/review_cmd.py:run)(args, 'src_dir', '.')
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/review_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/review_cmd.py:run)(args, 'format', 'markdown')
-    p0-->>p2: bool (src/llm_wiki_cli/commands/review_cmd.py:run)(getattr(...))
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/review_cmd.py:run)(args, 'allow_external_src', False)
-    p0->>p3: validate_source_root
-    p0-->>p4: str (src/llm_wiki_cli/commands/review_cmd.py:run)(source_root)
-    p0->>p5: validate_path
-    p0->>p6: _preflight_review_source_selection
-    p0-->>p7: Path (src/llm_wiki_cli/commands/review_cmd.py:run)(wiki_dir)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/review_cmd.py:run)(args, 'source_selection', None)
-    p0->>p8: _read_patch
-    p0->>p9: build_impact
+    participant p11 as render_json
+    participant p12 as render_markdown
+    participant p13 as resolve_source_selection
+    participant p14 as source_relative_paths
+    participant p15 as SyncManifest.load
+    participant p16 as patch_paths
+    participant p17 as build_analysis
+    participant p18 as _write_utf8_text
+    participant p19 as build_dependency_graph
+    participant p20 as build_static_api_contracts
+    participant p21 as capture_source_selection_inputs
+    participant p22 as validate_persisted_source_selection_identity
+    participant p23 as build_source_snapshot
+    participant p24 as windows_current_user_sid
+    participant p25 as source_snapshot_matches_current_files
+    participant p26 as source_selection_identity_from_generation_inputs
+    participant p27 as _validate_capture_options
+    participant p28 as _current_windows_user_sid
+    participant p29 as getattr (src/llm_wiki_cli/commands/review_cmd.py:run)
+    participant p30 as Path(…).expanduser (src/llm_wiki_cli/services/io.py:write_text_output)
+    p0->>p1: validate_source_root
+    p0->>p2: _preflight_review_source_selection
+    p0->>p3: _read_patch
+    p0->>p4: build_impact
+    p0->>p5: write_text_output
+    p0->>p6: render_summary
+    p0->>p7: render_github
+    p0->>p8: build_findings
+    p0->>p9: validate_path
     p0->>p10: changes_from_args
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/review_cmd.py:run)(args, 'helper_cache_dir', None)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/review_cmd.py:run)(args, 'source_selection', None)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/review_cmd.py:run)(args, 'summary_output', None)
-    p0->>p11: write_text_output
-    p0->>p12: render_summary
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/review_cmd.py:run)(args, 'impact_output', None)
-    p0->>p11: write_text_output
-    p0-->>p13: json.dumps (src/llm_wiki_cli/commands/review_cmd.py:run)(impact, indent=2, sort_keys=True)
-    p0-->>p14: print (src/llm_wiki_cli/commands/review_cmd.py:run)(json.dumps(...))
-    p0-->>p13: json.dumps (src/llm_wiki_cli/commands/review_cmd.py:run)(impact, indent=2, sort_keys=True)
-    p0-->>p14: print (src/llm_wiki_cli/commands/review_cmd.py:run)(render_github(...), end='')
-    p0->>p15: render_github
-    p0-->>p14: print (src/llm_wiki_cli/commands/review_cmd.py:run)(render_summary(...), end='')
-    p0->>p12: render_summary
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/review_cmd.py:run)(args, 'summary_output', None)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/review_cmd.py:run)(args, 'impact_output', None)
+    p0->>p11: render_json
+    p0->>p12: render_markdown
+    p2->>p13: resolve_source_selection
+    p4->>p14: source_relative_paths
+    p2->>p15: SyncManifest.load
+    p4->>p16: patch_paths
+    p4->>p17: build_analysis
+    p5->>p18: _write_utf8_text
+    p4->>p19: build_dependency_graph
+    p4->>p20: build_static_api_contracts
+    p2->>p21: capture_source_selection_inputs
+    p2->>p22: validate_persisted_source_selection_identity
+    p2->>p23: build_source_snapshot
+    p1->>p24: windows_current_user_sid
+    p4->>p25: source_snapshot_matches_current_files
+    p22->>p26: source_selection_identity_from_generation_inputs
+    p23->>p27: _validate_capture_options
+    p24->>p28: _current_windows_user_sid
+    p0-->>p29: getattr (src/llm_wiki_cli/commands/review_cmd.py:run)(args, 'src_dir', '.')
+    p5-->>p30: Path(…).expanduser (src/llm_wiki_cli/services/io.py:write_text_output)
 ```
 
-> Call sequence diagram shows 30 of 2129 interactions; 2099 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2133 interactions; 2103 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 19 of 697 (678 omitted); unresolved 0 of 707 (707 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 698 (697 omitted); unresolved 1 of 708 (707 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/commands/review_cmd.py:run` | 1 | - | external | 22 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 7 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
 | `src/llm_wiki_cli/config.py:validate_path` | 8 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
 | `src/llm_wiki_cli/config.py:validate_path` | 8 | - | unresolved | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 8 | - | external | 2 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 7 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 7 | - | external | 11 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 7 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 26 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 2 |
-> Omission summary shows 8 of 572 groups; 564 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 26 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
+> Omission summary shows 8 of 563 groups; 555 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

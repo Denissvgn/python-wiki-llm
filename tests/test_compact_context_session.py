@@ -16,6 +16,16 @@ from tests.developer_value.fixtures import POLICY_SOURCE
 from tests.test_task_compact_receiving import tiny_request, view_options
 
 
+@pytest.fixture(autouse=True, params=["v1", "v2"])
+def view_version(request, monkeypatch):
+    if request.param == "v2":
+        monkeypatch.setattr(__import__(__name__, fromlist=["view_options"]), "view_options",
+                            lambda budget=32000: {
+                                "schema_version": "llm-wiki-task-view-request/v2",
+                                "budget_tokens": budget,
+                            })
+
+
 @pytest.fixture
 def project(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)

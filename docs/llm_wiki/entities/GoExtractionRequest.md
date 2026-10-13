@@ -11,6 +11,8 @@
 
 Internal request object for Go extraction orchestration.
 
+The optional `diagnostics` flag selects attributable per-file outcomes for the exact source-file request. It leaves the ordinary inventory protocol unchanged. Prepared helper selection remains explicit; analysis does not prepare missing toolchains.
+
 ## Attributes
 
 | Name | Type | Default | Description |
@@ -22,6 +24,7 @@ Internal request object for Go extraction orchestration.
 | `helper_cache_dir` | `str \| None` | `None` | — |
 | `include_tests` | `Iterable[str] \| None` | `None` | — |
 | `defer_receiver_attachment` | `bool` | `False` | — |
+| `diagnostics` | `bool` | `False` | — |
 
 ## Methods
 
@@ -63,7 +66,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [go_extractor](../modules/go_extractor.md) | 1 | `deep`, `defer_receiver_attachment`, `helper_cache_dir`, `include_tests`, `only_files`, `source_files`, `src_dir` |
+| [go_extractor](../modules/go_extractor.md) | 1 | `deep`, `defer_receiver_attachment`, `diagnostics`, `helper_cache_dir`, `include_tests`, `only_files`, `source_files`, `src_dir` |
 
 ### References
 

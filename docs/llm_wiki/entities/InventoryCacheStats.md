@@ -46,12 +46,14 @@ flowchart LR
     n4["format_cache_stats (src/llm_wiki_cli/services/inventory_cache.py)"]
     n5["InventoryCache.__init__ (src/llm_wiki_cli/services/inventory_cache.py)"]
     n6["src/llm_wiki_cli/services/lint_service.py"]
+    n7["inventory_result (src/llm_wiki_cli/services/sync_analysis_cache.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
     n6 --> n0
+    n7 --> n0
     click n0 "../modules/inventory_cache.md"
     click n1 "../modules/ci_check_cmd.md"
     click n2 "../modules/sync_cmd.md"
@@ -59,6 +61,7 @@ flowchart LR
     click n4 "../modules/inventory_cache.md"
     click n5 "../modules/inventory_cache.md"
     click n6 "../modules/lint_service.md"
+    click n7 "../modules/sync_analysis_cache.md"
 ```
 
 ### Summary
@@ -77,3 +80,4 @@ flowchart LR
 | `format_cache_stats` | type_reference | [inventory_cache](../modules/inventory_cache.md) | — |
 | `InventoryCache.__init__` | call | [inventory_cache](../modules/inventory_cache.md) | 1 |
 | `lint_service` | import | [lint_service](../modules/lint_service.md) | — |
+| `inventory_result` | call | [sync_analysis_cache](../modules/sync_analysis_cache.md) | 1 |

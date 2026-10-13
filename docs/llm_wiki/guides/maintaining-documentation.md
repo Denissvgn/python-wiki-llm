@@ -41,7 +41,13 @@ llm-wiki knowledge storage-check --wiki-dir docs/llm_wiki --full
 
 Run heavy gates serially. Run the configured team gate only when team policy
 exists. `ci-check` normally writes a report; this example explicitly chooses
-console output with `--no-report`. Review warnings as well as blocking errors.
+console output with `--no-report`. Report schema v4 works for flat and migrated
+native wikis and retains native comparison details plus separate check/command
+exit status. Flat storage can already contain native comparison metadata; its
+layout does not make v2/v3 compatible. Keep the selected comparison policy rather
+than changing it merely to render an older report. A required report destination
+keeps its own write authority and failure handling. Review warnings as well as
+blocking errors.
 If a repair edits Markdown, re-anchor with the same sync before validating again.
 A failed or unfinished gate leaves maintenance incomplete. Repository rules
 still determine whether the wiki may be committed or published.

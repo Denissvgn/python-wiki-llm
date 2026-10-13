@@ -239,9 +239,10 @@ def test_discovery_fixtures_distinguish_supported_alternate_and_empty_roots(tmp_
     ]
     assert sorted(yaml_inventory) == [
         ".github/workflows/ci.yml",
+        "deploy/alternate.yaml",
         "k8s/deployment.yaml",
     ]
-    assert "deploy/alternate.yaml" not in yaml_inventory
+    assert yaml_inventory["deploy/alternate.yaml"]["type"] == "kubernetes"
     assert "alternate roots such as `deploy/`" in _skill_text()
 
     empty = tmp_path / "empty"

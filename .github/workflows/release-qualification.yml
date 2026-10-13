@@ -1417,6 +1417,7 @@ jobs:
           tests/test_workflow_interfaces.py::test_real_sdk_preserves_single_counted_representation -q
           tests/test_compact_delivery_interfaces.py::test_actual_mcp_sdk_content_carries_view_then_receipt_as_separate_transport
           tests/test_developer_value_combined_interfaces.py::test_actual_sdk_combined_callers_compact_and_stale_custody
+          tests/test_task_compact_readable.py::test_actual_mcp_v2_metadata_toggle_keeps_qualifications_and_receipts
           -p no:cacheprovider --strict-config --strict-markers
           -W error
           -o xfail_strict=true
@@ -1427,8 +1428,8 @@ jobs:
           --junit "evidence/mcp-${{ matrix.python }}.xml"
           --lane "mcp-${{ matrix.python }}"
           --allowlist candidate/release/skip-allowlist.json
-          --minimum-collected 6
-          --minimum-passed 6
+          --minimum-collected 7
+          --minimum-passed 7
           --output "evidence/result-mcp-${{ matrix.python }}.json"
       - name: Upload gate evidence
         if: always()
@@ -1616,6 +1617,7 @@ jobs:
       - name: Run toolchain owner suites
         env:
           LLM_WIKI_CACHE_DIR: ${{ runner.temp }}/extractor-cache
+          LLM_WIKI_REQUIRE_NATIVE_DIAGNOSTICS: "1"
         working-directory: candidate
         run: >-
           python -m pytest -q
@@ -1630,6 +1632,9 @@ jobs:
           tests/test_lint.py
           tests/test_documentation_dogfood.py
           tests/test_verified_bug_migrations.py::test_javascript_health_refresh_and_first_sync_converge
+          tests/test_native_helper_path_diagnostics.py
+          tests/test_qualified_empty_modules.py
+          tests/test_javascript_module_coverage.py
           -p no:cacheprovider --strict-config --strict-markers
           -W error -o xfail_strict=true --durations=20
           --junitxml=../evidence/toolchains.xml
@@ -1649,8 +1654,8 @@ jobs:
           --junit evidence/toolchains.xml
           --lane toolchains
           --allowlist candidate/release/skip-allowlist.json
-          --minimum-collected 489
-          --minimum-passed 489
+          --minimum-collected 597
+          --minimum-passed 597
           --output evidence/result-toolchains.json
       - name: Verify independent provider parser controls
         working-directory: candidate

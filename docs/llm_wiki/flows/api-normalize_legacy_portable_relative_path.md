@@ -6,84 +6,89 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as normalize_legacy_portable_relative_path
-    participant p1 as isinstance (src/llm_wiki_cli/services…acy_portable_relative_path)
-    participant p2 as value.strip
-    participant p3 as value.strip().replace
-    participant p4 as PurePosixPath (src/llm_wiki_cli/services…acy_portable_relative_path)
-    participant p5 as normalized_input.startswith
-    participant p6 as path.is_absolute (src/llm_wiki_cli/services…acy_portable_relative_path)
-    participant p7 as _WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_cli/services…acy_portable_relative_path)
-    participant p8 as _WINDOWS_DRIVE_PREFIX_RE.match
-    participant p9 as path.as_posix (src/llm_wiki_cli/services…acy_portable_relative_path)
-    participant p10 as require_portable_relative_path
-    participant p11 as isinstance (src/llm_wiki_cli/services…ire_portable_relative_path)
-    participant p12 as _default_path_error
-    participant p13 as os.fspath
-    participant p14 as _syntax_key
-    participant p15 as _known_syntax
-    participant p16 as _check_path_collision
-    participant p17 as raw.encode
-    participant p18 as raw.replace
-    participant p19 as PurePosixPath (src/llm_wiki_cli/services…ire_portable_relative_path)
-    participant p20 as path.is_absolute (src/llm_wiki_cli/services…ire_portable_relative_path)
-    participant p21 as _WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_cli/services…ire_portable_relative_path)
-    participant p22 as path.as_posix (src/llm_wiki_cli/services…ire_portable_relative_path)
-    participant p23 as normalized.strip
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…acy_portable_relative_path)(value, str)
-    p0-->>p2: value.strip
-    p0-->>p3: value.strip().replace('\\', '/')
-    p0-->>p2: value.strip
-    p0-->>p4: PurePosixPath (src/llm_wiki_cli/services…acy_portable_relative_path)(normalized_input)
-    p0-->>p5: normalized_input.startswith('.//')
-    p0-->>p6: path.is_absolute (src/llm_wiki_cli/services…acy_portable_relative_path)
-    p0-->>p7: _WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_cli/services…acy_portable_relative_path)(normalized_input)
-    p0-->>p8: _WINDOWS_DRIVE_PREFIX_RE.match(normalized_input)
-    p0-->>p9: path.as_posix (src/llm_wiki_cli/services…acy_portable_relative_path)
-    p0->>p10: require_portable_relative_path
-    p10-->>p11: isinstance (src/llm_wiki_cli/services…ire_portable_relative_path)(value, (...))
-    p10->>p12: _default_path_error
-    p10-->>p13: os.fspath(value)
-    p10-->>p11: isinstance (src/llm_wiki_cli/services…ire_portable_relative_path)(raw, str)
-    p10->>p12: _default_path_error
-    p10->>p14: _syntax_key
-    p10->>p15: _known_syntax
-    p10->>p16: _check_path_collision
-    p10-->>p17: raw.encode('utf-8')
-    p10->>p12: _default_path_error
-    p10->>p12: _default_path_error
-    p10-->>p18: raw.replace('\\', '/')
-    p10-->>p19: PurePosixPath (src/llm_wiki_cli/services…ire_portable_relative_path)(normalized)
-    p10-->>p20: path.is_absolute (src/llm_wiki_cli/services…ire_portable_relative_path)
-    p10-->>p21: _WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_cli/services…ire_portable_relative_path)(raw)
-    p10->>p12: _default_path_error
-    p10->>p12: _default_path_error
-    p10-->>p22: path.as_posix (src/llm_wiki_cli/services…ire_portable_relative_path)
-    p10-->>p23: normalized.strip
+    participant p1 as require_portable_relative_path
+    participant p2 as _default_path_error
+    participant p3 as _check_path_collision
+    participant p4 as require_portable_path_component
+    participant p5 as _syntax_key
+    participant p6 as _known_syntax
+    participant p7 as _remember_syntax
+    participant p8 as SharedValidationError
+    participant p9 as portable_path_key
+    participant p10 as isinstance (src/llm_wiki_cli/services…acy_portable_relative_path)
+    participant p11 as value.strip
+    participant p12 as value.strip().replace
+    participant p13 as PurePosixPath (src/llm_wiki_cli/services…acy_portable_relative_path)
+    participant p14 as normalized_input.startswith
+    participant p15 as path.is_absolute (src/llm_wiki_cli/services…acy_portable_relative_path)
+    participant p16 as _WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_cli/services…acy_portable_relative_path)
+    participant p17 as _WINDOWS_DRIVE_PREFIX_RE.match
+    participant p18 as path.as_posix (src/llm_wiki_cli/services…acy_portable_relative_path)
+    participant p19 as isinstance (src/llm_wiki_cli/services…ire_portable_relative_path)
+    participant p20 as os.fspath
+    participant p21 as raw.encode
+    participant p22 as raw.replace
+    participant p23 as PurePosixPath (src/llm_wiki_cli/services…ire_portable_relative_path)
+    participant p24 as path.is_absolute (src/llm_wiki_cli/services…ire_portable_relative_path)
+    participant p25 as _WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_cli/services…ire_portable_relative_path)
+    participant p26 as path.as_posix (src/llm_wiki_cli/services…ire_portable_relative_path)
+    participant p27 as normalized.strip
+    participant p28 as canonical.casefold().endswith
+    p0->>p1: require_portable_relative_path
+    p1->>p2: _default_path_error
+    p1->>p3: _check_path_collision
+    p1->>p4: require_portable_path_component
+    p1->>p5: _syntax_key
+    p1->>p6: _known_syntax
+    p1->>p7: _remember_syntax
+    p2->>p8: SharedValidationError
+    p3->>p9: portable_path_key
+    p0-->>p10: isinstance (src/llm_wiki_cli/services…acy_portable_relative_path)(value, str)
+    p0-->>p11: value.strip
+    p0-->>p12: value.strip().replace('\\', '/')
+    p0-->>p11: value.strip
+    p0-->>p13: PurePosixPath (src/llm_wiki_cli/services…acy_portable_relative_path)(normalized_input)
+    p0-->>p14: normalized_input.startswith('.//')
+    p0-->>p15: path.is_absolute (src/llm_wiki_cli/services…acy_portable_relative_path)
+    p0-->>p16: _WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_cli/services…acy_portable_relative_path)(normalized_input)
+    p0-->>p17: _WINDOWS_DRIVE_PREFIX_RE.match(normalized_input)
+    p0-->>p18: path.as_posix (src/llm_wiki_cli/services…acy_portable_relative_path)
+    p1-->>p19: isinstance (src/llm_wiki_cli/services…ire_portable_relative_path)(value, (...))
+    p1-->>p20: os.fspath(value)
+    p1-->>p19: isinstance (src/llm_wiki_cli/services…ire_portable_relative_path)(raw, str)
+    p1-->>p21: raw.encode('utf-8')
+    p1-->>p22: raw.replace('\\', '/')
+    p1-->>p23: PurePosixPath (src/llm_wiki_cli/services…ire_portable_relative_path)(normalized)
+    p1-->>p24: path.is_absolute (src/llm_wiki_cli/services…ire_portable_relative_path)
+    p1-->>p25: _WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_cli/services…ire_portable_relative_path)(raw)
+    p1-->>p26: path.as_posix (src/llm_wiki_cli/services…ire_portable_relative_path)
+    p1-->>p27: normalized.strip
+    p1-->>p28: canonical.casefold().endswith(required_suffix.casefold(...))
 ```
 
 > Call sequence diagram shows 30 of 69 interactions; 39 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 6 of 19 (13 omitted); unresolved 14 of 28 (14 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 6 of 19 (13 omitted); unresolved 15 of 28 (13 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/validation.py:_default_path_error` | 14 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 12 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 7 |
 | `src/llm_wiki_cli/services/validation.py:_syntax_key` | 19 | - | external | 6 |
 | `src/llm_wiki_cli/services/validation.py:_known_syntax` | 26 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/validation.py:_check_path_collision` | 29 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 2 |
 | `src/llm_wiki_cli/services/validation.py:portable_path_key` | 30 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/validation.py:portable_path_key` | 30 | - | external | 1 |
 | `src/llm_wiki_cli/services/validation.py:_check_path_collision` | 29 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 12 | - | unresolved | 3 |
-> Omission summary shows 8 of 14 groups; 6 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/validation.py:_check_path_collision` | 29 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 12 | - | unresolved | 2 |
+> Omission summary shows 8 of 13 groups; 5 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow

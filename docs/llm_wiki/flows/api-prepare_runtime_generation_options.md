@@ -6,7 +6,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -73,13 +73,13 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| prepare_runtime_generation_options | isinstance | 339 | `isinstance(inventory_complete, bool)` |
-| prepare_runtime_generation_options | TypeError | 340 | `TypeError('inventory_complete must be a boolean')` |
-| prepare_runtime_generation_options | dict | 341 | `dict(generation_options)` |
-| prepare_runtime_generation_options | dict | 343 | `dict(generation_option_defaults)` |
-| prepare_runtime_generation_options | tuple | 345 | `tuple(dict.fromkeys(...))` |
-| prepare_runtime_generation_options | dict.fromkeys | 346 | `dict.fromkeys((...))` |
-| prepare_runtime_generation_options | PreparedRuntimeGenerationOptions | 348 | `PreparedRuntimeGenerationOptions(values=values, defaults=defaults, allowlist=allowlist)` |
+| prepare_runtime_generation_options | isinstance | 343 | `isinstance(inventory_complete, bool)` |
+| prepare_runtime_generation_options | TypeError | 344 | `TypeError('inventory_complete must be a boolean')` |
+| prepare_runtime_generation_options | dict | 345 | `dict(generation_options)` |
+| prepare_runtime_generation_options | dict | 347 | `dict(generation_option_defaults)` |
+| prepare_runtime_generation_options | tuple | 349 | `tuple(dict.fromkeys(...))` |
+| prepare_runtime_generation_options | dict.fromkeys | 350 | `dict.fromkeys((...))` |
+| prepare_runtime_generation_options | PreparedRuntimeGenerationOptions | 352 | `PreparedRuntimeGenerationOptions(values=values, defaults=defaults, allowlist=allowlist)` |
 
 ### Boundary effects
 
@@ -89,9 +89,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `prepare_runtime_generation_options` | `isinstance` | 339 |
-| external_call | `prepare_runtime_generation_options` | `TypeError` | 340 |
-| external_call | `prepare_runtime_generation_options` | `dict.fromkeys` | 346 |
+| external_call | `prepare_runtime_generation_options` | `isinstance` | 343 |
+| external_call | `prepare_runtime_generation_options` | `TypeError` | 344 |
+| external_call | `prepare_runtime_generation_options` | `dict.fromkeys` | 350 |
 
 ## Behavior
 

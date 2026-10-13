@@ -6,84 +6,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as allocate_concept
-    participant p1 as isinstance (src/llm_wiki_cli/services…ntity.py:allocate_concept)
-    participant p2 as TypeError (src/llm_wiki_cli/services…ntity.py:allocate_concept)
-    participant p3 as validate_bundle_id
-    participant p4 as validate_identity_registry
-    participant p5 as set (src/llm_wiki_cli/services…ntity.py:allocate_concept)
-    participant p6 as identity_coordinate_key
-    participant p7 as candidates.add
-    participant p8 as len (src/llm_wiki_cli/services…ntity.py:allocate_concept)
-    participant p9 as IdentityCollision
-    participant p10 as tuple (src/llm_wiki_cli/services…ntity.py:allocate_concept)
-    participant p11 as sorted (src/llm_wiki_cli/services…ntity.py:allocate_concept)
-    participant p12 as IdentityCollisionError
-    participant p13 as next
-    participant p14 as iter
-    participant p15 as ConceptIdentityError
-    participant p16 as derive_concept_uid
-    participant p17 as ConceptAllocation
-    participant p18 as _machine_text
-    participant p19 as _typed_tuple
-    participant p20 as _BUNDLE_ID_RE.fullmatch
-    participant p21 as validate_concept_kind
-    participant p22 as text.casefold
-    participant p23 as find_identity_collisions
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…ntity.py:allocate_concept)(reference, ConceptReference)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…ntity.py:allocate_concept)('reference must be a ConceptReference')
-    p0->>p3: validate_bundle_id
-    p0->>p4: validate_identity_registry
-    p0-->>p5: set (src/llm_wiki_cli/services…ntity.py:allocate_concept)
-    p0->>p6: identity_coordinate_key
-    p0->>p6: identity_coordinate_key
-    p0-->>p7: candidates.add(allocation.uid)
-    p0->>p6: identity_coordinate_key
-    p0-->>p7: candidates.add(alias.uid)
-    p0-->>p8: len (src/llm_wiki_cli/services…ntity.py:allocate_concept)(candidates)
-    p0->>p9: IdentityCollision
-    p0-->>p10: tuple (src/llm_wiki_cli/services…ntity.py:allocate_concept)(sorted(...))
-    p0-->>p11: sorted (src/llm_wiki_cli/services…ntity.py:allocate_concept)(candidates)
-    p0->>p12: IdentityCollisionError
-    p0-->>p13: next(iter(...))
-    p0-->>p14: iter(candidates)
-    p0->>p15: ConceptIdentityError
-    p0->>p16: derive_concept_uid
-    p0->>p12: IdentityCollisionError
-    p0->>p9: IdentityCollision
-    p0->>p17: ConceptAllocation
-    p3->>p18: _machine_text
-    p4->>p19: _typed_tuple
-    p16->>p3: validate_bundle_id
-    p3-->>p20: _BUNDLE_ID_RE.fullmatch(text)
-    p4->>p19: _typed_tuple
-    p16->>p21: validate_concept_kind
-    p3-->>p22: text.casefold
-    p4->>p23: find_identity_collisions
+    participant p1 as validate_bundle_id
+    participant p2 as validate_identity_registry
+    participant p3 as derive_concept_uid
+    participant p4 as identity_coordinate_key
+    participant p5 as IdentityCollision
+    participant p6 as IdentityCollisionError
+    participant p7 as ConceptIdentityError
+    participant p8 as ConceptAllocation
+    participant p9 as _machine_text
+    participant p10 as validate_concept_kind
+    participant p11 as find_identity_collisions
+    participant p12 as validate_alias_type
+    participant p13 as validate_alias_value
+    participant p14 as canonical_path
+    participant p15 as mcp_uri
+    participant p16 as _entry_for
+    participant p17 as validate_locator
+    participant p18 as _validate_page_id
+    participant p19 as validate_natural_key
+    participant p20 as _typed_tuple
+    participant p21 as _looks_absolute_path
+    participant p22 as _contains_uri_userinfo
+    participant p23 as _sorted_aliases
+    participant p24 as _uid_tag
+    participant p25 as iter_page_kinds
+    participant p26 as AliasType
+    participant p27 as WikiSurfaceError
+    participant p28 as PageKind
+    participant p29 as isinstance (src/llm_wiki_cli/services…ntity.py:allocate_concept)
+    participant p30 as candidates.add
+    p0->>p1: validate_bundle_id
+    p0->>p2: validate_identity_registry
+    p0->>p3: derive_concept_uid
+    p0->>p4: identity_coordinate_key
+    p0->>p5: IdentityCollision
+    p0->>p6: IdentityCollisionError
+    p0->>p7: ConceptIdentityError
+    p0->>p8: ConceptAllocation
+    p1->>p9: _machine_text
+    p3->>p10: validate_concept_kind
+    p2->>p11: find_identity_collisions
+    p4->>p12: validate_alias_type
+    p4->>p13: validate_alias_value
+    p4->>p14: canonical_path
+    p4->>p15: mcp_uri
+    p14->>p16: _entry_for
+    p13->>p17: validate_locator
+    p14->>p18: _validate_page_id
+    p13->>p19: validate_natural_key
+    p2->>p20: _typed_tuple
+    p1->>p21: _looks_absolute_path
+    p1->>p22: _contains_uri_userinfo
+    p2->>p23: _sorted_aliases
+    p3->>p24: _uid_tag
+    p4->>p25: iter_page_kinds
+    p12->>p26: AliasType
+    p14->>p27: WikiSurfaceError
+    p16->>p28: PageKind
+    p0-->>p29: isinstance (src/llm_wiki_cli/services…ntity.py:allocate_concept)(reference, ConceptReference)
+    p0-->>p30: candidates.add(allocation.uid)
 ```
 
 > Call sequence diagram shows 30 of 193 interactions; 163 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 8 of 62 (54 omitted); unresolved 4 of 44 (40 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 62 (61 omitted); unresolved 1 of 44 (43 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/concept_identity.py:allocate_concept` | 1 | - | external | 7 |
 | `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 5 | - | external | 6 |
 | `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 5 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 5 |
 | `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 5 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/concept_identity.py:validate_bundle_id` | 4 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 3 |
+| `src/llm_wiki_cli/services/concept_identity.py:validate_bundle_id` | 4 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/concept_identity.py:_looks_absolute_path` | 22 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/concept_identity.py:_contains_uri_userinfo` | 25 | - | external | 1 |
-| `src/llm_wiki_cli/services/concept_identity.py:_typed_tuple` | 29 | - | external | 7 |
-| `src/llm_wiki_cli/services/concept_identity.py:find_identity_collisions` | 38 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 10 |
-> Omission summary shows 8 of 38 groups; 30 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/concept_identity.py:validate_bundle_id` | 4 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 1 |
+> Omission summary shows 8 of 40 groups; 32 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

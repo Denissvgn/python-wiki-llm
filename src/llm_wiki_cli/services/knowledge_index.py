@@ -239,7 +239,18 @@ def build_knowledge_index(inputs: KnowledgeIndexInputs) -> KnowledgeIndex:
     )
     record_counts(concepts=len(concepts), relationships=len(relationships))
     try:
-        return validate_knowledge_index(model)
+        identity = _validator_identity()
+        validated = validate_knowledge_index(model)
+        operation = _INDEX_VALIDATION_OPERATION.get()
+        if operation is not None and operation._active:
+            if identity != _validator_identity():
+                raise TypeError("knowledge validators changed during builder validation")
+            validated = freeze(validated)
+            content = _serialize_payload(_model_to_payload(validated)).encode("utf-8")
+            receipt = _ValidatedIndexReceipt(validated, content, operation.wiki_root)
+            object.__setattr__(receipt, "_proof", _IndexValidationProof(validated, content, operation, issuer=_INDEX_RECEIPT_ISSUER))
+            operation.models[id(validated)] = receipt
+        return validated
     except KnowledgeModelError as exc:
         raise KnowledgeIndexBuildError(exc.field, exc.reason) from exc
 
@@ -305,6 +316,7 @@ class _IndexValidationOperation:
     wiki_root: Path
     token: object = field(default_factory=object)
     _active: bool = field(default=True, init=False, repr=False, compare=False)
+    models: dict = field(default_factory=dict, init=False, repr=False, compare=False)
 
 
 _INDEX_VALIDATION_OPERATION: ContextVar[_IndexValidationOperation | None] = ContextVar(
@@ -381,6 +393,10 @@ def _validated_index_receipt(value: object, wiki_root: Path) -> _ValidatedIndexR
     operation = _INDEX_VALIDATION_OPERATION.get()
     if operation is None or not operation._active or operation.wiki_root != wiki_root:
         raise TypeError("final validation receipt requires its active wiki operation")
+    retained = operation.models.get(id(value))
+    if retained is not None and retained.model is value:
+        _require_validation_receipt(retained, wiki_root, retained.content)
+        return retained
     identity = _validator_identity()
     model, content = _validated_index_serialization(value)
     if identity != _validator_identity():

@@ -126,9 +126,13 @@ dependency architecture, and manifest files. User-flow pages under `flows/` are
 generated from detected entry points with a call sequence, generated static
 `## Data flow` section, boundary-effects table, and editable `## Behavior`; use
 `--skip-flows` to omit them or `--skip-data-flow` to keep flow pages without the
-generated data-flow section. Large generated call-sequence diagrams are capped
-to the first 30 interactions and include an omitted-interaction note so Mermaid
+generated data-flow section. Large generated call-sequence diagrams select up to
+30 representative captured interactions and include an omitted-interaction note so Mermaid
 output stays readable on large repositories.
+Selection favors resolved internal continuations and distinct target coordinates,
+with captured boundary examples. Repeated sites remain in the underlying trace;
+the diagram reports display omissions separately from traversal limits and is
+not runtime execution order.
 Sequence participants distinguish same-named functions in different modules
 and calls through different receivers. A delegated call such as
 `service.check_wiki()` stays distinct from a `check_wiki` wrapper; genuine
@@ -221,6 +225,26 @@ rewriting artifacts. Source/configuration, Markdown, assets, implementation,
 and lifecycle changes invalidate reuse. Governed or plugin-driven generation
 uses the full path. `--rebuild-knowledge` explicitly runs the full knowledge
 builder; `--no-cache` controls source extraction independently.
+
+Eligible ordinary syncs also retain `llm-wiki-sync-analysis.json` beside the
+inventory cache. Its exact content is bound to the last complete knowledge
+commit. When source bytes, selection, generation settings, schema, implementation,
+and prepared helper identities match, a later Markdown edit can reuse static
+inventory, page maps and source graph observations. The source-derived typed
+graph is reused only when its inventory, producer, options and concept
+coordinates still match. Markdown sections, links, assets and final commitments
+are evaluated again; page ownership and required writes retain their ordinary
+checks.
+
+The command reports `Sync analysis reuse: hit` or `miss` with a reason, and
+progress includes a `sync_analysis_reuse` phase. Missing, corrupted, oversized
+or redirected cache files fall back to ordinary analysis. Source changes,
+generated-section changes, unavailable helpers and incompatible inputs prevent
+reuse. Governed, maintenance-adopted and plugin-configured projects use ordinary
+analysis. `--no-cache`, `--rebuild-cache` and `--rebuild-knowledge` disable this
+shortcut. An established unchanged snapshot is preserved without adding cache
+metadata solely to warm a cache. Standalone strict lint and CI still validate
+their own invocation inputs.
 
 `sync`, `lint`, and `ci-check` accept `--progress auto|always|never` and
 `--progress-format text|json`. Progress events are flushed to stderr. `auto`
@@ -1019,6 +1043,21 @@ selection, tokenizer and output paths distinct. `--view-budget-tokens` chooses
 its separate presentation budget; no fixed token saving or small-budget fit is
 promised. Include the selected view once in the coding host.
 
+Use `--view compact-v2` for readable JSON containing complete selected facts,
+citations, requirements, coverage, gaps and limitations. It requires the same
+explicit view budget and canonical receipt destination. Python and session
+calls select it with `schema_version: "llm-wiki-task-view-request/v2"` in
+`view_options`. Validation and expansion require the original canonical text,
+request and view options. The body is self-contained and may be larger than
+compact-v1's encoded body. Canonical delivery remains the default.
+
+MCP `read_compact_context_session` with these v2 options retains identity,
+conditional base, state, validation scope and limitations in its smaller default
+envelope. Set `include_metadata: true` for full work/reuse telemetry; v1 retains
+its full envelope. Python session replies retain full metadata. Count host
+framing, setup and any required receipt/metadata follow-ups in addition to the
+view budget; no complete-host token cap is implied by `--view-budget-tokens`.
+
 Choose `knowledge_mode: "off"` only when no native evidence is required; this
 route works without a wiki. Native v2 requirements need explicitly adopted
 sharded or packed knowledge. Keep `required` mode and the native requirements
@@ -1036,6 +1075,29 @@ interface with current input revalidation, not a general speedup guarantee.
 See [workflow recipes and limits](native-agent-workflow.md).
 
 ## Codebase source integration
+
+`llm-wiki doctor --analysis-inputs --format json` checks the installed provider's
+Python/helper classification and registered implementation files without
+scanning application source, executing code or preparing helpers. Python callers
+use `api.get_analysis_input_status(limit=20)`. The report lists bounded relative
+paths, reason, omitted counts and the registry-review route; exit 0 means the
+census/files are ready and exit 2 means unavailable. This mode is exclusive with
+`--capabilities` and explicit `--report-schema` selection. It does not establish
+runtime/helper readiness, semantic correctness or producer authority.
+
+The default and `--format text` show a readable summary with the same status,
+path and omission counts, corrective route and qualifications. Use `--format
+json` for the structured report and its schema; output format does not change
+the readiness exit policy or read scope.
+
+Provider source additions require deliberate review of
+`services/analysis_contracts.json`: classify presentation/consumer files in the
+census and observation changes in their correct producer input lists. Missing
+or unclassified inputs retain unavailable analysis. Inventory results expose
+`analysis_input_status`; affected canonical task v2 results include it in `work`
+and sync-cache misses emit the bounded diagnostic. Compact callers can inspect
+the host-owned canonical receipt. Healthy task output retains its existing
+shape; diagnostics provide information without changing source/review claims.
 
 For research or indexing systems that need codebase evidence without adopting
 the maintained wiki format, prefer the read-only source-adapter commands:
@@ -1919,6 +1981,15 @@ of UTF-8 content, with 1–100 returned results. Exceeding a corpus limit fails
 explicitly; narrow `--kind` or choose a smaller wiki. Search is read-only and
 does not require embeddings or a model service.
 
+Lexical-v2 uses approximate English word families for discovery while preserving
+literal page and symbol identity checks. Strong matches in diagnostic guide
+sections can also surface explicitly linked module/entity pages already in the
+captured corpus. These one-hop leads report `linked_evidence` with the guide's
+hash, section locator and target path. A link-derived candidate without its own
+text match has no fabricated matched-section location; its provenance identifies
+linked discovery. Links do not trigger network reads, source indexing or recursive
+traversal. Inspect exact source before treating any candidate as an explanation.
+
 The query must contain a non-whitespace character. Nonblank queries retain
 their original whitespace, including in substring mode. `--limit` accepts a
 positive integer, defaults to 20, and caps the returned results at 100 even when
@@ -1988,6 +2059,14 @@ an empty queue leaves `source_prose_correctness` as `not-established`.
 Inspect the affected source and semantic prose; use explicit
 [ordinary review tracking](maintenance.md) when durable review is needed.
 An empty queue does not establish ordinary-review completion.
+
+On a coherent unadopted native wiki, captured source-backed semantic sections
+appear as informational coverage gaps, including after sync makes structural
+freshness current. Each item's `coverage_gaps` identifies the exact untracked
+section; `coverage_gap_bounds` reports omitted details. These candidates need
+source/prose inspection and remain untracked even after a prose correction.
+Durable pending and acknowledgment history require explicit ordinary-review
+adoption.
 
 ## `maintenance`
 

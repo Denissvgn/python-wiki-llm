@@ -1,6 +1,6 @@
 # KnowledgeGenerationError
 
-**Location:** `src/llm_wiki_cli/services/knowledge_generation.py:91`
+**Location:** `src/llm_wiki_cli/services/knowledge_generation.py:98`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [knowledge_generation](../modules/knowledge_generation.md)
@@ -31,13 +31,13 @@ flowchart LR
     n4["_exact_source_mapping (src/llm_wiki_cli/services/knowledge_generation.py)"]
     n5["_next_manifest_mapping (src/llm_wiki_cli/services/knowledge_generation.py)"]
     n6["_raise_page_map_parity (src/llm_wiki_cli/services/knowledge_generation.py)"]
-    n7["_structural_page_paths (src/llm_wiki_cli/services/knowledge_generation.py)"]
-    n8["_surface_index_bytes (src/llm_wiki_cli/services/knowledge_generation.py)"]
-    n9["_validated_consumed_inputs (src/llm_wiki_cli/services/knowledge_generation.py)"]
-    n10["_validated_evidence_page_paths (src/llm_wiki_cli/services/knowledge_generation.py)"]
-    n11["_validated_inventory (src/llm_wiki_cli/services/knowledge_generation.py)"]
-    n12["_validated_page_maps (src/llm_wiki_cli/services/knowledge_generation.py)"]
-    n13["_validated_previous_producer (src/llm_wiki_cli/services/knowledge_generation.py)"]
+    n7["_reconcile_active_structural_evidence (src/llm_wiki_cli/services/knowledge_generation.py)"]
+    n8["_structural_page_paths (src/llm_wiki_cli/services/knowledge_generation.py)"]
+    n9["_surface_index_bytes (src/llm_wiki_cli/services/knowledge_generation.py)"]
+    n10["_validated_consumed_inputs (src/llm_wiki_cli/services/knowledge_generation.py)"]
+    n11["_validated_evidence_page_paths (src/llm_wiki_cli/services/knowledge_generation.py)"]
+    n12["_validated_inventory (src/llm_wiki_cli/services/knowledge_generation.py)"]
+    n13["_validated_page_maps (src/llm_wiki_cli/services/knowledge_generation.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -83,16 +83,16 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `_application_knowledge_extensions` | call | [knowledge_generation](../modules/knowledge_generation.md) | 2 |
-| `_build_knowledge_generation_plan` | call | [knowledge_generation](../modules/knowledge_generation.md) | 6 |
+| `_build_knowledge_generation_plan` | call | [knowledge_generation](../modules/knowledge_generation.md) | 7 |
 | `_exact_source_mapping` | call | [knowledge_generation](../modules/knowledge_generation.md) | 3 |
 | `_next_manifest_mapping` | call | [knowledge_generation](../modules/knowledge_generation.md) | 1 |
 | `_raise_page_map_parity` | call | [knowledge_generation](../modules/knowledge_generation.md) | 2 |
+| `_reconcile_active_structural_evidence` | call | [knowledge_generation](../modules/knowledge_generation.md) | 1 |
 | `_structural_page_paths` | call | [knowledge_generation](../modules/knowledge_generation.md) | 2 |
 | `_surface_index_bytes` | call | [knowledge_generation](../modules/knowledge_generation.md) | 4 |
 | `_validated_consumed_inputs` | call | [knowledge_generation](../modules/knowledge_generation.md) | 5 |
 | `_validated_evidence_page_paths` | call | [knowledge_generation](../modules/knowledge_generation.md) | 2 |
 | `_validated_inventory` | call | [knowledge_generation](../modules/knowledge_generation.md) | 6 |
 | `_validated_page_maps` | call | [knowledge_generation](../modules/knowledge_generation.md) | 6 |
-| `_validated_previous_producer` | call | [knowledge_generation](../modules/knowledge_generation.md) | 1 |
 
-> References: showing 12 of 21 logical references; 9 omitted by the 12-row generated summary limit.
+> References: showing 12 of 22 logical references; 10 omitted by the 12-row generated summary limit.

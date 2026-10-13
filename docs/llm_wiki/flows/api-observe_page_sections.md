@@ -6,7 +6,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -14,79 +14,83 @@ sequenceDiagram
     participant p0 as observe_page_sections
     participant p1 as _coerce_page_kind
     participant p2 as parse_markdown_document
-    participant p3 as len (src/llm_wiki_cli/services….py:observe_page_sections)
-    participant p4 as _preamble_observation
-    participant p5 as defaultdict (src/llm_wiki_cli/services….py:observe_page_sections)
-    participant p6 as section.title.casefold
-    participant p7 as ownership_by_locator.get
-    participant p8 as classify_section_ownership
-    participant p9 as _scoped_hashes
-    participant p10 as observations.append
-    participant p11 as SectionObservation
-    participant p12 as tuple (src/llm_wiki_cli/services….py:observe_page_sections)
-    participant p13 as PageSectionObservations
-    participant p14 as sha256_bytes
-    participant p15 as markdown.encode
-    participant p16 as isinstance (src/llm_wiki_cli/services…ship.py:_coerce_page_kind)
-    participant p17 as isinstance (src/llm_wiki_cli/services…y:parse_markdown_document)
-    participant p18 as mixed_table_projection
-    participant p19 as PageKind
-    participant p20 as TypeError
-    participant p21 as preamble.encode
-    participant p22 as _top_level_policy
-    participant p23 as ValueError (src/llm_wiki_cli/services…ship.py:_coerce_page_kind)
-    participant p24 as ValueError (src/llm_wiki_cli/services…y:parse_markdown_document)
-    participant p25 as normalize_markdown
-    participant p26 as list (src/llm_wiki_cli/services…y:parse_markdown_document)
+    participant p3 as _preamble_observation
+    participant p4 as classify_section_ownership
+    participant p5 as _scoped_hashes
+    participant p6 as SectionObservation
+    participant p7 as PageSectionObservations
+    participant p8 as sha256_bytes
+    participant p9 as mixed_table_projection
+    participant p10 as _iter_structural_headings
+    participant p11 as hash_json
+    participant p12 as _frontmatter_extent
+    participant p13 as canonical_json_bytes
+    participant p14 as description_table_cells
+    participant p15 as PageKind
+    participant p16 as _top_level_policy
+    participant p17 as normalize_markdown
+    participant p18 as _HeadingCandidate
+    participant p19 as section_locator
+    participant p20 as MarkdownSection
+    participant p21 as MarkdownSectionDocument
+    participant p22 as _line_content
+    participant p23 as format_table_row
+    participant p24 as is_placeholder_description
+    participant p25 as _atx_heading
+    participant p26 as MixedTableProjection
+    participant p27 as canonical_json_text
+    participant p28 as split_table_row
+    participant p29 as len (src/llm_wiki_cli/services….py:observe_page_sections)
+    participant p30 as section.title.casefold
     p0->>p1: _coerce_page_kind
     p0->>p2: parse_markdown_document
-    p0-->>p3: len (src/llm_wiki_cli/services….py:observe_page_sections)(document.normalized_markdown)
-    p0->>p4: _preamble_observation
-    p0-->>p5: defaultdict (src/llm_wiki_cli/services….py:observe_page_sections)(int)
-    p0-->>p6: section.title.casefold
-    p0-->>p7: ownership_by_locator.get(section.parent_locator)
-    p0->>p8: classify_section_ownership
-    p0->>p9: _scoped_hashes
-    p0-->>p10: observations.append(SectionObservation(...))
-    p0->>p11: SectionObservation
-    p0-->>p12: tuple (src/llm_wiki_cli/services….py:observe_page_sections)(observations)
-    p0->>p13: PageSectionObservations
-    p0->>p14: sha256_bytes
-    p0-->>p15: markdown.encode('utf-8')
-    p1-->>p16: isinstance (src/llm_wiki_cli/services…ship.py:_coerce_page_kind)(page_kind, PageKind)
-    p2-->>p17: isinstance (src/llm_wiki_cli/services…y:parse_markdown_document)(markdown, str)
-    p4->>p14: sha256_bytes
-    p8->>p1: _coerce_page_kind
-    p9->>p18: mixed_table_projection
-    p1->>p19: PageKind
-    p2-->>p20: TypeError('markdown must be a string')
-    p4-->>p21: preamble.encode('utf-8')
-    p8->>p22: _top_level_policy
-    p1-->>p23: ValueError (src/llm_wiki_cli/services…ship.py:_coerce_page_kind)(...)
-    p2-->>p17: isinstance (src/llm_wiki_cli/services…y:parse_markdown_document)(page_locator, str)
-    p4->>p11: SectionObservation
-    p2-->>p24: ValueError (src/llm_wiki_cli/services…y:parse_markdown_document)('page_locator must be a non-empty string')
-    p2->>p25: normalize_markdown
-    p2-->>p26: list (src/llm_wiki_cli/services…y:parse_markdown_document)(_iter_structural_headings(...))
+    p0->>p3: _preamble_observation
+    p0->>p4: classify_section_ownership
+    p0->>p5: _scoped_hashes
+    p0->>p6: SectionObservation
+    p0->>p7: PageSectionObservations
+    p0->>p8: sha256_bytes
+    p5->>p9: mixed_table_projection
+    p2->>p10: _iter_structural_headings
+    p2->>p11: hash_json
+    p10->>p12: _frontmatter_extent
+    p11->>p13: canonical_json_bytes
+    p9->>p14: description_table_cells
+    p1->>p15: PageKind
+    p4->>p16: _top_level_policy
+    p2->>p17: normalize_markdown
+    p2->>p18: _HeadingCandidate
+    p2->>p19: section_locator
+    p2->>p20: MarkdownSection
+    p2->>p21: MarkdownSectionDocument
+    p10->>p22: _line_content
+    p9->>p23: format_table_row
+    p9->>p24: is_placeholder_description
+    p10->>p25: _atx_heading
+    p9->>p26: MixedTableProjection
+    p13->>p27: canonical_json_text
+    p14->>p28: split_table_row
+    p0-->>p29: len (src/llm_wiki_cli/services….py:observe_page_sections)(document.normalized_markdown)
+    p0-->>p30: section.title.casefold
 ```
 
 > Call sequence diagram shows 30 of 174 interactions; 144 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 10 of 67 (57 omitted); unresolved 5 of 61 (56 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 67 (66 omitted); unresolved 1 of 61 (60 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/section_ownership.py:_coerce_page_kind` | 2 | - | external | 2 |
+| `src/llm_wiki_cli/services/markdown_sections.py:parse_markdown_document` | 6 | - | external | 15 |
 | `src/llm_wiki_cli/services/markdown_sections.py:normalize_markdown` | 11 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/markdown_sections.py:parse_markdown_document` | 6 | [src/llm_wiki_cli/services/markdown_sections.py](../modules/markdown_sections.md) | internal | 6 |
 | `src/llm_wiki_cli/services/markdown_sections.py:_iter_structural_headings` | 15 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/markdown_sections.py:_iter_structural_headings` | 15 | [src/llm_wiki_cli/services/markdown_sections.py](../modules/markdown_sections.md) | internal | 3 |
 | `src/llm_wiki_cli/services/markdown_sections.py:_frontmatter_extent` | 17 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/markdown_sections.py:_frontmatter_extent` | 17 | [src/llm_wiki_cli/services/markdown_sections.py](../modules/markdown_sections.md) | internal | 2 |
 | `src/llm_wiki_cli/services/markdown_sections.py:_line_content` | 20 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/markdown_sections.py:_frontmatter_extent` | 17 | - | external | 2 |
-> Omission summary shows 8 of 38 groups; 30 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 43 groups; 35 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow

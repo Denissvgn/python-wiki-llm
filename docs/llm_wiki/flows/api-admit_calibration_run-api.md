@@ -6,7 +6,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -54,9 +54,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| admit_calibration_run | _call_calibration_controller | 3366 | `_call_calibration_controller('admit_calibration_run', root, authority_grant=authority_grant, broker_attestation=broker_attestation)` |
-| _call_calibration_controller | <dynamic> | 3337 | `<dynamic>(..., **=kwargs)` |
-| _call_calibration_controller | getattr | 3337 | `getattr(controller, name)` |
+| admit_calibration_run | _call_calibration_controller | 3389 | `_call_calibration_controller('admit_calibration_run', root, authority_grant=authority_grant, broker_attestation=broker_attestation)` |
+| _call_calibration_controller | <dynamic> | 3360 | `<dynamic>(..., **=kwargs)` |
+| _call_calibration_controller | getattr | 3360 | `getattr(controller, name)` |
 
 ### Boundary effects
 
@@ -66,8 +66,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_call_calibration_controller` | `<dynamic>` | 3337 |
-| external_call | `_call_calibration_controller` | `getattr` | 3337 |
+| unresolved_call | `_call_calibration_controller` | `<dynamic>` | 3360 |
+| external_call | `_call_calibration_controller` | `getattr` | 3360 |
 
 ## Behavior
 

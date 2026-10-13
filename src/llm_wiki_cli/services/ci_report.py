@@ -201,7 +201,7 @@ def build_ci_check_payload(
     if not isinstance(report, LintReport):
         raise TypeError("report must be a LintReport")
     if report_schema not in {"auto", "v1", "v2", "v3", "v4"}:
-        raise ValueError("report_schema must be v1, v2 or v3")
+        raise ValueError("report_schema must be auto, v1, v2, v3 or v4")
     details = None if report.health_details is None else report.health_details.to_payload()
     report_schema = ac.report_schema(report_schema, details)
     payload: dict[str, object] = {

@@ -111,4 +111,4 @@ flowchart LR
 | `_governance_moves_for_sync` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_invalid_manifest_hash_paths` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 
-> References: showing 12 of 106 logical references; 94 omitted by the 12-row generated summary limit.
+> References: showing 12 of 112 logical references; 100 omitted by the 12-row generated summary limit.

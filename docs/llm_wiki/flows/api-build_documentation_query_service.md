@@ -2,7 +2,7 @@
 
 **Entry point:** `build_documentation_query_service` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 22 more
+**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 23 more
 
 **Complete modules touched:**
 
@@ -28,6 +28,7 @@
 - [markdown_sections](../modules/markdown_sections.md)
 - [python_implementation](../modules/python_implementation.md)
 - [section_ownership](../modules/section_ownership.md)
+- [source_path_diagnostics](../modules/source_path_diagnostics.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
@@ -35,76 +36,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as build_documentation_query_service
-    participant p1 as isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service)
-    participant p2 as InvalidRequestError
-    participant p3 as normalize_documentation_query_limit
-    participant p4 as validate_source_root
-    participant p5 as _validate_wiki_dir
-    participant p6 as src_root.is_dir
-    participant p7 as WorkspaceStateError
-    participant p8 as Path (src/llm_wiki_cli/api.py:b…cumentation_query_service)
-    participant p9 as build_live_documentation_query_service
-    participant p10 as _caused_by
-    participant p11 as str (src/llm_wiki_cli/api.py:b…cumentation_query_service)
-    participant p12 as str(…).startswith
-    participant p13 as isinstance (src/llm_wiki_cli/services…documentation_query_limit)
-    participant p14 as validate_path
-    participant p15 as normalize_supplied_paths
-    p0-->>p1: isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service)(value, bool)
-    p0->>p2: InvalidRequestError
-    p0-->>p1: isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service)(helper_cache_dir, (...))
-    p0->>p2: InvalidRequestError
-    p0->>p3: normalize_documentation_query_limit
-    p0->>p4: validate_source_root
-    p0->>p5: _validate_wiki_dir
-    p0-->>p6: src_root.is_dir
-    p0->>p7: WorkspaceStateError
-    p0-->>p8: Path (src/llm_wiki_cli/api.py:b…cumentation_query_service)(helper_cache_dir)
-    p0->>p9: build_live_documentation_query_service
-    p0->>p10: _caused_by
-    p0->>p7: WorkspaceStateError
-    p0-->>p11: str (src/llm_wiki_cli/api.py:b…cumentation_query_service)(exc)
-    p0->>p2: InvalidRequestError
-    p0-->>p11: str (src/llm_wiki_cli/api.py:b…cumentation_query_service)(exc)
-    p0->>p7: WorkspaceStateError
-    p0-->>p11: str (src/llm_wiki_cli/api.py:b…cumentation_query_service)(exc)
-    p0-->>p12: str(…).startswith('limit ')
-    p0-->>p11: str (src/llm_wiki_cli/api.py:b…cumentation_query_service)(exc)
-    p0->>p2: InvalidRequestError
-    p0-->>p11: str (src/llm_wiki_cli/api.py:b…cumentation_query_service)(exc)
-    p0->>p2: InvalidRequestError
-    p0-->>p11: str (src/llm_wiki_cli/api.py:b…cumentation_query_service)(exc)
-    p0->>p7: WorkspaceStateError
-    p0-->>p11: str (src/llm_wiki_cli/api.py:b…cumentation_query_service)(exc)
-    p3-->>p13: isinstance (src/llm_wiki_cli/services…documentation_query_limit)(value, bool)
-    p4->>p14: validate_path
-    p5->>p14: validate_path
-    p9->>p15: normalize_supplied_paths
+    participant p1 as normalize_documentation_query_limit
+    participant p2 as validate_source_root
+    participant p3 as _validate_wiki_dir
+    participant p4 as build_live_documentation_query_service
+    participant p5 as InvalidRequestError
+    participant p6 as WorkspaceStateError
+    participant p7 as _caused_by
+    participant p8 as validate_path
+    participant p9 as normalize_supplied_paths
+    participant p10 as resolve_source_selection
+    participant p11 as capture_source_selection_inputs
+    participant p12 as validate_live_query_source_selection
+    participant p13 as windows_current_user_sid
+    participant p14 as _source_anchor
+    participant p15 as _wiki_anchor
+    participant p16 as source_path_diagnostics
+    participant p17 as _live_source_selection_identity
+    participant p18 as confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet.py)
+    participant p19 as attach_implementation_read_view
+    participant p20 as analysis_identity
+    participant p21 as read_guarded
+    participant p22 as attach_maintenance_view_from_inputs
+    participant p23 as _assert_source_unchanged
+    participant p24 as _assert_wiki_unchanged
+    participant p25 as _portable_supplied_path
+    participant p26 as SyncManifest.load
+    participant p27 as _domain_hash
+    participant p28 as confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py)
+    participant p29 as isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service)
+    participant p30 as src_root.is_dir
+    p0->>p1: normalize_documentation_query_limit
+    p0->>p2: validate_source_root
+    p0->>p3: _validate_wiki_dir
+    p0->>p4: build_live_documentation_query_service
+    p0->>p5: InvalidRequestError
+    p0->>p6: WorkspaceStateError
+    p0->>p7: _caused_by
+    p2->>p8: validate_path
+    p4->>p9: normalize_supplied_paths
+    p4->>p10: resolve_source_selection
+    p4->>p11: capture_source_selection_inputs
+    p4->>p12: validate_live_query_source_selection
+    p2->>p13: windows_current_user_sid
+    p4->>p14: _source_anchor
+    p4->>p15: _wiki_anchor
+    p4->>p16: source_path_diagnostics
+    p4->>p17: _live_source_selection_identity
+    p4->>p18: confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet.py)
+    p4->>p19: attach_implementation_read_view
+    p4->>p20: analysis_identity
+    p4->>p21: read_guarded
+    p4->>p22: attach_maintenance_view_from_inputs
+    p4->>p23: _assert_source_unchanged
+    p4->>p24: _assert_wiki_unchanged
+    p9->>p25: _portable_supplied_path
+    p12->>p26: SyncManifest.load
+    p14->>p27: _domain_hash
+    p18->>p28: confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py)
+    p0-->>p29: isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service)(value, bool)
+    p0-->>p30: src_root.is_dir
 ```
 
-> Call sequence diagram shows 30 of 1803 interactions; 1773 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1871 interactions; 1841 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 11 of 656 (645 omitted); unresolved 2 of 465 (463 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 683 (682 omitted); unresolved 1 of 491 (490 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/documentation_query_builder.py:normalize_documentation_query_limit` | 6 | - | external | 2 |
+| `src/llm_wiki_cli/api.py:build_documentation_query_service` | 1 | - | external | 9 |
+| `src/llm_wiki_cli/api.py:build_documentation_query_service` | 1 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 7 |
+| `src/llm_wiki_cli/services/documentation_query_builder.py:normalize_documentation_query_limit` | 6 | - | external | 3 |
 | `src/llm_wiki_cli/services/documentation_query_builder.py:normalize_documentation_query_limit` | 6 | [src/llm_wiki_cli/services/documentation_queries.py](../modules/documentation_queries.md) | internal | 1 |
 | `src/llm_wiki_cli/config.py:validate_path` | 12 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
 | `src/llm_wiki_cli/config.py:validate_path` | 12 | - | unresolved | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 12 | - | external | 2 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 11 | - | unresolved | 5 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 11 | - | external | 11 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 11 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 6 |
-> Omission summary shows 8 of 436 groups; 428 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 448 groups; 440 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -167,16 +183,16 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_documentation_query_service | isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service) | 1909 | `isinstance(value, bool)` |
-| build_documentation_query_service | InvalidRequestError | 1910 | `InvalidRequestError('must be a boolean', code='invalid-request', details={...})` |
-| build_documentation_query_service | isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service) | 1915 | `isinstance(helper_cache_dir, (...))` |
-| build_documentation_query_service | InvalidRequestError | 1918 | `InvalidRequestError('must be a path', code='invalid-request', details={...})` |
-| build_documentation_query_service | normalize_documentation_query_limit | 1923 | `normalize_documentation_query_limit(limit)` |
+| build_documentation_query_service | isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service) | 1917 | `isinstance(value, bool)` |
+| build_documentation_query_service | InvalidRequestError | 1918 | `InvalidRequestError('must be a boolean', code='invalid-request', details={...})` |
+| build_documentation_query_service | isinstance (src/llm_wiki_cli/api.py:b…cumentation_query_service) | 1923 | `isinstance(helper_cache_dir, (...))` |
+| build_documentation_query_service | InvalidRequestError | 1926 | `InvalidRequestError('must be a path', code='invalid-request', details={...})` |
+| build_documentation_query_service | normalize_documentation_query_limit | 1931 | `normalize_documentation_query_limit(limit)` |
 | normalize_documentation_query_limit | isinstance (src/llm_wiki_cli/services…documentation_query_limit) | 56 | `isinstance(value, bool)` |
 | normalize_documentation_query_limit | isinstance (src/llm_wiki_cli/services…documentation_query_limit) | 56 | `isinstance(value, int)` |
 | normalize_documentation_query_limit | DocumentationQueryError | 57 | `DocumentationQueryError('limit must be a positive integer.')` |
 | normalize_documentation_query_limit | min (src/llm_wiki_cli/services…documentation_query_limit) | 58 | `min(value, MAX_DOCUMENTATION_QUERY_LIMIT)` |
-| build_documentation_query_service | validate_source_root | 1924 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
+| build_documentation_query_service | validate_source_root | 1932 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
 | validate_source_root | validate_path | 160 | `validate_path(path, label)` |
 
 ### Boundary effects
@@ -187,8 +203,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_documentation_query_service` | `isinstance` | 1909 |
-| external_call | `build_documentation_query_service` | `isinstance` | 1915 |
+| external_call | `build_documentation_query_service` | `isinstance` | 1917 |
+| external_call | `build_documentation_query_service` | `isinstance` | 1923 |
 | external_call | `normalize_documentation_query_limit` | `isinstance` | 56 |
 | external_call | `normalize_documentation_query_limit` | `min` | 58 |
 | step_limit | `build_documentation_query_service` | `first 12 steps` | 0 |

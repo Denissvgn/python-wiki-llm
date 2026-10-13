@@ -17,6 +17,7 @@ from .sync_manifest import ManifestPageSource, SyncManifest
 from .sync_retained_links import repair_retained_page_links
 from .validation import portable_path_key
 from .wiki_surface import PageKind, WikiSurfaceError, canonical_path
+from .source_retirement import retired_entity_mappings
 
 
 class PageTransitionError(SyncOwnershipError):
@@ -60,6 +61,7 @@ class RetainedPageRepair:
     expected_bytes: bytes
     text: str
     staging_slot: str
+    reason: str = "links"
 
 
 @dataclass(frozen=True)
@@ -181,6 +183,8 @@ def _prior_ownership(manifest: SyncManifest) -> _Ownership:
         owner = ManifestPageSource("module", source)
         if owner not in prior.candidates:
             prior.add(owner, _page_path("module", _module_name_from_path(source)))
+    for path, owner in retired_entity_mappings(manifest).items():
+        prior.add(owner, path)
     return prior
 
 
@@ -277,6 +281,7 @@ def plan_page_transitions(
     for counts in old_counts.values():
         old_names.update(counts)
     moves = moved_entities or {}
+    retired = retired_entity_mappings(manifest)
     targets: set[str] = set()
     origins: dict[str, PageTransition] = {}
     transitions = []
@@ -291,6 +296,8 @@ def plan_page_transitions(
         elif owner.scope == "entity":
             name, occurrence = str(owner.entity_name), int(owner.occurrence or 0)
             if old_counts.get(owner.source_path, {}).get(name, 0) >= occurrence:
+                previous = owner
+            elif owner in retired.values():
                 previous = owner
             elif name in moves and moves[name][1] == owner.source_path:
                 old_source = moves[name][0]

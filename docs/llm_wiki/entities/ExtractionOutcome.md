@@ -1,6 +1,6 @@
 # _ExtractionOutcome
 
-**Location:** `src/llm_wiki_cli/services/extraction_service.py:266`
+**Location:** `src/llm_wiki_cli/services/extraction_service.py:279`
 **Kind:** Class
 **Bases:** —
 **Module:** [extraction_service](../modules/extraction_service.md)
@@ -23,6 +23,7 @@ _Auto-generated from `_ExtractionOutcome` in `src/llm_wiki_cli/services/extracti
 | `data_effect_observations` | `dict \| None` | `None` | — |
 | `import_observations` | `dict \| None` | `None` | — |
 | `implementation_observations` | `dict \| None` | `None` | — |
+| `path_outcomes` | `dict \| None` | `None` | — |
 
 ## Methods
 
@@ -62,7 +63,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [extraction_service](../modules/extraction_service.md) | 0 | `data_effect_observations`, `extracted`, `files_found`, `implementation_observations`, `import_observations`, `language`, `message`, `state` |
+| [extraction_service](../modules/extraction_service.md) | 0 | `data_effect_observations`, `extracted`, `files_found`, `implementation_observations`, `import_observations`, `language`, `message`, `path_outcomes`, `state` |
 
 ### References
 

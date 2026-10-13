@@ -6,80 +6,85 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as hash_generation_options
-    participant p1 as isinstance (src/llm_wiki_cli/services…py:hash_generation_options)
-    participant p2 as KnowledgeEnvelopeError
-    participant p3 as _normalized_allowlist
-    participant p4 as _reject_unknown_option_keys
+    participant p1 as _normalized_allowlist
+    participant p2 as _reject_unknown_option_keys
+    participant p3 as _hash_structured
+    participant p4 as KnowledgeEnvelopeError
     participant p5 as _reject_machine_local_paths
-    participant p6 as _hash_structured
-    participant p7 as isinstance (src/llm_wiki_cli/services…e.py:_normalized_allowlist)
-    participant p8 as any (src/llm_wiki_cli/services…reject_unknown_option_keys)
-    participant p9 as set (src/llm_wiki_cli/services…reject_machine_local_paths)
-    participant p10 as payload.values
-    participant p11 as isinstance (src/llm_wiki_cli/services…reject_unknown_option_keys)
-    participant p12 as walk (src/llm_wiki_cli/services…reject_machine_local_paths)
-    participant p13 as _validate_json_tree
-    participant p14 as tuple
-    participant p15 as sha256_bytes
-    participant p16 as set (src/llm_wiki_cli/services…reject_unknown_option_keys)
-    participant p17 as canonical_json_bytes
-    participant p18 as any (src/llm_wiki_cli/services…e.py:_normalized_allowlist)
-    participant p19 as min
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…py:hash_generation_options)(values, Mapping)
-    p0->>p2: KnowledgeEnvelopeError
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…py:hash_generation_options)(defaults, Mapping)
-    p0->>p2: KnowledgeEnvelopeError
-    p0->>p3: _normalized_allowlist
-    p0->>p4: _reject_unknown_option_keys
-    p0->>p4: _reject_unknown_option_keys
-    p0->>p2: KnowledgeEnvelopeError
+    participant p6 as canonical_json_bytes
+    participant p7 as _validate_json_tree
+    participant p8 as sha256_bytes
+    participant p9 as canonical_json_text
+    participant p10 as isinstance (src/llm_wiki_cli/services…py:hash_generation_options)
+    participant p11 as payload.values
+    participant p12 as isinstance (src/llm_wiki_cli/services…e.py:_normalized_allowlist)
+    participant p13 as any (src/llm_wiki_cli/services…reject_unknown_option_keys)
+    participant p14 as set (src/llm_wiki_cli/services…reject_machine_local_paths)
+    participant p15 as isinstance (src/llm_wiki_cli/services…reject_unknown_option_keys)
+    participant p16 as walk (src/llm_wiki_cli/services…reject_machine_local_paths)
+    participant p17 as tuple
+    participant p18 as set (src/llm_wiki_cli/services…reject_unknown_option_keys)
+    participant p19 as any (src/llm_wiki_cli/services…e.py:_normalized_allowlist)
+    participant p20 as min
+    participant p21 as len
+    participant p22 as set (src/llm_wiki_cli/services…e.py:_normalized_allowlist)
+    participant p23 as sorted
+    participant p24 as set (src/llm_wiki_cli/services…ope.py:_validate_json_tree)
+    participant p25 as hashlib.sha256(…).hexdigest
+    p0->>p1: _normalized_allowlist
+    p0->>p2: _reject_unknown_option_keys
+    p0->>p3: _hash_structured
+    p0->>p4: KnowledgeEnvelopeError
     p0->>p5: _reject_machine_local_paths
-    p0->>p6: _hash_structured
-    p3-->>p7: isinstance (src/llm_wiki_cli/services…e.py:_normalized_allowlist)(value, (...))
-    p4-->>p8: any (src/llm_wiki_cli/services…reject_unknown_option_keys)(...)
-    p5-->>p9: set (src/llm_wiki_cli/services…reject_machine_local_paths)
-    p6-->>p10: payload.values
-    p3->>p2: KnowledgeEnvelopeError
-    p4-->>p11: isinstance (src/llm_wiki_cli/services…reject_unknown_option_keys)(key, str)
-    p5-->>p12: walk (src/llm_wiki_cli/services…reject_machine_local_paths)(value, field_name)
-    p6->>p13: _validate_json_tree
-    p3-->>p14: tuple(value)
-    p4->>p2: KnowledgeEnvelopeError
-    p6->>p15: sha256_bytes
-    p3->>p2: KnowledgeEnvelopeError
-    p4-->>p16: set (src/llm_wiki_cli/services…reject_unknown_option_keys)(value)
-    p6->>p17: canonical_json_bytes
-    p3-->>p18: any (src/llm_wiki_cli/services…e.py:_normalized_allowlist)(...)
-    p4-->>p16: set (src/llm_wiki_cli/services…reject_unknown_option_keys)(allowlist)
-    p6->>p2: KnowledgeEnvelopeError
-    p3-->>p7: isinstance (src/llm_wiki_cli/services…e.py:_normalized_allowlist)(item, str)
-    p4-->>p19: min(unknown)
-    p3->>p2: KnowledgeEnvelopeError
+    p3->>p6: canonical_json_bytes
+    p3->>p7: _validate_json_tree
+    p3->>p8: sha256_bytes
+    p6->>p9: canonical_json_text
+    p0-->>p10: isinstance (src/llm_wiki_cli/services…py:hash_generation_options)(values, Mapping)
+    p3-->>p11: payload.values
+    p0-->>p10: isinstance (src/llm_wiki_cli/services…py:hash_generation_options)(defaults, Mapping)
+    p1-->>p12: isinstance (src/llm_wiki_cli/services…e.py:_normalized_allowlist)(value, (...))
+    p2-->>p13: any (src/llm_wiki_cli/services…reject_unknown_option_keys)(...)
+    p5-->>p14: set (src/llm_wiki_cli/services…reject_machine_local_paths)
+    p2-->>p15: isinstance (src/llm_wiki_cli/services…reject_unknown_option_keys)(key, str)
+    p5-->>p16: walk (src/llm_wiki_cli/services…reject_machine_local_paths)(value, field_name)
+    p1-->>p17: tuple(value)
+    p2-->>p18: set (src/llm_wiki_cli/services…reject_unknown_option_keys)(value)
+    p1-->>p19: any (src/llm_wiki_cli/services…e.py:_normalized_allowlist)(...)
+    p2-->>p18: set (src/llm_wiki_cli/services…reject_unknown_option_keys)(allowlist)
+    p1-->>p12: isinstance (src/llm_wiki_cli/services…e.py:_normalized_allowlist)(item, str)
+    p2-->>p20: min(unknown)
+    p1-->>p21: len(items)
+    p1-->>p21: len(set(...))
+    p1-->>p22: set (src/llm_wiki_cli/services…e.py:_normalized_allowlist)(items)
+    p1-->>p17: tuple(sorted(...))
+    p1-->>p23: sorted(items)
+    p7-->>p24: set (src/llm_wiki_cli/services…ope.py:_validate_json_tree)
+    p8-->>p25: hashlib.sha256(…).hexdigest
 ```
 
 > Call sequence diagram shows 30 of 44 interactions; 14 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 12 of 20 (8 omitted); unresolved 2 of 5 (3 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 18 of 20 (2 omitted); unresolved 3 of 5 (2 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:_normalized_allowlist` | 6 | - | external | 5 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:_normalized_allowlist` | 6 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:_reject_unknown_option_keys` | 20 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_envelope.py:_validate_json_tree` | 35 | - | external | 1 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:hash_generation_options` | 1 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 3 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_normalized_allowlist` | 6 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 4 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_reject_unknown_option_keys` | 20 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 2 |
 | `src/llm_wiki_cli/services/knowledge_envelope.py:_validate_json_tree` | 35 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:sha256_bytes` | 38 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:sha256_bytes` | 38 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:canonical_json_bytes` | 41 | - | unresolved | 1 |
-> Omission summary shows 8 of 10 groups; 2 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/knowledge_evidence.py:canonical_json_text` | 43 | - | external | 1 |
+| `src/llm_wiki_cli/services/knowledge_envelope.py:_hash_structured` | 33 | [src/llm_wiki_cli/services/knowledge_envelope.py](../modules/knowledge_envelope.md) | internal | 1 |
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow

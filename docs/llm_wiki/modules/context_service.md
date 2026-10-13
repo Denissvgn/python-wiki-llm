@@ -20,6 +20,11 @@ Usage::
     llm-wiki context --budget 8000 --format markdown
     llm-wiki context --budget 32000 --focus all
 
+Live inventory collection carries the configured manifest's retained empty
+source paths into the parser request. This preserves current module observations
+without discovering every unowned empty file. Parsing failures and unavailable
+coverage retain their explicit states rather than being presented as emptiness.
+
 ## Imports
 
 | Source | Symbols |
@@ -49,6 +54,7 @@ Usage::
 | `.knowledge_verification` | `attach_machine_verification_read_view`, `verification_summaries_for_concepts` |
 | `.maintenance_status` | `compact_maintenance_summary` |
 | `.plugins` | `runtime_project_plugins_enabled` |
+| `.source_retirement` | `retained_empty_module_paths_from_wiki` |
 | `.source_selection` | `SourceSelectionError`, `resolve_source_selection` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
 | `.sync_manifest` | `SyncManifest` |
@@ -84,9 +90,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (9) |
-| Outbound | `src` (30) |
+| Outbound | `src` (31) |
 
-> All 36 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 37 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -94,17 +100,17 @@ flowchart LR
 |-------|------|-------|-------------|
 | [ProtocolRequestError](../entities/ProtocolRequestError.md) | 176 | `ValueError` | Validation error for Wiki-as-Context protocol requests. |
 | [KnowledgeRequiredUnavailableError](../entities/KnowledgeRequiredUnavailableError.md) | 191 | `RuntimeError` | Explicit required mode could not produce ready qualified knowledge. |
-| [_ProtocolEnrichmentSession](../entities/ProtocolEnrichmentSession.md) | 1811 | — | Operation-scoped query state captured from one knowledge read. |
+| [_ProtocolEnrichmentSession](../entities/ProtocolEnrichmentSession.md) | 1817 | — | Operation-scoped query state captured from one knowledge read. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
 | `_extractor_failure_message` | `(inventory_result) -> str` | — | Return a compact, structured error message for extractor failures. |
-| `get_inventory` | `(src_dir: str, *, deep: bool = False, return_result: Literal[False] = False, job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, include_plugins: bool = True, source_selection: str \| Path \| None = None, source_snapshot: SourceSnapshot \| None = None, helper_cache_dir: str \| None = None, capture_implementation_observations: bool = False) -> dict` | `@overload` | — |
-| `get_inventory` | `(src_dir: str, *, deep: bool = False, return_result: Literal[True], job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, include_plugins: bool = True, source_selection: str \| Path \| None = None, source_snapshot: SourceSnapshot \| None = None, helper_cache_dir: str \| None = None, capture_implementation_observations: bool = False) -> InventoryResult` | `@overload` | — |
-| `get_inventory` | `(src_dir: str, *, deep: bool = False, return_result: bool, job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, include_plugins: bool = True, source_selection: str \| Path \| None = None, source_snapshot: SourceSnapshot \| None = None, helper_cache_dir: str \| None = None, capture_implementation_observations: bool = False) -> dict \| InventoryResult` | `@overload` | — |
-| `get_inventory` | `(src_dir: str, *, deep: bool = False, return_result: bool = False, job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, include_plugins: bool = True, source_selection: str \| Path \| None = None, source_snapshot: SourceSnapshot \| None = None, helper_cache_dir: str \| None = None, capture_implementation_observations: bool = False) -> dict \| InventoryResult` | — | Build command inventory, optionally returning extraction metadata. |
+| `get_inventory` | `(src_dir: str, *, deep: bool = False, return_result: Literal[False] = False, job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, include_plugins: bool = True, source_selection: str \| Path \| None = None, source_snapshot: SourceSnapshot \| None = None, helper_cache_dir: str \| None = None, capture_implementation_observations: bool = False, retain_empty_paths: tuple[str, ...] = ()) -> dict` | `@overload` | — |
+| `get_inventory` | `(src_dir: str, *, deep: bool = False, return_result: Literal[True], job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, include_plugins: bool = True, source_selection: str \| Path \| None = None, source_snapshot: SourceSnapshot \| None = None, helper_cache_dir: str \| None = None, capture_implementation_observations: bool = False, retain_empty_paths: tuple[str, ...] = ()) -> InventoryResult` | `@overload` | — |
+| `get_inventory` | `(src_dir: str, *, deep: bool = False, return_result: bool, job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, include_plugins: bool = True, source_selection: str \| Path \| None = None, source_snapshot: SourceSnapshot \| None = None, helper_cache_dir: str \| None = None, capture_implementation_observations: bool = False, retain_empty_paths: tuple[str, ...] = ()) -> dict \| InventoryResult` | `@overload` | — |
+| `get_inventory` | `(src_dir: str, *, deep: bool = False, return_result: bool = False, job_request: ExtractionJobRequest \| None = None, plan_reporter: Callable[[ExtractionJobPlan], None] \| None = None, include_plugins: bool = True, source_selection: str \| Path \| None = None, source_snapshot: SourceSnapshot \| None = None, helper_cache_dir: str \| None = None, capture_implementation_observations: bool = False, retain_empty_paths: tuple[str, ...] = ()) -> dict \| InventoryResult` | — | Build command inventory, optionally returning extraction metadata. |
 | `_selected_git_changed_files` | `(src_dir: str, source_snapshot: SourceSnapshot \| None) -> list[str] \| None` | — | — |
 | `_estimate_tokens` | `(text: str) -> int` | — | Approximate token count using the ~4 chars/token heuristic. |
 | `_build_import_graph` | `(inventory: dict) -> dict[str, set[str]]` | — | Build a bidirectional import adjacency map from a deep inventory. |

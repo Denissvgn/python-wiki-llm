@@ -139,7 +139,9 @@ def test_combined_current_workflow_preserves_authority_gaps_and_repaired_callers
                 durable_owner_available=not (variant == "legacy" and stage == "pending-after-sync"))})
         if variant == "legacy" and stage == "pending-after-sync":
             reconciliation = observations["queues"][-1]["reconciliation"]
-            assert reconciliation["unavailable_unsolved"] and reconciliation["missing_owner_actions"]
+            assert reconciliation["required_owner_surfaced"]
+            assert not reconciliation["unavailable_unsolved"]
+            assert not reconciliation["missing_owner_actions"]
 
     if variant == "source-only":
         discovery = read("discover-source", lambda: api.build_task_context({"schema_version": "llm-wiki-task-request/v2",

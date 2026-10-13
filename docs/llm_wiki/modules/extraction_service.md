@@ -10,6 +10,29 @@ safe inventory-cache entries, schedules only declared parallel-safe work, and
 merges deterministic per-language results. Callers receive both the inventory
 and explicit extractor status, cache, plugin, and source-snapshot metadata.
 
+Opt-in path diagnostics pass the request to the built-in Python, JavaScript,
+Go, Rust and Haskell extractors and carry their attributable file outcomes through extraction and
+inventory results. Inventory membership remains separate: a missing entry with
+no reported outcome is unavailable, and a failed extractor batch retains its
+batch scope. Completed native diagnostic chunks survive a later batch failure;
+unrequested paths in a supplied full snapshot are neither parsed nor reported. Legacy calls and trusted extractors without these observations
+keep their existing behavior; missing inventory alone never proves a parser
+failure.
+
+Dockerfile observations keep their dedicated parser. Compose uses the shared
+bounded YAML composer, preserving nested maps, lists and multiline scalar text.
+Content discovery requires mapped services with Compose-specific fields;
+conventional filenames can retain empty typed models with explicit advisories.
+Unsupported build shapes and multi-document inputs are qualified before page
+rendering. Generated YAML text is quoted and normalized to keep source scalars
+from introducing Markdown structure.
+
+`retain_empty_paths` selects previously retained source modules without widening
+ordinary empty-file discovery. Python and TypeScript return their parsed module
+records for those exact paths and capture attributable outcomes. Supplied source
+snapshots still honor `only_files`; unrequested files are not parsed during a
+narrow qualification. Failed and unavailable paths remain qualified gaps.
+
 ## Imports
 
 | Source | Symbols |
@@ -43,6 +66,7 @@ and explicit extractor status, cache, plugin, and source-snapshot metadata.
 | `.resource_diagnostics` | `format_resource_failure` |
 | `.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `path_is_selected`, `resolve_source_selection`, `selection_may_contain_path` |
 | `.source_snapshot` | `SourceFile`, `SourceSnapshot`, `SourceSnapshotError`, `build_source_snapshot`, `format_unsupported_source_summary`, `unsupported_source_summary`, `SourceSnapshotMutationError` |
+| `.yaml_syntax` | `load_yaml_documents` |
 | `__future__` | `annotations` |
 | `concurrent.futures` | `ThreadPoolExecutor` |
 | `copy` | `deepcopy` |
@@ -76,25 +100,24 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (22) |
-| Outbound | `src` (29) |
+| Inbound | `src` (23) |
+| Outbound | `src` (30) |
 
-> All 51 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 53 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ExtractorStatus](../entities/ExtractorStatus.md) | 140 | — | — |
-| [InventoryRequest](../entities/InventoryRequest.md) | 148 | — | — |
-| [InventoryResult](../entities/InventoryResult.md) | 174 | — | — |
-| [ExtractPayloadResult](../entities/ExtractPayloadResult.md) | 208 | — | — |
-| [ExtractorFailureError](../entities/ExtractorFailureError.md) | 228 | `RuntimeError` | Raised when one or more extractors fail during payload construction. |
-| [_ExtractionPlan](../entities/ExtractionPlan.md) | 253 | — | — |
-| [_ExtractionOutcome](../entities/ExtractionOutcome.md) | 266 | — | — |
-| [_InventoryBuildContext](../entities/InventoryBuildContext.md) | 278 | — | — |
-| [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 300 | — | — |
-| [_ComposeParserState](../entities/ComposeParserState.md) | 3239 | — | — |
+| [ExtractorStatus](../entities/ExtractorStatus.md) | 141 | — | — |
+| [InventoryRequest](../entities/InventoryRequest.md) | 149 | — | — |
+| [InventoryResult](../entities/InventoryResult.md) | 180 | — | — |
+| [ExtractPayloadResult](../entities/ExtractPayloadResult.md) | 221 | — | — |
+| [ExtractorFailureError](../entities/ExtractorFailureError.md) | 241 | `RuntimeError` | Raised when one or more extractors fail during payload construction. |
+| [_ExtractionPlan](../entities/ExtractionPlan.md) | 266 | — | — |
+| [_ExtractionOutcome](../entities/ExtractionOutcome.md) | 279 | — | — |
+| [_InventoryBuildContext](../entities/InventoryBuildContext.md) | 292 | — | — |
+| [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 314 | — | — |
 
 ## Functions
 
@@ -112,6 +135,7 @@ flowchart LR
 | `get_inventory_result` | `(request = _MISSING_INVENTORY_REQUEST, *legacy_args, **legacy_kwargs) -> InventoryResult` | — | Scan source files across all registered languages and return inventory. |
 | `_build_inventory_result` | `(request: InventoryRequest) -> InventoryResult` | `@capture_operation` | — |
 | `_completed_inventory_result` | `(context: _InventoryBuildContext, *, inventory: dict, statuses: dict[str, ExtractorStatus], extraction_job_plan: ExtractionJobPlan, selected_plugin_components: tuple[dict, ...], producer_plugin_components: tuple[dict, ...], evaluated_source_snapshot: SourceSnapshot, outcomes_by_language: dict[str, _ExtractionOutcome], implementation_observations: dict \| None) -> InventoryResult` | — | — |
+| `_inventory_path_outcomes` | `(context, inventory, outcomes_by_language) -> dict` | — | — |
 | `_implementation_observations` | `(context: _InventoryBuildContext, outcomes: dict[str, _ExtractionOutcome]) -> dict \| None` | — | — |
 | `_python_extraction_sidecars` | `(context: _InventoryBuildContext, outcomes_by_language: dict[str, _ExtractionOutcome]) -> dict` | `@observed_phase('sidecar_observations')` | — |
 | `_inventory_plugin_state` | `(context: _InventoryBuildContext, statuses: dict[str, ExtractorStatus], inventory: dict) -> tuple[tuple[dict, ...], tuple[dict, ...], SourceSnapshot]` | — | — |
@@ -166,7 +190,7 @@ flowchart LR
 | `_public_data_flow_coverage` | `(coverage: dict) -> dict` | — | — |
 | `_public_detailed_data_flow` | `(flow: dict) -> dict` | — | — |
 | `_data_flow_details_contract` | `(*, deep: bool, inventory: dict, unsupported_sources: dict, flows: list[dict]) -> dict` | — | — |
-| `build_extract_payload` | `(src_dir: str = '.', *, changed: bool = False, summary: bool = False, deep: bool = False, paths: list[str] \| None = None, package_filter: str \| None = None, include_empty: bool = False, helper_cache_dir: str \| None = None, include_tests: Iterable[str] \| None = None, openapi_file: str \| Path \| None = None, allow_external_src: bool = False, read_only: bool = False, include_plugins: bool = True, source_plugins_only: bool = False, source_selection: str \| Path \| None = None, source_snapshot: SourceSnapshot \| None = None, capture_implementation_observations: bool = False) -> ExtractPayloadResult` | — | Build the stable extract JSON payload without printing or exiting. |
+| `build_extract_payload` | `(src_dir: str = '.', *, changed: bool = False, summary: bool = False, deep: bool = False, paths: list[str] \| None = None, package_filter: str \| None = None, include_empty: bool = False, helper_cache_dir: str \| None = None, include_tests: Iterable[str] \| None = None, openapi_file: str \| Path \| None = None, allow_external_src: bool = False, read_only: bool = False, include_plugins: bool = True, source_plugins_only: bool = False, source_selection: str \| Path \| None = None, source_snapshot: SourceSnapshot \| None = None, capture_implementation_observations: bool = False, path_diagnostics: bool = False) -> ExtractPayloadResult` | — | Build the stable extract JSON payload without printing or exiting. |
 | `run` | `(args)` | — | — |
 | `_module_name` | `(filepath: str) -> str` | — | — |
 | `_build_symbol_file_index` | `(inventory: dict) -> dict[str, set[str]]` | — | — |
@@ -193,16 +217,7 @@ flowchart LR
 | `resolve_call_edges` | `(inventory: dict) -> list[dict]` | — | Resolve captured ``calls`` records into caller→callee edges. |
 | `_parse_dockerfile` | `(text: str) -> dict` | — | Parse a Dockerfile into a structured dict (line-based, no external deps). |
 | `_parse_inline_yaml_list` | `(value: str) -> list[str] \| None` | — | Parse an inline YAML list like ``["CMD", "curl", "-f", "http://..."]``. |
-| `_strip_yaml_quotes` | `(value: str) -> str` | — | Remove surrounding YAML quotes from a value. |
-| `_compose_path_parent` | `(state: _ComposeParserState, path: list[str], *, create: bool = False)` | — | Return ``(parent_dict, final_key)`` for a nested service path. |
-| `_start_compose_top_level_section` | `(state: _ComposeParserState, stripped: str, indent: int) -> bool` | — | — |
-| `_start_compose_service` | `(state: _ComposeParserState, stripped: str, indent: int) -> bool` | — | — |
-| `_compose_service_depth` | `(indent: int) -> int` | — | — |
-| `_append_compose_list_item` | `(state: _ComposeParserState, stripped: str) -> None` | — | — |
-| `_assign_compose_value` | `(parent: dict, final_key: str, value: str) -> None` | — | — |
-| `_set_compose_service_key` | `(state: _ComposeParserState, stripped: str, depth: int) -> None` | — | — |
-| `_parse_compose_service_line` | `(state: _ComposeParserState, stripped: str, indent: int) -> None` | — | — |
-| `_collect_compose_section_name` | `(names: list[str], stripped: str, indent: int) -> None` | — | — |
-| `_parse_compose` | `(text: str) -> dict` | — | Parse a docker-compose YAML file using line-based parsing (no PyYAML). |
+| `_parse_compose` | `(text: str) -> dict` | — | Parse one Compose document while preserving nested YAML structures. |
+| `_valid_compose_document` | `(document: object) -> bool` | — | — |
 | `_looks_like_compose` | `(text: str) -> bool` | — | Return True if the file content appears to be a docker-compose file. |
 | `get_docker_inventory` | `(src_dir: str \| Path, *, source_snapshot: SourceSnapshot \| None = None) -> dict` | — | Discover and parse Dockerfiles and Compose files in the source tree. |

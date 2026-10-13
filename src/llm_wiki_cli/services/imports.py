@@ -10,6 +10,7 @@ from pathlib import Path, PurePosixPath
 from typing import TYPE_CHECKING
 
 from ..config import is_agent_worktree_path
+from ..extractors.common import TYPESCRIPT_FAMILY_EXTENSIONS
 from .python_imports import PythonModuleIndex, is_python_source
 from .validation import (
     path_is_under as shared_path_is_under,
@@ -176,6 +177,9 @@ class ModulePathResolver:
         if self._is_haskell_importer(importer_filepath):
             return self._haskell_candidates(module)
         if self._is_typescript_importer(importer_filepath):
+            if module.startswith(("./", "../")) and PurePosixPath(module).suffix in TYPESCRIPT_FAMILY_EXTENSIONS:
+                exact = posixpath.normpath(posixpath.join(posixpath.dirname(importer_filepath), module))
+                return {exact} if exact in self.inventory and _is_typescript_entry(self.inventory[exact]) else set()
             matched, candidate_stems = self._typescript_alias_candidate_stems(
                 module, importer_filepath
             )
@@ -620,6 +624,8 @@ _TS_SOURCE_SUFFIXES: tuple[str, ...] = (
     ".ts",
     ".jsx",
     ".js",
+    ".mjs",
+    ".cjs",
 )
 
 

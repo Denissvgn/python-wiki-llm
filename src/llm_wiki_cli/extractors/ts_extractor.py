@@ -46,6 +46,8 @@ class TypeScriptExtractor:
     """
 
     last_error: str | None = None
+    def __init__(self) -> None:
+        self.last_path_outcomes: dict = {}
 
     def extract(
         self,
@@ -54,6 +56,9 @@ class TypeScriptExtractor:
         deep: bool = False,
         source_files: list[str] | None = None,
         helper_cache_dir: str | None = None,
+        diagnostics: bool = False,
+        include_empty: bool = False,
+        retain_empty_paths: tuple[str, ...] = (),
     ) -> dict:
         """Scan *src_dir* for TypeScript files and return an inventory dict.
 
@@ -76,28 +81,49 @@ class TypeScriptExtractor:
             minimum ``"classes"``, ``"functions"``, and ``"language"``.
         """
         self.last_error = None
+        if include_empty and not diagnostics:
+            raise ValueError("empty module retention requires attributable diagnostics")
+        self.last_path_outcomes = {}
         source_files = self._resolve_source_files(src_dir, only_files, source_files)
         if not source_files:
             return {}
 
         helper_root = self._toolchain_root(src_dir, helper_cache_dir)
         if helper_root is None:
+            self.last_path_outcomes = {path: {"extraction_state": "unavailable", "reason": "helper-unavailable", "failure_scope": "extractor-batch"} for path in source_files}
             return {}
 
         inventory: dict = {}
-        for chunk in chunk_source_files_for_cli(source_files):
-            cmd = self._build_command(src_dir, chunk, deep, helper_root)
+        chunks = chunk_source_files_for_cli(source_files)
+        for chunk_index, chunk in enumerate(chunks):
+            cmd = self._build_command(src_dir, chunk, deep, helper_root) + self._diagnostic_arguments(diagnostics, include_empty, retain_empty_paths)
             result = self._run_node_extractor(cmd, helper_root)
             if result is None:
-                return {}
-            chunk_inventory = self._load_inventory(result)
+                self.last_path_outcomes.update({path: {"extraction_state": "failed", "reason": "extractor-batch-failed", "failure_scope": "extractor-batch"} for path in chunk})
+                self._record_unattempted_chunks(chunks[chunk_index + 1:])
+                return self._normalize_inventory(src_dir, inventory, helper_root) if diagnostics else {}
+            chunk_inventory = self._load_inventory(result, diagnostics=diagnostics, paths=chunk, src_dir=src_dir)
             if self.last_error:
-                return {}
+                self.last_path_outcomes.update({path: {"extraction_state": "failed", "reason": "invalid-helper-output", "failure_scope": "extractor-batch"} for path in chunk})
+                self._record_unattempted_chunks(chunks[chunk_index + 1:])
+                return self._normalize_inventory(src_dir, inventory, helper_root) if diagnostics else {}
             inventory.update(chunk_inventory)
         if not inventory:
             return {}
 
         return self._normalize_inventory(src_dir, inventory, helper_root)
+
+    def _record_unattempted_chunks(self, chunks: list[list[str]]) -> None:
+        for chunk in chunks:
+            self.last_path_outcomes.update({path: {"extraction_state": "not-attempted", "reason": "extractor-batch-aborted"} for path in chunk})
+
+    def _diagnostic_arguments(self, diagnostics: bool, include_empty: bool, retain_empty_paths: tuple[str, ...]) -> list[str]:
+        arguments = ["--diagnostics-v1"] if diagnostics else []
+        if include_empty:
+            arguments.append("--include-empty-v1")
+        if retain_empty_paths:
+            arguments.extend(["--retain-empty-files-v1", json.dumps(retain_empty_paths)])
+        return arguments
 
     def _resolve_source_files(
         self,
@@ -196,7 +222,7 @@ class TypeScriptExtractor:
             )
             return None
 
-    def _load_inventory(self, result: subprocess.CompletedProcess) -> dict:
+    def _load_inventory(self, result: subprocess.CompletedProcess, *, diagnostics: bool = False, paths: list[str] | None = None, src_dir: str | None = None) -> dict:
         # Forward any warnings the Node.js script wrote to stderr (e.g. skipped files).
         if result.stderr.strip():
             sys.stderr.write(result.stderr)
@@ -214,6 +240,44 @@ class TypeScriptExtractor:
             )
             return {}
 
+        if not isinstance(inventory, dict):
+            self.last_error = "invalid inventory output"
+            return {}
+        if diagnostics and inventory.get("schema_version") == "llm-wiki-typescript-diagnostics/v1":
+            outcomes = inventory.get("outcomes")
+            diagnostic_inventory = inventory.get("inventory")
+            if not isinstance(diagnostic_inventory, dict) or not isinstance(outcomes, dict) or set(outcomes) - set(paths or []):
+                self.last_error = "invalid diagnostic output"
+                return {}
+            inventory = diagnostic_inventory
+            record_paths = set(inventory)
+            if src_dir is not None:
+                source_root = Path(src_dir).resolve()
+                record_paths = set()
+                for key in inventory:
+                    candidate = Path(key)
+                    try:
+                        normalized = candidate.resolve().relative_to(source_root).as_posix() if candidate.is_absolute() else candidate.as_posix()
+                    except ValueError:
+                        self.last_error = "diagnostic inventory escaped the selected source root"
+                        return {}
+                    record_paths.add(normalized)
+            for fp, outcome in outcomes.items():
+                if not isinstance(outcome, dict) or outcome.get("extraction_state") not in {"extracted", "failed", "no-documentable-content"}:
+                    self.last_error = "invalid diagnostic output"
+                    return {}
+                if outcome.get("reason") not in {"inventory-entry", "syntax-error", "source-load-failed", "extraction-error", "no-documentable-content"} or outcome.get("failure_scope") not in {None, "file"}:
+                    self.last_error = "invalid diagnostic output"
+                    return {}
+                self.last_path_outcomes[fp] = {key: outcome[key] for key in ("extraction_state", "reason", "failure_scope") if key in outcome}
+                if "retained_empty" in outcome:
+                    if outcome["retained_empty"] is not True or outcome["extraction_state"] != "extracted" or outcome["reason"] != "inventory-entry" or fp not in record_paths:
+                        self.last_error = "invalid retained empty module observation"
+                        return {}
+                    self.last_path_outcomes[fp]["retained_empty"] = True
+        if not isinstance(inventory, dict) or any(not isinstance(entry, dict) for entry in inventory.values()):
+            self.last_error = "invalid inventory output"
+            return {}
         for fp, entry in inventory.items():
             entry["language"] = inventory_language_for_path("typescript", fp)
 

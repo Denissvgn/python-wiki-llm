@@ -6,7 +6,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -117,17 +117,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| runtime_generation_options | surface_value | 1162 | `surface_value('flows', 'categories', None)` |
-| runtime_generation_options | isinstance (src/llm_wiki_cli/services…runtime_generation_options) | 1165 | `isinstance(raw_categories, (...))` |
-| runtime_generation_options | sorted (src/llm_wiki_cli/services…runtime_generation_options) | 1164 | `sorted(...)` |
-| runtime_generation_options | str | 1164 | `str(value)` |
-| runtime_generation_options | _runtime_policy_from_generation_inputs | 1168 | `_runtime_policy_from_generation_inputs(generation_inputs)` |
-| _runtime_policy_from_generation_inputs | isinstance (src/llm_wiki_cli/services…icy_from_generation_inputs) | 1250 | `isinstance(raw_policy, Mapping)` |
-| _runtime_policy_from_generation_inputs | KnowledgeGenerationError | 1251 | `KnowledgeGenerationError(..., 'must be an object')` |
-| _runtime_policy_from_generation_inputs | dict | 1255 | `dict(raw_policy)` |
-| _runtime_policy_from_generation_inputs | _validate_runtime_policy | 1256 | `_validate_runtime_policy(policy)` |
-| _validate_runtime_policy | set | 1261 | `set(policy)` |
-| _validate_runtime_policy | sorted (src/llm_wiki_cli/services…y:_validate_runtime_policy) | 1263 | `sorted(...)` |
+| runtime_generation_options | surface_value | 1169 | `surface_value('flows', 'categories', None)` |
+| runtime_generation_options | isinstance (src/llm_wiki_cli/services…runtime_generation_options) | 1172 | `isinstance(raw_categories, (...))` |
+| runtime_generation_options | sorted (src/llm_wiki_cli/services…runtime_generation_options) | 1171 | `sorted(...)` |
+| runtime_generation_options | str | 1171 | `str(value)` |
+| runtime_generation_options | _runtime_policy_from_generation_inputs | 1175 | `_runtime_policy_from_generation_inputs(generation_inputs)` |
+| _runtime_policy_from_generation_inputs | isinstance (src/llm_wiki_cli/services…icy_from_generation_inputs) | 1257 | `isinstance(raw_policy, Mapping)` |
+| _runtime_policy_from_generation_inputs | KnowledgeGenerationError | 1258 | `KnowledgeGenerationError(..., 'must be an object')` |
+| _runtime_policy_from_generation_inputs | dict | 1262 | `dict(raw_policy)` |
+| _runtime_policy_from_generation_inputs | _validate_runtime_policy | 1263 | `_validate_runtime_policy(policy)` |
+| _validate_runtime_policy | set | 1268 | `set(policy)` |
+| _validate_runtime_policy | sorted (src/llm_wiki_cli/services…y:_validate_runtime_policy) | 1270 | `sorted(...)` |
 
 ### Boundary effects
 
@@ -137,11 +137,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `runtime_generation_options` | `surface_value` | 1162 |
-| external_call | `runtime_generation_options` | `isinstance` | 1165 |
-| external_call | `runtime_generation_options` | `sorted` | 1164 |
-| external_call | `_runtime_policy_from_generation_inputs` | `isinstance` | 1250 |
-| external_call | `_validate_runtime_policy` | `sorted` | 1263 |
+| unresolved_call | `runtime_generation_options` | `surface_value` | 1169 |
+| external_call | `runtime_generation_options` | `isinstance` | 1172 |
+| external_call | `runtime_generation_options` | `sorted` | 1171 |
+| external_call | `_runtime_policy_from_generation_inputs` | `isinstance` | 1257 |
+| external_call | `_validate_runtime_policy` | `sorted` | 1270 |
 | step_limit | `runtime_generation_options` | `first 12 steps` | 0 |
 
 ## Behavior

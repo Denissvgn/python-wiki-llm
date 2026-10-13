@@ -16,72 +16,82 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as record_calibration_agent_result
     participant p1 as _record_p0_calibration_agent_result
-    participant p2 as isinstance (src/llm_wiki_cli/services…_calibration_agent_result)
-    participant p3 as P0CalibrationDispatchReceipt.from_dict
-    participant p4 as P0CalibrationAgentResult.from_dict
-    participant p5 as _open_store
-    participant p6 as store.lock
-    participant p7 as _load_run_locked
-    participant p8 as _sha256_json
-    participant p9 as run.payload[…].get (src/llm_wiki_cli/services…_calibration_agent_result)
-    participant p10 as existing.get
-    participant p11 as _terminal_transition_locked
-    participant p12 as P0CalibrationIntegrityError
-    participant p13 as P0CalibrationTransitionError
-    participant p14 as _recheck_bound_controls
-    participant p15 as _require_choice
-    participant p16 as receipt.payload.get
-    participant p17 as _authority_freshness_failure
-    participant p18 as next (src/llm_wiki_cli/services…_calibration_agent_result)
-    participant p19 as run.payload[…].items
+    participant p2 as P0CalibrationDispatchReceipt.from_dict
+    participant p3 as P0CalibrationAgentResult.from_dict
+    participant p4 as _open_store
+    participant p5 as _load_run_locked
+    participant p6 as _recheck_bound_controls
+    participant p7 as _authority_freshness_failure
+    participant p8 as _validate_result_import_bindings
+    participant p9 as _validate_semantic_result
+    participant p10 as _frozen_intake_proposals
+    participant p11 as _json_round_trip
+    participant p12 as _bound_outbound_roots
+    participant p13 as _validate_dispatch_receipt
+    participant p14 as _validate_agent_result
+    participant p15 as _load_emergency_rejection
+    participant p16 as _recover_pending_transaction
+    participant p17 as _block_ambiguous_recovery
+    participant p18 as _persist_emergency_rejection
+    participant p19 as _validate_authority_grant
+    participant p20 as _sanitize_outbound_value
+    participant p21 as _validate_host_authorization
+    participant p22 as _validate_cited_claim
+    participant p23 as _assert_outbound_payload_safe
+    participant p24 as _unknown_root_entries
+    participant p25 as _terminal_transition_locked
+    participant p26 as _proposal_claim_records
+    participant p27 as _load_control_workspace
+    participant p28 as _validate_isolation_attestation
+    participant p29 as isinstance (src/llm_wiki_cli/services…_calibration_agent_result)
+    participant p30 as store.lock
     p0->>p1: _record_p0_calibration_agent_result
-    p1-->>p2: isinstance (src/llm_wiki_cli/services…_calibration_agent_result)(dispatch_receipt, P0CalibrationDispatchReceipt)
-    p1->>p3: P0CalibrationDispatchReceipt.from_dict
-    p1-->>p2: isinstance (src/llm_wiki_cli/services…_calibration_agent_result)(result, P0CalibrationAgentResult)
-    p1->>p4: P0CalibrationAgentResult.from_dict
-    p1->>p5: _open_store
-    p1-->>p6: store.lock
-    p1->>p7: _load_run_locked
-    p1->>p8: _sha256_json
-    p1->>p8: _sha256_json
-    p1-->>p9: run.payload[…].get (src/llm_wiki_cli/services…_calibration_agent_result)(receipt.receipt_id)
-    p1-->>p2: isinstance (src/llm_wiki_cli/services…_calibration_agent_result)(existing, Mapping)
-    p1-->>p10: existing.get('receipt_hash')
-    p1-->>p10: existing.get('result_hash')
-    p1->>p11: _terminal_transition_locked
-    p1->>p12: P0CalibrationIntegrityError
-    p1->>p13: P0CalibrationTransitionError
-    p1->>p14: _recheck_bound_controls
-    p1->>p11: _terminal_transition_locked
-    p1->>p12: P0CalibrationIntegrityError
-    p1->>p13: P0CalibrationTransitionError
-    p1->>p15: _require_choice
-    p1-->>p16: receipt.payload.get('role')
-    p1->>p13: P0CalibrationTransitionError
-    p1->>p17: _authority_freshness_failure
-    p1->>p11: _terminal_transition_locked
-    p1->>p13: P0CalibrationTransitionError
-    p1-->>p18: next (src/llm_wiki_cli/services…_calibration_agent_result)(..., None)
-    p1-->>p19: run.payload[…].items
-    p1-->>p2: isinstance (src/llm_wiki_cli/services…_calibration_agent_result)(binding, Mapping)
+    p1->>p2: P0CalibrationDispatchReceipt.from_dict
+    p1->>p3: P0CalibrationAgentResult.from_dict
+    p1->>p4: _open_store
+    p1->>p5: _load_run_locked
+    p1->>p6: _recheck_bound_controls
+    p1->>p7: _authority_freshness_failure
+    p1->>p8: _validate_result_import_bindings
+    p1->>p9: _validate_semantic_result
+    p1->>p10: _frozen_intake_proposals
+    p2->>p11: _json_round_trip
+    p10->>p12: _bound_outbound_roots
+    p2->>p13: _validate_dispatch_receipt
+    p3->>p14: _validate_agent_result
+    p5->>p15: _load_emergency_rejection
+    p5->>p16: _recover_pending_transaction
+    p5->>p17: _block_ambiguous_recovery
+    p5->>p18: _persist_emergency_rejection
+    p7->>p19: _validate_authority_grant
+    p10->>p20: _sanitize_outbound_value
+    p7->>p21: _validate_host_authorization
+    p9->>p22: _validate_cited_claim
+    p10->>p23: _assert_outbound_payload_safe
+    p5->>p24: _unknown_root_entries
+    p5->>p25: _terminal_transition_locked
+    p9->>p26: _proposal_claim_records
+    p6->>p27: _load_control_workspace
+    p7->>p28: _validate_isolation_attestation
+    p1-->>p29: isinstance (src/llm_wiki_cli/services…_calibration_agent_result)(dispatch_receipt, P0CalibrationDispatchReceipt)
+    p1-->>p30: store.lock
 ```
 
 > Call sequence diagram shows 30 of 1719 interactions; 1689 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 5 of 367 (362 omitted); unresolved 6 of 605 (599 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 367 (366 omitted); unresolved 1 of 605 (604 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/calibration/controller.py:P0CalibrationDispatchReceipt.from_dict` | 4 | [src/llm_wiki_cli/services/calibration/controller.py](../modules/controller.md) | internal | 3 |
 | `src/llm_wiki_cli/services/calibration/controller.py:_json_round_trip` | 5 | - | external | 4 |
 | `src/llm_wiki_cli/services/calibration/controller.py:_json_round_trip` | 5 | [src/llm_wiki_cli/services/calibration/controller.py](../modules/controller.md) | internal | 3 |
 | `src/llm_wiki_cli/services/calibration/controller.py:_validate_dispatch_receipt` | 13 | - | unresolved | 20 |
@@ -89,6 +99,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/calibration/controller.py:_require_uuid` | 16 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_uuid` | 17 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_uuid` | 17 | - | external | 2 |
+| `src/llm_wiki_cli/services/calibration/controller.py:_require_uuid` | 16 | [src/llm_wiki_cli/services/calibration/controller.py](../modules/controller.md) | internal | 3 |
 > Omission summary shows 8 of 265 groups; 257 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

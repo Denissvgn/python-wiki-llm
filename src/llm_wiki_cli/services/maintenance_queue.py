@@ -535,6 +535,29 @@ def build_maintenance_queue(
             issues.setdefault(path, []).append(issue)
         else:
             global_issues.append(asdict(issue))
+    maintenance_report = getattr(captured.knowledge_view, "maintenance_report", None)
+    if (
+        maintenance_report is None
+        and not captured.basis_incompatible
+        and captured.knowledge_view.ready
+        and captured.knowledge_view.knowledge is not None
+        and captured.knowledge_view.manifest_basis is not None
+        and captured.knowledge_view.manifest_basis.maintenance_state is None
+    ):
+        from .maintenance_service import capture_maintenance_observations
+        from .maintenance_status import build_maintenance_status
+
+        # Current structural freshness cannot discharge untracked prose review.
+        # Reuse exact captured owners/sections without allocating durable state.
+        untracked = capture_maintenance_observations(
+            captured, raw_pages=captured.raw_content_by_page
+        )
+        maintenance_report = build_maintenance_status(
+            None,
+            None,
+            untracked,
+            analysis_scope="full-inventory",
+        )
     result = compose_queue(
         pages,
         work.items,
@@ -542,7 +565,7 @@ def build_maintenance_queue(
         issues,
         captured.dependency_analysis.get("metrics", {}).get("metrics", {}),
         limit=limit,
-        maintenance_report=getattr(captured.knowledge_view, "maintenance_report", None),
+        maintenance_report=maintenance_report,
         manifest_basis=captured.knowledge_view.manifest_basis,
     )
     if captured.basis_incompatible:

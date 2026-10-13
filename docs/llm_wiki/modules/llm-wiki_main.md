@@ -9,6 +9,13 @@ Obsidian loads this file to register the plugin and its command helpers. It is
 a generated bundle rather than an independent implementation; behavior changes
 belong in the TypeScript source and are carried here by the integration build.
 
+## Imports
+
+| Source | Symbols |
+|--------|---------|
+| `child_process` | `` |
+| `obsidian` | `` |
+
 ## Module Signals
 
 | Signal | Values |
@@ -20,6 +27,12 @@ belong in the TypeScript source and are carried here by the integration build.
 
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 *No internal module dependencies detected.*
+
+### External packages
+
+| Language | Used packages | Undeclared packages |
+|---|---:|---:|
+| typescript | 1 | 0 |
 
 ## Functions
 

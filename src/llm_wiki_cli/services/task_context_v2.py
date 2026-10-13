@@ -412,6 +412,8 @@ def build_scoped_task_read(request, *, src_dir=".", wiki_dir=DEFAULT_WIKI_DIR,
             "source_bytes": sum(i.size for i in snapshot.captured_file_integrity.values()) if snapshot else 0,
             "queries": len(queried), "capture_retries": 0, "scope": scope,
             "source_byte_measure": "unique-captured-inputs; excludes parser and validation rereads"}
+    if collected is not None and collected.analysis_input_status is not None:
+        work["analysis_input_status"] = collected.analysis_input_status
     basis = {"source": source_id, "wiki": wiki_id,
              "consumed_source": hash_source_snapshot(snapshot.to_consumed_inputs()) if snapshot else None,
              "scope": scope, "paths": sorted(paths), "changes": changes,

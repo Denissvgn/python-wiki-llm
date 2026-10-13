@@ -34,6 +34,7 @@ Filtered source-tree discovery results shared by lint/extract paths.
 | `captured_file_integrity` | `dict[str, SourceFileIntegrity]` | `field(default_factory=dict)` | — |
 | `captured_gitignore_paths` | `frozenset[str]` | `frozenset()` | — |
 | `respect_ignores` | `bool` | `False` | — |
+| `respect_discovery` | `bool` | `False` | — |
 | `capture_byte_limit` | `int \| None` | `None` | — |
 | `capture_scan_limit` | `int \| None` | `None` | — |
 | `coherent` | `bool` | `False` | — |
@@ -124,4 +125,4 @@ flowchart LR
 | `_apply_sync_changes` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_build_generated_section_context` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 
-> References: showing 12 of 161 logical references; 149 omitted by the 12-row generated summary limit.
+> References: showing 12 of 162 logical references; 150 omitted by the 12-row generated summary limit.

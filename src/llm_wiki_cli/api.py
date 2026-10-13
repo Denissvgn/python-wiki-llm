@@ -1836,6 +1836,14 @@ def list_wiki_pages(wiki_dir: str = DEFAULT_WIKI_DIR) -> WikiPagesResult:
     }
 
 
+@_api_boundary
+def get_analysis_input_status(*, limit: int = 20) -> dict[str, Any]:
+    """Read bounded installed-provider census diagnostics, without source execution."""
+    from .services.analysis_capture import analysis_input_status
+
+    return analysis_input_status(limit=limit)
+
+
 @overload
 def doctor(
     src_dir: str = ".", *, wiki_dir: str = DEFAULT_WIKI_DIR, strict: bool = False,
@@ -2555,6 +2563,7 @@ _DOCUMENTATION_QUERY_FIELDS = {
             "diff",
             "limit",
             "include_raw_evidence",
+            "source_policy",
         }
     ),
 }
@@ -2695,7 +2704,9 @@ def _validate_documentation_query_request(
     limit = _normalize_query_limit(request.get("limit", 20))
     # Operation-specific transport fields are input validation, not part of
     # loading the query service. Reject them before any workspace access.
-    if operation == "related":
+    if operation == "impact":
+        _normalize_query_choice(request.get("source_policy", "explicit"), field="source_policy", allowed=("explicit", "discovery"))
+    elif operation == "related":
         _normalize_query_choice(request.get("direction", "both"), field="direction", allowed=_KNOWLEDGE_QUERY_DIRECTIONS)
         _normalize_query_values(request.get("kinds"), field="kinds", allowed=_KNOWLEDGE_QUERY_KINDS)
     elif operation == "typed":
@@ -2889,8 +2900,16 @@ def _impact_query(
         allow_external=allow_external_src,
     )
     wiki_root = _validate_wiki_dir(wiki_dir)
-    existing_paths = _existing_supplied_source_paths(src_root, selected_paths)
-    if existing_paths:
+    source_policy = request.get("source_policy", "explicit")
+    checked_paths = selected_paths
+    if source_policy == "discovery":
+        from .services.source_selection import resolve_source_selection, path_is_selected
+        policy = resolve_source_selection(src_root, source_selection)
+        if policy is not None:
+            checked_paths = tuple(path for path in selected_paths if path != policy.path and path_is_selected(policy, path))
+    existing_paths = _existing_supplied_source_paths(src_root, checked_paths)
+    if existing_paths or source_policy == "discovery":
+        policy_options: dict[str, Any] = {"source_policy": source_policy} if source_policy == "discovery" else {}
         service = build_live_documentation_query_service(
             source_root=src_root,
             wiki_root=wiki_root,
@@ -2898,7 +2917,7 @@ def _impact_query(
             read_only=True,
             include_plugins=False,
             source_selection=source_selection,
-            paths=existing_paths,
+            paths=selected_paths if source_policy == "discovery" else existing_paths,
             extract_payload_builder=extract_cmd.build_extract_payload,
             source_snapshot_builder=extract_cmd.build_source_snapshot,
             call_edge_resolver=extract_cmd.resolve_call_edges,
@@ -2907,6 +2926,7 @@ def _impact_query(
             verification_view_attacher=attach_machine_verification_read_view,
             verification_summarizer=verification_summaries_for_concepts,
             service_factory=DocumentationGraphQueryService,
+            **policy_options,
         )
         scope = "targeted-extraction"
     else:
@@ -2952,7 +2972,8 @@ def _impact_query(
 
     source_summaries, source_bound = _bounded_query_records(
         (
-            _source_inventory_summary(path, service.inventory.get(path))
+            {**_source_inventory_summary(path, service.inventory.get(path)),
+             **getattr(service, "path_outcomes", {}).get(path, {})}
             for path in selected_paths
         ),
         limit=limit,
@@ -2991,6 +3012,8 @@ def _impact_query(
             "targeted source extraction does not establish global live freshness"
         ],
     }
+    if "source_policy" in request:
+        payload["query"]["source_policy"] = source_policy
     if include_raw:
         raw_records, raw_bound, raw_byte_bound = _bounded_raw_query_evidence(
             (
@@ -3716,6 +3739,7 @@ __all__ = [
     "dispatch_calibration_agent",
     "dispatch_p0_calibration_agent",
     "doctor",
+    "get_analysis_input_status",
     "explain_evidence",
     "export_documentation_run",
     "extract_source",

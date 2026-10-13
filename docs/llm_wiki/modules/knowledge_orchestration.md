@@ -12,6 +12,14 @@ module adapts those exact in-memory results to the pure generation planner and
 applies the shared atomic commit protocol.  It performs no discovery or
 extraction of its own.
 
+
+Sync transports the independently versioned static-analysis commitment, its
+explicit full/inventory coverage, and an
+optional typed-graph reuse request to the generation owner. This is an internal
+optimization of evaluated inputs; it does not adopt storage or maintenance,
+prepare helpers, alter read scope or waive the live source and prior-artifact
+checks around publication.
+
 ## Imports
 
 | Source | Symbols |
@@ -37,6 +45,7 @@ extraction of its own.
 | `.python_implementation` | `analysis_identity` |
 | `.source_selection` | `SourceSelectionError`, `selection_may_contain_path`, `with_source_selection_generation_input` |
 | `.source_snapshot` | `SourceSnapshot`, `source_snapshot_matches_current_files`, `confirmed_missing_source_paths` |
+| `.sync_analysis_cache` | `EXTENSION` |
 | `.sync_manifest` | `EVIDENCE_NOT_RECORDED`, `MANIFEST_FILENAME`, `SyncManifest` |
 | `.sync_transitions` | `PageTransitionPlan` |
 | `.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION`, `SurfaceIndexEvaluation` |
@@ -68,19 +77,19 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (9) |
-| Outbound | `src` (25) |
+| Outbound | `src` (26) |
 
-> All 34 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 35 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [RuntimeKnowledgeInputs](../entities/RuntimeKnowledgeInputs.md) | 134 | — | Evaluated command state needed to plan one three-artifact commit. |
-| [CommittedKnowledgeState](../entities/CommittedKnowledgeState.md) | 185 | — | One command's captured prior commit, including explicit absent/invalid state. |
-| [CommittedRuntimeProvenance](../entities/CommittedRuntimeProvenance.md) | 290 | — | Exact runtime provenance recovered from an intact committed projection. |
-| [RuntimeLiveEvaluationInputs](../entities/RuntimeLiveEvaluationInputs.md) | 299 | — | Already evaluated runtime values for one live freshness comparison. |
-| [PreparedRuntimeGenerationOptions](../entities/PreparedRuntimeGenerationOptions.md) | 322 | — | Canonical writer/reader inputs for the generation-options commitment. |
+| [RuntimeKnowledgeInputs](../entities/RuntimeKnowledgeInputs.md) | 136 | — | Evaluated command state needed to plan one three-artifact commit. |
+| [CommittedKnowledgeState](../entities/CommittedKnowledgeState.md) | 189 | — | One command's captured prior commit, including explicit absent/invalid state. |
+| [CommittedRuntimeProvenance](../entities/CommittedRuntimeProvenance.md) | 294 | — | Exact runtime provenance recovered from an intact committed projection. |
+| [RuntimeLiveEvaluationInputs](../entities/RuntimeLiveEvaluationInputs.md) | 303 | — | Already evaluated runtime values for one live freshness comparison. |
+| [PreparedRuntimeGenerationOptions](../entities/PreparedRuntimeGenerationOptions.md) | 326 | — | Canonical writer/reader inputs for the generation-options commitment. |
 
 ## Functions
 

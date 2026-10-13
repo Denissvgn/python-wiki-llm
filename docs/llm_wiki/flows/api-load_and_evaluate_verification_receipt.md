@@ -6,7 +6,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -14,74 +14,83 @@ sequenceDiagram
     participant p0 as load_and_evaluate_verification_receipt
     participant p1 as load_verification_receipt
     participant p2 as evaluate_verification_receipt
-    participant p3 as Path (src/llm_wiki_cli/services…load_verification_receipt)
-    participant p4 as validate_verification_receipt
-    participant p5 as first_unsafe_path_component
-    participant p6 as isinstance (src/llm_wiki_cli/services…uate_verification_receipt)
-    participant p7 as VerificationReceiptError
-    participant p8 as TypeError (src/llm_wiki_cli/services…uate_verification_receipt)
-    participant p9 as root.is_symlink
-    participant p10 as add
-    participant p11 as verification_receipt_path
-    participant p12 as dict (src/llm_wiki_cli/services…uate_verification_receipt)
-    participant p13 as _read_regular_receipt
-    participant p14 as deserialize_verification_receipt
-    participant p15 as _CHECKER_REGISTRY.get
-    participant p16 as VerificationReceiptEvaluation
-    participant p17 as tuple (src/llm_wiki_cli/services…uate_verification_receipt)
-    participant p18 as Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p19 as Path (src/llm_wiki_cli/services…verification_receipt_path)
-    participant p20 as path.lstat
-    participant p21 as isinstance (src/llm_wiki_cli/services…lize_verification_receipt)
+    participant p3 as _read_regular_receipt
+    participant p4 as deserialize_verification_receipt
+    participant p5 as validate_verification_receipt
+    participant p6 as serialize_verification_receipt
+    participant p7 as formatted_json_bytes
+    participant p8 as verification_receipt_to_payload
+    participant p9 as _object
+    participant p10 as _exact_fields
+    participant p11 as _string
+    participant p12 as _receipt_hash
+    participant p13 as _scope_uid
+    participant p14 as _receipt_anchor_mapping
+    participant p15 as hash_json
+    participant p16 as _parse_check
+    participant p17 as _sha256
+    participant p18 as _checker_id
+    participant p19 as _normalized_anchor_mapping
+    participant p20 as canonical_json_bytes
+    participant p21 as _checker_version
+    participant p22 as _array
+    participant p23 as _parse_diagnostic
+    participant p24 as _parse_coverage
+    participant p25 as first_unsafe_path_component
+    participant p26 as VerificationReceiptError
+    participant p27 as verification_receipt_path
+    participant p28 as VerificationReceiptEvaluation
+    participant p29 as Path (src/llm_wiki_cli/services…load_verification_receipt)
+    participant p30 as root.is_symlink
     p0->>p1: load_verification_receipt
     p0->>p2: evaluate_verification_receipt
-    p1-->>p3: Path (src/llm_wiki_cli/services…load_verification_receipt)(wiki_dir)
-    p2->>p4: validate_verification_receipt
-    p1->>p5: first_unsafe_path_component
-    p2-->>p6: isinstance (src/llm_wiki_cli/services…uate_verification_receipt)(context, VerificationContext)
-    p1->>p7: VerificationReceiptError
-    p2-->>p8: TypeError (src/llm_wiki_cli/services…uate_verification_receipt)('context must be a VerificationContext')
-    p1-->>p9: root.is_symlink
-    p2-->>p10: add(VerificationInvalidationReason.KNOWLEDGE_CHANGED)
-    p1->>p7: VerificationReceiptError
-    p2-->>p10: add(VerificationInvalidationReason.SCOPE_CHANGED)
-    p1->>p11: verification_receipt_path
-    p2-->>p12: dict (src/llm_wiki_cli/services…uate_verification_receipt)(current_receipt.evidence)
-    p1->>p13: _read_regular_receipt
-    p2-->>p12: dict (src/llm_wiki_cli/services…uate_verification_receipt)(context.evidence)
-    p1->>p14: deserialize_verification_receipt
-    p2-->>p10: add(VerificationInvalidationReason.EVIDENCE_CHANGED)
-    p2-->>p12: dict (src/llm_wiki_cli/services…uate_verification_receipt)(current_receipt.evaluated_snapshot)
-    p2-->>p12: dict (src/llm_wiki_cli/services…uate_verification_receipt)(context.evaluated_snapshot)
-    p2-->>p10: add(VerificationInvalidationReason.SNAPSHOT_CHANGED)
-    p2-->>p15: _CHECKER_REGISTRY.get(check.checker_id)
-    p2-->>p10: add(VerificationInvalidationReason.UNKNOWN_CHECKER)
-    p2-->>p10: add(VerificationInvalidationReason.CHECKER_VERSION_CHANGED)
-    p2->>p16: VerificationReceiptEvaluation
-    p2-->>p17: tuple (src/llm_wiki_cli/services…uate_verification_receipt)(reasons)
-    p5-->>p18: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)(os.fspath(...))
-    p11-->>p19: Path (src/llm_wiki_cli/services…verification_receipt_path)(wiki_dir)
-    p13-->>p20: path.lstat
-    p14-->>p21: isinstance (src/llm_wiki_cli/services…lize_verification_receipt)(content, bytes)
+    p1->>p3: _read_regular_receipt
+    p1->>p4: deserialize_verification_receipt
+    p4->>p5: validate_verification_receipt
+    p4->>p6: serialize_verification_receipt
+    p6->>p7: formatted_json_bytes
+    p6->>p8: verification_receipt_to_payload
+    p5->>p9: _object
+    p5->>p10: _exact_fields
+    p5->>p11: _string
+    p5->>p12: _receipt_hash
+    p5->>p13: _scope_uid
+    p5->>p14: _receipt_anchor_mapping
+    p5->>p15: hash_json
+    p5->>p16: _parse_check
+    p12->>p17: _sha256
+    p16->>p18: _checker_id
+    p14->>p19: _normalized_anchor_mapping
+    p15->>p20: canonical_json_bytes
+    p16->>p21: _checker_version
+    p16->>p22: _array
+    p16->>p23: _parse_diagnostic
+    p16->>p24: _parse_coverage
+    p1->>p25: first_unsafe_path_component
+    p1->>p26: VerificationReceiptError
+    p1->>p27: verification_receipt_path
+    p2->>p28: VerificationReceiptEvaluation
+    p1-->>p29: Path (src/llm_wiki_cli/services…load_verification_receipt)(wiki_dir)
+    p1-->>p30: root.is_symlink
 ```
 
 > Call sequence diagram shows 30 of 247 interactions; 217 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 11 of 92 (81 omitted); unresolved 9 of 35 (26 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 92 (91 omitted); unresolved 1 of 35 (34 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 4 | - | external | 19 |
+| `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 4 | - | external | 20 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 4 | - | unresolved | 5 |
+| `src/llm_wiki_cli/services/verification_contracts.py:load_verification_receipt` | 2 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 1 |
+| `src/llm_wiki_cli/services/verification_contracts.py:verification_receipt_path` | 33 | - | external | 1 |
+| `src/llm_wiki_cli/services/verification_contracts.py:_read_regular_receipt` | 35 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/verification_contracts.py:_read_regular_receipt` | 35 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 7 |
 | `src/llm_wiki_cli/services/verification_contracts.py:_read_regular_receipt` | 35 | - | external | 12 |
-| `src/llm_wiki_cli/services/verification_contracts.py:_read_regular_receipt` | 35 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/verification_contracts.py:deserialize_verification_receipt` | 58 | - | external | 3 |
-| `src/llm_wiki_cli/services/verification_contracts.py:deserialize_verification_receipt` | 58 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 6 |
-| `src/llm_wiki_cli/services/verification_contracts.py:deserialize_verification_receipt` | 58 | - | unresolved | 1 |
-> Omission summary shows 8 of 65 groups; 57 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/verification_contracts.py:deserialize_verification_receipt` | 58 | - | external | 4 |
+> Omission summary shows 8 of 69 groups; 61 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

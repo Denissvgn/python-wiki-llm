@@ -17,85 +17,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as main
-    participant p1 as _arguments
-    participant p2 as load_report
-    participant p3 as render_summary
-    participant p4 as Path (integrations/github-action/render_summary.py:main)
-    participant p5 as SystemExit
-    participant p6 as _append
-    participant p7 as os.environ.get
-    participant p8 as int (integrations/github-action/render_summary.py:main)
-    participant p9 as str (integrations/github-action/render_summary.py:main)
-    participant p10 as _write_receipt
-    participant p11 as argparse.ArgumentParser
-    participant p12 as Path(…).read_bytes (integrations/github-actio…er_summary.py:load_report)
-    participant p13 as _object (integrations/github-action/render_summary.py)
-    participant p14 as Path(…).open
-    participant p15 as Path (integrations/github-actio…summary.py:_write_receipt)
-    participant p16 as parser.add_argument
-    participant p17 as Path (integrations/github-actio…er_summary.py:load_report)
-    participant p18 as Path (integrations/github-actio…render_summary.py:_append)
-    participant p19 as target.exists
-    participant p20 as ValueError (integrations/github-actio…er_summary.py:load_report)
-    participant p21 as output.write
-    participant p22 as target.is_symlink
-    participant p23 as sorted (integrations/github-actio…der_summary.py:_arguments)
-    participant p24 as _validate_report_bytes
-    p0->>p1: _arguments
-    p0->>p2: load_report
-    p0->>p3: render_summary
-    p0-->>p4: Path (integrations/github-action/render_summary.py:main)(args.report)
-    p0-->>p5: SystemExit(...)
-    p0->>p6: _append
-    p0-->>p7: os.environ.get('GITHUB_STEP_SUMMARY')
-    p0->>p6: _append
-    p0-->>p7: os.environ.get('GITHUB_OUTPUT')
-    p0-->>p8: int (integrations/github-action/render_summary.py:main)(...)
-    p0-->>p9: str (integrations/github-action/render_summary.py:main)(report[...])
-    p0->>p10: _write_receipt
-    p0-->>p5: SystemExit(...)
-    p1-->>p11: argparse.ArgumentParser
-    p2-->>p12: Path(…).read_bytes (integrations/github-actio…er_summary.py:load_report)
-    p3->>p13: _object (integrations/github-action/render_summary.py)
-    p6-->>p14: Path(…).open('a', encoding='utf-8', newline='\n')
-    p10-->>p15: Path (integrations/github-actio…summary.py:_write_receipt)(path)
-    p1-->>p16: parser.add_argument('--report', required=True)
-    p2-->>p17: Path (integrations/github-actio…er_summary.py:load_report)(path)
-    p3->>p13: _object (integrations/github-action/render_summary.py)
-    p6-->>p18: Path (integrations/github-actio…render_summary.py:_append)(path)
-    p10-->>p19: target.exists
-    p1-->>p16: parser.add_argument('--fail-on', choices=sorted(...), required=True)
-    p2-->>p20: ValueError (integrations/github-actio…er_summary.py:load_report)(...)
-    p3->>p13: _object (integrations/github-action/render_summary.py)
-    p6-->>p21: output.write(content)
-    p10-->>p22: target.is_symlink
-    p1-->>p23: sorted (integrations/github-actio…der_summary.py:_arguments)(FAIL_THRESHOLDS)
-    p2->>p24: _validate_report_bytes
+    participant p1 as load_report
+    participant p2 as render_summary
+    participant p3 as _write_receipt
+    participant p4 as _arguments
+    participant p5 as _append
+    participant p6 as _validate_report_bytes
+    participant p7 as detailed_health_rows
+    participant p8 as _cell
+    participant p9 as _required_object
+    participant p10 as _enum (integrations/github-action/render_summary.py)
+    participant p11 as _validate_availability
+    participant p12 as _validate_freshness
+    participant p13 as _validate_snapshot
+    participant p14 as _validate_governance
+    participant p15 as _validate_drift
+    participant p16 as _validate_verification
+    participant p17 as validate_doctor_payload
+    participant p18 as _exact_object (src/llm_wiki_cli/services/ci_report.py)
+    participant p19 as _string_list
+    participant p20 as _freshness_counts (integrations/github-action/render_summary.py)
+    participant p21 as _nullable_boolean (integrations/github-action/render_summary.py)
+    participant p22 as validate_health_details
+    participant p23 as _contract_object
+    participant p24 as _string (src/llm_wiki_cli/services/ci_report.py)
+    participant p25 as _validate_doctor
+    participant p26 as _exact_object (integrations/github-action/render_summary.py)
+    participant p27 as _object (src/llm_wiki_cli/services/ci_report.py)
+    participant p28 as _object (src/llm_wiki_cli/services/health_contract.py)
+    participant p29 as Path (integrations/github-action/render_summary.py:main)
+    participant p30 as Path(…).read_bytes (integrations/github-actio…er_summary.py:load_report)
+    p0->>p1: load_report
+    p0->>p2: render_summary
+    p0->>p3: _write_receipt
+    p0->>p4: _arguments
+    p0->>p5: _append
+    p1->>p6: _validate_report_bytes
+    p2->>p7: detailed_health_rows
+    p2->>p8: _cell
+    p6->>p9: _required_object
+    p6->>p10: _enum (integrations/github-action/render_summary.py)
+    p6->>p11: _validate_availability
+    p6->>p12: _validate_freshness
+    p6->>p13: _validate_snapshot
+    p6->>p14: _validate_governance
+    p6->>p15: _validate_drift
+    p6->>p16: _validate_verification
+    p6->>p17: validate_doctor_payload
+    p17->>p18: _exact_object (src/llm_wiki_cli/services/ci_report.py)
+    p13->>p19: _string_list
+    p12->>p20: _freshness_counts (integrations/github-action/render_summary.py)
+    p16->>p21: _nullable_boolean (integrations/github-action/render_summary.py)
+    p17->>p22: validate_health_details
+    p17->>p23: _contract_object
+    p17->>p24: _string (src/llm_wiki_cli/services/ci_report.py)
+    p17->>p25: _validate_doctor
+    p20->>p26: _exact_object (integrations/github-action/render_summary.py)
+    p18->>p27: _object (src/llm_wiki_cli/services/ci_report.py)
+    p22->>p28: _object (src/llm_wiki_cli/services/health_contract.py)
+    p0-->>p29: Path (integrations/github-action/render_summary.py:main)(args.report)
+    p1-->>p30: Path(…).read_bytes (integrations/github-actio…er_summary.py:load_report)
 ```
 
 > Call sequence diagram shows 30 of 571 interactions; 541 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 13 of 189 (176 omitted); unresolved 7 of 99 (92 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 189 (188 omitted); unresolved 1 of 99 (98 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `integrations/github-action/render_summary.py:_arguments` | 2 | - | unresolved | 5 |
-| `integrations/github-action/render_summary.py:_arguments` | 2 | - | external | 1 |
+| `integrations/github-action/render_summary.py:_arguments` | 2 | - | external | 3 |
+| `integrations/github-action/render_summary.py:_arguments` | 2 | - | unresolved | 7 |
+| `integrations/github-action/render_summary.py:load_report` | 13 | - | external | 2 |
 | `integrations/github-action/render_summary.py:_validate_report_bytes` | 17 | - | external | 11 |
 | `integrations/github-action/render_summary.py:_validate_report_bytes` | 17 | - | unresolved | 4 |
-| `integrations/github-action/render_summary.py:_validate_report_bytes` | 17 | [integrations/github-action/render_summary.py](../modules/render_summary.md) | internal | 13 |
 | `integrations/github-action/render_summary.py:_required_object` | 21 | [integrations/github-action/render_summary.py](../modules/render_summary.md) | internal | 1 |
 | `integrations/github-action/render_summary.py:_object` | 22 | - | external | 2 |
 | `integrations/github-action/render_summary.py:_required_object` | 21 | - | external | 3 |
-> Omission summary shows 8 of 111 groups; 103 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 114 groups; 106 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

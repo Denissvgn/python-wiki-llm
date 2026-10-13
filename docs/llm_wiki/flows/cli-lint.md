@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [lint_service](../modules/lint_service.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 59 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 62 more
 
 **Complete modules touched:**
 
@@ -58,6 +58,7 @@
 - [python_observations](../modules/python_observations.md)
 - [runtime_output](../modules/runtime_output.md)
 - [services_dependencies](../modules/services_dependencies.md)
+- [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_analysis](../modules/sync_analysis.md)
@@ -68,79 +69,96 @@
 - [wiki_lifecycle](../modules/wiki_lifecycle.md)
 - [wiki_media](../modules/wiki_media.md)
 - [wiki_surface](../modules/wiki_surface.md)
+- [yaml_formats](../modules/yaml_formats.md)
+- [yaml_syntax](../modules/yaml_syntax.md)
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as run
-    participant p1 as Path (src/llm_wiki_cli/services/lint_service.py:run)
-    participant p2 as getattr (src/llm_wiki_cli/services/lint_service.py:run)
-    participant p3 as bool (src/llm_wiki_cli/services/lint_service.py:run)
-    participant p4 as validate_path
-    participant p5 as str (src/llm_wiki_cli/services/lint_service.py:run)
-    participant p6 as validate_source_root
-    participant p7 as _LintProfiler
-    participant p8 as cache_options_from_args
-    participant p9 as extraction_job_request_from_args
-    participant p10 as build_report
-    participant p11 as report.count (src/llm_wiki_cli/services/lint_service.py:run)
-    participant p12 as report.by_category().get
-    participant p13 as report.by_category (src/llm_wiki_cli/services/lint_service.py:run)
-    participant p14 as print
-    participant p15 as sys.exit
-    p0-->>p1: Path (src/llm_wiki_cli/services/lint_service.py:run)(args.wiki_dir)
-    p0-->>p2: getattr (src/llm_wiki_cli/services/lint_service.py:run)(args, 'src_dir', '.')
-    p0-->>p3: bool (src/llm_wiki_cli/services/lint_service.py:run)(getattr(...))
-    p0-->>p2: getattr (src/llm_wiki_cli/services/lint_service.py:run)(args, 'knowledge_drift_report', False)
-    p0-->>p3: bool (src/llm_wiki_cli/services/lint_service.py:run)(...)
-    p0-->>p2: getattr (src/llm_wiki_cli/services/lint_service.py:run)(args, 'strict', False)
-    p0-->>p3: bool (src/llm_wiki_cli/services/lint_service.py:run)(getattr(...))
-    p0-->>p2: getattr (src/llm_wiki_cli/services/lint_service.py:run)(args, 'profile', False)
-    p0-->>p3: bool (src/llm_wiki_cli/services/lint_service.py:run)(getattr(...))
-    p0-->>p2: getattr (src/llm_wiki_cli/services/lint_service.py:run)(args, 'cache_stats', False)
-    p0-->>p3: bool (src/llm_wiki_cli/services/lint_service.py:run)(getattr(...))
-    p0-->>p2: getattr (src/llm_wiki_cli/services/lint_service.py:run)(args, 'allow_external_src', False)
-    p0-->>p2: getattr (src/llm_wiki_cli/services/lint_service.py:run)(args, 'source_selection', None)
-    p0->>p4: validate_path
-    p0-->>p5: str (src/llm_wiki_cli/services/lint_service.py:run)(wiki_dir)
-    p0->>p6: validate_source_root
-    p0-->>p5: str (src/llm_wiki_cli/services/lint_service.py:run)(src_root)
-    p0->>p7: _LintProfiler
-    p0->>p8: cache_options_from_args
-    p0->>p9: extraction_job_request_from_args
-    p0->>p10: build_report
-    p0-->>p2: getattr (src/llm_wiki_cli/services/lint_service.py:run)(args, 'jobs', 1)
-    p0-->>p2: getattr (src/llm_wiki_cli/services/lint_service.py:run)(args, 'helper_cache_dir', None)
-    p0-->>p2: getattr (src/llm_wiki_cli/services/lint_service.py:run)(args, 'include_tests', None)
-    p0-->>p2: getattr (src/llm_wiki_cli/services/lint_service.py:run)(args, 'media_size_warn_bytes', None)
-    p0-->>p11: report.count (src/llm_wiki_cli/services/lint_service.py:run)('extractor_failure')
-    p0-->>p12: report.by_category().get('extractor_failure', [...])
-    p0-->>p13: report.by_category (src/llm_wiki_cli/services/lint_service.py:run)
-    p0-->>p14: print(..., file=sys.stderr)
-    p0-->>p15: sys.exit(1)
+    participant p1 as validate_path
+    participant p2 as validate_source_root
+    participant p3 as cache_options_from_args
+    participant p4 as extraction_job_request_from_args
+    participant p5 as build_report
+    participant p6 as _profile_report_to_dict
+    participant p7 as render_text
+    participant p8 as record_validation_event
+    participant p9 as _LintProfiler
+    participant p10 as report_to_dict
+    participant p11 as _safe_knowledge_summary
+    participant p12 as record_event
+    participant p13 as _new_lint_report
+    participant p14 as _preflight_lint_inputs
+    participant p15 as _finalize_lint_report
+    participant p16 as prepare_cache_options
+    participant p17 as _collect_lint_inputs
+    participant p18 as _run_report_checks
+    participant p19 as windows_current_user_sid
+    participant p20 as resolve_team_policy
+    participant p21 as capture_health_details
+    participant p22 as _current_windows_user_sid
+    participant p23 as _profile_phase
+    participant p24 as _coerce_plugin_issue
+    participant p25 as resolve_inventory_cache_path
+    participant p26 as _check_unsupported_source_diagnostics
+    participant p27 as team_config_issue
+    participant p28 as _sanitize_metrics_value
+    participant p29 as Path (src/llm_wiki_cli/services/lint_service.py:run)
+    participant p30 as report.count (src/llm_wiki_cli/services/lint_service.py:run)
+    p0->>p1: validate_path
+    p0->>p2: validate_source_root
+    p0->>p3: cache_options_from_args
+    p0->>p4: extraction_job_request_from_args
+    p0->>p5: build_report
+    p0->>p6: _profile_report_to_dict
+    p0->>p7: render_text
+    p0->>p8: record_validation_event
+    p0->>p9: _LintProfiler
+    p6->>p10: report_to_dict
+    p8->>p11: _safe_knowledge_summary
+    p8->>p12: record_event
+    p5->>p13: _new_lint_report
+    p5->>p14: _preflight_lint_inputs
+    p5->>p15: _finalize_lint_report
+    p5->>p16: prepare_cache_options
+    p5->>p17: _collect_lint_inputs
+    p5->>p18: _run_report_checks
+    p2->>p19: windows_current_user_sid
+    p14->>p20: resolve_team_policy
+    p15->>p21: capture_health_details
+    p19->>p22: _current_windows_user_sid
+    p17->>p23: _profile_phase
+    p14->>p24: _coerce_plugin_issue
+    p16->>p25: resolve_inventory_cache_path
+    p18->>p26: _check_unsupported_source_diagnostics
+    p14->>p27: team_config_issue
+    p11->>p28: _sanitize_metrics_value
+    p0-->>p29: Path (src/llm_wiki_cli/services/lint_service.py:run)(args.wiki_dir)
+    p0-->>p30: report.count (src/llm_wiki_cli/services/lint_service.py:run)('extractor_failure')
 ```
 
-> Call sequence diagram shows 30 of 3170 interactions; 3140 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3259 interactions; 3229 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 21 of 943 (922 omitted); unresolved 3 of 1072 (1069 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 967 (966 omitted); unresolved 1 of 1115 (1114 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/lint_service.py:run` | 1 | - | external | 25 |
 | `src/llm_wiki_cli/config.py:validate_path` | 15 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
 | `src/llm_wiki_cli/config.py:validate_path` | 15 | - | unresolved | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 15 | - | external | 2 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 24 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 24 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 24 | - | external | 11 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 24 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 36 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 2 |
-> Omission summary shows 8 of 857 groups; 849 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 36 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
+> Omission summary shows 8 of 866 groups; 858 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -207,35 +225,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | Path (src/llm_wiki_cli/services/lint_service.py:run) | 3151 | `Path(args.wiki_dir)` |
-| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3152 | `getattr(args, 'src_dir', '.')` |
-| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3153 | `bool(getattr(...))` |
-| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3153 | `getattr(args, 'knowledge_drift_report', False)` |
-| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3154 | `bool(...)` |
-| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3154 | `getattr(args, 'strict', False)` |
-| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3155 | `bool(getattr(...))` |
-| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3155 | `getattr(args, 'profile', False)` |
-| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3156 | `bool(getattr(...))` |
-| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3156 | `getattr(args, 'cache_stats', False)` |
-| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3157 | `bool(getattr(...))` |
+| run | Path (src/llm_wiki_cli/services/lint_service.py:run) | 3242 | `Path(args.wiki_dir)` |
+| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3243 | `getattr(args, 'src_dir', '.')` |
+| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3244 | `bool(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3244 | `getattr(args, 'knowledge_drift_report', False)` |
+| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3245 | `bool(...)` |
+| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3245 | `getattr(args, 'strict', False)` |
+| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3246 | `bool(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3246 | `getattr(args, 'profile', False)` |
+| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3247 | `bool(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3247 | `getattr(args, 'cache_stats', False)` |
+| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3248 | `bool(getattr(...))` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 3189 |
-| output | `print` | `run` | 3192 |
-| output | `print` | `run` | 3200 |
+| output | `print` | `run` | 3280 |
+| output | `print` | `run` | 3283 |
+| output | `print` | `run` | 3291 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `run` | `getattr` | 3152 |
-| external_call | `run` | `getattr` | 3153 |
-| external_call | `run` | `getattr` | 3154 |
-| external_call | `run` | `getattr` | 3155 |
-| external_call | `run` | `getattr` | 3156 |
+| external_call | `run` | `getattr` | 3243 |
+| external_call | `run` | `getattr` | 3244 |
+| external_call | `run` | `getattr` | 3245 |
+| external_call | `run` | `getattr` | 3246 |
+| external_call | `run` | `getattr` | 3247 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

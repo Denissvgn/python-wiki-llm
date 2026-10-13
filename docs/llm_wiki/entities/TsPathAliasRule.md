@@ -1,6 +1,6 @@
 # _TsPathAliasRule
 
-**Location:** `src/llm_wiki_cli/services/imports.py:24`
+**Location:** `src/llm_wiki_cli/services/imports.py:25`
 **Kind:** Class
 **Bases:** —
 **Module:** [imports](../modules/imports.md)

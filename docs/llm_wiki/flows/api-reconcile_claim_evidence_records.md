@@ -6,7 +6,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -14,62 +14,69 @@ sequenceDiagram
     participant p0 as reconcile_claim_evidence_records
     participant p1 as _normalize_claim_record
     participant p2 as qualify_claim_evidence
-    participant p3 as record.get (src/llm_wiki_cli/services…le_claim_evidence_records)
-    participant p4 as isinstance (src/llm_wiki_cli/services…le_claim_evidence_records)
-    participant p5 as dict
-    participant p6 as legacy_freshness.pop
-    participant p7 as next
-    participant p8 as sorted (src/llm_wiki_cli/services…le_claim_evidence_records)
-    participant p9 as expected.get
-    participant p10 as DocumentationClaimEvidenceError
-    participant p11 as reconciled.append
-    participant p12 as tuple (src/llm_wiki_cli/services…le_claim_evidence_records)
-    participant p13 as _mapping
-    participant p14 as _identifier
-    participant p15 as _exact_fields
-    participant p16 as _portable_path
-    participant p17 as _text
-    participant p18 as _section_locator
-    participant p19 as _enum
-    participant p20 as _normalize_graph_query
-    participant p21 as _optional_identifier
-    participant p22 as _safe_evidence_link
-    participant p23 as record.get (src/llm_wiki_cli/services…y:_normalize_claim_record)
+    participant p3 as DocumentationClaimEvidenceError
+    participant p4 as _mapping
+    participant p5 as _exact_fields
+    participant p6 as _portable_path
+    participant p7 as _enum
+    participant p8 as _optional_identifier
+    participant p9 as _optional_locator
+    participant p10 as _section_locator
+    participant p11 as _structural_evidence
+    participant p12 as _freshness
+    participant p13 as _lifecycle_review
+    participant p14 as _normalize_graph_query
+    participant p15 as _bounds
+    participant p16 as _safe_evidence_link
+    participant p17 as _internal_evidence_ref
+    participant p18 as _current_lifecycle_review
+    participant p19 as _text
+    participant p20 as require_exact_choice
+    participant p21 as _identifier
+    participant p22 as require_portable_relative_path
+    participant p23 as _bound_record
+    participant p24 as _reason
+    participant p25 as _bound
+    participant p26 as _analyzer_bounds
+    participant p27 as _string_list
+    participant p28 as require_trimmed_text
+    participant p29 as isinstance (src/llm_wiki_cli/services…le_claim_evidence_records)
+    participant p30 as record.get (src/llm_wiki_cli/services…le_claim_evidence_records)
     p0->>p1: _normalize_claim_record
     p0->>p2: qualify_claim_evidence
-    p0-->>p3: record.get (src/llm_wiki_cli/services…le_claim_evidence_records)('section_locator')
-    p0-->>p3: record.get (src/llm_wiki_cli/services…le_claim_evidence_records)('graph_query')
-    p0-->>p3: record.get (src/llm_wiki_cli/services…le_claim_evidence_records)('internal_evidence_ref')
-    p0-->>p3: record.get (src/llm_wiki_cli/services…le_claim_evidence_records)('freshness')
-    p0-->>p4: isinstance (src/llm_wiki_cli/services…le_claim_evidence_records)(record_freshness, Mapping)
-    p0-->>p5: dict(expected[...])
-    p0-->>p6: legacy_freshness.pop('disclosure')
-    p0-->>p7: next(..., 'record')
-    p0-->>p8: sorted (src/llm_wiki_cli/services…le_claim_evidence_records)(_CLAIM_FIELDS)
-    p0-->>p3: record.get (src/llm_wiki_cli/services…le_claim_evidence_records)(field)
-    p0-->>p9: expected.get(field)
-    p0->>p10: DocumentationClaimEvidenceError
-    p0-->>p11: reconciled.append(expected)
-    p0-->>p12: tuple (src/llm_wiki_cli/services…le_claim_evidence_records)(sorted(...))
-    p0-->>p8: sorted (src/llm_wiki_cli/services…le_claim_evidence_records)(reconciled, key=...)
-    p1->>p13: _mapping
-    p2->>p14: _identifier
-    p1->>p15: _exact_fields
-    p2->>p16: _portable_path
-    p1->>p10: DocumentationClaimEvidenceError
-    p2->>p17: _text
-    p1->>p16: _portable_path
-    p2->>p18: _section_locator
-    p1->>p19: _enum
-    p2->>p20: _normalize_graph_query
-    p1->>p21: _optional_identifier
-    p2->>p22: _safe_evidence_link
-    p1-->>p23: record.get (src/llm_wiki_cli/services…y:_normalize_claim_record)('concept_uid')
+    p0->>p3: DocumentationClaimEvidenceError
+    p1->>p4: _mapping
+    p1->>p5: _exact_fields
+    p1->>p6: _portable_path
+    p1->>p7: _enum
+    p1->>p8: _optional_identifier
+    p1->>p9: _optional_locator
+    p1->>p10: _section_locator
+    p1->>p11: _structural_evidence
+    p1->>p12: _freshness
+    p1->>p13: _lifecycle_review
+    p1->>p14: _normalize_graph_query
+    p1->>p15: _bounds
+    p1->>p16: _safe_evidence_link
+    p1->>p17: _internal_evidence_ref
+    p2->>p18: _current_lifecycle_review
+    p6->>p19: _text
+    p7->>p20: require_exact_choice
+    p8->>p21: _identifier
+    p6->>p22: require_portable_relative_path
+    p15->>p23: _bound_record
+    p11->>p24: _reason
+    p18->>p25: _bound
+    p15->>p26: _analyzer_bounds
+    p13->>p27: _string_list
+    p19->>p28: require_trimmed_text
+    p0-->>p29: isinstance (src/llm_wiki_cli/services…le_claim_evidence_records)(record_freshness, Mapping)
+    p0-->>p30: record.get (src/llm_wiki_cli/services…le_claim_evidence_records)('section_locator')
 ```
 
 > Call sequence diagram shows 30 of 345 interactions; 315 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 6 of 99 (93 omitted); unresolved 9 of 86 (77 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 99 (98 omitted); unresolved 1 of 86 (85 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -83,7 +90,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 10 | - | external | 9 |
 | `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 10 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/documentation_claim_evidence.py:_exact_fields` | 9 | [src/llm_wiki_cli/services/documentation_claim_evidence.py](../modules/documentation_claim_evidence.md) | internal | 3 |
-> Omission summary shows 8 of 90 groups; 82 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 88 groups; 80 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

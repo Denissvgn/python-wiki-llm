@@ -14,85 +14,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as write_verification_receipt
     participant p1 as serialize_verification_receipt
-    participant p2 as Path (src/llm_wiki_cli/services…rite_verification_receipt)
+    participant p2 as write_bytes_atomic
     participant p3 as first_unsafe_path_component
     participant p4 as VerificationReceiptError
-    participant p5 as root.is_symlink
-    participant p6 as root.is_dir
-    participant p7 as verification_receipt_path
-    participant p8 as path.is_symlink
-    participant p9 as path.exists
-    participant p10 as path.is_file
-    participant p11 as write_bytes_atomic
-    participant p12 as formatted_json_bytes
-    participant p13 as Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p14 as Path (src/llm_wiki_cli/services…verification_receipt_path)
-    participant p15 as isinstance (src/llm_wiki_cli/services/io.py:write_bytes_atomic)
-    participant p16 as verification_receipt_to_payload
-    participant p17 as os.fspath
-    participant p18 as TypeError
-    participant p19 as len (src/llm_wiki_cli/services…lize_verification_receipt)
-    participant p20 as Path (src/llm_wiki_cli/services/io.py:write_bytes_atomic)
-    participant p21 as os.path.abspath
-    participant p22 as before_wiki_write
-    participant p23 as lexical.is_absolute
-    participant p24 as target.parent.mkdir
+    participant p5 as verification_receipt_path
+    participant p6 as formatted_json_bytes
+    participant p7 as verification_receipt_to_payload
+    participant p8 as validate_verification_receipt
+    participant p9 as _object
+    participant p10 as _exact_fields
+    participant p11 as _string
+    participant p12 as _receipt_hash
+    participant p13 as _scope_uid
+    participant p14 as _receipt_anchor_mapping
+    participant p15 as hash_json
+    participant p16 as _parse_check
+    participant p17 as _sha256
+    participant p18 as _checker_id
+    participant p19 as _normalized_anchor_mapping
+    participant p20 as canonical_json_bytes
+    participant p21 as _checker_version
+    participant p22 as _array
+    participant p23 as _parse_diagnostic
+    participant p24 as _parse_coverage
+    participant p25 as before_wiki_write
+    participant p26 as after_wiki_write
+    participant p27 as formatted_json_text
+    participant p28 as _receipt_to_payload
+    participant p29 as Path (src/llm_wiki_cli/services…rite_verification_receipt)
+    participant p30 as root.is_symlink
     p0->>p1: serialize_verification_receipt
-    p0-->>p2: Path (src/llm_wiki_cli/services…rite_verification_receipt)(wiki_dir)
+    p0->>p2: write_bytes_atomic
     p0->>p3: first_unsafe_path_component
     p0->>p4: VerificationReceiptError
-    p0-->>p5: root.is_symlink
-    p0->>p4: VerificationReceiptError
-    p0-->>p6: root.is_dir
-    p0->>p4: VerificationReceiptError
-    p0->>p7: verification_receipt_path
-    p0-->>p8: path.is_symlink
-    p0->>p4: VerificationReceiptError
-    p0-->>p9: path.exists
-    p0-->>p10: path.is_file
-    p0->>p4: VerificationReceiptError
-    p0->>p11: write_bytes_atomic
-    p1->>p12: formatted_json_bytes
-    p3-->>p13: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)(os.fspath(...))
-    p7-->>p14: Path (src/llm_wiki_cli/services…verification_receipt_path)(wiki_dir)
-    p11-->>p15: isinstance (src/llm_wiki_cli/services/io.py:write_bytes_atomic)(content, bytes)
-    p1->>p16: verification_receipt_to_payload
-    p3-->>p17: os.fspath(path)
-    p11-->>p18: TypeError('content must be bytes')
-    p1-->>p19: len (src/llm_wiki_cli/services…lize_verification_receipt)(content)
-    p3-->>p13: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)(os.path.abspath(...))
-    p11-->>p20: Path (src/llm_wiki_cli/services/io.py:write_bytes_atomic)(path)
-    p1->>p4: VerificationReceiptError
-    p3-->>p21: os.path.abspath(lexical)
-    p11->>p22: before_wiki_write
-    p3-->>p23: lexical.is_absolute
-    p11-->>p24: target.parent.mkdir(parents=True, exist_ok=True)
+    p0->>p5: verification_receipt_path
+    p1->>p6: formatted_json_bytes
+    p1->>p7: verification_receipt_to_payload
+    p7->>p8: validate_verification_receipt
+    p8->>p9: _object
+    p8->>p10: _exact_fields
+    p8->>p11: _string
+    p8->>p12: _receipt_hash
+    p8->>p13: _scope_uid
+    p8->>p14: _receipt_anchor_mapping
+    p8->>p15: hash_json
+    p8->>p16: _parse_check
+    p12->>p17: _sha256
+    p16->>p18: _checker_id
+    p14->>p19: _normalized_anchor_mapping
+    p15->>p20: canonical_json_bytes
+    p16->>p21: _checker_version
+    p16->>p22: _array
+    p16->>p23: _parse_diagnostic
+    p16->>p24: _parse_coverage
+    p2->>p25: before_wiki_write
+    p2->>p26: after_wiki_write
+    p6->>p27: formatted_json_text
+    p7->>p28: _receipt_to_payload
+    p0-->>p29: Path (src/llm_wiki_cli/services…rite_verification_receipt)(wiki_dir)
+    p0-->>p30: root.is_symlink
 ```
 
 > Call sequence diagram shows 30 of 220 interactions; 190 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 10 of 78 (68 omitted); unresolved 7 of 34 (27 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 78 (77 omitted); unresolved 1 of 34 (33 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_bytes` | 3 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_bytes` | 3 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_text` | 5 | - | external | 1 |
-| `src/llm_wiki_cli/services/verification_contracts.py:verification_receipt_to_payload` | 7 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 2 |
 | `src/llm_wiki_cli/services/verification_contracts.py:validate_verification_receipt` | 8 | - | external | 7 |
-| `src/llm_wiki_cli/services/verification_contracts.py:validate_verification_receipt` | 8 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 25 |
+| `src/llm_wiki_cli/services/verification_contracts.py:validate_verification_receipt` | 8 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 18 |
 | `src/llm_wiki_cli/services/verification_contracts.py:_receipt_to_payload` | 10 | - | external | 2 |
 | `src/llm_wiki_cli/services/verification_contracts.py:_receipt_to_payload` | 10 | - | unresolved | 1 |
-> Omission summary shows 8 of 63 groups; 55 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/verification_contracts.py:_object` | 14 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_mapping` | 15 | - | external | 2 |
+> Omission summary shows 8 of 65 groups; 57 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

@@ -2,7 +2,7 @@
 
 **Entry point:** `evaluate_documentation_native_freshness` (`api`)
 **Source:** [documentation_native](../modules/documentation_native.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 41 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 44 more
 
 **Complete modules touched:**
 
@@ -46,92 +46,102 @@
 - [python_observations](../modules/python_observations.md)
 - [resource_diagnostics](../modules/resource_diagnostics.md)
 - [section_ownership](../modules/section_ownership.md)
+- [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [validation](../modules/validation.md)
 - [wiki_media](../modules/wiki_media.md)
 - [wiki_surface](../modules/wiki_surface.md)
+- [yaml_formats](../modules/yaml_formats.md)
+- [yaml_syntax](../modules/yaml_syntax.md)
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as evaluate_documentation_native_freshness
-    participant p1 as isinstance (src/llm_wiki_cli/services…entation_native_freshness)
-    participant p2 as TypeError (src/llm_wiki_cli/services…entation_native_freshness)
-    participant p3 as _native_source_snapshot_preflight
-    participant p4 as _generation_input_paths
-    participant p5 as _collect_runtime
-    participant p6 as _runtime_generation_options
-    participant p7 as _source_mismatches
-    participant p8 as set (src/llm_wiki_cli/services…entation_native_freshness)
-    participant p9 as (…).lstat
-    participant p10 as missing_source_paths.add
-    participant p11 as build_runtime_live_evaluation
-    participant p12 as RuntimeLiveEvaluationInputs
-    participant p13 as tuple (src/llm_wiki_cli/services…entation_native_freshness)
-    participant p14 as evaluate_knowledge_freshness
-    participant p15 as DocumentationNativeError
-    participant p16 as list (src/llm_wiki_cli/services…entation_native_freshness)
-    participant p17 as reasons.append (src/llm_wiki_cli/services…entation_native_freshness)
-    participant p18 as sorted (src/llm_wiki_cli/services…entation_native_freshness)
-    participant p19 as DocumentationNativeFreshness
-    participant p20 as _validated_directory
-    participant p21 as manifest.generation_inputs.get (src/llm_wiki_cli/services…y:_generation_input_paths)
-    participant p22 as runtime_generation_options
-    participant p23 as set (src/llm_wiki_cli/services…ive.py:_source_mismatches)
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…entation_native_freshness)(knowledge, KnowledgeIndex)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…entation_native_freshness)('knowledge must be a KnowledgeIndex')
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…entation_native_freshness)(manifest, SyncManifest)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…entation_native_freshness)('manifest must be a SyncManifest')
-    p0->>p3: _native_source_snapshot_preflight
-    p0->>p4: _generation_input_paths
-    p0->>p5: _collect_runtime
-    p0->>p6: _runtime_generation_options
-    p0->>p7: _source_mismatches
-    p0-->>p8: set (src/llm_wiki_cli/services…entation_native_freshness)(manifest.sources)
-    p0-->>p8: set (src/llm_wiki_cli/services…entation_native_freshness)(runtime.inventory)
-    p0-->>p9: (…).lstat
-    p0-->>p10: missing_source_paths.add(basis.source_path)
-    p0->>p11: build_runtime_live_evaluation
-    p0->>p12: RuntimeLiveEvaluationInputs
-    p0-->>p13: tuple (src/llm_wiki_cli/services…entation_native_freshness)(RUNTIME_GENERATION_OPTION_DEFAULTS)
-    p0->>p14: evaluate_knowledge_freshness
-    p0->>p15: DocumentationNativeError
-    p0-->>p16: list (src/llm_wiki_cli/services…entation_native_freshness)(source_mismatches)
-    p0-->>p17: reasons.append (src/llm_wiki_cli/services…entation_native_freshness)('generation-options-changed')
-    p0-->>p17: reasons.append (src/llm_wiki_cli/services…entation_native_freshness)('producer-basis-changed')
-    p0-->>p18: sorted (src/llm_wiki_cli/services…entation_native_freshness)(structural_locators)
-    p0-->>p17: reasons.append (src/llm_wiki_cli/services…entation_native_freshness)(...)
-    p0->>p19: DocumentationNativeFreshness
-    p0-->>p13: tuple (src/llm_wiki_cli/services…entation_native_freshness)(reasons)
-    p3->>p20: _validated_directory
-    p4-->>p21: manifest.generation_inputs.get (src/llm_wiki_cli/services…y:_generation_input_paths)('openapi')
-    p5->>p20: _validated_directory
-    p6->>p22: runtime_generation_options
-    p7-->>p23: set (src/llm_wiki_cli/services…ive.py:_source_mismatches)(manifest.sources)
+    participant p1 as _native_source_snapshot_preflight
+    participant p2 as _generation_input_paths
+    participant p3 as _collect_runtime
+    participant p4 as _retained_empty_paths
+    participant p5 as _runtime_generation_options
+    participant p6 as _source_mismatches
+    participant p7 as build_runtime_live_evaluation
+    participant p8 as evaluate_knowledge_freshness
+    participant p9 as RuntimeLiveEvaluationInputs
+    participant p10 as DocumentationNativeError
+    participant p11 as DocumentationNativeFreshness
+    participant p12 as _validated_directory
+    participant p13 as retained_empty_module_paths
+    participant p14 as runtime_generation_options
+    participant p15 as resolve_source_selection
+    participant p16 as capture_source_selection_inputs
+    participant p17 as source_selection_identity_from_generation_inputs
+    participant p18 as parse_knowledge_index
+    participant p19 as validate_persisted_source_selection_identity
+    participant p20 as _knowledge_index_to_payload_unchecked
+    participant p21 as build_source_snapshot
+    participant p22 as get_inventory_result
+    participant p23 as _evaluate_model_freshness
+    participant p24 as has_contract
+    participant p25 as get_docker_inventory
+    participant p26 as get_yaml_infrastructure_inventory
+    participant p27 as _live_source_snapshot_hash
+    participant p28 as _producer_evidence
+    participant p29 as isinstance (src/llm_wiki_cli/services…entation_native_freshness)
+    participant p30 as (…).lstat
+    p0->>p1: _native_source_snapshot_preflight
+    p0->>p2: _generation_input_paths
+    p0->>p3: _collect_runtime
+    p0->>p4: _retained_empty_paths
+    p0->>p5: _runtime_generation_options
+    p0->>p6: _source_mismatches
+    p0->>p7: build_runtime_live_evaluation
+    p0->>p8: evaluate_knowledge_freshness
+    p0->>p9: RuntimeLiveEvaluationInputs
+    p0->>p10: DocumentationNativeError
+    p0->>p11: DocumentationNativeFreshness
+    p1->>p12: _validated_directory
+    p4->>p13: retained_empty_module_paths
+    p5->>p14: runtime_generation_options
+    p1->>p15: resolve_source_selection
+    p1->>p16: capture_source_selection_inputs
+    p1->>p17: source_selection_identity_from_generation_inputs
+    p8->>p18: parse_knowledge_index
+    p1->>p19: validate_persisted_source_selection_identity
+    p8->>p20: _knowledge_index_to_payload_unchecked
+    p1->>p21: build_source_snapshot
+    p3->>p22: get_inventory_result
+    p8->>p23: _evaluate_model_freshness
+    p7->>p24: has_contract
+    p3->>p25: get_docker_inventory
+    p3->>p26: get_yaml_infrastructure_inventory
+    p6->>p27: _live_source_snapshot_hash
+    p7->>p28: _producer_evidence
+    p0-->>p29: isinstance (src/llm_wiki_cli/services…entation_native_freshness)(knowledge, KnowledgeIndex)
+    p0-->>p30: (…).lstat
 ```
 
-> Call sequence diagram shows 30 of 3439 interactions; 3409 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3462 interactions; 3432 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 11 of 937 (926 omitted); unresolved 6 of 874 (868 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 970 (969 omitted); unresolved 1 of 866 (865 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/documentation_native.py:evaluate_documentation_native_freshness` | 1 | - | external | 9 |
 | `src/llm_wiki_cli/services/documentation_native.py:_validated_directory` | 7 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/documentation_native.py:_validated_directory` | 7 | - | external | 3 |
 | `src/llm_wiki_cli/services/documentation_native.py:_validated_directory` | 7 | [src/llm_wiki_cli/services/documentation_native.py](../modules/documentation_native.md) | internal | 2 |
-| `src/llm_wiki_cli/services/documentation_native.py:_native_source_snapshot_preflight` | 6 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 3 |
 | `src/llm_wiki_cli/services/source_selection.py:resolve_source_selection` | 16 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/source_selection.py:resolve_source_selection` | 16 | - | external | 1 |
 | `src/llm_wiki_cli/services/source_selection.py:resolve_source_selection` | 16 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 8 |
 | `src/llm_wiki_cli/services/source_selection.py:_override_text` | 20 | - | external | 3 |
-> Omission summary shows 8 of 920 groups; 912 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 913 groups; 905 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -210,20 +220,20 @@ flowchart LR
 | evaluate_documentation_native_freshness | TypeError (src/llm_wiki_cli/services…entation_native_freshness) | 206 | `TypeError('manifest must be a SyncManifest')` |
 | evaluate_documentation_native_freshness | _native_source_snapshot_preflight | 207 | `_native_source_snapshot_preflight(source_root=source_root, manifest=manifest, source_selection=source_selection, operation='native freshness')` |
 | _native_source_snapshot_preflight | _validated_directory | 156 | `_validated_directory(source_root, 'source_root')` |
-| _validated_directory | Path(…).expanduser | 1114 | `Path(value).expanduser(data not statically known)` |
-| _validated_directory | Path (src/llm_wiki_cli/services…e.py:_validated_directory) | 1114 | `Path(value)` |
-| _validated_directory | candidate.lstat | 1116 | `candidate.lstat(data not statically known)` |
-| _validated_directory | DocumentationNativeError | 1118 | `DocumentationNativeError(...)` |
-| _validated_directory | stat.S_ISLNK (src/llm_wiki_cli/services…e.py:_validated_directory) | 1121 | `stat.S_ISLNK(metadata.st_mode)` |
+| _validated_directory | Path(…).expanduser | 1123 | `Path(value).expanduser(data not statically known)` |
+| _validated_directory | Path (src/llm_wiki_cli/services…e.py:_validated_directory) | 1123 | `Path(value)` |
+| _validated_directory | candidate.lstat | 1125 | `candidate.lstat(data not statically known)` |
+| _validated_directory | DocumentationNativeError | 1127 | `DocumentationNativeError(...)` |
+| _validated_directory | stat.S_ISLNK (src/llm_wiki_cli/services…e.py:_validated_directory) | 1130 | `stat.S_ISLNK(metadata.st_mode)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `missing_source_paths.add` | `evaluate_documentation_native_freshness` | 243 |
-| mutation | `reasons.append` | `evaluate_documentation_native_freshness` | 284 |
-| mutation | `reasons.append` | `evaluate_documentation_native_freshness` | 286 |
-| mutation | `reasons.append` | `evaluate_documentation_native_freshness` | 296 |
+| mutation | `missing_source_paths.add` | `evaluate_documentation_native_freshness` | 244 |
+| mutation | `reasons.append` | `evaluate_documentation_native_freshness` | 285 |
+| mutation | `reasons.append` | `evaluate_documentation_native_freshness` | 287 |
+| mutation | `reasons.append` | `evaluate_documentation_native_freshness` | 297 |
 
 ### Static analysis gaps
 
@@ -233,9 +243,9 @@ flowchart LR
 | external_call | `evaluate_documentation_native_freshness` | `TypeError` | 204 |
 | external_call | `evaluate_documentation_native_freshness` | `isinstance` | 205 |
 | external_call | `evaluate_documentation_native_freshness` | `TypeError` | 206 |
-| unresolved_call | `_validated_directory` | `Path(value).expanduser` | 1114 |
-| unresolved_call | `_validated_directory` | `candidate.lstat` | 1116 |
-| external_call | `_validated_directory` | `stat.S_ISLNK` | 1121 |
+| unresolved_call | `_validated_directory` | `Path(value).expanduser` | 1123 |
+| unresolved_call | `_validated_directory` | `candidate.lstat` | 1125 |
+| external_call | `_validated_directory` | `stat.S_ISLNK` | 1130 |
 | step_limit | `evaluate_documentation_native_freshness` | `first 12 steps` | 0 |
 | truncated_flow | `evaluate_documentation_native_freshness` | `depth limit` | 0 |
 

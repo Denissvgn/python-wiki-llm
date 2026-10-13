@@ -4,6 +4,15 @@ Use a symptom to find candidate pages, then resolve an exact implementation and
 inspect source. A lexical match is a navigation lead, not a diagnosis. Search
 can miss a useful page when the symptom's vocabulary differs from its source.
 
+Default lexical discovery can connect approximate English word forms such as
+`rename` and `renaming`. This broadens navigation matches without changing literal
+page or defined-symbol identity checks. Diagnostic prose may also explicitly link
+to an implementation whose page does not repeat the symptom. Strong matched guide
+sections can surface that captured module/entity as a one-hop lead. Inspect its
+`linked_evidence`: the guide hash, section locator and target path explain the
+route, while linked-discovery provenance does not claim a target text match or a
+correct diagnosis. No network traversal or automatic source indexing is implied.
+
 ## Move from discovery to evidence
 
 In a workspace with a wiki, try a small query using terms from the symptom:

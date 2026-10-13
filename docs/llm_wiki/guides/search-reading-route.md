@@ -26,11 +26,26 @@ Read [`src/llm_wiki_cli/services/search_service.py:search_records`](../../../src
 
 | Mode | Source to read | Matching contract |
 | --- | --- | --- |
-| `ranked` (default), `ranked-v2` | [`src/llm_wiki_cli/services/search_lexical.py:rank_pages`](../../../src/llm_wiki_cli/services/search_lexical.py#L94-L216) ([module](../modules/search_lexical.md)) | Lexical-v2 ranking over captured candidate text: exact page identity and defined-symbol precedence, weighted sections, informative terms, and a qualified long-query fallback. |
+| `ranked` (default), `ranked-v2` | [`src/llm_wiki_cli/services/search_lexical.py:rank_pages`](../../../src/llm_wiki_cli/services/search_lexical.py#L297) ([module](../modules/search_lexical.md)) | Lexical-v2 ranking over captured candidate text: exact page identity and defined-symbol precedence, weighted sections, informative terms, and a qualified long-query fallback. |
 | `ranked-v1` | [`src/llm_wiki_cli/services/search_rank.py:rank_pages`](../../../src/llm_wiki_cli/services/search_rank.py#L34-L171) ([module](../modules/search_rank.md)) | Legacy lexical-v1 scoring with identity, symbol, term, phrase, and local-link signals. |
 | `substring` | `search_service.py:search_records`, lines 56–76 | Case-insensitive literal content matching in input order, with snippets and result bounds. |
 
 The default lexical results are discovery candidates: their provenance says live comparison was not performed, and dispatch marks them `definitive_answer=False`. Neither ranking nor explicit static source indexing establishes runtime behavior.
+
+Flow Call sequence and Data flow sections use inventory weight, including nested
+step/call tables. Only the complete untouched default Behavior placeholder is
+discounted; authored Behavior keeps its semantic weight. Generated trace detail
+remains searchable and cited. This limits scaffolding dominance without choosing
+an owner by name or imposing a page-kind quota; broad vocabulary can still leave
+the intended primary owner or flow outside the result bound.
+
+Read section-local normalization, strongest-per-term contributions and coherent
+explanatory coverage before interpreting scores. An unrelated large inventory
+does not dilute a short explanation. A matched formal function description can
+also surface the uniquely captured flow declaring that literal entry and module
+Source link. This one-hop declaration lead retains donor row text, hash and
+section locator; it does not create a target text-match location, infer a source
+owner or establish a runtime call. Fenced or ambiguous declarations are skipped.
 
 ## 4. Results and output
 
@@ -38,14 +53,41 @@ Both rankers report `total`, `returned`, `count`, `truncated`, and `bounds.resul
 
 Return to [`search_cmd.py:run`](../../../src/llm_wiki_cli/commands/search_cmd.py#L8-L31). JSON prints the complete result dictionary. Text prints each path/title and snippet, the returned/total summary, and optional discovery JSON. Use JSON when inspecting ranking qualifications, provenance, bounds, or source-indexing metadata.
 
-## Reading past the saved flow
+## Reading the generated flow
 
-The saved flow leaves the local API `search_wiki` hop as a dashed boundary. This reading route follows source definitions across that boundary; it does not convert it into a resolved captured call. Local API imports, module namespaces, decorators, the `eligible` closure and reader callback, and `page_records` generator consumption still require care when interpreting static expansion.
+The [generated search flow](../flows/cli-search.md#call-sequence) includes the
+captured CLI/API/service calls and representatives of validation, corpus
+selection, ranking and result handling. The default lexical ranker and legacy
+ranker have distinct source-qualified participants. Their presence shows static
+call sites; it does not mean both ranking branches execute for one request.
 
-The [saved flow disclosure](../flows/cli-search.md#call-sequence) reports 30 displayed of 114 captured interactions, with 84 omitted. These are historical saved static counts. A fresh whole-source static capture attempt timed out after 600 seconds; a current full trace and current omission counts are unavailable. The saved counts must not stand in for fresh output or runtime equivalence.
+Use this source-reading route to inspect the branch guards, source-selection
+policy and publication checks behind those displayed stages. Decorators, module
+namespaces, the `eligible` closure and reader callback still require care;
+calling `page_records` does not by itself establish generator consumption.
+The diagram's omitted-interaction and boundary counts describe its current
+captured input, while detailed queries retain their own scope and limits.
 
-Keep traversal omissions separate from display omissions. [`entrypoints.py:build_flow_detailed`](../../../src/llm_wiki_cli/services/entrypoints.py#L1302-L1335) reports depth-bounded traversal coverage; default traversal depth is 6. [`flow_overview.py:select_flow_overview`](../../../src/llm_wiki_cli/services/flow_overview.py#L75-L137) selects at most 30 captured interactions for presentation, subject also to [renderer ceilings](../../../src/llm_wiki_cli/services/diagrams.py#L63-L65) of 40 nodes, 80 body lines, and 6000 characters. Display order and omissions do not establish which calls execute.
+Keep traversal omissions separate from display omissions.
+[`entrypoints.py:build_flow_detailed`](../../../src/llm_wiki_cli/services/entrypoints.py#L1302)
+reports depth-bounded traversal coverage; default traversal depth is 6.
+[`flow_overview.py:select_flow_overview`](../../../src/llm_wiki_cli/services/flow_overview.py#L75)
+selects at most 30 representative captured interactions, favoring coherent
+internal continuations and distinct exact targets while retaining boundary
+examples. The [renderer ceilings](../../../src/llm_wiki_cli/services/diagrams.py#L63)
+remain 40 nodes, 80 body lines and 6000 characters. Repeated sites remain in the
+underlying trace, and final counts reconcile any shorter renderer-admitted prefix.
+Omitted intermediate occurrences are not replaced by synthetic arrows.
 
-For a supported bounded graph query, read [`src/llm_wiki_cli/api.py:flow_for_entrypoint`](../../../src/llm_wiki_cli/api.py#L2103-L2136). Its result is a bounded static query, not an observed search execution or a guarantee that the full current trace will be available. Use the source links above for the four reading stages while that trace is unavailable.
+For a supported bounded graph query, read
+[`src/llm_wiki_cli/api.py:flow_for_entrypoint`](../../../src/llm_wiki_cli/api.py#L2103).
+Its result is a bounded static query, not an observed search execution. This guide
+and the generated diagram provide complementary source orientation; neither
+establishes runtime execution order, dynamic completeness or semantic correctness.
 
-This is a source-grounded reading route, not a generated runtime diagram. Current generated trace coverage is unestablished. The current whole-provider trace capture timed out. The saved static flow shows 30 of 114 interactions with 84 display omissions; these saved counts are not a fresh trace for current code. Static presentation order does not prove runtime execution.
+Captured explanatory prose can connect approximate nominal word families, such
+as verification and verified. The same expansion does not create defined-symbol
+identities from generated names or signatures. Treat the result as a discovery
+lead, inspect its cited original section, and resolve an exact owner before
+using native evidence. Unmatched vocabulary and competing traces can still
+leave the intended owner outside the bounded result list.

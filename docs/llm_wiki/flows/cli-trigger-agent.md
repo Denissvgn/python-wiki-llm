@@ -35,86 +35,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as run
-    participant p1 as getattr (src/llm_wiki_cli/commands/trigger_cmd.py:run)
-    participant p2 as reset_breaker
-    participant p3 as print (src/llm_wiki_cli/commands/trigger_cmd.py:run)
-    participant p4 as sys.exit
-    participant p5 as WikiLock
-    participant p6 as _lock_wait_seconds
-    participant p7 as _run_sync
-    participant p8 as SystemExit
-    participant p9 as save_state
-    participant p10 as os.environ.get (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)
-    participant p11 as getattr (src/llm_wiki_cli/commands/trigger_cmd.py:_run_sync)
-    participant p12 as dict (src/llm_wiki_cli/services…_breaker.py:reset_breaker)
-    participant p13 as raw_value.strip
-    participant p14 as validate_path
-    participant p15 as float (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)
-    participant p16 as _validated_trigger_source
-    participant p17 as ValueError
-    participant p18 as time.monotonic (src/llm_wiki_cli/commands/trigger_cmd.py:_run_sync)
-    participant p19 as math.isfinite (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)
-    participant p20 as _is_breaker_open
-    participant p21 as _record_trigger_start
-    participant p22 as _prepare_and_run_sync
-    participant p23 as record_failure
-    participant p24 as _record_trigger_finish
-    participant p25 as _state_path
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/trigger_cmd.py:run)(args, 'reset_breaker', False)
-    p0->>p2: reset_breaker
-    p0-->>p3: print (src/llm_wiki_cli/commands/trigger_cmd.py:run)('Circuit breaker reset. Manual trigger-agent sync is re-enabled.')
-    p0-->>p3: print (src/llm_wiki_cli/commands/trigger_cmd.py:run)(...)
-    p0-->>p3: print (src/llm_wiki_cli/commands/trigger_cmd.py:run)("To use trigger-agent, you must specify a CLI-native agent like 'claude' or 'aider'.")
-    p0-->>p3: print (src/llm_wiki_cli/commands/trigger_cmd.py:run)('Example: llm-wiki trigger-agent --agent claude')
-    p0-->>p4: sys.exit(1)
-    p0->>p5: WikiLock
-    p0->>p6: _lock_wait_seconds
-    p0->>p7: _run_sync
-    p0-->>p3: print (src/llm_wiki_cli/commands/trigger_cmd.py:run)('Another llm-wiki sync is already running. Skipping.')
-    p0-->>p8: SystemExit(exc.exit_code)
-    p2->>p9: save_state
-    p6-->>p10: os.environ.get (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)('LLM_WIKI_LOCK_WAIT')
-    p7-->>p11: getattr (src/llm_wiki_cli/commands/trigger_cmd.py:_run_sync)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
-    p2-->>p12: dict (src/llm_wiki_cli/services…_breaker.py:reset_breaker)(_DEFAULT_STATE)
-    p6-->>p13: raw_value.strip
-    p7->>p14: validate_path
-    p6-->>p15: float (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)(raw_value)
-    p7->>p16: _validated_trigger_source
-    p6-->>p17: ValueError('LLM_WIKI_LOCK_WAIT must be a finite non-negative number of seconds.')
-    p7-->>p18: time.monotonic (src/llm_wiki_cli/commands/trigger_cmd.py:_run_sync)
-    p6-->>p19: math.isfinite (src/llm_wiki_cli/commands…cmd.py:_lock_wait_seconds)(wait_seconds)
-    p7->>p20: _is_breaker_open
-    p6-->>p17: ValueError('LLM_WIKI_LOCK_WAIT must be a finite non-negative number of seconds.')
-    p7->>p21: _record_trigger_start
-    p7->>p22: _prepare_and_run_sync
-    p7->>p23: record_failure
-    p7->>p24: _record_trigger_finish
-    p9->>p25: _state_path
+    participant p1 as reset_breaker
+    participant p2 as _run_sync
+    participant p3 as WikiLock
+    participant p4 as _lock_wait_seconds
+    participant p5 as save_state
+    participant p6 as validate_path
+    participant p7 as _validated_trigger_source
+    participant p8 as _is_breaker_open
+    participant p9 as _record_trigger_start
+    participant p10 as _prepare_and_run_sync
+    participant p11 as check_breaker
+    participant p12 as record_event
+    participant p13 as _preflight_trigger_source_selection
+    participant p14 as _fetch_last_commit_diff
+    participant p15 as _filter_trigger_diff
+    participant p16 as _skip_large_diff
+    participant p17 as validate_source_root
+    participant p18 as _build_sync_prompt
+    participant p19 as _skip_large_prompt
+    participant p20 as _write_prompt_file
+    participant p21 as _run_agent
+    participant p22 as load_state
+    participant p23 as SyncManifest.load
+    participant p24 as filter_source_diff
+    participant p25 as _redact_prompt_artifact
+    participant p26 as _iso_now
+    participant p27 as _record_trigger_failure
+    participant p28 as get_inventory_result
+    participant p29 as getattr (src/llm_wiki_cli/commands/trigger_cmd.py:run)
+    participant p30 as raw_value.strip
+    p0->>p1: reset_breaker
+    p0->>p2: _run_sync
+    p0->>p3: WikiLock
+    p0->>p4: _lock_wait_seconds
+    p1->>p5: save_state
+    p2->>p6: validate_path
+    p2->>p7: _validated_trigger_source
+    p2->>p8: _is_breaker_open
+    p2->>p9: _record_trigger_start
+    p2->>p10: _prepare_and_run_sync
+    p8->>p11: check_breaker
+    p9->>p12: record_event
+    p10->>p13: _preflight_trigger_source_selection
+    p10->>p14: _fetch_last_commit_diff
+    p10->>p15: _filter_trigger_diff
+    p10->>p16: _skip_large_diff
+    p7->>p17: validate_source_root
+    p10->>p18: _build_sync_prompt
+    p10->>p19: _skip_large_prompt
+    p10->>p20: _write_prompt_file
+    p10->>p21: _run_agent
+    p11->>p22: load_state
+    p13->>p23: SyncManifest.load
+    p15->>p24: filter_source_diff
+    p20->>p25: _redact_prompt_artifact
+    p12->>p26: _iso_now
+    p14->>p27: _record_trigger_failure
+    p18->>p28: get_inventory_result
+    p0-->>p29: getattr (src/llm_wiki_cli/commands/trigger_cmd.py:run)(args, 'reset_breaker', False)
+    p4-->>p30: raw_value.strip
 ```
 
 > Call sequence diagram shows 30 of 858 interactions; 828 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 16 of 328 (312 omitted); unresolved 1 of 197 (196 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 328 (327 omitted); unresolved 1 of 197 (196 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/circuit_breaker.py:save_state` | 4 | [src/llm_wiki_cli/services/circuit_breaker.py](../modules/circuit_breaker.md) | internal | 1 |
 | `src/llm_wiki_cli/services/circuit_breaker.py:save_state` | 4 | - | external | 5 |
+| `src/llm_wiki_cli/services/circuit_breaker.py:reset_breaker` | 3 | - | external | 1 |
+| `src/llm_wiki_cli/commands/trigger_cmd.py:run` | 1 | - | external | 7 |
+| `src/llm_wiki_cli/commands/trigger_cmd.py:_lock_wait_seconds` | 18 | - | external | 5 |
+| `src/llm_wiki_cli/commands/trigger_cmd.py:_run_sync` | 25 | - | external | 2 |
 | `src/llm_wiki_cli/config.py:validate_path` | 27 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
 | `src/llm_wiki_cli/config.py:validate_path` | 27 | - | unresolved | 3 |
-| `src/llm_wiki_cli/config.py:validate_path` | 27 | - | external | 2 |
-| `src/llm_wiki_cli/commands/trigger_cmd.py:_validated_trigger_source` | 35 | - | external | 5 |
-| `src/llm_wiki_cli/commands/trigger_cmd.py:_validated_trigger_source` | 35 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 1 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 40 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 40 | - | unresolved | 5 |
-> Omission summary shows 8 of 229 groups; 221 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 230 groups; 222 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

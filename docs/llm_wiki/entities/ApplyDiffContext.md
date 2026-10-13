@@ -1,6 +1,6 @@
 # _ApplyDiffContext
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:657`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:667`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)

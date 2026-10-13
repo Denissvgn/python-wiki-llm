@@ -1,6 +1,7 @@
 module Paths
     ( SourceFile (..)
     , collectSourceFiles
+    , collectDiagnosticSourceFiles
     , splitCommaList
     , toPosixPath
     ) where
@@ -36,6 +37,16 @@ collectSourceFiles srcDir onlyFilesValue = do
     case onlyFilesValue of
         Just raw -> collectRequestedFiles root (splitCommaList raw)
         Nothing -> collectDiscoveredFiles root
+
+-- Diagnostic requests preserve missing/unreadable paths for parser-owned read outcomes.
+-- Canonical containment still applies; source failures are not collection failures.
+collectDiagnosticSourceFiles :: FilePath -> [FilePath] -> IO (Either String [SourceFile])
+collectDiagnosticSourceFiles srcDir requested = do
+    root <- canonicalizePath srcDir
+    values <- forM requested $ \path -> do
+        absolutePath <- canonicalizePath (if isAbsolute path then path else root </> path)
+        pure (sourceFileFromAbsolute root path absolutePath)
+    pure (sequenceSourceFiles values)
 
 collectRequestedFiles :: FilePath -> [FilePath] -> IO (Either String [SourceFile])
 collectRequestedFiles root requested

@@ -86,12 +86,21 @@ from ..services.infrastructure_sync import (
 )
 from ..services.io import read_md, write_md
 from ..services.validation import portable_path_key
+from ..services.source_retirement import (
+    SOURCE_MEMBER_REMOVED_HEADER,
+    SourceRetirementError,
+    discover_retired_entities,
+    read_entity_retirement_state,
+    historical_entity_semantics,
+    with_entity_retirement_state,
+)
 from ..services.knowledge_artifacts import (
     ArtifactWriteState,
     KnowledgeCommitResult,
 )
 from ..services.knowledge_envelope import RepositoryEvidence, build_repository_record
 from ..services import knowledge_reuse
+from ..services import sync_analysis_cache
 from ..services.knowledge_evidence import hash_file
 from ..services.knowledge_evidence import (
     is_valid_sha256,
@@ -170,6 +179,7 @@ from ..services.sync_analysis import (
     SyncOwnershipError,
     compute_sync_diff as _compute_diff,
 )
+from ..services.sync_generated_sections import plan_generated_source_repairs
 from ..services.sync_transitions import (
     PageTransitionPlan, find_missing_source_pages, plan_page_transitions,
 )
@@ -844,6 +854,9 @@ def _previous_entity_semantics(ctx: _ApplyDiffContext, path: Path) -> dict | Non
     owner = item.previous_owner
     if owner is None or owner.entity_name is None:
         return None
+    historical = historical_entity_semantics(ctx.manifest, owner)
+    if historical is not None:
+        return historical
     source = ctx.manifest.sources.get(owner.source_path, {})
     semantics = source.get("generated_semantics", {})
     if not isinstance(semantics, Mapping):
@@ -899,6 +912,17 @@ def _merge_entity_page(
             generated,
             _previous_entity_semantics(ctx, entity_path),
         )
+        if existing.startswith(SOURCE_MEMBER_REMOVED_HEADER):
+            # Unknown/custom sections remain retained authored context on exact
+            # owner revival; generated sections still come from the new source.
+            from ..services.markdown_sections import parse_markdown_document
+            generated_doc = parse_markdown_document(generated, "revived-generated")
+            old_doc = parse_markdown_document(existing, "revived-retained")
+            known = {section.title.casefold() for section in generated_doc.sections if section.level == 2}
+            extra = [old_doc.normalized_markdown[section.start:section.end] for section in old_doc.sections if section.level == 2 and section.title.casefold() not in known]
+            if extra:
+                markdown = merge_result.text.rstrip() + "\n\n" + "\n\n".join(section.rstrip() for section in extra) + "\n"
+                merge_result = replace(merge_result, text=markdown, preserved=merge_result.preserved + len(extra))
         result.preserved_semantic += merge_result.preserved
     return merge_result
 
@@ -1114,7 +1138,8 @@ def _record_unchanged_file_skips(
     )
     unchanged_sources = set(unchanged_files)
     unchanged_pages -= sum(
-        owner.source_path in unchanged_sources for owner in diff.missing_pages.values()
+        owner.source_path in unchanged_sources
+        for owner in (*diff.missing_pages.values(), *diff.generated_page_repairs.values())
     )
     result.skipped += unchanged_pages
     if unchanged_files:
@@ -1532,6 +1557,11 @@ def _build_apply_diff_context(
         wiki_dir, manifest, inventory, diff, module_page_map, entity_occurrence_page_cache,
         source_selection_policy=source_selection_policy,
     )
+    if diff.generated_page_repairs:
+        transitions, _ = plan_generated_source_repairs(
+            wiki_dir, transitions, inventory, module_page_map, entity_occurrence_page_cache,
+            module_renderer=_generate_module_md, entity_renderer=_generate_entity_md,
+        )
     return _ApplyDiffContext(
         wiki_dir=wiki_dir,
         src_dir=src_dir,
@@ -1563,7 +1593,9 @@ def _apply_planned_diff(ctx, diff, result, refresh_files, execution=None, *, ref
     for repair in ctx.page_transitions.retained_page_repairs:
         if execution.write(repair.path, repair.text) == "updated":
             result.updated += 1
-            print(f"  UPDATE retained page links: {repair.path}")
+            print(f"  UPDATE retained page {repair.reason}: {repair.path}")
+            if repair.reason == "generated sections":
+                result.regenerated_evidence_page_paths.add(repair.path)
     refresh_files = list(dict.fromkeys(refresh_files + [
         item.owner.source_path for item in ctx.page_transitions.transitions
         if item.action == "rename" or (item.old_path is not None and item.old_path != item.final_path)
@@ -1696,6 +1728,7 @@ class _SyncRunOptions:
     source_selection: str | Path | None
     rebuild_knowledge: bool = False
     knowledge_format: str | None = None
+    capture_cache_options: InventoryCacheOptions | None = None
 
 
 @dataclass(frozen=True)
@@ -1798,6 +1831,10 @@ class _PreparedSyncRun:
     log_missing: bool
     committed_state: CommittedKnowledgeState | None = None
     reuse_observations_hash: str | None = None
+    entrypoint_analysis: _SyncEntryPointAnalysis | None = None
+    contracts: dict | None = None
+    analysis_reused: bool = False
+    analysis_input_key: dict | None = None
     page_transitions: PageTransitionPlan | None = None
     transition_execution: PageTransitionExecution | None = None
 
@@ -1958,6 +1995,7 @@ def _dependency_plan(
     inventory: dict,
     *,
     source_snapshot: SourceSnapshot | None = None,
+    cached_analysis: dict | None = None,
 ) -> tuple[dict, dict | None, tuple[str, ...], tuple[str, ...], int]:
     existing = tuple(
         stem
@@ -1980,7 +2018,7 @@ def _dependency_plan(
     )
     excluded_tests = len(inventory) - len(dependency_inventory)
     analysis = (
-        analyze_dependencies(
+        cached_analysis or analyze_dependencies(
             dependency_inventory,
             options.src_dir,
             source_snapshot=source_snapshot,
@@ -2008,6 +2046,7 @@ def _build_surface_initialization_plan(
     api_contracts: dict | None,
     generation_inputs: Mapping[str, object],
     source_snapshot: SourceSnapshot | None = None,
+    cached_dependency_analysis: dict | None = None,
 ) -> _SurfaceInitializationPlan:
     surfaces, policy_changed = _updated_surface_policies(options, manifest)
     include_all_enabled = not options.initialize_surfaces
@@ -2032,6 +2071,7 @@ def _build_surface_initialization_plan(
             surfaces,
             inventory,
             source_snapshot=source_snapshot,
+            cached_analysis=cached_dependency_analysis,
         )
     else:
         dependency_inventory = inventory
@@ -2240,6 +2280,9 @@ def _print_dry_run_plan(
     print(f"  missing source pages: {len(application_diff.missing_pages)} repair")
     for path in sorted(application_diff.missing_pages):
         print(f"    REPAIR {path}")
+    print(f"  generated source sections: {len(application_diff.generated_page_repairs)} repair")
+    for path in sorted(application_diff.generated_page_repairs):
+        print(f"    REPAIR generated sections {path}")
     ancillary = [
         "index.md",
         "log.md",
@@ -2364,6 +2407,7 @@ def _sync_run_options_from_args(args) -> _SyncRunOptions:
     dry_run = bool(getattr(args, "dry_run", False))
     include_plugins = not bool(getattr(args, "no_plugins", False))
     cache_options = _cache_options_from_args(args)
+    capture_cache_options = cache_options
     if dry_run:
         cache_options = InventoryCacheOptions(enabled=False)
     cache_stats_enabled = bool(getattr(args, "cache_stats", False))
@@ -2412,6 +2456,7 @@ def _sync_run_options_from_args(args) -> _SyncRunOptions:
         rebuild_knowledge=bool(getattr(args, "rebuild_knowledge", False)),
         knowledge_format=getattr(args, "knowledge_format", None),
         cache_options=cache_options,
+        capture_cache_options=capture_cache_options,
         cache_stats_enabled=cache_stats_enabled,
         parallel_jobs=parallel_jobs,
         job_request=job_request,
@@ -2515,6 +2560,60 @@ def _extract_current_inventory(
         result=inventory_result,
         source_snapshot=source_snapshot,
     )
+
+
+def _qualify_surviving_module_inventory(options, snapshot, manifest, result):
+    """Resolve prior-owned sparse paths through attributable parser observations."""
+    from ..config import EXTRACTOR_REGISTRY
+    from ..services.knowledge_evidence import module_observation_hash
+
+    captured = snapshot.hashes_for()
+    prior = set(manifest.sources) & set(captured)
+    languages = {item.rel_path: language for language, files in snapshot.files_by_language.items() for item in files}
+    missing = prior - set(result.inventory)
+    changed = {
+        path for path in prior
+        if languages.get(path) in {"python", "typescript"}
+        and manifest.sources[path].get("hash") != captured[path]
+        and (
+            manifest.sources[path].get("empty_module") is True
+            or Counter(manifest.sources[path].get("entities", [])) != Counter(cls["name"] for cls in result.inventory.get(path, {}).get("classes", []))
+        )
+    }
+    unqualified_cached = {path for path, data in result.inventory.items() if data.get("empty_module") is True and result.path_outcomes.get(path, {}).get("retained_empty") is not True}
+    paths = sorted(missing | changed | unqualified_cached)
+    if not paths:
+        return result
+    print(f"Qualifying surviving module inputs: {len(paths)} path(s).")
+    retry = get_inventory_result(
+        options.src_dir, deep=True, only_files=paths, source_snapshot=snapshot,
+        include_empty=True, capture_path_outcomes=True,
+        helper_cache_dir=options.helper_cache_dir, include_tests=options.include_tests,
+        include_plugins=options.include_plugins, parallel_jobs=options.parallel_jobs,
+        capture_data_effect_observations=True, capture_import_observations=True,
+        capture_implementation_observations=True,
+    )
+    inventory = dict(result.inventory)
+    outcomes = dict(result.path_outcomes)
+    for path in paths:
+        outcome = retry.path_outcomes.get(path, {})
+        record = retry.inventory.get(path)
+        language = languages.get(path, "")
+        status = retry.statuses.get(language)
+        builtin = retry.extractor_registry.get(language) == EXTRACTOR_REGISTRY.get(language) and language in EXTRACTOR_REGISTRY
+        extracted = outcome.get("extraction_state") == "extracted" and outcome.get("reason") == "inventory-entry"
+        empty = extracted and outcome.get("retained_empty") is True
+        if (
+            status is None or status.state != "ok" or not builtin
+            or not isinstance(record, dict) or not (empty or extracted)
+            or (empty and (record.get("empty_module") is not True or record.get("classes") != [] or record.get("functions") != []))
+            or module_observation_hash(record, inventory_complete=True) is None
+        ):
+            reason = outcome.get("reason", "outcome-not-reported")
+            raise SourceRetirementError(f"Selected source is still captured but its module classification is unqualified: {path!r} [reason={reason}]. Resolve parser/coverage before retiring its pages.")
+        inventory[path] = record
+        outcomes[path] = dict(outcome)
+    return replace(result, inventory=inventory, path_outcomes=outcomes)
 
 
 @observed_phase("page_maps")
@@ -2745,6 +2844,7 @@ def _apply_sync_changes(
                 infrastructure_plan,
             )
         ),
+        retired_entity_pages=list(read_entity_retirement_state(surface_plan.generation_inputs)),
     )
     _record_page_write_state(result, index_state)
 
@@ -3666,6 +3766,30 @@ def _plan_source_page_transitions(
         moved_entities=diff.moved_entities,
         deleted_source_paths=deleted_sources,
     )
+    retired = discover_retired_entities(manifest, inventory)
+    repairs = {item.path: item for item in plan.retained_page_repairs}
+    from ..services.sync_transitions import RetainedPageRepair
+    from ..services.knowledge_storage import MAX_EXPANDED_BYTES
+    from ..services.knowledge_storage_io import StorageReadSession
+    live_paths = {item.final_path for item in plan.transitions}
+    outgoing_paths = {item.old_path for item in plan.transitions if item.previous_owner != item.owner}
+    with StorageReadSession(wiki_dir).phase() as reader:
+        for path in sorted(retired):
+            if path in live_paths or path in outgoing_paths or not (wiki_dir / path).exists():
+                continue
+            content = reader.read(path, MAX_EXPANDED_BYTES)
+            try:
+                original = content.decode("utf-8")
+            except UnicodeDecodeError:
+                try:
+                    original = content.decode("cp1252")
+                except UnicodeDecodeError as exc:
+                    raise SourceRetirementError(f"Retained page encoding is unavailable: {path!r}") from exc
+            text = repairs[path].text if path in repairs else original
+            if not text.startswith(SOURCE_MEMBER_REMOVED_HEADER):
+                text = SOURCE_MEMBER_REMOVED_HEADER + text
+                repairs[path] = RetainedPageRepair(path, content, text, f"retirement-{len(repairs):06d}", "source member retirement")
+    plan = replace(plan, retained_page_repairs=tuple(repairs.values()))
     _preflight_page_transition_governance(wiki_dir, plan, diff)
     return plan
 
@@ -3713,16 +3837,37 @@ def _prepare_sync_run(
         baseline_manifest,
         source_snapshot,
     )
-    extracted = _extract_current_inventory(
-        options,
-        source_snapshot=source_snapshot,
+    cached_analysis = sync_analysis_cache.load(
+        options, source_snapshot, baseline_manifest, generation_inputs, committed_state,
+    ) if manifest is not None and not _invalid_manifest_hash_paths(manifest) else None
+    cached_wiki_inputs = knowledge_reuse.wiki_input_hashes(options.wiki_dir) if cached_analysis is not None else None
+    extracted = (
+        _ExtractedSyncInventory(
+            sync_analysis_cache.inventory_result(cached_analysis, source_snapshot, options), source_snapshot,
+        ) if cached_analysis is not None else _extract_current_inventory(options, source_snapshot=source_snapshot)
     )
     inventory_result = extracted.result
     source_snapshot = extracted.source_snapshot
+    inventory_result = _qualify_surviving_module_inventory(options, source_snapshot, baseline_manifest, inventory_result)
+    if inventory_result.inventory != extracted.result.inventory:
+        cached_analysis = None
     inventory = inventory_result.inventory
     source_content_hashes = source_snapshot.hashes_for(inventory)
+    captured_prior_sources = set(source_snapshot.hashes_for()) & set(baseline_manifest.sources)
+    unobserved = sorted(captured_prior_sources - set(inventory))
+    if unobserved:
+        raise SourceRetirementError(
+            f"Selected source is still captured but has no documentable inventory: {unobserved[0]!r}. "
+            "Resolve parser/coverage or empty-module classification before retiring its pages."
+        )
     repair_only = manifest is not None and bool(_invalid_manifest_hash_paths(manifest))
-    maps = _prepare_sync_page_maps(inventory)
+    maps = (
+        _SyncPageMaps(
+            cached_analysis["module_page_map"],
+            {(a, b): c for a, b, c in cached_analysis["entity_page_map"]},
+            {(a, b, c): d for a, b, c, d in cached_analysis["entity_occurrence_page_map"]},
+        ) if cached_analysis is not None else _prepare_sync_page_maps(inventory)
+    )
     if manifest is None:
         manifest = _build_manifest_from_inventory(
             inventory,
@@ -3748,6 +3893,14 @@ def _prepare_sync_run(
     )
     entries = attach_routes_to_entry_points(entrypoint_analysis.entries, contracts)
     contracts = _linked_api_contracts(contracts, entries)
+    from dataclasses import asdict
+    cached_graph_matches = bool(cached_analysis is not None
+                                and cached_analysis["coverage"] == "full"
+                                and cached_analysis["entrypoint_analysis"] == asdict(entrypoint_analysis)
+                                and cached_analysis["contracts"] == contracts)
+    if cached_analysis is not None and not cached_graph_matches:
+        reason = "inventory-only-capture" if cached_analysis["coverage"] == "inventory" else "detector-observations-changed"
+        print(f"Sync graph reuse: miss ({reason})", flush=True)
     diff = _compute_sync_diff(
         manifest,
         inventory,
@@ -3755,6 +3908,21 @@ def _prepare_sync_run(
         maps,
         source_content_hashes,
     )
+    retirement_mappings = discover_retired_entities(manifest, inventory)
+    # Membership is qualified by prior source coordinates before any unchanged
+    # fast path. Absent physical pages do not acquire invented retained content.
+    current_entity_paths = {portable_path_key(canonical_path(PageKind.ENTITIES, name)) for name in maps.entity_occurrence_page_cache.values()}
+    retirement_mappings = {
+        path: owner for path, owner in retirement_mappings.items()
+        if (options.wiki_dir / path).exists()
+        and portable_path_key(path) not in current_entity_paths
+        and not (owner.entity_name in diff.moved_entities and diff.moved_entities[owner.entity_name][0] == owner.source_path)
+    }
+    retained_semantics = {
+        path: baseline for path, owner in retirement_mappings.items()
+        if (baseline := historical_entity_semantics(manifest, owner)) is not None
+    }
+    generation_inputs = with_entity_retirement_state(generation_inputs, retirement_mappings, generated_semantics=retained_semantics)
     missing_pages = (
         find_missing_source_pages(
             options.wiki_dir, manifest, inventory,
@@ -3766,6 +3934,22 @@ def _prepare_sync_run(
         if not seed_manifest and not repair_only and not options.initialize_surfaces
         else {}
     )
+    generated_plan = None
+    if not seed_manifest and not repair_only and not options.initialize_surfaces:
+        generated_plan = _plan_source_page_transitions(
+            options.wiki_dir, manifest, inventory, diff,
+            maps.module_page_map, maps.entity_occurrence_page_cache,
+            source_selection_policy=source_snapshot.source_selection_policy,
+        )
+        generated_plan, diff.generated_page_repairs = plan_generated_source_repairs(
+            options.wiki_dir, generated_plan, inventory,
+            maps.module_page_map, maps.entity_occurrence_page_cache,
+            module_renderer=_generate_module_md, entity_renderer=_generate_entity_md,
+        )
+        if any(item.reason == "source member retirement" for item in generated_plan.retained_page_repairs):
+            # Page application must run for recovery/header repair even when
+            # source bytes and the already committed retirement marker match.
+            diff.retirement_repairs = True
     surface_plan = _build_surface_initialization_plan(
         options,
         manifest,
@@ -3775,6 +3959,7 @@ def _prepare_sync_run(
         api_contracts=contracts,
         generation_inputs=generation_inputs,
         source_snapshot=source_snapshot,
+        cached_dependency_analysis=cached_analysis["graph_observations"]["dependency_analysis"] if cached_analysis is not None and cached_graph_matches else None,
     )
     infrastructure_plan = _discover_infrastructure_plan(
         source_snapshot,
@@ -3870,6 +4055,7 @@ def _prepare_sync_run(
         and not diff.has_changes
         and not surface_plan.has_work
         and not missing_pages
+        and not diff.generated_page_repairs
         and not infrastructure_plan.has_changes
         and not source_selection_prune.deselected_source_paths
         and not source_selection_prune.deselected_page_paths
@@ -3885,6 +4071,12 @@ def _prepare_sync_run(
             reuse_observations_hash,
         )
         if reused is not None:
+            if cached_wiki_inputs is not None and knowledge_reuse.wiki_input_hashes(options.wiki_dir) != cached_wiki_inputs:
+                raise sync_analysis_cache.SyncAnalysisMutationError("wiki changed during cached sync planning")
+            if cached_analysis is not None and sync_analysis_cache.input_key(
+                options, source_snapshot, manifest, surface_plan.generation_inputs,
+            ) != cached_analysis["input_key"]:
+                raise sync_analysis_cache.SyncAnalysisMutationError("analysis inputs changed during cached sync")
             return reused
     graph_options = options
     graph_plan = surface_plan
@@ -3923,7 +4115,7 @@ def _prepare_sync_run(
         api_contracts=contracts,
         dependency_analysis=graph_plan.dependency_analysis,
     )
-    graph_observations = _build_sync_graph_observations(
+    graph_observations = _RuntimeGraphObservations(**cached_analysis["graph_observations"]) if cached_analysis is not None and cached_graph_matches else _build_sync_graph_observations(
         graph_options,
         inventory,
         source_snapshot,
@@ -4007,6 +4199,15 @@ def _prepare_sync_run(
             maps.module_page_map, maps.entity_occurrence_page_cache,
             source_selection_policy=source_snapshot.source_selection_policy,
         )
+    if page_transitions is not None and generated_plan is not None:
+        generated_repairs = tuple(r for r in generated_plan.retained_page_repairs if r.reason == "generated sections")
+        if generated_repairs:
+            # Source/provider refreshes regenerate complete pages instead.
+            regenerated = set(_refresh_files_for_diff(application_diff))
+            generated_repairs = tuple(r for r in generated_repairs if diff.generated_page_repairs[r.path].source_path not in regenerated)
+            page_transitions = replace(page_transitions, retained_page_repairs=page_transitions.retained_page_repairs + generated_repairs)
+    if cached_wiki_inputs is not None and knowledge_reuse.wiki_input_hashes(options.wiki_dir) != cached_wiki_inputs:
+        raise sync_analysis_cache.SyncAnalysisMutationError("wiki changed during cached sync planning")
     return _PreparedSyncRun(
         manifest=manifest,
         seed_manifest=seed_manifest,
@@ -4028,7 +4229,11 @@ def _prepare_sync_run(
         log_missing=not (options.wiki_dir / canonical_path(PageKind.LOG)).is_file(),
         committed_state=committed_state,
         reuse_observations_hash=reuse_observations_hash,
+        entrypoint_analysis=entrypoint_analysis,
+        contracts=contracts,
         page_transitions=page_transitions,
+        analysis_reused=cached_graph_matches,
+        analysis_input_key=cached_analysis["input_key"] if cached_analysis is not None else None,
     )
 
 
@@ -4456,6 +4661,7 @@ def _apply_prepared_sync(
                 options.wiki_dir,
                 prepared.infrastructure_plan,
             ),
+            retired_entity_pages=list(read_entity_retirement_state(prepared.surface_plan.generation_inputs)),
         )
     _record_page_write_state(result, index_state)
     if _applied_sync_has_changes(options, prepared, result):
@@ -4539,6 +4745,15 @@ def _finalize_prepared_sync(
         prepared.repository_evidence,
         prepared.reuse_observations_hash,
     )
+    analysis_payload = sync_analysis_cache.build_payload(options, prepared, surface)
+    prior = prepared.committed_state.artifacts if prepared.committed_state is not None else None
+    if (prior is not None and sync_analysis_cache.EXTENSION not in prior.knowledge.extensions
+            and reuse_basis is not None
+            and reuse_basis["source_snapshot_hash"] == prior.knowledge.bundle.snapshot.source_snapshot_hash
+            and reuse_basis["markdown_snapshot_hash"] == prior.knowledge.bundle.snapshot.markdown_snapshot_hash):
+        if analysis_payload is not None:
+            sync_analysis_cache.report_capture(options, "skipped", "unchanged-snapshot")
+        analysis_payload = None  # Never change an established no-op just to seed a cache.
     artifact_result = finalize_runtime_knowledge(
         RuntimeKnowledgeInputs(
             target_wiki_dir=target,
@@ -4556,6 +4771,8 @@ def _finalize_prepared_sync(
             previous_manifest=prepared.manifest,
             committed_state=prepared.committed_state,
             reuse_input_basis=reuse_basis,
+            sync_analysis_commitment=sync_analysis_cache.commitment(analysis_payload),
+            reuse_typed_graph=prepared.analysis_reused and not options.rebuild_knowledge,
             next_manifest=next_manifest,
             manifest_surfaces=prepared.surface_plan.surfaces,
             manifest_generation_inputs=prepared.surface_plan.generation_inputs,
@@ -4611,8 +4828,12 @@ def _finalize_prepared_sync(
     )
     _print_sync_artifact_actions(artifact_result)
     if dry_run:
+        if analysis_payload is not None:
+            sync_analysis_cache.report_capture(options, "skipped", "dry-run")
         return artifact_result
 
+    if analysis_payload is not None:
+        sync_analysis_cache.save(options, analysis_payload)
     if prepared.repair_only:
         invalid_hashes = len(_invalid_manifest_hash_paths(prepared.manifest))
         print(
@@ -4862,7 +5083,7 @@ def _run_prepared_sync(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> 
             return
         _enforce_sync_write_safety(options, prepared)
         _execute_prepared_sync(options, prepared)
-    except SyncOwnershipError as exc:
+    except (SyncOwnershipError, SourceRetirementError, sync_analysis_cache.SyncAnalysisMutationError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(2)
 
@@ -4888,13 +5109,16 @@ def _run_sync_options(options, write_basis=None) -> None:
         GovernanceError,
         InfrastructureSyncError,
         SyncOwnershipError,
+        SourceRetirementError,
         SyncRuntimeRefreshError,
+        sync_analysis_cache.SyncAnalysisMutationError,
     ) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(2)
     if prepared is None:
         return
     if isinstance(prepared, _ReusedSync):
+        sync_analysis_cache.report_capture(options, "skipped", "unchanged-knowledge")
         _print_sync_artifact_actions(prepared.artifacts)
         print(
             "Dry-run: wiki is up to date." if options.dry_run else "Wiki is up to date."
@@ -5079,6 +5303,7 @@ def _rebuild_index(
     workflow_entries: list[dict] | None = None,
     flow_entries: list[dict] | None = None,
     infra_entries: list[dict] | None = None,
+    retired_entity_pages: list[str] | None = None,
 ) -> str:
     """Regenerate index.md from the live inventory."""
     if entity_page_cache is None:
@@ -5134,6 +5359,7 @@ def _rebuild_index(
     new_index = _generate_index_md(
         all_entity_names,
         module_entries,
+        retired_entity_pages=retired_entity_pages,
         workflow_entries=workflow_entries or None,
         guide_entries=guide_entries or None,
         infra_entries=infra_entries or None,

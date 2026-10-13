@@ -2,12 +2,13 @@
 
 **Entry point:** `knowledge_index_to_payload` (`api`)
 **Source:** [knowledge_index](../modules/knowledge_index.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [concept_identity](../modules/concept_identity.md), [implementation_evidence](../modules/implementation_evidence.md), and 20 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [concept_identity](../modules/concept_identity.md), [immutable](../modules/immutable.md), and 21 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
 - [concept_identity](../modules/concept_identity.md)
+- [immutable](../modules/immutable.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
@@ -32,7 +33,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -41,59 +42,68 @@ sequenceDiagram
     participant p1 as _model_to_payload
     participant p2 as validate_knowledge_index
     participant p3 as _knowledge_index_to_payload_unchecked
-    participant p4 as isinstance (src/llm_wiki_cli/services…:validate_knowledge_index)
-    participant p5 as KnowledgeModelError
-    participant p6 as parse_knowledge_index
-    participant p7 as _validate_builder_model
-    participant p8 as build_knowledge_index
-    participant p9 as canonical_json_text
-    participant p10 as _first_difference
-    participant p11 as KnowledgeIndexBuildError
-    participant p12 as _bundle_to_payload
-    participant p13 as _record
-    participant p14 as model.bundle.snapshot.extensions.get
-    participant p15 as _validate_and_join_inputs
-    participant p16 as isinstance (src/llm_wiki_cli/services…ndex.py:_first_difference)
-    participant p17 as sorted (src/llm_wiki_cli/services…ndex_to_payload_unchecked)
-    participant p18 as _string
-    participant p19 as is_valid_sha256
-    participant p20 as tuple (src/llm_wiki_cli/services….py:build_knowledge_index)
-    participant p21 as _concept_for_page
+    participant p4 as parse_knowledge_index
+    participant p5 as _validate_builder_model
+    participant p6 as build_knowledge_index
+    participant p7 as _first_difference
+    participant p8 as _bundle_to_payload
+    participant p9 as _record
+    participant p10 as _validate_and_join_inputs
+    participant p11 as _string
+    participant p12 as _concept_for_page
+    participant p13 as _parse_bundle
+    participant p14 as _concept_to_payload
+    participant p15 as _derived_relationship
+    participant p16 as _relationship_to_payload
+    participant p17 as _parse_concept
+    participant p18 as _link_relationship
+    participant p19 as _require_structure_state
+    participant p20 as _parse_relationship
+    participant p21 as _validated_reserved_extensions
+    participant p22 as _validate_index_references
+    participant p23 as validate_implementation_collection
+    participant p24 as freeze
+    participant p25 as validate_maintenance_projection
+    participant p26 as _validate_builder_link
+    participant p27 as _serialize_payload
+    participant p28 as validate_governance_projection
+    participant p29 as isinstance (src/llm_wiki_cli/services…:validate_knowledge_index)
+    participant p30 as model.bundle.snapshot.extensions.get
     p0->>p1: _model_to_payload
     p0->>p2: validate_knowledge_index
     p1->>p3: _knowledge_index_to_payload_unchecked
-    p2-->>p4: isinstance (src/llm_wiki_cli/services…:validate_knowledge_index)(value, KnowledgeIndex)
-    p1->>p5: KnowledgeModelError
-    p2->>p6: parse_knowledge_index
-    p2->>p1: _model_to_payload
-    p2->>p6: parse_knowledge_index
-    p2->>p7: _validate_builder_model
-    p2->>p8: build_knowledge_index
-    p2->>p1: _model_to_payload
-    p2->>p1: _model_to_payload
-    p2->>p9: canonical_json_text
-    p2->>p9: canonical_json_text
-    p2->>p10: _first_difference
-    p2->>p11: KnowledgeIndexBuildError
-    p3->>p12: _bundle_to_payload
-    p6->>p13: _record
-    p7-->>p14: model.bundle.snapshot.extensions.get(INVENTORY_HASH_EXTENSION)
-    p8->>p15: _validate_and_join_inputs
-    p10-->>p16: isinstance (src/llm_wiki_cli/services…ndex.py:_first_difference)(actual, dict)
-    p3-->>p17: sorted (src/llm_wiki_cli/services…ndex_to_payload_unchecked)(producer[...], key=...)
-    p6->>p18: _string
-    p7->>p19: is_valid_sha256
-    p8-->>p20: tuple (src/llm_wiki_cli/services….py:build_knowledge_index)(...)
-    p10-->>p16: isinstance (src/llm_wiki_cli/services…ndex.py:_first_difference)(expected, dict)
-    p3-->>p17: sorted (src/llm_wiki_cli/services…ndex_to_payload_unchecked)(producer[...], key=...)
-    p6->>p5: KnowledgeModelError
-    p7->>p5: KnowledgeModelError
-    p8->>p21: _concept_for_page
+    p2->>p4: parse_knowledge_index
+    p2->>p5: _validate_builder_model
+    p2->>p6: build_knowledge_index
+    p2->>p7: _first_difference
+    p3->>p8: _bundle_to_payload
+    p4->>p9: _record
+    p6->>p10: _validate_and_join_inputs
+    p4->>p11: _string
+    p6->>p12: _concept_for_page
+    p4->>p13: _parse_bundle
+    p3->>p14: _concept_to_payload
+    p6->>p15: _derived_relationship
+    p3->>p16: _relationship_to_payload
+    p4->>p17: _parse_concept
+    p6->>p18: _link_relationship
+    p5->>p19: _require_structure_state
+    p4->>p20: _parse_relationship
+    p4->>p21: _validated_reserved_extensions
+    p4->>p22: _validate_index_references
+    p4->>p23: validate_implementation_collection
+    p6->>p24: freeze
+    p4->>p25: validate_maintenance_projection
+    p5->>p26: _validate_builder_link
+    p6->>p27: _serialize_payload
+    p4->>p28: validate_governance_projection
+    p2-->>p29: isinstance (src/llm_wiki_cli/services…:validate_knowledge_index)(value, KnowledgeIndex)
+    p5-->>p30: model.bundle.snapshot.extensions.get(INVENTORY_HASH_EXTENSION)
 ```
 
-> Call sequence diagram shows 30 of 1688 interactions; 1658 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1725 interactions; 1695 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 6 of 423 (417 omitted); unresolved 1 of 267 (266 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 443 (442 omitted); unresolved 1 of 270 (269 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -107,7 +117,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_model.py:_parse_extensions` | 7 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_wire_enum` | 17 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_component_to_payload` | 21 | - | external | 1 |
-> Omission summary shows 8 of 388 groups; 380 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 396 groups; 388 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -172,8 +182,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| knowledge_index_to_payload | _model_to_payload | 281 | `_model_to_payload(validate_knowledge_index(...))` |
-| _model_to_payload | _knowledge_index_to_payload_unchecked | 287 | `_knowledge_index_to_payload_unchecked(model)` |
+| knowledge_index_to_payload | _model_to_payload | 292 | `_model_to_payload(validate_knowledge_index(...))` |
+| _model_to_payload | _knowledge_index_to_payload_unchecked | 298 | `_knowledge_index_to_payload_unchecked(model)` |
 | _knowledge_index_to_payload_unchecked | _bundle_to_payload | 2224 | `_bundle_to_payload(model.bundle)` |
 | _bundle_to_payload | _emit_extensions | 2043 | `_emit_extensions({...}, bundle.repository.extensions, 'bundle.repository.extensions')` |
 | _emit_extensions | isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions) | 2003 | `isinstance(extensions, FrozenDict)` |

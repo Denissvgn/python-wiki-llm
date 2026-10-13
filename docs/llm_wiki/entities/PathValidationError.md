@@ -93,4 +93,4 @@ flowchart LR
 | `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
 | `context_service` | import | [context_service](../modules/context_service.md) | — |
 
-> References: showing 12 of 14 logical references; 2 omitted by the 12-row generated summary limit.
+> References: showing 12 of 15 logical references; 3 omitted by the 12-row generated summary limit.

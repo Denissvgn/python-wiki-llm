@@ -6,7 +6,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -89,16 +89,16 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| persist_runtime_generation_policy | _validate_runtime_policy | 1235 | `_validate_runtime_policy(policy)` |
-| _validate_runtime_policy | set | 1261 | `set(policy)` |
-| _validate_runtime_policy | sorted | 1263 | `sorted(...)` |
-| _validate_runtime_policy | min | 1268 | `min(...)` |
-| _validate_runtime_policy | KnowledgeGenerationError | 1270 | `KnowledgeGenerationError(..., message)` |
-| _validate_runtime_policy | isinstance | 1275 | `isinstance(policy[...], bool)` |
-| _validate_runtime_policy | KnowledgeGenerationError | 1276 | `KnowledgeGenerationError(..., 'must be a boolean')` |
-| _validate_runtime_policy | isinstance | 1281 | `isinstance(detail, str)` |
-| _validate_runtime_policy | KnowledgeGenerationError | 1282 | `KnowledgeGenerationError(..., 'must be one of: auto, module, package')` |
-| persist_runtime_generation_policy | dict | 1236 | `dict(generation_inputs)` |
+| persist_runtime_generation_policy | _validate_runtime_policy | 1242 | `_validate_runtime_policy(policy)` |
+| _validate_runtime_policy | set | 1268 | `set(policy)` |
+| _validate_runtime_policy | sorted | 1270 | `sorted(...)` |
+| _validate_runtime_policy | min | 1275 | `min(...)` |
+| _validate_runtime_policy | KnowledgeGenerationError | 1277 | `KnowledgeGenerationError(..., message)` |
+| _validate_runtime_policy | isinstance | 1282 | `isinstance(policy[...], bool)` |
+| _validate_runtime_policy | KnowledgeGenerationError | 1283 | `KnowledgeGenerationError(..., 'must be a boolean')` |
+| _validate_runtime_policy | isinstance | 1288 | `isinstance(detail, str)` |
+| _validate_runtime_policy | KnowledgeGenerationError | 1289 | `KnowledgeGenerationError(..., 'must be one of: auto, module, package')` |
+| persist_runtime_generation_policy | dict | 1243 | `dict(generation_inputs)` |
 
 ### Boundary effects
 
@@ -108,10 +108,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_validate_runtime_policy` | `sorted` | 1263 |
-| external_call | `_validate_runtime_policy` | `min` | 1268 |
-| external_call | `_validate_runtime_policy` | `isinstance` | 1275 |
-| external_call | `_validate_runtime_policy` | `isinstance` | 1281 |
+| external_call | `_validate_runtime_policy` | `sorted` | 1270 |
+| external_call | `_validate_runtime_policy` | `min` | 1275 |
+| external_call | `_validate_runtime_policy` | `isinstance` | 1282 |
+| external_call | `_validate_runtime_policy` | `isinstance` | 1288 |
 
 ## Behavior
 

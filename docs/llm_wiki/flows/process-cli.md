@@ -21,84 +21,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as main
     participant p1 as _build_parser
-    participant p2 as parser.parse_args
-    participant p3 as comparison_scope
-    participant p4 as getattr
-    participant p5 as _dispatch_command
-    participant p6 as print
-    participant p7 as sys.exit
-    participant p8 as str
-    participant p9 as os.environ.get
-    participant p10 as resource_failure_hint
-    participant p11 as argparse.ArgumentParser
-    participant p12 as _ACTIVE.set
-    participant p13 as Progress(…).run
-    participant p14 as tuple
-    participant p15 as parser.add_argument (src/llm_wiki_cli/cli.py:_build_parser)
-    participant p16 as selected_policy
-    participant p17 as Progress
-    participant p18 as _exception_chain
-    participant p19 as parser.add_subparsers (src/llm_wiki_cli/cli.py:_build_parser)
-    participant p20 as _ACTIVE.reset
-    participant p21 as _COMMAND_MODULES[…].run
-    participant p22 as isinstance (src/llm_wiki_cli/services….py:resource_failure_hint)
-    participant p23 as _register_commands
+    participant p2 as comparison_scope
+    participant p3 as _dispatch_command
+    participant p4 as resource_failure_hint
+    participant p5 as _register_commands
+    participant p6 as _add_init_command
+    participant p7 as _add_extract_command
+    participant p8 as _add_lint_command
+    participant p9 as _add_prepare_extractors_command
+    participant p10 as _add_ci_check_command
+    participant p11 as _add_knowledge_command
+    participant p12 as _add_team_command
+    participant p13 as _add_trigger_agent_command
+    participant p14 as _add_bootstrap_command
+    participant p15 as _add_generate_prompt_command
+    participant p16 as _add_metrics_command
+    participant p17 as _add_review_command
+    participant p18 as _add_search_command
+    participant p19 as _add_status_command
+    participant p20 as _add_queue_command
+    participant p21 as _add_maintenance_command
+    participant p22 as _add_query_command
+    participant p23 as _add_task_context_command
+    participant p24 as _add_mcp_command
+    participant p25 as _add_obsidian_command
+    participant p26 as _add_site_command
+    participant p27 as _add_skills_command
+    participant p28 as _add_upgrade_command
+    participant p29 as getattr
+    participant p30 as parser.parse_args
     p0->>p1: _build_parser
-    p0-->>p2: parser.parse_args
-    p0->>p3: comparison_scope
-    p0-->>p4: getattr(args, 'comparison_policy', 'auto')
-    p0->>p5: _dispatch_command
-    p0-->>p6: print('\nAborted.')
-    p0-->>p7: sys.exit(130)
-    p0-->>p6: print(str(...), file=sys.stderr)
-    p0-->>p8: str(exc)
-    p0-->>p7: sys.exit(1)
-    p0-->>p6: print(..., file=sys.stderr)
-    p0-->>p7: sys.exit(2)
-    p0-->>p9: os.environ.get('LLM_WIKI_DEBUG')
-    p0-->>p6: print(..., file=sys.stderr)
-    p0->>p10: resource_failure_hint
-    p0-->>p6: print(..., file=sys.stderr)
-    p0-->>p7: sys.exit(1)
-    p1-->>p11: argparse.ArgumentParser(description='LLM Wiki CLI')
-    p3-->>p12: _ACTIVE.set(selected_policy(...))
-    p5-->>p13: Progress(…).run
-    p10-->>p14: tuple(_exception_chain(...))
-    p1-->>p15: parser.add_argument (src/llm_wiki_cli/cli.py:_build_parser)('--version', action='version', version=...)
-    p3->>p16: selected_policy
-    p5->>p17: Progress
-    p10->>p18: _exception_chain
-    p1-->>p19: parser.add_subparsers (src/llm_wiki_cli/cli.py:_build_parser)(dest='command', required=True)
-    p3-->>p20: _ACTIVE.reset(token)
-    p5-->>p21: _COMMAND_MODULES[…].run(args)
-    p10-->>p22: isinstance (src/llm_wiki_cli/services….py:resource_failure_hint)(current, MemoryError)
-    p1->>p23: _register_commands
+    p0->>p2: comparison_scope
+    p0->>p3: _dispatch_command
+    p0->>p4: resource_failure_hint
+    p1->>p5: _register_commands
+    p5->>p6: _add_init_command
+    p5->>p7: _add_extract_command
+    p5->>p8: _add_lint_command
+    p5->>p9: _add_prepare_extractors_command
+    p5->>p10: _add_ci_check_command
+    p5->>p11: _add_knowledge_command
+    p5->>p12: _add_team_command
+    p5->>p13: _add_trigger_agent_command
+    p5->>p14: _add_bootstrap_command
+    p5->>p15: _add_generate_prompt_command
+    p5->>p16: _add_metrics_command
+    p5->>p17: _add_review_command
+    p5->>p18: _add_search_command
+    p5->>p19: _add_status_command
+    p5->>p20: _add_queue_command
+    p5->>p21: _add_maintenance_command
+    p5->>p22: _add_query_command
+    p5->>p23: _add_task_context_command
+    p5->>p24: _add_mcp_command
+    p5->>p25: _add_obsidian_command
+    p5->>p26: _add_site_command
+    p5->>p27: _add_skills_command
+    p5->>p28: _add_upgrade_command
+    p0-->>p29: getattr(args, 'comparison_policy', 'auto')
+    p0-->>p30: parser.parse_args
 ```
 
-> Call sequence diagram shows 30 of 708 interactions; 678 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 709 interactions; 679 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 15 of 24 (9 omitted); unresolved 7 of 550 (543 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 24 (23 omitted); unresolved 1 of 551 (550 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/cli.py:_register_commands` | 6 | [src/llm_wiki_cli/cli.py](../modules/cli.md) | internal | 35 |
+| `src/llm_wiki_cli/cli.py:_build_parser` | 2 | - | external | 1 |
+| `src/llm_wiki_cli/cli.py:_build_parser` | 2 | - | unresolved | 2 |
 | `src/llm_wiki_cli/cli.py:_add_init_command` | 7 | - | unresolved | 9 |
 | `src/llm_wiki_cli/cli.py:_add_init_command` | 7 | [src/llm_wiki_cli/cli.py](../modules/cli.md) | internal | 2 |
 | `src/llm_wiki_cli/cli.py:_add_helper_cache_argument` | 14 | - | unresolved | 1 |
 | `src/llm_wiki_cli/cli.py:_add_source_selection_argument` | 19 | - | unresolved | 1 |
 | `src/llm_wiki_cli/cli.py:_add_extract_command` | 21 | - | unresolved | 12 |
 | `src/llm_wiki_cli/cli.py:_add_extract_command` | 21 | [src/llm_wiki_cli/cli.py](../modules/cli.md) | internal | 3 |
-| `src/llm_wiki_cli/cli.py:_add_include_tests_argument` | 31 | - | unresolved | 1 |
-> Omission summary shows 8 of 84 groups; 76 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 91 groups; 83 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
@@ -175,28 +182,28 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| main | _build_parser | 2627 | `_build_parser(data not statically known)` |
+| main | _build_parser | 2628 | `_build_parser(data not statically known)` |
 | _build_parser | argparse.ArgumentParser | 261 | `argparse.ArgumentParser(description='LLM Wiki CLI')` |
 | _build_parser | parser.add_argument (src/llm_wiki_cli/cli.py:_build_parser) | 262 | `parser.add_argument('--version', action='version', version=...)` |
 | _build_parser | parser.add_subparsers (src/llm_wiki_cli/cli.py:_build_parser) | 265 | `parser.add_subparsers(dest='command', required=True)` |
 | _build_parser | _register_commands | 266 | `_register_commands(subparsers)` |
 | _register_commands | _add_init_command | 301 | `_add_init_command(subparsers)` |
-| _add_init_command | subparsers.add_parser (src/llm_wiki_cli/cli.py:_add_init_command) | 380 | `subparsers.add_parser('init', help='Scaffold LLM Wiki structure and schema')` |
-| _add_init_command | init_parser.add_argument | 383 | `init_parser.add_argument('--agent', choices=AGENT_CHOICES, default=None, help='Target agent format (default: stored agent, or generic for a new project)')` |
-| _add_init_command | init_parser.add_argument | 389 | `init_parser.add_argument('--wiki-dir', default=DEFAULT_WIKI_DIR, help='Wiki directory to create (default: docs/llm_wiki)')` |
-| _add_init_command | init_parser.add_argument | 394 | `init_parser.add_argument('--no-quality-hints', action='store_true', default=None, help='Omit agent quality guidelines from the constraint block')` |
-| _add_init_command | init_parser.add_argument | 400 | `init_parser.add_argument('--no-skills', action='store_true', default=None, help="Skip installing the wiki-reference skill into the agent's skills directory (.claude/skills for claude, .llm-wiki/skills otherwise)")` |
+| _add_init_command | subparsers.add_parser (src/llm_wiki_cli/cli.py:_add_init_command) | 381 | `subparsers.add_parser('init', help='Scaffold LLM Wiki structure and schema')` |
+| _add_init_command | init_parser.add_argument | 384 | `init_parser.add_argument('--agent', choices=AGENT_CHOICES, default=None, help='Target agent format (default: stored agent, or generic for a new project)')` |
+| _add_init_command | init_parser.add_argument | 390 | `init_parser.add_argument('--wiki-dir', default=DEFAULT_WIKI_DIR, help='Wiki directory to create (default: docs/llm_wiki)')` |
+| _add_init_command | init_parser.add_argument | 395 | `init_parser.add_argument('--no-quality-hints', action='store_true', default=None, help='Omit agent quality guidelines from the constraint block')` |
+| _add_init_command | init_parser.add_argument | 401 | `init_parser.add_argument('--no-skills', action='store_true', default=None, help="Skip installing the wiki-reference skill into the agent's skills directory (.claude/skills for claude, .llm-wiki/skills otherwise)")` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `main` | 2635 |
-| output | `print` | `main` | 2638 |
-| output | `print` | `main` | 2641 |
-| environment_read | `os.environ.get` | `main` | 2644 |
-| output | `print` | `main` | 2646 |
-| output | `print` | `main` | 2649 |
+| output | `print` | `main` | 2636 |
+| output | `print` | `main` | 2639 |
+| output | `print` | `main` | 2642 |
+| environment_read | `os.environ.get` | `main` | 2645 |
+| output | `print` | `main` | 2647 |
+| output | `print` | `main` | 2650 |
 
 ### Static analysis gaps
 
@@ -205,11 +212,11 @@ flowchart LR
 | external_call | `_build_parser` | `argparse.ArgumentParser` | 261 |
 | unresolved_call | `_build_parser` | `parser.add_argument` | 262 |
 | unresolved_call | `_build_parser` | `parser.add_subparsers` | 265 |
-| unresolved_call | `_add_init_command` | `subparsers.add_parser` | 380 |
-| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 383 |
-| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 389 |
-| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 394 |
-| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 400 |
+| unresolved_call | `_add_init_command` | `subparsers.add_parser` | 381 |
+| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 384 |
+| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 390 |
+| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 395 |
+| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 401 |
 | step_limit | `main` | `first 12 steps` | 0 |
 
 ## Behavior

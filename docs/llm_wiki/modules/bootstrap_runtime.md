@@ -17,6 +17,7 @@ artifacts only after the public Markdown surface has been written.
 | `.` | `knowledge_reuse` |
 | `..` | `__version__` |
 | `..config` | `DEFAULT_WIKI_DIR`, `validate_path`, `validate_source_root` |
+| `..extractors.common` | `TYPESCRIPT_FAMILY_EXTENSIONS` |
 | `.api_contracts` | `ApiContractError`, `attach_routes_to_entry_points`, `build_api_contracts`, `link_entry_point_flows`, `render_api_contracts_markdown`, `render_flow_api_contract_section` |
 | `.bootstrap_service` | `BootstrapContractError`, `BootstrapExtractionError`, `BootstrapRequestError`, `BootstrapRequest`, `BootstrapResult` |
 | `.contracts` | `BOOTSTRAP_SUMMARY_SCHEMA_VERSION`, `KNOWLEDGE_SCHEMA_VERSION` |
@@ -80,28 +81,28 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (16) |
-| Outbound | `src` (33) |
+| Inbound | `src` (17) |
+| Outbound | `src` (34) |
 
-> All 49 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 51 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 735 | — | — |
-| [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 1013 | — | — |
-| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3138 | — | — |
-| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4387 | — | — |
-| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4413 | — | — |
-| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4426 | — | — |
-| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4433 | — | — |
-| [_WorkflowResult](../entities/WorkflowResult.md) | 4441 | — | — |
-| [_FlowResult](../entities/FlowResult.md) | 4447 | — | — |
-| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4458 | — | — |
-| [_DependencyResult](../entities/DependencyResult.md) | 4469 | — | — |
-| [_ApiContractResult](../entities/ApiContractResult.md) | 4477 | — | — |
-| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4484 | — | — |
+| [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 737 | — | — |
+| [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 1015 | — | — |
+| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3147 | — | — |
+| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4440 | — | — |
+| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4466 | — | — |
+| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4479 | — | — |
+| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4486 | — | — |
+| [_WorkflowResult](../entities/WorkflowResult.md) | 4494 | — | — |
+| [_FlowResult](../entities/FlowResult.md) | 4500 | — | — |
+| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4511 | — | — |
+| [_DependencyResult](../entities/DependencyResult.md) | 4522 | — | — |
+| [_ApiContractResult](../entities/ApiContractResult.md) | 4530 | — | — |
+| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4537 | — | — |
 
 ## Functions
 
@@ -187,7 +188,7 @@ flowchart LR
 | `_overview_target` | `(count: int, heading: str) -> str` | — | — |
 | `_overview_row` | `(label: str, count: int, target: str) -> str` | — | — |
 | `_append_surface_overview` | `(lines: list[str], *, entity_count: int, module_count: int, workflow_count: int, guide_count: int, flow_count: int, infrastructure_count: int, api_contracts_present: bool, architecture_count: int, log_present: bool) -> None` | — | — |
-| `_append_index_entities` | `(lines: list[str], entity_names: list[str]) -> None` | — | — |
+| `_append_index_entities` | `(lines: list[str], entity_names: list[str], retired_entity_pages: list[str] \| None = None) -> None` | — | — |
 | `_append_index_modules` | `(lines: list[str], module_entries: list[dict]) -> None` | — | — |
 | `_append_index_workflows` | `(lines: list[str], workflow_entries: list[dict] \| None) -> None` | — | — |
 | `_append_index_guides` | `(lines: list[str], guide_entries: list[dict] \| None) -> None` | — | — |
@@ -198,7 +199,7 @@ flowchart LR
 | `_architecture_order` | `(entry: dict) -> int` | — | — |
 | `_append_index_architecture` | `(lines: list[str], architecture_entries: list[dict] \| None) -> None` | — | Append the dependency architecture section linking top-level analysis pages. |
 | `_append_index_log` | `(lines: list[str], *, log_present: bool) -> None` | — | — |
-| `_generate_index_md` | `(entity_names: list[str], module_entries: list[dict], workflow_entries: list[dict] \| None = None, guide_entries: list[dict] \| None = None, infra_entries: list[dict] \| None = None, flow_entries: list[dict] \| None = None, architecture_entries: list[dict] \| None = None, *, api_contracts_present: bool = False, log_present: bool = True) -> str` | — | Generate the full index.md content. |
+| `_generate_index_md` | `(entity_names: list[str], module_entries: list[dict], workflow_entries: list[dict] \| None = None, guide_entries: list[dict] \| None = None, infra_entries: list[dict] \| None = None, flow_entries: list[dict] \| None = None, architecture_entries: list[dict] \| None = None, *, retired_entity_pages: list[str] \| None = None, api_contracts_present: bool = False, log_present: bool = True) -> str` | — | Generate the full index.md content. |
 | `_workflow_module_refs` | `(wf: dict, module_page_map: Mapping[str, str] \| None = None) -> list[tuple[str, str]]` | — | Return ``(label, page_stem)`` pairs for workflow module links. |
 | `_generate_workflow_md` | `(name: str, wf: dict, module_page_map: Mapping[str, str] \| None = None) -> str` | — | Generate a workflow page from call-graph data. |
 | `_flow_module_refs` | `(flow: dict, module_page_map: Mapping[str, str] \| None = None) -> list[tuple[str, str]]` | — | Return sorted ``(label, page_stem)`` pairs for a flow's touched modules. |
@@ -244,6 +245,9 @@ flowchart LR
 | `_generate_infrastructure_md` | `(filename: str, info: dict, module_links: Mapping[str, str] \| set[str] \| None = None, unsupported_sources: dict[str, dict[str, object]] \| None = None) -> str` | — | Generate a wiki page for any supported infrastructure inventory entry. |
 | `_with_infrastructure_notes_placeholder` | `(markdown: str) -> str` | — | Append the sole supported semantic surface to generated infra pages. |
 | `_append_infrastructure_advisories` | `(lines: list[str], advisories: list[str]) -> None` | — | — |
+| `_generate_yaml_format_md` | `(filename: str, info: dict) -> str` | — | Render named structural summaries without exposing arbitrary config values. |
+| `_infrastructure_label` | `(value: object) -> str` | — | Keep a source label on one line with Markdown punctuation inert. |
+| `_infrastructure_code` | `(value: object) -> str` | — | Quote a single line of source text, including embedded backticks. |
 | `_generate_github_actions_md` | `(filename: str, info: dict) -> str` | — | Generate markdown for a GitHub Actions workflow file. |
 | `_generate_kubernetes_md` | `(filename: str, info: dict) -> str` | — | Generate markdown for a Kubernetes manifest file. |
 | `_format_resource_map` | `(values: Mapping[str, str]) -> str` | — | — |

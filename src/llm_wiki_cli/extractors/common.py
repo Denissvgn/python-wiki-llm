@@ -15,8 +15,8 @@ from ..config import (
     is_agent_worktree_path,
 )
 
-TYPESCRIPT_FAMILY_EXTENSIONS = (".ts", ".tsx", ".js", ".jsx")
-JAVASCRIPT_EXTENSIONS = (".js", ".jsx")
+JAVASCRIPT_EXTENSIONS = (".js", ".jsx", ".mjs", ".cjs")
+TYPESCRIPT_FAMILY_EXTENSIONS = (".ts", ".tsx", *JAVASCRIPT_EXTENSIONS)
 GENERATED_JAVASCRIPT_BUNDLE_LANGUAGE = "generated_javascript_bundle"
 _BUNDLE_ASSET_DIRS = {
     ("public", "assets"),
@@ -110,7 +110,7 @@ def is_generated_javascript_bundle_path(path: str | Path) -> bool:
     """Return True for generated/minified JavaScript static asset bundles."""
     path_text = path.as_posix() if isinstance(path, Path) else str(path)
     parts = tuple(part for part in path_text.replace("\\", "/").split("/") if part)
-    if not parts or Path(parts[-1]).suffix.lower() != ".js":
+    if not parts or Path(parts[-1]).suffix.lower() not in (".js", ".mjs", ".cjs"):
         return False
     if "src" in parts[:-1]:
         return False
@@ -118,7 +118,7 @@ def is_generated_javascript_bundle_path(path: str | Path) -> bool:
         return False
 
     name = parts[-1]
-    if name.endswith(".min.js"):
+    if Path(name).stem.endswith(".min"):
         return True
     return _looks_like_hashed_bundle_name(name)
 
@@ -363,7 +363,7 @@ def _has_bundle_asset_directory(directory_parts: tuple[str, ...]) -> bool:
 
 
 def _looks_like_hashed_bundle_name(name: str) -> bool:
-    stem = name[:-3]
+    stem = Path(name).stem
     tokens = [token for token in _HASH_TOKEN_SPLIT_RE.split(stem) if token]
     if not tokens:
         return False

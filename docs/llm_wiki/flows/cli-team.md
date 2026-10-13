@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [team_cmd](../modules/team_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 35 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 38 more
 
 **Complete modules touched:**
 
@@ -37,6 +37,7 @@
 - [python_imports](../modules/python_imports.md)
 - [python_observations](../modules/python_observations.md)
 - [resource_diagnostics](../modules/resource_diagnostics.md)
+- [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
@@ -44,84 +45,96 @@
 - [team_cmd](../modules/team_cmd.md)
 - [validation](../modules/validation.md)
 - [wiki_write_basis](../modules/wiki_write_basis.md)
+- [yaml_formats](../modules/yaml_formats.md)
+- [yaml_syntax](../modules/yaml_syntax.md)
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as run
-    participant p1 as getattr (src/llm_wiki_cli/commands/team_cmd.py:run)
-    participant p2 as _run_init
-    participant p3 as _run_check
-    participant p4 as _run_resolve_conflicts
-    participant p5 as print (src/llm_wiki_cli/commands/team_cmd.py:run)
-    participant p6 as sys.exit (src/llm_wiki_cli/commands/team_cmd.py:run)
-    participant p7 as getattr (src/llm_wiki_cli/commands/team_cmd.py:_run_init)
-    participant p8 as getattr (src/llm_wiki_cli/commands/team_cmd.py:_run_check)
-    participant p9 as getattr (src/llm_wiki_cli/commands…py:_run_resolve_conflicts)
-    participant p10 as validate_path
-    participant p11 as team_config_path
-    participant p12 as path.exists (src/llm_wiki_cli/commands/team_cmd.py:_run_init)
-    participant p13 as bool (src/llm_wiki_cli/commands/team_cmd.py:_run_check)
-    participant p14 as bool (src/llm_wiki_cli/commands…py:_run_resolve_conflicts)
-    participant p15 as print (src/llm_wiki_cli/commands/team_cmd.py:_run_init)
-    participant p16 as write_default_team_config
-    participant p17 as validate_source_root
-    participant p18 as str (src/llm_wiki_cli/commands/team_cmd.py:_run_check)
-    participant p19 as str (src/llm_wiki_cli/commands…py:_run_resolve_conflicts)
-    participant p20 as resolve_team_policy
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/team_cmd.py:run)(args, 'team_action', None)
-    p0->>p2: _run_init
-    p0->>p3: _run_check
-    p0->>p4: _run_resolve_conflicts
-    p0-->>p5: print (src/llm_wiki_cli/commands/team_cmd.py:run)('Error: missing team action.', file=sys.stderr)
-    p0-->>p6: sys.exit (src/llm_wiki_cli/commands/team_cmd.py:run)(1)
-    p2-->>p7: getattr (src/llm_wiki_cli/commands/team_cmd.py:_run_init)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
-    p3-->>p8: getattr (src/llm_wiki_cli/commands/team_cmd.py:_run_check)(args, 'src_dir', '.')
-    p4-->>p9: getattr (src/llm_wiki_cli/commands…py:_run_resolve_conflicts)(args, 'src_dir', '.')
-    p2->>p10: validate_path
-    p3-->>p8: getattr (src/llm_wiki_cli/commands/team_cmd.py:_run_check)(args, 'wiki_dir', None)
-    p4-->>p9: getattr (src/llm_wiki_cli/commands…py:_run_resolve_conflicts)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
-    p2->>p11: team_config_path
-    p3-->>p8: getattr (src/llm_wiki_cli/commands/team_cmd.py:_run_check)(args, 'format', 'text')
-    p4-->>p9: getattr (src/llm_wiki_cli/commands…py:_run_resolve_conflicts)(args, 'format', 'text')
-    p2-->>p12: path.exists (src/llm_wiki_cli/commands/team_cmd.py:_run_init)
-    p3-->>p13: bool (src/llm_wiki_cli/commands/team_cmd.py:_run_check)(getattr(...))
-    p4-->>p14: bool (src/llm_wiki_cli/commands…py:_run_resolve_conflicts)(getattr(...))
-    p2-->>p15: print (src/llm_wiki_cli/commands/team_cmd.py:_run_init)(...)
-    p3-->>p8: getattr (src/llm_wiki_cli/commands/team_cmd.py:_run_check)(args, 'allow_external_src', False)
-    p4-->>p9: getattr (src/llm_wiki_cli/commands…py:_run_resolve_conflicts)(args, 'allow_external_src', False)
-    p2->>p16: write_default_team_config
-    p3->>p17: validate_source_root
-    p4->>p17: validate_source_root
-    p2-->>p15: print (src/llm_wiki_cli/commands/team_cmd.py:_run_init)(...)
-    p3-->>p18: str (src/llm_wiki_cli/commands/team_cmd.py:_run_check)(src_root)
-    p4-->>p19: str (src/llm_wiki_cli/commands…py:_run_resolve_conflicts)(src_root)
-    p3->>p10: validate_path
-    p4->>p10: validate_path
-    p3->>p20: resolve_team_policy
+    participant p1 as _run_init
+    participant p2 as _run_check
+    participant p3 as _run_resolve_conflicts
+    participant p4 as validate_path
+    participant p5 as write_default_team_config
+    participant p6 as validate_source_root
+    participant p7 as resolve_team_policy
+    participant p8 as _finish_check
+    participant p9 as team_config_issue
+    participant p10 as resolve_conflicts
+    participant p11 as _preflight_team_source_selection
+    participant p12 as get_inventory_result
+    participant p13 as extraction_job_request_from_args
+    participant p14 as get_docker_inventory
+    participant p15 as get_yaml_infrastructure_inventory
+    participant p16 as build_team_issues
+    participant p17 as resolve_source_selection
+    participant p18 as _build_inventory_result
+    participant p19 as write_json_atomic
+    participant p20 as _print_payload
+    participant p21 as SyncManifest.load
+    participant p22 as _coerce_inventory_request
+    participant p23 as load_team_config
+    participant p24 as _parse_compose
+    participant p25 as parse_github_actions_workflow
+    participant p26 as check_plugin_requirements
+    participant p27 as _looks_like_compose
+    participant p28 as check_team_conventions
+    participant p29 as getattr (src/llm_wiki_cli/commands/team_cmd.py:run)
+    participant p30 as path.exists (src/llm_wiki_cli/commands/team_cmd.py:_run_init)
+    p0->>p1: _run_init
+    p0->>p2: _run_check
+    p0->>p3: _run_resolve_conflicts
+    p1->>p4: validate_path
+    p1->>p5: write_default_team_config
+    p2->>p6: validate_source_root
+    p2->>p7: resolve_team_policy
+    p2->>p8: _finish_check
+    p2->>p9: team_config_issue
+    p3->>p10: resolve_conflicts
+    p2->>p11: _preflight_team_source_selection
+    p2->>p12: get_inventory_result
+    p2->>p13: extraction_job_request_from_args
+    p2->>p14: get_docker_inventory
+    p2->>p15: get_yaml_infrastructure_inventory
+    p2->>p16: build_team_issues
+    p11->>p17: resolve_source_selection
+    p12->>p18: _build_inventory_result
+    p5->>p19: write_json_atomic
+    p8->>p20: _print_payload
+    p11->>p21: SyncManifest.load
+    p12->>p22: _coerce_inventory_request
+    p7->>p23: load_team_config
+    p14->>p24: _parse_compose
+    p15->>p25: parse_github_actions_workflow
+    p16->>p26: check_plugin_requirements
+    p14->>p27: _looks_like_compose
+    p16->>p28: check_team_conventions
+    p0-->>p29: getattr (src/llm_wiki_cli/commands/team_cmd.py:run)(args, 'team_action', None)
+    p1-->>p30: path.exists (src/llm_wiki_cli/commands/team_cmd.py:_run_init)
 ```
 
-> Call sequence diagram shows 30 of 2397 interactions; 2367 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2418 interactions; 2388 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 18 of 655 (637 omitted); unresolved 1 of 826 (825 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 687 (686 omitted); unresolved 1 of 819 (818 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/commands/team_cmd.py:_run_init` | 3 | - | external | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 5 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
 | `src/llm_wiki_cli/config.py:validate_path` | 5 | - | unresolved | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 5 | - | external | 2 |
+| `src/llm_wiki_cli/commands/team_cmd.py:_run_init` | 3 | [src/llm_wiki_cli/services/team.py](../modules/team.md) | internal | 1 |
 | `src/llm_wiki_cli/services/team.py:team_config_path` | 13 | - | external | 1 |
 | `src/llm_wiki_cli/services/team.py:write_default_team_config` | 17 | [src/llm_wiki_cli/services/team.py](../modules/team.md) | internal | 2 |
-| `src/llm_wiki_cli/services/team.py:write_default_team_config` | 17 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
 | `src/llm_wiki_cli/services/io.py:write_json_atomic` | 19 | - | external | 1 |
-| `src/llm_wiki_cli/services/io.py:write_json_atomic` | 19 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
-> Omission summary shows 8 of 623 groups; 615 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 614 groups; 606 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

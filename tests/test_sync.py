@@ -3130,7 +3130,7 @@ class TestMovedClass:
         proj, wiki_dir = bootstrapped_project
 
         # Remove User from models.py, add it to users.py
-        (proj / "models.py").write_text("# empty\n")
+        (proj / "models.py").write_text("def remaining_module_entry():\n    return None\n")
         (proj / "users.py").write_text(
             textwrap.dedent("""\
                 class User:

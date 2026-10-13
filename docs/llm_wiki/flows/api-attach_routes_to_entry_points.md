@@ -6,19 +6,19 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as attach_routes_to_entry_points
-    participant p1 as defaultdict
-    participant p2 as contracts.get
-    participant p3 as operation.get (src/llm_wiki_cli/services…ach_routes_to_entry_points)
-    participant p4 as isinstance (src/llm_wiki_cli/services…ach_routes_to_entry_points)
-    participant p5 as str
-    participant p6 as handler.get
-    participant p7 as _resolved_flow_route
+    participant p1 as _resolved_flow_route
+    participant p2 as defaultdict
+    participant p3 as contracts.get
+    participant p4 as operation.get (src/llm_wiki_cli/services…ach_routes_to_entry_points)
+    participant p5 as isinstance (src/llm_wiki_cli/services…ach_routes_to_entry_points)
+    participant p6 as str
+    participant p7 as handler.get
     participant p8 as handler_routes.append
     participant p9 as leaf_qualnames[…].add
     participant p10 as symbol.rsplit
@@ -31,25 +31,25 @@ sequenceDiagram
     participant p17 as next
     participant p18 as iter
     participant p19 as item.pop
-    p0-->>p1: defaultdict(list)
-    p0-->>p1: defaultdict(set)
-    p0-->>p2: contracts.get('operations', [...])
-    p0-->>p3: operation.get (src/llm_wiki_cli/services…ach_routes_to_entry_points)('handler')
-    p0-->>p4: isinstance (src/llm_wiki_cli/services…ach_routes_to_entry_points)(handler, Mapping)
-    p0-->>p5: str(...)
-    p0-->>p6: handler.get('file')
-    p0-->>p5: str(...)
-    p0-->>p6: handler.get('symbol')
-    p0-->>p5: str(...)
-    p0-->>p6: handler.get('qualname')
-    p0->>p7: _resolved_flow_route
+    p0->>p1: _resolved_flow_route
+    p0-->>p2: defaultdict(list)
+    p0-->>p3: contracts.get('operations', [...])
+    p0-->>p2: defaultdict(set)
+    p0-->>p4: operation.get (src/llm_wiki_cli/services…ach_routes_to_entry_points)('handler')
+    p0-->>p5: isinstance (src/llm_wiki_cli/services…ach_routes_to_entry_points)(handler, Mapping)
+    p0-->>p6: str(...)
+    p0-->>p7: handler.get('file')
+    p0-->>p6: str(...)
+    p0-->>p7: handler.get('symbol')
+    p0-->>p6: str(...)
+    p0-->>p7: handler.get('qualname')
     p0-->>p8: handler_routes.append(route)
     p0-->>p9: leaf_qualnames[…].add(qualname)
     p0-->>p10: symbol.rsplit('.', 1)
     p0-->>p11: dict(entry)
-    p0-->>p5: str(...)
+    p0-->>p6: str(...)
     p0-->>p12: item.get('file')
-    p0-->>p5: str(...)
+    p0-->>p6: str(...)
     p0-->>p12: item.get('symbol')
     p0-->>p13: routes.get((...))
     p0-->>p14: leaf_qualnames.get((...), set(...))

@@ -14,9 +14,12 @@ from .request_json import _pairs, _constant
 from .task_context import validate_task_context, _counter, _LIMITATIONS
 from .task_contract import TaskContext, TASK_REQUEST_SCHEMA_V2, normalize_task_request
 from .workflow_profile import canonical_json, content_id
+from .task_compact_readable import readable_projection, readable_expansion
 
 COMPACT_SCHEMA = "llm-wiki-task-compact/v1"
 VIEW_REQUEST_SCHEMA = "llm-wiki-task-view-request/v1"
+COMPACT_SCHEMA_V2 = "llm-wiki-task-compact/v2"
+VIEW_REQUEST_SCHEMA_V2 = "llm-wiki-task-view-request/v2"
 FACT_COLUMNS = (
     "fact_id",
     "facet",
@@ -125,7 +128,7 @@ def normalize_view_options(value, *, ceiling):
         )
     budget = value["budget_tokens"]
     if (
-        value["schema_version"] != VIEW_REQUEST_SCHEMA
+        value["schema_version"] not in (VIEW_REQUEST_SCHEMA, VIEW_REQUEST_SCHEMA_V2)
         or type(budget) is not int
         or not 1 <= budget <= ceiling
     ):
@@ -133,7 +136,7 @@ def normalize_view_options(value, *, ceiling):
             "invalid-view-request",
             "Compact budget must narrow the trusted effective ceiling",
         )
-    return {"schema_version": VIEW_REQUEST_SCHEMA, "budget_tokens": budget}
+    return {"schema_version": value["schema_version"], "budget_tokens": budget}
 
 
 class _CheckedCounter:
@@ -476,7 +479,10 @@ def render_compact_task_context(
     options = normalize_view_options(
         view_options, ceiling=effective.settings["budget_tokens"]
     )
-    projection = _projection(canonical, normalized)
+    schema = (COMPACT_SCHEMA_V2 if options["schema_version"] == VIEW_REQUEST_SCHEMA_V2
+              else COMPACT_SCHEMA)
+    projection = (readable_projection(canonical, normalized) if schema == COMPACT_SCHEMA_V2
+                  else _projection(canonical, normalized))
     accounting = {
         "budget_tokens": options["budget_tokens"],
         "used_tokens": 0,
@@ -490,12 +496,12 @@ def render_compact_task_context(
 
     def render(value):
         payload = {
-            "schema_version": COMPACT_SCHEMA,
+            "schema_version": schema,
             "ok": True,
             **projection,
             "accounting": dict(value),
         }
-        payload["view_id"] = content_id(COMPACT_SCHEMA, payload)
+        payload["view_id"] = content_id(schema, payload)
         return canonical_json(payload).decode("utf-8")
 
     rendered = _accounted_render(render, accounting, trusted)
@@ -517,7 +523,7 @@ def render_compact_task_context(
         def render_diagnostic(value):
             return canonical_json(
                 {
-                    "schema_version": COMPACT_SCHEMA,
+                    "schema_version": schema,
                     "ok": False,
                     "error": "cannot-fit-compact",
                     "accounting": failure,
@@ -535,9 +541,11 @@ def render_compact_task_context(
             text,
             canonical["accounting"],
             "cannot-fit-compact",
+            schema_version=schema,
             diagnostic_rendered=diagnostic,
         )
-    return CompactTaskContext(True, rendered, accounting, text, canonical["accounting"])
+    return CompactTaskContext(True, rendered, accounting, text, canonical["accounting"],
+                              schema_version=schema)
 
 
 def validate_compact_task_context(
@@ -600,4 +608,5 @@ def expand_compact_task_context(
         policy=policy,
         counter=counter,
     )
-    return _expanded(payload)
+    return (readable_expansion(payload) if payload["schema_version"] == COMPACT_SCHEMA_V2
+            else _expanded(payload))

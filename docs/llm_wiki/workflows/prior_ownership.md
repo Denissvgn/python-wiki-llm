@@ -1,7 +1,7 @@
 # prior_ownership
 
 **Entry point:** `sync_transitions._prior_ownership`
-**Modules involved:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [sync_analysis](../modules/sync_analysis.md), [sync_manifest](../modules/sync_manifest.md), [sync_transitions](../modules/sync_transitions.md)
+**Modules involved:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [source_retirement](../modules/source_retirement.md), [sync_analysis](../modules/sync_analysis.md), [sync_manifest](../modules/sync_manifest.md), [sync_transitions](../modules/sync_transitions.md)
 
 ## Sequence
 
@@ -12,10 +12,12 @@
 4. `sync_manifest.ManifestPageSource`
 5. `sync_manifest.ManifestPageSource`
 6. `bootstrap_runtime._module_name_from_path`
+7. `source_retirement.retired_entity_mappings`
 
 ## Touches
 
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
+- [source_retirement](../modules/source_retirement.md)
 - [sync_analysis](../modules/sync_analysis.md)
 - [sync_manifest](../modules/sync_manifest.md)
 - [sync_transitions](../modules/sync_transitions.md)

@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [context_service](../modules/context_service.md)
-**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), [config](../modules/config.md), and 32 more
+**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), [config](../modules/config.md), and 33 more
 
 **Complete modules touched:**
 
@@ -34,6 +34,7 @@
 - [maintenance_status](../modules/maintenance_status.md)
 - [plugins](../modules/plugins.md)
 - [services_dependencies](../modules/services_dependencies.md)
+- [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
@@ -45,72 +46,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as run (src/llm_wiki_cli/services/context_service.py)
-    participant p1 as getattr (src/llm_wiki_cli/services/context_service.py:run)
-    participant p2 as _run_protocol
-    participant p3 as bool (src/llm_wiki_cli/services/context_service.py:run)
-    participant p4 as print (src/llm_wiki_cli/services/context_service.py:run)
-    participant p5 as SystemExit (src/llm_wiki_cli/services/context_service.py:run)
-    participant p6 as changes_from_args
-    participant p7 as run (src/llm_wiki_cli/services/context_budget.py)
-    participant p8 as ValueError (src/llm_wiki_cli/services/context_service.py:run)
-    participant p9 as _run_packet_output
-    participant p10 as _build_context
-    participant p11 as ExtractionJobRequest.resolved
-    p0-->>p1: getattr (src/llm_wiki_cli/services/context_service.py:run)(args, 'request', None)
-    p0->>p2: _run_protocol
-    p0-->>p1: getattr (src/llm_wiki_cli/services/context_service.py:run)(args, 'src_dir', '.')
-    p0-->>p1: getattr (src/llm_wiki_cli/services/context_service.py:run)(args, 'budget', None)
-    p0-->>p1: getattr (src/llm_wiki_cli/services/context_service.py:run)(args, 'format', 'json')
-    p0-->>p1: getattr (src/llm_wiki_cli/services/context_service.py:run)(args, 'focus', 'changed')
-    p0-->>p1: getattr (src/llm_wiki_cli/services/context_service.py:run)(args, 'output', None)
-    p0-->>p1: getattr (src/llm_wiki_cli/services/context_service.py:run)(args, 'allow_external_src', False)
-    p0-->>p1: getattr (src/llm_wiki_cli/services/context_service.py:run)(args, 'read_only', False)
-    p0-->>p1: getattr (src/llm_wiki_cli/services/context_service.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
-    p0-->>p3: bool (src/llm_wiki_cli/services/context_service.py:run)(getattr(...))
-    p0-->>p1: getattr (src/llm_wiki_cli/services/context_service.py:run)(args, 'prefer_fresh', False)
-    p0-->>p1: getattr (src/llm_wiki_cli/services/context_service.py:run)(args, 'knowledge_mode', None)
-    p0-->>p1: getattr (src/llm_wiki_cli/services/context_service.py:run)(args, 'source_selection', None)
-    p0-->>p4: print (src/llm_wiki_cli/services/context_service.py:run)('Error: --budget is required unless --request is used.', file=sys.stderr)
-    p0-->>p5: SystemExit (src/llm_wiki_cli/services/context_service.py:run)(2)
-    p0-->>p4: print (src/llm_wiki_cli/services/context_service.py:run)('Error: --budget must be greater than zero.', file=sys.stderr)
-    p0-->>p5: SystemExit (src/llm_wiki_cli/services/context_service.py:run)(2)
-    p0-->>p1: getattr (src/llm_wiki_cli/services/context_service.py:run)(args, 'budget_mode', None)
-    p0->>p6: changes_from_args
-    p0->>p7: run (src/llm_wiki_cli/services/context_budget.py)
-    p0-->>p1: getattr (src/llm_wiki_cli/services/context_service.py:run)(args, 'tokenizer', None)
-    p0-->>p8: ValueError (src/llm_wiki_cli/services/context_service.py:run)('--tokenizer requires --budget-mode exact')
-    p0->>p9: _run_packet_output
-    p0->>p10: _build_context
-    p0->>p11: ExtractionJobRequest.resolved
-    p0-->>p4: print (src/llm_wiki_cli/services/context_service.py:run)(..., file=sys.stderr)
-    p0-->>p5: SystemExit (src/llm_wiki_cli/services/context_service.py:run)(1)
-    p0-->>p4: print (src/llm_wiki_cli/services/context_service.py:run)(..., file=sys.stderr)
-    p0-->>p5: SystemExit (src/llm_wiki_cli/services/context_service.py:run)(1)
+    participant p1 as _run_protocol
+    participant p2 as changes_from_args
+    participant p3 as run (src/llm_wiki_cli/services/context_budget.py)
+    participant p4 as _run_packet_output
+    participant p5 as _build_context
+    participant p6 as ExtractionJobRequest.resolved
+    participant p7 as write_text_output
+    participant p8 as _render_markdown
+    participant p9 as _read_protocol_request
+    participant p10 as _validate_request_cli_options
+    participant p11 as _emit_protocol_error
+    participant p12 as build_qualified_context
+    participant p13 as _build_context_impl
+    participant p14 as _emit_packet_error
+    participant p15 as _validate_protocol_request
+    participant p16 as build_budgeted_context
+    participant p17 as _packet_contract_for_request
+    participant p18 as _validate_protocol_request_impl
+    participant p19 as _write_utf8_text
+    participant p20 as capture_context_read
+    participant p21 as _protocol_success_payload
+    participant p22 as select_changes
+    participant p23 as affected_page_map
+    participant p24 as _fit_knowledge_packet_response
+    participant p25 as packet_from_captured_response
+    participant p26 as build_context_from_captured_read
+    participant p27 as fit_payload
+    participant p28 as _assert_selection_unchanged
+    participant p29 as getattr (src/llm_wiki_cli/services/context_service.py:run)
+    participant p30 as request.get (src/llm_wiki_cli/services…_service.py:_run_protocol)
+    p0->>p1: _run_protocol
+    p0->>p2: changes_from_args
+    p0->>p3: run (src/llm_wiki_cli/services/context_budget.py)
+    p0->>p4: _run_packet_output
+    p0->>p5: _build_context
+    p0->>p6: ExtractionJobRequest.resolved
+    p0->>p7: write_text_output
+    p0->>p8: _render_markdown
+    p1->>p9: _read_protocol_request
+    p1->>p10: _validate_request_cli_options
+    p1->>p11: _emit_protocol_error
+    p4->>p12: build_qualified_context
+    p5->>p13: _build_context_impl
+    p4->>p14: _emit_packet_error
+    p9->>p15: _validate_protocol_request
+    p3->>p16: build_budgeted_context
+    p12->>p17: _packet_contract_for_request
+    p15->>p18: _validate_protocol_request_impl
+    p7->>p19: _write_utf8_text
+    p16->>p20: capture_context_read
+    p12->>p21: _protocol_success_payload
+    p16->>p22: select_changes
+    p16->>p23: affected_page_map
+    p12->>p24: _fit_knowledge_packet_response
+    p12->>p25: packet_from_captured_response
+    p16->>p26: build_context_from_captured_read
+    p16->>p27: fit_payload
+    p16->>p28: _assert_selection_unchanged
+    p0-->>p29: getattr (src/llm_wiki_cli/services/context_service.py:run)(args, 'request', None)
+    p1-->>p30: request.get (src/llm_wiki_cli/services…_service.py:_run_protocol)('knowledge_mode')
 ```
 
-> Call sequence diagram shows 30 of 1364 interactions; 1334 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1368 interactions; 1338 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 24 of 460 (436 omitted); unresolved 0 of 421 (421 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 460 (459 omitted); unresolved 1 of 421 (420 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/context_service.py:_run_protocol` | 3 | - | external | 21 |
-| `src/llm_wiki_cli/services/context_service.py:_run_protocol` | 3 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 9 |
 | `src/llm_wiki_cli/services/context_service.py:_read_protocol_request` | 5 | - | external | 3 |
 | `src/llm_wiki_cli/services/context_service.py:_read_protocol_request` | 5 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/context_service.py:_read_protocol_request` | 5 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 3 |
+| `src/llm_wiki_cli/services/context_service.py:_read_protocol_request` | 5 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 2 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 12 | - | external | 2 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 12 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 12 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 1 |
-> Omission summary shows 8 of 267 groups; 259 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 15 | - | external | 11 |
+| `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 15 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 12 |
+> Omission summary shows 8 of 263 groups; 255 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -197,40 +217,40 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run (src/llm_wiki_cli/services/context_service.py) | getattr (src/llm_wiki_cli/services/context_service.py:run) | 3580 | `getattr(args, 'request', None)` |
-| run (src/llm_wiki_cli/services/context_service.py) | _run_protocol | 3581 | `_run_protocol(args)` |
-| _run_protocol | getattr (src/llm_wiki_cli/services…_service.py:_run_protocol) | 3418 | `getattr(args, 'output', None)` |
-| _run_protocol | _read_protocol_request | 3421 | `_read_protocol_request(args.request)` |
-| _read_protocol_request | sys.stdin.read | 1086 | `sys.stdin.read(data not statically known)` |
-| _read_protocol_request | Path(…).read_text | 1088 | `Path(source).read_text(encoding='utf-8')` |
-| _read_protocol_request | Path (src/llm_wiki_cli/services…py:_read_protocol_request) | 1088 | `Path(source)` |
-| _read_protocol_request | ProtocolRequestError | 1091 | `ProtocolRequestError(..., 'request')` |
-| _read_protocol_request | json.loads | 1094 | `json.loads(raw)` |
-| _read_protocol_request | ProtocolRequestError | 1096 | `ProtocolRequestError(..., 'request')` |
-| _read_protocol_request | _validate_protocol_request | 1098 | `_validate_protocol_request(data)` |
+| run (src/llm_wiki_cli/services/context_service.py) | getattr (src/llm_wiki_cli/services/context_service.py:run) | 3590 | `getattr(args, 'request', None)` |
+| run (src/llm_wiki_cli/services/context_service.py) | _run_protocol | 3591 | `_run_protocol(args)` |
+| _run_protocol | getattr (src/llm_wiki_cli/services…_service.py:_run_protocol) | 3428 | `getattr(args, 'output', None)` |
+| _run_protocol | _read_protocol_request | 3431 | `_read_protocol_request(args.request)` |
+| _read_protocol_request | sys.stdin.read | 1092 | `sys.stdin.read(data not statically known)` |
+| _read_protocol_request | Path(…).read_text | 1094 | `Path(source).read_text(encoding='utf-8')` |
+| _read_protocol_request | Path (src/llm_wiki_cli/services…py:_read_protocol_request) | 1094 | `Path(source)` |
+| _read_protocol_request | ProtocolRequestError | 1097 | `ProtocolRequestError(..., 'request')` |
+| _read_protocol_request | json.loads | 1100 | `json.loads(raw)` |
+| _read_protocol_request | ProtocolRequestError | 1102 | `ProtocolRequestError(..., 'request')` |
+| _read_protocol_request | _validate_protocol_request | 1104 | `_validate_protocol_request(data)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 3597 |
-| output | `print` | `run` | 3600 |
-| output | `print` | `run` | 3644 |
-| output | `print` | `run` | 3647 |
+| output | `print` | `run` | 3607 |
+| output | `print` | `run` | 3610 |
 | output | `print` | `run` | 3654 |
-| output | `print` | `run` | 3656 |
-| output | `print` | `run` | 3665 |
-| output | `print` | `run` | 3667 |
+| output | `print` | `run` | 3657 |
+| output | `print` | `run` | 3664 |
+| output | `print` | `run` | 3666 |
+| output | `print` | `run` | 3675 |
+| output | `print` | `run` | 3677 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `run` | `getattr` | 3580 |
-| external_call | `_run_protocol` | `getattr` | 3418 |
-| external_call | `_read_protocol_request` | `sys.stdin.read` | 1086 |
-| unresolved_call | `_read_protocol_request` | `Path(source).read_text` | 1088 |
-| external_call | `_read_protocol_request` | `json.loads` | 1094 |
+| external_call | `run` | `getattr` | 3590 |
+| external_call | `_run_protocol` | `getattr` | 3428 |
+| external_call | `_read_protocol_request` | `sys.stdin.read` | 1092 |
+| unresolved_call | `_read_protocol_request` | `Path(source).read_text` | 1094 |
+| external_call | `_read_protocol_request` | `json.loads` | 1100 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

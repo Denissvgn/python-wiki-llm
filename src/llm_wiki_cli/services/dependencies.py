@@ -110,6 +110,8 @@ def _resolve_internal_targets(
     the imported symbol's defining files.
     """
     module = imp.get("module", "") or ""
+    if imp.get("resolution") == "unresolved":
+        return set()
     name = imp.get("name", "") or ""
     targets = resolver.import_candidates(
         module,
@@ -117,9 +119,8 @@ def _resolve_internal_targets(
         filepath,
         import_type=imp.get("type"),
     )
-    if len(targets) > 1 and not is_python_source(
-        filepath, resolver.inventory.get(filepath)
-    ):
+    importer = resolver.inventory.get(filepath, {})
+    if len(targets) > 1 and not is_python_source(filepath, importer) and importer.get("language") != "javascript":
         narrowed = targets & symbol_index.get(name, set())
         if narrowed:
             targets = narrowed
@@ -179,7 +180,7 @@ def build_dependency_graph(
             continue
         for imp in data.get("imports", []):
             targets = _resolve_internal_targets(imp, filepath, resolver, symbol_index)
-            ambiguous = is_python_source(filepath, data) and len(targets) > 1
+            ambiguous = len(targets) > 1 and (is_python_source(filepath, data) or language == "javascript")
             if not targets or ambiguous:
                 module = imp.get("module", "") or ""
                 entry = {
@@ -189,6 +190,8 @@ def build_dependency_graph(
                 }
                 if ambiguous:
                     entry["kind"] = "ambiguous"
+                if imp.get("reason"):
+                    entry["reason"] = imp["reason"]
                 if resolver.typescript_path_alias_matched(
                     _resolve_target_module(module, entry["name"]), filepath
                 ):
@@ -390,6 +393,7 @@ def build_dependency_observations(
                     "candidates": candidates,
                     "target_path": target_path,
                     "resolution": resolution,
+                    **({"reason": raw_import["reason"]} if raw_import.get("reason") else {}),
                 }
             )
 

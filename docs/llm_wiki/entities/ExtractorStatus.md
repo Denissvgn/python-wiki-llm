@@ -1,6 +1,6 @@
 # ExtractorStatus
 
-**Location:** `src/llm_wiki_cli/services/extraction_service.py:140`
+**Location:** `src/llm_wiki_cli/services/extraction_service.py:141`
 **Kind:** Class
 **Bases:** —
 **Module:** [extraction_service](../modules/extraction_service.md)
@@ -40,6 +40,7 @@ flowchart LR
     n8["InventoryResult.failed (src/llm_wiki_cli/services/extraction_service.py)"]
     n9["_check_module_coverage (src/llm_wiki_cli/services/lint_service.py)"]
     n10["_extracted_source_files (src/llm_wiki_cli/services/lint_service.py)"]
+    n11["inventory_result (src/llm_wiki_cli/services/sync_analysis_cache.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -50,6 +51,7 @@ flowchart LR
     n8 --> n0
     n9 --> n0
     n10 --> n0
+    n11 --> n0
     click n0 "../modules/extraction_service.md"
     click n1 "../modules/extraction_service.md"
     click n2 "../modules/extraction_service.md"
@@ -61,6 +63,7 @@ flowchart LR
     click n8 "../modules/extraction_service.md"
     click n9 "../modules/lint_service.md"
     click n10 "../modules/lint_service.md"
+    click n11 "../modules/sync_analysis_cache.md"
 ```
 
 ### Summary
@@ -84,3 +87,4 @@ flowchart LR
 | `InventoryResult.failed` | type_reference | [extraction_service](../modules/extraction_service.md) | — |
 | `_check_module_coverage` | type_reference | [lint_service](../modules/lint_service.md) | — |
 | `_extracted_source_files` | type_reference | [lint_service](../modules/lint_service.md) | — |
+| `inventory_result` | call | [sync_analysis_cache](../modules/sync_analysis_cache.md) | 1 |

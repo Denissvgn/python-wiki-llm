@@ -39,6 +39,8 @@ flowchart LR
     n6["src/llm_wiki_cli/services/sync_transition_execution.py"]
     n7["src/llm_wiki_cli/services/sync_transitions.py"]
     n8["src/llm_wiki_cli/services/validation.py"]
+    n0 --> n2
+    n0 --> n3
     n0 --> n4
     n0 --> n6
     n0 --> n7

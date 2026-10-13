@@ -12,6 +12,14 @@ freshness, or writes an artifact.  Callers are responsible for supplying the
 exact canonical Markdown strings, surface-index bytes, manifest evidence, and
 link observations from the generation run being committed.
 
+
+The final builder can freeze and retain its validated model inside one active
+operation for one wiki root. Its private receipt checks exact canonical
+re-emission, object identity, current validators and operation lifetime before
+reuse. Public and untrusted values retain ordinary validation, and replaced or
+expired receipts carry no authority. No parsed-model authority is persisted
+across invocations.
+
 ## Imports
 
 | Source | Symbols |
@@ -76,9 +84,9 @@ flowchart LR
 | [_BuildContext](../entities/BuildContext.md) | 200 | — | — |
 | [_ExpectedLinkOutcome](../entities/ExpectedLinkOutcome.md) | 208 | — | — |
 | [_InvalidSurfaceJson](../entities/InvalidSurfaceJson.md) | 215 | `ValueError` | — |
-| [_IndexValidationOperation](../entities/IndexValidationOperation.md) | 304 | — | — |
-| [_IndexValidationProof](../entities/IndexValidationProof.md) | 349 | — | — |
-| [_ValidatedIndexReceipt](../entities/ValidatedIndexReceipt.md) | 370 | — | — |
+| [_IndexValidationOperation](../entities/IndexValidationOperation.md) | 315 | — | — |
+| [_IndexValidationProof](../entities/IndexValidationProof.md) | 361 | — | — |
+| [_ValidatedIndexReceipt](../entities/ValidatedIndexReceipt.md) | 382 | — | — |
 
 ## Functions
 

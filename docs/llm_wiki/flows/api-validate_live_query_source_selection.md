@@ -22,86 +22,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as validate_live_query_source_selection
     participant p1 as SyncManifest.load
-    participant p2 as _wiki_has_persisted_read_state
-    participant p3 as DocumentationQueryError
-    participant p4 as validate_persisted_source_selection_identity
-    participant p5 as str (src/llm_wiki_cli/services…ve_query_source_selection)
-    participant p6 as manifest_path.exists
-    participant p7 as wiki_root.is_dir
-    participant p8 as source_selection_identity_from_generation_inputs
-    participant p9 as FileNotFoundError
-    participant p10 as os.walk
-    participant p11 as _validated_identity
-    participant p12 as json.loads (src/llm_wiki_cli/services…fest.py:SyncManifest.load)
-    participant p13 as (…).is_symlink
-    participant p14 as source_selection_inputs_from_generation_inputs
-    participant p15 as manifest_path.read_text
-    participant p16 as Path (src/llm_wiki_cli/services…_has_persisted_read_state)
-    participant p17 as _validated_selection_inputs
-    participant p18 as isinstance (src/llm_wiki_cli/services…fest.py:SyncManifest.load)
-    participant p19 as any (src/llm_wiki_cli/services…_has_persisted_read_state)
-    participant p20 as SourceSelectionError
-    participant p21 as data.get (src/llm_wiki_cli/services…fest.py:SyncManifest.load)
-    participant p22 as StorageReadSession
-    participant p23 as StorageReadSession.read
-    participant p24 as SyncManifest.from_payload
-    participant p25 as decode_bytes
+    participant p2 as validate_persisted_source_selection_identity
+    participant p3 as _wiki_has_persisted_read_state
+    participant p4 as DocumentationQueryError
+    participant p5 as source_selection_identity_from_generation_inputs
+    participant p6 as source_selection_inputs_from_generation_inputs
+    participant p7 as StorageReadSession.read
+    participant p8 as SyncManifest.from_payload
+    participant p9 as StorageReadSession.recheck
+    participant p10 as _require_relative_name
+    participant p11 as _mapping_value
+    participant p12 as StorageReadSession.phase
+    participant p13 as _validated_identity
+    participant p14 as _validated_selection_inputs
+    participant p15 as StorageReadSession.read_ranges
+    participant p16 as ManifestStoreReader.materialize
+    participant p17 as StorageReadSession.read_range
+    participant p18 as _copy_sources
+    participant p19 as _legacy_operational_state
+    participant p20 as _validate_exact_keys
+    participant p21 as _copy_mapping
+    participant p22 as ManifestPageSource.from_payload
+    participant p23 as ManifestEvidenceBaseline.from_payload
+    participant p24 as ManifestTombstone.from_payload
+    participant p25 as ManifestArtifactHashes.from_payload
+    participant p26 as is_portable_relative_path
+    participant p27 as ManifestStoreReader.field
+    participant p28 as range_batches
+    participant p29 as str (src/llm_wiki_cli/services…ve_query_source_selection)
+    participant p30 as manifest_path.exists
     p0->>p1: SyncManifest.load
-    p0->>p2: _wiki_has_persisted_read_state
-    p0->>p3: DocumentationQueryError
-    p0->>p3: DocumentationQueryError
-    p0->>p3: DocumentationQueryError
-    p0->>p4: validate_persisted_source_selection_identity
-    p0->>p4: validate_persisted_source_selection_identity
-    p0->>p3: DocumentationQueryError
-    p0-->>p5: str (src/llm_wiki_cli/services…ve_query_source_selection)(exc)
-    p1-->>p6: manifest_path.exists
-    p2-->>p7: wiki_root.is_dir
-    p4->>p8: source_selection_identity_from_generation_inputs
-    p1-->>p9: FileNotFoundError(manifest_path)
-    p2-->>p10: os.walk(wiki_root, followlinks=False)
-    p4->>p11: _validated_identity
-    p1-->>p12: json.loads (src/llm_wiki_cli/services…fest.py:SyncManifest.load)(manifest_path.read_text(...), object_pairs_hook=unique_object, parse_constant=reject_constant)
-    p2-->>p13: (…).is_symlink
-    p4->>p14: source_selection_inputs_from_generation_inputs
-    p1-->>p15: manifest_path.read_text(encoding='utf-8')
-    p2-->>p16: Path (src/llm_wiki_cli/services…_has_persisted_read_state)(root)
-    p4->>p17: _validated_selection_inputs
-    p1-->>p18: isinstance (src/llm_wiki_cli/services…fest.py:SyncManifest.load)(data, dict)
-    p2-->>p19: any (src/llm_wiki_cli/services…_has_persisted_read_state)(...)
-    p4->>p20: SourceSelectionError
-    p1-->>p21: data.get (src/llm_wiki_cli/services…fest.py:SyncManifest.load)('version')
-    p4->>p20: SourceSelectionError
-    p1->>p22: StorageReadSession
-    p1->>p23: StorageReadSession.read
-    p1->>p24: SyncManifest.from_payload
-    p1->>p25: decode_bytes
+    p0->>p2: validate_persisted_source_selection_identity
+    p0->>p3: _wiki_has_persisted_read_state
+    p0->>p4: DocumentationQueryError
+    p2->>p5: source_selection_identity_from_generation_inputs
+    p2->>p6: source_selection_inputs_from_generation_inputs
+    p1->>p7: StorageReadSession.read
+    p1->>p8: SyncManifest.from_payload
+    p1->>p9: StorageReadSession.recheck
+    p7->>p10: _require_relative_name
+    p8->>p11: _mapping_value
+    p9->>p12: StorageReadSession.phase
+    p5->>p13: _validated_identity
+    p6->>p14: _validated_selection_inputs
+    p9->>p15: StorageReadSession.read_ranges
+    p8->>p16: ManifestStoreReader.materialize
+    p9->>p17: StorageReadSession.read_range
+    p8->>p18: _copy_sources
+    p8->>p19: _legacy_operational_state
+    p8->>p20: _validate_exact_keys
+    p8->>p21: _copy_mapping
+    p8->>p22: ManifestPageSource.from_payload
+    p8->>p23: ManifestEvidenceBaseline.from_payload
+    p8->>p24: ManifestTombstone.from_payload
+    p8->>p25: ManifestArtifactHashes.from_payload
+    p10->>p26: is_portable_relative_path
+    p16->>p27: ManifestStoreReader.field
+    p15->>p28: range_batches
+    p0-->>p29: str (src/llm_wiki_cli/services…ve_query_source_selection)(exc)
+    p1-->>p30: manifest_path.exists
 ```
 
 > Call sequence diagram shows 30 of 491 interactions; 461 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 7 of 142 (135 omitted); unresolved 5 of 90 (85 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 142 (141 omitted); unresolved 1 of 90 (89 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:StorageReadSession.read` | 10 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 2 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:_require_relative_name` | 11 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/sync_manifest.py:SyncManifest.load` | 2 | - | external | 3 |
+| `src/llm_wiki_cli/services/sync_manifest.py:SyncManifest.load` | 2 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/sync_manifest.py:SyncManifest.load` | 2 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:is_portable_relative_path` | 12 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 13 | - | external | 4 |
 | `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 13 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 13 |
 | `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 13 | - | unresolved | 9 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_require_relative_name` | 11 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
-| `src/llm_wiki_cli/services/knowledge_storage_io.py:StorageReadSession.read` | 10 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 3 |
-> Omission summary shows 8 of 140 groups; 132 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 146 groups; 138 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

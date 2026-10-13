@@ -6,7 +6,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -15,72 +15,80 @@ sequenceDiagram
     participant p1 as normalize_action_ref
     participant p2 as _portable_project_path
     participant p3 as _workflow_body
-    participant p4 as hashlib.sha256(…).hexdigest
-    participant p5 as hashlib.sha256
-    participant p6 as body.encode
-    participant p7 as (…).encode
-    participant p8 as isinstance (src/llm_wiki_cli/services…er.py:normalize_action_ref)
-    participant p9 as _without_github_expression
-    participant p10 as json.dumps
-    participant p11 as _ACTION_REF_RE.fullmatch
-    participant p12 as _validated_project_path
-    participant p13 as InstallCiError
-    participant p14 as value.lower
-    participant p15 as require_repository_relative_path
-    participant p16 as isinstance (src/llm_wiki_cli/services…e_repository_relative_path)
-    participant p17 as _syntax_key
-    participant p18 as _known_syntax
-    participant p19 as value.strip
-    participant p20 as any (src/llm_wiki_cli/services…e_repository_relative_path)
+    participant p4 as _without_github_expression
+    participant p5 as _validated_project_path
+    participant p6 as require_repository_relative_path
+    participant p7 as require_portable_relative_path
+    participant p8 as _default_path_error
+    participant p9 as _check_path_collision
+    participant p10 as require_portable_path_component
+    participant p11 as InstallCiError
+    participant p12 as _syntax_key
+    participant p13 as _known_syntax
+    participant p14 as _remember_syntax
+    participant p15 as SharedValidationError
+    participant p16 as portable_path_key
+    participant p17 as hashlib.sha256
+    participant p18 as hashlib.sha256(…).hexdigest
+    participant p19 as body.encode
+    participant p20 as (…).encode
+    participant p21 as isinstance (src/llm_wiki_cli/services…er.py:normalize_action_ref)
+    participant p22 as json.dumps
+    participant p23 as _ACTION_REF_RE.fullmatch
+    participant p24 as value.lower
+    participant p25 as isinstance (src/llm_wiki_cli/services…e_repository_relative_path)
+    participant p26 as value.strip
+    participant p27 as any (src/llm_wiki_cli/services…e_repository_relative_path)
+    participant p28 as ord (src/llm_wiki_cli/services…e_repository_relative_path)
     p0->>p1: normalize_action_ref
     p0->>p2: _portable_project_path
-    p0->>p2: _portable_project_path
     p0->>p3: _workflow_body
-    p0-->>p4: hashlib.sha256(…).hexdigest
-    p0-->>p5: hashlib.sha256(body.encode(...))
-    p0-->>p6: body.encode('utf-8')
-    p0-->>p7: (…).encode('utf-8')
-    p1-->>p8: isinstance (src/llm_wiki_cli/services…er.py:normalize_action_ref)(value, str)
-    p2->>p9: _without_github_expression
-    p3-->>p10: json.dumps(src_dir)
-    p1-->>p11: _ACTION_REF_RE.fullmatch(value)
-    p2->>p12: _validated_project_path
-    p3-->>p10: json.dumps(wiki_dir)
-    p1->>p13: InstallCiError
-    p1-->>p14: value.lower
-    p9->>p13: InstallCiError
-    p12->>p15: require_repository_relative_path
-    p12->>p13: InstallCiError
-    p12->>p13: InstallCiError
-    p12->>p13: InstallCiError
-    p12->>p13: InstallCiError
-    p12->>p13: InstallCiError
-    p12->>p13: InstallCiError
-    p12->>p13: InstallCiError
-    p15-->>p16: isinstance (src/llm_wiki_cli/services…e_repository_relative_path)(value, str)
-    p15->>p17: _syntax_key
-    p15->>p18: _known_syntax
-    p15-->>p19: value.strip
-    p15-->>p20: any (src/llm_wiki_cli/services…e_repository_relative_path)(...)
+    p2->>p4: _without_github_expression
+    p2->>p5: _validated_project_path
+    p5->>p6: require_repository_relative_path
+    p6->>p7: require_portable_relative_path
+    p7->>p8: _default_path_error
+    p7->>p9: _check_path_collision
+    p7->>p10: require_portable_path_component
+    p1->>p11: InstallCiError
+    p6->>p12: _syntax_key
+    p6->>p13: _known_syntax
+    p6->>p14: _remember_syntax
+    p8->>p15: SharedValidationError
+    p9->>p16: portable_path_key
+    p0-->>p17: hashlib.sha256(body.encode(...))
+    p0-->>p18: hashlib.sha256(…).hexdigest
+    p0-->>p19: body.encode('utf-8')
+    p0-->>p20: (…).encode('utf-8')
+    p1-->>p21: isinstance (src/llm_wiki_cli/services…er.py:normalize_action_ref)(value, str)
+    p3-->>p22: json.dumps(src_dir)
+    p1-->>p23: _ACTION_REF_RE.fullmatch(value)
+    p3-->>p22: json.dumps(wiki_dir)
+    p1-->>p24: value.lower
+    p6-->>p25: isinstance (src/llm_wiki_cli/services…e_repository_relative_path)(value, str)
+    p6-->>p26: value.strip
+    p6-->>p27: any (src/llm_wiki_cli/services…e_repository_relative_path)(...)
+    p6-->>p28: ord (src/llm_wiki_cli/services…e_repository_relative_path)(character)
+    p6-->>p28: ord (src/llm_wiki_cli/services…e_repository_relative_path)(character)
 ```
 
 > Call sequence diagram shows 30 of 97 interactions; 67 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 6 of 27 (21 omitted); unresolved 6 of 29 (23 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 8 of 27 (19 omitted); unresolved 6 of 29 (23 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/ci_installer.py:_without_github_expression` | 8 | [src/llm_wiki_cli/services/ci_installer.py](../modules/ci_installer.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:_syntax_key` | 13 | - | external | 6 |
 | `src/llm_wiki_cli/services/validation.py:_known_syntax` | 20 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 11 | - | external | 5 |
 | `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 11 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 11 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 2 |
+| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 11 | - | external | 3 |
 | `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 34 | - | external | 4 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 34 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 13 |
-| `src/llm_wiki_cli/services/validation.py:_default_path_error` | 36 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-> Omission summary shows 8 of 16 groups; 8 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 34 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 10 |
+| `src/llm_wiki_cli/services/validation.py:_check_path_collision` | 43 | - | unresolved | 2 |
+> Omission summary shows 8 of 17 groups; 9 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

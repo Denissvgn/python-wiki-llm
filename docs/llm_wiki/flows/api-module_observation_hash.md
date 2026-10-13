@@ -6,7 +6,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -15,78 +15,82 @@ sequenceDiagram
     participant p1 as _validate_inventory_complete
     participant p2 as normalize_module_observation
     participant p3 as _hash_normalized_observation
-    participant p4 as require_bool
-    participant p5 as _normalize_module_observation
-    participant p6 as hash_json
-    participant p7 as TypeError
-    participant p8 as isinstance (src/llm_wiki_cli/services…alidation.py:require_bool)
-    participant p9 as _inventory_language
-    participant p10 as sha256_bytes
-    participant p11 as isinstance (src/llm_wiki_cli/services…malize_module_observation)
-    participant p12 as canonical_json_bytes
-    participant p13 as _record_array
-    participant p14 as _validate_import_record
-    participant p15 as _record_name
-    participant p16 as _validate_module_entity_record
-    participant p17 as seen_names.get
-    participant p18 as _copy_selected_fields
-    participant p19 as class_summaries.append
-    participant p20 as _validate_callable_record
-    participant p21 as function_summaries.append
-    participant p22 as _structural_copy
-    participant p23 as module_name.strip
-    participant p24 as _InventoryNormalizationError
-    participant p25 as _json_array
-    participant p26 as _validate_string_array
+    participant p4 as _normalize_module_observation
+    participant p5 as hash_json
+    participant p6 as _inventory_language
+    participant p7 as canonical_json_bytes
+    participant p8 as _record_array
+    participant p9 as _validate_import_record
+    participant p10 as _record_name
+    participant p11 as _validate_module_entity_record
+    participant p12 as _copy_selected_fields
+    participant p13 as _validate_callable_record
+    participant p14 as _json_array
+    participant p15 as _validate_string_array
+    participant p16 as _validate_constant_record
+    participant p17 as _validate_module_call_record
+    participant p18 as require_nonempty_text
+    participant p19 as _structural_copy
+    participant p20 as _validate_optional_string_array
+    participant p21 as _validate_optional_strings
+    participant p22 as _optional_record_array
+    participant p23 as _validate_optional_booleans
+    participant p24 as require_string_list
+    participant p25 as require_mapping_list
+    participant p26 as require_bool
+    participant p27 as sha256_bytes
+    participant p28 as _InventoryNormalizationError
+    participant p29 as TypeError
+    participant p30 as seen_names.get
     p0->>p1: _validate_inventory_complete
     p0->>p2: normalize_module_observation
     p0->>p3: _hash_normalized_observation
-    p1->>p4: require_bool
-    p2->>p5: _normalize_module_observation
-    p3->>p6: hash_json
-    p1-->>p7: TypeError('inventory_complete must be a boolean')
-    p4-->>p8: isinstance (src/llm_wiki_cli/services…alidation.py:require_bool)(value, bool)
-    p5->>p9: _inventory_language
-    p6->>p10: sha256_bytes
-    p5-->>p11: isinstance (src/llm_wiki_cli/services…malize_module_observation)(file_data, Mapping)
-    p6->>p12: canonical_json_bytes
-    p5->>p13: _record_array
-    p5->>p13: _record_array
-    p5->>p13: _record_array
-    p5->>p14: _validate_import_record
-    p5->>p15: _record_name
-    p5->>p16: _validate_module_entity_record
-    p5-->>p17: seen_names.get(name, 0)
-    p5->>p18: _copy_selected_fields
-    p5-->>p19: class_summaries.append(summary)
-    p5->>p20: _validate_callable_record
-    p5-->>p21: function_summaries.append(_copy_selected_fields(...))
-    p5->>p18: _copy_selected_fields
-    p5->>p22: _structural_copy
-    p5-->>p11: isinstance (src/llm_wiki_cli/services…malize_module_observation)(module_name, str)
-    p5-->>p23: module_name.strip
-    p5->>p24: _InventoryNormalizationError
-    p5->>p25: _json_array
-    p5->>p26: _validate_string_array
+    p2->>p4: _normalize_module_observation
+    p3->>p5: hash_json
+    p4->>p6: _inventory_language
+    p5->>p7: canonical_json_bytes
+    p4->>p8: _record_array
+    p4->>p9: _validate_import_record
+    p4->>p10: _record_name
+    p4->>p11: _validate_module_entity_record
+    p4->>p12: _copy_selected_fields
+    p4->>p13: _validate_callable_record
+    p4->>p14: _json_array
+    p4->>p15: _validate_string_array
+    p4->>p16: _validate_constant_record
+    p4->>p17: _validate_module_call_record
+    p10->>p18: require_nonempty_text
+    p12->>p19: _structural_copy
+    p11->>p20: _validate_optional_string_array
+    p9->>p21: _validate_optional_strings
+    p13->>p22: _optional_record_array
+    p9->>p23: _validate_optional_booleans
+    p20->>p24: require_string_list
+    p22->>p25: require_mapping_list
+    p1->>p26: require_bool
+    p5->>p27: sha256_bytes
+    p4->>p28: _InventoryNormalizationError
+    p1-->>p29: TypeError('inventory_complete must be a boolean')
+    p4-->>p30: seen_names.get(name, 0)
 ```
 
 > Call sequence diagram shows 30 of 129 interactions; 99 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 4 of 27 (23 omitted); unresolved 4 of 22 (18 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 27 (26 omitted); unresolved 1 of 22 (21 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/validation.py:require_bool` | 3 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_inventory_language` | 8 | - | external | 2 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_inventory_language` | 8 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 3 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_inventory_language` | 8 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:_normalize_module_observation` | 7 | - | external | 2 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_record_array` | 16 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 3 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_record_array` | 16 | - | external | 3 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:_validate_import_record` | 25 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:_validate_import_record` | 25 | - | external | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:_validate_import_record` | 25 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 4 |
-> Omission summary shows 8 of 51 groups; 43 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/knowledge_evidence.py:_normalize_module_observation` | 7 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 9 |
+> Omission summary shows 8 of 49 groups; 41 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

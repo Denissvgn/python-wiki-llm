@@ -41,7 +41,11 @@ Classify the wiki rather than guessing a repair:
 
 If generated instructions name `--source-selection <profile>`, append that
 exact argument to every source-reading command: sync, extract, lint, ci-check,
-team check, context, migration, and helper preparation. Omit it only when the
+team check, context, migration, and automatic source-based helper preparation.
+Explicit language-specific preparation uses `--language` and must omit
+`--source-selection`; that combination is rejected. Preserve the original source
+root and helper cache, then retry the original read with its original selection
+and other options. Omit selection on source-reading commands only when the
 project has no configured profile. Never replace it with discovery or a
 broader scan during the same maintenance run.
 
@@ -73,7 +77,11 @@ Inspect exact source and semantic prose before using the status/acknowledgment
 route below. Python executable syntax changes are scoped observations, separate
 from source-byte and structural freshness; unchanged syntax proves neither
 unchanged dependencies nor runtime behavior. Unsupported evidence stays
-unavailable. Unadopted wikis retain their existing format and review limits.
+unavailable. On coherent unadopted native wikis, the queue surfaces captured
+source-backed semantic sections as bounded informational coverage gaps. Inspect
+those exact targets against source; structural freshness cannot discharge their
+untracked review. Corrected prose remains untracked until explicit adoption and
+review. Unadopted wikis retain their existing format and review limits.
 
 Review an exact record's source and semantic section, then run the final owning
 sync after any prose edit. Capture its current basis before acknowledgment:
@@ -112,6 +120,12 @@ class, function, module, or cross-module flow, run the full sync-then-lint
 workflow. Use the same loop for a relevant contract, dependency, entry-point,
 infrastructure-observation, or source-revision change.
 
+Complete this loop after a coherent edit batch, before relying on its changed
+knowledge and before delivery; it is not a request to synchronize after each
+keystroke. Source-only evidence does not exempt an existing affected wiki. If no
+wiki is within the task's scope, preserve the reason and maintenance status in
+the permitted handoff; creating a wiki is a separate explicit choice.
+
 1. Run the deterministic owning pass, serialized for interactive or unknown
    capacity:
 
@@ -133,9 +147,19 @@ infrastructure-observation, or source-revision change.
 
    Use `--progress always --progress-format json` for machine-readable progress
    events on stderr. Result JSON stays on stdout. For console-only CI, use
-   `ci-check --no-report --format json --report-schema v2`; v2 separates check
-   outcomes from required report-write failures. Select an explicit writable
-   `--cache-dir` when repository metadata is read-only.
+   `ci-check --no-report --format json --report-schema v4`; v4 supports both flat
+   and migrated native wikis, preserves native comparison details, and separates
+   check outcomes from required report-write failures. `--no-report` disables
+   only the Markdown report file; integrity failures still return nonzero. If a
+   report file is required, retain its authorized destination instead.
+
+   Automatic schema selection emits v1 for legacy comparison metadata and v4
+   for native comparison metadata. Flat storage can already carry native
+   metadata, so storage layout alone does not make v2/v3 compatible. Use those
+   older schemas only for a compatible legacy consumer; keep the chosen
+   comparison policy rather than switching to `exact-v1` just to render an older
+   report. Schema selection grants no report/cache write authority. Select an
+   explicit writable `--cache-dir` when repository metadata is read-only.
 
 2. Inspect the sync plan and every affected canonical page. Treat its reported
    `CREATE`, `UPDATE`, `METADATA`, `SKIP`, `DEPRECATE`, `RENAME`, `MOVE`, and

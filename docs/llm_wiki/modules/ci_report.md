@@ -12,6 +12,12 @@ performs another source extraction.  The strict loader and bounded renderer
 are used by the portable GitHub integrity wrapper; broad ``ci-check`` policy
 and its process exit remain authoritative over the nested health dashboard.
 
+Report composition rejects unsupported schema values before composing health
+or rendering a payload. Its error lists all accepted choices: `auto`, `v1`,
+`v2`, `v3` and `v4`. Native metadata compatibility is evaluated separately and
+keeps its specific v4/comparison-policy diagnostic; a supported schema name alone
+does not establish compatibility with the captured native basis.
+
 ## Imports
 
 | Source | Symbols |

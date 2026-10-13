@@ -9,6 +9,12 @@ Use this recipe when the caller has chosen the native workflow. Loading this
 skill does not activate a profile or grant source, command, network, or publication
 permissions. The host chooses the profile, workspace roots and context inclusion.
 
+Use the shared development procedure at
+`.claude/skills/wiki-reference/references/development-workflow.md` for Claude or
+`.llm-wiki/skills/wiki-reference/references/development-workflow.md` for other
+configured agents. This recipe adds explicitly chosen interface details; it does
+not activate its profile.
+
 Claude reads `.claude/skills/wiki-reference/references/context-query.md`; other
 configured agents read `.llm-wiki/skills/wiki-reference/references/context-query.md`.
 Use that installed route for the shared context and query contract.

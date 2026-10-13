@@ -1,6 +1,6 @@
 # _CheckedCounter
 
-**Location:** `src/llm_wiki_cli/services/task_compact.py:139`
+**Location:** `src/llm_wiki_cli/services/task_compact.py:142`
 **Kind:** Class
 **Bases:** —
 **Module:** [task_compact](../modules/task_compact.md)

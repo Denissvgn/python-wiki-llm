@@ -1,6 +1,6 @@
 # _SnapshotBuckets
 
-**Location:** `src/llm_wiki_cli/services/source_snapshot.py:452`
+**Location:** `src/llm_wiki_cli/services/source_snapshot.py:454`
 **Kind:** Class
 **Bases:** —
 **Module:** [source_snapshot](../modules/source_snapshot.md)
@@ -28,6 +28,7 @@ _Auto-generated from `_SnapshotBuckets` in `src/llm_wiki_cli/services/source_sna
 | `selected_regular_paths` | `set[str]` | *required* | — |
 | `expected_gitignore_paths` | `frozenset[str] \| None` | *required* | — |
 | `respect_ignores` | `bool` | `False` | — |
+| `respect_discovery` | `bool` | `False` | — |
 | `max_control_bytes` | `int \| None` | `None` | — |
 | `control_bytes` | `int` | `0` | — |
 | `max_scan_entries` | `int \| None` | `None` | — |

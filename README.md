@@ -90,8 +90,8 @@ for [Obsidian](docs/cli-reference.md#obsidian) or a
 | Go | `go/ast` | prepared helper binary |
 | Rust | `syn` | prepared helper binary |
 | Haskell | GHC parser, syntax-only inventory | prepared helper binary |
-| Docker / Compose | built-in parsers | none |
-| Runtime/config YAML | targeted built-in parsers | none |
+| Docker / Compose | Dockerfile parser / bounded YAML parser | included with the package |
+| Infrastructure / runtime YAML | structured format summaries | included with the package |
 | OpenAPI 3.0/3.1 JSON / YAML | `json` / PyYAML safe loader | included with the package |
 
 Discovery honors `.gitignore`. Use a
@@ -106,7 +106,9 @@ initialization. Every agent can use explicit sync, lint, and reviewed prompts;
 LLM Wiki does not install Git hooks.
 
 [Agent setup](docs/wiki-guide.md#agent-support) explains instruction files and
-skill export. The [MCP server](docs/cli-reference.md#mcp) provides read-only wiki
+skill export. [Workflow installation and upgrades](docs/native-agent-workflow.md#install-the-workflow-in-another-project)
+cover setup in another project, all agent targets, and the `--no-skills` inline fallback.
+The [MCP server](docs/cli-reference.md#mcp) provides read-only wiki
 access, and [bundled skills](docs/cli-reference.md#skills) guide documentation
 and analysis workflows.
 

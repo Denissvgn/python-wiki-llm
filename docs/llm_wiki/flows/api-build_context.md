@@ -2,7 +2,7 @@
 
 **Entry point:** `build_context` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), and 40 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), and 43 more
 
 **Complete modules touched:**
 
@@ -43,6 +43,7 @@
 - [python_implementation](../modules/python_implementation.md)
 - [python_imports](../modules/python_imports.md)
 - [services_dependencies](../modules/services_dependencies.md)
+- [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_manifest](../modules/sync_manifest.md)
@@ -50,80 +51,96 @@
 - [wiki_media](../modules/wiki_media.md)
 - [wiki_surface](../modules/wiki_surface.md)
 - [wiki_surface_index](../modules/wiki_surface_index.md)
+- [yaml_formats](../modules/yaml_formats.md)
+- [yaml_syntax](../modules/yaml_syntax.md)
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as build_context
-    participant p1 as _normalise_focus
-    participant p2 as _normalize_optional_knowledge_mode
-    participant p3 as _validate_protocol_request
-    participant p4 as _build_context
-    participant p5 as validated.get
-    participant p6 as _caused_by
-    participant p7 as WorkspaceStateError
-    participant p8 as str (src/llm_wiki_cli/api.py:build_context)
+    participant p1 as _normalize_optional_knowledge_mode
+    participant p2 as _validate_protocol_request
+    participant p3 as _build_context
+    participant p4 as _raise_required_knowledge_api_error
+    participant p5 as _render_markdown
+    participant p6 as _normalise_focus
+    participant p7 as _caused_by
+    participant p8 as WorkspaceStateError
     participant p9 as _path_error_field
     participant p10 as InvalidRequestError
-    participant p11 as _raise_required_knowledge_api_error
-    participant p12 as _wiki_path_policy_details
-    participant p13 as cast (src/llm_wiki_cli/api.py:build_context)
-    participant p14 as _render_markdown
-    participant p15 as dict (src/llm_wiki_cli/api.py:build_context)
-    participant p16 as isinstance (src/llm_wiki_cli/api.py:_normalise_focus)
-    p0->>p1: _normalise_focus
-    p0->>p2: _normalize_optional_knowledge_mode
-    p0->>p3: _validate_protocol_request
-    p0->>p4: _build_context
-    p0-->>p5: validated.get(KNOWLEDGE_MODE_REQUEST_FIELD)
-    p0->>p6: _caused_by
-    p0->>p7: WorkspaceStateError
-    p0-->>p8: str (src/llm_wiki_cli/api.py:build_context)(exc)
+    participant p11 as _wiki_path_policy_details
+    participant p12 as _build_context_impl
+    participant p13 as _validate_protocol_request_impl
+    participant p14 as _typed_graph_page_badge
+    participant p15 as validate_source_root
+    participant p16 as resolve_source_selection
+    participant p17 as validate_request
+    participant p18 as capture_source_selection_inputs
+    participant p19 as validate_live_query_source_selection
+    participant p20 as build_source_snapshot
+    participant p21 as retained_empty_module_paths_from_wiki
+    participant p22 as _normalise_protocol_focus
+    participant p23 as _normalise_protocol_filters
+    participant p24 as _apply_protocol_filters
+    participant p25 as _capture_protocol_enrichment_session
+    participant p26 as _context_freshness_rank_by_source
+    participant p27 as _context_enrichment_from_session
+    participant p28 as _selected_git_changed_files
+    participant p29 as str (src/llm_wiki_cli/api.py:build_context)
+    participant p30 as validated.get
+    p0->>p1: _normalize_optional_knowledge_mode
+    p0->>p2: _validate_protocol_request
+    p0->>p3: _build_context
+    p0->>p4: _raise_required_knowledge_api_error
+    p0->>p5: _render_markdown
+    p0->>p6: _normalise_focus
+    p0->>p7: _caused_by
+    p0->>p8: WorkspaceStateError
     p0->>p9: _path_error_field
-    p0-->>p8: str (src/llm_wiki_cli/api.py:build_context)(exc)
     p0->>p10: InvalidRequestError
-    p0-->>p8: str (src/llm_wiki_cli/api.py:build_context)(exc)
-    p0->>p9: _path_error_field
-    p0-->>p8: str (src/llm_wiki_cli/api.py:build_context)(exc)
-    p0->>p11: _raise_required_knowledge_api_error
-    p0->>p7: WorkspaceStateError
-    p0-->>p8: str (src/llm_wiki_cli/api.py:build_context)(exc)
-    p0->>p11: _raise_required_knowledge_api_error
-    p0->>p10: InvalidRequestError
-    p0-->>p8: str (src/llm_wiki_cli/api.py:build_context)(exc)
-    p0->>p12: _wiki_path_policy_details
-    p0->>p7: WorkspaceStateError
-    p0-->>p8: str (src/llm_wiki_cli/api.py:build_context)(exc)
-    p0->>p10: InvalidRequestError
-    p0-->>p8: str (src/llm_wiki_cli/api.py:build_context)(exc)
-    p0-->>p13: cast (src/llm_wiki_cli/api.py:build_context)(MarkdownContextResult, {...})
-    p0->>p14: _render_markdown
-    p0-->>p15: dict (src/llm_wiki_cli/api.py:build_context)(payload)
-    p0-->>p13: cast (src/llm_wiki_cli/api.py:build_context)(ContextPayload, result)
-    p1-->>p16: isinstance (src/llm_wiki_cli/api.py:_normalise_focus)(focus, str)
+    p0->>p11: _wiki_path_policy_details
+    p3->>p12: _build_context_impl
+    p2->>p13: _validate_protocol_request_impl
+    p5->>p14: _typed_graph_page_badge
+    p12->>p15: validate_source_root
+    p12->>p16: resolve_source_selection
+    p13->>p17: validate_request
+    p12->>p18: capture_source_selection_inputs
+    p12->>p19: validate_live_query_source_selection
+    p12->>p20: build_source_snapshot
+    p12->>p21: retained_empty_module_paths_from_wiki
+    p13->>p22: _normalise_protocol_focus
+    p13->>p23: _normalise_protocol_filters
+    p12->>p24: _apply_protocol_filters
+    p12->>p25: _capture_protocol_enrichment_session
+    p12->>p26: _context_freshness_rank_by_source
+    p12->>p27: _context_enrichment_from_session
+    p12->>p28: _selected_git_changed_files
+    p0-->>p29: str (src/llm_wiki_cli/api.py:build_context)(exc)
+    p0-->>p30: validated.get(KNOWLEDGE_MODE_REQUEST_FIELD)
 ```
 
-> Call sequence diagram shows 30 of 2168 interactions; 2138 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2182 interactions; 2152 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 12 of 734 (722 omitted); unresolved 1 of 796 (795 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 737 (736 omitted); unresolved 1 of 800 (799 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/api.py:_normalise_focus` | 2 | - | external | 1 |
+| `src/llm_wiki_cli/api.py:_normalise_focus` | 2 | - | external | 2 |
 | `src/llm_wiki_cli/api.py:_normalize_optional_knowledge_mode` | 5 | - | external | 3 |
 | `src/llm_wiki_cli/api.py:_normalize_optional_knowledge_mode` | 5 | - | unresolved | 1 |
 | `src/llm_wiki_cli/api.py:_normalize_optional_knowledge_mode` | 5 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 1 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 11 | - | external | 2 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 11 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 11 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 1 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 14 | - | external | 11 |
-> Omission summary shows 8 of 478 groups; 470 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 14 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 10 |
+> Omission summary shows 8 of 485 groups; 477 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -185,8 +202,8 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | build_context | _normalise_focus | 1239 | `_normalise_focus(focus)` |
-| _normalise_focus | isinstance (src/llm_wiki_cli/api.py:_normalise_focus) | 3197 | `isinstance(focus, str)` |
-| _normalise_focus | list (src/llm_wiki_cli/api.py:_normalise_focus) | 3203 | `list(focus)` |
+| _normalise_focus | isinstance (src/llm_wiki_cli/api.py:_normalise_focus) | 3220 | `isinstance(focus, str)` |
+| _normalise_focus | list (src/llm_wiki_cli/api.py:_normalise_focus) | 3226 | `list(focus)` |
 | build_context | _normalize_optional_knowledge_mode | 1240 | `_normalize_optional_knowledge_mode(knowledge_mode)` |
 | _normalize_optional_knowledge_mode | isinstance (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 397 | `isinstance(value, str)` |
 | _normalize_optional_knowledge_mode | ', '.join (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 398 | `', '.join(...)` |
@@ -194,7 +211,7 @@ flowchart LR
 | _normalize_optional_knowledge_mode | InvalidRequestError | 399 | `InvalidRequestError(..., code='invalid-request', details={...})` |
 | _normalize_optional_knowledge_mode | cast (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 404 | `cast(KnowledgeMode, value)` |
 | build_context | _validate_protocol_request | 1256 | `context_cmd._validate_protocol_request(request)` |
-| _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 1104 | `isinstance(data, dict)` |
+| _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 1110 | `isinstance(data, dict)` |
 
 ### Boundary effects
 
@@ -204,11 +221,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_normalise_focus` | `isinstance` | 3197 |
+| external_call | `_normalise_focus` | `isinstance` | 3220 |
 | external_call | `_normalize_optional_knowledge_mode` | `isinstance` | 397 |
 | unresolved_call | `_normalize_optional_knowledge_mode` | `', '.join` | 398 |
 | external_call | `_normalize_optional_knowledge_mode` | `cast` | 404 |
-| external_call | `_validate_protocol_request` | `isinstance` | 1104 |
+| external_call | `_validate_protocol_request` | `isinstance` | 1110 |
 | step_limit | `build_context` | `first 12 steps` | 0 |
 | truncated_flow | `build_context` | `depth limit` | 0 |
 

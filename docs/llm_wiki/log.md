@@ -1729,3 +1729,533 @@ Aligned search orientation, source-reading navigation and documentation review g
 - Pages deprecated: 0
 - Semantic fields preserved: 2
 - Moved entities: none
+
+## 2026-10-11
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:9e78dc1b799d52463daf3cea8ebb1e60b99ac8346a5bb84a959cac226557a46c`
+- Pages created: 4
+- Pages updated: 116
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1449
+- Pages deprecated: 0
+- Semantic fields preserved: 9
+- Moved entities: none
+- Flow pages initialized: 0 (none)
+- Workflow pages created: 2
+- Dependency pages initialized: 0
+- Surface policy updated: no
+
+## 2026-10-11
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:8a86e7267aecccf1fc9dc236e3f9a12e14afed9fd6dddea859823dccef49d9bf`
+- Pages created: 0
+- Pages updated: 4
+- Pages metadata-only: 11
+- Pages skipped (unchanged): 1550
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none
+
+## 2026-10-11
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:da4d36ee996a75f54d37c26b06cb570217adf08f7f988f15e4d4d7fe909daf6c`
+- Pages created: 0
+- Pages updated: 44
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1524
+- Pages deprecated: 0
+- Semantic fields preserved: 5
+- Moved entities: none
+
+## 2026-10-11
+
+### Supplied path diagnostics
+
+Python extraction now owns optional file-scoped parse/read outcomes and distinguishes
+parsed modules without documentable content. Discovery retains recognized Go source
+identity when default language policy excludes `_test.go` files, preserving separate
+filesystem, selection and extraction observations and legacy inventory semantics.
+
+## 2026-10-11
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:ff05d6c6d6807126e29f9bd2f4d5419eb95ee22428dcffe0a5824026af4ffa49`
+- Pages created: 8
+- Pages updated: 95
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1471
+- Pages deprecated: 0
+- Semantic fields preserved: 2
+- Moved entities: none
+- Flow pages initialized: 0 (none)
+- Workflow pages created: 6
+- Dependency pages initialized: 0
+- Surface policy updated: no
+
+## 2026-10-11
+
+### Static analysis reuse for Markdown maintenance
+
+Ordinary sync can reuse authenticated source analysis and compatible typed graphs
+while re-evaluating Markdown and final commitments. Detector observations,
+source/wiki/provider identity, generated ownership and required atomic writes
+retain their qualifying checks. Native writers retain a frozen logical-model
+receipt only within the active validation operation; physical storage and
+standalone reads keep their integrity obligations.
+
+## 2026-10-11
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:73cc2027419ad179b2c90de0b9ed17d274606841f0e3b8e4c5a124ec1f5105cf`
+- Pages created: 0
+- Pages updated: 6
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1568
+- Pages deprecated: 0
+- Semantic fields preserved: 3
+- Moved entities: none
+
+## 2026-10-11
+
+### Static-analysis capture eligibility
+
+Sync exposes bounded capture status, destination eligibility, byte counts and
+explicit skip reasons. Oversized observations retain ordinary generation while
+budget checks stop before constructing their complete encoding. Producer and
+input qualification, generated ownership, native integrity and successful
+owning publication remain prerequisites for reuse.
+
+## 2026-10-11
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:3d22d2f1e5a63c022b2f39781ebcc31dc6b2061d678c770b866ce8233d9c4a0f`
+- Pages created: 1
+- Pages updated: 25
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1549
+- Pages deprecated: 0
+- Semantic fields preserved: 4
+- Moved entities: none
+- Flow pages initialized: 0 (none)
+- Workflow pages created: 1
+- Dependency pages initialized: 0
+- Surface policy updated: no
+
+## 2026-10-11
+
+### Bounded static-analysis reuse levels
+
+Versioned cache commitments distinguish full graph reuse from inventory and
+page-map reuse. Complete extraction sidecars remain available for ordinary graph
+rebuilding when graph observations exceed the cache budget or detectors change.
+Compact, uncompressed JSON retains the 64 MiB limit and all native coverage
+qualifiers; unavailable observations remain explicit.
+
+## 2026-10-11
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:1912ae09cb08aa5540501a87dcfc73c7d6f4245e4571e61a7cfaea566aaf122b`
+- Pages created: 1
+- Pages updated: 41
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1534
+- Pages deprecated: 0
+- Semantic fields preserved: 2
+- Moved entities: none
+
+## 2026-10-11
+
+### Source-grounded generated section repair
+
+Ordinary sync checks surviving source-derived sections against the selected
+source and active renderer. Unchanged source can require targeted output repair
+without reclassifying source bytes. Authored cells and custom sections retain
+their ownership, while ambiguous attribution fails before page writes. Repairs
+use guarded retained-page plans and their existing explicit recovery boundary.
+
+## 2026-10-11
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:781db935be7156af1b348828de63c5d11ed5e5c39f67c496465b763a1145e07d`
+- Pages created: 0
+- Pages updated: 34
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1541
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none
+
+## 2026-10-12
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:1f9bcabfe7dc4bb95e01e92de245f0fa692c72ea02994cee212606cd3374eb57`
+- Pages created: 0
+- Pages updated: 476
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1099
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none
+
+## 2026-10-12
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:b4a0bb6fa9b0758fa7d16cf4082658175672443036c25703b19b47fee455f5f1`
+- Pages created: 0
+- Pages updated: 3
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1571
+- Pages deprecated: 1
+- Semantic fields preserved: 0
+- Moved entities: none
+- Generated surface pages retired: 1
+
+## 2026-10-12
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:32ae2b7ef6106ac55f2b5e077f3e1ebcb699dc791875fe89bcdfda505fdeb105`
+- Pages created: 1
+- Pages updated: 13
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1561
+- Pages deprecated: 0
+- Semantic fields preserved: 3
+- Moved entities: none
+
+## 2026-10-12
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:f49469e179def683cf104420d70855ae091dafdf89cca2f7475ec680f60d8f05`
+- Pages created: 2
+- Pages updated: 66
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1515
+- Pages deprecated: 0
+- Semantic fields preserved: 14
+- Moved entities: none
+- Flow pages initialized: 1 (api=1)
+- Workflow pages created: 1
+- Dependency pages initialized: 0
+- Surface policy updated: no
+
+## 2026-10-12
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:7cfb4daad3634f8a59a64418b55676bb5b26fdc42a9dd772f4266d9062c8d055`
+- Pages created: 6
+- Pages updated: 64
+- Pages metadata-only: 2
+- Pages skipped (unchanged): 1513
+- Pages deprecated: 0
+- Semantic fields preserved: 6
+- Moved entities: none
+- Flow pages initialized: 0 (none)
+- Workflow pages created: 1
+- Dependency pages initialized: 0
+- Surface policy updated: no
+- Infrastructure added: 2
+- Infrastructure changed: 0
+- Infrastructure moved: 0
+- Infrastructure removed: 0
+- Unsupported infrastructure YAML: 0
+
+### Structured YAML coverage
+
+Compose and infrastructure observations now share bounded node composition with
+scalar text preserved. Named CI/deployment formats include action metadata,
+GitLab CI, CircleCI, Azure Pipelines, Kustomize, Helm charts and Ansible playbooks.
+The selected integration actions have source-backed infrastructure pages;
+unknown formats and unrendered templates retain explicit qualifications.
+
+## 2026-10-12
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:c57c00a085cd5b44b291bf4a9b14abe58683f8818c86b7ccb6ebcd5285600454`
+- Pages created: 7
+- Pages updated: 114
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1467
+- Pages deprecated: 0
+- Semantic fields preserved: 7
+- Moved entities: none
+- Flow pages initialized: 0 (none)
+- Workflow pages created: 5
+- Dependency pages initialized: 0
+- Surface policy updated: no
+
+### Source-member retirement
+
+Ordinary sync retains removed entity pages with exact historical ownership,
+qualified native projections and authored context. Unchanged recovery can use
+previously retained tombstones, while exact owner revival restores live source
+structure. Ambiguous custody and captured sources without inventory remain
+explicit preflight gaps.
+
+## 2026-10-12
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:d669c4f38255ce3193d137d4e3836b535bb27fb179b3222e531628869f450d1f`
+- Pages created: 1
+- Pages updated: 82
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1508
+- Pages deprecated: 0
+- Semantic fields preserved: 12
+- Moved entities: none
+- Flow pages initialized: 0 (none)
+- Workflow pages created: 1
+- Dependency pages initialized: 0
+- Surface policy updated: no
+
+### Qualified surviving empty modules
+
+Parser-owned empty modules retain current source commitments and authored module
+context while removed declarations become history. Scoped diagnostic retries and
+manifest-selected live reads preserve the distinction between valid emptiness,
+syntax failure, unavailable coverage and module aliases. Cached qualifications
+remain attributable or are rebuilt through the owning parser route.
+
+## 2026-10-12
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:5318d01f6d42af8f50fe6e41db8914019bef59bd9fa4978a913e64811398b116`
+- Pages created: 1
+- Pages updated: 22
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1568
+- Pages deprecated: 0
+- Semantic fields preserved: 3
+- Moved entities: none
+
+Go, Rust and Haskell diagnostic reads now retain exact parser-owned file outcomes through a shared native response boundary. Syntax/read failures, unavailable helpers and failed batches stay distinct; partial coverage cannot create module or member-retirement authority.
+
+Maintenance guidance now uses CI report schema v4 for console-only output across flat and migrated native wikis. Report-write authority and comparison policy remain separate; older envelopes are qualified by metadata rather than physical layout.
+
+## 2026-10-12
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:bed26ef7efdb6da2cac7919b039983bbcc88b480ca6dae96d570ceecb4d588ef`
+- Pages created: 0
+- Pages updated: 1
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1588
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none
+
+CI command and service invalid-schema diagnostics now list every supported choice. Early rejection and the separate native compatibility boundary remain intact.
+
+## 2026-10-12
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:e1db9ff801a4d30941076f1c11759e60468e1bde9ba78e5b4a4cd6b7c81ec074`
+- Pages created: 0
+- Pages updated: 1
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1588
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none
+
+Symptom discovery now connects bounded nominal families in captured explanatory prose and definition descriptions. Exact identities, original citations and lexical-only qualifications remain separate from these navigation leads.
+
+## 2026-10-12
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:b9a09f1a39081dcd6286c8b4c1b63a779f2906054a0fbd095d59602c9b2817f7`
+- Pages created: 0
+- Pages updated: 1
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1588
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none
+
+Flow call/data inventories and untouched default Behavior placeholders now use inventory weight for lexical discovery. Authored behavior, exact identities, captured trace citations and bounded-scan qualifications remain intact.
+
+## 2026-10-13
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.4.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:2db88b2bf9b1812eade53ab07c0416d52cee6b1eb6dbf22756b4f22fd2c20be0`
+- Pages created: 0
+- Pages updated: 3
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1586
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none
+
+Lexical discovery now uses section-local relevance and coherent explanatory coverage, with qualified one-hop leads from formal function descriptions to uniquely declared flows. Literal identities, captured citations and scan limits remain intact.
+
+## 2026-10-13
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.5.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:12dfafc9136fb1cb645c7acfa56965a04b7f9cbfd637506412f8cb52df83658b`
+- Pages created: 0
+- Pages updated: 124
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1515
+- Pages deprecated: 0
+- Semantic fields preserved: 144
+- Moved entities: none
+
+## 2026-10-13
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.5.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:75a79225d71a5b8fb7ba355d83a7aac74e506e15437e318bff6b756d6f6a7d57`
+- Pages created: 0
+- Pages updated: 2
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1587
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none
+
+Analysis-input doctor diagnostics now honor text and JSON output with the same classification scope, bounded path counts, corrective route and readiness exit policy.
+
+## 2026-10-13
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.5.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:67e8b571e92774642e17286b5fc620ff93f80ddaf3bf4bfefdfa6e394336c10b`
+- Pages created: 0
+- Pages updated: 13
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1577
+- Pages deprecated: 0
+- Semantic fields preserved: 4
+- Moved entities: none
+
+## 2026-10-13 — Sync preview cache commitment
+
+Sync preview keeps requested cache eligibility separate from disabled extraction
+cache I/O, preserving projected artifact commitments without destination probes
+or cache publication. Apply still owns publication and advisory cache saving.
+The compact instruction kernel retains its provider census route and existing
+authority, evidence and maintenance guidance within its bounded presentation.
+
+## 2026-10-13
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.5.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:e7d734ddb8ab536addb25162ddb10e0bad39d40cc1c69b7306788a9fa8ca7d5b`
+- Pages created: 0
+- Pages updated: 0
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1589
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none
+
+## 2026-10-13
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.5.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:470a017336d3276a4743d9075c89a34ced8e8ea7fc81a5239e25cf770590c692`
+- Pages created: 0
+- Pages updated: 0
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1589
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none

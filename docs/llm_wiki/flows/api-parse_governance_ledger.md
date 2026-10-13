@@ -16,7 +16,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -24,56 +24,69 @@ sequenceDiagram
     participant p0 as parse_governance_ledger
     participant p1 as _object
     participant p2 as _exact_fields
-    participant p3 as GovernanceError
-    participant p4 as _bundle_id
-    participant p5 as concepts_raw.items
-    participant p6 as _concept_uid
-    participant p7 as GovernanceAllocation
-    participant p8 as _concept_kind
-    participant p9 as _identity_value
-    participant p10 as aliases_raw.items
-    participant p11 as GovernanceAlias
-    participant p12 as _alias_type
-    participant p13 as str (src/llm_wiki_cli/services…y:parse_governance_ledger)
-    participant p14 as _parse_lifecycle_event
-    participant p15 as lifecycle_raw.items
-    participant p16 as _parse_review_event
-    participant p17 as reviews_raw.items
+    participant p3 as _bundle_id
+    participant p4 as _concept_uid
+    participant p5 as _concept_kind
+    participant p6 as _identity_value
+    participant p7 as _parse_lifecycle_event
+    participant p8 as _parse_review_event
+    participant p9 as validate_governance_ledger
+    participant p10 as GovernanceError
+    participant p11 as GovernanceAllocation
+    participant p12 as GovernanceAlias
+    participant p13 as _alias_type
+    participant p14 as GovernanceLedger
+    participant p15 as validate_bundle_id
+    participant p16 as validate_concept_uid
+    participant p17 as validate_concept_kind
+    participant p18 as _event_id
+    participant p19 as validate_alias_value
+    participant p20 as _section_locator
+    participant p21 as _hash
+    participant p22 as _parse_review_evidence
+    participant p23 as _parse_actor
+    participant p24 as authored_event_time
+    participant p25 as _machine_code
+    participant p26 as _identity_ownership_key
+    participant p27 as _validate_lifecycle_event_fields
+    participant p28 as _validate_lifecycle_histories
+    participant p29 as str (src/llm_wiki_cli/services…y:parse_governance_ledger)
+    participant p30 as concepts_raw.items
     p0->>p1: _object
     p0->>p2: _exact_fields
-    p0->>p3: GovernanceError
-    p0->>p4: _bundle_id
-    p0->>p3: GovernanceError
-    p0->>p1: _object
-    p0-->>p5: concepts_raw.items
-    p0->>p6: _concept_uid
-    p0->>p1: _object
-    p0->>p2: _exact_fields
-    p0->>p7: GovernanceAllocation
-    p0->>p8: _concept_kind
-    p0->>p9: _identity_value
-    p0->>p9: _identity_value
-    p0->>p1: _object
-    p0-->>p10: aliases_raw.items
-    p0->>p1: _object
-    p0->>p2: _exact_fields
-    p0->>p11: GovernanceAlias
-    p0->>p6: _concept_uid
-    p0->>p12: _alias_type
-    p0->>p9: _identity_value
-    p0-->>p13: str (src/llm_wiki_cli/services…y:parse_governance_ledger)(record[...])
-    p0->>p3: GovernanceError
-    p0->>p1: _object
-    p0->>p14: _parse_lifecycle_event
-    p0-->>p15: lifecycle_raw.items
-    p0->>p1: _object
-    p0->>p16: _parse_review_event
-    p0-->>p17: reviews_raw.items
+    p0->>p3: _bundle_id
+    p0->>p4: _concept_uid
+    p0->>p5: _concept_kind
+    p0->>p6: _identity_value
+    p0->>p7: _parse_lifecycle_event
+    p0->>p8: _parse_review_event
+    p0->>p9: validate_governance_ledger
+    p0->>p10: GovernanceError
+    p0->>p11: GovernanceAllocation
+    p0->>p12: GovernanceAlias
+    p0->>p13: _alias_type
+    p0->>p14: GovernanceLedger
+    p3->>p15: validate_bundle_id
+    p4->>p16: validate_concept_uid
+    p5->>p17: validate_concept_kind
+    p7->>p18: _event_id
+    p6->>p19: validate_alias_value
+    p8->>p20: _section_locator
+    p8->>p21: _hash
+    p8->>p22: _parse_review_evidence
+    p7->>p23: _parse_actor
+    p7->>p24: authored_event_time
+    p7->>p25: _machine_code
+    p9->>p26: _identity_ownership_key
+    p9->>p27: _validate_lifecycle_event_fields
+    p9->>p28: _validate_lifecycle_histories
+    p0-->>p29: str (src/llm_wiki_cli/services…y:parse_governance_ledger)(record[...])
+    p0-->>p30: concepts_raw.items
 ```
 
 > Call sequence diagram shows 30 of 441 interactions; 411 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 93 (92 omitted); unresolved 4 of 87 (83 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 93 (92 omitted); unresolved 1 of 87 (86 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -87,7 +100,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_governance.py:_exact_fields` | 10 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 11 | - | external | 9 |
 | `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 11 | - | unresolved | 2 |
-> Omission summary shows 8 of 125 groups; 117 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 122 groups; 114 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

@@ -1,6 +1,6 @@
 # PageTransitionError
 
-**Location:** `src/llm_wiki_cli/services/sync_transitions.py:22`
+**Location:** `src/llm_wiki_cli/services/sync_transitions.py:23`
 **Kind:** Class
 **Bases:** `SyncOwnershipError`
 **Module:** [sync_transitions](../modules/sync_transitions.md)
@@ -24,18 +24,18 @@ The intended page writes cannot preserve verified ownership.
 flowchart LR
     n0["PageTransitionError (src/llm_wiki_cli/services/sync_transitions.py)"]
     n1["SyncOwnershipError (src/llm_wiki_cli/services/sync_analysis.py)"]
-    n2["assert_no_pending_page_moves (src/llm_wiki_cli/services/sync_transition_execution.py)"]
-    n3["PageTransitionExecution.__exit__ (src/llm_wiki_cli/services/sync_transition_execution.py)"]
-    n4["PageTransitionExecution._cleanup (src/llm_wiki_cli/services/sync_transition_execution.py)"]
-    n5["PageTransitionExecution._expected (src/llm_wiki_cli/services/sync_transition_execution.py)"]
-    n6["PageTransitionExecution._verified_recovery_manifest (src/llm_wiki_cli/services/sync_transition_execution.py)"]
-    n7["PageTransitionExecution.apply (src/llm_wiki_cli/services/sync_transition_execution.py)"]
-    n8["PageTransitionExecution.read_text (src/llm_wiki_cli/services/sync_transition_execution.py)"]
-    n9["PageTransitionExecution.write (src/llm_wiki_cli/services/sync_transition_execution.py)"]
-    n10["_current_pages (src/llm_wiki_cli/services/sync_transitions.py)"]
-    n11["_existing_pages (src/llm_wiki_cli/services/sync_transitions.py)"]
-    n12["_Ownership.resolve (src/llm_wiki_cli/services/sync_transitions.py)"]
-    n13["_page_path (src/llm_wiki_cli/services/sync_transitions.py)"]
+    n2["_preserve_cells (src/llm_wiki_cli/services/sync_generated_sections.py)"]
+    n3["_source_markdown (src/llm_wiki_cli/services/sync_generated_sections.py)"]
+    n4["plan_generated_source_repairs (src/llm_wiki_cli/services/sync_generated_sections.py)"]
+    n5["repair_source_sections (src/llm_wiki_cli/services/sync_generated_sections.py)"]
+    n6["assert_no_pending_page_moves (src/llm_wiki_cli/services/sync_transition_execution.py)"]
+    n7["PageTransitionExecution.__exit__ (src/llm_wiki_cli/services/sync_transition_execution.py)"]
+    n8["PageTransitionExecution._cleanup (src/llm_wiki_cli/services/sync_transition_execution.py)"]
+    n9["PageTransitionExecution._expected (src/llm_wiki_cli/services/sync_transition_execution.py)"]
+    n10["PageTransitionExecution._verified_recovery_manifest (src/llm_wiki_cli/services/sync_transition_execution.py)"]
+    n11["PageTransitionExecution.apply (src/llm_wiki_cli/services/sync_transition_execution.py)"]
+    n12["PageTransitionExecution.read_text (src/llm_wiki_cli/services/sync_transition_execution.py)"]
+    n13["PageTransitionExecution.write (src/llm_wiki_cli/services/sync_transition_execution.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -51,18 +51,18 @@ flowchart LR
     n13 --> n0
     click n0 "../modules/sync_transitions.md"
     click n1 "../modules/sync_analysis.md"
-    click n2 "../modules/sync_transition_execution.md"
-    click n3 "../modules/sync_transition_execution.md"
-    click n4 "../modules/sync_transition_execution.md"
-    click n5 "../modules/sync_transition_execution.md"
+    click n2 "../modules/sync_generated_sections.md"
+    click n3 "../modules/sync_generated_sections.md"
+    click n4 "../modules/sync_generated_sections.md"
+    click n5 "../modules/sync_generated_sections.md"
     click n6 "../modules/sync_transition_execution.md"
     click n7 "../modules/sync_transition_execution.md"
     click n8 "../modules/sync_transition_execution.md"
     click n9 "../modules/sync_transition_execution.md"
-    click n10 "../modules/sync_transitions.md"
-    click n11 "../modules/sync_transitions.md"
-    click n12 "../modules/sync_transitions.md"
-    click n13 "../modules/sync_transitions.md"
+    click n10 "../modules/sync_transition_execution.md"
+    click n11 "../modules/sync_transition_execution.md"
+    click n12 "../modules/sync_transition_execution.md"
+    click n13 "../modules/sync_transition_execution.md"
 ```
 
 ### Summary
@@ -81,6 +81,10 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `_preserve_cells` | call | [sync_generated_sections](../modules/sync_generated_sections.md) | 2 |
+| `_source_markdown` | call | [sync_generated_sections](../modules/sync_generated_sections.md) | 1 |
+| `plan_generated_source_repairs` | call | [sync_generated_sections](../modules/sync_generated_sections.md) | 1 |
+| `repair_source_sections` | call | [sync_generated_sections](../modules/sync_generated_sections.md) | 3 |
 | `assert_no_pending_page_moves` | call | [sync_transition_execution](../modules/sync_transition_execution.md) | 1 |
 | `PageTransitionExecution.__exit__` | call | [sync_transition_execution](../modules/sync_transition_execution.md) | 1 |
 | `PageTransitionExecution._cleanup` | call | [sync_transition_execution](../modules/sync_transition_execution.md) | 1 |
@@ -89,9 +93,5 @@ flowchart LR
 | `PageTransitionExecution.apply` | call | [sync_transition_execution](../modules/sync_transition_execution.md) | 3 |
 | `PageTransitionExecution.read_text` | call | [sync_transition_execution](../modules/sync_transition_execution.md) | 3 |
 | `PageTransitionExecution.write` | call | [sync_transition_execution](../modules/sync_transition_execution.md) | 1 |
-| `_current_pages` | call | [sync_transitions](../modules/sync_transitions.md) | 3 |
-| `_existing_pages` | call | [sync_transitions](../modules/sync_transitions.md) | 2 |
-| `_Ownership.resolve` | call | [sync_transitions](../modules/sync_transitions.md) | 2 |
-| `_page_path` | call | [sync_transitions](../modules/sync_transitions.md) | 1 |
 
-> References: showing 12 of 16 logical references; 4 omitted by the 12-row generated summary limit.
+> References: showing 12 of 20 logical references; 8 omitted by the 12-row generated summary limit.

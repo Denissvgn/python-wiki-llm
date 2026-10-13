@@ -18,10 +18,10 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .common import (
-    chunk_source_files_for_cli,
     discover_source_files,
     filter_bundled_inventory,
 )
+from .native_diagnostics import load_native_chunks, path_outcome
 from ..services.extractor_helpers import (
     ENV_EXTRACTOR_TIMEOUT,
     extractor_timeout_seconds,
@@ -41,6 +41,7 @@ class RustExtractionRequest:
     deep: bool = False
     source_files: list[str] | None = None
     helper_cache_dir: str | None = None
+    diagnostics: bool = False
 
 
 class RustExtractor:
@@ -61,6 +62,7 @@ class RustExtractor:
     ) -> dict:
         """Scan Rust files and return an inventory dict."""
         self.last_error = None
+        self.last_path_outcomes: dict = {}
         request = self._coerce_request(src_dir, only_files, deep)
         source_files = self._resolve_source_files(request)
         if not source_files:
@@ -68,6 +70,8 @@ class RustExtractor:
 
         helper_binary = self._prepared_helper(request)
         if helper_binary is None:
+            if request.diagnostics:
+                self.last_path_outcomes = {path: path_outcome("unavailable", "helper-unavailable", "extractor-batch") for path in source_files}
             return {}
 
         inventory = self._load_chunked_inventory(request, source_files, helper_binary)
@@ -115,17 +119,7 @@ class RustExtractor:
         source_files: list[str],
         helper_binary: Path,
     ) -> dict:
-        inventory: dict = {}
-        for chunk in chunk_source_files_for_cli(source_files):
-            cmd = self._build_command(request, chunk, helper_binary)
-            result = self._run_helper(cmd, helper_binary)
-            if result is None:
-                return {}
-            chunk_inventory = self._load_inventory(result)
-            if self.last_error:
-                return {}
-            inventory.update(chunk_inventory)
-        return inventory
+        return load_native_chunks(self, request, source_files, helper_binary, "rust")
 
     def _build_command(
         self,
@@ -138,7 +132,10 @@ class RustExtractor:
             "--src-dir",
             str(Path(request.src_dir).resolve()),
         ]
-        cmd += ["--only-files", ",".join(source_files)]
+        if request.diagnostics:
+            cmd += ["--diagnostics-v1", *[arg for path in source_files for arg in ("--file-v1", path)]]
+        else:
+            cmd += ["--only-files", ",".join(source_files)]
         if request.deep:
             cmd.append("--deep")
         return cmd

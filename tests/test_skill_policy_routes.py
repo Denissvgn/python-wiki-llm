@@ -13,10 +13,10 @@ from llm_wiki_cli.services.instruction_ownership import markdown_anchor
 
 CLAUDE_TOPIC_ROOT = ".claude/skills/wiki-reference/references"
 GENERIC_TOPIC_ROOT = ".llm-wiki/skills/wiki-reference/references"
-DESCRIPTION_WORD_BASELINE = 570
+DESCRIPTION_WORD_BASELINE = 572
 DESCRIPTION_WORD_RANGE = range(25, 41)
 LONG_REFERENCE_LINE_THRESHOLD = 100
-LONG_REFERENCE_RESOURCE_COUNT = 19
+LONG_REFERENCE_RESOURCE_COUNT = 20
 MARKDOWN = MarkdownIt("commonmark")
 
 EXPECTED_COMMON_ROUTES: dict[str, frozenset[str]] = {

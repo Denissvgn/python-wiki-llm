@@ -10,7 +10,7 @@ filesystem reads are the target-state comparisons performed by
 
 from __future__ import annotations
 
-from .progress import observed_phase
+from .progress import observed_phase, record_counts
 
 import json
 from collections.abc import Mapping, Sequence
@@ -30,6 +30,7 @@ from .knowledge_artifacts import (
     validate_surface_index_bytes,
 )
 from .knowledge_envelope import (
+    EvaluatedEnvelope,
     ConsumedInput,
     EnvelopeInputs,
     KnowledgeEnvelopeError,
@@ -75,6 +76,12 @@ from .contracts import (
     TYPED_GRAPH_EXTENSION_KEY,
 )
 from .section_ownership import observe_page_sections, section_ownership_extension
+from .source_retirement import (
+    ENTITY_RETIREMENT_SCHEMA_VERSION,
+    SOURCE_RETIREMENT_EXTENSION_KEY,
+    SourceRetirementError,
+    retired_entity_mappings,
+)
 from .sync_manifest import (
     EVIDENCE_NOT_RECORDED,
     MANIFEST_REPAIR_UNAVAILABLE,
@@ -146,6 +153,7 @@ class KnowledgeGenerationInputs:
     snapshot_extensions: Mapping[str, Any] = field(default_factory=dict)
     producer_extensions: Mapping[str, Any] = field(default_factory=dict)
     knowledge_extensions: Mapping[str, Any] = field(default_factory=dict)
+    reuse_typed_graph: bool = False
     call_edges: Mapping[str, Any] | Sequence[Mapping[str, Any]] = ()
     dependency_observations: Mapping[str, Any] | Sequence[Mapping[str, Any]] = ()
     entrypoint_observations: Mapping[str, Any] | Sequence[Mapping[str, Any]] = ()
@@ -380,6 +388,7 @@ def _build_knowledge_generation_plan(
         inventory=inventory,
         module_page_map=module_page_map,
         occurrence_page_map=occurrence_page_map,
+        envelope=envelope,
     )
     from .knowledge_reuse import (
         REUSE_EXTENSION_KEY,
@@ -421,6 +430,22 @@ def _build_knowledge_generation_plan(
          and manifest.sources.get(mapping.source_path, {}).get("hash") == source_hashes[mapping.source_path]},
         producer=envelope.bundle.producer, source_content_hashes=source_hashes,
     )
+    try:
+        retired_mappings = retired_entity_mappings(manifest)
+    except SourceRetirementError as exc:
+        raise KnowledgeGenerationError(
+            "manifest_generation_inputs.entity_retirement", str(exc)
+        ) from exc
+    for page_path, owner in retired_mappings.items():
+        concept_implementations.setdefault(page_path, {})[
+            SOURCE_RETIREMENT_EXTENSION_KEY
+        ] = {
+            "schema_version": ENTITY_RETIREMENT_SCHEMA_VERSION,
+            "state": "source-member-removed",
+            "source_path": owner.source_path,
+            "entity_name": owner.entity_name,
+            "occurrence": owner.occurrence,
+        }
     knowledge = build_knowledge_index(
         KnowledgeIndexInputs(
             envelope=envelope,
@@ -490,6 +515,7 @@ def _application_knowledge_extensions(
     inventory: Mapping[str, Mapping[str, Any]],
     module_page_map: Mapping[str, str],
     occurrence_page_map: Mapping[tuple[str, str, int], str],
+    envelope: EvaluatedEnvelope,
 ) -> dict[str, Any]:
     """Build reserved extensions from the exact final evaluated snapshot."""
 
@@ -504,7 +530,26 @@ def _application_knowledge_extensions(
                 "is application-owned and cannot be supplied by callers",
             )
 
-    graph = materialize_typed_graph(
+    from .sync_analysis_cache import EXTENSION
+    from .knowledge_artifacts import require_validated_artifacts
+    prior = inputs.prior_artifacts
+    reused_graph = None
+    if inputs.reuse_typed_graph and prior is not None:
+        require_validated_artifacts(prior)
+        commitment = extensions.get(EXTENSION)
+        from dataclasses import asdict
+        from .knowledge_envelope import INVENTORY_HASH_EXTENSION, hash_inventory
+        from .knowledge_evidence import hash_json
+        coordinates = _graph_concepts(inputs.pages, module_page_map=module_page_map, occurrence_page_map=occurrence_page_map)
+        if (isinstance(commitment, Mapping) and commitment == prior.knowledge.extensions.get(EXTENSION)
+                and commitment.get("graph_concepts_hash") == hash_json([asdict(v) for v in coordinates])
+                and hash_inventory(inventory) == prior.knowledge.bundle.snapshot.extensions[INVENTORY_HASH_EXTENSION]
+                and envelope.bundle.snapshot.source_snapshot_hash == prior.knowledge.bundle.snapshot.source_snapshot_hash
+                and envelope.bundle.snapshot.generation_options_hash == prior.knowledge.bundle.snapshot.generation_options_hash
+                and envelope.bundle.producer == prior.knowledge.bundle.producer):
+            reused_graph = prior.knowledge.extensions[TYPED_GRAPH_EXTENSION_KEY]
+            record_counts(reused_typed_graph=1)
+    graph = reused_graph if reused_graph is not None else materialize_typed_graph(
         KnowledgeGraphInputs(
             inventory=inventory,
             concepts=_graph_concepts(
@@ -768,6 +813,12 @@ def _reconcile_active_structural_evidence(
     tombstone.  No evidence is inferred from page text.
     """
 
+    try:
+        retired_mappings = retired_entity_mappings(manifest)
+    except SourceRetirementError as exc:
+        raise KnowledgeGenerationError(
+            "manifest_generation_inputs.entity_retirement", str(exc)
+        ) from exc
     mappings = {
         path: mapping
         for path, mapping in manifest.page_source_mappings.items()
@@ -787,7 +838,9 @@ def _reconcile_active_structural_evidence(
     for page_path in active_page_paths:
         mapping = mappings.get(page_path)
         has_live_source = (
-            mapping is not None and mapping.source_path in manifest.sources
+            mapping is not None
+            and mapping.source_path in manifest.sources
+            and page_path not in retired_mappings
         )
         if force_unknown:
             reason = (

@@ -9,8 +9,34 @@ from ..services.doctor_service import build_doctor_report, render_doctor_text
 from ..services.extraction_jobs import extraction_job_request_from_args
 
 
+def _render_analysis_input_text(report) -> str:
+    """Readable classification diagnostics with unchanged scope and work bounds."""
+    bounds = report["bounds"]
+    lines = [f"Analysis inputs: {report['status']}", f"Scope: {report['scope']}",
+             f"Registry: {report['registry']}",
+             f"Paths: {bounds['returned']} of {bounds['total']}; omitted: {bounds['omitted']}"]
+    if report["reason"]:
+        lines.append(f"Reason: {report['reason']}")
+    lines.extend(f"- {row['kind']}: {json.dumps(row['path'], ensure_ascii=True)}" for row in report["paths"])
+    if report["next_action"]:
+        lines.append(f"Next action: {report['next_action']}")
+    lines.append(f"Qualification: {report['qualification']}")
+    return "\n".join(lines)
+
+
 def run(args) -> None:
     report_schema = getattr(args, "report_schema", "auto")
+    if getattr(args, "analysis_inputs", False):
+        if report_schema != "auto":
+            raise ValueError("--analysis-inputs and --report-schema are mutually exclusive")
+        from ..api import get_analysis_input_status
+
+        report = get_analysis_input_status()
+        print(json.dumps(report, sort_keys=True, ensure_ascii=True)
+              if getattr(args, "format", "text") == "json" else _render_analysis_input_text(report))
+        if report["status"] != "ready":
+            raise SystemExit(2)
+        return
     if report_schema not in {"auto", "v1", "v3", "v4"}:
         raise ValueError("--report-schema must be v1 or v3")
     if getattr(args, "capabilities", False):

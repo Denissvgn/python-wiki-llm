@@ -15,7 +15,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -23,71 +23,81 @@ sequenceDiagram
     participant p0 as review_scope_hash
     participant p1 as _section_locator
     participant p2 as _section_records_by_locator
-    participant p3 as sections.get
-    participant p4 as GovernanceError
-    participant p5 as section.get (src/llm_wiki_cli/services…ance.py:review_scope_hash)
-    participant p6 as is_valid_sha256
-    participant p7 as isinstance (src/llm_wiki_cli/services…ance.py:review_scope_hash)
-    participant p8 as isinstance (src/llm_wiki_cli/services…nance.py:_section_locator)
-    participant p9 as knowledge.extensions.get
-    participant p10 as isinstance (src/llm_wiki_cli/services…idence.py:is_valid_sha256)
-    participant p11 as value.startswith (src/llm_wiki_cli/services…nance.py:_section_locator)
-    participant p12 as isinstance (src/llm_wiki_cli/services…ection_records_by_locator)
-    participant p13 as _SHA256_RE.fullmatch
-    participant p14 as value.strip (src/llm_wiki_cli/services…nance.py:_section_locator)
-    participant p15 as extension.get
-    participant p16 as value.partition
-    participant p17 as page.get
-    participant p18 as validate_locator
-    participant p19 as require_no_control_characters
-    participant p20 as section.get (src/llm_wiki_cli/services…ection_records_by_locator)
+    participant p3 as GovernanceError
+    participant p4 as is_valid_sha256
+    participant p5 as validate_locator
+    participant p6 as require_no_control_characters
+    participant p7 as contains_uri_authority_userinfo
+    participant p8 as _machine_text
+    participant p9 as validate_exact_page_coordinate
+    participant p10 as _matches_directory_path
+    participant p11 as _matches_directory_uri
+    participant p12 as is_safe_page_id
+    participant p13 as canonical_path
+    participant p14 as mcp_uri
+    participant p15 as _contains_uri_userinfo
+    participant p16 as contains_control_character
+    participant p17 as _looks_absolute_path
+    participant p18 as ConceptIdentityError
+    participant p19 as _uri_candidate_contains_authority_userinfo
+    participant p20 as WikiSurfaceError
+    participant p21 as _entry_for
+    participant p22 as _validate_page_id
+    participant p23 as is_portable_path_component
+    participant p24 as isinstance (src/llm_wiki_cli/services…ance.py:review_scope_hash)
+    participant p25 as sections.get
+    participant p26 as section.get (src/llm_wiki_cli/services…ance.py:review_scope_hash)
+    participant p27 as isinstance (src/llm_wiki_cli/services…nance.py:_section_locator)
+    participant p28 as knowledge.extensions.get
+    participant p29 as isinstance (src/llm_wiki_cli/services…idence.py:is_valid_sha256)
+    participant p30 as value.startswith (src/llm_wiki_cli/services…nance.py:_section_locator)
     p0->>p1: _section_locator
     p0->>p2: _section_records_by_locator
-    p0-->>p3: sections.get(selected)
-    p0->>p4: GovernanceError
-    p0-->>p5: section.get (src/llm_wiki_cli/services…ance.py:review_scope_hash)('semantic_hash')
-    p0->>p6: is_valid_sha256
-    p0->>p4: GovernanceError
-    p0-->>p7: isinstance (src/llm_wiki_cli/services…ance.py:review_scope_hash)(semantic_hash, str)
-    p1-->>p8: isinstance (src/llm_wiki_cli/services…nance.py:_section_locator)(value, str)
-    p2-->>p9: knowledge.extensions.get(SECTION_OWNERSHIP_EXTENSION_KEY)
-    p6-->>p10: isinstance (src/llm_wiki_cli/services…idence.py:is_valid_sha256)(value, str)
-    p1-->>p11: value.startswith (src/llm_wiki_cli/services…nance.py:_section_locator)('llm-wiki://')
-    p2-->>p12: isinstance (src/llm_wiki_cli/services…ection_records_by_locator)(extension, Mapping)
-    p6-->>p13: _SHA256_RE.fullmatch(value)
-    p1-->>p14: value.strip (src/llm_wiki_cli/services…nance.py:_section_locator)
-    p2-->>p15: extension.get('pages')
-    p1->>p4: GovernanceError
-    p2-->>p12: isinstance (src/llm_wiki_cli/services…ection_records_by_locator)(pages, list)
-    p1-->>p16: value.partition(' section/')
-    p2-->>p12: isinstance (src/llm_wiki_cli/services…ection_records_by_locator)(page, Mapping)
-    p1->>p4: GovernanceError
-    p2-->>p17: page.get('sections')
-    p1->>p18: validate_locator
-    p2-->>p12: isinstance (src/llm_wiki_cli/services…ection_records_by_locator)(sections, list)
-    p1->>p4: GovernanceError
-    p2-->>p12: isinstance (src/llm_wiki_cli/services…ection_records_by_locator)(section, Mapping)
-    p1->>p19: require_no_control_characters
-    p2-->>p20: section.get (src/llm_wiki_cli/services…ection_records_by_locator)('locator')
-    p1->>p4: GovernanceError
-    p2-->>p12: isinstance (src/llm_wiki_cli/services…ection_records_by_locator)(locator, str)
+    p0->>p3: GovernanceError
+    p0->>p4: is_valid_sha256
+    p1->>p5: validate_locator
+    p1->>p6: require_no_control_characters
+    p1->>p7: contains_uri_authority_userinfo
+    p5->>p8: _machine_text
+    p5->>p9: validate_exact_page_coordinate
+    p9->>p10: _matches_directory_path
+    p9->>p11: _matches_directory_uri
+    p10->>p12: is_safe_page_id
+    p10->>p13: canonical_path
+    p11->>p14: mcp_uri
+    p5->>p15: _contains_uri_userinfo
+    p6->>p16: contains_control_character
+    p5->>p17: _looks_absolute_path
+    p5->>p18: ConceptIdentityError
+    p7->>p19: _uri_candidate_contains_authority_userinfo
+    p9->>p20: WikiSurfaceError
+    p13->>p21: _entry_for
+    p13->>p22: _validate_page_id
+    p12->>p23: is_portable_path_component
+    p0-->>p24: isinstance (src/llm_wiki_cli/services…ance.py:review_scope_hash)(semantic_hash, str)
+    p0-->>p25: sections.get(selected)
+    p0-->>p26: section.get (src/llm_wiki_cli/services…ance.py:review_scope_hash)('semantic_hash')
+    p1-->>p27: isinstance (src/llm_wiki_cli/services…nance.py:_section_locator)(value, str)
+    p2-->>p28: knowledge.extensions.get(SECTION_OWNERSHIP_EXTENSION_KEY)
+    p4-->>p29: isinstance (src/llm_wiki_cli/services…idence.py:is_valid_sha256)(value, str)
+    p1-->>p30: value.startswith (src/llm_wiki_cli/services…nance.py:_section_locator)('llm-wiki://')
 ```
 
 > Call sequence diagram shows 30 of 121 interactions; 91 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 9 of 35 (26 omitted); unresolved 10 of 39 (29 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 3 of 35 (32 omitted); unresolved 4 of 39 (35 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/concept_identity.py:validate_locator` | 9 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 6 |
+| `src/llm_wiki_cli/services/knowledge_governance.py:_section_locator` | 2 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/knowledge_governance.py:_section_locator` | 2 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 5 |
 | `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 10 | - | external | 6 |
 | `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 10 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 5 |
 | `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 10 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/concept_identity.py:_contains_uri_userinfo` | 25 | - | external | 1 |
 | `src/llm_wiki_cli/services/concept_identity.py:_looks_absolute_path` | 27 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/concept_identity.py:validate_locator` | 9 | [src/llm_wiki_cli/services/wiki_surface.py](../modules/wiki_surface.md) | internal | 1 |
 | `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 31 | - | external | 4 |
 > Omission summary shows 8 of 33 groups; 25 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.

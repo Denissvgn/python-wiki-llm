@@ -17,6 +17,7 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `.api_types` | `CalleesResult`, `CallersResult`, `ConceptResult`, `ConceptSectionsResult`, `ContextPayload`, `DataFlowForEntrypointResult`, `DependencyNeighborhoodResult`, `DocumentationQueryResult`, `DocumentationExportResult`, `DoctorResult`, `DoctorV3Result`, `DoctorV4Result`, `EvidenceExplanationResult`, `ExtractSourceResult`, `FlowForEntrypointResult`, `KnowledgeMode`, `KnowledgeCoverageResult`, `NativeInspectionResult`, `MarkdownContextResult`, `PagesForSymbolResult`, `RelatedConceptsResult`, `TypedGraphTraversalResult`, `WikiPage`, `WikiPageCounts`, `WikiPagesResult`, `SearchResult`, `MaintenanceQueueResult`, `MaintenanceStatusResult`, `MaintenanceAdoptionResult`, `MaintenanceAcknowledgmentResult`, `MaintenanceRecoveryResult` |
 | `.config` | `DEFAULT_WIKI_DIR`, `PathValidationError`, `validate_path`, `validate_source_root` |
 | `.services` | `analysis_compatibility`, `bootstrap_runtime`, `context_service`, `extraction_service`, `context_packet`, `wiki_surface` |
+| `.services.analysis_capture` | `analysis_input_status` |
 | `.services.bootstrap_service` | `BootstrapContractError`, `BootstrapExtractionError`, `BootstrapRequestError`, `BootstrapRequest`, `BootstrapResult`, `BootstrapServiceError` |
 | `.services.calibration` | `controller`, `host_broker`, `controller`, `host_broker`, `controller` |
 | `.services.calibration.controller` | `P0CalibrationAgentPacket`, `P0CalibrationAgentResult`, `P0CalibrationDispatchReceipt`, `P0CalibrationError`, `P0CalibrationIntegrityError`, `P0CalibrationRecoveryError`, `P0CalibrationRun`, `P0CalibrationSchemaError`, `P0CalibrationStatus`, `P0CalibrationTransitionError`, `P0CalibrationVerificationReport` |
@@ -46,7 +47,7 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `.services.native_inspection` | `NATIVE_INSPECTION_SCHEMA_VERSION`, `inspect_native_concept` |
 | `.services.search_discovery` | `DiscoveryError`, `MAX_DISCOVERY_BYTES` |
 | `.services.search_service` | `search_wiki` |
-| `.services.source_selection` | `SourceSelectionError` |
+| `.services.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `path_is_selected` |
 | `.services.source_snapshot` | `SourceSnapshotError` |
 | `.services.storage_receipts` | `expand_storage_receipt` |
 | `.services.task_compact` | `CompactTaskContext`, `render_compact_task_context`, `validate_compact_task_context`, `expand_compact_task_context` |
@@ -87,10 +88,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (6) |
-| Outbound | `src` (47) |
+| Inbound | `src` (7) |
+| Outbound | `src` (48) |
 
-> All 53 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 55 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -158,6 +159,7 @@ flowchart LR
 | `compare_context_packet_basis` | `(packet_bytes: bytes \| bytearray \| memoryview, expected_basis: Mapping[str, Any]) -> ContextBasisComparison` | `@_api_boundary` | Compare caller basis without upgrading it to a currentness claim. |
 | `reconcile_context_packet` | `(packet_bytes: bytes \| bytearray \| memoryview, src_dir: str = '.', *, wiki_dir: str = DEFAULT_WIKI_DIR, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None, comparison_policy: str \| None = None) -> ContextPacketReconciliation` | `@_api_boundary`, `@ac.comparison_entrypoint` | Reconcile packet facets against one fresh official read. |
 | `list_wiki_pages` | `(wiki_dir: str = DEFAULT_WIKI_DIR) -> WikiPagesResult` | `@_api_boundary` | Return registry-backed wiki page metadata without source extraction. |
+| `get_analysis_input_status` | `(*, limit: int = 20) -> dict[str, Any]` | `@_api_boundary` | Read bounded installed-provider census diagnostics, without source execution. |
 | `doctor` | `(src_dir: str = '.', *, wiki_dir: str = DEFAULT_WIKI_DIR, strict: bool = False, allow_external_src: bool = False, source_selection: str \| Path \| None = None, report_schema: Literal['v1', 'auto'] = 'auto', comparison_policy: str \| None = None) -> DoctorResult` | `@overload` | — |
 | `doctor` | `(src_dir: str = '.', *, wiki_dir: str = DEFAULT_WIKI_DIR, strict: bool = False, allow_external_src: bool = False, source_selection: str \| Path \| None = None, report_schema: Literal['v3'], comparison_policy: str \| None = None) -> DoctorV3Result` | `@overload` | — |
 | `doctor` | `(src_dir: str = '.', *, wiki_dir: str = DEFAULT_WIKI_DIR, strict: bool = False, allow_external_src: bool = False, source_selection: str \| Path \| None = None, report_schema: Literal['v4'], comparison_policy: str \| None = None) -> DoctorV4Result` | `@overload` | — |

@@ -1,6 +1,6 @@
 # HaskellExtractor
 
-**Location:** `src/llm_wiki_cli/extractors/haskell_extractor.py:37`
+**Location:** `src/llm_wiki_cli/extractors/haskell_extractor.py:38`
 **Kind:** Class
 **Bases:** —
 **Module:** [haskell_extractor](../modules/haskell_extractor.md)
@@ -8,6 +8,8 @@
 ## Description
 
 Extractor for Haskell source files using a prepared helper binary.
+
+Diagnostic requests use the shared native response validator and reset `last_path_outcomes` for each extraction. Parsed files carry source-relative inventory entries; syntax and read failures carry file scope without records. Missing helpers are unavailable at batch scope. A failed or invalid later chunk preserves completed diagnostic chunks and marks the remaining chunks unattempted; owning consumers still see the failed batch status.
 
 ## Attributes
 

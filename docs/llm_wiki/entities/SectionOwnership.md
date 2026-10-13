@@ -36,7 +36,8 @@ flowchart LR
     n6["_scoped_hashes (src/llm_wiki_cli/services/section_ownership.py)"]
     n7["_top_level_policy (src/llm_wiki_cli/services/section_ownership.py)"]
     n8["classify_section_ownership (src/llm_wiki_cli/services/section_ownership.py)"]
-    n9["src/llm_wiki_cli/services/sync_retained_links.py"]
+    n9["src/llm_wiki_cli/services/sync_generated_sections.py"]
+    n10["src/llm_wiki_cli/services/sync_retained_links.py"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
@@ -46,6 +47,7 @@ flowchart LR
     n7 --> n0
     n8 --> n0
     n9 --> n0
+    n10 --> n0
     click n0 "../modules/section_ownership.md"
     click n3 "../modules/maintenance_evidence.md"
     click n4 "../modules/section_ownership.md"
@@ -53,7 +55,8 @@ flowchart LR
     click n6 "../modules/section_ownership.md"
     click n7 "../modules/section_ownership.md"
     click n8 "../modules/section_ownership.md"
-    click n9 "../modules/sync_retained_links.md"
+    click n9 "../modules/sync_generated_sections.md"
+    click n10 "../modules/sync_retained_links.md"
 ```
 
 ### Summary
@@ -79,4 +82,5 @@ flowchart LR
 | `_scoped_hashes` | type_reference | [section_ownership](../modules/section_ownership.md) | — |
 | `_top_level_policy` | type_reference | [section_ownership](../modules/section_ownership.md) | — |
 | `classify_section_ownership` | type_reference | [section_ownership](../modules/section_ownership.md) | — |
+| `sync_generated_sections` | import | [sync_generated_sections](../modules/sync_generated_sections.md) | — |
 | `sync_retained_links` | import | [sync_retained_links](../modules/sync_retained_links.md) | — |

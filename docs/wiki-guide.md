@@ -28,12 +28,43 @@ canonical wiki surface registry:
 | `workflows/` | mixed | Detected or manually maintained cross-module flow pages. |
 | `guides/` | semantic | Agent-authored navigation, operator, and contributor guides. |
 | `flows/` | mixed | User-flow pages, one per detected entry point, with bounded generated Mermaid call and data-flow diagrams. |
-| `infrastructure/` | mixed | Dockerfile, Compose, GitHub Actions, Kubernetes, and targeted runtime/config YAML pages. |
+| `infrastructure/` | mixed | Dockerfile, Compose, CI, Kubernetes, deployment and targeted runtime/config YAML pages. |
 | `api-contracts.md` | mixed | Optional production HTTP contract inventory generated from static FastAPI declarations or an exported OpenAPI document; `## Notes` is semantic. |
 | `dependencies.md` | mixed | Optional internal and external dependency architecture page. |
 | `load-order.md` | mixed | Optional load-order, cycle, and startup-caveat architecture page. |
 
 ### Generated state and content ownership
+
+When a declaration disappears from a source module that remains in the selected
+inventory, ordinary sync retains its entity page as source history. The index
+lists it under **Retired source members**, and native reads carry the explicit
+`llm-wiki/source-retirement` qualification. Historical evidence stays historical;
+unknown provenance stays unknown. This source observation does not author a
+concept lifecycle change or a human review.
+
+Retained manifest ownership lets ordinary sync recover a previously unqualified
+removed-member page. Reappearance at the exact same source coordinate can revive
+its page and authored context; an unrelated owner cannot claim the occupied path.
+Ambiguous duplicate removal requires resolved ownership before page writes.
+Previously documented sources with no documentable inventory receive a narrow
+parser qualification: a valid empty module retains its module page and source
+commitment while its removed members become history. Python aliases, parse
+failures and unavailable coverage stop that transition. A stale Markdown header
+alone does not establish retirement authority.
+
+Retained empty modules remain explicit in the owning manifest. Lint and live
+native reads request those exact parser records, preserving the distinction
+between an empty module and a missing source. Analysis caches retain attributable
+outcomes; missing qualifications are rebuilt through the same scoped parser
+route. This does not add every otherwise-undocumented empty file to the wiki.
+
+Discovery-policy impact queries report Go, Rust and Haskell parse and read
+failures at the selected file boundary. Successful parsed records remain
+available alongside failed files; missing helpers, invalid helper responses,
+and process failures retain their separate coverage or batch qualifications.
+An omitted outcome remains unavailable and cannot establish an empty module or
+authorize source-member retirement. Ordinary extraction keeps its inventory
+format; these diagnostics are an opt-in analysis contract.
 
 The wiki also contains `.llm-wiki-manifest.json`, the operational source,
 evidence, and artifact-commit state used by incremental sync and strict
@@ -126,7 +157,7 @@ The [native knowledge tutorial](../examples/native-knowledge/README.md) shows
 a library consumer using shared inspection, coverage and qualified packets.
 
 The package has a small required Python runtime footprint. `PyYAML>=6` parses
-user-supplied OpenAPI YAML, and Python versions older than 3.11 use `tomli` for
+OpenAPI and infrastructure YAML, and Python versions older than 3.11 use `tomli` for
 TOML. FastAPI, Pydantic, and the target application are not runtime
 dependencies and are never imported for contract extraction. Optional language
 features use external tools when they are available on `PATH`.
@@ -140,10 +171,41 @@ features use external tools when they are available on `PATH`.
 | Go | bundled Go extractor using `go/ast` | prepared helper binary |
 | Rust | bundled Rust extractor using `syn` | prepared helper binary |
 | Haskell | bundled GHC parser helper for syntax-only inventory | prepared helper binary |
-| Docker / Compose | built-in parsers | none |
-| Runtime/config YAML | targeted built-in parsers | none |
+| Docker / Compose | Dockerfile parser / bounded YAML parser | included with the package |
+| Infrastructure / runtime YAML | structured format summaries | included with the package |
 | OpenAPI 3.0/3.1 JSON / YAML | stdlib `json` / PyYAML safe loader | `PyYAML>=6` (installed with the package) |
 | MCP server | official Python MCP SDK | `agent-wiki-cli[mcp]`, Python 3.10+ |
+
+### YAML inputs
+
+Infrastructure discovery recognizes GitHub Actions workflows and action metadata
+(composite, JavaScript and Docker actions), GitLab CI, CircleCI, Azure Pipelines,
+Kubernetes manifests, Kustomize configurations, Helm `Chart.yaml` metadata and
+Ansible playbooks. Runtime summaries cover Prometheus configuration and rules,
+Grafana provisioning, Promtail, Loki, Envoy, Buf and service-local model settings.
+Kubernetes resources can live outside `k8s/`; multi-document streams and `List`
+resources are summarized, including CronJob container settings.
+
+Named format detection requires a matching path and recognizable structure:
+
+| Format | Discovery path |
+|---|---|
+| Action metadata | `action.yml` or `action.yaml` |
+| GitLab CI | `.gitlab-ci.yml`/`.yaml` or YAML below `.gitlab/ci/` |
+| CircleCI | `.circleci/config.yml` or `.circleci/config.yaml` |
+| Azure Pipelines | `azure-pipelines*.yml` or `azure-pipelines*.yaml` |
+| Kustomize | `kustomization.yml`, `kustomization.yaml` or `Kustomization` |
+| Helm chart metadata | `Chart.yaml` or `Chart.yml` |
+| Ansible playbooks | `playbook.yml`/`.yaml`, `site.yml`/`.yaml` or YAML below `playbooks/` |
+
+Compose and infrastructure YAML accept block and flow collections, quoted keys,
+comments, alternate indentation, multiline scalars, anchors, aliases and merge
+keys. Scalar text is preserved, including GitHub's `on` key. Parsing is bounded;
+malformed YAML, duplicate keys, recursive aliases and unsupported tags produce
+diagnostics instead of guessed summaries. Arbitrary YAML, Helm templates and
+unrecognized schemas remain unsupported. Named summaries describe structure,
+not schema validity, evaluated expressions or deployment behavior. Action input
+and output names are summarized without copying their defaults or values.
 
 TypeScript/JavaScript, Go, Rust, and Haskell helper setup is explicit; prepare
 helper dependencies and binaries with `llm-wiki prepare-extractors`. Lint, CI,
@@ -153,7 +215,7 @@ and extract never run `npm install`, `go build`, `go run`, `cargo build`,
 Source discovery honors `.gitignore` before extractors run. Unescaped trailing
 ASCII spaces in ignore entries are ignored, while `\ ` preserves a literal
 final space. A root, unanchored `lib/` rule is treated as a generic build-output
-pattern for TypeScript projects, so `.ts`, `.tsx`, `.js`, and `.jsx` files under
+pattern for TypeScript projects, so `.ts`, `.tsx`, `.js`, `.jsx`, `.mjs`, and `.cjs` files under
 `src/lib/` remain first-party source; top-level `lib/`, excluded
 dependency/build directories, and explicit nested `.gitignore` rules still stay
 excluded. Generated agent
@@ -238,6 +300,10 @@ CPP branches. Source coordinates then refer to the supplied snapshot.
 | `copilot` | `.github/copilot-instructions.md` | explicit sync or reviewed IDE prompt |
 | `cursor` | `.cursorrules` | explicit sync or reviewed IDE prompt |
 | `generic` | `AGENTS.md` | explicit sync or reviewed IDE prompt |
+
+For package installation, project initialization, managed instruction upgrades,
+and the `--no-skills` inline fallback, follow
+[workflow installation in another project](native-agent-workflow.md#install-the-workflow-in-another-project).
 
 Use explicit `sync` and `lint` commands with any agent. `generate-prompt`
 creates a prompt for review when needed. LLM Wiki does not install Git hooks. The explicit

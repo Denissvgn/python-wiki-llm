@@ -30,6 +30,10 @@ const srcDir = path.resolve(getArg("--src-dir", "."));
 const srcDirPosix = srcDir.split(path.sep).join("/");
 const onlyFilesArg = getArg("--only-files", null);
 const deep = args.includes("--deep");
+const diagnostics = args.includes("--diagnostics-v1");
+const includeEmpty = diagnostics && args.includes("--include-empty-v1");
+const retainedEmptyFiles = new Set(diagnostics ? JSON.parse(getArg("--retain-empty-files-v1", "[]")) : []);
+const outcomes = {};
 const extensionsArg = getArg("--extensions", ".ts,.tsx");
 const extensions = extensionsArg.split(",").map((e) => e.trim());
 
@@ -148,6 +152,7 @@ for (const f of filesToProcess) {
   try {
     project.addSourceFileAtPath(f);
   } catch (err) {
+    outcomes[relativePathFromSrc(f)] = { extraction_state: "failed", reason: "source-load-failed", failure_scope: "file" };
     process.stderr.write(`Warning: could not add ${f}: ${err.message}\n`);
   }
 }
@@ -453,8 +458,87 @@ function extractImportRecords(sourceFile) {
         type: "namespace",
       });
     }
+    if (!defaultImport && imp.getNamedImports().length === 0 && !ns) {
+      imports.push({ module: moduleSpecifier, name: "", alias: null, type: "side-effect" });
+    }
   }
-  return imports;
+  const gaps = [];
+  for (const call of sourceFile.getDescendantsOfKind(SyntaxKind.CallExpression)) {
+    const expression = call.getExpression();
+    const isDynamicImport = expression.getKind() === SyntaxKind.ImportKeyword;
+    const isRequire = expression.getKind() === SyntaxKind.Identifier && expression.getText() === "require";
+    if (!isRequire && !isDynamicImport) continue;
+    const line = call.getStartLineNumber();
+    if (isRequire && requireIsShadowed(call)) {
+      gaps.push({ line, reason: "shadowed-call-not-module-import" });
+      continue;
+    }
+    const argument = call.getArguments()[0];
+    const literal = call.getArguments().length === 1 && argument?.getKind() === SyntaxKind.StringLiteral;
+    const deferred = call.getAncestors().some((node) => [
+      SyntaxKind.FunctionDeclaration, SyntaxKind.FunctionExpression, SyntaxKind.ArrowFunction,
+      SyntaxKind.MethodDeclaration, SyntaxKind.Constructor, SyntaxKind.GetAccessor, SyntaxKind.SetAccessor,
+    ].includes(node.getKind()));
+    if (isRequire && literal) {
+      imports.push({ module: argument.getLiteralValue(), name: "", alias: null, type: "require", line,
+        ...(deferred ? { scope: "deferred" } : {}) });
+    } else {
+      imports.push({ module: "", name: "", type: isDynamicImport ? "dynamic-import" : "require",
+        line, resolution: "unresolved", reason: isDynamicImport ? "dynamic-import" : "dynamic-require",
+        ...(deferred ? { scope: "deferred" } : {}) });
+    }
+  }
+  for (const declaration of sourceFile.getDescendantsOfKind(SyntaxKind.VariableDeclaration)) {
+    if (declaration.getInitializer()?.getText() === "require") {
+      gaps.push({ line: declaration.getStartLineNumber(), reason: "indirect-require-unsupported" });
+    }
+  }
+  return { imports, gaps };
+}
+
+function bindingNames(node) {
+  if (!node) return [];
+  if (node.getKind() === SyntaxKind.Identifier) return [node.getText()];
+  return (node.getElements?.() ?? []).flatMap((element) => bindingNames(element.getNameNode?.()));
+}
+
+function enclosingFunction(node) {
+  return node.getFirstAncestor((ancestor) => [SyntaxKind.FunctionDeclaration, SyntaxKind.FunctionExpression,
+    SyntaxKind.ArrowFunction, SyntaxKind.MethodDeclaration, SyntaxKind.Constructor,
+    SyntaxKind.GetAccessor, SyntaxKind.SetAccessor].includes(ancestor.getKind()));
+}
+
+function requireIsShadowed(call) {
+  // JavaScript files may not participate in the TypeScript type checker. Use
+  // conservative lexical bindings rather than assuming an absent symbol is global.
+  const scopeKinds = [SyntaxKind.SourceFile, SyntaxKind.Block, SyntaxKind.CatchClause,
+    SyntaxKind.ForStatement, SyntaxKind.ForInStatement, SyntaxKind.ForOfStatement];
+  const source = call.getSourceFile();
+  for (const declaration of source.getDescendantsOfKind(SyntaxKind.VariableDeclaration)) {
+    if (declaration.getFirstAncestorByKind(SyntaxKind.VariableDeclarationList)?.getDeclarationKind() === "var"
+      && enclosingFunction(declaration) === enclosingFunction(call)
+      && bindingNames(declaration.getNameNode()).includes("require")) return true;
+  }
+  if (source.getDescendantsOfKind(SyntaxKind.BinaryExpression).some((assignment) =>
+    assignment.getLeft().getText() === "require" && ["=", "||=", "&&=", "??="].includes(assignment.getOperatorToken().getText()))) return true;
+  for (const scope of call.getAncestors()) {
+    if (scope.getParameters?.().some((parameter) => bindingNames(parameter.getNameNode()).includes("require"))) return true;
+    if (scope.getKind() === SyntaxKind.FunctionExpression && scope.getName?.() === "require") return true;
+    if (scope.getKind() === SyntaxKind.CatchClause && bindingNames(scope.getVariableDeclaration()?.getNameNode()).includes("require")) return true;
+    if (!scopeKinds.includes(scope.getKind())) continue;
+    const bindings = scope.getDescendantsOfKind(SyntaxKind.VariableDeclaration).concat(
+      scope.getDescendantsOfKind(SyntaxKind.FunctionDeclaration), scope.getDescendantsOfKind(SyntaxKind.ClassDeclaration),
+      scope.getDescendantsOfKind(SyntaxKind.ImportSpecifier), scope.getDescendantsOfKind(SyntaxKind.ImportClause),
+      scope.getDescendantsOfKind(SyntaxKind.NamespaceImport),
+    );
+    for (const binding of bindings) {
+      const owner = binding.getFirstAncestor((node) => scopeKinds.includes(node.getKind()));
+      if (owner !== scope) continue;
+      const name = binding.getAliasNode?.() ?? binding.getNameNode?.() ?? binding.getDefaultImport?.();
+      if (bindingNames(name).includes("require")) return true;
+    }
+  }
+  return false;
 }
 
 function extractModuleDocstring(sourceFile) {
@@ -477,7 +561,7 @@ function hasDocumentableModuleSignals(fileEntry, moduleDocstring = "") {
 }
 
 function isPlainJavaScriptFile(filePath) {
-  return path.extname(filePath) === ".js";
+  return [".js", ".mjs", ".cjs"].includes(path.extname(filePath));
 }
 
 function shouldIncludeTopLevelFunction(fn, filePath, commonJs) {
@@ -649,8 +733,9 @@ function extractFile(sourceFile) {
   }
 
   // ── Module-level signals ───────────────────────────────────────────────────
-  const imports = extractImportRecords(sourceFile);
+  const { imports, gaps } = extractImportRecords(sourceFile);
   if (imports.length > 0) fileEntry.imports = imports;
+  if (gaps.length > 0) fileEntry.import_gaps = gaps;
 
   const moduleDocstring = extractModuleDocstring(sourceFile);
 
@@ -668,12 +753,14 @@ function extractFile(sourceFile) {
   }
 
   // Only include files that have something worth tracking
-  if (
+  const documentable = (
     fileEntry.classes.length > 0 ||
     fileEntry.functions.length > 0 ||
-    hasDocumentableModuleSignals(fileEntry, moduleDocstring)
-  ) {
-    return [filePath, fileEntry];
+    hasDocumentableModuleSignals(fileEntry, moduleDocstring) || fileEntry.import_gaps?.length
+  );
+  if (documentable || includeEmpty || retainedEmptyFiles.has(relativePathFromSrc(filePath))) {
+    if (!documentable) fileEntry.empty_module = true;
+    return [filePath, fileEntry, Boolean(documentable)];
   }
   if (deep) {
     process.stderr.write(
@@ -688,6 +775,7 @@ function extractFile(sourceFile) {
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 const inventory = {};
+const requestedFiles = new Set(filesToProcess.map((f) => f.split(path.sep).join("/")));
 
 for (const sourceFile of project.getSourceFiles()) {
   // Skip files outside srcDir (e.g. from lib.d.ts loaded via tsconfig).
@@ -695,17 +783,30 @@ for (const sourceFile of project.getSourceFiles()) {
   // ts-morph always returns forward-slash paths, so compare against srcDirPosix.
   const fp = sourceFile.getFilePath();
   if (!fp.startsWith(srcDirPosix + "/") && fp !== srcDirPosix) continue;
+  if (onlyFilesArg && !requestedFiles.has(fp)) continue;
   if (isExcluded(fp)) continue;
 
   try {
+    if (diagnostics && sourceFile.compilerNode.parseDiagnostics?.length) {
+      outcomes[relativePathFromSrc(fp)] = { extraction_state: "failed", reason: "syntax-error", failure_scope: "file" };
+      continue;
+    }
     const result = extractFile(sourceFile);
     if (result) {
-      const [filePath, fileEntry] = result;
+      const [filePath, fileEntry, documentable] = result;
       inventory[filePath] = fileEntry;
+      outcomes[relativePathFromSrc(fp)] = documentable
+        ? { extraction_state: "extracted", reason: "inventory-entry" }
+        : { extraction_state: "extracted", reason: "inventory-entry", retained_empty: true };
+    } else {
+      outcomes[relativePathFromSrc(fp)] = { extraction_state: "no-documentable-content", reason: "no-documentable-content" };
     }
   } catch (err) {
+    outcomes[relativePathFromSrc(fp)] = { extraction_state: "failed", reason: "extraction-error", failure_scope: "file" };
     process.stderr.write(`Warning: failed to extract ${fp}: ${err.message}\n`);
   }
 }
 
-process.stdout.write(JSON.stringify(inventory));
+process.stdout.write(JSON.stringify(diagnostics
+  ? { schema_version: "llm-wiki-typescript-diagnostics/v1", inventory, outcomes }
+  : inventory));

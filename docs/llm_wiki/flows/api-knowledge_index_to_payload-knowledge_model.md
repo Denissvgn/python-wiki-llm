@@ -28,79 +28,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as knowledge_index_to_payload
-    participant p1 as isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload)
-    participant p2 as TypeError (src/llm_wiki_cli/services…nowledge_index_to_payload)
-    participant p3 as _emit_extensions
-    participant p4 as _bundle_to_payload
-    participant p5 as _concept_to_payload
-    participant p6 as _relationship_to_payload
+    participant p1 as _emit_extensions
+    participant p2 as _bundle_to_payload
+    participant p3 as _concept_to_payload
+    participant p4 as _relationship_to_payload
+    participant p5 as parse_knowledge_index
+    participant p6 as _knowledge_index_to_payload_unchecked
     participant p7 as KnowledgeModelError
-    participant p8 as parse_knowledge_index
-    participant p9 as _knowledge_index_to_payload_unchecked
-    participant p10 as isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions)
-    participant p11 as _wire_enum
-    participant p12 as _record
-    participant p13 as _parse_extensions
-    participant p14 as _string
-    participant p15 as sorted (src/llm_wiki_cli/services…ndex_to_payload_unchecked)
-    participant p16 as _basis_to_payload
-    participant p17 as _relationship_target_to_payload
-    participant p18 as _parse_bundle
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload)(model, KnowledgeIndex)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…nowledge_index_to_payload)('model must be a KnowledgeIndex')
-    p0->>p3: _emit_extensions
-    p0->>p4: _bundle_to_payload
-    p0->>p5: _concept_to_payload
-    p0->>p6: _relationship_to_payload
+    participant p8 as _record
+    participant p9 as _parse_extensions
+    participant p10 as _basis_to_payload
+    participant p11 as _relationship_target_to_payload
+    participant p12 as _parse_bundle
+    participant p13 as _component_to_payload
+    participant p14 as _relationship_evidence_to_payload
+    participant p15 as _actor_to_payload
+    participant p16 as _parse_concept
+    participant p17 as _parse_relationship
+    participant p18 as _document_to_payload
+    participant p19 as _validated_reserved_extensions
+    participant p20 as _validate_index_references
+    participant p21 as validate_implementation_collection
+    participant p22 as validate_maintenance_projection
+    participant p23 as validate_governance_projection
+    participant p24 as _object (src/llm_wiki_cli/services/knowledge_model.py)
+    participant p25 as _parse_document
+    participant p26 as validate_reuse_commitment
+    participant p27 as _parse_repository
+    participant p28 as _locator (src/llm_wiki_cli/services/knowledge_model.py)
+    participant p29 as isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload)
+    participant p30 as validated.get
+    p0->>p1: _emit_extensions
+    p0->>p2: _bundle_to_payload
+    p0->>p3: _concept_to_payload
+    p0->>p4: _relationship_to_payload
+    p0->>p5: parse_knowledge_index
+    p0->>p6: _knowledge_index_to_payload_unchecked
     p0->>p7: KnowledgeModelError
-    p0->>p8: parse_knowledge_index
-    p0->>p9: _knowledge_index_to_payload_unchecked
-    p3-->>p10: isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions)(extensions, FrozenDict)
-    p4->>p3: _emit_extensions
-    p5->>p11: _wire_enum
-    p6->>p11: _wire_enum
-    p8->>p12: _record
-    p9->>p4: _bundle_to_payload
-    p3->>p13: _parse_extensions
-    p4->>p11: _wire_enum
-    p5->>p11: _wire_enum
-    p6->>p3: _emit_extensions
-    p8->>p14: _string
-    p9-->>p15: sorted (src/llm_wiki_cli/services…ndex_to_payload_unchecked)(producer[...], key=...)
-    p4->>p3: _emit_extensions
-    p5->>p16: _basis_to_payload
-    p6->>p17: _relationship_target_to_payload
-    p8->>p7: KnowledgeModelError
-    p9-->>p15: sorted (src/llm_wiki_cli/services…ndex_to_payload_unchecked)(producer[...], key=...)
-    p4->>p3: _emit_extensions
-    p5->>p3: _emit_extensions
-    p6->>p11: _wire_enum
-    p8->>p18: _parse_bundle
+    p5->>p8: _record
+    p1->>p9: _parse_extensions
+    p3->>p10: _basis_to_payload
+    p4->>p11: _relationship_target_to_payload
+    p5->>p12: _parse_bundle
+    p2->>p13: _component_to_payload
+    p4->>p14: _relationship_evidence_to_payload
+    p3->>p15: _actor_to_payload
+    p5->>p16: _parse_concept
+    p5->>p17: _parse_relationship
+    p3->>p18: _document_to_payload
+    p5->>p19: _validated_reserved_extensions
+    p5->>p20: _validate_index_references
+    p5->>p21: validate_implementation_collection
+    p5->>p22: validate_maintenance_projection
+    p5->>p23: validate_governance_projection
+    p9->>p24: _object (src/llm_wiki_cli/services/knowledge_model.py)
+    p16->>p25: _parse_document
+    p19->>p26: validate_reuse_commitment
+    p12->>p27: _parse_repository
+    p16->>p28: _locator (src/llm_wiki_cli/services/knowledge_model.py)
+    p0-->>p29: isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload)(model, KnowledgeIndex)
+    p21-->>p30: validated.get(IMPLEMENTATION_KEY)
 ```
 
 > Call sequence diagram shows 30 of 1781 interactions; 1751 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 5 of 479 (474 omitted); unresolved 0 of 308 (308 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 479 (478 omitted); unresolved 1 of 308 (307 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_model.py:_parse_extensions` | 6 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 7 |
+| `src/llm_wiki_cli/services/knowledge_model.py:knowledge_index_to_payload` | 1 | - | external | 1 |
+| `src/llm_wiki_cli/services/knowledge_model.py:_emit_extensions` | 4 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_object` | 7 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_object` | 7 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_mapping` | 9 | - | external | 2 |
 | `src/llm_wiki_cli/services/validation.py:require_mapping` | 9 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_object` | 7 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 3 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_parse_extensions` | 6 | - | external | 1 |
-| `src/llm_wiki_cli/services/knowledge_model.py:_parse_extensions` | 6 | - | unresolved | 1 |
-> Omission summary shows 8 of 433 groups; 425 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 431 groups; 423 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

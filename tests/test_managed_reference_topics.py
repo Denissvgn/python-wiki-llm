@@ -14,6 +14,7 @@ LEADING_CONTENTS_BLOCK = re.compile(
 )
 
 TOPIC_HEADINGS = {
+    "development-workflow.md": "Development workflow",
     "maintenance.md": "Maintenance and validation",
     "surfaces-naming.md": "Canonical surfaces and naming",
     "repository-handoff.md": "Repository handoff",

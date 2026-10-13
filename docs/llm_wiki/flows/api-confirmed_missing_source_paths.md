@@ -15,7 +15,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -24,79 +24,82 @@ sequenceDiagram
     participant p1 as confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py)
     participant p2 as ContextPacketSourceMutationError
     participant p3 as ContextPacketPathPolicyError
-    participant p4 as str (src/llm_wiki_cli/services…rmed_missing_source_paths)
-    participant p5 as isinstance (src/llm_wiki_cli/services…rmed_missing_source_paths)
-    participant p6 as TypeError
-    participant p7 as GitIgnoreMatcher
-    participant p8 as list
-    participant p9 as set
-    participant p10 as _confirmed_source_path
-    participant p11 as snapshot.path_is_effectively_selected
-    participant p12 as EXCLUDED_DIRS.isdisjoint
-    participant p13 as Path (src/llm_wiki_cli/services…rmed_missing_source_paths)
-    participant p14 as is_agent_worktree_path
-    participant p15 as is_bundled_helper_implementation_path
-    participant p16 as GitIgnoreMatcher.is_ignored
-    participant p17 as _missing_source_path_no_follow
-    participant p18 as missing.add
-    participant p19 as frozenset
-    participant p20 as SourceSnapshotError
-    participant p21 as _normalized_rel_parts
-    participant p22 as _normalize_path_text
-    participant p23 as GitIgnoreMatcher.last_matching_rule
-    participant p24 as ExitStack
-    participant p25 as require_repository_relative_path
-    participant p26 as len (src/llm_wiki_cli/config.py:is_agent_worktree_path)
-    participant p27 as stack.enter_context
+    participant p4 as _confirmed_source_path
+    participant p5 as is_agent_worktree_path
+    participant p6 as is_bundled_helper_implementation_path
+    participant p7 as GitIgnoreMatcher.is_ignored
+    participant p8 as _missing_source_path_no_follow
+    participant p9 as GitIgnoreMatcher.last_matching_rule
+    participant p10 as require_repository_relative_path
+    participant p11 as guard_windows_directory_chain
+    participant p12 as _is_absolute_path_text
+    participant p13 as _path_text_equal
+    participant p14 as _rule_matches
+    participant p15 as _open_windows_directory_guard
+    participant p16 as require_portable_relative_path
+    participant p17 as create_private_windows_directory
+    participant p18 as _default_path_error
+    participant p19 as _private_windows_security_attributes
+    participant p20 as _check_path_collision
+    participant p21 as move_windows_path_write_through
+    participant p22 as _verify_windows_handle_restrictive_dacl
+    participant p23 as require_portable_path_component
+    participant p24 as GitIgnoreMatcher
+    participant p25 as SourceSnapshotError
+    participant p26 as _normalized_rel_parts
+    participant p27 as _normalize_path_text
+    participant p28 as _is_windows_absolute_path_text
+    participant p29 as str (src/llm_wiki_cli/services…rmed_missing_source_paths)
+    participant p30 as snapshot.path_is_effectively_selected
     p0->>p1: confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py)
     p0->>p2: ContextPacketSourceMutationError
     p0->>p3: ContextPacketPathPolicyError
-    p0-->>p4: str (src/llm_wiki_cli/services…rmed_missing_source_paths)(exc)
-    p1-->>p5: isinstance (src/llm_wiki_cli/services…rmed_missing_source_paths)(snapshot, SourceSnapshot)
-    p1-->>p6: TypeError('missing-source confirmation requires a SourceSnapshot')
-    p1-->>p5: isinstance (src/llm_wiki_cli/services…rmed_missing_source_paths)(requested_paths, (...))
-    p1-->>p6: TypeError('requested_paths must be a collection of source paths')
-    p1->>p7: GitIgnoreMatcher
-    p1-->>p8: list(snapshot.gitignore_rules)
-    p1-->>p9: set
-    p1->>p10: _confirmed_source_path
-    p1-->>p11: snapshot.path_is_effectively_selected(path)
-    p1-->>p12: EXCLUDED_DIRS.isdisjoint(...)
-    p1-->>p13: Path (src/llm_wiki_cli/services…rmed_missing_source_paths)(path)
-    p1->>p14: is_agent_worktree_path
-    p1->>p15: is_bundled_helper_implementation_path
-    p1->>p16: GitIgnoreMatcher.is_ignored
-    p1->>p17: _missing_source_path_no_follow
-    p1-->>p18: missing.add(path)
-    p1-->>p19: frozenset(missing)
-    p10->>p20: SourceSnapshotError
-    p14->>p21: _normalized_rel_parts
-    p15->>p22: _normalize_path_text
-    p16->>p23: GitIgnoreMatcher.last_matching_rule
-    p17-->>p24: ExitStack
-    p10->>p25: require_repository_relative_path
-    p14-->>p26: len (src/llm_wiki_cli/config.py:is_agent_worktree_path)(pattern)
-    p15->>p22: _normalize_path_text
-    p17-->>p27: stack.enter_context(guard_windows_directory_chain(...))
+    p1->>p4: _confirmed_source_path
+    p1->>p5: is_agent_worktree_path
+    p1->>p6: is_bundled_helper_implementation_path
+    p1->>p7: GitIgnoreMatcher.is_ignored
+    p1->>p8: _missing_source_path_no_follow
+    p7->>p9: GitIgnoreMatcher.last_matching_rule
+    p4->>p10: require_repository_relative_path
+    p8->>p11: guard_windows_directory_chain
+    p6->>p12: _is_absolute_path_text
+    p6->>p13: _path_text_equal
+    p9->>p14: _rule_matches
+    p11->>p15: _open_windows_directory_guard
+    p10->>p16: require_portable_relative_path
+    p11->>p17: create_private_windows_directory
+    p16->>p18: _default_path_error
+    p17->>p19: _private_windows_security_attributes
+    p16->>p20: _check_path_collision
+    p17->>p21: move_windows_path_write_through
+    p15->>p22: _verify_windows_handle_restrictive_dacl
+    p16->>p23: require_portable_path_component
+    p1->>p24: GitIgnoreMatcher
+    p4->>p25: SourceSnapshotError
+    p5->>p26: _normalized_rel_parts
+    p6->>p27: _normalize_path_text
+    p6->>p28: _is_windows_absolute_path_text
+    p0-->>p29: str (src/llm_wiki_cli/services…rmed_missing_source_paths)(exc)
+    p1-->>p30: snapshot.path_is_effectively_selected(path)
 ```
 
 > Call sequence diagram shows 30 of 393 interactions; 363 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 11 of 188 (177 omitted); unresolved 4 of 95 (91 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 188 (187 omitted); unresolved 1 of 95 (94 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/source_snapshot.py:confirmed_missing_source_paths` | 2 | - | external | 8 |
 | `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 12 | - | external | 7 |
-| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 12 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 4 |
+| `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 12 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 3 |
 | `src/llm_wiki_cli/services/validation.py:_syntax_key` | 14 | - | external | 6 |
 | `src/llm_wiki_cli/services/validation.py:_known_syntax` | 21 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 12 | - | unresolved | 5 |
 | `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 35 | - | external | 4 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 35 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 13 |
 | `src/llm_wiki_cli/services/validation.py:_default_path_error` | 37 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-> Omission summary shows 8 of 67 groups; 59 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 68 groups; 60 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -162,32 +165,32 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet.py) | confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | 5007 | `confirm_missing(snapshot, requested_paths)` |
-| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | isinstance (src/llm_wiki_cli/services…rmed_missing_source_paths) | 1900 | `isinstance(snapshot, SourceSnapshot)` |
-| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | TypeError | 1901 | `TypeError('missing-source confirmation requires a SourceSnapshot')` |
-| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | isinstance (src/llm_wiki_cli/services…rmed_missing_source_paths) | 1902 | `isinstance(requested_paths, (...))` |
-| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | TypeError | 1903 | `TypeError('requested_paths must be a collection of source paths')` |
-| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | GitIgnoreMatcher | 1904 | `GitIgnoreMatcher(list(...))` |
-| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | list | 1904 | `list(snapshot.gitignore_rules)` |
-| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | set | 1905 | `set(data not statically known)` |
-| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | _confirmed_source_path | 1907 | `_confirmed_source_path(path)` |
-| _confirmed_source_path | SourceSnapshotError | 1883 | `SourceSnapshotError('source_path', 'must be a portable relative source path')` |
-| _confirmed_source_path | require_repository_relative_path | 1884 | `require_repository_relative_path(value, text_error=error, posix_error=error, normalized_error=error, absolute_error=error, separator_error=error, control_error=error, reject_delete_character=True, portability_error=error)` |
+| confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet.py) | confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | 5011 | `confirm_missing(snapshot, requested_paths)` |
+| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | isinstance (src/llm_wiki_cli/services…rmed_missing_source_paths) | 1916 | `isinstance(snapshot, SourceSnapshot)` |
+| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | TypeError | 1917 | `TypeError('missing-source confirmation requires a SourceSnapshot')` |
+| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | isinstance (src/llm_wiki_cli/services…rmed_missing_source_paths) | 1918 | `isinstance(requested_paths, (...))` |
+| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | TypeError | 1919 | `TypeError('requested_paths must be a collection of source paths')` |
+| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | GitIgnoreMatcher | 1920 | `GitIgnoreMatcher(list(...))` |
+| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | list | 1920 | `list(snapshot.gitignore_rules)` |
+| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | set | 1921 | `set(data not statically known)` |
+| confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | _confirmed_source_path | 1923 | `_confirmed_source_path(path)` |
+| _confirmed_source_path | SourceSnapshotError | 1899 | `SourceSnapshotError('source_path', 'must be a portable relative source path')` |
+| _confirmed_source_path | require_repository_relative_path | 1900 | `require_repository_relative_path(value, text_error=error, posix_error=error, normalized_error=error, absolute_error=error, separator_error=error, control_error=error, reject_delete_character=True, portability_error=error)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `missing.add` | `confirmed_missing_source_paths` | 1919 |
+| mutation | `missing.add` | `confirmed_missing_source_paths` | 1935 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `confirmed_missing_source_paths` | `isinstance` | 1900 |
-| external_call | `confirmed_missing_source_paths` | `TypeError` | 1901 |
-| external_call | `confirmed_missing_source_paths` | `isinstance` | 1902 |
-| external_call | `confirmed_missing_source_paths` | `TypeError` | 1903 |
+| external_call | `confirmed_missing_source_paths` | `isinstance` | 1916 |
+| external_call | `confirmed_missing_source_paths` | `TypeError` | 1917 |
+| external_call | `confirmed_missing_source_paths` | `isinstance` | 1918 |
+| external_call | `confirmed_missing_source_paths` | `TypeError` | 1919 |
 | step_limit | `confirmed_missing_source_paths` | `first 12 steps` | 0 |
 | truncated_flow | `confirmed_missing_source_paths` | `depth limit` | 0 |
 

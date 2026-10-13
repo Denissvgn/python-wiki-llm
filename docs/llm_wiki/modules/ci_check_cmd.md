@@ -4,10 +4,14 @@
 
 ## Description
 
-Runs the lint service in strict mode for automation. The command validates
-source and wiki paths, emits the selected console format, always writes a
-Markdown report, records best-effort local metrics, and returns a failing exit
-status when blocking wiki issues remain.
+Runs the lint service in strict mode for automation. Unsupported report-schema
+values are rejected before source-path validation, cache preparation or report
+destination selection; the diagnostic lists `auto`, `v1`, `v2`, `v3` and `v4`.
+The command emits the selected console format and attempts a Markdown report
+when enabled, using the default or explicit authorized destination. `--no-report`
+disables that artifact while retaining checks. Blocking wiki findings and
+required explicit report-write failures return nonzero; local metrics remain
+best effort.
 
 ## Imports
 

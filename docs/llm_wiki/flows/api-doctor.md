@@ -2,7 +2,7 @@
 
 **Entry point:** `doctor` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), and 44 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [common](../modules/common.md), and 47 more
 
 **Complete modules touched:**
 
@@ -44,6 +44,7 @@
 - [python_implementation](../modules/python_implementation.md)
 - [runtime_output](../modules/runtime_output.md)
 - [services_dependencies](../modules/services_dependencies.md)
+- [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [sync_analysis](../modules/sync_analysis.md)
@@ -54,84 +55,96 @@
 - [wiki_lifecycle](../modules/wiki_lifecycle.md)
 - [wiki_media](../modules/wiki_media.md)
 - [wiki_surface](../modules/wiki_surface.md)
+- [yaml_formats](../modules/yaml_formats.md)
+- [yaml_syntax](../modules/yaml_syntax.md)
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as doctor
     participant p1 as build_doctor_report
-    participant p2 as cast (src/llm_wiki_cli/api.py:doctor)
-    participant p3 as report.to_payload
-    participant p4 as isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report)
-    participant p5 as TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report)
-    participant p6 as ValueError (src/llm_wiki_cli/services…ce.py:build_doctor_report)
-    participant p7 as str (src/llm_wiki_cli/services…ce.py:build_doctor_report)
-    participant p8 as validate_path
-    participant p9 as validate_source_root
-    participant p10 as build_report
-    participant p11 as report_schema
-    participant p12 as lint.health_details.to_payload
-    participant p13 as compose_doctor_report
-    participant p14 as PathValidationError
-    participant p15 as isinstance (src/llm_wiki_cli/services…t_service.py:build_report)
-    participant p16 as bool (src/llm_wiki_cli/services…tibility.py:report_schema)
-    participant p17 as isinstance (src/llm_wiki_cli/services….py:compose_doctor_report)
-    participant p18 as (…).resolve (src/llm_wiki_cli/config.py:validate_path)
-    participant p19 as Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)
-    participant p20 as TypeError (src/llm_wiki_cli/services…t_service.py:build_report)
+    participant p2 as validate_path
+    participant p3 as validate_source_root
+    participant p4 as build_report
+    participant p5 as compose_doctor_report
+    participant p6 as _new_lint_report
+    participant p7 as _preflight_lint_inputs
+    participant p8 as _availability_section
+    participant p9 as _finalize_lint_report
+    participant p10 as _freshness_section
+    participant p11 as prepare_cache_options
+    participant p12 as _collect_lint_inputs
+    participant p13 as _governance_section
+    participant p14 as _drift_section
+    participant p15 as _run_report_checks
+    participant p16 as _verification_section
+    participant p17 as windows_current_user_sid
+    participant p18 as resolve_team_policy
+    participant p19 as capture_health_details
+    participant p20 as _knowledge_declared
+    participant p21 as _current_windows_user_sid
+    participant p22 as _profile_phase
+    participant p23 as _coerce_plugin_issue
+    participant p24 as resolve_inventory_cache_path
+    participant p25 as _check_unsupported_source_diagnostics
+    participant p26 as knowledge_freshness_disclosure
+    participant p27 as team_config_issue
+    participant p28 as _check_broken_links
+    participant p29 as cast (src/llm_wiki_cli/api.py:doctor)
+    participant p30 as report.to_payload
     p0->>p1: build_doctor_report
-    p0-->>p2: cast (src/llm_wiki_cli/api.py:doctor)(DoctorResult, report.to_payload(...))
-    p0-->>p3: report.to_payload(**=...)
-    p1-->>p4: isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report)(strict, bool)
-    p1-->>p5: TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report)('strict must be a boolean')
-    p1-->>p6: ValueError (src/llm_wiki_cli/services…ce.py:build_doctor_report)('report_schema must be auto, v1, v3 or v4')
-    p1-->>p4: isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report)(allow_external_src, bool)
-    p1-->>p5: TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report)('allow_external_src must be a boolean')
-    p1-->>p4: isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report)(parallel_jobs, bool)
-    p1-->>p4: isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report)(parallel_jobs, int)
-    p1-->>p5: TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report)('parallel_jobs must be an integer')
-    p1-->>p6: ValueError (src/llm_wiki_cli/services…ce.py:build_doctor_report)('parallel_jobs must be greater than zero')
-    p1-->>p7: str (src/llm_wiki_cli/services…ce.py:build_doctor_report)(wiki_dir)
-    p1-->>p7: str (src/llm_wiki_cli/services…ce.py:build_doctor_report)(src_dir)
-    p1->>p8: validate_path
-    p1->>p9: validate_source_root
-    p1-->>p7: str (src/llm_wiki_cli/services…ce.py:build_doctor_report)(source_root)
-    p1->>p10: build_report
-    p1-->>p7: str (src/llm_wiki_cli/services…ce.py:build_doctor_report)(helper_cache_dir)
-    p1->>p11: report_schema
-    p1-->>p12: lint.health_details.to_payload
-    p1->>p13: compose_doctor_report
-    p8->>p14: PathValidationError
-    p9->>p8: validate_path
-    p10-->>p15: isinstance (src/llm_wiki_cli/services…t_service.py:build_report)(include_health_details, bool)
-    p11-->>p16: bool (src/llm_wiki_cli/services…tibility.py:report_schema)(...)
-    p13-->>p17: isinstance (src/llm_wiki_cli/services….py:compose_doctor_report)(lint, LintReport)
-    p8-->>p18: (…).resolve (src/llm_wiki_cli/config.py:validate_path)
-    p9-->>p19: Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)
-    p10-->>p20: TypeError (src/llm_wiki_cli/services…t_service.py:build_report)('include_health_details must be a boolean')
+    p1->>p2: validate_path
+    p1->>p3: validate_source_root
+    p1->>p4: build_report
+    p1->>p5: compose_doctor_report
+    p4->>p6: _new_lint_report
+    p4->>p7: _preflight_lint_inputs
+    p5->>p8: _availability_section
+    p4->>p9: _finalize_lint_report
+    p5->>p10: _freshness_section
+    p4->>p11: prepare_cache_options
+    p4->>p12: _collect_lint_inputs
+    p5->>p13: _governance_section
+    p5->>p14: _drift_section
+    p4->>p15: _run_report_checks
+    p5->>p16: _verification_section
+    p3->>p17: windows_current_user_sid
+    p7->>p18: resolve_team_policy
+    p9->>p19: capture_health_details
+    p8->>p20: _knowledge_declared
+    p17->>p21: _current_windows_user_sid
+    p12->>p22: _profile_phase
+    p7->>p23: _coerce_plugin_issue
+    p11->>p24: resolve_inventory_cache_path
+    p15->>p25: _check_unsupported_source_diagnostics
+    p10->>p26: knowledge_freshness_disclosure
+    p7->>p27: team_config_issue
+    p15->>p28: _check_broken_links
+    p0-->>p29: cast (src/llm_wiki_cli/api.py:doctor)(DoctorResult, report.to_payload(...))
+    p0-->>p30: report.to_payload(**=...)
 ```
 
-> Call sequence diagram shows 30 of 1627 interactions; 1597 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1668 interactions; 1638 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 18 of 512 (494 omitted); unresolved 4 of 496 (492 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 531 (530 omitted); unresolved 1 of 512 (511 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/doctor_service.py:build_doctor_report` | 2 | - | external | 13 |
+| `src/llm_wiki_cli/config.py:validate_path` | 14 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
+| `src/llm_wiki_cli/config.py:validate_path` | 14 | - | unresolved | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 14 | - | external | 2 |
-| `src/llm_wiki_cli/config.py:validate_path` | 14 | - | unresolved | 2 |
-| `src/llm_wiki_cli/config.py:validate_path` | 14 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 1 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 22 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
+| `src/llm_wiki_cli/config.py:validate_source_root` | 22 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 22 | - | external | 11 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 22 | - | unresolved | 4 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 22 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 6 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 22 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 34 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 2 |
-> Omission summary shows 8 of 452 groups; 444 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 34 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
+> Omission summary shows 8 of 471 groups; 463 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -189,7 +202,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| doctor | build_doctor_report | 1879 | `build_doctor_report(wiki_dir, src_dir, strict=strict, allow_external_src=allow_external_src, source_selection=source_selection, report_schema=report_schema)` |
+| doctor | build_doctor_report | 1887 | `build_doctor_report(wiki_dir, src_dir, strict=strict, allow_external_src=allow_external_src, source_selection=source_selection, report_schema=report_schema)` |
 | build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 132 | `isinstance(strict, bool)` |
 | build_doctor_report | TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 133 | `TypeError('strict must be a boolean')` |
 | build_doctor_report | ValueError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 135 | `ValueError('report_schema must be auto, v1, v3 or v4')` |

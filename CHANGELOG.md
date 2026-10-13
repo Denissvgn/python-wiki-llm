@@ -7,6 +7,135 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-10-13
+
+This release broadens JavaScript and YAML coverage, adds a portable default
+development workflow, and improves bounded task delivery and symptom discovery.
+Synchronization preserves more source-backed context while reporting extraction
+and cache limitations explicitly.
+
+### Added
+
+- Structured YAML coverage for Compose and existing infrastructure/runtime
+  families, plus action metadata, GitLab CI, CircleCI, Azure Pipelines, Kustomize,
+  Helm chart metadata and Ansible playbooks. Kubernetes discovery recognizes
+  content outside `k8s/`, resource lists and CronJob containers; bounded parsing
+  reports malformed, ambiguous and unsupported inputs.
+
+- Read-only `doctor --analysis-inputs` and `get_analysis_input_status` report
+  bounded installed-provider classification/file gaps and their review route.
+  Capture, cache and canonical task diagnostics explain unavailable analysis
+  while preserving unknown producer authority.
+
+- Opt-in `compact-v2` task delivery exposes complete selected evidence as
+  readable JSON, with canonical receipts and separately counted view budgets.
+  MCP retains delivery qualifications while offering detailed telemetry through
+  `include_metadata: true`.
+
+- Versioned, bounded static-analysis capture can reuse inventory and page maps
+  when full graph observations exceed the cache budget. Partial hits preserve
+  extraction sidecars and rebuild graph projections with their coverage intact.
+
+- Authenticated static-analysis reuse for eligible Markdown-only wiki syncs,
+  with explicit hit/miss reasons, source and ownership checks, and bounded
+  operation-local validation reuse for native storage writers.
+
+- A default development workflow in managed agent instructions and the
+  `wiki-reference` topic, with a complete inline fallback when skills are disabled
+  or unavailable and shared guidance for explicitly selected native coding.
+
+- JavaScript `.mjs` and `.cjs` coverage across discovery, extraction, source
+  commitments, and static import resolution, including side-effect ESM imports
+  and direct unshadowed literal CommonJS `require` calls.
+- Opt-in impact-query discovery policy with separate filesystem, selection,
+  and extraction outcomes, preserving legacy inventory-presence semantics.
+
+### Fixed
+
+- Deeply nested advisory sync caches fall back to ordinary regeneration when
+  JSON decoding or commitment encoding reaches the runtime recursion limit.
+
+- Sync previews retain the requested analysis-cache commitment without probing
+  or writing cache destinations, keeping generated artifact bytes aligned with
+  apply when the same source and settings remain available.
+
+- Analysis-input doctor diagnostics honor default/explicit text output while
+  preserving structured JSON, readiness exits and classification-only scope.
+
+- Symptom discovery uses section-local relevance and coherent explanatory
+  coverage, and can expose an explicitly declared flow from a matching formal
+  function description with captured lexical evidence.
+
+- Symptom search weights flow call/data inventories and untouched default
+  Behavior placeholders as captured scaffolding, preserving authored behavior,
+  searchable trace details, and exact identity precedence.
+
+- Symptom discovery connects nominal word families such as serialization and
+  serialized in captured explanatory prose, while keeping exact identities and
+  generated identifiers literal.
+
+- Invalid CI report-schema diagnostics list every supported choice, including
+  `auto` and `v4`.
+
+- Go, Rust and Haskell discovery-policy impact queries distinguish parser-owned
+  file syntax/read failures from unavailable coverage and helper batch failures.
+  Qualified diagnostics retain successful selected files without granting
+  failed files inventory or retirement authority.
+
+- Surviving empty modules retain parser-qualified module records, source
+  commitments and authored context while removed members become history.
+  Scoped diagnostics and cache recovery distinguish valid emptiness from
+  syntax failures, unavailable coverage and Python module aliases.
+
+- Ordinary sync qualifies removed entities inside surviving source modules,
+  retaining historical ownership, evidence and authored context. Exact owner
+  revival restores live generation; ambiguous duplicate removal and captured
+  sources without documentable inventory stop before page writes.
+
+- Symptom discovery matches approximate English word forms and surfaces
+  explicitly linked implementation pages from relevant diagnostic prose,
+  preserving exact identity precedence and qualified evidence.
+
+- Generated call overviews show representative resolved continuations and
+  boundary examples, keeping deeper stages visible within existing diagram limits.
+
+- Advisory queues retain captured semantic review targets on unadopted native
+  wikis after sync, with informational coverage gaps and explicit review limits.
+
+- Ordinary sync repairs source-derived generated member tables and missing
+  sections even when source bytes are unchanged. Authored cells and custom
+  sections are retained; ambiguous attribution stops before page writes.
+
+- Cached inventory reconstruction retains data-effect and import observations
+  when changed detector results require ordinary graph generation.
+
+- Static-analysis cache capture reports destination eligibility, skip reasons
+  and payload size. Oversized checks stop at the existing 64 MiB budget without
+  retaining the complete encoding; ordinary wiki generation continues.
+
+- Discovery impact queries distinguish Python syntax failures from modules
+  without documentable content and report default-excluded Go test files as
+  policy exclusions rather than unsupported extensions.
+
+- Expanded maintenance and prompt recipes retain configured wiki paths, and
+  helper-recovery instructions distinguish explicit language preparation from
+  source-selection planning.
+
+- Explicit relative module suffixes retain their exact identity; ambiguous
+  extensionless JavaScript imports no longer produce guessed dependency edges.
+
+### Compatibility
+
+- Python 3.10+ and existing required runtime dependencies remain supported.
+  Canonical task-context defaults and public API argument shapes are retained;
+  `compact-v2` remains opt-in.
+- Ranked discovery keeps exact identity precedence and lexical qualifications.
+  Result ordering and scores may change; `ranked-v1` and substring modes retain
+  their existing matching contracts.
+- Existing native storage formats remain supported. Extraction and captured
+  call overviews describe bounded static observations, with unavailable or
+  ambiguous coverage kept explicit.
+
 ## [2.4.0] - 2026-10-10
 
 This release adds durable ordinary documentation review, compact task views,
@@ -1274,7 +1403,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.4.0...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.5.0...HEAD
+[2.5.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.3.2...v2.4.0
 [2.3.2]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.3.1...v2.3.2
 [2.3.1]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.3.0...v2.3.1

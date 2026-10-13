@@ -15,7 +15,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -24,73 +24,82 @@ sequenceDiagram
     participant p1 as validate_governance_ledger
     participant p2 as _existing_uid
     participant p3 as _section_locator
-    participant p4 as selected_section.partition
-    participant p5 as _identity_ownership_key
-    participant p6 as GovernanceError
-    participant p7 as _hash
-    participant p8 as _review_evidence
-    participant p9 as _actor
-    participant p10 as _safe_name
-    participant p11 as authored_event_time
-    participant p12 as ReviewEvent
-    participant p13 as replace
-    participant p14 as _derived_event_id
-    participant p15 as _review_event_digest_payload
-    participant p16 as dict (src/llm_wiki_cli/services…nance.py:add_review_event)
-    participant p17 as events.get
-    participant p18 as isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)
-    participant p19 as TypeError
-    participant p20 as _bundle_id
-    participant p21 as dict (src/llm_wiki_cli/services…alidate_governance_ledger)
+    participant p4 as _identity_ownership_key
+    participant p5 as GovernanceError
+    participant p6 as _hash
+    participant p7 as _review_evidence
+    participant p8 as _actor
+    participant p9 as _safe_name
+    participant p10 as authored_event_time
+    participant p11 as ReviewEvent
+    participant p12 as _derived_event_id
+    participant p13 as _review_event_digest_payload
+    participant p14 as _bundle_id
+    participant p15 as _concept_uid
+    participant p16 as _concept_kind
+    participant p17 as _identity_value
+    participant p18 as _validate_lifecycle_event_fields
+    participant p19 as _validate_lifecycle_histories
+    participant p20 as _validate_review_event_fields
+    participant p21 as validate_bundle_id
+    participant p22 as validate_concept_uid
+    participant p23 as validate_concept_kind
+    participant p24 as _alias_type
+    participant p25 as identity_coordinate_key
+    participant p26 as _event_id
+    participant p27 as validate_alias_value
+    participant p28 as _machine_code
+    participant p29 as replace
+    participant p30 as selected_section.partition
     p0->>p1: validate_governance_ledger
     p0->>p2: _existing_uid
     p0->>p3: _section_locator
-    p0-->>p4: selected_section.partition(' section/')
-    p0->>p5: _identity_ownership_key
-    p0->>p5: _identity_ownership_key
-    p0->>p6: GovernanceError
-    p0->>p7: _hash
-    p0->>p8: _review_evidence
-    p0->>p9: _actor
-    p0->>p10: _safe_name
-    p0->>p10: _safe_name
-    p0->>p11: authored_event_time
-    p0->>p12: ReviewEvent
-    p0-->>p13: replace(event, event_id=_derived_event_id(...))
-    p0->>p14: _derived_event_id
-    p0->>p15: _review_event_digest_payload
-    p0-->>p16: dict (src/llm_wiki_cli/services…nance.py:add_review_event)(current.review_events)
-    p0-->>p17: events.get(event_id)
-    p0->>p6: GovernanceError
-    p0->>p1: validate_governance_ledger
-    p0-->>p13: replace(current, review_events=events)
-    p1-->>p18: isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)(ledger, GovernanceLedger)
-    p1-->>p19: TypeError('ledger must be a GovernanceLedger')
-    p1->>p6: GovernanceError
-    p1->>p20: _bundle_id
-    p1->>p6: GovernanceError
-    p1-->>p21: dict (src/llm_wiki_cli/services…alidate_governance_ledger)(ledger.concepts)
-    p1-->>p21: dict (src/llm_wiki_cli/services…alidate_governance_ledger)(ledger.aliases)
-    p1-->>p21: dict (src/llm_wiki_cli/services…alidate_governance_ledger)(ledger.lifecycle_events)
+    p0->>p4: _identity_ownership_key
+    p0->>p5: GovernanceError
+    p0->>p6: _hash
+    p0->>p7: _review_evidence
+    p0->>p8: _actor
+    p0->>p9: _safe_name
+    p0->>p10: authored_event_time
+    p0->>p11: ReviewEvent
+    p0->>p12: _derived_event_id
+    p0->>p13: _review_event_digest_payload
+    p1->>p14: _bundle_id
+    p1->>p15: _concept_uid
+    p1->>p16: _concept_kind
+    p1->>p17: _identity_value
+    p1->>p18: _validate_lifecycle_event_fields
+    p1->>p19: _validate_lifecycle_histories
+    p1->>p20: _validate_review_event_fields
+    p14->>p21: validate_bundle_id
+    p15->>p22: validate_concept_uid
+    p16->>p23: validate_concept_kind
+    p17->>p24: _alias_type
+    p4->>p25: identity_coordinate_key
+    p18->>p26: _event_id
+    p17->>p27: validate_alias_value
+    p18->>p28: _machine_code
+    p0-->>p29: replace(event, event_id=_derived_event_id(...))
+    p0-->>p30: selected_section.partition(' section/')
 ```
 
 > Call sequence diagram shows 30 of 341 interactions; 311 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 8 of 69 (61 omitted); unresolved 2 of 76 (74 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 69 (68 omitted); unresolved 1 of 76 (75 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_governance.py:_bundle_id` | 6 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 1 |
+| `src/llm_wiki_cli/services/knowledge_governance.py:validate_governance_ledger` | 2 | - | external | 15 |
+| `src/llm_wiki_cli/services/knowledge_governance.py:validate_governance_ledger` | 2 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 20 |
 | `src/llm_wiki_cli/services/concept_identity.py:validate_bundle_id` | 7 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 4 |
 | `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 8 | - | external | 6 |
 | `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 8 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 5 |
 | `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 8 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/concept_identity.py:validate_bundle_id` | 7 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/concept_identity.py:_looks_absolute_path` | 25 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/concept_identity.py:_contains_uri_userinfo` | 28 | - | external | 1 |
-> Omission summary shows 8 of 94 groups; 86 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 92 groups; 84 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

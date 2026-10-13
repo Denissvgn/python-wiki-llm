@@ -1,6 +1,6 @@
 # InventoryResult
 
-**Location:** `src/llm_wiki_cli/services/extraction_service.py:174`
+**Location:** `src/llm_wiki_cli/services/extraction_service.py:180`
 **Kind:** Class
 **Bases:** —
 **Module:** [extraction_service](../modules/extraction_service.md)
@@ -14,6 +14,8 @@ validation callers. Alongside merged inventory it carries per-extractor
 statuses, the effective job plan, cache statistics, plugin producer metadata,
 the exact source snapshot, and optional observation maps. The `failed`
 property gives callers a single fail-closed check across extractor statuses.
+
+The `failed` property covers extractor statuses. A successful diagnostic helper batch may still report file-scoped syntax/read failures, so consumers making source or member-retirement decisions inspect the exact path outcome and its parsed record. Batch failure, unavailable coverage and omitted outcomes remain separate from valid empty records.
 
 ## Attributes
 
@@ -33,11 +35,13 @@ property gives callers a single fail-closed check across extractor statuses.
 | `data_effect_observations` | `dict \| None` | `field(default=None, repr=False, compare=False)` | — |
 | `import_observations` | `dict \| None` | `field(default=None, repr=False, compare=False)` | — |
 | `implementation_observations` | `dict \| None` | `field(default=None, repr=False, compare=False)` | — |
+| `path_outcomes` | `dict` | `field(default_factory=dict)` | — |
 
 ## Methods
 
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
+| `analysis_input_status` | `()` | `@property` | — |
 | `job_plan` | `() -> ExtractionJobPlan` | `@property` | — |
 | `failed` | `() -> list[ExtractorStatus]` | `@property` | — |
 
@@ -90,7 +94,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [extraction_service](../modules/extraction_service.md) | 2 | `analysis_components`, `cache_stats`, `data_effect_observations`, `extraction_job_plan`, `extractor_registry`, `implementation_observations`, `import_observations`, `inventory`, `plugin_components`, `plugin_lock_hash`, `plugin_lock_path`, `producer_plugin_components` |
+| [extraction_service](../modules/extraction_service.md) | 3 | `analysis_components`, `cache_stats`, `data_effect_observations`, `extraction_job_plan`, `extractor_registry`, `implementation_observations`, `import_observations`, `inventory`, `path_outcomes`, `plugin_components`, `plugin_lock_hash`, `plugin_lock_path` |
 
 ### References
 
@@ -109,4 +113,4 @@ flowchart LR
 | `_capture_protocol_enrichment_session` | type_reference | [context_service](../modules/context_service.md) | — |
 | `get_inventory` | type_reference | [context_service](../modules/context_service.md) | — |
 
-> References: showing 12 of 25 logical references; 13 omitted by the 12-row generated summary limit.
+> References: showing 12 of 26 logical references; 14 omitted by the 12-row generated summary limit.

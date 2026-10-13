@@ -6,6 +6,16 @@
 
 Shared helpers for source-file extractor discovery and filtering.
 
+JavaScript `.js`, `.jsx`, `.mjs`, and `.cjs` share one extension classification
+across source discovery, helper input selection, and source commitments. Explicit
+module suffixes retain their identity during relative import resolution.
+
+Filesystem existence and extracted inventory membership are distinct facts.
+Discovery-policy impact queries preserve ignore and selection exclusions and
+report the filesystem, selection, and extraction outcomes separately. This lets
+consumers distinguish missing source from unavailable or intentionally excluded
+context while retaining the legacy meaning of `present`.
+
 ## Imports
 
 | Source | Symbols |
@@ -36,10 +46,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (15) |
+| Inbound | `src` (20) |
 | Outbound | `src` (1) |
 
-> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 21 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 

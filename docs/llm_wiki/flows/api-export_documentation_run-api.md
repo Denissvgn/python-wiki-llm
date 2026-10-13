@@ -6,7 +6,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -48,8 +48,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| export_documentation_run | cast | 3316 | `cast(DocumentationExportResult, _export_documentation_run_impl(...))` |
-| export_documentation_run | _export_documentation_run_impl | 3318 | `_export_documentation_run_impl(workspace, build=build, builder_command=builder_command, knowledge_mode=knowledge_mode, knowledge_public_repository_identity=knowledge_public_repository_identity)` |
+| export_documentation_run | cast | 3339 | `cast(DocumentationExportResult, _export_documentation_run_impl(...))` |
+| export_documentation_run | _export_documentation_run_impl | 3341 | `_export_documentation_run_impl(workspace, build=build, builder_command=builder_command, knowledge_mode=knowledge_mode, knowledge_public_repository_identity=knowledge_public_repository_identity)` |
 
 ### Boundary effects
 
@@ -59,8 +59,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `export_documentation_run` | `cast` | 3316 |
-| unresolved_call | `export_documentation_run` | `_export_documentation_run_impl` | 3318 |
+| external_call | `export_documentation_run` | `cast` | 3339 |
+| unresolved_call | `export_documentation_run` | `_export_documentation_run_impl` | 3341 |
 
 ## Behavior
 

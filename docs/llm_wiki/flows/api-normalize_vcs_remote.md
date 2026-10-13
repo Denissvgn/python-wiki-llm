@@ -6,22 +6,22 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as normalize_vcs_remote
-    participant p1 as isinstance
-    participant p2 as value.strip
-    participant p3 as any (src/llm_wiki_cli/services…pe.py:normalize_vcs_remote)
-    participant p4 as ord
-    participant p5 as value.startswith
-    participant p6 as _WINDOWS_DRIVE_PREFIX_RE.match
-    participant p7 as _MALFORMED_PERCENT_RE.search
-    participant p8 as _normalize_scheme_remote
-    participant p9 as _normalize_scp_remote
-    participant p10 as _normalized_remote_identity
+    participant p1 as _normalize_scheme_remote
+    participant p2 as _normalize_scp_remote
+    participant p3 as _normalized_remote_identity
+    participant p4 as isinstance
+    participant p5 as value.strip
+    participant p6 as any (src/llm_wiki_cli/services…pe.py:normalize_vcs_remote)
+    participant p7 as ord
+    participant p8 as value.startswith
+    participant p9 as _WINDOWS_DRIVE_PREFIX_RE.match
+    participant p10 as _MALFORMED_PERCENT_RE.search
     participant p11 as urlsplit
     participant p12 as _SCP_REMOTE_RE.fullmatch
     participant p13 as unquote
@@ -41,36 +41,36 @@ sequenceDiagram
     participant p27 as any (src/llm_wiki_cli/services…normalized_remote_identity)
     participant p28 as '/'.join
     participant p29 as _REPOSITORY_IDENTITY_RE.fullmatch
-    p0-->>p1: isinstance(value, str)
-    p0-->>p2: value.strip
-    p0-->>p3: any (src/llm_wiki_cli/services…pe.py:normalize_vcs_remote)(...)
-    p0-->>p4: ord(char)
-    p0-->>p5: value.startswith((...))
-    p0-->>p6: _WINDOWS_DRIVE_PREFIX_RE.match(value)
-    p0-->>p7: _MALFORMED_PERCENT_RE.search(value)
-    p0->>p8: _normalize_scheme_remote
-    p0->>p9: _normalize_scp_remote
-    p0->>p10: _normalized_remote_identity
-    p8-->>p11: urlsplit(value)
-    p9-->>p12: _SCP_REMOTE_RE.fullmatch(value)
-    p10-->>p13: unquote(raw_path)
-    p8-->>p14: parsed.scheme.casefold
-    p9-->>p15: match.group(…).split(…)[…].split('?', 1)
-    p10-->>p16: decoded_path.removeprefix('/')
-    p8-->>p17: parsed.netloc.rsplit('@', 1)
-    p9-->>p18: match.group(…).split(' ', 1)
-    p10-->>p19: path.removesuffix('/')
-    p8-->>p20: authority.endswith(':')
-    p9-->>p21: match.group('path')
-    p10-->>p22: path.casefold().endswith('.git')
-    p8-->>p23: host.casefold
-    p9-->>p24: match.group(…).casefold
-    p10-->>p25: path.casefold
-    p9-->>p21: match.group('host')
-    p10-->>p26: path.split('/')
-    p10-->>p27: any (src/llm_wiki_cli/services…normalized_remote_identity)(...)
-    p10-->>p28: '/'.join(parts)
-    p10-->>p29: _REPOSITORY_IDENTITY_RE.fullmatch(identity)
+    p0->>p1: _normalize_scheme_remote
+    p0->>p2: _normalize_scp_remote
+    p0->>p3: _normalized_remote_identity
+    p0-->>p4: isinstance(value, str)
+    p0-->>p5: value.strip
+    p0-->>p6: any (src/llm_wiki_cli/services…pe.py:normalize_vcs_remote)(...)
+    p0-->>p7: ord(char)
+    p0-->>p8: value.startswith((...))
+    p0-->>p9: _WINDOWS_DRIVE_PREFIX_RE.match(value)
+    p0-->>p10: _MALFORMED_PERCENT_RE.search(value)
+    p1-->>p11: urlsplit(value)
+    p2-->>p12: _SCP_REMOTE_RE.fullmatch(value)
+    p3-->>p13: unquote(raw_path)
+    p1-->>p14: parsed.scheme.casefold
+    p2-->>p15: match.group(…).split(…)[…].split('?', 1)
+    p3-->>p16: decoded_path.removeprefix('/')
+    p1-->>p17: parsed.netloc.rsplit('@', 1)
+    p2-->>p18: match.group(…).split(' ', 1)
+    p3-->>p19: path.removesuffix('/')
+    p1-->>p20: authority.endswith(':')
+    p2-->>p21: match.group('path')
+    p3-->>p22: path.casefold().endswith('.git')
+    p1-->>p23: host.casefold
+    p2-->>p24: match.group(…).casefold
+    p3-->>p25: path.casefold
+    p2-->>p21: match.group('host')
+    p3-->>p26: path.split('/')
+    p3-->>p27: any (src/llm_wiki_cli/services…normalized_remote_identity)(...)
+    p3-->>p28: '/'.join(parts)
+    p3-->>p29: _REPOSITORY_IDENTITY_RE.fullmatch(identity)
 ```
 
 > Call sequence diagram shows 30 of 32 interactions; 2 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.

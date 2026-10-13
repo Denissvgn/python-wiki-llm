@@ -2,7 +2,7 @@
 
 **Entry point:** `load_knowledge_state` (`api`)
 **Source:** [knowledge_loader](../modules/knowledge_loader.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [filesystem_guard](../modules/filesystem_guard.md), and 28 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [filesystem_guard](../modules/filesystem_guard.md), and 29 more
 
 **Complete modules touched:**
 
@@ -35,91 +35,98 @@
 - [progress](../modules/progress.md)
 - [python_implementation](../modules/python_implementation.md)
 - [section_ownership](../modules/section_ownership.md)
+- [source_retirement](../modules/source_retirement.md)
 - [sync_manifest](../modules/sync_manifest.md)
 - [validation](../modules/validation.md)
 - [wiki_surface](../modules/wiki_surface.md)
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as load_knowledge_state
-    participant p1 as isinstance (src/llm_wiki_cli/services…r.py:load_knowledge_state)
-    participant p2 as KnowledgeMismatchPolicy
-    participant p3 as ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state)
-    participant p4 as callable (src/llm_wiki_cli/services…r.py:load_knowledge_state)
-    participant p5 as TypeError (src/llm_wiki_cli/services…r.py:load_knowledge_state)
-    participant p6 as Path (src/llm_wiki_cli/services…r.py:load_knowledge_state)
-    participant p7 as guard_maintenance_owner
-    participant p8 as KnowledgeLoadResult
-    participant p9 as KnowledgeLoadIssue
-    participant p10 as str (src/llm_wiki_cli/services…r.py:load_knowledge_state)
-    participant p11 as _load_once
-    participant p12 as any (src/llm_wiki_cli/services…r.py:load_knowledge_state)
-    participant p13 as issue.field.split
-    participant p14 as replace (src/llm_wiki_cli/services…r.py:load_knowledge_state)
-    participant p15 as rebuild_callback
-    participant p16 as KnowledgeStateLoadError
-    participant p17 as _absolute_path
-    participant p18 as _read_artifact
-    participant p19 as Path (src/llm_wiki_cli/services…y:guard_maintenance_owner)
-    participant p20 as load_adoption_marker
-    participant p21 as validate_surface_index_bytes
-    participant p22 as SyncManifest.load
-    participant p23 as _issue_from_artifact_error
-    participant p24 as MaintenanceProtocolError
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…r.py:load_knowledge_state)(policy, KnowledgeMismatchPolicy)
-    p0->>p2: KnowledgeMismatchPolicy
-    p0-->>p3: ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state)("policy must be 'reject', 'rebuild', or 'degraded'")
-    p0-->>p3: ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state)('rebuild policy requires rebuild_callback')
-    p0-->>p4: callable (src/llm_wiki_cli/services…r.py:load_knowledge_state)(rebuild_callback)
-    p0-->>p5: TypeError (src/llm_wiki_cli/services…r.py:load_knowledge_state)('rebuild_callback must be callable')
-    p0-->>p6: Path (src/llm_wiki_cli/services…r.py:load_knowledge_state)(wiki_dir)
-    p0->>p7: guard_maintenance_owner
-    p0->>p8: KnowledgeLoadResult
-    p0->>p9: KnowledgeLoadIssue
-    p0-->>p10: str (src/llm_wiki_cli/services…r.py:load_knowledge_state)(exc)
-    p0->>p11: _load_once
-    p0-->>p12: any (src/llm_wiki_cli/services…r.py:load_knowledge_state)(...)
-    p0-->>p13: issue.field.split('.')
-    p0-->>p14: replace (src/llm_wiki_cli/services…r.py:load_knowledge_state)(result, status=KnowledgeLoadState.INVALID, surface=None, knowledge=None)
-    p0-->>p15: rebuild_callback(result.issues)
-    p0->>p11: _load_once
-    p0-->>p14: replace (src/llm_wiki_cli/services…r.py:load_knowledge_state)(rebuilt, rebuilt=True)
-    p0->>p16: KnowledgeStateLoadError
-    p0->>p8: KnowledgeLoadResult
-    p0->>p16: KnowledgeStateLoadError
-    p7->>p17: _absolute_path
-    p11->>p18: _read_artifact
-    p7-->>p19: Path (src/llm_wiki_cli/services…y:guard_maintenance_owner)(wiki_dir)
-    p11->>p8: KnowledgeLoadResult
-    p7->>p20: load_adoption_marker
-    p11->>p21: validate_surface_index_bytes
-    p7->>p22: SyncManifest.load
-    p11->>p23: _issue_from_artifact_error
-    p7->>p24: MaintenanceProtocolError
+    participant p1 as guard_maintenance_owner
+    participant p2 as _load_once
+    participant p3 as KnowledgeMismatchPolicy
+    participant p4 as KnowledgeLoadResult
+    participant p5 as KnowledgeLoadIssue
+    participant p6 as KnowledgeStateLoadError
+    participant p7 as _absolute_path
+    participant p8 as _read_artifact
+    participant p9 as load_adoption_marker
+    participant p10 as validate_surface_index_bytes
+    participant p11 as SyncManifest.load
+    participant p12 as _issue_from_artifact_error
+    participant p13 as _current_markdown
+    participant p14 as _load_manifest
+    participant p15 as validate_knowledge_artifacts
+    participant p16 as _marker_issues
+    participant p17 as _live_governance_issues
+    participant p18 as _decode_json_object
+    participant p19 as _validate_surface_payload
+    participant p20 as _surface_page_index
+    participant p21 as hash_markdown_snapshot
+    participant p22 as load_governance
+    participant p23 as read_guarded
+    participant p24 as read_md
+    participant p25 as _require_validation_receipt
+    participant p26 as collect_wiki_pages
+    participant p27 as validate_maintenance_adoption
+    participant p28 as canonical_bytes (src/llm_wiki_cli/services/knowledge_storage.py)
+    participant p29 as isinstance (src/llm_wiki_cli/services…r.py:load_knowledge_state)
+    participant p30 as issue.field.split
+    p0->>p1: guard_maintenance_owner
+    p0->>p2: _load_once
+    p0->>p3: KnowledgeMismatchPolicy
+    p0->>p4: KnowledgeLoadResult
+    p0->>p5: KnowledgeLoadIssue
+    p0->>p6: KnowledgeStateLoadError
+    p1->>p7: _absolute_path
+    p2->>p8: _read_artifact
+    p1->>p9: load_adoption_marker
+    p2->>p10: validate_surface_index_bytes
+    p1->>p11: SyncManifest.load
+    p2->>p12: _issue_from_artifact_error
+    p2->>p13: _current_markdown
+    p2->>p14: _load_manifest
+    p2->>p15: validate_knowledge_artifacts
+    p2->>p16: _marker_issues
+    p2->>p17: _live_governance_issues
+    p10->>p18: _decode_json_object
+    p10->>p19: _validate_surface_payload
+    p10->>p20: _surface_page_index
+    p13->>p21: hash_markdown_snapshot
+    p17->>p22: load_governance
+    p9->>p23: read_guarded
+    p13->>p24: read_md
+    p15->>p25: _require_validation_receipt
+    p13->>p26: collect_wiki_pages
+    p9->>p27: validate_maintenance_adoption
+    p9->>p28: canonical_bytes (src/llm_wiki_cli/services/knowledge_storage.py)
+    p0-->>p29: isinstance (src/llm_wiki_cli/services…r.py:load_knowledge_state)(policy, KnowledgeMismatchPolicy)
+    p0-->>p30: issue.field.split('.')
 ```
 
-> Call sequence diagram shows 30 of 1874 interactions; 1844 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1955 interactions; 1925 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 11 of 616 (605 omitted); unresolved 2 of 314 (312 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 648 (647 omitted); unresolved 1 of 330 (329 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/knowledge_loader.py:load_knowledge_state` | 1 | - | external | 9 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 10 | - | external | 4 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 10 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 13 | - | external | 20 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 13 | - | unresolved | 5 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 10 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 10 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/maintenance_protocol.py:load_adoption_marker` | 46 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 2 |
-| `src/llm_wiki_cli/services/maintenance_protocol.py:load_adoption_marker` | 46 | - | external | 3 |
-> Omission summary shows 8 of 454 groups; 446 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/maintenance_protocol.py:guard_maintenance_owner` | 9 | - | external | 2 |
+> Omission summary shows 8 of 464 groups; 456 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

@@ -37,6 +37,7 @@ REFERENCE_SKILL_FILES: tuple[str, ...] = (
     SKILL_MANIFEST_NAME,
     "reference.md",
     "references/context-query.md",
+    "references/development-workflow.md",
     "references/extractors-dependencies.md",
     "references/governance.md",
     "references/knowledge-consumption.md",

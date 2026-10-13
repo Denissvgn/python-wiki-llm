@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [bootstrap_runtime](../modules/bootstrap_runtime.md)
-**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [bootstrap_service](../modules/bootstrap_service.md), [common](../modules/common.md), and 38 more
+**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [bootstrap_service](../modules/bootstrap_service.md), [common](../modules/common.md), and 40 more
 
 **Complete modules touched:**
 
@@ -48,10 +48,12 @@
 - [wiki_surface](../modules/wiki_surface.md)
 - [wiki_surface_index](../modules/wiki_surface_index.md)
 - [wiki_write_basis](../modules/wiki_write_basis.md)
+- [yaml_formats](../modules/yaml_formats.md)
+- [yaml_syntax](../modules/yaml_syntax.md)
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -59,69 +61,83 @@ sequenceDiagram
     participant p0 as run
     participant p1 as _bootstrap_run_options_from_args
     participant p2 as _execute_bootstrap_options
-    participant p3 as SystemExit
-    participant p4 as print (src/llm_wiki_cli/services/bootstrap_runtime.py:run)
-    participant p5 as Path (src/llm_wiki_cli/services…rap_run_options_from_args)
-    participant p6 as guard_maintenance_owner
-    participant p7 as validate_path
-    participant p8 as _preflight_public_bootstrap
-    participant p9 as str (src/llm_wiki_cli/services…rap_run_options_from_args)
-    participant p10 as validate_source_root
-    participant p11 as _preflight_bootstrap_source_selection
-    participant p12 as getattr (src/llm_wiki_cli/services…rap_run_options_from_args)
-    participant p13 as maintenance_write_operation
-    participant p14 as _execute_bootstrap_options_locked
-    participant p15 as bool (src/llm_wiki_cli/services…rap_run_options_from_args)
-    participant p16 as _BootstrapRunOptions
+    participant p3 as guard_maintenance_owner
+    participant p4 as validate_path
+    participant p5 as _preflight_public_bootstrap
+    participant p6 as validate_source_root
+    participant p7 as _preflight_bootstrap_source_selection
+    participant p8 as maintenance_write_operation
+    participant p9 as _execute_bootstrap_options_locked
+    participant p10 as _absolute_path
+    participant p11 as _preflight_bootstrap_governance
+    participant p12 as _first_use_guidance
+    participant p13 as load_adoption_marker
+    participant p14 as _is_pristine_bootstrap_target
+    participant p15 as resolve_source_selection
+    participant p16 as SyncManifest.load
+    participant p17 as validate_persisted_source_selection_identity
+    participant p18 as _start_bootstrap
+    participant p19 as governance_writer_lock
+    participant p20 as _extract_bootstrap_inventory
+    participant p21 as storage_writer_lock
+    participant p22 as _finish_if_empty_bootstrap_inventory
+    participant p23 as snapshot_wiki
+    participant p24 as _bootstrap_result
+    participant p25 as _prepare_bootstrap_page_maps
+    participant p26 as _generate_bootstrap_content
+    participant p27 as windows_current_user_sid
+    participant p28 as _recovery_directory
+    participant p29 as SystemExit
+    participant p30 as (…).resolve
     p0->>p1: _bootstrap_run_options_from_args
     p0->>p2: _execute_bootstrap_options
-    p0-->>p3: SystemExit(1)
-    p0-->>p4: print (src/llm_wiki_cli/services/bootstrap_runtime.py:run)(..., file=sys.stderr)
-    p0-->>p3: SystemExit(2)
-    p1-->>p5: Path (src/llm_wiki_cli/services…rap_run_options_from_args)(args.wiki_dir)
-    p2->>p6: guard_maintenance_owner
-    p1->>p7: validate_path
-    p2->>p8: _preflight_public_bootstrap
-    p1-->>p9: str (src/llm_wiki_cli/services…rap_run_options_from_args)(wiki_dir)
-    p2->>p8: _preflight_public_bootstrap
-    p1->>p10: validate_source_root
-    p2->>p11: _preflight_bootstrap_source_selection
-    p1-->>p12: getattr (src/llm_wiki_cli/services…rap_run_options_from_args)(args, 'allow_external_src', False)
-    p2->>p13: maintenance_write_operation
-    p1-->>p12: getattr (src/llm_wiki_cli/services…rap_run_options_from_args)(args, 'openapi_file', None)
-    p2->>p14: _execute_bootstrap_options_locked
-    p1-->>p15: bool (src/llm_wiki_cli/services…rap_run_options_from_args)(...)
-    p1-->>p12: getattr (src/llm_wiki_cli/services…rap_run_options_from_args)(args, 'api_contracts', False)
-    p1-->>p12: getattr (src/llm_wiki_cli/services…rap_run_options_from_args)(args, 'depth', 'full')
-    p1-->>p12: getattr (src/llm_wiki_cli/services…rap_run_options_from_args)(args, 'format', 'text')
-    p1->>p16: _BootstrapRunOptions
-    p1-->>p9: str (src/llm_wiki_cli/services…rap_run_options_from_args)(src_root)
-    p1-->>p12: getattr (src/llm_wiki_cli/services…rap_run_options_from_args)(args, 'skip_workflows', False)
-    p1-->>p12: getattr (src/llm_wiki_cli/services…rap_run_options_from_args)(args, 'skip_flows', False)
-    p1-->>p12: getattr (src/llm_wiki_cli/services…rap_run_options_from_args)(args, 'skip_data_flow', False)
-    p1-->>p12: getattr (src/llm_wiki_cli/services…rap_run_options_from_args)(args, 'skip_dependencies', False)
-    p1-->>p12: getattr (src/llm_wiki_cli/services…rap_run_options_from_args)(args, 'dependency_graph_detail', 'auto')
-    p1-->>p12: getattr (src/llm_wiki_cli/services…rap_run_options_from_args)(args, 'source_adapter', False)
-    p1-->>p12: getattr (src/llm_wiki_cli/services…rap_run_options_from_args)(args, 'helper_cache_dir', None)
+    p2->>p3: guard_maintenance_owner
+    p1->>p4: validate_path
+    p2->>p5: _preflight_public_bootstrap
+    p1->>p6: validate_source_root
+    p2->>p7: _preflight_bootstrap_source_selection
+    p2->>p8: maintenance_write_operation
+    p2->>p9: _execute_bootstrap_options_locked
+    p3->>p10: _absolute_path
+    p9->>p11: _preflight_bootstrap_governance
+    p5->>p12: _first_use_guidance
+    p3->>p13: load_adoption_marker
+    p5->>p14: _is_pristine_bootstrap_target
+    p7->>p15: resolve_source_selection
+    p3->>p16: SyncManifest.load
+    p7->>p17: validate_persisted_source_selection_identity
+    p9->>p18: _start_bootstrap
+    p8->>p19: governance_writer_lock
+    p9->>p20: _extract_bootstrap_inventory
+    p8->>p21: storage_writer_lock
+    p9->>p22: _finish_if_empty_bootstrap_inventory
+    p8->>p23: snapshot_wiki
+    p9->>p24: _bootstrap_result
+    p9->>p25: _prepare_bootstrap_page_maps
+    p9->>p26: _generate_bootstrap_content
+    p6->>p27: windows_current_user_sid
+    p8->>p28: _recovery_directory
+    p0-->>p29: SystemExit(1)
+    p4-->>p30: (…).resolve
 ```
 
-> Call sequence diagram shows 30 of 2909 interactions; 2879 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2917 interactions; 2887 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 19 of 961 (942 omitted); unresolved 0 of 881 (881 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 960 (959 omitted); unresolved 1 of 886 (885 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/bootstrap_runtime.py:_bootstrap_run_options_from_args` | 2 | - | external | 19 |
 | `src/llm_wiki_cli/config.py:validate_path` | 4 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
-| `src/llm_wiki_cli/config.py:validate_path` | 4 | - | unresolved | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 4 | - | external | 2 |
+| `src/llm_wiki_cli/config.py:validate_path` | 4 | - | unresolved | 2 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 13 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 13 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 13 | - | external | 11 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 13 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 25 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 2 |
-> Omission summary shows 8 of 631 groups; 623 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 633 groups; 625 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -186,9 +202,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | _bootstrap_run_options_from_args | 6448 | `_bootstrap_run_options_from_args(args)` |
-| _bootstrap_run_options_from_args | Path (src/llm_wiki_cli/services…rap_run_options_from_args) | 4522 | `Path(args.wiki_dir)` |
-| _bootstrap_run_options_from_args | validate_path | 4523 | `validate_path(str(...), '--wiki-dir')` |
+| run | _bootstrap_run_options_from_args | 6501 | `_bootstrap_run_options_from_args(args)` |
+| _bootstrap_run_options_from_args | Path (src/llm_wiki_cli/services…rap_run_options_from_args) | 4575 | `Path(args.wiki_dir)` |
+| _bootstrap_run_options_from_args | validate_path | 4576 | `validate_path(str(...), '--wiki-dir')` |
 | validate_path | PathValidationError | 134 | `PathValidationError(...)` |
 | validate_path | (…).resolve | 135 | `(Path.cwd() / path).resolve(data not statically known)` |
 | validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 135 | `Path.cwd(data not statically known)` |
@@ -196,13 +212,13 @@ flowchart LR
 | validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd(data not statically known)` |
 | validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 138 | `resolved.relative_to(cwd)` |
 | validate_path | PathValidationError | 140 | `PathValidationError(...)` |
-| _bootstrap_run_options_from_args | str (src/llm_wiki_cli/services…rap_run_options_from_args) | 4523 | `str(wiki_dir)` |
+| _bootstrap_run_options_from_args | str (src/llm_wiki_cli/services…rap_run_options_from_args) | 4576 | `str(wiki_dir)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 6454 |
+| output | `print` | `run` | 6507 |
 
 ### Static analysis gaps
 

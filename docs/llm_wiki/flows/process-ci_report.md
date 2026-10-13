@@ -25,82 +25,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as main
-    participant p1 as _arguments
-    participant p2 as load_ci_check_payload
-    participant p3 as CiCheckReportError
-    participant p4 as Path (src/llm_wiki_cli/services/ci_report.py:main)
-    participant p5 as status_path.is_symlink
-    participant p6 as status_path.is_file
-    participant p7 as status_path.read_bytes().splitlines
-    participant p8 as status_path.read_bytes
-    participant p9 as render_ci_summary
-    participant p10 as output.is_symlink
-    participant p11 as output.parent.is_dir
-    participant p12 as output.write_bytes
-    participant p13 as SystemExit
-    participant p14 as argparse.ArgumentParser
-    participant p15 as Path (src/llm_wiki_cli/services….py:load_ci_check_payload)
-    participant p16 as parser.add_subparsers
-    participant p17 as report_path.is_symlink
-    participant p18 as isinstance (src/llm_wiki_cli/services…port.py:render_ci_summary)
-    participant p19 as commands.add_parser
-    participant p20 as report_path.is_file
-    participant p21 as validate.add_argument
-    p0->>p1: _arguments
-    p0->>p2: load_ci_check_payload
-    p0->>p3: CiCheckReportError
-    p0->>p2: load_ci_check_payload
-    p0-->>p4: Path (src/llm_wiki_cli/services/ci_report.py:main)(args.status_path)
-    p0-->>p5: status_path.is_symlink
-    p0-->>p6: status_path.is_file
-    p0->>p3: CiCheckReportError
-    p0-->>p7: status_path.read_bytes().splitlines
-    p0-->>p8: status_path.read_bytes
-    p0->>p9: render_ci_summary
-    p0-->>p4: Path (src/llm_wiki_cli/services/ci_report.py:main)(args.report)
-    p0-->>p4: Path (src/llm_wiki_cli/services/ci_report.py:main)(args.output)
-    p0-->>p10: output.is_symlink
-    p0-->>p11: output.parent.is_dir
-    p0->>p3: CiCheckReportError
-    p0-->>p12: output.write_bytes(payload)
-    p0-->>p13: SystemExit(...)
-    p1-->>p14: argparse.ArgumentParser
-    p2-->>p15: Path (src/llm_wiki_cli/services….py:load_ci_check_payload)(path)
-    p9->>p3: CiCheckReportError
-    p1-->>p16: parser.add_subparsers(dest='action', required=True)
-    p2-->>p17: report_path.is_symlink
-    p9-->>p18: isinstance (src/llm_wiki_cli/services…port.py:render_ci_summary)(value, bool)
-    p1-->>p19: commands.add_parser('validate')
-    p2-->>p20: report_path.is_file
-    p9-->>p18: isinstance (src/llm_wiki_cli/services…port.py:render_ci_summary)(value, int)
-    p1-->>p21: validate.add_argument('--report', required=True)
-    p2->>p3: CiCheckReportError
-    p9->>p3: CiCheckReportError
+    participant p1 as load_ci_check_payload
+    participant p2 as render_ci_summary
+    participant p3 as _arguments
+    participant p4 as CiCheckReportError
+    participant p5 as validate_ci_check_payload
+    participant p6 as _health_detail_lines
+    participant p7 as _bounded_summary
+    participant p8 as _validate_ci_v3
+    participant p9 as _validate_lint_findings
+    participant p10 as _validate_execution
+    participant p11 as _validate_knowledge_summary
+    participant p12 as detailed_health_rows
+    participant p13 as validate_doctor_payload
+    participant p14 as _array
+    participant p15 as _positive_integer
+    participant p16 as _validate_ci_v2
+    participant p17 as _count_mapping
+    participant p18 as _canonical_plan_ids
+    participant p19 as _exact_object
+    participant p20 as validate_health_details
+    participant p21 as _contract_object
+    participant p22 as _string
+    participant p23 as _validate_doctor
+    participant p24 as _nullable_string
+    participant p25 as summary_cell
+    participant p26 as _object (src/llm_wiki_cli/services/ci_report.py)
+    participant p27 as _finding_reasons
+    participant p28 as _boolean
+    participant p29 as Path (src/llm_wiki_cli/services/ci_report.py:main)
+    participant p30 as status_path.is_symlink
+    p0->>p1: load_ci_check_payload
+    p0->>p2: render_ci_summary
+    p0->>p3: _arguments
+    p0->>p4: CiCheckReportError
+    p1->>p5: validate_ci_check_payload
+    p2->>p6: _health_detail_lines
+    p2->>p7: _bounded_summary
+    p5->>p8: _validate_ci_v3
+    p5->>p9: _validate_lint_findings
+    p5->>p10: _validate_execution
+    p5->>p11: _validate_knowledge_summary
+    p6->>p12: detailed_health_rows
+    p8->>p13: validate_doctor_payload
+    p9->>p14: _array
+    p10->>p15: _positive_integer
+    p8->>p16: _validate_ci_v2
+    p11->>p17: _count_mapping
+    p10->>p18: _canonical_plan_ids
+    p13->>p19: _exact_object
+    p13->>p20: validate_health_details
+    p13->>p21: _contract_object
+    p13->>p22: _string
+    p13->>p23: _validate_doctor
+    p16->>p24: _nullable_string
+    p2->>p25: summary_cell
+    p2->>p26: _object (src/llm_wiki_cli/services/ci_report.py)
+    p6->>p27: _finding_reasons
+    p5->>p28: _boolean
+    p0-->>p29: Path (src/llm_wiki_cli/services/ci_report.py:main)(args.status_path)
+    p0-->>p30: status_path.is_symlink
 ```
 
 > Call sequence diagram shows 30 of 559 interactions; 529 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 8 of 128 (120 omitted); unresolved 12 of 107 (95 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 128 (127 omitted); unresolved 1 of 107 (106 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/ci_report.py:_arguments` | 2 | - | unresolved | 17 |
-| `src/llm_wiki_cli/services/ci_report.py:load_ci_check_payload` | 24 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/ci_report.py:load_ci_check_payload` | 24 | - | external | 1 |
+| `src/llm_wiki_cli/services/ci_report.py:_arguments` | 2 | - | external | 1 |
+| `src/llm_wiki_cli/services/ci_report.py:_arguments` | 2 | - | unresolved | 20 |
+| `src/llm_wiki_cli/services/ci_report.py:load_ci_check_payload` | 24 | - | external | 2 |
+| `src/llm_wiki_cli/services/ci_report.py:load_ci_check_payload` | 24 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/ci_report.py:load_ci_check_payload` | 24 | [src/llm_wiki_cli/services/ci_report.py](../modules/ci_report.md) | internal | 2 |
 | `src/llm_wiki_cli/services/ci_report.py:validate_ci_check_payload` | 32 | - | external | 9 |
 | `src/llm_wiki_cli/services/ci_report.py:validate_ci_check_payload` | 32 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/ci_report.py:validate_ci_check_payload` | 32 | [src/llm_wiki_cli/services/ci_report.py](../modules/ci_report.md) | internal | 31 |
-| `src/llm_wiki_cli/services/ci_report.py:_validate_ci_v3` | 35 | [src/llm_wiki_cli/services/ci_report.py](../modules/ci_report.md) | internal | 4 |
-> Omission summary shows 8 of 72 groups; 64 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/ci_report.py:validate_doctor_payload` | 36 | - | external | 2 |
+> Omission summary shows 8 of 74 groups; 66 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

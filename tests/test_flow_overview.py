@@ -1,6 +1,7 @@
 """Presentation selection retains complete occurrence evidence and raw bounds."""
 
 from copy import deepcopy
+import json
 import re
 
 import pytest
@@ -227,3 +228,125 @@ def test_all_shown_interaction_totals_are_disclosed_without_implied_omissions():
     assert "Call sequence diagram shows 1 of 1 interactions; 0 omitted" in text
     assert "external 0 of 0 (0 omitted); unresolved 0 of 0 (0 omitted)" in text
     assert diagram(text).count("->>") == 1
+
+
+def test_actual_imported_pipeline_survives_validation_fanout_and_duplicate_targets(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    sources = {
+        "transport.py": """from guard import permit
+from adapter import invoke
+def start():
+    permit()
+    result = invoke()
+    print(result)
+""",
+        "guard.py": """def reject():
+    raise ValueError('denied')
+def permit():
+""" + "".join("    reject()\n    getattr(object(), 'missing', None)\n" for _ in range(40)),
+        "adapter.py": """from operations import dispatch
+def invoke():
+    return dispatch()
+""",
+        "operations.py": """from ordering import arrange
+def accept():
+    isinstance('input', str)
+def collect():
+    yield len('row')
+def deliver(values):
+    return tuple(values)
+def dispatch():
+    accept()
+    values = collect()
+    return deliver(arrange(values))
+""",
+        "ordering.py": """def tokenize(values):
+    return str(values)
+def arrange(values):
+    return sorted(tokenize(values))
+""",
+        "tripwire.py": """from pathlib import Path
+Path('trace-source-executed').write_text('must never execute')
+""",
+    }
+    for name, source in sources.items():
+        (tmp_path / name).write_text(source)
+    inventory = get_inventory(tmp_path, deep=True)
+    edges = resolve_call_edges(inventory)
+    flow = build_flow_detailed({**entry(), "file": "transport.py", "symbol": "start"}, edges)
+    original = deepcopy(flow)
+    selected = overview(flow)
+    rendered = runtime._bounded_sequence_diagram([dict(row) for row in selected.interactions])
+    admitted = trim_flow_overview(selected, rendered.shown_items)
+    required = {
+        ("operations.py", "accept"), ("operations.py", "collect"),
+        ("operations.py", "dispatch"), ("ordering.py", "arrange"),
+        ("operations.py", "deliver"),
+    }
+    coordinates = {
+        (record["callee"]["file"], record["callee"]["symbol"])
+        for record in admitted.records if record["step_index"] in admitted.selected_step_indexes
+    }
+    assert required <= coordinates
+    assert all(name in diagram(runtime._generate_flow_md(flow)) for _, name in required)
+    assert admitted.counts["displayed"] <= 30
+    assert flow["coverage"]["steps"]["depth_limit"] == 6
+    assert len((rendered.diagram or "").splitlines()) <= 80
+    assert len(rendered.diagram or "") <= 6000
+    assert flow == original and not (tmp_path / "trace-source-executed").exists()
+    assert runtime._generate_flow_md(flow) == runtime._generate_flow_md(flow)
+    # The generator declaration is static evidence, never proof it was consumed.
+    assert next(record for record in admitted.records if record["callee"]["symbol"] == "collect")["kind"] == "internal"
+    selection = tmp_path / ".llm-wiki/source-selection.json"
+    selection.parent.mkdir()
+    selection.write_text(json.dumps({
+        "schema_version": "llm-wiki-source-selection/v1",
+        "include": [name for name in sources if name != "ordering.py"], "exclude": [],
+    }))
+    excluded = get_inventory(tmp_path, deep=True)
+    assert "ordering.py" not in excluded and (tmp_path / "ordering.py").exists()
+    excluded_edges = resolve_call_edges(excluded)
+    rank_call = next(e for e in excluded_edges if e["from"] == {"file": "operations.py", "symbol": "dispatch"} and e["name"] == "arrange")
+    # Existing resolution treats imports outside the captured inventory as external.
+    assert rank_call["kind"] == "external" and rank_call["to"]["file"] is None
+    assert not any(e["kind"] == "internal" and e["to"]["file"] == "ordering.py" for e in excluded_edges)
+    assert not (tmp_path / "trace-source-executed").exists()
+
+
+def test_repeated_internal_sites_yield_display_space_without_coalescing_raw_occurrences():
+    edges = [edge("main", "same", line=i + 1, args=[{"kind": "constant", "value": str(i)}]) for i in range(40)]
+    edges += [edge("main", f"distinct_{i}") for i in range(5)]
+    edges += [edge("main", "remote", kind="external", callee_file=None),
+              edge("main", "dynamic", kind="unresolved", callee_file=None)]
+    flow = build_flow_detailed(entry(), edges)
+    original = deepcopy(flow)
+    selected = overview(flow, limit=8)
+    shown = [record for record in selected.records if record["step_index"] in selected.selected_step_indexes]
+    assert {"same", *(f"distinct_{i}" for i in range(5)), "remote", "dynamic"} == {record["callee"]["symbol"] for record in shown}
+    assert selected.counts["captured"] == 47 and selected.counts["omitted"] == 39
+    assert all(selected.counts["boundaries"][kind]["displayed"] == 1 for kind in ("external", "unresolved"))
+    duplicates = [record for record in selected.records if record["callee"]["symbol"] == "same"]
+    assert len(duplicates) == 40
+    assert [record["edge"]["args"][0]["value"] for record in duplicates] == [str(i) for i in range(40)]
+    assert sum(group["count"] for group in selected.omission_groups) == 39
+    assert flow == original
+
+
+def test_conflicting_child_does_not_promote_an_invented_internal_continuation():
+    flow = build_flow(entry(), [])
+    flow["steps"] += [
+        {"depth": 1, "file": "app.py", "symbol": "left", "kind": "internal",
+         "edge": edge("main", "left")},
+        {"depth": 2, "file": "app.py", "symbol": "bad", "kind": "internal",
+         "edge": edge("other", "bad")},
+        {"depth": 1, "file": "app.py", "symbol": "right", "kind": "internal",
+         "edge": edge("main", "right")},
+        {"depth": 2, "file": "app.py", "symbol": "good", "kind": "internal",
+         "edge": edge("right", "good")},
+    ]
+    original = deepcopy(flow)
+    selected = overview(flow, limit=1)
+    assert selected.selected_step_indexes == (4,)
+    assert selected.counts["parent_gaps"]["conflicting"] == 1
+    assert selected.records[1]["parent_state"] == "conflicting"
+    assert flow == original

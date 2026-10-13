@@ -6,6 +6,8 @@ import ast
 import inspect
 import textwrap
 
+import pytest
+
 from llm_wiki_cli.commands.extract_cmd import (
     _parse_dockerfile,
     _parse_compose,
@@ -495,6 +497,141 @@ class TestLooksLikeCompose:
 
     def test_empty_file(self):
         assert _looks_like_compose("") is False
+
+
+class TestComposeStructuredYaml:
+    def test_flow_mappings_quoted_names_and_long_syntax(self):
+        text = (
+            'services: {"api:main": {image: nginx, ports: '
+            '[{target: 80, published: "8080", protocol: tcp}], '
+            'environment: {ENABLED: true, START_DATE: 2026-10-12}}}\n'
+            'networks: {"front:end": {driver: bridge}}\n'
+            'volumes: {"cache:data": {}}\n'
+        )
+
+        assert _looks_like_compose(text)
+        result = _parse_compose(text)
+        assert result == {
+            "type": "compose",
+            "services": {
+                "api:main": {
+                    "image": "nginx",
+                    "ports": [
+                        {"target": "80", "published": "8080", "protocol": "tcp"}
+                    ],
+                    "environment": {"ENABLED": "true", "START_DATE": "2026-10-12"},
+                }
+            },
+            "networks": ["front:end"],
+            "volumes": ["cache:data"],
+        }
+
+    def test_anchors_merges_and_variable_indentation(self):
+        text = textwrap.dedent("""\
+            x-base: &base
+                image: nginx
+                environment: &environment
+                    APP_MODE: production
+                    REPLICAS: 2
+            services:
+                web:
+                    <<: *base
+                    image: nginx:stable
+                    environment:
+                        <<: *environment
+                        REPLICAS: 3
+                worker:
+                    <<: *base
+            networks:
+                internal: {}
+        """)
+
+        assert _looks_like_compose(text)
+        result = _parse_compose(text)
+        assert result["services"]["web"] == {
+            "image": "nginx:stable",
+            "environment": {"APP_MODE": "production", "REPLICAS": "3"},
+        }
+        assert result["services"]["worker"]["environment"]["REPLICAS"] == "2"
+        assert result["networks"] == ["internal"]
+        assert "advisories" not in result
+
+    def test_literal_and_folded_multiline_values(self):
+        text = textwrap.dedent("""\
+            services:
+              web:
+                image: nginx # ignored comment
+                command: |-
+                  echo "hello: world"
+                  echo done
+                labels:
+                  summary: >-
+                    first line
+                    second line
+        """)
+
+        result = _parse_compose(text)
+        assert result["services"]["web"]["image"] == "nginx"
+        assert result["services"]["web"]["command"] == 'echo "hello: world"\necho done'
+        assert result["services"]["web"]["labels"]["summary"] == "first line second line"
+
+    @pytest.mark.parametrize(
+        "text",
+        [
+            "services: [web]\n",
+            "services: {web: nginx}\n",
+            "services: {web: {image: nginx}}\nvolumes: [cache]\n",
+            "services: {web: {image: nginx}\n",
+            "services: {web: {image: first, image: second}}\n",
+            "services: {web: {image: nginx}}\n---\nservices: {db: {image: redis}}\n",
+            "services: {web: {image: nginx, command: &loop [*loop]}}\n",
+        ],
+    )
+    def test_invalid_or_multiple_documents_fail_closed(self, text):
+        assert not _looks_like_compose(text)
+        result = _parse_compose(text)
+        assert result["type"] == "compose"
+        assert result["services"] == {}
+        assert result["networks"] == []
+        assert result["volumes"] == []
+        assert result["advisories"]
+
+    def test_constructor_tags_are_not_executed_or_echoed(self, tmp_path):
+        sentinel = tmp_path / "executed"
+        secret = "private-token-should-not-appear"
+        text = (
+            "services:\n  web:\n    image: nginx\n"
+            "    command: !!python/object/apply:os.system\n"
+            f"      - touch {sentinel} # {secret}\n"
+        )
+
+        result = _parse_compose(text)
+        assert not sentinel.exists()
+        assert result["services"] == {}
+        assert secret not in str(result["advisories"])
+        assert str(sentinel) not in str(result["advisories"])
+
+    @pytest.mark.parametrize(
+        "text",
+        [
+            'services: {web: {note: "image: nginx"}}\n',
+            'services: {web: {config: {image: nginx}}}\n',
+            'description: |\n  services:\n    web:\n      image: nginx\n',
+        ],
+    )
+    def test_detection_does_not_match_nested_keys_or_scalar_content(self, text):
+        assert not _looks_like_compose(text)
+
+    def test_discovery_retains_malformed_conventional_compose_with_advisory(self, tmp_path):
+        (tmp_path / "compose.yaml").write_text("services: {web: [\n")
+        (tmp_path / "invalid.yaml").write_text("services: {web: [\n")
+        (tmp_path / "split.yaml").write_text("services: {web: {image: nginx}}\n")
+
+        result = get_docker_inventory(tmp_path)
+        assert result["compose.yaml"]["services"] == {}
+        assert result["compose.yaml"]["advisories"]
+        assert "invalid.yaml" not in result
+        assert result["split.yaml"]["services"] == {"web": {"image": "nginx"}}
 
 
 # ── Recursive discovery ──────────────────────────────────────────────

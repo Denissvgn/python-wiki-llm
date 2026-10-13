@@ -6,7 +6,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -111,9 +111,9 @@ flowchart LR
 |---|---|---:|---|
 | build_infrastructure_page_map | sorted | 42 | `sorted(source_paths)` |
 | build_infrastructure_page_map | infrastructure_page_name | 45 | `infrastructure_page_name(source_path)` |
-| infrastructure_page_name | source_path.replace(…).replace(…).replace | 28 | `source_path.replace('\\', '/').replace('/', '_').replace('.', '_')` |
-| infrastructure_page_name | source_path.replace(…).replace | 28 | `source_path.replace('\\', '/').replace('/', '_')` |
-| infrastructure_page_name | source_path.replace | 28 | `source_path.replace('\\', '/')` |
+| infrastructure_page_name | source_path.replace(…).replace(…).replace | 31 | `source_path.replace('\\', '/').replace('/', '_').replace('.', '_')` |
+| infrastructure_page_name | source_path.replace(…).replace | 31 | `source_path.replace('\\', '/').replace('/', '_')` |
+| infrastructure_page_name | source_path.replace | 31 | `source_path.replace('\\', '/')` |
 | build_infrastructure_page_map | by_stem.setdefault(…).append | 46 | `by_stem.setdefault(stem, []).append(source_path)` |
 | build_infrastructure_page_map | by_stem.setdefault | 46 | `by_stem.setdefault(stem, [...])` |
 | build_infrastructure_page_map | sorted | 48 | `sorted(by_stem.items(...))` |
@@ -130,9 +130,9 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `build_infrastructure_page_map` | `sorted` | 42 |
-| unresolved_call | `infrastructure_page_name` | `source_path.replace('\\', '/').replace('/', '_').replace` | 28 |
-| unresolved_call | `infrastructure_page_name` | `source_path.replace('\\', '/').replace` | 28 |
-| unresolved_call | `infrastructure_page_name` | `source_path.replace` | 28 |
+| unresolved_call | `infrastructure_page_name` | `source_path.replace('\\', '/').replace('/', '_').replace` | 31 |
+| unresolved_call | `infrastructure_page_name` | `source_path.replace('\\', '/').replace` | 31 |
+| unresolved_call | `infrastructure_page_name` | `source_path.replace` | 31 |
 | unresolved_call | `build_infrastructure_page_map` | `by_stem.setdefault(stem, []).append` | 46 |
 | unresolved_call | `build_infrastructure_page_map` | `by_stem.setdefault` | 46 |
 | external_call | `build_infrastructure_page_map` | `sorted` | 48 |

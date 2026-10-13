@@ -6,80 +6,80 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as is_pristine_wiki_target
-    participant p1 as Path
-    participant p2 as root.is_symlink
-    participant p3 as root.exists
-    participant p4 as root.is_dir
-    participant p5 as iter_page_kinds
-    participant p6 as sorted
-    participant p7 as root.rglob
-    participant p8 as path.is_symlink
-    participant p9 as path.relative_to(…).as_posix
-    participant p10 as path.relative_to
-    participant p11 as set
-    participant p12 as paths_by_relative.items
-    participant p13 as path.is_dir
-    participant p14 as path.is_file
-    participant p15 as path.stat
-    participant p16 as path.read_text
-    participant p17 as json.loads
-    participant p18 as isinstance
-    participant p19 as frozenset
-    participant p20 as any
-    participant p21 as type
-    participant p22 as (…).encode
-    participant p23 as json.dumps (src/llm_wiki_cli/services…py:is_pristine_wiki_target)
-    participant p24 as formatted_json_bytes
-    participant p25 as raw_config.encode
-    p0-->>p1: Path(wiki_dir)
-    p0-->>p2: root.is_symlink
-    p0-->>p3: root.exists
-    p0-->>p4: root.is_dir
-    p0->>p5: iter_page_kinds
-    p0-->>p6: sorted(root.rglob(...))
-    p0-->>p7: root.rglob('*')
-    p0-->>p8: path.is_symlink
-    p0-->>p9: path.relative_to(…).as_posix
-    p0-->>p10: path.relative_to(root)
-    p0-->>p11: set(paths_by_relative)
-    p0-->>p12: paths_by_relative.items
-    p0-->>p13: path.is_dir
-    p0-->>p14: path.is_file
-    p0-->>p15: path.stat
-    p0-->>p16: path.read_text(encoding='utf-8')
-    p0-->>p16: path.read_text(encoding='utf-8')
-    p0-->>p16: path.read_text(encoding='utf-8')
-    p0-->>p17: json.loads(raw_config)
-    p0-->>p18: isinstance(config, dict)
-    p0-->>p19: frozenset(config)
-    p0-->>p19: frozenset(legacy_fields)
-    p0-->>p19: frozenset(profiled_fields)
-    p0-->>p20: any(...)
-    p0-->>p21: type(config[...])
-    p0-->>p11: set(config)
-    p0-->>p22: (…).encode
-    p0-->>p23: json.dumps (src/llm_wiki_cli/services…py:is_pristine_wiki_target)(legacy_config, indent=2)
-    p0->>p24: formatted_json_bytes
-    p0-->>p25: raw_config.encode('utf-8')
+    participant p1 as formatted_json_bytes
+    participant p2 as iter_page_kinds
+    participant p3 as formatted_json_text
+    participant p4 as Path
+    participant p5 as root.is_symlink
+    participant p6 as root.exists
+    participant p7 as root.is_dir
+    participant p8 as sorted
+    participant p9 as root.rglob
+    participant p10 as path.is_symlink
+    participant p11 as path.relative_to(…).as_posix
+    participant p12 as path.relative_to
+    participant p13 as set
+    participant p14 as paths_by_relative.items
+    participant p15 as path.is_dir
+    participant p16 as path.is_file
+    participant p17 as path.stat
+    participant p18 as path.read_text
+    participant p19 as json.loads
+    participant p20 as isinstance
+    participant p21 as frozenset
+    participant p22 as any
+    participant p23 as type
+    participant p24 as (…).encode
+    participant p25 as json.dumps (src/llm_wiki_cli/services…py:is_pristine_wiki_target)
+    p0->>p1: formatted_json_bytes
+    p0->>p2: iter_page_kinds
+    p1->>p3: formatted_json_text
+    p0-->>p4: Path(wiki_dir)
+    p0-->>p5: root.is_symlink
+    p0-->>p6: root.exists
+    p0-->>p7: root.is_dir
+    p0-->>p8: sorted(root.rglob(...))
+    p0-->>p9: root.rglob('*')
+    p0-->>p10: path.is_symlink
+    p0-->>p11: path.relative_to(…).as_posix
+    p0-->>p12: path.relative_to(root)
+    p0-->>p13: set(paths_by_relative)
+    p0-->>p14: paths_by_relative.items
+    p0-->>p15: path.is_dir
+    p0-->>p16: path.is_file
+    p0-->>p17: path.stat
+    p0-->>p18: path.read_text(encoding='utf-8')
+    p0-->>p18: path.read_text(encoding='utf-8')
+    p0-->>p18: path.read_text(encoding='utf-8')
+    p0-->>p19: json.loads(raw_config)
+    p0-->>p20: isinstance(config, dict)
+    p0-->>p21: frozenset(config)
+    p0-->>p21: frozenset(legacy_fields)
+    p0-->>p21: frozenset(profiled_fields)
+    p0-->>p22: any(...)
+    p0-->>p23: type(config[...])
+    p0-->>p13: set(config)
+    p0-->>p24: (…).encode
+    p0-->>p25: json.dumps (src/llm_wiki_cli/services…py:is_pristine_wiki_target)(legacy_config, indent=2)
 ```
 
 > Call sequence diagram shows 30 of 33 interactions; 3 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 12 of 13 (1 omitted); unresolved 16 of 17 (1 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 12 of 13 (1 omitted); unresolved 15 of 17 (2 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_bytes` | 30 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_bytes` | 30 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_text` | 32 | - | external | 1 |
+| `src/llm_wiki_cli/services/wiki_lifecycle.py:is_pristine_wiki_target` | 1 | - | unresolved | 1 |
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow

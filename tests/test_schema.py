@@ -705,6 +705,7 @@ def test_compact_schema_has_exact_managed_reference_routes(
 ) -> None:
     content = build_compact_schema_content(agent, "docs/llm_wiki")
     topics = (
+        "development-workflow",
         "context-query",
         "extractors-dependencies",
         "governance",
@@ -743,9 +744,9 @@ def test_compact_schema_omits_expanded_procedural_catalogs() -> None:
     assert "--prefer-fresh" not in content
     assert "read raw knowledge JSON" not in text
     assert "edit raw knowledge JSON" not in text
-    assert "not raw knowledge" in text
+    assert "Validated context/query only" in text
     assert "Governance needs owner approval/recovery" in text
-    assert "User-selected optional routes" in text
+    assert "Optional:" in text
     assert (
         "`wiki-bootstrap`, `wiki-sync`, `user-docs-author`, `usage-examples`, "
         "and `publish-docs`"
@@ -759,7 +760,7 @@ def test_generated_agents_have_actionable_helper_recovery(agent, profile):
         _build_schema_content(agent, "docs/llm_wiki", render_profile=profile)
     )
     if profile is SchemaRenderProfile.COMPACT:
-        assert "authorized remedy and one retry" in content
+        assert "authorized remedy, one retry" in content
         assert "otherwise disclose/use source/wiki" in content
         assert "Reads never prepare helpers" in content
     else:
@@ -848,7 +849,7 @@ def test_generated_context_recipe_parses_with_custom_paths(
     navigation_fallback = content.index("docs/team wiki/index.md", exact_route)
     markdown_fallback = content.index(
         (
-            "use validated surface/Markdown"
+            "validated surface/Markdown"
             if render_profile is SchemaRenderProfile.COMPACT
             else "then canonical Markdown"
         ),

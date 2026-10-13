@@ -6,7 +6,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -14,67 +14,77 @@ sequenceDiagram
     participant p0 as validate_infrastructure_generation_input
     participant p1 as _prior_infrastructure_state
     participant p2 as _record_mapping
-    participant p3 as state.get
-    participant p4 as isinstance (src/llm_wiki_cli/services…rior_infrastructure_state)
-    participant p5 as isinstance (src/llm_wiki_cli/services…e_sync.py:_record_mapping)
-    participant p6 as InfrastructureSyncError
-    participant p7 as value.items
-    participant p8 as value.get
-    participant p9 as deepcopy (src/llm_wiki_cli/services…rior_infrastructure_state)
-    participant p10 as _valid_repository_path
-    participant p11 as dict (src/llm_wiki_cli/services…rior_infrastructure_state)
-    participant p12 as raw_record.get
-    participant p13 as _valid_page_path
-    participant p14 as is_valid_sha256
+    participant p3 as _valid_repository_path
+    participant p4 as is_portable_relative_path
+    participant p5 as require_portable_relative_path
+    participant p6 as _default_path_error
+    participant p7 as _check_path_collision
+    participant p8 as require_portable_path_component
+    participant p9 as InfrastructureSyncError
+    participant p10 as _valid_page_path
+    participant p11 as is_valid_sha256
+    participant p12 as _syntax_key
+    participant p13 as _known_syntax
+    participant p14 as _remember_syntax
+    participant p15 as SharedValidationError
+    participant p16 as portable_path_key
+    participant p17 as isinstance (src/llm_wiki_cli/services…rior_infrastructure_state)
+    participant p18 as state.get
+    participant p19 as isinstance (src/llm_wiki_cli/services…e_sync.py:_record_mapping)
+    participant p20 as value.items
+    participant p21 as value.get
+    participant p22 as deepcopy (src/llm_wiki_cli/services…rior_infrastructure_state)
+    participant p23 as dict (src/llm_wiki_cli/services…rior_infrastructure_state)
+    participant p24 as raw_record.get
     p0->>p1: _prior_infrastructure_state
     p0->>p2: _record_mapping
-    p0-->>p3: state.get('sources')
-    p0->>p2: _record_mapping
-    p0-->>p3: state.get('tombstones')
-    p1-->>p4: isinstance (src/llm_wiki_cli/services…rior_infrastructure_state)(generation_inputs, Mapping)
-    p2-->>p5: isinstance (src/llm_wiki_cli/services…e_sync.py:_record_mapping)(value, Mapping)
-    p1-->>p4: isinstance (src/llm_wiki_cli/services…rior_infrastructure_state)(value, Mapping)
-    p2->>p6: InfrastructureSyncError
-    p1->>p6: InfrastructureSyncError
-    p2-->>p7: value.items
-    p1-->>p8: value.get('schema_version')
-    p2-->>p5: isinstance (src/llm_wiki_cli/services…e_sync.py:_record_mapping)(key, str)
-    p1->>p6: InfrastructureSyncError
-    p2-->>p5: isinstance (src/llm_wiki_cli/services…e_sync.py:_record_mapping)(raw_record, Mapping)
-    p1-->>p8: value.get('schema_version')
-    p2->>p6: InfrastructureSyncError
-    p1-->>p9: deepcopy (src/llm_wiki_cli/services…rior_infrastructure_state)(dict(...))
-    p2->>p10: _valid_repository_path
-    p1-->>p11: dict (src/llm_wiki_cli/services…rior_infrastructure_state)(value)
-    p2->>p6: InfrastructureSyncError
-    p2-->>p12: raw_record.get('source_path')
-    p2->>p6: InfrastructureSyncError
-    p2->>p13: _valid_page_path
-    p2-->>p12: raw_record.get('page_path')
-    p2->>p6: InfrastructureSyncError
-    p2->>p14: is_valid_sha256
-    p2-->>p12: raw_record.get(hash_field)
-    p2->>p6: InfrastructureSyncError
-    p2-->>p12: raw_record.get('adapter')
+    p2->>p3: _valid_repository_path
+    p3->>p4: is_portable_relative_path
+    p4->>p5: require_portable_relative_path
+    p5->>p6: _default_path_error
+    p5->>p7: _check_path_collision
+    p5->>p8: require_portable_path_component
+    p2->>p9: InfrastructureSyncError
+    p2->>p10: _valid_page_path
+    p2->>p11: is_valid_sha256
+    p5->>p12: _syntax_key
+    p5->>p13: _known_syntax
+    p5->>p14: _remember_syntax
+    p6->>p15: SharedValidationError
+    p7->>p16: portable_path_key
+    p1-->>p17: isinstance (src/llm_wiki_cli/services…rior_infrastructure_state)(generation_inputs, Mapping)
+    p0-->>p18: state.get('sources')
+    p0-->>p18: state.get('tombstones')
+    p2-->>p19: isinstance (src/llm_wiki_cli/services…e_sync.py:_record_mapping)(value, Mapping)
+    p1-->>p17: isinstance (src/llm_wiki_cli/services…rior_infrastructure_state)(value, Mapping)
+    p2-->>p20: value.items
+    p1-->>p21: value.get('schema_version')
+    p2-->>p19: isinstance (src/llm_wiki_cli/services…e_sync.py:_record_mapping)(key, str)
+    p2-->>p19: isinstance (src/llm_wiki_cli/services…e_sync.py:_record_mapping)(raw_record, Mapping)
+    p1-->>p21: value.get('schema_version')
+    p1-->>p22: deepcopy (src/llm_wiki_cli/services…rior_infrastructure_state)(dict(...))
+    p1-->>p23: dict (src/llm_wiki_cli/services…rior_infrastructure_state)(value)
+    p2-->>p24: raw_record.get('source_path')
+    p2-->>p24: raw_record.get('page_path')
 ```
 
 > Call sequence diagram shows 30 of 114 interactions; 84 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 7 of 34 (27 omitted); unresolved 9 of 34 (25 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 7 of 34 (27 omitted); unresolved 7 of 34 (27 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/infrastructure_sync.py:_prior_infrastructure_state` | 2 | [src/llm_wiki_cli/services/infrastructure_sync.py](../modules/infrastructure_sync.md) | internal | 2 |
+| `src/llm_wiki_cli/services/infrastructure_sync.py:_record_mapping` | 11 | [src/llm_wiki_cli/services/infrastructure_sync.py](../modules/infrastructure_sync.md) | internal | 14 |
 | `src/llm_wiki_cli/services/infrastructure_sync.py:_valid_repository_path` | 18 | - | external | 1 |
-| `src/llm_wiki_cli/services/infrastructure_sync.py:_valid_repository_path` | 18 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:is_portable_relative_path` | 20 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 21 | - | external | 4 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 21 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 13 |
-| `src/llm_wiki_cli/services/validation.py:_default_path_error` | 23 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 21 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 7 |
 | `src/llm_wiki_cli/services/validation.py:_syntax_key` | 28 | - | external | 6 |
 | `src/llm_wiki_cli/services/validation.py:_known_syntax` | 35 | - | unresolved | 2 |
-> Omission summary shows 8 of 23 groups; 15 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/validation.py:_check_path_collision` | 38 | - | unresolved | 2 |
+> Omission summary shows 8 of 22 groups; 14 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

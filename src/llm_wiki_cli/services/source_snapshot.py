@@ -162,6 +162,7 @@ class SourceSnapshot:
     )
     captured_gitignore_paths: frozenset[str] = frozenset()
     respect_ignores: bool = False
+    respect_discovery: bool = False
     capture_byte_limit: int | None = None
     capture_scan_limit: int | None = None
     coherent: bool = False
@@ -441,6 +442,7 @@ class SourceSnapshot:
             captured_file_integrity=file_integrity,
             captured_gitignore_paths=self.captured_gitignore_paths,
             respect_ignores=self.respect_ignores,
+            respect_discovery=self.respect_discovery,
             capture_byte_limit=self.capture_byte_limit,
             capture_scan_limit=self.capture_scan_limit,
             coherent=self.coherent,
@@ -463,6 +465,7 @@ class _SnapshotBuckets:
     selected_regular_paths: set[str]
     expected_gitignore_paths: frozenset[str] | None
     respect_ignores: bool = False
+    respect_discovery: bool = False
     max_control_bytes: int | None = None
     control_bytes: int = 0
     max_scan_entries: int | None = None
@@ -477,6 +480,7 @@ def _new_snapshot_buckets(
     *,
     expected_gitignore_paths: frozenset[str] | None = None,
     respect_ignores: bool = False,
+    respect_discovery: bool = False,
     max_control_bytes: int | None = None,
     max_scan_entries: int | None = None,
     coherent: bool = False,
@@ -500,7 +504,7 @@ def _new_snapshot_buckets(
         source_selection_policy=source_selection_policy,
         selected_regular_paths=set(),
         expected_gitignore_paths=expected_gitignore_paths,
-        respect_ignores=respect_ignores,
+        respect_ignores=respect_ignores, respect_discovery=respect_discovery,
         max_control_bytes=max_control_bytes,
         max_scan_entries=max_scan_entries,
         coherent=coherent,
@@ -544,7 +548,10 @@ def _normalize_only_files(
     return normalized
 
 
-def _language_for_path(path: Path, include_tests: frozenset[str]) -> str | None:
+def _language_selection_for_path(
+    path: Path, include_tests: frozenset[str]
+) -> tuple[str | None, str | None]:
+    """Return recognized language and any language test-policy exclusion."""
     suffix = path.suffix
     for language, extensions in LANGUAGE_EXTENSIONS.items():
         if suffix not in extensions:
@@ -554,9 +561,14 @@ def _language_for_path(path: Path, include_tests: frozenset[str]) -> str | None:
             and path.name.endswith("_test.go")
             and "go" not in include_tests
         ):
-            return None
-        return language
-    return None
+            return language, "go-tests-excluded"
+        return language, None
+    return None, None
+
+
+def _language_for_path(path: Path, include_tests: frozenset[str]) -> str | None:
+    language, exclusion = _language_selection_for_path(path, include_tests)
+    return None if exclusion else language
 
 
 def _unsupported_language_for_path(path: Path) -> str | None:
@@ -1004,7 +1016,7 @@ def _record_infrastructure_candidates(
         _append_sorted(buckets.dockerfile_candidates, source_file)
     if _is_compose_candidate(resolved):
         _append_sorted(buckets.compose_candidates, source_file)
-    if resolved.suffix.lower() in {".yml", ".yaml"}:
+    if resolved.suffix.lower() in {".yml", ".yaml"} or resolved.name == "Kustomization":
         _append_sorted(buckets.yaml_candidates, source_file)
 
 
@@ -1056,7 +1068,7 @@ def _record_generated_javascript_bundle_candidate(
     buckets: _SnapshotBuckets,
 ) -> bool:
     rel_posix = rel.as_posix()
-    if only_set is not None or not is_generated_javascript_bundle_path(rel_posix):
+    if (only_set is not None and not buckets.respect_discovery) or not is_generated_javascript_bundle_path(rel_posix):
         return False
 
     source_file = _make_source_file(
@@ -1116,7 +1128,7 @@ def _record_source_file(
     if not resolved.is_file() or not EXCLUDED_DIRS.isdisjoint(rel.parts):
         return
     if is_agent_worktree_path(rel_posix) and (
-        policy is not None or only_set is None or rel_posix not in only_set
+        policy is not None or buckets.respect_discovery or only_set is None or rel_posix not in only_set
     ):
         return
 
@@ -1134,6 +1146,7 @@ def _record_source_file(
         and (
             policy is not None
             or buckets.respect_ignores
+            or buckets.respect_discovery
             or only_set is None
             or rel_posix not in only_set
         )
@@ -1457,6 +1470,7 @@ def _build_source_snapshot(
         captured_file_integrity=captured_file_integrity,
         captured_gitignore_paths=frozenset(buckets.gitignore_contents),
         respect_ignores=buckets.respect_ignores,
+        respect_discovery=buckets.respect_discovery,
         capture_byte_limit=max_bytes,
         capture_scan_limit=buckets.max_scan_entries,
         coherent=buckets.coherent,
@@ -1564,18 +1578,18 @@ def _resolve_snapshot_selection(
     return selection_policy
 
 
-def _validate_capture_options(max_files, max_bytes, respect_ignores, coherent):
+def _validate_capture_options(max_files, max_bytes, respect_ignores, coherent, respect_discovery=False):
     for name, value in (("max_files", max_files), ("max_bytes", max_bytes)):
         if value is not None and (type(value) is not int or value < 1):
             raise SourceSnapshotError(name, "must be a positive integer")
-    for name, value in (("respect_ignores", respect_ignores), ("coherent", coherent)):
+    for name, value in (("respect_ignores", respect_ignores), ("coherent", coherent), ("respect_discovery", respect_discovery)):
         if type(value) is not bool:
             raise SourceSnapshotError(name, "must be a boolean")
 
 
-def _capture_buckets(include_tests, policy, max_files, max_bytes, respect_ignores, coherent):
+def _capture_buckets(include_tests, policy, max_files, max_bytes, respect_ignores, coherent, respect_discovery=False):
     return _new_snapshot_buckets(
-        include_tests, policy, respect_ignores=respect_ignores,
+        include_tests, policy, respect_ignores=respect_ignores, respect_discovery=respect_discovery,
         max_control_bytes=max_bytes, coherent=coherent,
         max_scan_entries=None if max_files is None else min(100_000, max(4096, max_files * 128)),
     )
@@ -1595,6 +1609,7 @@ def build_source_snapshot(
     max_files: int | None = None,
     max_bytes: int | None = None,
     respect_ignores: bool = False,
+    respect_discovery: bool = False,
     coherent: bool = False,
 ) -> SourceSnapshot:
     """Build a deterministic source-tree snapshot rooted at *src_dir*.
@@ -1604,7 +1619,7 @@ def build_source_snapshot(
     tree so command paths that restrict source extraction preserve their
     existing infrastructure and package behavior.
     """
-    _validate_capture_options(max_files, max_bytes, respect_ignores, coherent)
+    _validate_capture_options(max_files, max_bytes, respect_ignores, coherent, respect_discovery)
     root = Path(src_dir).resolve()
     policy = _resolve_snapshot_selection(
         root,
@@ -1623,7 +1638,7 @@ def build_source_snapshot(
             only_files=normalized_only_files,
         )
 
-    buckets = _capture_buckets(normalized_include_tests, policy, max_files, max_bytes, respect_ignores, coherent)
+    buckets = _capture_buckets(normalized_include_tests, policy, max_files, max_bytes, respect_ignores, coherent, respect_discovery)
     _collect_source_tree(root, only_set, buckets)
     if expected_selection_inputs is not _UNSET_EXPECTED_SELECTION_INPUTS:
         current_inputs = _selection_inputs_from_buckets(buckets)
@@ -1749,6 +1764,7 @@ def source_snapshot_matches_current_files(snapshot: SourceSnapshot, *, metrics: 
         policy,
         expected_gitignore_paths=snapshot.captured_gitignore_paths,
         respect_ignores=snapshot.respect_ignores,
+        respect_discovery=snapshot.respect_discovery,
         max_control_bytes=snapshot.capture_byte_limit,
         max_scan_entries=snapshot.capture_scan_limit,
     )

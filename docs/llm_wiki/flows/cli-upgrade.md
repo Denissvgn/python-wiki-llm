@@ -25,62 +25,77 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as run
-    participant p1 as getattr (src/llm_wiki_cli/commands/upgrade_cmd.py:run)
-    participant p2 as validate_path
-    participant p3 as require_safe_wiki_scaffold
-    participant p4 as require_safe_config_path
-    participant p5 as print (src/llm_wiki_cli/commands/upgrade_cmd.py:run)
-    participant p6 as SystemExit (src/llm_wiki_cli/commands/upgrade_cmd.py:run)
-    participant p7 as remove_legacy_hooks
-    participant p8 as inspect_legacy_hooks
-    participant p9 as inspect_config
-    participant p10 as get_agent_config_path
-    participant p11 as dict (src/llm_wiki_cli/commands/upgrade_cmd.py:run)
-    participant p12 as config_requires_manual_recovery
-    participant p13 as Path (src/llm_wiki_cli/commands/upgrade_cmd.py:run)
-    participant p14 as stored.get
-    participant p15 as isinstance (src/llm_wiki_cli/commands/upgrade_cmd.py:run)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
-    p0->>p2: validate_path
-    p0->>p3: require_safe_wiki_scaffold
-    p0->>p4: require_safe_config_path
-    p0-->>p5: print (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(..., file=sys.stderr)
-    p0-->>p6: SystemExit (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(2)
-    p0-->>p5: print (src/llm_wiki_cli/commands/upgrade_cmd.py:run)('Legacy Git Hook Cleanup:')
-    p0->>p7: remove_legacy_hooks
-    p0->>p8: inspect_legacy_hooks
-    p0-->>p5: print (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(..., file=sys.stderr)
-    p0-->>p6: SystemExit (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(2)
-    p0-->>p5: print (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(...)
-    p0->>p9: inspect_config
-    p0->>p10: get_agent_config_path
-    p0-->>p5: print (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(..., file=sys.stderr)
-    p0-->>p6: SystemExit (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(2)
-    p0-->>p5: print (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(..., file=sys.stderr)
-    p0-->>p6: SystemExit (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(2)
-    p0-->>p11: dict (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(config_inspection.data)
-    p0->>p12: config_requires_manual_recovery
-    p0-->>p5: print (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(..., file=sys.stderr)
-    p0-->>p13: Path (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(wiki_dir)
-    p0-->>p6: SystemExit (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(2)
-    p0-->>p5: print (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(..., file=sys.stderr)
-    p0-->>p6: SystemExit (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(2)
-    p0-->>p5: print (src/llm_wiki_cli/commands/upgrade_cmd.py:run)('Error: local agent config path is unsafe', file=sys.stderr)
-    p0-->>p6: SystemExit (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(2)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(args, 'source_selection', None)
-    p0-->>p14: stored.get('source_selection')
-    p0-->>p15: isinstance (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(stored_selection, str)
+    participant p1 as validate_path
+    participant p2 as require_safe_wiki_scaffold
+    participant p3 as require_safe_config_path
+    participant p4 as remove_legacy_hooks
+    participant p5 as inspect_config
+    participant p6 as resolve_source_selection
+    participant p7 as _resolve_agent
+    participant p8 as _require_replaceable_schema_path
+    participant p9 as _preflight_cleanup_agent
+    participant p10 as verify_reference_skill
+    participant p11 as require_config_inspection_unchanged
+    participant p12 as _provision_reference_skill_guarded
+    participant p13 as select_render_profile
+    participant p14 as _upgrade_schema
+    participant p15 as _upgrade_dirs
+    participant p16 as formatted_json_bytes
+    participant p17 as write_config
+    participant p18 as require_committed_config
+    participant p19 as _target_cleanup_is_ready
+    participant p20 as _cleanup_recorded_source
+    participant p21 as inspect_legacy_hooks
+    participant p22 as get_agent_config_path
+    participant p23 as config_requires_manual_recovery
+    participant p24 as skills_install_dir
+    participant p25 as reference_recovery_command
+    participant p26 as unlink_guarded_bytes
+    participant p27 as require_safe_schema_path
+    participant p28 as _reference_install_path
+    participant p29 as getattr (src/llm_wiki_cli/commands/upgrade_cmd.py:run)
+    participant p30 as stored.get
+    p0->>p1: validate_path
+    p0->>p2: require_safe_wiki_scaffold
+    p0->>p3: require_safe_config_path
+    p0->>p4: remove_legacy_hooks
+    p0->>p5: inspect_config
+    p0->>p6: resolve_source_selection
+    p0->>p7: _resolve_agent
+    p0->>p8: _require_replaceable_schema_path
+    p0->>p9: _preflight_cleanup_agent
+    p0->>p10: verify_reference_skill
+    p0->>p11: require_config_inspection_unchanged
+    p0->>p12: _provision_reference_skill_guarded
+    p0->>p13: select_render_profile
+    p0->>p14: _upgrade_schema
+    p0->>p15: _upgrade_dirs
+    p0->>p16: formatted_json_bytes
+    p0->>p17: write_config
+    p0->>p18: require_committed_config
+    p0->>p19: _target_cleanup_is_ready
+    p0->>p20: _cleanup_recorded_source
+    p0->>p21: inspect_legacy_hooks
+    p0->>p22: get_agent_config_path
+    p0->>p23: config_requires_manual_recovery
+    p0->>p24: skills_install_dir
+    p0->>p25: reference_recovery_command
+    p0->>p26: unlink_guarded_bytes
+    p8->>p27: require_safe_schema_path
+    p10->>p28: _reference_install_path
+    p0-->>p29: getattr (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
+    p0-->>p30: stored.get('source_selection')
 ```
 
-> Call sequence diagram shows 30 of 1685 interactions; 1655 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1687 interactions; 1657 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 21 of 737 (716 omitted); unresolved 1 of 357 (356 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 737 (736 omitted); unresolved 1 of 357 (356 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -94,7 +109,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/wiki_surface.py:iter_directory_kinds` | 14 | - | external | 1 |
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 11 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 17 | - | external | 20 |
-> Omission summary shows 8 of 375 groups; 367 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 372 groups; 364 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

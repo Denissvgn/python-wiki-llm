@@ -132,6 +132,7 @@ def test_package_data_includes_bundled_skills():
         if item.startswith("skills/wiki-reference/references/")
     } == {
         "skills/wiki-reference/references/context-query.md",
+        "skills/wiki-reference/references/development-workflow.md",
         "skills/wiki-reference/references/extractors-dependencies.md",
         "skills/wiki-reference/references/governance.md",
         "skills/wiki-reference/references/knowledge-consumption.md",
@@ -170,7 +171,7 @@ def test_package_data_includes_bundled_skills():
 def test_managed_reference_tree_matches_artifact_smoke_contract():
     root = PROJECT_ROOT / "src" / "llm_wiki_cli" / "skills" / "wiki-reference"
 
-    assert release_artifact_smoke._validate_wiki_reference_tree(root) == 11
+    assert release_artifact_smoke._validate_wiki_reference_tree(root) == 12
 
 
 def test_core_dependencies_do_not_install_model_provider_sdks():
@@ -220,7 +221,7 @@ def test_project_distribution_name_is_pypi_safe_name():
 
 def test_project_version_is_release_target():
     data = _pyproject()
-    assert data["project"]["version"] == "2.4.0"
+    assert data["project"]["version"] == "2.5.0"
 
 
 def test_standalone_guide_is_installed_as_canonical_shared_documentation():

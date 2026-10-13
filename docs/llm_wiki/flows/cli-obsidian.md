@@ -63,73 +63,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as run
-    participant p1 as getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)
-    participant p2 as validate_path
-    participant p3 as bool (src/llm_wiki_cli/commands/obsidian_cmd.py:run)
-    participant p4 as validate_source_root
-    participant p5 as str (src/llm_wiki_cli/commands/obsidian_cmd.py:run)
-    participant p6 as validate_obsidian_export_source_selection
-    participant p7 as _knowledge_projection
-    participant p8 as export_obsidian_vault
-    participant p9 as _print_report
-    participant p10 as check_obsidian_vault
-    participant p11 as SystemExit
-    participant p12 as install_obsidian_plugin
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'obsidian_action', None)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'format', 'text')
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'src_dir', '.')
-    p0->>p2: validate_path
-    p0-->>p3: bool (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(getattr(...))
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'allow_external_src', False)
-    p0->>p4: validate_source_root
-    p0-->>p5: str (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(source_root)
-    p0->>p6: validate_obsidian_export_source_selection
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'source_selection', None)
-    p0->>p7: _knowledge_projection
-    p0->>p8: export_obsidian_vault
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'vault_dir')
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'notes_dir', DEFAULT_NOTES_DIR)
-    p0-->>p3: bool (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(getattr(...))
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'dry_run', False)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'knowledge_metadata', None)
-    p0->>p9: _print_report
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
-    p0->>p2: validate_path
-    p0->>p7: _knowledge_projection
-    p0->>p10: check_obsidian_vault
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'vault_dir')
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'knowledge_metadata', None)
-    p0->>p9: _print_report
-    p0-->>p11: SystemExit(1)
-    p0->>p12: install_obsidian_plugin
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'vault_dir')
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'plugin_dir', DEFAULT_PLUGIN_SOURCE)
+    participant p1 as validate_path
+    participant p2 as validate_source_root
+    participant p3 as validate_obsidian_export_source_selection
+    participant p4 as _knowledge_projection
+    participant p5 as export_obsidian_vault
+    participant p6 as _print_report
+    participant p7 as check_obsidian_vault
+    participant p8 as install_obsidian_plugin
+    participant p9 as resolve_source_selection
+    participant p10 as capture_source_selection_inputs
+    participant p11 as validate_live_query_source_selection
+    participant p12 as _validate_existing_dir
+    participant p13 as build_source_snapshot
+    participant p14 as load_knowledge_read_view
+    participant p15 as _ensure_safe_base
+    participant p16 as project_knowledge
+    participant p17 as _validate_no_authority_overlap
+    participant p18 as collect_wiki_pages (src/llm_wiki_cli/services/obsidian.py)
+    participant p19 as windows_current_user_sid
+    participant p20 as _collect_outgoing_links
+    participant p21 as _select_knowledge_projection
+    participant p22 as _merge_inventory_relationships
+    participant p23 as _preflight_no_alias_paths
+    participant p24 as _sidecar_note_path
+    participant p25 as _unexpected_projected_mirror_pages
+    participant p26 as _mirror_scan_relative_path
+    participant p27 as _preflight_planned_parent_directories
+    participant p28 as build_mirror_page
+    participant p29 as getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)
+    participant p30 as Path(…).expanduser (src/llm_wiki_cli/services…y:install_obsidian_plugin)
+    p0->>p1: validate_path
+    p0->>p2: validate_source_root
+    p0->>p3: validate_obsidian_export_source_selection
+    p0->>p4: _knowledge_projection
+    p0->>p5: export_obsidian_vault
+    p0->>p6: _print_report
+    p0->>p7: check_obsidian_vault
+    p0->>p8: install_obsidian_plugin
+    p3->>p9: resolve_source_selection
+    p3->>p10: capture_source_selection_inputs
+    p3->>p11: validate_live_query_source_selection
+    p5->>p12: _validate_existing_dir
+    p3->>p13: build_source_snapshot
+    p4->>p14: load_knowledge_read_view
+    p5->>p15: _ensure_safe_base
+    p4->>p16: project_knowledge
+    p5->>p17: _validate_no_authority_overlap
+    p5->>p18: collect_wiki_pages (src/llm_wiki_cli/services/obsidian.py)
+    p2->>p19: windows_current_user_sid
+    p5->>p20: _collect_outgoing_links
+    p5->>p21: _select_knowledge_projection
+    p5->>p22: _merge_inventory_relationships
+    p5->>p23: _preflight_no_alias_paths
+    p5->>p24: _sidecar_note_path
+    p5->>p25: _unexpected_projected_mirror_pages
+    p5->>p26: _mirror_scan_relative_path
+    p5->>p27: _preflight_planned_parent_directories
+    p5->>p28: build_mirror_page
+    p0-->>p29: getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)(args, 'obsidian_action', None)
+    p8-->>p30: Path(…).expanduser (src/llm_wiki_cli/services…y:install_obsidian_plugin)
 ```
 
-> Call sequence diagram shows 30 of 3164 interactions; 3134 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3180 interactions; 3150 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 19 of 949 (930 omitted); unresolved 0 of 860 (860 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 955 (954 omitted); unresolved 1 of 861 (860 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/commands/obsidian_cmd.py:run` | 1 | - | external | 22 |
 | `src/llm_wiki_cli/config.py:validate_path` | 6 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
 | `src/llm_wiki_cli/config.py:validate_path` | 6 | - | unresolved | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 6 | - | external | 2 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 16 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 16 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 16 | - | external | 11 |
-| `src/llm_wiki_cli/config.py:validate_source_root` | 16 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 28 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 2 |
-> Omission summary shows 8 of 773 groups; 765 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 769 groups; 761 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

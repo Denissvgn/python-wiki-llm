@@ -6,76 +6,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as run
-    participant p1 as getattr
-    participant p2 as list_bundled_skills
-    participant p3 as print (src/llm_wiki_cli/commands/skills_cmd.py:run)
-    participant p4 as render_skill_list_json
-    participant p5 as render_skill_list_text
-    participant p6 as export_skills
-    participant p7 as bool
-    participant p8 as _print_report
-    participant p9 as SystemExit
-    participant p10 as _default_install_dest
-    participant p11 as validate_path
-    participant p12 as install_skills
-    participant p13 as root.is_dir
-    participant p14 as json.dumps (src/llm_wiki_cli/services…py:render_skill_list_json)
-    participant p15 as lines.append (src/llm_wiki_cli/services…py:render_skill_list_text)
-    p0-->>p1: getattr(args, 'skills_action', None)
-    p0-->>p1: getattr(args, 'format', 'text')
-    p0->>p2: list_bundled_skills
-    p0-->>p3: print (src/llm_wiki_cli/commands/skills_cmd.py:run)(render_skill_list_json(...), end='')
-    p0->>p4: render_skill_list_json
-    p0-->>p3: print (src/llm_wiki_cli/commands/skills_cmd.py:run)(render_skill_list_text(...), end='')
-    p0->>p5: render_skill_list_text
-    p0->>p6: export_skills
-    p0-->>p1: getattr(args, 'dest')
-    p0-->>p1: getattr(args, 'skill', None)
-    p0-->>p7: bool(getattr(...))
-    p0-->>p1: getattr(args, 'force', False)
-    p0->>p8: _print_report
-    p0-->>p9: SystemExit(1)
-    p0-->>p1: getattr(args, 'dest', None)
-    p0->>p10: _default_install_dest
-    p0->>p11: validate_path
-    p0->>p12: install_skills
-    p0-->>p1: getattr(args, 'skill', None)
-    p0-->>p7: bool(getattr(...))
-    p0-->>p1: getattr(args, 'force', False)
-    p0->>p8: _print_report
-    p0-->>p9: SystemExit(1)
-    p0-->>p3: print (src/llm_wiki_cli/commands/skills_cmd.py:run)(..., file=sys.stderr)
-    p0-->>p9: SystemExit(1)
-    p0-->>p3: print (src/llm_wiki_cli/commands/skills_cmd.py:run)('Error: missing skills action.', file=sys.stderr)
-    p0-->>p9: SystemExit(1)
-    p2-->>p13: root.is_dir
-    p4-->>p14: json.dumps (src/llm_wiki_cli/services…py:render_skill_list_json)({...}, indent=2)
-    p5-->>p15: lines.append (src/llm_wiki_cli/services…py:render_skill_list_text)(...)
+    participant p1 as list_bundled_skills
+    participant p2 as export_skills
+    participant p3 as _print_report
+    participant p4 as _default_install_dest
+    participant p5 as validate_path
+    participant p6 as install_skills
+    participant p7 as render_skill_list_json
+    participant p8 as render_skill_list_text
+    participant p9 as _ensure_safe_base
+    participant p10 as _select_skills
+    participant p11 as read_config
+    participant p12 as _preflight_reference_requirement
+    participant p13 as read_md
+    participant p14 as _ensure_regular_directory
+    participant p15 as _is_regular_file
+    participant p16 as write_md
+    participant p17 as _write_utf8_text
+    participant p18 as _skill_tree_matches
+    participant p19 as write_bytes_atomic
+    participant p20 as _directory_ancestry_is_safe
+    participant p21 as _tree_entries
+    participant p22 as _nearest_existing_directory
+    participant p23 as _tree_snapshot
+    participant p24 as PathValidationError
+    participant p25 as render_report_json
+    participant p26 as get_agent_config_path
+    participant p27 as render_report_text
+    participant p28 as _parse_skill_frontmatter
+    participant p29 as getattr
+    participant p30 as root.is_dir
+    p0->>p1: list_bundled_skills
+    p0->>p2: export_skills
+    p0->>p3: _print_report
+    p0->>p4: _default_install_dest
+    p0->>p5: validate_path
+    p0->>p6: install_skills
+    p0->>p7: render_skill_list_json
+    p0->>p8: render_skill_list_text
+    p2->>p9: _ensure_safe_base
+    p2->>p10: _select_skills
+    p4->>p11: read_config
+    p2->>p12: _preflight_reference_requirement
+    p1->>p13: read_md
+    p2->>p14: _ensure_regular_directory
+    p2->>p15: _is_regular_file
+    p2->>p16: write_md
+    p16->>p17: _write_utf8_text
+    p12->>p18: _skill_tree_matches
+    p17->>p19: write_bytes_atomic
+    p18->>p20: _directory_ancestry_is_safe
+    p18->>p21: _tree_entries
+    p20->>p22: _nearest_existing_directory
+    p21->>p23: _tree_snapshot
+    p5->>p24: PathValidationError
+    p3->>p25: render_report_json
+    p4->>p26: get_agent_config_path
+    p3->>p27: render_report_text
+    p1->>p28: _parse_skill_frontmatter
+    p0-->>p29: getattr(args, 'skills_action', None)
+    p1-->>p30: root.is_dir
 ```
 
 > Call sequence diagram shows 30 of 298 interactions; 268 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 19 of 98 (79 omitted); unresolved 2 of 106 (104 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 98 (97 omitted); unresolved 1 of 106 (105 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/commands/skills_cmd.py:run` | 1 | - | external | 17 |
 | `src/llm_wiki_cli/services/skills.py:list_bundled_skills` | 4 | - | external | 1 |
 | `src/llm_wiki_cli/services/skills.py:list_bundled_skills` | 4 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/skills.py:list_bundled_skills` | 4 | [src/llm_wiki_cli/services/skills.py](../modules/skills.md) | internal | 3 |
 | `src/llm_wiki_cli/services/skills.py:_parse_skill_frontmatter` | 10 | - | unresolved | 10 |
-| `src/llm_wiki_cli/services/skills.py:list_bundled_skills` | 4 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
 | `src/llm_wiki_cli/services/io.py:read_md` | 21 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
 | `src/llm_wiki_cli/services/io.py:decode_markdown_bytes` | 22 | - | unresolved | 4 |
 | `src/llm_wiki_cli/services/io.py:read_md` | 21 | - | unresolved | 1 |
-> Omission summary shows 8 of 76 groups; 68 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/skills.py:list_bundled_skills` | 4 | [src/llm_wiki_cli/services/skills.py](../modules/skills.md) | internal | 2 |
+> Omission summary shows 8 of 72 groups; 64 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -153,14 +168,14 @@ flowchart LR
 | run | getattr | 46 | `getattr(args, 'skills_action', None)` |
 | run | getattr | 47 | `getattr(args, 'format', 'text')` |
 | run | list_bundled_skills | 51 | `list_bundled_skills(data not statically known)` |
-| list_bundled_skills | root.is_dir | 267 | `root.is_dir(data not statically known)` |
-| list_bundled_skills | sorted (src/llm_wiki_cli/services…ls.py:list_bundled_skills) | 271 | `sorted(root.iterdir(...), key=...)` |
-| list_bundled_skills | root.iterdir | 271 | `root.iterdir(data not statically known)` |
-| list_bundled_skills | skill_dir.is_dir | 273 | `skill_dir.is_dir(data not statically known)` |
-| list_bundled_skills | manifest.is_file | 273 | `manifest.is_file(data not statically known)` |
-| list_bundled_skills | _parse_skill_frontmatter | 275 | `_parse_skill_frontmatter(read_md(...))` |
-| _parse_skill_frontmatter | content.replace(…).replace(…).split | 1344 | `content.replace('\r\n', '\n').replace('\r', '\n').split('\n')` |
-| _parse_skill_frontmatter | content.replace(…).replace | 1344 | `content.replace('\r\n', '\n').replace('\r', '\n')` |
+| list_bundled_skills | root.is_dir | 268 | `root.is_dir(data not statically known)` |
+| list_bundled_skills | sorted (src/llm_wiki_cli/services…ls.py:list_bundled_skills) | 272 | `sorted(root.iterdir(...), key=...)` |
+| list_bundled_skills | root.iterdir | 272 | `root.iterdir(data not statically known)` |
+| list_bundled_skills | skill_dir.is_dir | 274 | `skill_dir.is_dir(data not statically known)` |
+| list_bundled_skills | manifest.is_file | 274 | `manifest.is_file(data not statically known)` |
+| list_bundled_skills | _parse_skill_frontmatter | 276 | `_parse_skill_frontmatter(read_md(...))` |
+| _parse_skill_frontmatter | content.replace(…).replace(…).split | 1345 | `content.replace('\r\n', '\n').replace('\r', '\n').split('\n')` |
+| _parse_skill_frontmatter | content.replace(…).replace | 1345 | `content.replace('\r\n', '\n').replace('\r', '\n')` |
 
 ### Boundary effects
 
@@ -170,7 +185,7 @@ flowchart LR
 | output | `print` | `run` | 55 |
 | output | `print` | `run` | 83 |
 | output | `print` | `run` | 86 |
-| mutation | `skills.append` | `list_bundled_skills` | 276 |
+| mutation | `skills.append` | `list_bundled_skills` | 277 |
 
 ### Static analysis gaps
 
@@ -178,13 +193,13 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `run` | `getattr` | 46 |
 | external_call | `run` | `getattr` | 47 |
-| unresolved_call | `list_bundled_skills` | `root.is_dir` | 267 |
-| external_call | `list_bundled_skills` | `sorted` | 271 |
-| unresolved_call | `list_bundled_skills` | `root.iterdir` | 271 |
-| unresolved_call | `list_bundled_skills` | `skill_dir.is_dir` | 273 |
-| unresolved_call | `list_bundled_skills` | `manifest.is_file` | 273 |
-| unresolved_call | `_parse_skill_frontmatter` | `content.replace('\r\n', '\n').replace('\r', '\n').split` | 1344 |
-| unresolved_call | `_parse_skill_frontmatter` | `content.replace('\r\n', '\n').replace` | 1344 |
+| unresolved_call | `list_bundled_skills` | `root.is_dir` | 268 |
+| external_call | `list_bundled_skills` | `sorted` | 272 |
+| unresolved_call | `list_bundled_skills` | `root.iterdir` | 272 |
+| unresolved_call | `list_bundled_skills` | `skill_dir.is_dir` | 274 |
+| unresolved_call | `list_bundled_skills` | `manifest.is_file` | 274 |
+| unresolved_call | `_parse_skill_frontmatter` | `content.replace('\r\n', '\n').replace('\r', '\n').split` | 1345 |
+| unresolved_call | `_parse_skill_frontmatter` | `content.replace('\r\n', '\n').replace` | 1345 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

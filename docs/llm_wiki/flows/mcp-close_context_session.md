@@ -6,7 +6,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -69,7 +69,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| close_context_session | _native_tool_call | 1689 | `_native_tool_call(service.close_context_session, session_id)` |
+| close_context_session | _native_tool_call | 1695 | `_native_tool_call(service.close_context_session, session_id)` |
 | _native_tool_call | callback | 1354 | `callback(..., **=kwargs)` |
 | _native_tool_call | str | 1362 | `str(exc)` |
 | _native_tool_call | CallToolResult | 1366 | `CallToolResult(isError=True, content=[...], structuredContent=failure)` |

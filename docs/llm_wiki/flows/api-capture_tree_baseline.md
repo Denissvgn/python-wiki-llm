@@ -6,86 +6,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as capture_tree_baseline
-    participant p1 as limits.items
-    participant p2 as isinstance
-    participant p3 as DocumentationPolicyError
-    participant p4 as _resolve_existing_directory
-    participant p5 as frozenset
-    participant p6 as str (src/llm_wiki_cli/services….py:capture_tree_baseline)
-    participant p7 as _walk_regular_files
-    participant p8 as len (src/llm_wiki_cli/services….py:capture_tree_baseline)
-    participant p9 as int (src/llm_wiki_cli/services….py:capture_tree_baseline)
-    participant p10 as _hash_file
-    participant p11 as min
-    participant p12 as TreeBaseline
-    participant p13 as _hash_labeled_hashes
-    participant p14 as tuple
-    participant p15 as sorted (src/llm_wiki_cli/services….py:capture_tree_baseline)
-    participant p16 as Path(…).expanduser (src/llm_wiki_cli/services…esolve_existing_directory)
-    participant p17 as _lstat
-    participant p18 as Path (src/llm_wiki_cli/services…tion_policy.py:_hash_file)
-    participant p19 as hashlib.sha256 (src/llm_wiki_cli/services…y.py:_hash_labeled_hashes)
-    participant p20 as Path (src/llm_wiki_cli/services…esolve_existing_directory)
-    participant p21 as _assert_safe_directory
-    participant p22 as os.path.abspath (src/llm_wiki_cli/services…tion_policy.py:_hash_file)
-    participant p23 as sorted (src/llm_wiki_cli/services…y.py:_hash_labeled_hashes)
-    participant p24 as Path (src/llm_wiki_cli/services…cy.py:_walk_regular_files)
-    participant p25 as os.fspath (src/llm_wiki_cli/services…tion_policy.py:_hash_file)
-    p0-->>p1: limits.items
-    p0-->>p2: isinstance(value, bool)
-    p0-->>p2: isinstance(value, int)
-    p0->>p3: DocumentationPolicyError
-    p0->>p4: _resolve_existing_directory
-    p0-->>p5: frozenset(...)
-    p0-->>p6: str (src/llm_wiki_cli/services….py:capture_tree_baseline)(value)
-    p0->>p7: _walk_regular_files
-    p0-->>p8: len (src/llm_wiki_cli/services….py:capture_tree_baseline)(file_hashes)
-    p0->>p3: DocumentationPolicyError
-    p0-->>p9: int (src/llm_wiki_cli/services….py:capture_tree_baseline)(inspected.st_size)
-    p0->>p3: DocumentationPolicyError
-    p0->>p3: DocumentationPolicyError
-    p0->>p10: _hash_file
-    p0-->>p11: min(max_file_bytes, ...)
-    p0->>p12: TreeBaseline
-    p0->>p13: _hash_labeled_hashes
-    p0-->>p14: tuple(sorted(...))
-    p0-->>p15: sorted (src/llm_wiki_cli/services….py:capture_tree_baseline)(excluded)
-    p4-->>p16: Path(…).expanduser (src/llm_wiki_cli/services…esolve_existing_directory)
-    p7->>p17: _lstat
-    p10-->>p18: Path (src/llm_wiki_cli/services…tion_policy.py:_hash_file)(os.path.abspath(...))
-    p13-->>p19: hashlib.sha256 (src/llm_wiki_cli/services…y.py:_hash_labeled_hashes)
-    p4-->>p20: Path (src/llm_wiki_cli/services…esolve_existing_directory)(path)
-    p7->>p21: _assert_safe_directory
-    p10-->>p22: os.path.abspath (src/llm_wiki_cli/services…tion_policy.py:_hash_file)(os.fspath(...))
-    p13-->>p23: sorted (src/llm_wiki_cli/services…y.py:_hash_labeled_hashes)(file_hashes.items(...))
-    p4->>p17: _lstat
-    p7-->>p24: Path (src/llm_wiki_cli/services…cy.py:_walk_regular_files)
-    p10-->>p25: os.fspath (src/llm_wiki_cli/services…tion_policy.py:_hash_file)(path)
+    participant p1 as _resolve_existing_directory
+    participant p2 as _walk_regular_files
+    participant p3 as _hash_file
+    participant p4 as DocumentationPolicyError
+    participant p5 as TreeBaseline
+    participant p6 as _hash_labeled_hashes
+    participant p7 as _lstat
+    participant p8 as _assert_safe_directory
+    participant p9 as _resolve_path
+    participant p10 as _guard_baseline_directory
+    participant p11 as _hash_windows_file
+    participant p12 as _assert_same_file_identity
+    participant p13 as windows_object_identity
+    participant p14 as guard_windows_directory_chain
+    participant p15 as _assert_safe_regular_file
+    participant p16 as open_windows_readonly_file
+    participant p17 as _assert_stable_windows_path_handle_metadata
+    participant p18 as _assert_stable_file_metadata
+    participant p19 as windows_object_identity_from_values
+    participant p20 as _windows_path_handle_metadata
+    participant p21 as _open_windows_readonly_file_handle
+    participant p22 as _open_windows_directory_guard
+    participant p23 as create_private_windows_directory
+    participant p24 as _private_windows_security_attributes
+    participant p25 as move_windows_path_write_through
+    participant p26 as _verify_windows_handle_restrictive_dacl
+    participant p27 as fresh_no_follow_stat
+    participant p28 as _is_windows_reparse_point
+    participant p29 as isinstance
+    participant p30 as limits.items
+    p0->>p1: _resolve_existing_directory
+    p0->>p2: _walk_regular_files
+    p0->>p3: _hash_file
+    p0->>p4: DocumentationPolicyError
+    p0->>p5: TreeBaseline
+    p0->>p6: _hash_labeled_hashes
+    p1->>p7: _lstat
+    p1->>p8: _assert_safe_directory
+    p1->>p9: _resolve_path
+    p2->>p10: _guard_baseline_directory
+    p3->>p11: _hash_windows_file
+    p1->>p12: _assert_same_file_identity
+    p12->>p13: windows_object_identity
+    p10->>p14: guard_windows_directory_chain
+    p11->>p15: _assert_safe_regular_file
+    p11->>p16: open_windows_readonly_file
+    p11->>p17: _assert_stable_windows_path_handle_metadata
+    p11->>p18: _assert_stable_file_metadata
+    p13->>p19: windows_object_identity_from_values
+    p17->>p20: _windows_path_handle_metadata
+    p16->>p21: _open_windows_readonly_file_handle
+    p14->>p22: _open_windows_directory_guard
+    p14->>p23: create_private_windows_directory
+    p23->>p24: _private_windows_security_attributes
+    p23->>p25: move_windows_path_write_through
+    p22->>p26: _verify_windows_handle_restrictive_dacl
+    p2->>p27: fresh_no_follow_stat
+    p2->>p28: _is_windows_reparse_point
+    p0-->>p29: isinstance(value, bool)
+    p0-->>p30: limits.items
 ```
 
 > Call sequence diagram shows 30 of 412 interactions; 382 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 16 of 199 (183 omitted); unresolved 2 of 54 (52 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 199 (198 omitted); unresolved 1 of 54 (53 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/documentation_policy.py:capture_tree_baseline` | 1 | - | external | 8 |
+| `src/llm_wiki_cli/services/documentation_policy.py:_resolve_existing_directory` | 6 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/documentation_policy.py:_resolve_existing_directory` | 6 | - | external | 1 |
 | `src/llm_wiki_cli/services/documentation_policy.py:_lstat` | 9 | - | external | 1 |
 | `src/llm_wiki_cli/services/documentation_policy.py:_lstat` | 9 | [src/llm_wiki_cli/services/documentation_policy.py](../modules/documentation_policy.md) | internal | 1 |
-| `src/llm_wiki_cli/services/documentation_policy.py:_resolve_existing_directory` | 6 | [src/llm_wiki_cli/services/documentation_policy.py](../modules/documentation_policy.md) | internal | 8 |
 | `src/llm_wiki_cli/services/documentation_policy.py:_assert_safe_directory` | 12 | - | external | 2 |
 | `src/llm_wiki_cli/services/documentation_policy.py:_assert_safe_directory` | 12 | [src/llm_wiki_cli/services/documentation_policy.py](../modules/documentation_policy.md) | internal | 4 |
 | `src/llm_wiki_cli/services/documentation_policy.py:_is_windows_reparse_point` | 15 | - | external | 5 |
-| `src/llm_wiki_cli/services/documentation_policy.py:_resolve_path` | 24 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/documentation_policy.py:_resolve_path` | 24 | - | external | 1 |
-> Omission summary shows 8 of 69 groups; 61 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 72 groups; 64 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

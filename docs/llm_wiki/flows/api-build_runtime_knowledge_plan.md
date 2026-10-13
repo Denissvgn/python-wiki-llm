@@ -2,7 +2,7 @@
 
 **Entry point:** `build_runtime_knowledge_plan` (`api`)
 **Source:** [knowledge_orchestration](../modules/knowledge_orchestration.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 38 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 39 more
 
 **Complete modules touched:**
 
@@ -41,6 +41,7 @@
 - [progress](../modules/progress.md)
 - [python_implementation](../modules/python_implementation.md)
 - [section_ownership](../modules/section_ownership.md)
+- [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [storage_spool](../modules/storage_spool.md)
@@ -51,90 +52,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as build_runtime_knowledge_plan
-    participant p1 as isinstance (src/llm_wiki_cli/services…ld_runtime_knowledge_plan)
-    participant p2 as TypeError (src/llm_wiki_cli/services…ld_runtime_knowledge_plan)
-    participant p3 as capture_committed_knowledge
-    participant p4 as replace (src/llm_wiki_cli/services…ld_runtime_knowledge_plan)
-    participant p5 as committed_state.require_for
-    participant p6 as _prepared_runtime_governance
-    participant p7 as inputs.source_snapshot.hashes_for
-    participant p8 as _producer_evidence
-    participant p9 as _manifest_extractor_refs
-    participant p10 as with_source_selection_generation_input
-    participant p11 as _runtime_manifest_generation_inputs
-    participant p12 as KnowledgeGenerationError
-    participant p13 as next_manifest.with_generation_state
-    participant p14 as infrastructure_evidence_by_page
-    participant p15 as _infrastructure_extractor_component
-    participant p16 as prepare_runtime_generation_options
-    participant p17 as committed_state.captured_bytes.get
-    participant p18 as json.loads (src/llm_wiki_cli/services…ld_runtime_knowledge_plan)
-    participant p19 as previous_maintenance[…].values
-    participant p20 as confirmed_missing_source_paths
-    participant p21 as frozenset (src/llm_wiki_cli/services…ld_runtime_knowledge_plan)
-    participant p22 as Path (src/llm_wiki_cli/services…ld_runtime_knowledge_plan)
-    participant p23 as (…).exists (src/llm_wiki_cli/services…ld_runtime_knowledge_plan)
-    participant p24 as (…).is_symlink (src/llm_wiki_cli/services…ld_runtime_knowledge_plan)
-    participant p25 as ACTIVE_WRITE_BASIS.get
-    participant p26 as dict (src/llm_wiki_cli/services…ld_runtime_knowledge_plan)
-    participant p27 as _stabilize_revision_only_noop
-    participant p28 as KnowledgeGenerationInputs
-    participant p29 as runtime_consumed_inputs
-    p0-->>p1: isinstance (src/llm_wiki_cli/services…ld_runtime_knowledge_plan)(inputs, RuntimeKnowledgeInputs)
-    p0-->>p2: TypeError (src/llm_wiki_cli/services…ld_runtime_knowledge_plan)('inputs must be a RuntimeKnowledgeInputs')
-    p0->>p3: capture_committed_knowledge
-    p0-->>p4: replace (src/llm_wiki_cli/services…ld_runtime_knowledge_plan)(inputs, committed_state=committed_state)
-    p0-->>p5: committed_state.require_for(inputs.target_wiki_dir)
-    p0->>p6: _prepared_runtime_governance
-    p0-->>p7: inputs.source_snapshot.hashes_for(inputs.inventory)
-    p0->>p8: _producer_evidence
-    p0->>p9: _manifest_extractor_refs
-    p0->>p10: with_source_selection_generation_input
-    p0->>p11: _runtime_manifest_generation_inputs
-    p0->>p12: KnowledgeGenerationError
-    p0-->>p13: next_manifest.with_generation_state(surfaces=next_manifest.surfaces, generation_inputs=generation_inputs)
-    p0->>p14: infrastructure_evidence_by_page
-    p0->>p15: _infrastructure_extractor_component
-    p0->>p16: prepare_runtime_generation_options
-    p0-->>p17: committed_state.captured_bytes.get(ADOPTION_FILENAME)
-    p0-->>p18: json.loads (src/llm_wiki_cli/services…ld_runtime_knowledge_plan)(marker_bytes)
-    p0-->>p19: previous_maintenance[…].values
-    p0->>p20: confirmed_missing_source_paths
-    p0-->>p21: frozenset (src/llm_wiki_cli/services…ld_runtime_knowledge_plan)
-    p0-->>p19: previous_maintenance[…].values
-    p0-->>p22: Path (src/llm_wiki_cli/services…ld_runtime_knowledge_plan)(inputs.target_wiki_dir)
-    p0-->>p23: (…).exists (src/llm_wiki_cli/services…ld_runtime_knowledge_plan)
-    p0-->>p24: (…).is_symlink (src/llm_wiki_cli/services…ld_runtime_knowledge_plan)
-    p0-->>p25: ACTIVE_WRITE_BASIS.get
-    p0-->>p26: dict (src/llm_wiki_cli/services…ld_runtime_knowledge_plan)(operation_basis.expected)
-    p0->>p27: _stabilize_revision_only_noop
-    p0->>p28: KnowledgeGenerationInputs
-    p0->>p29: runtime_consumed_inputs
+    participant p1 as capture_committed_knowledge
+    participant p2 as _prepared_runtime_governance
+    participant p3 as _producer_evidence
+    participant p4 as with_source_selection_generation_input
+    participant p5 as _infrastructure_extractor_component
+    participant p6 as prepare_runtime_generation_options
+    participant p7 as confirmed_missing_source_paths
+    participant p8 as _stabilize_revision_only_noop
+    participant p9 as runtime_consumed_inputs
+    participant p10 as _tool_component
+    participant p11 as _previous_committed_producer
+    participant p12 as _manifest_extractor_refs
+    participant p13 as _runtime_manifest_generation_inputs
+    participant p14 as KnowledgeGenerationError
+    participant p15 as infrastructure_evidence_by_page
+    participant p16 as KnowledgeGenerationInputs
+    participant p17 as build_knowledge_generation_plan
+    participant p18 as committed_governance_bundle_id
+    participant p19 as _plugin_extractors_by_language
+    participant p20 as guard_maintenance_owner
+    participant p21 as validate_governance_ledger
+    participant p22 as load_governance
+    participant p23 as _decode_json_object
+    participant p24 as _merge_explicit_consumed_input
+    participant p25 as _confirmed_source_path
+    participant p26 as _validated_identity
+    participant p27 as natural_key_for (src/llm_wiki_cli/services/knowledge_governance.py)
+    participant p28 as validate_knowledge_artifacts
+    participant p29 as isinstance (src/llm_wiki_cli/services…ld_runtime_knowledge_plan)
+    participant p30 as committed_state.require_for
+    p0->>p1: capture_committed_knowledge
+    p0->>p2: _prepared_runtime_governance
+    p0->>p3: _producer_evidence
+    p0->>p4: with_source_selection_generation_input
+    p0->>p5: _infrastructure_extractor_component
+    p0->>p6: prepare_runtime_generation_options
+    p0->>p7: confirmed_missing_source_paths
+    p0->>p8: _stabilize_revision_only_noop
+    p0->>p9: runtime_consumed_inputs
+    p0->>p10: _tool_component
+    p0->>p11: _previous_committed_producer
+    p0->>p12: _manifest_extractor_refs
+    p0->>p13: _runtime_manifest_generation_inputs
+    p0->>p14: KnowledgeGenerationError
+    p0->>p15: infrastructure_evidence_by_page
+    p0->>p16: KnowledgeGenerationInputs
+    p8->>p17: build_knowledge_generation_plan
+    p2->>p18: committed_governance_bundle_id
+    p3->>p19: _plugin_extractors_by_language
+    p1->>p20: guard_maintenance_owner
+    p2->>p21: validate_governance_ledger
+    p2->>p22: load_governance
+    p1->>p23: _decode_json_object
+    p9->>p24: _merge_explicit_consumed_input
+    p7->>p25: _confirmed_source_path
+    p4->>p26: _validated_identity
+    p2->>p27: natural_key_for (src/llm_wiki_cli/services/knowledge_governance.py)
+    p1->>p28: validate_knowledge_artifacts
+    p0-->>p29: isinstance (src/llm_wiki_cli/services…ld_runtime_knowledge_plan)(inputs, RuntimeKnowledgeInputs)
+    p0-->>p30: committed_state.require_for(inputs.target_wiki_dir)
 ```
 
-> Call sequence diagram shows 30 of 3693 interactions; 3663 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3800 interactions; 3770 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 7 of 1174 (1167 omitted); unresolved 9 of 838 (829 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1214 (1213 omitted); unresolved 1 of 860 (859 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/knowledge_orchestration.py:build_runtime_knowledge_plan` | 1 | - | external | 8 |
 | `src/llm_wiki_cli/services/knowledge_orchestration.py:capture_committed_knowledge` | 4 | - | unresolved | 7 |
 | `src/llm_wiki_cli/services/knowledge_orchestration.py:capture_committed_knowledge` | 4 | - | external | 3 |
-| `src/llm_wiki_cli/services/knowledge_orchestration.py:capture_committed_knowledge` | 4 | [src/llm_wiki_cli/services/maintenance_protocol.py](../modules/maintenance_protocol.md) | internal | 1 |
 | `src/llm_wiki_cli/services/maintenance_protocol.py:guard_maintenance_owner` | 7 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 8 | - | external | 4 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 8 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 11 | - | external | 20 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 11 | - | unresolved | 5 |
-> Omission summary shows 8 of 875 groups; 867 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 891 groups; 883 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -185,7 +187,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `build_runtime_knowledge_plan` | `inputs: RuntimeKnowledgeInputs` | `RuntimeKnowledgeInputs`, `SourceSelectionError`, `__version__`, `KNOWLEDGE_SCHEMA_VERSION`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION` | - | `_stabilize_revision_only_noop(...)` |
+| `build_runtime_knowledge_plan` | `inputs: RuntimeKnowledgeInputs` | `RuntimeKnowledgeInputs`, `SourceSelectionError`, `__version__`, `KNOWLEDGE_SCHEMA_VERSION`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION`, `SYNC_ANALYSIS_EXTENSION` | - | `_stabilize_revision_only_noop(...)` |
 | `isinstance (src/llm_wiki_cli/services…ld_runtime_knowledge_plan)` | - | - | - | - |
 | `TypeError (src/llm_wiki_cli/services…ld_runtime_knowledge_plan)` | - | - | - | - |
 | `capture_committed_knowledge` | `wiki_dir: str \| Path`, `manifest: SyncManifest \| None` | `SURFACE_INDEX_FILENAME`, `KNOWLEDGE_INDEX_FILENAME`, `MANIFEST_FILENAME`, `MANIFEST_FILENAME`, `SURFACE_INDEX_FILENAME`, `KNOWLEDGE_INDEX_FILENAME`, `KnowledgeArtifactError`, `KnowledgeArtifactError` | `captured[...]`, `captured[...]` | `state` |
@@ -202,12 +204,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_runtime_knowledge_plan | isinstance (src/llm_wiki_cli/services…ld_runtime_knowledge_plan) | 389 | `isinstance(inputs, RuntimeKnowledgeInputs)` |
-| build_runtime_knowledge_plan | TypeError (src/llm_wiki_cli/services…ld_runtime_knowledge_plan) | 390 | `TypeError('inputs must be a RuntimeKnowledgeInputs')` |
-| build_runtime_knowledge_plan | capture_committed_knowledge | 393 | `capture_committed_knowledge(inputs.target_wiki_dir, inputs.previous_manifest)` |
-| capture_committed_knowledge | Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge) | 235 | `Path(wiki_dir).resolve(data not statically known)` |
-| capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 235 | `Path(wiki_dir)` |
-| capture_committed_knowledge | guard_maintenance_owner | 238 | `guard_maintenance_owner(root, manifest)` |
+| build_runtime_knowledge_plan | isinstance (src/llm_wiki_cli/services…ld_runtime_knowledge_plan) | 393 | `isinstance(inputs, RuntimeKnowledgeInputs)` |
+| build_runtime_knowledge_plan | TypeError (src/llm_wiki_cli/services…ld_runtime_knowledge_plan) | 394 | `TypeError('inputs must be a RuntimeKnowledgeInputs')` |
+| build_runtime_knowledge_plan | capture_committed_knowledge | 397 | `capture_committed_knowledge(inputs.target_wiki_dir, inputs.previous_manifest)` |
+| capture_committed_knowledge | Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge) | 239 | `Path(wiki_dir).resolve(data not statically known)` |
+| capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 239 | `Path(wiki_dir)` |
+| capture_committed_knowledge | guard_maintenance_owner | 242 | `guard_maintenance_owner(root, manifest)` |
 | guard_maintenance_owner | _absolute_path | 104 | `_absolute_path(Path(...))` |
 | _absolute_path | Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `Path(os.path.abspath(...))` |
 | _absolute_path | os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `os.path.abspath(path)` |
@@ -218,16 +220,16 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `captured.update` | `capture_committed_knowledge` | 264 |
+| mutation | `captured.update` | `capture_committed_knowledge` | 268 |
 | mutation | `pending_parts.pop` | `first_unsafe_path_component` | 71 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_runtime_knowledge_plan` | `isinstance` | 389 |
-| external_call | `build_runtime_knowledge_plan` | `TypeError` | 390 |
-| unresolved_call | `capture_committed_knowledge` | `Path(wiki_dir).resolve` | 235 |
+| external_call | `build_runtime_knowledge_plan` | `isinstance` | 393 |
+| external_call | `build_runtime_knowledge_plan` | `TypeError` | 394 |
+| unresolved_call | `capture_committed_knowledge` | `Path(wiki_dir).resolve` | 239 |
 | external_call | `_absolute_path` | `os.path.abspath` | 49 |
 | step_limit | `build_runtime_knowledge_plan` | `first 12 steps` | 0 |
 | truncated_flow | `build_runtime_knowledge_plan` | `depth limit` | 0 |

@@ -1,6 +1,6 @@
 ---
 name: wiki-reference
-description: Route an LLM Wiki task to one bounded managed contract. Use for maintenance, canonical surfaces, repository handoff, qualified knowledge, context queries, governance, extraction, publishing, or resource-aware execution without loading unrelated policy.
+description: Route an LLM Wiki task to one bounded managed contract. Use for substantive development, maintenance, canonical surfaces, repository handoff, qualified knowledge, context queries, governance, extraction, publishing, or resource-aware execution without loading unrelated policy.
 ---
 
 # wiki-reference
@@ -9,6 +9,9 @@ Open only the topic that matches the task. Each route is one hop from this
 file, owns its stated contract, and cannot grant authority that the user,
 repository policy, or calling application did not provide.
 
+- [Development workflow](references/development-workflow.md) — use for substantive
+  coding or investigations to connect criteria, evidence, independent checks,
+  durable explanations, gap reporting, and resumable handoff.
 - [Maintenance and validation](references/maintenance.md) — use after relevant
   code or source changes for owning sync, semantic pass, final re-anchor,
   strict validation, recovery, and handoff ordering.

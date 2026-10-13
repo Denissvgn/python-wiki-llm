@@ -6,6 +6,16 @@
 
 Read-only ownership and filesystem preflight for entity/module page writes.
 
+Retained page repair plans can carry source-derived section corrections as well
+as link corrections, with exact expected bytes and an explicit reason. Both
+retain the existing ownership, mutation and durable-original recovery boundary.
+
+Validated retired coordinates participate in exact-owner revival. Their occupied
+paths cannot be claimed by another live owner. Retirement history repairs use
+the same expected-byte guards and durable preimage journal as other retained
+page repairs; interrupted application retains recovery data and refuses blind
+retry.
+
 ## Imports
 
 | Source | Symbols |
@@ -14,6 +24,7 @@ Read-only ownership and filesystem preflight for entity/module page writes.
 | `.knowledge_storage` | `MAX_EXPANDED_BYTES`, `KnowledgeStorageError` |
 | `.knowledge_storage_io` | `StorageReadSession` |
 | `.markdown_sections` | `normalize_markdown` |
+| `.source_retirement` | `retired_entity_mappings` |
 | `.sync_analysis` | `SyncOwnershipError`, `_recorded_entity_pages` |
 | `.sync_manifest` | `ManifestPageSource`, `SyncManifest` |
 | `.sync_retained_links` | `repair_retained_page_links` |
@@ -44,21 +55,21 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (5) |
-| Outbound | `src` (9) |
+| Inbound | `src` (6) |
+| Outbound | `src` (10) |
 
-> All 14 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [PageTransitionError](../entities/PageTransitionError.md) | 22 | `SyncOwnershipError` | The intended page writes cannot preserve verified ownership. |
-| [PageTransition](../entities/PageTransition.md) | 27 | — | — |
-| [StagedPageMove](../entities/StagedPageMove.md) | 51 | — | — |
-| [RetainedPageRepair](../entities/RetainedPageRepair.md) | 58 | — | — |
-| [PageTransitionPlan](../entities/PageTransitionPlan.md) | 66 | — | — |
-| [_Ownership](../entities/Ownership.md) | 131 | — | — |
+| [PageTransitionError](../entities/PageTransitionError.md) | 23 | `SyncOwnershipError` | The intended page writes cannot preserve verified ownership. |
+| [PageTransition](../entities/PageTransition.md) | 28 | — | — |
+| [StagedPageMove](../entities/StagedPageMove.md) | 52 | — | — |
+| [RetainedPageRepair](../entities/RetainedPageRepair.md) | 59 | — | — |
+| [PageTransitionPlan](../entities/PageTransitionPlan.md) | 68 | — | — |
+| [_Ownership](../entities/Ownership.md) | 133 | — | — |
 
 ## Functions
 

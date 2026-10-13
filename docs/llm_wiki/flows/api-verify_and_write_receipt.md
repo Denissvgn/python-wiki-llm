@@ -14,7 +14,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -25,76 +25,80 @@ sequenceDiagram
     participant p3 as build_verification_receipt
     participant p4 as serialize_verification_receipt
     participant p5 as run_verification
-    participant p6 as Path (src/llm_wiki_cli/services…rite_verification_receipt)
-    participant p7 as first_unsafe_path_component
-    participant p8 as VerificationReceiptError
-    participant p9 as root.is_symlink
-    participant p10 as root.is_dir
-    participant p11 as verification_receipt_path
-    participant p12 as path.is_symlink
-    participant p13 as path.exists
-    participant p14 as path.is_file
-    participant p15 as write_bytes_atomic
-    participant p16 as isinstance (src/llm_wiki_cli/services…uild_verification_receipt)
-    participant p17 as isinstance (src/llm_wiki_cli/services…racts.py:run_verification)
-    participant p18 as formatted_json_bytes
-    participant p19 as Path (src/llm_wiki_cli/services…rst_unsafe_path_component)
-    participant p20 as Path (src/llm_wiki_cli/services…verification_receipt_path)
-    participant p21 as isinstance (src/llm_wiki_cli/services/io.py:write_bytes_atomic)
-    participant p22 as TypeError (src/llm_wiki_cli/services…uild_verification_receipt)
-    participant p23 as TypeError (src/llm_wiki_cli/services…racts.py:run_verification)
-    participant p24 as verification_receipt_to_payload
-    participant p25 as os.fspath
-    participant p26 as TypeError (src/llm_wiki_cli/services/io.py:write_bytes_atomic)
+    participant p6 as write_bytes_atomic
+    participant p7 as formatted_json_bytes
+    participant p8 as verification_receipt_to_payload
+    participant p9 as _selected_contracts
+    participant p10 as validate_verification_receipt
+    participant p11 as _checker_id
+    participant p12 as _object
+    participant p13 as _exact_fields
+    participant p14 as _string
+    participant p15 as _receipt_hash
+    participant p16 as _scope_uid
+    participant p17 as _receipt_anchor_mapping
+    participant p18 as hash_json
+    participant p19 as _parse_check
+    participant p20 as first_unsafe_path_component
+    participant p21 as VerificationReceiptError
+    participant p22 as verification_receipt_path
+    participant p23 as VerificationContractError
+    participant p24 as before_wiki_write
+    participant p25 as VerificationReceipt
+    participant p26 as after_wiki_write
+    participant p27 as formatted_json_text
+    participant p28 as _receipt_to_payload
+    participant p29 as Path (src/llm_wiki_cli/services…rite_verification_receipt)
+    participant p30 as root.is_symlink
     p0->>p1: verify
     p0->>p2: write_verification_receipt
     p1->>p3: build_verification_receipt
     p2->>p4: serialize_verification_receipt
     p1->>p5: run_verification
-    p2-->>p6: Path (src/llm_wiki_cli/services…rite_verification_receipt)(wiki_dir)
-    p2->>p7: first_unsafe_path_component
-    p2->>p8: VerificationReceiptError
-    p2-->>p9: root.is_symlink
-    p2->>p8: VerificationReceiptError
-    p2-->>p10: root.is_dir
-    p2->>p8: VerificationReceiptError
-    p2->>p11: verification_receipt_path
-    p2-->>p12: path.is_symlink
-    p2->>p8: VerificationReceiptError
-    p2-->>p13: path.exists
-    p2-->>p14: path.is_file
-    p2->>p8: VerificationReceiptError
-    p2->>p15: write_bytes_atomic
-    p3-->>p16: isinstance (src/llm_wiki_cli/services…uild_verification_receipt)(context, VerificationContext)
-    p5-->>p17: isinstance (src/llm_wiki_cli/services…racts.py:run_verification)(context, VerificationContext)
-    p4->>p18: formatted_json_bytes
-    p7-->>p19: Path (src/llm_wiki_cli/services…rst_unsafe_path_component)(os.fspath(...))
-    p11-->>p20: Path (src/llm_wiki_cli/services…verification_receipt_path)(wiki_dir)
-    p15-->>p21: isinstance (src/llm_wiki_cli/services/io.py:write_bytes_atomic)(content, bytes)
-    p3-->>p22: TypeError (src/llm_wiki_cli/services…uild_verification_receipt)('context must be a VerificationContext')
-    p5-->>p23: TypeError (src/llm_wiki_cli/services…racts.py:run_verification)('context must be a VerificationContext')
-    p4->>p24: verification_receipt_to_payload
-    p7-->>p25: os.fspath(path)
-    p15-->>p26: TypeError (src/llm_wiki_cli/services/io.py:write_bytes_atomic)('content must be bytes')
+    p2->>p6: write_bytes_atomic
+    p4->>p7: formatted_json_bytes
+    p4->>p8: verification_receipt_to_payload
+    p5->>p9: _selected_contracts
+    p8->>p10: validate_verification_receipt
+    p9->>p11: _checker_id
+    p10->>p12: _object
+    p10->>p13: _exact_fields
+    p10->>p14: _string
+    p10->>p15: _receipt_hash
+    p10->>p16: _scope_uid
+    p10->>p17: _receipt_anchor_mapping
+    p10->>p18: hash_json
+    p10->>p19: _parse_check
+    p2->>p20: first_unsafe_path_component
+    p2->>p21: VerificationReceiptError
+    p2->>p22: verification_receipt_path
+    p3->>p23: VerificationContractError
+    p6->>p24: before_wiki_write
+    p3->>p25: VerificationReceipt
+    p6->>p26: after_wiki_write
+    p7->>p27: formatted_json_text
+    p8->>p28: _receipt_to_payload
+    p2-->>p29: Path (src/llm_wiki_cli/services…rite_verification_receipt)(wiki_dir)
+    p2-->>p30: root.is_symlink
 ```
 
 > Call sequence diagram shows 30 of 199 interactions; 169 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 10 of 75 (65 omitted); unresolved 5 of 25 (20 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 75 (74 omitted); unresolved 1 of 25 (24 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/verification_contracts.py:build_verification_receipt` | 3 | - | external | 4 |
-| `src/llm_wiki_cli/services/verification_contracts.py:build_verification_receipt` | 3 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 3 |
-| `src/llm_wiki_cli/services/verification_contracts.py:run_verification` | 13 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 1 |
+| `src/llm_wiki_cli/services/verification_contracts.py:build_verification_receipt` | 3 | - | external | 6 |
+| `src/llm_wiki_cli/services/verification_contracts.py:build_verification_receipt` | 3 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 1 |
+| `src/llm_wiki_cli/services/verification_contracts.py:run_verification` | 13 | - | external | 3 |
 | `src/llm_wiki_cli/services/verification_contracts.py:_selected_contracts` | 16 | - | external | 11 |
-| `src/llm_wiki_cli/services/verification_contracts.py:_selected_contracts` | 16 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 8 |
+| `src/llm_wiki_cli/services/verification_contracts.py:_selected_contracts` | 16 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 7 |
 | `src/llm_wiki_cli/services/verification_contracts.py:_checker_id` | 31 | - | external | 1 |
 | `src/llm_wiki_cli/services/verification_contracts.py:_checker_id` | 31 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/verification_contracts.py:_checker_id` | 31 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 1 |
-> Omission summary shows 8 of 49 groups; 41 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 48 groups; 40 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

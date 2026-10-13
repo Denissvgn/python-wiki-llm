@@ -313,7 +313,7 @@ class TestTypeScriptWrapperFiltering:
         assert set(inv) == {"script.js", "view.jsx"}
         assert {entry["language"] for entry in inv.values()} == {"javascript"}
         cmd = commands[0]
-        assert cmd[cmd.index("--extensions") + 1] == ".ts,.tsx,.js,.jsx"
+        assert cmd[cmd.index("--extensions") + 1] == ".ts,.tsx,.js,.jsx,.mjs,.cjs"
         only_files = cmd[cmd.index("--only-files") + 1].split(",")
         assert only_files == ["script.js", "view.jsx"]
 

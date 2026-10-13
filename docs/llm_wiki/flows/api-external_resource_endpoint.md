@@ -14,7 +14,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -23,56 +23,68 @@ sequenceDiagram
     participant p1 as _normalise_endpoint
     participant p2 as _object
     participant p3 as _enum
-    participant p4 as endpoint.get
-    participant p5 as _only_fields
-    participant p6 as len (src/llm_wiki_cli/services…ph.py:_normalise_endpoint)
-    participant p7 as KnowledgeGraphError
-    participant p8 as _locator
-    participant p9 as _name
-    participant p10 as _relative_path
-    participant p11 as _external_uri
-    participant p12 as _array
-    participant p13 as enumerate
-    participant p14 as any (src/llm_wiki_cli/services…ph.py:_normalise_endpoint)
-    participant p15 as _canonical_json
-    participant p16 as sorted (src/llm_wiki_cli/services…ph.py:_normalise_endpoint)
-    participant p17 as require_mapping
-    participant p18 as require_exact_fields
+    participant p4 as _only_fields
+    participant p5 as _locator
+    participant p6 as _relative_path
+    participant p7 as _external_uri
+    participant p8 as _array
+    participant p9 as _canonical_json
+    participant p10 as _name
+    participant p11 as validate_exact_page_coordinate
+    participant p12 as require_repository_relative_path
+    participant p13 as require_choice
+    participant p14 as contains_uri_authority_userinfo
+    participant p15 as require_trimmed_text
+    participant p16 as _matches_directory_path
+    participant p17 as _matches_directory_uri
+    participant p18 as require_portable_relative_path
+    participant p19 as require_nonempty_text
+    participant p20 as _default_path_error
+    participant p21 as is_safe_page_id
+    participant p22 as canonical_path
+    participant p23 as mcp_uri
+    participant p24 as _check_path_collision
+    participant p25 as require_portable_path_component
+    participant p26 as KnowledgeGraphError
+    participant p27 as require_mapping
+    participant p28 as require_exact_fields
+    participant p29 as len (src/llm_wiki_cli/services…ph.py:_normalise_endpoint)
+    participant p30 as endpoint.get
     p0->>p1: _normalise_endpoint
     p1->>p2: _object
     p1->>p3: _enum
-    p1-->>p4: endpoint.get('kind')
-    p1->>p5: _only_fields
-    p1-->>p6: len (src/llm_wiki_cli/services…ph.py:_normalise_endpoint)(present)
-    p1->>p7: KnowledgeGraphError
-    p1->>p8: _locator
-    p1->>p9: _name
-    p1->>p5: _only_fields
-    p1->>p10: _relative_path
-    p1->>p9: _name
-    p1->>p5: _only_fields
-    p1->>p9: _name
-    p1->>p11: _external_uri
-    p1->>p5: _only_fields
-    p1->>p9: _name
-    p1->>p12: _array
-    p1->>p1: _normalise_endpoint
-    p1-->>p13: enumerate(raw_candidates)
-    p1-->>p14: any (src/llm_wiki_cli/services…ph.py:_normalise_endpoint)(...)
-    p1->>p7: KnowledgeGraphError
-    p1->>p15: _canonical_json
-    p1-->>p16: sorted (src/llm_wiki_cli/services…ph.py:_normalise_endpoint)(canonical)
-    p2->>p17: require_mapping
-    p3->>p7: KnowledgeGraphError
-    p5->>p18: require_exact_fields
-    p8->>p9: _name
-    p10->>p9: _name
-    p11->>p9: _name
+    p1->>p4: _only_fields
+    p1->>p5: _locator
+    p1->>p6: _relative_path
+    p1->>p7: _external_uri
+    p1->>p8: _array
+    p1->>p9: _canonical_json
+    p5->>p10: _name
+    p5->>p11: validate_exact_page_coordinate
+    p6->>p12: require_repository_relative_path
+    p3->>p13: require_choice
+    p7->>p14: contains_uri_authority_userinfo
+    p13->>p15: require_trimmed_text
+    p11->>p16: _matches_directory_path
+    p11->>p17: _matches_directory_uri
+    p12->>p18: require_portable_relative_path
+    p15->>p19: require_nonempty_text
+    p18->>p20: _default_path_error
+    p16->>p21: is_safe_page_id
+    p16->>p22: canonical_path
+    p17->>p23: mcp_uri
+    p18->>p24: _check_path_collision
+    p18->>p25: require_portable_path_component
+    p1->>p26: KnowledgeGraphError
+    p2->>p27: require_mapping
+    p4->>p28: require_exact_fields
+    p1-->>p29: len (src/llm_wiki_cli/services…ph.py:_normalise_endpoint)(present)
+    p1-->>p30: endpoint.get('kind')
 ```
 
 > Call sequence diagram shows 30 of 216 interactions; 186 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 4 of 63 (59 omitted); unresolved 1 of 56 (55 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 63 (62 omitted); unresolved 1 of 56 (55 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -82,11 +94,11 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/validation.py:require_mapping` | 4 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_graph.py:_object` | 3 | [src/llm_wiki_cli/services/knowledge_graph.py](../modules/knowledge_graph.md) | internal | 2 |
 | `src/llm_wiki_cli/services/knowledge_graph.py:_object` | 3 | - | external | 1 |
+| `src/llm_wiki_cli/services/knowledge_graph.py:_enum` | 11 | [src/llm_wiki_cli/services/knowledge_graph.py](../modules/knowledge_graph.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_graph.py:_enum` | 11 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_graph.py:_enum` | 11 | - | external | 1 |
-| `src/llm_wiki_cli/services/knowledge_graph.py:_enum` | 11 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:require_choice` | 15 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-> Omission summary shows 8 of 71 groups; 63 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 17 | - | external | 1 |
+> Omission summary shows 8 of 67 groups; 59 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

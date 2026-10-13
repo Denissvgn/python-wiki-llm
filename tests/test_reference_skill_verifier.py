@@ -488,5 +488,5 @@ def test_reported_success_without_current_tree_is_install_error(
 
 
 def test_expected_file_contract_is_exact() -> None:
-    assert len(REFERENCE_SKILL_FILES) == 11
+    assert len(REFERENCE_SKILL_FILES) == 12
     assert len(set(REFERENCE_SKILL_FILES)) == len(REFERENCE_SKILL_FILES)

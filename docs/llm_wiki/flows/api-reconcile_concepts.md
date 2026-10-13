@@ -15,79 +15,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as reconcile_concepts
     participant p1 as validate_governance_ledger
-    participant p2 as dict (src/llm_wiki_cli/services…nce.py:reconcile_concepts)
-    participant p3 as _identity_ownership_key
-    participant p4 as allocations.items (src/llm_wiki_cli/services…nce.py:reconcile_concepts)
-    participant p5 as _validated_references
-    participant p6 as sorted (src/llm_wiki_cli/services…nce.py:reconcile_concepts)
-    participant p7 as (…).items
-    participant p8 as _identity_value
-    participant p9 as by_locator.get
-    participant p10 as refs_by_locator.get
-    participant p11 as GovernanceError
-    participant p12 as by_natural_key.get
-    participant p13 as tuple (src/llm_wiki_cli/services…nce.py:reconcile_concepts)
-    participant p14 as aliases.items (src/llm_wiki_cli/services…nce.py:reconcile_concepts)
-    participant p15 as aliases.pop
-    participant p16 as GovernanceAllocation
-    participant p17 as _put_alias
-    participant p18 as GovernanceAlias
+    participant p2 as _validated_references
+    participant p3 as _put_alias
+    participant p4 as derive_concept_uid (src/llm_wiki_cli/services/knowledge_governance.py)
+    participant p5 as _identity_ownership_key
+    participant p6 as _identity_value
+    participant p7 as GovernanceError
+    participant p8 as GovernanceAllocation
+    participant p9 as GovernanceAlias
+    participant p10 as derive_concept_uid (src/llm_wiki_cli/services/concept_identity.py)
+    participant p11 as _bundle_id
+    participant p12 as _concept_uid
+    participant p13 as _concept_kind
+    participant p14 as _validate_lifecycle_event_fields
+    participant p15 as _validate_lifecycle_histories
+    participant p16 as _validate_review_event_fields
+    participant p17 as validate_bundle_id
+    participant p18 as validate_concept_uid
+    participant p19 as validate_concept_kind
+    participant p20 as _alias_type
+    participant p21 as identity_coordinate_key
+    participant p22 as _event_id
+    participant p23 as validate_alias_value
+    participant p24 as _existing_uid
+    participant p25 as _section_locator
+    participant p26 as _hash
+    participant p27 as _review_evidence
+    participant p28 as _actor
+    participant p29 as dict (src/llm_wiki_cli/services…nce.py:reconcile_concepts)
+    participant p30 as allocations.items (src/llm_wiki_cli/services…nce.py:reconcile_concepts)
     p0->>p1: validate_governance_ledger
-    p0-->>p2: dict (src/llm_wiki_cli/services…nce.py:reconcile_concepts)(current.concepts)
-    p0-->>p2: dict (src/llm_wiki_cli/services…nce.py:reconcile_concepts)(current.aliases)
-    p0->>p3: _identity_ownership_key
-    p0-->>p4: allocations.items (src/llm_wiki_cli/services…nce.py:reconcile_concepts)
-    p0-->>p4: allocations.items (src/llm_wiki_cli/services…nce.py:reconcile_concepts)
-    p0->>p5: _validated_references
-    p0->>p3: _identity_ownership_key
-    p0-->>p6: sorted (src/llm_wiki_cli/services…nce.py:reconcile_concepts)(...)
-    p0-->>p7: (…).items
-    p0->>p8: _identity_value
-    p0->>p8: _identity_value
-    p0->>p3: _identity_ownership_key
-    p0->>p3: _identity_ownership_key
-    p0-->>p9: by_locator.get(old_coordinate)
-    p0-->>p10: refs_by_locator.get(new_coordinate)
-    p0->>p11: GovernanceError
-    p0-->>p9: by_locator.get(new_coordinate)
-    p0->>p11: GovernanceError
-    p0->>p11: GovernanceError
-    p0-->>p12: by_natural_key.get(target_reference.natural_key)
-    p0->>p11: GovernanceError
-    p0->>p3: _identity_ownership_key
-    p0-->>p13: tuple (src/llm_wiki_cli/services…nce.py:reconcile_concepts)(aliases.items(...))
-    p0-->>p14: aliases.items (src/llm_wiki_cli/services…nce.py:reconcile_concepts)
-    p0->>p3: _identity_ownership_key
-    p0-->>p15: aliases.pop(promoted_key)
-    p0->>p16: GovernanceAllocation
-    p0->>p17: _put_alias
-    p0->>p18: GovernanceAlias
+    p0->>p2: _validated_references
+    p0->>p3: _put_alias
+    p0->>p4: derive_concept_uid (src/llm_wiki_cli/services/knowledge_governance.py)
+    p0->>p5: _identity_ownership_key
+    p0->>p6: _identity_value
+    p0->>p7: GovernanceError
+    p0->>p8: GovernanceAllocation
+    p0->>p9: GovernanceAlias
+    p4->>p10: derive_concept_uid (src/llm_wiki_cli/services/concept_identity.py)
+    p1->>p11: _bundle_id
+    p1->>p12: _concept_uid
+    p1->>p13: _concept_kind
+    p1->>p14: _validate_lifecycle_event_fields
+    p1->>p15: _validate_lifecycle_histories
+    p1->>p16: _validate_review_event_fields
+    p11->>p17: validate_bundle_id
+    p12->>p18: validate_concept_uid
+    p13->>p19: validate_concept_kind
+    p6->>p20: _alias_type
+    p5->>p21: identity_coordinate_key
+    p14->>p22: _event_id
+    p6->>p23: validate_alias_value
+    p14->>p24: _existing_uid
+    p16->>p25: _section_locator
+    p16->>p26: _hash
+    p16->>p27: _review_evidence
+    p14->>p28: _actor
+    p0-->>p29: dict (src/llm_wiki_cli/services…nce.py:reconcile_concepts)(current.concepts)
+    p0-->>p30: allocations.items (src/llm_wiki_cli/services…nce.py:reconcile_concepts)
 ```
 
 > Call sequence diagram shows 30 of 406 interactions; 376 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 4 of 82 (78 omitted); unresolved 9 of 97 (88 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 82 (81 omitted); unresolved 1 of 97 (96 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/knowledge_governance.py:validate_governance_ledger` | 2 | - | external | 15 |
-| `src/llm_wiki_cli/services/knowledge_governance.py:validate_governance_ledger` | 2 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 27 |
-| `src/llm_wiki_cli/services/knowledge_governance.py:_bundle_id` | 6 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 1 |
+| `src/llm_wiki_cli/services/knowledge_governance.py:validate_governance_ledger` | 2 | [src/llm_wiki_cli/services/knowledge_governance.py](../modules/knowledge_governance.md) | internal | 21 |
 | `src/llm_wiki_cli/services/concept_identity.py:validate_bundle_id` | 7 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 4 |
 | `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 8 | - | external | 6 |
 | `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 8 | [src/llm_wiki_cli/services/concept_identity.py](../modules/concept_identity.md) | internal | 5 |
 | `src/llm_wiki_cli/services/concept_identity.py:_machine_text` | 8 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/concept_identity.py:validate_bundle_id` | 7 | - | unresolved | 2 |
-> Omission summary shows 8 of 108 groups; 100 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/concept_identity.py:_looks_absolute_path` | 25 | - | unresolved | 2 |
+> Omission summary shows 8 of 102 groups; 94 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

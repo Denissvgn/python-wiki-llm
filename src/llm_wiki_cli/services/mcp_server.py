@@ -1638,6 +1638,7 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
         session_id: str, request: dict, view_options: dict,
         if_result_id: str | None = None, if_view_id: str | None = None,
         delta: bool = False,
+        include_metadata: bool = False,
     ):
         """Return an opt-in counted view; fetch its canonical receipt explicitly."""
         from mcp.types import CallToolResult, TextContent  # type: ignore[reportMissingImports]
@@ -1649,6 +1650,10 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
         if isinstance(result, CallToolResult):
             return result
         metadata = result.metadata()
+        if view_options.get("schema_version") == "llm-wiki-task-view-request/v2" and not include_metadata:
+            from .task_compact_readable import readable_session_metadata
+
+            metadata = readable_session_metadata(metadata)
         if result.view is not None:
             view = result.view
             text = view.rendered if view.ok else view.diagnostic_rendered
@@ -1658,6 +1663,7 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
             text=canonical_json(metadata).decode("utf-8"))], structuredContent=metadata)
 
     read_compact_context_session.__annotations__["delta"] = strict_bool
+    read_compact_context_session.__annotations__["include_metadata"] = strict_bool
     server.tool()(read_compact_context_session)
 
     def get_task_context_receipt(

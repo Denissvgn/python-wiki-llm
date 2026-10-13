@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`api`)
 **Source:** [knowledge_cmd](../modules/knowledge_cmd.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 67 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 70 more
 
 **Complete modules touched:**
 
@@ -66,6 +66,7 @@
 - [python_imports](../modules/python_imports.md)
 - [section_ownership](../modules/section_ownership.md)
 - [services_dependencies](../modules/services_dependencies.md)
+- [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
 - [storage_sort](../modules/storage_sort.md)
@@ -77,10 +78,12 @@
 - [wiki_surface](../modules/wiki_surface.md)
 - [wiki_surface_index](../modules/wiki_surface_index.md)
 - [wiki_write_basis](../modules/wiki_write_basis.md)
+- [yaml_formats](../modules/yaml_formats.md)
+- [yaml_syntax](../modules/yaml_syntax.md)
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -93,17 +96,29 @@ sequenceDiagram
     participant p5 as _run_move
     participant p6 as _run_alias
     participant p7 as _run_lifecycle
-    participant p8 as GovernanceError
-    participant p9 as _run_review
-    participant p10 as _run_verify
+    participant p8 as _run_review
+    participant p9 as _run_verify
+    participant p10 as GovernanceError
     participant p11 as _wiki_root
     participant p12 as get_knowledge_coverage
     participant p13 as _run_existing_mutation
-    participant p14 as getattr (src/llm_wiki_cli/commands…dge_cmd.py:_run_lifecycle)
-    participant p15 as migrate_knowledge_storage
-    participant p16 as _init_ledger
-    participant p17 as print (src/llm_wiki_cli/commands…edge_cmd.py:_run_coverage)
-    participant p18 as prepare
+    participant p14 as migrate_knowledge_storage
+    participant p15 as _init_ledger
+    participant p16 as recover_knowledge_storage
+    participant p17 as _projected_commit_plan
+    participant p18 as export_knowledge_v1
+    participant p19 as build_knowledge_read_view
+    participant p20 as _scope_locator_for_uid
+    participant p21 as knowledge_freshness_disclosure
+    participant p22 as _lifecycle_mutation
+    participant p23 as build_artifact_verification_context
+    participant p24 as _governance_mutation_operation
+    participant p25 as verify (src/llm_wiki_cli/services/verification_contracts.py)
+    participant p26 as verify_and_write_receipt
+    participant p27 as prune_knowledge_storage
+    participant p28 as _assert_snapshot_unchanged
+    participant p29 as getattr (src/llm_wiki_cli/commands…dge_cmd.py:_run_lifecycle)
+    participant p30 as prepare
     p0->>p1: run (src/llm_wiki_cli/commands/knowledge_storage_cmd.py)
     p0->>p2: _run_init
     p0->>p3: _run_status
@@ -111,34 +126,34 @@ sequenceDiagram
     p0->>p5: _run_move
     p0->>p6: _run_alias
     p0->>p7: _run_lifecycle
-    p0->>p7: _run_lifecycle
-    p0->>p7: _run_lifecycle
-    p0->>p8: GovernanceError
-    p0->>p7: _run_lifecycle
-    p0->>p7: _run_lifecycle
-    p0->>p9: _run_review
-    p0->>p10: _run_verify
-    p0->>p8: GovernanceError
+    p0->>p8: _run_review
+    p0->>p9: _run_verify
+    p0->>p10: GovernanceError
     p1->>p11: _wiki_root
-    p2->>p11: _wiki_root
-    p3->>p8: GovernanceError
     p4->>p12: get_knowledge_coverage
-    p5->>p11: _wiki_root
     p6->>p13: _run_existing_mutation
-    p7-->>p14: getattr (src/llm_wiki_cli/commands…dge_cmd.py:_run_lifecycle)(args, 'successor_uid', None)
-    p9->>p8: GovernanceError
-    p10->>p11: _wiki_root
-    p1->>p15: migrate_knowledge_storage
-    p2->>p16: _init_ledger
-    p3->>p11: _wiki_root
-    p4-->>p17: print (src/llm_wiki_cli/commands…edge_cmd.py:_run_coverage)(json.dumps(...), file=sys.stderr)
-    p5-->>p18: prepare
-    p6->>p11: _wiki_root
+    p1->>p14: migrate_knowledge_storage
+    p2->>p15: _init_ledger
+    p1->>p16: recover_knowledge_storage
+    p2->>p17: _projected_commit_plan
+    p1->>p18: export_knowledge_v1
+    p3->>p19: build_knowledge_read_view
+    p9->>p20: _scope_locator_for_uid
+    p3->>p21: knowledge_freshness_disclosure
+    p7->>p22: _lifecycle_mutation
+    p9->>p23: build_artifact_verification_context
+    p2->>p24: _governance_mutation_operation
+    p9->>p25: verify (src/llm_wiki_cli/services/verification_contracts.py)
+    p9->>p26: verify_and_write_receipt
+    p1->>p27: prune_knowledge_storage
+    p2->>p28: _assert_snapshot_unchanged
+    p7-->>p29: getattr (src/llm_wiki_cli/commands…dge_cmd.py:_run_lifecycle)(args, 'successor_uid', None)
+    p5-->>p30: prepare
 ```
 
-> Call sequence diagram shows 30 of 4336 interactions; 4306 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4371 interactions; 4341 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 2 of 1291 (1289 omitted); unresolved 1 of 1035 (1034 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1301 (1300 omitted); unresolved 1 of 1043 (1042 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -152,7 +167,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/commands/knowledge_cmd.py:_wiki_root` | 3 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/knowledge_storage_lifecycle.py:migrate_knowledge_storage` | 36 | - | external | 3 |
 | `src/llm_wiki_cli/services/knowledge_storage_lifecycle.py:migrate_knowledge_storage` | 36 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 2 |
-> Omission summary shows 8 of 1042 groups; 1034 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1052 groups; 1044 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

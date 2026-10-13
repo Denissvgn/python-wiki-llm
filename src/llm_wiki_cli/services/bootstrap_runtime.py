@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from ..extractors.common import TYPESCRIPT_FAMILY_EXTENSIONS
+
 import ast
 import io
 import json
@@ -2175,14 +2177,19 @@ def _append_surface_overview(
     )
 
 
-def _append_index_entities(lines: list[str], entity_names: list[str]) -> None:
-    if not entity_names:
+def _append_index_entities(lines: list[str], entity_names: list[str], retired_entity_pages: list[str] | None = None) -> None:
+    if not entity_names and not retired_entity_pages:
         return
     lines.append(f"## {_SURFACE_LABELS[PageKind.ENTITIES]}")
     lines.append("")
     for name in sorted(entity_names):
         lines.append(f"- [{name}]({canonical_path(PageKind.ENTITIES, name)})")
     lines.append("")
+    if retired_entity_pages:
+        lines.extend(["### Retired source members", "", "Retained history; these declarations are absent from the selected source inventory.", ""])
+        for path in sorted(retired_entity_pages):
+            lines.append(f"- [{Path(path).stem}]({path})")
+        lines.append("")
 
 
 def _append_index_modules(lines: list[str], module_entries: list[dict]) -> None:
@@ -2269,7 +2276,7 @@ def _append_index_infrastructure(
         desc = entry.get("type", "")
         suffix = f" - {desc}" if desc else ""
         path = canonical_path(PageKind.INFRASTRUCTURE, entry["name"])
-        lines.append(f"- [{label}]({path}){suffix}")
+        lines.append(f"- [{_infrastructure_label(label)}]({path}){suffix}")
     lines.append("")
 
 
@@ -2346,6 +2353,7 @@ def _generate_index_md(
     flow_entries: list[dict] | None = None,
     architecture_entries: list[dict] | None = None,
     *,
+    retired_entity_pages: list[str] | None = None,
     api_contracts_present: bool = False,
     log_present: bool = True,
 ) -> str:
@@ -2368,7 +2376,7 @@ def _generate_index_md(
 
     _append_surface_overview(
         lines,
-        entity_count=len(entity_names),
+        entity_count=len(entity_names) + len(retired_entity_pages or []),
         module_count=len(module_entries),
         workflow_count=len(workflow_entries),
         guide_count=len(guide_entries),
@@ -2378,7 +2386,7 @@ def _generate_index_md(
         architecture_count=len(architecture_entries),
         log_present=log_present,
     )
-    _append_index_entities(lines, entity_names)
+    _append_index_entities(lines, entity_names, retired_entity_pages)
     _append_index_modules(lines, module_entries)
     _append_index_workflows(lines, workflow_entries)
     _append_index_guides(lines, guide_entries)
@@ -3040,7 +3048,8 @@ def _generate_flow_md(
     lines.append("## Call sequence")
     lines.append("")
     lines.append("> Static overview in presentation order, not runtime execution order. "
-                 "Arrows retain captured callers; siblings are shown before deeper helper detail.")
+                 "Arrows retain captured callers; representative internal continuations "
+                 "and boundary examples precede repeated helper detail.")
     lines.append("")
     lines.append(
         "<!-- Auto-generated from static call edges. Dashed arrows are external "
@@ -3569,7 +3578,7 @@ def _generate_load_order_md(
     return "\n".join(lines)
 
 
-_SOURCE_EXTS = (".py", ".ts", ".tsx", ".js", ".jsx", ".go", ".rs")
+_SOURCE_EXTS = (".py", *TYPESCRIPT_FAMILY_EXTENSIONS, ".go", ".rs")
 
 
 def _normalize_source_path(path: str) -> str:
@@ -3765,6 +3774,8 @@ def _generate_infrastructure_md(
         generated = _generate_github_actions_md(filename, info)
     elif info["type"] == "kubernetes":
         generated = _generate_kubernetes_md(filename, info)
+    elif info["type"] == "yaml_format":
+        generated = _generate_yaml_format_md(filename, info)
     elif info["type"] in RUNTIME_CONFIG_TYPES:
         generated = _generate_runtime_config_md(filename, info)
     else:
@@ -3793,11 +3804,51 @@ def _append_infrastructure_advisories(lines: list[str], advisories: list[str]) -
     lines.append("")
 
 
+def _generate_yaml_format_md(filename: str, info: dict) -> str:
+    """Render named structural summaries without exposing arbitrary config values."""
+    title = infrastructure_display_label(filename, info)
+    lines = [
+        f"# {title}",
+        "",
+        f"**Path:** `{filename}`",
+        f"**Format:** `{info['yaml_format']}`",
+        "",
+        "Structural summary only; templates, expressions and referenced files "
+        "are not evaluated. Read the source for complete configuration.",
+        "",
+    ]
+    for heading, values in info.get("sections", {}).items():
+        if not values:
+            continue
+        lines.extend([f"## {heading}", ""])
+        for value in values:
+            # A single code span keeps source labels inert, including embedded
+            # backticks; normalize multiline scalar labels to one Markdown row.
+            lines.append(f"- {_infrastructure_code(value)}")
+        lines.append("")
+    _append_infrastructure_advisories(lines, info.get("advisories") or [])
+    return "\n".join(lines)
+
+
+def _infrastructure_label(value: object) -> str:
+    """Keep a source label on one line with Markdown punctuation inert."""
+    return re.sub(r"([\\`*{}\[\]()<>#!|])", r"\\\1", " ".join(str(value).split()))
+
+
+def _infrastructure_code(value: object) -> str:
+    """Quote a single line of source text, including embedded backticks."""
+    label = " ".join(str(value).split()).replace("|", "\\|")
+    longest = max((len(part) for part in re.findall(r"`+", label)), default=0)
+    delimiter = "`" * (longest + 1)
+    padding = " " if label.startswith("`") or label.endswith("`") else ""
+    return f"{delimiter}{padding}{label}{padding}{delimiter}"
+
+
 def _generate_github_actions_md(filename: str, info: dict) -> str:
     """Generate markdown for a GitHub Actions workflow file."""
     title = infrastructure_display_label(filename, info)
     lines = [
-        f"# {title}",
+        f"# {_infrastructure_label(title)}",
         "",
         f"**Path:** `{filename}`",
         "**Type:** `github_actions`",
@@ -3808,7 +3859,7 @@ def _generate_github_actions_md(filename: str, info: dict) -> str:
         lines.append("## Triggers")
         lines.append("")
         for trigger in triggers:
-            lines.append(f"- `{trigger}`")
+            lines.append(f"- {_infrastructure_code(trigger)}")
         lines.append("")
 
     jobs = info.get("jobs") or []
@@ -3819,17 +3870,17 @@ def _generate_github_actions_md(filename: str, info: dict) -> str:
         lines.append("|---|---|---|---|---:|")
         for job in jobs:
             needs = job.get("needs") or []
-            needs_text = ", ".join(f"`{item}`" for item in needs) if needs else "—"
-            name = f"`{job['name']}`" if job.get("name") else "—"
-            runs_on = f"`{job['runs_on']}`" if job.get("runs_on") else "—"
+            needs_text = ", ".join(_infrastructure_code(item) for item in needs) if needs else "—"
+            name = _infrastructure_code(job['name']) if job.get("name") else "—"
+            runs_on = _infrastructure_code(job['runs_on']) if job.get("runs_on") else "—"
             step_count = len(job.get("steps") or [])
             lines.append(
-                f"| `{job['id']}` | {name} | {runs_on} | {needs_text} | {step_count} |"
+                f"| {_infrastructure_code(job['id'])} | {name} | {runs_on} | {needs_text} | {step_count} |"
             )
         lines.append("")
 
         for job in jobs:
-            lines.append(f"### {job['id']}")
+            lines.append(f"### {_infrastructure_label(job['id'])}")
             lines.append("")
             for step in job.get("steps") or []:
                 label = (
@@ -3837,11 +3888,11 @@ def _generate_github_actions_md(filename: str, info: dict) -> str:
                 )
                 details = []
                 if step.get("uses"):
-                    details.append(f"uses `{step['uses']}`")
+                    details.append(f"uses {_infrastructure_code(step['uses'])}")
                 if step.get("run"):
-                    details.append(f"runs `{step['run']}`")
+                    details.append(f"runs {_infrastructure_code(step['run'])}")
                 suffix = f" - {'; '.join(details)}" if details else ""
-                lines.append(f"- {label}{suffix}")
+                lines.append(f"- {_infrastructure_code(label)}{suffix}")
             lines.append("")
 
     _append_infrastructure_advisories(lines, info.get("advisories") or [])
@@ -3852,7 +3903,7 @@ def _generate_kubernetes_md(filename: str, info: dict) -> str:
     """Generate markdown for a Kubernetes manifest file."""
     title = infrastructure_display_label(filename, info)
     lines = [
-        f"# {title}",
+        f"# {_infrastructure_label(title)}",
         "",
         f"**Path:** `{filename}`",
         "**Type:** `kubernetes`",
@@ -3871,7 +3922,8 @@ def _generate_kubernetes_md(filename: str, info: dict) -> str:
             namespace = resource.get("namespace") or "—"
             replicas = resource.get("replicas") or "—"
             lines.append(
-                f"| `{kind}` | `{name}` | {namespace} | `{api_version}` | {replicas} |"
+                f"| {_infrastructure_code(kind)} | {_infrastructure_code(name)} | "
+                f"{_infrastructure_label(namespace)} | {_infrastructure_code(api_version)} | {_infrastructure_label(replicas)} |"
             )
         lines.append("")
 
@@ -3880,7 +3932,7 @@ def _generate_kubernetes_md(filename: str, info: dict) -> str:
                 f"{resource.get('kind') or 'Resource'} "
                 f"{resource.get('name') or 'unknown'}"
             )
-            lines.append(f"### {heading}")
+            lines.append(f"### {_infrastructure_label(heading)}")
             lines.append("")
             containers = resource.get("containers") or []
             if containers:
@@ -3889,13 +3941,13 @@ def _generate_kubernetes_md(filename: str, info: dict) -> str:
                 lines.append("| Name | Image | Ports | Requests | Limits |")
                 lines.append("|---|---|---|---|---|")
                 for container in containers:
-                    ports = ", ".join(f"`{p}`" for p in container.get("ports") or [])
+                    ports = ", ".join(_infrastructure_code(p) for p in container.get("ports") or [])
                     requests = _format_resource_map(container.get("requests") or {})
                     limits = _format_resource_map(container.get("limits") or {})
                     name = container.get("name") or "unknown"
                     image = container.get("image") or "unknown"
                     lines.append(
-                        f"| `{name}` | `{image}` | {ports or '—'} | "
+                        f"| {_infrastructure_code(name)} | {_infrastructure_code(image)} | {ports or '—'} | "
                         f"{requests} | {limits} |"
                     )
                 lines.append("")
@@ -3909,7 +3961,7 @@ def _generate_kubernetes_md(filename: str, info: dict) -> str:
                     port_value = port.get("port") or "unknown"
                     target_port = port.get("target_port") or "unknown"
                     protocol = port.get("protocol") or "TCP"
-                    lines.append(f"| `{port_value}` | `{target_port}` | `{protocol}` |")
+                    lines.append("| " + " | ".join(_infrastructure_code(value) for value in (port_value, target_port, protocol)) + " |")
                 lines.append("")
             selector = resource.get("selector") or {}
             if selector:
@@ -3923,13 +3975,13 @@ def _generate_kubernetes_md(filename: str, info: dict) -> str:
 def _format_resource_map(values: Mapping[str, str]) -> str:
     if not values:
         return "—"
-    return ", ".join(f"`{key}={value}`" for key, value in sorted(values.items()))
+    return ", ".join(_infrastructure_code(f"{key}={value}") for key, value in sorted(values.items()))
 
 
 def _runtime_config_header(filename: str, info: dict) -> list[str]:
     title = infrastructure_display_label(filename, info)
     return [
-        f"# {title}",
+        f"# {_infrastructure_label(title)}",
         "",
         f"**Path:** `{filename}`",
         f"**Type:** `{info['type']}`",
@@ -3944,7 +3996,7 @@ def _append_value_list(lines: list[str], title: str, values: Iterable[str]) -> N
     lines.append(f"## {title}")
     lines.append("")
     for value in values:
-        lines.append(f"- `{value}`")
+        lines.append(f"- {_infrastructure_code(value)}")
     lines.append("")
 
 
@@ -3957,7 +4009,7 @@ def _append_setting_table(lines: list[str], settings: Mapping[str, str]) -> None
     lines.append("| Setting | Value |")
     lines.append("|---|---|")
     for key, value in visible:
-        lines.append(f"| `{key}` | `{value}` |")
+        lines.append(f"| {_infrastructure_code(key)} | {_infrastructure_code(value)} |")
     lines.append("")
 
 
@@ -4002,7 +4054,7 @@ def _generate_prometheus_rules_md(filename: str, info: dict) -> str:
             name = group.get("name") or "unknown"
             interval = group.get("interval") or "—"
             rules = group.get("rules") or 0
-            lines.append(f"| `{name}` | `{interval}` | {rules} |")
+            lines.append(f"| {_infrastructure_code(name)} | {_infrastructure_code(interval)} | {rules} |")
         lines.append("")
     _append_infrastructure_advisories(lines, info.get("advisories") or [])
     return "\n".join(lines)
@@ -4312,56 +4364,56 @@ def _generate_compose_md(
             build = svc.get("build", "")
             if isinstance(build, dict):
                 build = build.get("context", ".")
-            img_str = f"build: `{build}`" if build else (f"`{image}`" if image else "—")
+            img_str = f"build: {_infrastructure_code(build)}" if build else (_infrastructure_code(image) if image else "—")
             ports = svc.get("ports", [])
             ports_str = (
-                ", ".join(f"`{p}`" for p in ports)
+                ", ".join(_infrastructure_code(p) for p in ports)
                 if isinstance(ports, list)
-                else (f"`{ports}`" if ports else "—")
+                else (_infrastructure_code(ports) if ports else "—")
             )
             depends = svc.get("depends_on", [])
             deps_str = (
-                ", ".join(f"`{d}`" for d in depends)
+                ", ".join(_infrastructure_code(d) for d in depends)
                 if isinstance(depends, list)
-                else (f"`{depends}`" if depends else "—")
+                else (_infrastructure_code(depends) if depends else "—")
             )
-            lines.append(f"| `{name}` | {img_str} | {ports_str} | {deps_str} |")
+            lines.append(f"| {_infrastructure_code(name)} | {img_str} | {ports_str} | {deps_str} |")
         lines.append("")
 
         # Per-service detail
         for name, svc in services.items():
-            lines.append(f"### {name}")
+            lines.append(f"### {_infrastructure_label(name)}")
             lines.append("")
             image = svc.get("image", "")
             build = svc.get("build", "")
             if build:
                 ctx = build if isinstance(build, str) else build.get("context", ".")
-                lines.append(f"- **Build context:** `{ctx}`")
+                lines.append(f"- **Build context:** {_infrastructure_code(ctx)}")
             if image:
-                lines.append(f"- **Image:** `{image}`")
+                lines.append(f"- **Image:** {_infrastructure_code(image)}")
             ports = svc.get("ports", [])
             if ports:
                 ports_list = ports if isinstance(ports, list) else [ports]
-                lines.append(f"- **Ports:** {', '.join(f'`{p}`' for p in ports_list)}")
+                lines.append(f"- **Ports:** {', '.join(_infrastructure_code(p) for p in ports_list)}")
             vols = svc.get("volumes", [])
             if vols:
                 vols_list = vols if isinstance(vols, list) else [vols]
-                lines.append(f"- **Volumes:** {', '.join(f'`{v}`' for v in vols_list)}")
+                lines.append(f"- **Volumes:** {', '.join(_infrastructure_code(v) for v in vols_list)}")
             env = svc.get("environment", [])
             if env:
                 env_list = env if isinstance(env, list) else [env]
                 lines.append(
-                    f"- **Environment:** {', '.join(f'`{e}`' for e in env_list)}"
+                    f"- **Environment:** {', '.join(_infrastructure_code(e) for e in env_list)}"
                 )
             depends = svc.get("depends_on", [])
             if depends:
                 deps_list = depends if isinstance(depends, list) else [depends]
                 lines.append(
-                    f"- **Depends on:** {', '.join(f'`{d}`' for d in deps_list)}"
+                    f"- **Depends on:** {', '.join(_infrastructure_code(d) for d in deps_list)}"
                 )
             command = svc.get("command", "")
             if command:
-                lines.append(f"- **Command:** `{command}`")
+                lines.append(f"- **Command:** {_infrastructure_code(command)}")
             lines.append("")
 
     # Networks
@@ -4369,7 +4421,7 @@ def _generate_compose_md(
         lines.append("## Networks")
         lines.append("")
         for n in networks:
-            lines.append(f"- `{n}`")
+            lines.append(f"- {_infrastructure_code(n)}")
         lines.append("")
 
     # Named volumes
@@ -4377,9 +4429,10 @@ def _generate_compose_md(
         lines.append("## Named Volumes")
         lines.append("")
         for v in named_volumes:
-            lines.append(f"- `{v}`")
+            lines.append(f"- {_infrastructure_code(v)}")
         lines.append("")
 
+    _append_infrastructure_advisories(lines, info.get("advisories") or [])
     return "\n".join(lines)
 
 

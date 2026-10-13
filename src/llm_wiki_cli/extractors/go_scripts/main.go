@@ -10,6 +10,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"go/ast"
@@ -859,21 +860,45 @@ func extractFile(filename string, fset *token.FileSet, deep bool) (*FileEntry, e
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
+type PathOutcome struct {
+	State  string `json:"extraction_state"`
+	Reason string `json:"reason"`
+	Scope  string `json:"failure_scope"`
+}
+
+type requestedPaths []string
+
+func (p *requestedPaths) String() string         { return strings.Join(*p, ",") }
+func (p *requestedPaths) Set(value string) error { *p = append(*p, value); return nil }
+
 func main() {
 	srcDir := flag.String("src-dir", ".", "Root directory to scan")
 	onlyFiles := flag.String("only-files", "", "Comma-separated list of files to extract")
 	deep := flag.Bool("deep", false, "Include enriched data (docs, attributes, methods, imports)")
 	fileLocal := flag.Bool("file-local", false, "Keep cross-file receiver methods with their declaring source for caching")
 	includeTests := flag.Bool("include-tests", false, "Include Go _test.go files")
+	diagnostics := flag.Bool("diagnostics-v1", false, "Emit owned per-file parse/read outcomes")
+	var requested requestedPaths
+	flag.Var(&requested, "file-v1", "Exact selected diagnostic path; may be repeated")
 	flag.Parse()
+	if len(requested) > 0 && !*diagnostics {
+		fmt.Fprintln(os.Stderr, "--file-v1 requires --diagnostics-v1")
+		os.Exit(1)
+	}
 
 	fset := token.NewFileSet()
 	inventory := map[string]*FileEntry{}
 
 	var files []string
-	if *onlyFiles != "" {
-		for _, f := range strings.Split(*onlyFiles, ",") {
-			f = strings.TrimSpace(f)
+	if *onlyFiles != "" || len(requested) > 0 {
+		selected := []string(requested)
+		if len(selected) == 0 {
+			selected = strings.Split(*onlyFiles, ",")
+		}
+		for _, f := range selected {
+			if len(requested) == 0 {
+				f = strings.TrimSpace(f)
+			}
 			if f == "" {
 				continue
 			}
@@ -885,7 +910,7 @@ func main() {
 			if err != nil || isOutsideRoot(rel) || hasExcludedDir(rel) {
 				continue
 			}
-			if _, err := os.Stat(abs); err == nil && filepath.Ext(abs) == ".go" && (*includeTests || !strings.HasSuffix(filepath.Base(abs), "_test.go")) {
+			if _, err := os.Stat(abs); (err == nil || *diagnostics) && filepath.Ext(abs) == ".go" && (*includeTests || !strings.HasSuffix(filepath.Base(abs), "_test.go")) {
 				files = append(files, abs)
 			}
 		}
@@ -898,17 +923,26 @@ func main() {
 		}
 	}
 
+	outcomes := map[string]PathOutcome{}
 	for _, file := range files {
-		entry, err := extractFile(file, fset, *deep)
-		if err != nil {
-			continue // warning already printed inside extractFile
-		}
-		// Use relative path from srcDir as key.
 		rel, err := filepath.Rel(*srcDir, file)
 		if err != nil {
-			rel = file
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		rel = filepath.ToSlash(rel)
+		entry, err := extractFile(file, fset, *deep)
+		if err != nil {
+			reason := "syntax-error"
+			var pathError *os.PathError
+			if errors.As(err, &pathError) {
+				reason = "read-error"
+			}
+			outcomes[rel] = PathOutcome{"failed", reason, "file"}
+			continue
 		}
 		inventory[rel] = entry
+		outcomes[rel] = PathOutcome{"extracted", "inventory-entry", "file"}
 	}
 
 	// ── Cross-file receiver attachment (deep mode, per-package) ────────────────
@@ -986,7 +1020,11 @@ func main() {
 		}
 	}
 	enc.SetIndent("", "  ")
-	if err := enc.Encode(inventory); err != nil {
+	var output interface{} = inventory
+	if *diagnostics {
+		output = map[string]interface{}{"schema_version": "llm-wiki-native-diagnostics/v1", "language": "go", "inventory": inventory, "outcomes": outcomes}
+	}
+	if err := enc.Encode(output); err != nil {
 		fmt.Fprintf(os.Stderr, "Error encoding JSON: %v\n", err)
 		os.Exit(1)
 	}

@@ -14,7 +14,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -23,74 +23,82 @@ sequenceDiagram
     participant p1 as _parse_typed_graph
     participant p2 as _object
     participant p3 as _only_fields
-    participant p4 as KnowledgeGraphError
-    participant p5 as _normalise_input_hashes
-    participant p6 as _array
-    participant p7 as set (src/llm_wiki_cli/services…aph.py:_parse_typed_graph)
-    participant p8 as enumerate (src/llm_wiki_cli/services…aph.py:_parse_typed_graph)
-    participant p9 as _name
-    participant p10 as seen_analyzers.add
-    participant p11 as coverage.append
-    participant p12 as _normalise_coverage
-    participant p13 as _locator
-    participant p14 as concept_kinds.items
-    participant p15 as _normalise_edge
-    participant p16 as seen_keys.add
-    participant p17 as edges.append
-    participant p18 as edges.sort
-    participant p19 as coverage.sort
-    participant p20 as _validate_graph_bindings
-    participant p21 as require_mapping
-    participant p22 as require_exact_fields
+    participant p4 as _normalise_input_hashes
+    participant p5 as _array
+    participant p6 as _name
+    participant p7 as _normalise_coverage
+    participant p8 as _locator
+    participant p9 as _normalise_edge
+    participant p10 as _validate_graph_bindings
+    participant p11 as validate_exact_page_coordinate
+    participant p12 as _nonnegative_int
+    participant p13 as _hash
+    participant p14 as _relationship_kind
+    participant p15 as _normalise_endpoint
+    participant p16 as _aggregate_input_hash
+    participant p17 as _positive_int
+    participant p18 as _limitation
+    participant p19 as _validate_resolution_target
+    participant p20 as _normalise_evidence
+    participant p21 as _validate_endpoint_concept_references
+    participant p22 as relationship_edge_key
+    participant p23 as _validate_core_direction
+    participant p24 as require_sha256
+    participant p25 as require_nonnegative_int
+    participant p26 as _open_name
+    participant p27 as require_positive_int
+    participant p28 as _enum
+    participant p29 as set (src/llm_wiki_cli/services…aph.py:_parse_typed_graph)
+    participant p30 as seen_analyzers.add
     p0->>p1: _parse_typed_graph
     p1->>p2: _object
     p1->>p3: _only_fields
-    p1->>p4: KnowledgeGraphError
-    p1->>p5: _normalise_input_hashes
-    p1->>p6: _array
-    p1-->>p7: set (src/llm_wiki_cli/services…aph.py:_parse_typed_graph)
-    p1-->>p8: enumerate (src/llm_wiki_cli/services…aph.py:_parse_typed_graph)(coverage_values)
-    p1->>p2: _object
-    p1->>p3: _only_fields
-    p1->>p9: _name
-    p1->>p4: KnowledgeGraphError
-    p1-->>p10: seen_analyzers.add(analyzer)
-    p1-->>p11: coverage.append({...})
-    p1->>p12: _normalise_coverage
-    p1->>p6: _array
-    p1-->>p7: set (src/llm_wiki_cli/services…aph.py:_parse_typed_graph)
-    p1->>p13: _locator
-    p1->>p9: _name
-    p1-->>p14: concept_kinds.items
-    p1-->>p8: enumerate (src/llm_wiki_cli/services…aph.py:_parse_typed_graph)(raw_edges)
-    p1->>p15: _normalise_edge
-    p1->>p4: KnowledgeGraphError
-    p1-->>p16: seen_keys.add(key)
-    p1-->>p17: edges.append(edge)
-    p1-->>p18: edges.sort(key=...)
-    p1-->>p19: coverage.sort(key=...)
-    p1->>p20: _validate_graph_bindings
-    p2->>p21: require_mapping
-    p3->>p22: require_exact_fields
+    p1->>p4: _normalise_input_hashes
+    p1->>p5: _array
+    p1->>p6: _name
+    p1->>p7: _normalise_coverage
+    p1->>p8: _locator
+    p1->>p9: _normalise_edge
+    p1->>p10: _validate_graph_bindings
+    p8->>p11: validate_exact_page_coordinate
+    p7->>p12: _nonnegative_int
+    p4->>p13: _hash
+    p9->>p14: _relationship_kind
+    p9->>p15: _normalise_endpoint
+    p4->>p16: _aggregate_input_hash
+    p7->>p17: _positive_int
+    p7->>p18: _limitation
+    p9->>p19: _validate_resolution_target
+    p9->>p20: _normalise_evidence
+    p9->>p21: _validate_endpoint_concept_references
+    p9->>p22: relationship_edge_key
+    p9->>p23: _validate_core_direction
+    p13->>p24: require_sha256
+    p12->>p25: require_nonnegative_int
+    p14->>p26: _open_name
+    p17->>p27: require_positive_int
+    p15->>p28: _enum
+    p1-->>p29: set (src/llm_wiki_cli/services…aph.py:_parse_typed_graph)
+    p1-->>p30: seen_analyzers.add(analyzer)
 ```
 
 > Call sequence diagram shows 30 of 416 interactions; 386 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 4 of 97 (93 omitted); unresolved 7 of 74 (67 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 97 (96 omitted); unresolved 1 of 74 (73 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/services/knowledge_graph.py:_object` | 3 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_mapping` | 4 | - | external | 2 |
 | `src/llm_wiki_cli/services/validation.py:require_mapping` | 4 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_graph.py:_object` | 3 | [src/llm_wiki_cli/services/knowledge_graph.py](../modules/knowledge_graph.md) | internal | 2 |
 | `src/llm_wiki_cli/services/knowledge_graph.py:_object` | 3 | - | external | 1 |
+| `src/llm_wiki_cli/services/knowledge_graph.py:_only_fields` | 11 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 12 | - | external | 9 |
 | `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 12 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/knowledge_graph.py:_only_fields` | 11 | [src/llm_wiki_cli/services/knowledge_graph.py](../modules/knowledge_graph.md) | internal | 3 |
-| `src/llm_wiki_cli/services/knowledge_graph.py:_normalise_input_hashes` | 28 | [src/llm_wiki_cli/services/knowledge_graph.py](../modules/knowledge_graph.md) | internal | 5 |
-> Omission summary shows 8 of 122 groups; 114 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 123 groups; 115 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

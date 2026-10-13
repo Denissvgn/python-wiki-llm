@@ -6,7 +6,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -19,63 +19,69 @@ sequenceDiagram
     participant p5 as ConceptObservationBasis
     participant p6 as _validate_source_path
     participant p7 as _inventory_language
-    participant p8 as sha256_bytes
-    participant p9 as _validate_hash
-    participant p10 as isinstance (src/llm_wiki_cli/services…malize_module_observation)
-    participant p11 as canonical_json_bytes
-    participant p12 as _validate_extractor_ref
-    participant p13 as _record_array
-    participant p14 as _validate_inventory_complete
-    participant p15 as _validate_import_record
-    participant p16 as _record_name
-    participant p17 as _validate_module_entity_record
-    participant p18 as seen_names.get
-    participant p19 as _copy_selected_fields
-    participant p20 as class_summaries.append
-    participant p21 as _validate_callable_record
-    participant p22 as function_summaries.append
-    participant p23 as _structural_copy
+    participant p8 as _validate_hash
+    participant p9 as canonical_json_bytes
+    participant p10 as _validate_extractor_ref
+    participant p11 as _record_array
+    participant p12 as _validate_inventory_complete
+    participant p13 as _validate_import_record
+    participant p14 as _record_name
+    participant p15 as _validate_module_entity_record
+    participant p16 as _copy_selected_fields
+    participant p17 as _validate_callable_record
+    participant p18 as _json_array
+    participant p19 as _validate_string_array
+    participant p20 as _validate_constant_record
+    participant p21 as _validate_module_call_record
+    participant p22 as require_repository_relative_path
+    participant p23 as require_sha256
+    participant p24 as _structural_copy
+    participant p25 as _validate_optional_string_array
+    participant p26 as _validate_optional_strings
+    participant p27 as _optional_record_array
+    participant p28 as _validate_optional_booleans
+    participant p29 as isinstance (src/llm_wiki_cli/services…malize_module_observation)
+    participant p30 as seen_names.get
     p0->>p1: _validate_basis_inputs
     p0->>p2: _unknown_basis
     p0->>p3: _normalize_module_observation
     p0->>p4: hash_json
-    p0->>p2: _unknown_basis
-    p0->>p2: _unknown_basis
     p0->>p5: ConceptObservationBasis
     p1->>p6: _validate_source_path
-    p2->>p5: ConceptObservationBasis
     p3->>p7: _inventory_language
-    p4->>p8: sha256_bytes
-    p1->>p9: _validate_hash
-    p3-->>p10: isinstance (src/llm_wiki_cli/services…malize_module_observation)(file_data, Mapping)
-    p4->>p11: canonical_json_bytes
-    p1->>p12: _validate_extractor_ref
-    p3->>p13: _record_array
-    p1->>p14: _validate_inventory_complete
-    p3->>p13: _record_array
-    p3->>p13: _record_array
-    p3->>p15: _validate_import_record
-    p3->>p16: _record_name
-    p3->>p17: _validate_module_entity_record
-    p3-->>p18: seen_names.get(name, 0)
-    p3->>p19: _copy_selected_fields
-    p3-->>p20: class_summaries.append(summary)
-    p3->>p21: _validate_callable_record
-    p3-->>p22: function_summaries.append(_copy_selected_fields(...))
-    p3->>p19: _copy_selected_fields
-    p3->>p23: _structural_copy
-    p3-->>p10: isinstance (src/llm_wiki_cli/services…malize_module_observation)(module_name, str)
+    p1->>p8: _validate_hash
+    p4->>p9: canonical_json_bytes
+    p1->>p10: _validate_extractor_ref
+    p3->>p11: _record_array
+    p1->>p12: _validate_inventory_complete
+    p3->>p13: _validate_import_record
+    p3->>p14: _record_name
+    p3->>p15: _validate_module_entity_record
+    p3->>p16: _copy_selected_fields
+    p3->>p17: _validate_callable_record
+    p3->>p18: _json_array
+    p3->>p19: _validate_string_array
+    p3->>p20: _validate_constant_record
+    p3->>p21: _validate_module_call_record
+    p6->>p22: require_repository_relative_path
+    p8->>p23: require_sha256
+    p16->>p24: _structural_copy
+    p15->>p25: _validate_optional_string_array
+    p13->>p26: _validate_optional_strings
+    p17->>p27: _optional_record_array
+    p13->>p28: _validate_optional_booleans
+    p3-->>p29: isinstance (src/llm_wiki_cli/services…malize_module_observation)(file_data, Mapping)
+    p3-->>p30: seen_names.get(name, 0)
 ```
 
 > Call sequence diagram shows 30 of 225 interactions; 195 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 2 of 60 (58 omitted); unresolved 3 of 48 (45 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 60 (59 omitted); unresolved 1 of 48 (47 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:_validate_source_path` | 3 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 4 | - | external | 7 |
 | `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 4 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 4 |
 | `src/llm_wiki_cli/services/validation.py:_syntax_key` | 6 | - | external | 6 |
@@ -83,7 +89,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/validation.py:require_repository_relative_path` | 4 | - | unresolved | 5 |
 | `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 27 | - | external | 4 |
 | `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 27 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 13 |
-> Omission summary shows 8 of 83 groups; 75 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/validation.py:_default_path_error` | 29 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+> Omission summary shows 8 of 84 groups; 76 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

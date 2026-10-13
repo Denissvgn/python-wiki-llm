@@ -16,80 +16,91 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as run
-    participant p1 as getattr (src/llm_wiki_cli/commands/install_cmd.py:run)
-    participant p2 as validate_path
-    participant p3 as install_plugin
-    participant p4 as bool (src/llm_wiki_cli/commands/install_cmd.py:run)
-    participant p5 as print
-    participant p6 as sys.exit
-    participant p7 as _component_summary
-    participant p8 as read_config
-    participant p9 as refresh_skill_blocks
-    participant p10 as str (src/llm_wiki_cli/commands/install_cmd.py:run)
-    participant p11 as config.get
-    participant p12 as len (src/llm_wiki_cli/commands/install_cmd.py:run)
-    participant p13 as PathValidationError
-    participant p14 as resolve_plugin_ref
-    participant p15 as plugin.get (src/llm_wiki_cli/commands…cmd.py:_component_summary)
-    participant p16 as get_agent_config_path
-    participant p17 as SCHEMA_FILENAMES.get
-    participant p18 as (…).resolve
-    participant p19 as validate_plugin
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/install_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
-    p0->>p2: validate_path
-    p0->>p3: install_plugin
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/install_cmd.py:run)(args, 'ref')
-    p0-->>p4: bool (src/llm_wiki_cli/commands/install_cmd.py:run)(getattr(...))
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/install_cmd.py:run)(args, 'dry_run', False)
-    p0-->>p4: bool (src/llm_wiki_cli/commands/install_cmd.py:run)(getattr(...))
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/install_cmd.py:run)(args, 'yes', False)
-    p0-->>p5: print(..., file=sys.stderr)
-    p0-->>p6: sys.exit(1)
-    p0-->>p1: getattr (src/llm_wiki_cli/commands/install_cmd.py:run)(args, 'dry_run', False)
-    p0-->>p5: print(...)
-    p0->>p7: _component_summary
-    p0-->>p5: print('Dry run: no files were changed.')
-    p0->>p8: read_config
-    p0->>p9: refresh_skill_blocks
-    p0-->>p10: str (src/llm_wiki_cli/commands/install_cmd.py:run)(config.get(...))
-    p0-->>p11: config.get('agent', 'generic')
-    p0-->>p5: print(...)
-    p0-->>p5: print(...)
-    p0->>p7: _component_summary
-    p0-->>p5: print(...)
-    p0-->>p12: len (src/llm_wiki_cli/commands/install_cmd.py:run)(refreshed)
-    p2->>p13: PathValidationError
-    p3->>p14: resolve_plugin_ref
-    p7-->>p15: plugin.get (src/llm_wiki_cli/commands…cmd.py:_component_summary)('components', [...])
-    p8->>p16: get_agent_config_path
-    p9-->>p17: SCHEMA_FILENAMES.get(agent)
-    p2-->>p18: (…).resolve
-    p3->>p19: validate_plugin
+    participant p1 as validate_path
+    participant p2 as install_plugin
+    participant p3 as read_config
+    participant p4 as refresh_skill_blocks
+    participant p5 as _component_summary
+    participant p6 as resolve_plugin_ref
+    participant p7 as validate_plugin
+    participant p8 as require_safe_schema_path
+    participant p9 as read_lock
+    participant p10 as installed_skill_block_contents
+    participant p11 as _check_install_collisions
+    participant p12 as refresh_skill_blocks_content
+    participant p13 as write_bytes_atomic
+    participant p14 as plugin_store
+    participant p15 as write_lock
+    participant p16 as _manifest_root
+    participant p17 as lock_path
+    participant p18 as _ensure_no_reserved_plugin_sources
+    participant p19 as replace_skill_block_content
+    participant p20 as iter_components
+    participant p21 as _ensure_id
+    participant p22 as _load_catalog
+    participant p23 as _version_satisfies
+    participant p24 as _normalize_component
+    participant p25 as build_skill_block
+    participant p26 as _ensure_entry_point
+    participant p27 as _safe_component_path
+    participant p28 as _validate_prompt_template_vcs_boundary
+    participant p29 as getattr (src/llm_wiki_cli/commands/install_cmd.py:run)
+    participant p30 as config.get
+    p0->>p1: validate_path
+    p0->>p2: install_plugin
+    p0->>p3: read_config
+    p0->>p4: refresh_skill_blocks
+    p0->>p5: _component_summary
+    p2->>p6: resolve_plugin_ref
+    p2->>p7: validate_plugin
+    p4->>p8: require_safe_schema_path
+    p2->>p9: read_lock
+    p4->>p10: installed_skill_block_contents
+    p2->>p11: _check_install_collisions
+    p4->>p12: refresh_skill_blocks_content
+    p4->>p13: write_bytes_atomic
+    p2->>p14: plugin_store
+    p2->>p15: write_lock
+    p7->>p16: _manifest_root
+    p9->>p17: lock_path
+    p7->>p18: _ensure_no_reserved_plugin_sources
+    p12->>p19: replace_skill_block_content
+    p10->>p20: iter_components
+    p7->>p21: _ensure_id
+    p6->>p22: _load_catalog
+    p7->>p23: _version_satisfies
+    p7->>p24: _normalize_component
+    p19->>p25: build_skill_block
+    p24->>p26: _ensure_entry_point
+    p24->>p27: _safe_component_path
+    p24->>p28: _validate_prompt_template_vcs_boundary
+    p0-->>p29: getattr (src/llm_wiki_cli/commands/install_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
+    p0-->>p30: config.get('agent', 'generic')
 ```
 
 > Call sequence diagram shows 30 of 385 interactions; 355 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 16 of 125 (109 omitted); unresolved 4 of 151 (147 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 125 (124 omitted); unresolved 1 of 151 (150 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
+| `src/llm_wiki_cli/config.py:validate_path` | 3 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
+| `src/llm_wiki_cli/config.py:validate_path` | 3 | - | unresolved | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 3 | - | external | 2 |
-| `src/llm_wiki_cli/config.py:validate_path` | 3 | - | unresolved | 2 |
-| `src/llm_wiki_cli/config.py:validate_path` | 3 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 1 |
 | `src/llm_wiki_cli/services/plugins.py:resolve_plugin_ref` | 12 | - | unresolved | 9 |
 | `src/llm_wiki_cli/services/plugins.py:resolve_plugin_ref` | 12 | - | external | 5 |
-| `src/llm_wiki_cli/services/plugins.py:resolve_plugin_ref` | 12 | [src/llm_wiki_cli/services/plugins.py](../modules/plugins.md) | internal | 4 |
+| `src/llm_wiki_cli/services/plugins.py:resolve_plugin_ref` | 12 | [src/llm_wiki_cli/services/plugins.py](../modules/plugins.md) | internal | 3 |
 | `src/llm_wiki_cli/services/plugins.py:_load_catalog` | 23 | - | unresolved | 5 |
 | `src/llm_wiki_cli/services/plugins.py:_load_catalog` | 23 | - | external | 9 |
-> Omission summary shows 8 of 105 groups; 97 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 106 groups; 98 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

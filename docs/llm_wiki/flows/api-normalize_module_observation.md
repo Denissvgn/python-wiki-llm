@@ -6,7 +6,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -14,60 +14,69 @@ sequenceDiagram
     participant p0 as normalize_module_observation
     participant p1 as _normalize_module_observation
     participant p2 as _inventory_language
-    participant p3 as isinstance (src/llm_wiki_cli/services…malize_module_observation)
-    participant p4 as _record_array
-    participant p5 as _validate_import_record
-    participant p6 as _record_name
-    participant p7 as _validate_module_entity_record
-    participant p8 as seen_names.get
-    participant p9 as _copy_selected_fields
-    participant p10 as class_summaries.append
-    participant p11 as _validate_callable_record
-    participant p12 as function_summaries.append
-    participant p13 as _structural_copy
-    participant p14 as module_name.strip
-    participant p15 as _InventoryNormalizationError
-    participant p16 as _json_array
-    participant p17 as _validate_string_array
-    participant p18 as _validate_constant_record
-    participant p19 as constant_summaries.append
-    participant p20 as _validate_module_call_record
-    participant p21 as call_summaries.append
+    participant p3 as _record_array
+    participant p4 as _validate_import_record
+    participant p5 as _record_name
+    participant p6 as _validate_module_entity_record
+    participant p7 as _copy_selected_fields
+    participant p8 as _validate_callable_record
+    participant p9 as _json_array
+    participant p10 as _validate_string_array
+    participant p11 as _validate_constant_record
+    participant p12 as _validate_module_call_record
+    participant p13 as require_nonempty_text
+    participant p14 as _structural_copy
+    participant p15 as _validate_optional_string_array
+    participant p16 as _validate_optional_strings
+    participant p17 as _optional_record_array
+    participant p18 as _validate_optional_booleans
+    participant p19 as require_string_list
+    participant p20 as require_mapping_list
+    participant p21 as _InventoryNormalizationError
+    participant p22 as require_list
+    participant p23 as require_string
+    participant p24 as require_bool
+    participant p25 as contains_control_character
+    participant p26 as require_mapping
+    participant p27 as isinstance (src/llm_wiki_cli/services…malize_module_observation)
+    participant p28 as seen_names.get
+    participant p29 as class_summaries.append
+    participant p30 as function_summaries.append
     p0->>p1: _normalize_module_observation
     p1->>p2: _inventory_language
-    p1-->>p3: isinstance (src/llm_wiki_cli/services…malize_module_observation)(file_data, Mapping)
-    p1->>p4: _record_array
-    p1->>p4: _record_array
-    p1->>p4: _record_array
-    p1->>p5: _validate_import_record
-    p1->>p6: _record_name
-    p1->>p7: _validate_module_entity_record
-    p1-->>p8: seen_names.get(name, 0)
-    p1->>p9: _copy_selected_fields
-    p1-->>p10: class_summaries.append(summary)
-    p1->>p11: _validate_callable_record
-    p1-->>p12: function_summaries.append(_copy_selected_fields(...))
-    p1->>p9: _copy_selected_fields
-    p1->>p13: _structural_copy
-    p1-->>p3: isinstance (src/llm_wiki_cli/services…malize_module_observation)(module_name, str)
-    p1-->>p14: module_name.strip
-    p1->>p15: _InventoryNormalizationError
-    p1->>p16: _json_array
-    p1->>p17: _validate_string_array
-    p1->>p4: _record_array
-    p1->>p4: _record_array
-    p1->>p18: _validate_constant_record
-    p1-->>p19: constant_summaries.append(_copy_selected_fields(...))
-    p1->>p9: _copy_selected_fields
-    p1->>p13: _structural_copy
-    p1->>p20: _validate_module_call_record
-    p1-->>p21: call_summaries.append(_copy_selected_fields(...))
-    p1->>p9: _copy_selected_fields
+    p1->>p3: _record_array
+    p1->>p4: _validate_import_record
+    p1->>p5: _record_name
+    p1->>p6: _validate_module_entity_record
+    p1->>p7: _copy_selected_fields
+    p1->>p8: _validate_callable_record
+    p1->>p9: _json_array
+    p1->>p10: _validate_string_array
+    p1->>p11: _validate_constant_record
+    p1->>p12: _validate_module_call_record
+    p5->>p13: require_nonempty_text
+    p7->>p14: _structural_copy
+    p6->>p15: _validate_optional_string_array
+    p4->>p16: _validate_optional_strings
+    p8->>p17: _optional_record_array
+    p4->>p18: _validate_optional_booleans
+    p15->>p19: require_string_list
+    p17->>p20: require_mapping_list
+    p1->>p21: _InventoryNormalizationError
+    p9->>p22: require_list
+    p16->>p23: require_string
+    p18->>p24: require_bool
+    p13->>p25: contains_control_character
+    p20->>p26: require_mapping
+    p1-->>p27: isinstance (src/llm_wiki_cli/services…malize_module_observation)(file_data, Mapping)
+    p1-->>p28: seen_names.get(name, 0)
+    p1-->>p29: class_summaries.append(summary)
+    p1-->>p30: function_summaries.append(_copy_selected_fields(...))
 ```
 
 > Call sequence diagram shows 30 of 120 interactions; 90 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 2 of 27 (25 omitted); unresolved 6 of 21 (15 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 27 (26 omitted); unresolved 3 of 21 (18 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -78,10 +87,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_inventory_language` | 3 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_record_array` | 11 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 3 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_record_array` | 11 | - | external | 3 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:_normalize_module_observation` | 2 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 9 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_validate_import_record` | 20 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_validate_import_record` | 20 | - | external | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:_validate_import_record` | 20 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 4 |
-> Omission summary shows 8 of 48 groups; 40 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 43 groups; 35 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow

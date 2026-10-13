@@ -1,6 +1,6 @@
 # InventoryRequest
 
-**Location:** `src/llm_wiki_cli/services/extraction_service.py:148`
+**Location:** `src/llm_wiki_cli/services/extraction_service.py:149`
 **Kind:** Class
 **Bases:** —
 **Module:** [extraction_service](../modules/extraction_service.md)
@@ -13,6 +13,8 @@ Validated input contract for one extraction pass. It combines the source root
 and optional prebuilt snapshot with depth, file narrowing, cache, worker,
 helper, plugin, and source-selection controls. Construction normalizes mutable
 inputs so the extraction planner receives a stable request.
+
+`capture_path_outcomes` enables attributable diagnostics for built-in Python, JavaScript/TypeScript, Go, Rust and Haskell providers. Diagnostic extraction bypasses plain inventory-cache hits; retained qualified sync analysis remains committed to the source/provider basis and missing qualification requires a scoped live retry.
 
 ## Attributes
 
@@ -35,6 +37,8 @@ inputs so the extraction planner receives a stable request.
 | `source_selection` | `str \| Path \| None` | `None` | — |
 | `source_plugins_only` | `bool` | `False` | — |
 | `capture_implementation_observations` | `bool` | `False` | — |
+| `capture_path_outcomes` | `bool` | `False` | — |
+| `retain_empty_paths` | `tuple[str, ...]` | `()` | — |
 
 ## Methods
 
@@ -88,7 +92,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [extraction_service](../modules/extraction_service.md) | 1 | `cache_options`, `capture_data_effect_observations`, `capture_implementation_observations`, `capture_import_observations`, `deep`, `helper_cache_dir`, `include_empty`, `include_plugins`, `include_tests`, `job_request`, `only_files`, `parallel_jobs` |
+| [extraction_service](../modules/extraction_service.md) | 1 | `cache_options`, `capture_data_effect_observations`, `capture_implementation_observations`, `capture_import_observations`, `capture_path_outcomes`, `deep`, `helper_cache_dir`, `include_empty`, `include_plugins`, `include_tests`, `job_request`, `only_files` |
 
 ### References
 

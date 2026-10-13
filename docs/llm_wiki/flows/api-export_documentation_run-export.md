@@ -20,78 +20,83 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
 sequenceDiagram
     participant p0 as export_documentation_run
-    participant p1 as _resolve_workspace_root_argument
-    participant p2 as load_documentation_run
-    participant p3 as _verify_read_only_inputs
-    participant p4 as run.evidence.get
-    participant p5 as DocumentationIntegrityError (src/llm_wiki_cli/services…:export_documentation_run)
-    participant p6 as _read_json
-    participant p7 as _workspace_path
-    participant p8 as compare_generated_ownership
-    participant p9 as generated_payload.get
-    participant p10 as any (src/llm_wiki_cli/services…:export_documentation_run)
-    participant p11 as generated_diff.values
-    participant p12 as DocumentationTransitionError
-    participant p13 as _assert_documentation_export_projection_policy
-    participant p14 as str (src/llm_wiki_cli/services…:export_documentation_run)
-    participant p15 as _load_documentation_knowledge_projection
-    participant p16 as export_site_mirror
-    participant p17 as _block_run_for_integrity
-    participant p18 as _documentation_projection_evidence
-    participant p19 as export_report.to_dict
-    participant p20 as _write_json
-    participant p21 as export_path.relative_to(…).as_posix
-    participant p22 as export_path.relative_to
-    participant p23 as _run_authorized_builder
-    participant p24 as builder_path.relative_to(…).as_posix
-    participant p25 as builder_path.relative_to
-    p0-->>p1: _resolve_workspace_root_argument(workspace)
-    p0-->>p2: load_documentation_run(workspace_root)
-    p0-->>p3: _verify_read_only_inputs(workspace_root, run)
-    p0-->>p4: run.evidence.get('generated_ownership')
-    p0-->>p5: DocumentationIntegrityError (src/llm_wiki_cli/services…:export_documentation_run)('Workspace export requires generated-ownership evidence.')
-    p0-->>p6: _read_json(_workspace_path(...))
-    p0-->>p7: _workspace_path(workspace_root, generated_path)
-    p0-->>p8: compare_generated_ownership(generated_payload.get(...), ...)
-    p0-->>p9: generated_payload.get('fingerprints', {...})
-    p0-->>p10: any (src/llm_wiki_cli/services…:export_documentation_run)(generated_diff.values(...))
-    p0-->>p11: generated_diff.values
-    p0-->>p5: DocumentationIntegrityError (src/llm_wiki_cli/services…:export_documentation_run)(...)
-    p0-->>p12: DocumentationTransitionError('Workspace export requires a completed user-docs stage and review state.')
-    p0-->>p13: _assert_documentation_export_projection_policy(run, knowledge_mode=knowledge_mode, knowledge_public_repository_identity=knowledge_public_repository_identity)
-    p0-->>p14: str (src/llm_wiki_cli/services…:export_documentation_run)(run.publication[...])
-    p0-->>p14: str (src/llm_wiki_cli/services…:export_documentation_run)(run.publication[...])
-    p0-->>p15: _load_documentation_knowledge_projection(…)
-    p0->>p16: export_site_mirror
-    p0-->>p14: str (src/llm_wiki_cli/services…:export_documentation_run)(run.publication[...])
-    p0-->>p17: _block_run_for_integrity(workspace_root, run, message)
-    p0-->>p5: DocumentationIntegrityError (src/llm_wiki_cli/services…:export_documentation_run)(message)
-    p0-->>p18: _documentation_projection_evidence(…)
-    p0-->>p19: export_report.to_dict
-    p0-->>p20: _write_json(export_path, export_payload)
-    p0-->>p21: export_path.relative_to(…).as_posix
-    p0-->>p22: export_path.relative_to(workspace_root)
-    p0->>p23: _run_authorized_builder
-    p0-->>p20: _write_json(builder_path, builder_evidence)
-    p0-->>p24: builder_path.relative_to(…).as_posix
-    p0-->>p25: builder_path.relative_to(workspace_root)
+    participant p1 as export_site_mirror
+    participant p2 as _run_authorized_builder
+    participant p3 as check_site_mirror
+    participant p4 as _build_final_report
+    participant p5 as _render_final_report
+    participant p6 as _validate_format
+    participant p7 as _validate_link_mode (src/llm_wiki_cli/services/site_export.py)
+    participant p8 as _validate_file_friendly
+    participant p9 as _validate_profile
+    participant p10 as _validate_export_site_name
+    participant p11 as _normalized_source_id
+    participant p12 as _validate_existing_dir
+    participant p13 as _validate_output_base
+    participant p14 as collect_wiki_pages
+    participant p15 as _preflight_knowledge_projection
+    participant p16 as _preflight_existing_unexpected_knowledge_pages
+    participant p17 as read_md
+    participant p18 as _build_display_titles
+    participant p19 as _load_surface_index_sources
+    participant p20 as _source_identity
+    participant p21 as _build_publication_selection
+    participant p22 as _preflight_publication_export
+    participant p23 as _check_publication_receipt
+    participant p24 as _selection_mismatch_issues
+    participant p25 as _begin_publication_export
+    participant p26 as _record_write_operation
+    participant p27 as _check_existing_unexpected_knowledge_pages
+    participant p28 as _build_user_index_page
+    participant p29 as Path (src/llm_wiki_cli/services…port.py:check_site_mirror)
+    participant p30 as _resolve_workspace_root_argument
+    p0->>p1: export_site_mirror
+    p0->>p2: _run_authorized_builder
+    p0->>p3: check_site_mirror
+    p0->>p4: _build_final_report
+    p0->>p5: _render_final_report
+    p1->>p6: _validate_format
+    p3->>p7: _validate_link_mode (src/llm_wiki_cli/services/site_export.py)
+    p1->>p8: _validate_file_friendly
+    p1->>p9: _validate_profile
+    p1->>p10: _validate_export_site_name
+    p1->>p11: _normalized_source_id
+    p1->>p12: _validate_existing_dir
+    p1->>p13: _validate_output_base
+    p1->>p14: collect_wiki_pages
+    p1->>p15: _preflight_knowledge_projection
+    p1->>p16: _preflight_existing_unexpected_knowledge_pages
+    p1->>p17: read_md
+    p1->>p18: _build_display_titles
+    p1->>p19: _load_surface_index_sources
+    p1->>p20: _source_identity
+    p1->>p21: _build_publication_selection
+    p1->>p22: _preflight_publication_export
+    p3->>p23: _check_publication_receipt
+    p3->>p24: _selection_mismatch_issues
+    p1->>p25: _begin_publication_export
+    p1->>p26: _record_write_operation
+    p3->>p27: _check_existing_unexpected_knowledge_pages
+    p1->>p28: _build_user_index_page
+    p3-->>p29: Path (src/llm_wiki_cli/services…port.py:check_site_mirror)(wiki_dir)
+    p0-->>p30: _resolve_workspace_root_argument(workspace)
 ```
 
 > Call sequence diagram shows 30 of 1744 interactions; 1714 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 0 of 356 (356 omitted); unresolved 28 of 756 (728 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 356 (355 omitted); unresolved 1 of 756 (755 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/site_export.py:export_site_mirror` | 19 | [src/llm_wiki_cli/services/site_export.py](../modules/site_export.md) | internal | 41 |
+| `src/llm_wiki_cli/services/documentation_run/export.py:export_documentation_run` | 1 | - | unresolved | 54 |
 | `src/llm_wiki_cli/services/site_export.py:_validate_format` | 20 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/site_export.py:_validate_format` | 20 | - | external | 1 |
 | `src/llm_wiki_cli/services/site_export.py:_validate_format` | 20 | [src/llm_wiki_cli/services/site_export.py](../modules/site_export.md) | internal | 1 |
@@ -99,7 +104,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/site_export.py:_validate_profile` | 26 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/site_export.py:_validate_profile` | 26 | - | external | 1 |
 | `src/llm_wiki_cli/services/site_export.py:_validate_profile` | 26 | [src/llm_wiki_cli/services/site_export.py](../modules/site_export.md) | internal | 1 |
-> Omission summary shows 8 of 362 groups; 354 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 358 groups; 350 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

@@ -4,6 +4,7 @@ module Parser
     ( parseSourceFile
     ) where
 
+import Control.Exception (evaluate)
 import Data.Char (isSpace)
 import Data.List (foldl', isPrefixOf, sortOn)
 import qualified GHC.Data.EnumSet as EnumSet
@@ -73,6 +74,7 @@ import Inventory
 parseSourceFile :: FilePath -> FilePath -> IO (Either String FileEntry)
 parseSourceFile absolutePath displayPath = do
     rawSource <- readFile absolutePath
+    _ <- evaluate (length rawSource)
     let source = prepareSource absolutePath rawSource
         buffer = stringToStringBuffer source
         (_, locatedOptions) = getOptions (parserOptions (languageExtensions (Just Haskell2010))) buffer displayPath

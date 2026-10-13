@@ -287,7 +287,7 @@ def _add_task_context_command(subparsers):
     parser.add_argument("--allow-external-src", action="store_true")
     parser.add_argument("--allow-full-inventory", action="store_true", help="Permit explicit requests for a full source scan")
     parser.add_argument("--output", help="Write the selected context view to this file")
-    parser.add_argument("--view", choices=["canonical", "compact-v1"], default="canonical",
+    parser.add_argument("--view", choices=["canonical", "compact-v1", "compact-v2"], default="canonical",
                         help="Explicit presentation; canonical remains the default")
     parser.add_argument("--view-budget-tokens", type=int,
                         help="Separate compact text budget within the host ceiling")
@@ -342,6 +342,7 @@ def _add_doctor_command(subparsers):
     )
     doctor_contract = doctor_parser.add_mutually_exclusive_group()
     doctor_contract.add_argument("--capabilities", action="store_true", help="Opt into doctor v2 with provider prerequisites and corrective commands")
+    doctor_contract.add_argument("--analysis-inputs", action="store_true", help="Check installed provider input classification without scanning project source")
     doctor_parser.add_argument("--comparison-policy", choices=("auto", "exact-v1", "analysis-v1"), default="auto")
     doctor_contract.add_argument("--report-schema", choices=("auto", "v1", "v3", "v4"), default="auto", help="Health report schema; v3 includes captured coverage and producer details")
     doctor_parser.add_argument(

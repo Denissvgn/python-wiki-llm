@@ -6,7 +6,7 @@
 
 ## Call sequence
 
-> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; siblings are shown before deeper helper detail.
+> Static overview in presentation order, not runtime execution order. Arrows retain captured callers; representative internal continuations and boundary examples precede repeated helper detail.
 
 <!-- Auto-generated from static call edges. Dashed arrows are external or unresolved calls. Reviewed runtime conditions and side effects belong in Behavior. -->
 ```mermaid
@@ -14,76 +14,80 @@ sequenceDiagram
     participant p0 as normalize_concept_coordinate
     participant p1 as normalize_documentation_query_text
     participant p2 as validate_exact_page_coordinate
-    participant p3 as validator
-    participant p4 as DocumentationQueryError
-    participant p5 as isinstance (src/llm_wiki_cli/services…e_documentation_query_text)
-    participant p6 as isinstance (src/llm_wiki_cli/services…date_exact_page_coordinate)
-    participant p7 as value.strip (src/llm_wiki_cli/services…e_documentation_query_text)
-    participant p8 as value.strip (src/llm_wiki_cli/services…date_exact_page_coordinate)
-    participant p9 as WikiSurfaceError
-    participant p10 as len (src/llm_wiki_cli/services…e_documentation_query_text)
-    participant p11 as any (src/llm_wiki_cli/services…date_exact_page_coordinate)
-    participant p12 as selected.encode
-    participant p13 as ord (src/llm_wiki_cli/services…date_exact_page_coordinate)
-    participant p14 as _matches_directory_path
-    participant p15 as _matches_directory_uri
-    participant p16 as canonical_path
-    participant p17 as mcp_uri
-    participant p18 as coordinate.startswith (src/llm_wiki_cli/services…py:_matches_directory_path)
-    participant p19 as coordinate.startswith (src/llm_wiki_cli/services….py:_matches_directory_uri)
-    participant p20 as coordinate.endswith
-    participant p21 as len (src/llm_wiki_cli/services….py:_matches_directory_uri)
-    participant p22 as len (src/llm_wiki_cli/services…py:_matches_directory_path)
-    participant p23 as re.search
+    participant p3 as DocumentationQueryError
+    participant p4 as _matches_directory_path
+    participant p5 as _matches_directory_uri
+    participant p6 as is_safe_page_id
+    participant p7 as canonical_path
+    participant p8 as mcp_uri
+    participant p9 as _entry_for
+    participant p10 as _validate_page_id
+    participant p11 as is_portable_path_component
+    participant p12 as require_portable_path_component
+    participant p13 as WikiSurfaceError
+    participant p14 as PageKind
+    participant p15 as SharedValidationError
+    participant p16 as isinstance (src/llm_wiki_cli/services…e_documentation_query_text)
+    participant p17 as validator
+    participant p18 as isinstance (src/llm_wiki_cli/services…date_exact_page_coordinate)
+    participant p19 as value.strip (src/llm_wiki_cli/services…e_documentation_query_text)
+    participant p20 as value.strip (src/llm_wiki_cli/services…date_exact_page_coordinate)
+    participant p21 as len (src/llm_wiki_cli/services…e_documentation_query_text)
+    participant p22 as any (src/llm_wiki_cli/services…date_exact_page_coordinate)
+    participant p23 as selected.encode
+    participant p24 as ord (src/llm_wiki_cli/services…date_exact_page_coordinate)
+    participant p25 as coordinate.startswith (src/llm_wiki_cli/services…py:_matches_directory_path)
+    participant p26 as coordinate.startswith (src/llm_wiki_cli/services….py:_matches_directory_uri)
+    participant p27 as coordinate.endswith
     p0->>p1: normalize_documentation_query_text
     p0->>p2: validate_exact_page_coordinate
-    p0-->>p3: validator(selected)
-    p0->>p4: DocumentationQueryError
-    p1-->>p5: isinstance (src/llm_wiki_cli/services…e_documentation_query_text)(value, str)
-    p2-->>p6: isinstance (src/llm_wiki_cli/services…date_exact_page_coordinate)(value, str)
-    p1-->>p7: value.strip (src/llm_wiki_cli/services…e_documentation_query_text)
-    p2-->>p8: value.strip (src/llm_wiki_cli/services…date_exact_page_coordinate)
-    p1->>p4: DocumentationQueryError
-    p2->>p9: WikiSurfaceError
-    p1-->>p7: value.strip (src/llm_wiki_cli/services…e_documentation_query_text)
-    p2-->>p8: value.strip (src/llm_wiki_cli/services…date_exact_page_coordinate)
-    p1-->>p10: len (src/llm_wiki_cli/services…e_documentation_query_text)(selected.encode(...))
-    p2-->>p11: any (src/llm_wiki_cli/services…date_exact_page_coordinate)(...)
-    p1-->>p12: selected.encode('utf-8')
-    p2-->>p13: ord (src/llm_wiki_cli/services…date_exact_page_coordinate)(character)
-    p1->>p4: DocumentationQueryError
-    p2-->>p13: ord (src/llm_wiki_cli/services…date_exact_page_coordinate)(character)
-    p2->>p9: WikiSurfaceError
-    p2->>p14: _matches_directory_path
-    p2->>p15: _matches_directory_uri
-    p2->>p16: canonical_path
-    p2->>p17: mcp_uri
-    p2->>p9: WikiSurfaceError
-    p14-->>p18: coordinate.startswith (src/llm_wiki_cli/services…py:_matches_directory_path)(prefix)
-    p15-->>p19: coordinate.startswith (src/llm_wiki_cli/services….py:_matches_directory_uri)(prefix)
-    p14-->>p20: coordinate.endswith('.md')
-    p15-->>p21: len (src/llm_wiki_cli/services….py:_matches_directory_uri)(prefix)
-    p14-->>p22: len (src/llm_wiki_cli/services…py:_matches_directory_path)(prefix)
-    p15-->>p23: re.search(' (?![0-9A-Fa-f]{2})', encoded_page_id)
+    p0->>p3: DocumentationQueryError
+    p2->>p4: _matches_directory_path
+    p2->>p5: _matches_directory_uri
+    p4->>p6: is_safe_page_id
+    p4->>p7: canonical_path
+    p5->>p8: mcp_uri
+    p7->>p9: _entry_for
+    p7->>p10: _validate_page_id
+    p6->>p11: is_portable_path_component
+    p11->>p12: require_portable_path_component
+    p2->>p13: WikiSurfaceError
+    p9->>p14: PageKind
+    p12->>p15: SharedValidationError
+    p1-->>p16: isinstance (src/llm_wiki_cli/services…e_documentation_query_text)(value, str)
+    p0-->>p17: validator(selected)
+    p2-->>p18: isinstance (src/llm_wiki_cli/services…date_exact_page_coordinate)(value, str)
+    p1-->>p19: value.strip (src/llm_wiki_cli/services…e_documentation_query_text)
+    p2-->>p20: value.strip (src/llm_wiki_cli/services…date_exact_page_coordinate)
+    p1-->>p19: value.strip (src/llm_wiki_cli/services…e_documentation_query_text)
+    p2-->>p20: value.strip (src/llm_wiki_cli/services…date_exact_page_coordinate)
+    p1-->>p21: len (src/llm_wiki_cli/services…e_documentation_query_text)(selected.encode(...))
+    p2-->>p22: any (src/llm_wiki_cli/services…date_exact_page_coordinate)(...)
+    p1-->>p23: selected.encode('utf-8')
+    p2-->>p24: ord (src/llm_wiki_cli/services…date_exact_page_coordinate)(character)
+    p2-->>p24: ord (src/llm_wiki_cli/services…date_exact_page_coordinate)(character)
+    p4-->>p25: coordinate.startswith (src/llm_wiki_cli/services…py:_matches_directory_path)(prefix)
+    p5-->>p26: coordinate.startswith (src/llm_wiki_cli/services….py:_matches_directory_uri)(prefix)
+    p4-->>p27: coordinate.endswith('.md')
 ```
 
 > Call sequence diagram shows 30 of 74 interactions; 44 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 9 of 23 (14 omitted); unresolved 9 of 16 (7 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 6 of 23 (17 omitted); unresolved 9 of 16 (7 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/wiki_surface.py:_matches_directory_path` | 19 | - | external | 2 |
-| `src/llm_wiki_cli/services/wiki_surface.py:_matches_directory_path` | 19 | [src/llm_wiki_cli/services/wiki_surface.py](../modules/wiki_surface.md) | internal | 2 |
+| `src/llm_wiki_cli/services/documentation_query_builder.py:normalize_documentation_query_text` | 2 | [src/llm_wiki_cli/services/documentation_queries.py](../modules/documentation_queries.md) | internal | 2 |
+| `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 10 | [src/llm_wiki_cli/services/wiki_surface.py](../modules/wiki_surface.md) | internal | 4 |
+| `src/llm_wiki_cli/services/wiki_surface.py:_matches_directory_path` | 19 | - | external | 3 |
 | `src/llm_wiki_cli/services/wiki_surface.py:is_safe_page_id` | 25 | - | external | 3 |
 | `src/llm_wiki_cli/services/wiki_surface.py:is_safe_page_id` | 25 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/wiki_surface.py:is_safe_page_id` | 25 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-| `src/llm_wiki_cli/services/validation.py:is_portable_path_component` | 31 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_portable_path_component` | 32 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/validation.py:require_portable_path_component` | 32 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 5 |
-> Omission summary shows 8 of 18 groups; 10 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/validation.py:require_portable_path_component` | 32 | - | external | 5 |
+| `src/llm_wiki_cli/services/validation.py:require_portable_path_component` | 32 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 4 |
+> Omission summary shows 8 of 17 groups; 9 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow

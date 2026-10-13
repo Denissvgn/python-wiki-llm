@@ -842,7 +842,11 @@ def capture_context_read(
         _guard_windows_inputs(source_root, source_snapshot.captured_content_hashes)
         _assert_source_unchanged(source_snapshot, _source_anchor(source_snapshot))
 
-    helper_options = {"helper_cache_dir": helper_cache_dir} if helper_cache_dir is not None else {}
+    helper_options: dict[str, Any] = {"helper_cache_dir": helper_cache_dir} if helper_cache_dir is not None else {}
+    from .source_retirement import retained_empty_module_paths_from_wiki
+    empty_paths = retained_empty_module_paths_from_wiki(wiki_root)
+    if empty_paths:
+        helper_options["retain_empty_paths"] = empty_paths
     collected = context_service.get_inventory(
         str(source_root),
         deep=True,
