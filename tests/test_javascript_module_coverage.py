@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -22,7 +23,10 @@ from llm_wiki_cli.services.source_snapshot import build_source_snapshot, source_
 
 @pytest.fixture
 def project(tmp_path, monkeypatch):
-    monkeypatch.setenv("LLM_WIKI_CACHE_DIR", str(Path(__file__).resolve().parents[1] / ".git"))
+    monkeypatch.setenv(
+        "LLM_WIKI_CACHE_DIR",
+        os.environ.get("LLM_WIKI_CACHE_DIR", str(Path(__file__).resolve().parents[1] / ".git")),
+    )
     monkeypatch.chdir(tmp_path)
     source = tmp_path / "source"
     source.mkdir()
@@ -46,6 +50,8 @@ def project(tmp_path, monkeypatch):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text, encoding="utf-8")
     if get_prepared_typescript_root() is None:
+        if os.environ.get("LLM_WIKI_REQUIRE_NATIVE_DIAGNOSTICS") == "1":
+            pytest.fail("prepared TypeScript helper is required in the owner lane")
         pytest.skip("prepared TypeScript helper required")
     api.bootstrap_wiki(str(source), "wiki")
     return source
@@ -55,6 +61,8 @@ def project(tmp_path, monkeypatch):
 def helper():
     root = get_prepared_typescript_root()
     if root is None:
+        if os.environ.get("LLM_WIKI_REQUIRE_NATIVE_DIAGNOSTICS") == "1":
+            pytest.fail("prepared TypeScript helper is required in the owner lane")
         pytest.skip("prepared TypeScript helper required")
     return root
 

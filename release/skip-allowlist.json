@@ -524,6 +524,132 @@
     },
     {
       "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_batch_failure_is_not_reported_as_file_parse_failure",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_bounds_and_cli_mcp_match_api",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_cached_module_edits_are_reextracted[cjs]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_cached_module_edits_are_reextracted[mjs]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_chunk_failure_preserves_success_and_unattempted_paths",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_discovery_keeps_bundle_and_worktree_out_of_inventory",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_dynamic_and_shadowed_require_are_explicit_without_invented_edges",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_exact_esm_side_effect_and_commonjs_dependencies",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_invalid_policy_and_symlinks_fail_before_extraction",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_local_require_bindings_never_claim_module_edges[const require = () => null;]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_local_require_bindings_never_claim_module_edges[const { value: require } = object;]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_local_require_bindings_never_claim_module_edges[if (false) { var require; }]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_local_require_bindings_never_claim_module_edges[require = replacement;]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_local_require_bindings_never_claim_module_edges[try {} catch (require) { require('./helper.mjs'); }]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_missing_helper_and_batch_failure_are_attributable",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_module_edits_invalidate_captured_source[cjs]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_module_edits_invalidate_captured_source[mjs]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_module_extensions_match_broad_and_targeted_inventory",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_path_outcomes_are_distinct_and_present_keeps_inventory_meaning",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_profile_exclusion_is_not_a_missing_file",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_javascript_module_coverage.py::test_query_aborts_when_source_changes_during_diagnostic_read",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-macos-3.14",
       "node_id": "tests/test_lint.py::TestLintDependencyCoverage::test_typescript_src_lib_alias_resolves_under_root_lib_ignore",
       "owner_lane": "toolchains",
       "reason": "Node.js/ts-morph dependencies not installed"
@@ -1727,6 +1853,132 @@
       "node_id": "tests/test_haskell_extract.py::test_literate_haskell_helper_preserves_inventory_shape",
       "owner_lane": "toolchains",
       "reason": "Prepared Haskell helper not available \u2014 Haskell extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_batch_failure_is_not_reported_as_file_parse_failure",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_bounds_and_cli_mcp_match_api",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_cached_module_edits_are_reextracted[cjs]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_cached_module_edits_are_reextracted[mjs]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_chunk_failure_preserves_success_and_unattempted_paths",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_discovery_keeps_bundle_and_worktree_out_of_inventory",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_dynamic_and_shadowed_require_are_explicit_without_invented_edges",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_exact_esm_side_effect_and_commonjs_dependencies",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_invalid_policy_and_symlinks_fail_before_extraction",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_local_require_bindings_never_claim_module_edges[const require = () => null;]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_local_require_bindings_never_claim_module_edges[const { value: require } = object;]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_local_require_bindings_never_claim_module_edges[if (false) { var require; }]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_local_require_bindings_never_claim_module_edges[require = replacement;]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_local_require_bindings_never_claim_module_edges[try {} catch (require) { require('./helper.mjs'); }]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_missing_helper_and_batch_failure_are_attributable",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_module_edits_invalidate_captured_source[cjs]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_module_edits_invalidate_captured_source[mjs]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_module_extensions_match_broad_and_targeted_inventory",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_path_outcomes_are_distinct_and_present_keeps_inventory_meaning",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_profile_exclusion_is_not_a_missing_file",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_javascript_module_coverage.py::test_query_aborts_when_source_changes_during_diagnostic_read",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
     },
     {
       "lane": "core-ubuntu-3.10",
@@ -3329,6 +3581,132 @@
       "node_id": "tests/test_haskell_extract.py::test_literate_haskell_helper_preserves_inventory_shape",
       "owner_lane": "toolchains",
       "reason": "Prepared Haskell helper not available \u2014 Haskell extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_batch_failure_is_not_reported_as_file_parse_failure",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_bounds_and_cli_mcp_match_api",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_cached_module_edits_are_reextracted[cjs]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_cached_module_edits_are_reextracted[mjs]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_chunk_failure_preserves_success_and_unattempted_paths",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_discovery_keeps_bundle_and_worktree_out_of_inventory",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_dynamic_and_shadowed_require_are_explicit_without_invented_edges",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_exact_esm_side_effect_and_commonjs_dependencies",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_invalid_policy_and_symlinks_fail_before_extraction",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_local_require_bindings_never_claim_module_edges[const require = () => null;]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_local_require_bindings_never_claim_module_edges[const { value: require } = object;]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_local_require_bindings_never_claim_module_edges[if (false) { var require; }]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_local_require_bindings_never_claim_module_edges[require = replacement;]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_local_require_bindings_never_claim_module_edges[try {} catch (require) { require('./helper.mjs'); }]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_missing_helper_and_batch_failure_are_attributable",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_module_edits_invalidate_captured_source[cjs]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_module_edits_invalidate_captured_source[mjs]",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_module_extensions_match_broad_and_targeted_inventory",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_path_outcomes_are_distinct_and_present_keeps_inventory_meaning",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_profile_exclusion_is_not_a_missing_file",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_javascript_module_coverage.py::test_query_aborts_when_source_changes_during_diagnostic_read",
+      "owner_lane": "toolchains",
+      "reason": "prepared TypeScript helper required"
     },
     {
       "lane": "core-windows-3.13",

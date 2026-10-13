@@ -1224,6 +1224,14 @@ def test_toolchain_audits_require_complete_owner_suite_evidence() -> None:
     verifier_index = names.index("Enforce complete toolchain owner evidence")
     audit_index = names.index("Audit exact helper dependency trees")
     assert suite_index < verifier_index < audit_index
+    suite = steps[suite_index]
+    for control in (
+        "tests/test_native_helper_path_diagnostics.py",
+        "tests/test_qualified_empty_modules.py",
+        "tests/test_javascript_module_coverage.py",
+    ):
+        assert control in suite["run"]
+    assert suite["env"]["LLM_WIKI_REQUIRE_NATIVE_DIAGNOSTICS"] == "1"
 
     verifier = steps[verifier_index]
     assert verifier.get("continue-on-error") is None
@@ -1233,8 +1241,8 @@ def test_toolchain_audits_require_complete_owner_suite_evidence() -> None:
     assert "--junit evidence/toolchains.xml" in command
     assert "--lane toolchains" in command
     assert "--allowlist candidate/release/skip-allowlist.json" in command
-    assert "--minimum-collected 489" in command
-    assert "--minimum-passed 489" in command
+    assert "--minimum-collected 597" in command
+    assert "--minimum-passed 597" in command
     assert "--output evidence/result-toolchains.json" in command
     assert "--discovery" not in command
     assert "DISCOVERY_MODE" not in str(verifier)
@@ -1466,11 +1474,19 @@ def test_routine_ci_reuses_only_instrumentation_and_expensive_packaging() -> Non
     assert _named_step(mcp, "Run MCP SDK registration contract")["env"]["LLM_WIKI_REQUIRE_MCP_SDK"] == "1"
     assert "tests/test_mcp_sdk.py" in mcp_command
     assert "tests/test_mcp.py" not in mcp_command
+    assert (
+        "tests/test_task_compact_readable.py::"
+        "test_actual_mcp_v2_metadata_toggle_keeps_qualifications_and_receipts"
+    ) in mcp_command
     mcp_verifier = _named_step(
         mcp, "Enforce MCP SDK registration and canonical delivery"
     )["run"]
-    assert "--minimum-collected 6" in mcp_verifier
-    assert "--minimum-passed 6" in mcp_verifier
+    assert "--minimum-collected 7" in mcp_verifier
+    assert "--minimum-passed 7" in mcp_verifier
+    assert (
+        "tests/test_task_compact_readable.py::"
+        "test_actual_mcp_v2_metadata_toggle_keeps_qualifications_and_receipts"
+    ) in _named_step(mcp, "Run MCP SDK registration contract")["run"]
     assert (
         "tests/test_compact_delivery_interfaces.py::"
         "test_actual_mcp_sdk_content_carries_view_then_receipt_as_separate_transport"
@@ -1675,8 +1691,8 @@ def test_release_mcp_and_build_jobs_avoid_identical_revalidation() -> None:
     mcp_verifier = _named_step(
         mcp, "Enforce the dedicated MCP SDK contract"
     )["run"]
-    assert "--minimum-collected 6" in mcp_verifier
-    assert "--minimum-passed 6" in mcp_verifier
+    assert "--minimum-collected 7" in mcp_verifier
+    assert "--minimum-passed 7" in mcp_verifier
     assert (
         "tests/test_compact_delivery_interfaces.py::"
         "test_actual_mcp_sdk_content_carries_view_then_receipt_as_separate_transport"

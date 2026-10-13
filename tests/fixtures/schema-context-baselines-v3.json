@@ -65,28 +65,28 @@
           "compact": {
             "variants": {
               "default": {
-                "words": 500,
+                "words": 508,
                 "characters": 4981,
-                "lines": 89,
-                "sha256": "f4962034b6fd668d962ed5aa538d677f70423c94eb872514d8a3990baed077d0"
+                "lines": 55,
+                "sha256": "a5766cba1f11e3c3ac547b31bd10342582d12e9678b6f3b37ff2a0e86cd2f886"
               },
               "without_quality_hints": {
-                "words": 490,
+                "words": 498,
                 "characters": 4909,
-                "lines": 85,
-                "sha256": "de615f0b828ebef96d35bb02b827aa385162bd014396dd2d0febd484bd3e4fb7"
+                "lines": 51,
+                "sha256": "a9793ec28b89d3b1b0481fc3ec220175e001a12518f76d3424df00d562c3ebe5"
               },
               "with_issue_reporting": {
-                "words": 558,
+                "words": 566,
                 "characters": 5453,
-                "lines": 97,
-                "sha256": "9629989496feb9f35bc0611e4308be890a868c6e2f7ded8237e7aec171735078"
+                "lines": 63,
+                "sha256": "ad5238e8abbf7f4f7cc41b502b7e9146e10d02745a960a0528b7ce5aac43cf7f"
               },
               "without_quality_hints_with_issue_reporting": {
-                "words": 548,
+                "words": 556,
                 "characters": 5381,
-                "lines": 93,
-                "sha256": "c7ad6d0f7f7e36979feb126cdaeb359881b68699f57438b32da4b71326eb4300"
+                "lines": 59,
+                "sha256": "6e90f626929309d506ae89e80e3b2a94e31534e5338089ca3308fde2cab8f71e"
               }
             }
           },
@@ -126,28 +126,28 @@
           "compact": {
             "variants": {
               "default": {
-                "words": 504,
+                "words": 512,
                 "characters": 5022,
-                "lines": 89,
-                "sha256": "9d7ea2f0055a81abc3de10e31f20fb6c5e3b15ee75a02660ce86b42ba3e649e9"
+                "lines": 55,
+                "sha256": "683febbbad65579da2c642a25f7cc3bc7326b19e0210793f563998a8911e3ec4"
               },
               "without_quality_hints": {
-                "words": 494,
+                "words": 502,
                 "characters": 4950,
-                "lines": 85,
-                "sha256": "881dafb833a7c8385753fa618870b76e4cdf34b837ca438387be95be5f00dcad"
+                "lines": 51,
+                "sha256": "41eab9159cc62e71d51a37f00c035f2fb8712e085c0d1e3d78fdcd8612daad26"
               },
               "with_issue_reporting": {
-                "words": 562,
+                "words": 570,
                 "characters": 5494,
-                "lines": 97,
-                "sha256": "073525b828756325119692eb0da2036591140b0dd127e6e4cacc65c71f510b41"
+                "lines": 63,
+                "sha256": "99de2300883aaeb090f36708a6f923588ec4ed357ac231f1cf3a5c885cec643d"
               },
               "without_quality_hints_with_issue_reporting": {
-                "words": 552,
+                "words": 560,
                 "characters": 5422,
-                "lines": 93,
-                "sha256": "f8bd8802ebf2383cbd43c6b0a66c72623f28e187a4119e73aaef308db1a5439d"
+                "lines": 59,
+                "sha256": "33432e0796d0e9908bff84489843a20acbeb43cc19f277146434dccef0aec8cf"
               }
             }
           },
@@ -187,28 +187,28 @@
           "compact": {
             "variants": {
               "default": {
-                "words": 504,
+                "words": 512,
                 "characters": 5030,
-                "lines": 89,
-                "sha256": "b3741e8c264308b31c23382e1b0892f3f98ddb180e6231d10f527cdbce52fc78"
+                "lines": 55,
+                "sha256": "b0e7b9402c5e50109f2fbdc4996b0e50147340043b0e8270a7a8c63901454e00"
               },
               "without_quality_hints": {
-                "words": 494,
+                "words": 502,
                 "characters": 4958,
-                "lines": 85,
-                "sha256": "21700492c09e713307e9f8a5688d9110ddac6f498a8687032b937bbc5e28383a"
+                "lines": 51,
+                "sha256": "843bc0a0bbd07185ac53fa351642e26dc42cd6950f98a43cd00087fda64802ac"
               },
               "with_issue_reporting": {
-                "words": 562,
+                "words": 570,
                 "characters": 5502,
-                "lines": 97,
-                "sha256": "90868e5a679f0650b5fa3e0886158d9533b9114adab28c1e10795e53350f8e85"
+                "lines": 63,
+                "sha256": "33f64505df8153040a62afbba2f282959575c7a9b092061db05f24747a546917"
               },
               "without_quality_hints_with_issue_reporting": {
-                "words": 552,
+                "words": 560,
                 "characters": 5430,
-                "lines": 93,
-                "sha256": "6961d0e53aa12e3050c3044771924c854140f6674ca35b818a615dd933805458"
+                "lines": 59,
+                "sha256": "3ff63a7566a34b120656b43d1d0cf30a094ed21a1d9e1f8a57188c383be3449c"
               }
             }
           },
@@ -248,28 +248,28 @@
           "compact": {
             "variants": {
               "default": {
-                "words": 500,
+                "words": 508,
                 "characters": 5000,
-                "lines": 88,
-                "sha256": "2fac22de581d1d7d416f0baf22929f9e35559f703ee3eec1b1c5e950922a9a8b"
+                "lines": 54,
+                "sha256": "c5b5b9c8918132942755eaf324201e1e0dd9730fb2da74e05edca23b89b34aac"
               },
               "without_quality_hints": {
-                "words": 490,
+                "words": 498,
                 "characters": 4928,
-                "lines": 84,
-                "sha256": "b24872120c2050e8d78c34185cfd7652a46086ab010afff7a4485f0c712f982e"
+                "lines": 50,
+                "sha256": "efff574ae44e8a66dded12bd74dccfa75bad97e25bc18cf0aba749785a4db251"
               },
               "with_issue_reporting": {
-                "words": 558,
+                "words": 566,
                 "characters": 5472,
-                "lines": 96,
-                "sha256": "49ecb448c9003e5f00dabe0147a4a7356e0f95fad876cc200bf9ea28429d7301"
+                "lines": 62,
+                "sha256": "8fd1d189851b5f35558dad06a00de54022d6dee9ea82ee00e75bc176ba687028"
               },
               "without_quality_hints_with_issue_reporting": {
-                "words": 548,
+                "words": 556,
                 "characters": 5400,
-                "lines": 92,
-                "sha256": "ff2f8d59197adb078563b20535fb284c9f437aca2069299f8adea2c7074965fd"
+                "lines": 58,
+                "sha256": "412a74b21d24d1de69cd39c8b84984a0d1265731511b4eea15178a6aa6a085d3"
               }
             }
           },
@@ -309,28 +309,28 @@
           "compact": {
             "variants": {
               "default": {
-                "words": 500,
+                "words": 508,
                 "characters": 5000,
-                "lines": 88,
-                "sha256": "2fac22de581d1d7d416f0baf22929f9e35559f703ee3eec1b1c5e950922a9a8b"
+                "lines": 54,
+                "sha256": "c5b5b9c8918132942755eaf324201e1e0dd9730fb2da74e05edca23b89b34aac"
               },
               "without_quality_hints": {
-                "words": 490,
+                "words": 498,
                 "characters": 4928,
-                "lines": 84,
-                "sha256": "b24872120c2050e8d78c34185cfd7652a46086ab010afff7a4485f0c712f982e"
+                "lines": 50,
+                "sha256": "efff574ae44e8a66dded12bd74dccfa75bad97e25bc18cf0aba749785a4db251"
               },
               "with_issue_reporting": {
-                "words": 558,
+                "words": 566,
                 "characters": 5472,
-                "lines": 96,
-                "sha256": "49ecb448c9003e5f00dabe0147a4a7356e0f95fad876cc200bf9ea28429d7301"
+                "lines": 62,
+                "sha256": "8fd1d189851b5f35558dad06a00de54022d6dee9ea82ee00e75bc176ba687028"
               },
               "without_quality_hints_with_issue_reporting": {
-                "words": 548,
+                "words": 556,
                 "characters": 5400,
-                "lines": 92,
-                "sha256": "ff2f8d59197adb078563b20535fb284c9f437aca2069299f8adea2c7074965fd"
+                "lines": 58,
+                "sha256": "412a74b21d24d1de69cd39c8b84984a0d1265731511b4eea15178a6aa6a085d3"
               }
             }
           },
@@ -370,28 +370,28 @@
           "compact": {
             "variants": {
               "default": {
-                "words": 500,
+                "words": 508,
                 "characters": 5000,
-                "lines": 88,
-                "sha256": "2fac22de581d1d7d416f0baf22929f9e35559f703ee3eec1b1c5e950922a9a8b"
+                "lines": 54,
+                "sha256": "c5b5b9c8918132942755eaf324201e1e0dd9730fb2da74e05edca23b89b34aac"
               },
               "without_quality_hints": {
-                "words": 490,
+                "words": 498,
                 "characters": 4928,
-                "lines": 84,
-                "sha256": "b24872120c2050e8d78c34185cfd7652a46086ab010afff7a4485f0c712f982e"
+                "lines": 50,
+                "sha256": "efff574ae44e8a66dded12bd74dccfa75bad97e25bc18cf0aba749785a4db251"
               },
               "with_issue_reporting": {
-                "words": 558,
+                "words": 566,
                 "characters": 5472,
-                "lines": 96,
-                "sha256": "49ecb448c9003e5f00dabe0147a4a7356e0f95fad876cc200bf9ea28429d7301"
+                "lines": 62,
+                "sha256": "8fd1d189851b5f35558dad06a00de54022d6dee9ea82ee00e75bc176ba687028"
               },
               "without_quality_hints_with_issue_reporting": {
-                "words": 548,
+                "words": 556,
                 "characters": 5400,
-                "lines": 92,
-                "sha256": "ff2f8d59197adb078563b20535fb284c9f437aca2069299f8adea2c7074965fd"
+                "lines": 58,
+                "sha256": "412a74b21d24d1de69cd39c8b84984a0d1265731511b4eea15178a6aa6a085d3"
               }
             }
           },

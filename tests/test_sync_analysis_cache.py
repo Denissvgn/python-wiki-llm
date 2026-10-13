@@ -291,10 +291,10 @@ def test_unchanged_snapshot_does_not_add_commitment_to_warm_cache(primed, capsys
     assert sync_analysis_cache.EXTENSION not in final.extensions
 
 
+@pytest.mark.parametrize("primed", [("v1", "inventory"), ("packed-v4-deflate", "inventory")], indirect=True)
 def test_partial_reuse_rebuilds_graph_with_exact_sidecars(primed, monkeypatch, capsys):
     data = json.loads(Path('cache', sync_analysis_cache.FILENAME).read_bytes())
-    if data['coverage'] != 'inventory':
-        pytest.skip('partial coverage fixture')
+    assert data['coverage'] == 'inventory'
     assert data['graph_observations'] is None
     assert data['data_effect_observations'] is not None
     assert data['import_observations'] is not None
