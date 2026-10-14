@@ -400,7 +400,8 @@ class TestE2EDependencyArchitecture:
         out = capsys.readouterr().out
         assert "Import cycle: alpha.py ⇄ beta.py" in out
         assert "Undeclared python dependency (imported, not declared): httpx" in out
-        assert "✅ Lint passed: wiki is fully consistent." in out
+        assert "✅ Lint passed: no blocking issues." in out
+        assert "passing checks do not establish complete analysis or semantic correctness" in out
 
         extract_payload = extract_cmd.build_extract_payload(".", deep=True).payload
         python_external = extract_payload["dependencies"]["external"]["python"]

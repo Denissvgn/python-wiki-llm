@@ -90,6 +90,7 @@ def test_non_native_execution_stays_incomplete_without_starting_processes(tmp_pa
 
 def test_bad_download_is_rejected_before_any_consumer_install(tmp_path, monkeypatch):
     # This is an ordering unit control, not a native execution receipt.
+    monkeypatch.setattr(probe.sys, "prefix", str(tmp_path / "controller/.venv"))
     monkeypatch.setattr(probe, "is_native_windows", lambda: True)
     monkeypatch.setattr(probe.platform, "platform", lambda: "controlled-unit-fixture")
     monkeypatch.setattr(probe.platform, "machine", lambda: "controlled-unit-fixture")

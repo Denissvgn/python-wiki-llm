@@ -73,6 +73,41 @@ def verify_comparison(output: Path, hashes: dict[str, str], version: str) -> Non
         raise ProbeError("complete native wheel/sdist comparison did not agree")
 
 
+def diagnose_failed_harness(args, record, run, save, environment) -> None:
+    """Attribute the original failure without substituting a passing fallback."""
+    attempt = record["commands"][-1]
+    if attempt.get("status") == "timeout" or attempt.get("seconds", 1800) > 1500:
+        record["diagnostic"] = {"status": "unavailable", "release_acceptance": False,
+                                "reason": "insufficient remaining native owner budget"}
+        save()
+        return
+    commands_path = args.output / "commands.json"
+    commands = json.loads(commands_path.read_text(encoding="utf-8")) if commands_path.exists() else []
+    kind = "sdist" if commands and commands[-1].get("label") == "sdist-smoke" else "wheel"
+    python = args.work / f"{kind}-mcp/.venv/Scripts/python.exe"
+    if not python.is_file():
+        record["diagnostic"] = {"status": "unavailable", "release_acceptance": False,
+                                "reason": "original installed MCP consumer unavailable"}
+        save()
+        return
+    record["diagnostic"] = {"status": "running", "release_acceptance": False, "artifact": kind}
+    save()
+    digest = args.wheel_sha256 if kind == "wheel" else args.sdist_sha256
+    try:
+        run("native-session-diagnostic", [python, "-I",
+            Path(__file__).with_name("native_session_diagnostics.py"),
+            "--harness", args.harness_dir, "--harness-sha", args.harness_sha,
+            "--work", args.work / "diagnostic-caller",
+            "--output", args.output / "native-session-diagnostic", "--version", args.version,
+            "--archive-sha256", digest], timeout=300,
+            env={**environment, "PYTHONDONTWRITEBYTECODE": "1"})
+    except (ProbeError, OSError, ValueError) as error:
+        record["diagnostic"].update(status="failed", reason=str(error))
+    else:
+        record["diagnostic"]["status"] = "complete"
+    save()
+
+
 ORIGIN = """
 from importlib.metadata import distribution
 from pathlib import Path
@@ -202,11 +237,23 @@ def main(argv=None) -> int:
         consumer_environment = dict(environment)
         for key in ("GH_TOKEN", "GITHUB_TOKEN"):
             consumer_environment.pop(key, None)
-        run("installed-artifact-harness", [sys.executable, "-I",
-            harness / "tests/run_provider_artifact_checks.py",
-            "--artifacts", args.artifacts, "--work", args.work,
-            "--output", args.output, "--version", args.version],
-            timeout=1800, env=consumer_environment)
+        try:
+            run("installed-artifact-harness", [sys.executable, "-I",
+                harness / "tests/run_provider_artifact_checks.py",
+                "--artifacts", args.artifacts, "--work", args.work,
+                "--output", args.output, "--version", args.version],
+                timeout=1800, env=consumer_environment)
+        except ProbeError:
+            # Profiling occurs only after the immutable acceptance owner fails.
+            # It cannot warm that attempt, replace its result or extend its limit.
+            try:
+                diagnose_failed_harness(args, record, run, save, consumer_environment)
+            except Exception as error:
+                # Optional attribution failures must preserve the primary gate
+                # failure, including malformed receipts or diagnostic defects.
+                record["diagnostic"] = {"status": "failed", "release_acceptance": False,
+                                        "reason": str(error)}
+            raise
         verify_archives(args.artifacts, names, hashes)
         verify_comparison(args.output, hashes, args.version)
         origins = {}
