@@ -4,6 +4,7 @@
 
 - [Frame and ground the change](#frame-and-ground-the-change)
 - [Change and verify independently](#change-and-verify-independently)
+- [Select checks from contracts and environments](#select-checks-from-contracts-and-environments)
 - [Retain the reason and refresh knowledge](#retain-the-reason-and-refresh-knowledge)
 - [Deliver and improve the next task](#deliver-and-improve-the-next-task)
 
@@ -58,6 +59,52 @@ helpers, runtime/toolchain, and relevant process or socket permissions. A missin
 prerequisite is an environment failure, not a product defect or passing coverage.
 Use [Extractors and dependencies](extractors-dependencies.md) for helper recovery.
 Retain the original failure and successful corrective reruns separately.
+
+## Select checks from contracts and environments
+
+Discover supported environments and existing verification commands from the
+project's instructions, declared interfaces, packaging, CI and relevant source.
+Connect each affected criterion to its independently expected outcome, source
+owner, relevant environment or capability, and verification route. Use the
+project's own commands and support scope; do not invent another language,
+platform, CI provider or mandatory matrix. The conversation or an existing
+permitted record can hold these decisions; no new manifest is required.
+
+For an affected interface boundary, identify its representation and semantics:
+native filesystem path, canonical repository path, URI, shell argument,
+serialized key, byte stream or platform metadata. Fixtures and expected values
+must follow that interface contract. Translate only at the declared boundary
+and retain strict rejection rules. A backslash can be a literal POSIX filename
+character; replacing every backslash can change a valid native path. Metadata
+fields with the same name may have different meanings across APIs or runtimes;
+compare shared meanings across interfaces while retaining change detection
+within each interface.
+
+Choose a small, discriminating check before a broad suite. Flavored path objects
+can expose spelling assumptions locally; forced fault or capability cases can
+exercise decoder limits and supported stream alternatives. These simulations
+do not certify native behavior. When filesystem, process or runtime semantics
+matter, verify the relevant declared native environments using existing runners
+and maintained commands. Missing access leaves an applicable gate pending;
+local success does not replace required hosted qualification.
+
+Audit conditional checks against the current candidate. An applicable missing
+prerequisite needs a named verification owner and successful evidence from its
+capable environment before the gate can pass. An unavailable optimization must
+not skip verification of a supported fallback. Mark truly inapplicable cases
+with a reason; never admit blanket skips or count them as covered. Before owning
+sync or qualifying extraction, check both prepared helper identity and active
+execution runtime under the same cache base. Inspect package, helper and runtime
+bases separately; do not manufacture compatibility for runtime-bound observations.
+Use the authorized setup route or leave the prerequisite unresolved.
+
+Classify retained failures as environment, fixture, product or workflow issues
+before correcting them. Verify the correction with an independently expected,
+discriminating case and the affected required gates on the actual candidate.
+Keep the original failed attempt and source/evidence identities. A successful
+fallback does not erase the initial failure. Apply these checks proportionately:
+small mechanical or read-only work does not require a new matrix, task file or
+target execution merely to follow this procedure.
 
 Before qualifying measurements, run `llm-wiki doctor --analysis-inputs --format json`
 and retain its result. This read-only check covers the installed provider's

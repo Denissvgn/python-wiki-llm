@@ -238,6 +238,18 @@ jobs:
           --github-output "${GITHUB_OUTPUT}"
           --jobs 1
 
+      - name: Retain complete writer output for review
+        if: always() && steps.convergence.outputs.evidence-ready == 'true'
+        shell: bash
+        run: >-
+          "${{ steps.setup-python.outputs.python-path }}"
+          -I .github/scripts/capture-llm-wiki-review-snapshot.py
+          --root .
+          --evidence-dir "${RUNNER_TEMP}/llm-wiki-convergence-evidence"
+          --candidate-sha "${{ github.sha }}"
+          --run-id "${{ github.run_id }}"
+          --attempt "${{ github.run_attempt }}"
+
       - name: Upload fixed convergence evidence
         if: always() && steps.convergence.outputs.evidence-ready == 'true'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -251,5 +263,7 @@ jobs:
             ${{ runner.temp }}/llm-wiki-convergence-evidence/wiki-diff.patch
             ${{ runner.temp }}/llm-wiki-convergence-evidence/sync.log
             ${{ runner.temp }}/llm-wiki-convergence-evidence/convergence-result.json
+            ${{ runner.temp }}/llm-wiki-convergence-evidence/wiki-review-snapshot.tar
+            ${{ runner.temp }}/llm-wiki-convergence-evidence/wiki-review-snapshot.json
           if-no-files-found: error
           retention-days: 14

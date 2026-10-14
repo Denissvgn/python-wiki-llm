@@ -163,8 +163,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| load_governance | Path (src/llm_wiki_cli/services…rnance.py:load_governance) | 767 | `Path(wiki_dir)` |
-| load_governance | first_unsafe_path_component | 768 | `first_unsafe_path_component(root)` |
+| load_governance | Path (src/llm_wiki_cli/services…rnance.py:load_governance) | 768 | `Path(wiki_dir)` |
+| load_governance | first_unsafe_path_component | 769 | `first_unsafe_path_component(root)` |
 | first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 51 | `Path(os.fspath(...))` |
 | first_unsafe_path_component | os.fspath | 51 | `os.fspath(path)` |
 | first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 59 | `Path(os.path.abspath(...))` |

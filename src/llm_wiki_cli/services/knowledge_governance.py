@@ -14,6 +14,7 @@ already-validated in-memory knowledge values.
 
 from __future__ import annotations
 
+import errno
 import json
 import os
 import re
@@ -852,6 +853,25 @@ def save_governance(
     )
 
 
+def _lock_open_diagnostic(lock_path: os.PathLike[str], error: OSError) -> str:
+    """Render the native lock destination and bounded filesystem cause."""
+
+    reason = error.strerror or type(error).__name__
+    truncated = len(reason) > 256
+    details = {
+        "failure": "lock-open-failed",
+        "path": os.fspath(lock_path),
+        "errno": error.errno,
+        "errno_name": errno.errorcode.get(error.errno) if error.errno is not None else None,
+        "winerror": getattr(error, "winerror", None),
+        "reason": reason[:253] + "..." if truncated else reason,
+        "reason_truncated": truncated,
+    }
+    # JSON quoting preserves native separators and escapes control characters;
+    # do not turn filesystem paths into repository-relative POSIX spellings.
+    return "could not be opened safely: " + json.dumps(details, sort_keys=True)
+
+
 @contextmanager
 def governance_lock(
     wiki_dir: str | Path, *, _lock_filename: str = GOVERNANCE_LOCK_FILENAME,
@@ -882,7 +902,7 @@ def governance_lock(
     except OSError as exc:
         raise GovernanceError(
             _lock_filename,
-            "could not be opened safely",
+            _lock_open_diagnostic(lock_path, exc),
         ) from exc
     try:
         metadata = os.fstat(file_descriptor)

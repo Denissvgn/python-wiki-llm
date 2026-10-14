@@ -43,6 +43,8 @@ and cache limitations explicitly.
 - A default development workflow in managed agent instructions and the
   `wiki-reference` topic, with a complete inline fallback when skills are disabled
   or unavailable and shared guidance for explicitly selected native coding.
+  Verification follows the project's interface contracts, supported environments
+  and existing commands, with explicit conditional coverage and runtime checks.
 
 - JavaScript `.mjs` and `.cjs` coverage across discovery, extraction, source
   commitments, and static import resolution, including side-effect ESM imports
@@ -51,6 +53,9 @@ and cache limitations explicitly.
   and extraction outcomes, preserving legacy inventory-presence semantics.
 
 ### Fixed
+
+- Mutation-lock open failures identify the resolved native filesystem path,
+  errno and Windows error details, and a bounded cause while retaining lock safety.
 
 - Deeply nested advisory sync caches fall back to ordinary regeneration when
   JSON decoding or commitment encoding reaches the runtime recursion limit.

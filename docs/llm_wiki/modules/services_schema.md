@@ -9,6 +9,13 @@ reference and a short default route. Expanded instructions retain the essential
 procedure when skills are disabled or unavailable. The host owns independent
 verification and completion; provider coverage does not approve the change.
 
+The procedure derives verification from the project's declared interfaces,
+supported environments and existing commands. It distinguishes native paths,
+canonical repository paths and platform metadata meanings, preserves supported
+fallback coverage, and keeps unavailable capabilities pending with an owner.
+Local simulations do not certify another native environment. Prepared helpers
+and active runtimes retain the same cache binding before qualified extraction.
+
 Every maintenance recipe preserves the chosen wiki and source-selection bindings.
 Explicit-language helper recovery omits incompatible selection flags while the
 original read retains its selection. Optional profiles, storage adoption, and

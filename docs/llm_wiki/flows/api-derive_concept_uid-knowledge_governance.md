@@ -150,7 +150,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| derive_concept_uid (src/llm_wiki_cli/services/knowledge_governance.py) | derive_concept_uid (src/llm_wiki_cli/services/concept_identity.py) | 409 | `_derive_identity_uid(bundle_id, concept_kind, natural_key)` |
+| derive_concept_uid (src/llm_wiki_cli/services/knowledge_governance.py) | derive_concept_uid (src/llm_wiki_cli/services/concept_identity.py) | 410 | `_derive_identity_uid(bundle_id, concept_kind, natural_key)` |
 | derive_concept_uid (src/llm_wiki_cli/services/concept_identity.py) | validate_bundle_id | 534 | `validate_bundle_id(bundle_id)` |
 | validate_bundle_id | _machine_text | 289 | `_machine_text(value, 'bundle_id', maximum=_MAX_BUNDLE_ID_LENGTH)` |
 | _machine_text | isinstance | 942 | `isinstance(value, str)` |
