@@ -24961,7 +24961,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4373,
+          "step_count": 4356,
           "truncated": true
         }
       },
@@ -32008,7 +32008,7 @@
             "src/llm_wiki_cli/services/health_policy.py",
             "src/llm_wiki_cli/services/metrics.py"
           ],
-          "step_count": 4411,
+          "step_count": 4187,
           "truncated": true
         }
       },
@@ -33385,7 +33385,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4373,
+          "step_count": 4356,
           "truncated": true
         }
       },
@@ -66815,5 +66815,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:07e0cc92e28085cdc0bbb806cd99fa0f88a79822ab2f73daae4366ed84bf31a5"
+  "source_hash": "sha256:76d81de5498e3d798f14650e343b65eed7dad506ef7d3f7ce501176c8f88c03c"
 }

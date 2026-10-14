@@ -6,6 +6,9 @@
 
 Reports physical sizes and complete integrity through one native materialization, using statistics captured during that validation. Logical inspection and comparison retain full snapshot validation by default. Explicit selectors provide a separate scoped inspection whose output names its narrower validation boundary.
 
+
+Storage reporting retains a failed storage-limit result with bounded size observations and an explicit prune-preview recovery route. Quick inspection leaves reachability unknown; a full valid snapshot separates active references from unreferenced candidates, whose bytes are not validated for deletion. Namespace unknowns and incomplete inspection never authorize cleanup.
+
 ## Imports
 
 | Source | Symbols |
@@ -63,5 +66,7 @@ flowchart LR
 | `_git` | `(root: Path, arguments: list[str], *, input_bytes: bytes \| None = None, maximum: int = 16777216) -> tuple[int, bytes]` | — | Drain both pipes with hard byte/time bounds; never invoke a shell. |
 | `inspect_git_range` | `(project: str \| Path, *, base: str, head: str) -> dict[str, Any]` | — | Inspect every blob in head minus base, including subsequently deleted files. |
 | `storage_report` | `(wiki_dir: str \| Path, *, full: bool = False, git_base: str \| None = None, git_head: str \| None = None) -> dict[str, Any]` | — | — |
+| `_retention_recovery` | `(root: Path) -> dict[str, Any]` | — | Offer the maintained preview route, never a size-based cleanup decision. |
+| `_storage_report` | `(root: Path, report: dict[str, Any], *, full: bool, git_base: str \| None, git_head: str \| None) -> dict[str, Any]` | — | Inspect within existing bounds; the caller retains storage-limit gaps. |
 | `_review_records` | `(wiki_dir: str \| Path) -> dict[str, Any]` | — | Logical review keys preserve duplicates and avoid physical pack identities. |
 | `review_storage` | `(wiki_dir: str \| Path, *, against: str \| Path \| None = None, limit: int = 100, max_bytes: int = 262144, selectors = None) -> dict[str, Any]` | — | Inspect or compare complete logical snapshots with explicitly bounded output. |
