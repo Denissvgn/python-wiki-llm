@@ -234,7 +234,7 @@ jobs:
           retention-days: 14
 
   real-caller:
-    name: Real caller (${{ matrix.project }}, ${{ matrix.integration }})
+    name: Real caller (${{ matrix.project }}, ${{ matrix.integration }}, ${{ matrix.state }})
     if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 45
@@ -244,6 +244,7 @@ jobs:
       matrix:
         project: [fastapi, cobra]
         integration: [context, integrity]
+        state: [clean, drift, corrupt]
         include:
           - project: fastapi
             repository: fastapi/full-stack-fastapi-template
@@ -295,7 +296,7 @@ jobs:
           BOOTSTRAP_PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
           bash .provider/.github/scripts/setup-llm-wiki-ci-toolchains.sh \
-            --mode "${TOOL_MODE}" --install-root "${RUNNER_TEMP}/llm-wiki-toolchains" \
+            --mode "${TOOL_MODE}" --install-root "${RUNNER_TEMP}/real-bootstrap-toolchains" \
             --python "${BOOTSTRAP_PYTHON}"
       - name: Freeze selected real caller and ordinary clean baseline
         shell: bash
@@ -307,62 +308,20 @@ jobs:
             --project "${CALLER_PROJECT}" --provider .provider --provider-sha "${PROVIDER_REF}" \
             --checkout .caller-input --helper-cache "${RUNNER_TEMP}/real-bootstrap-cache" \
             --evidence "${RUNNER_TEMP}/real-caller-evidence"
-      - name: Actual real caller context Action (clean)
-        id: real-context-clean
-        if: ${{ matrix.integration == 'context' }}
-        continue-on-error: true
-        uses: ./.provider/integrations/github-action
-        with:
-          src-dir: source
-          wiki-dir: wiki
-          comparison-policy: exact-v1
-          strict: 'true'
-          fail-on: unhealthy
-          evidence-id: real-clean
-      - name: Actual real caller integrity Action (clean)
-        id: real-integrity-clean
-        if: ${{ matrix.integration == 'integrity' }}
-        continue-on-error: true
-        uses: ./.provider/integrations/wiki-integrity
-        with:
-          src-dir: source
-          wiki-dir: wiki
-          comparison-policy: exact-v1
-      - name: Verify real caller clean outcome and invariants
+      - name: Freeze independent selected state and ordinary baseline
+        if: ${{ matrix.state != 'clean' }}
         shell: bash
         env:
           CALLER_PROJECT: ${{ matrix.project }}
-          CALLER_KIND: ${{ matrix.integration }}
-          PROVIDER_REF: ${{ inputs.provider-ref }}
-          ACTION_PYTHON: ${{ steps.python.outputs.python-path }}
-          CONTEXT_OUTCOME: ${{ steps.real-context-clean.outcome }}
-          INTEGRITY_OUTCOME: ${{ steps.real-integrity-clean.outcome }}
-        run: |
-          set -euo pipefail
-          if [[ "${CALLER_KIND}" == context ]]; then
-            evidence="${RUNNER_TEMP}/llm-wiki-doctor-real-clean-evidence"
-            outcome="${CONTEXT_OUTCOME}"
-          else
-            evidence="${RUNNER_TEMP}/llm-wiki-evidence"
-            outcome="${INTEGRITY_OUTCOME}"
-          fi
-          .tools/.venv/bin/python -I .tools/tests/provider_conformance/real_action_fixture.py check \
-            --project "${CALLER_PROJECT}" --provider .provider --provider-sha "${PROVIDER_REF}" \
-            --case clean --kind "${CALLER_KIND}" --outcome "${outcome}" \
-            --action-python "${ACTION_PYTHON}" --action-evidence "${evidence}" \
-            --evidence "${RUNNER_TEMP}/real-caller-evidence"
-      - name: Freeze controlled drift state and baseline
-        shell: bash
-        env:
-          CALLER_PROJECT: ${{ matrix.project }}
+          CALLER_STATE: ${{ matrix.state }}
           PROVIDER_REF: ${{ inputs.provider-ref }}
         run: |
           .tools/.venv/bin/python -I .tools/tests/provider_conformance/real_action_fixture.py mutate \
             --project "${CALLER_PROJECT}" --provider .provider --provider-sha "${PROVIDER_REF}" \
-            --case drift --helper-cache "${RUNNER_TEMP}/real-bootstrap-cache" \
+            --case "${CALLER_STATE}" --helper-cache "${RUNNER_TEMP}/real-bootstrap-cache" \
             --evidence "${RUNNER_TEMP}/real-caller-evidence"
-      - name: Actual real caller context Action (drift)
-        id: real-context-drift
+      - name: Actual real caller context Action
+        id: real-context
         if: ${{ matrix.integration == 'context' }}
         continue-on-error: true
         uses: ./.provider/integrations/github-action
@@ -372,9 +331,9 @@ jobs:
           comparison-policy: exact-v1
           strict: 'true'
           fail-on: unhealthy
-          evidence-id: real-drift
-      - name: Actual real caller integrity Action (drift)
-        id: real-integrity-drift
+          evidence-id: real
+      - name: Actual real caller integrity Action
+        id: real-integrity
         if: ${{ matrix.integration == 'integrity' }}
         continue-on-error: true
         uses: ./.provider/integrations/wiki-integrity
@@ -382,19 +341,20 @@ jobs:
           src-dir: source
           wiki-dir: wiki
           comparison-policy: exact-v1
-      - name: Verify real caller drift outcome and invariants
+      - name: Verify real caller outcome and invariants
         shell: bash
         env:
           CALLER_PROJECT: ${{ matrix.project }}
           CALLER_KIND: ${{ matrix.integration }}
+          CALLER_STATE: ${{ matrix.state }}
           PROVIDER_REF: ${{ inputs.provider-ref }}
           ACTION_PYTHON: ${{ steps.python.outputs.python-path }}
-          CONTEXT_OUTCOME: ${{ steps.real-context-drift.outcome }}
-          INTEGRITY_OUTCOME: ${{ steps.real-integrity-drift.outcome }}
+          CONTEXT_OUTCOME: ${{ steps.real-context.outcome }}
+          INTEGRITY_OUTCOME: ${{ steps.real-integrity.outcome }}
         run: |
           set -euo pipefail
           if [[ "${CALLER_KIND}" == context ]]; then
-            evidence="${RUNNER_TEMP}/llm-wiki-doctor-real-drift-evidence"
+            evidence="${RUNNER_TEMP}/llm-wiki-doctor-real-evidence"
             outcome="${CONTEXT_OUTCOME}"
           else
             evidence="${RUNNER_TEMP}/llm-wiki-evidence"
@@ -402,61 +362,7 @@ jobs:
           fi
           .tools/.venv/bin/python -I .tools/tests/provider_conformance/real_action_fixture.py check \
             --project "${CALLER_PROJECT}" --provider .provider --provider-sha "${PROVIDER_REF}" \
-            --case drift --kind "${CALLER_KIND}" --outcome "${outcome}" \
-            --action-python "${ACTION_PYTHON}" --action-evidence "${evidence}" \
-            --evidence "${RUNNER_TEMP}/real-caller-evidence"
-      - name: Freeze controlled corrupt state and baseline
-        shell: bash
-        env:
-          CALLER_PROJECT: ${{ matrix.project }}
-          PROVIDER_REF: ${{ inputs.provider-ref }}
-        run: |
-          .tools/.venv/bin/python -I .tools/tests/provider_conformance/real_action_fixture.py mutate \
-            --project "${CALLER_PROJECT}" --provider .provider --provider-sha "${PROVIDER_REF}" \
-            --case corrupt --helper-cache "${RUNNER_TEMP}/real-bootstrap-cache" \
-            --evidence "${RUNNER_TEMP}/real-caller-evidence"
-      - name: Actual real caller context Action (corrupt)
-        id: real-context-corrupt
-        if: ${{ matrix.integration == 'context' }}
-        continue-on-error: true
-        uses: ./.provider/integrations/github-action
-        with:
-          src-dir: source
-          wiki-dir: wiki
-          comparison-policy: exact-v1
-          strict: 'true'
-          fail-on: unhealthy
-          evidence-id: real-corrupt
-      - name: Actual real caller integrity Action (corrupt)
-        id: real-integrity-corrupt
-        if: ${{ matrix.integration == 'integrity' }}
-        continue-on-error: true
-        uses: ./.provider/integrations/wiki-integrity
-        with:
-          src-dir: source
-          wiki-dir: wiki
-          comparison-policy: exact-v1
-      - name: Verify real caller corrupt outcome and invariants
-        shell: bash
-        env:
-          CALLER_PROJECT: ${{ matrix.project }}
-          CALLER_KIND: ${{ matrix.integration }}
-          PROVIDER_REF: ${{ inputs.provider-ref }}
-          ACTION_PYTHON: ${{ steps.python.outputs.python-path }}
-          CONTEXT_OUTCOME: ${{ steps.real-context-corrupt.outcome }}
-          INTEGRITY_OUTCOME: ${{ steps.real-integrity-corrupt.outcome }}
-        run: |
-          set -euo pipefail
-          if [[ "${CALLER_KIND}" == context ]]; then
-            evidence="${RUNNER_TEMP}/llm-wiki-doctor-real-corrupt-evidence"
-            outcome="${CONTEXT_OUTCOME}"
-          else
-            evidence="${RUNNER_TEMP}/llm-wiki-evidence"
-            outcome="${INTEGRITY_OUTCOME}"
-          fi
-          .tools/.venv/bin/python -I .tools/tests/provider_conformance/real_action_fixture.py check \
-            --project "${CALLER_PROJECT}" --provider .provider --provider-sha "${PROVIDER_REF}" \
-            --case corrupt --kind "${CALLER_KIND}" --outcome "${outcome}" \
+            --case "${CALLER_STATE}" --kind "${CALLER_KIND}" --outcome "${outcome}" \
             --action-python "${ACTION_PYTHON}" --action-evidence "${evidence}" \
             --evidence "${RUNNER_TEMP}/real-caller-evidence"
       - name: Retain real caller results and failed attempts
@@ -464,7 +370,7 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           archive: true
-          name: real-caller-${{ matrix.project }}-${{ matrix.integration }}-${{ github.run_id }}-${{ github.run_attempt }}
+          name: real-caller-${{ matrix.project }}-${{ matrix.integration }}-${{ matrix.state }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/real-caller-evidence
           if-no-files-found: error
           retention-days: 14

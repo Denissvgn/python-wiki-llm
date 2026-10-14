@@ -176,8 +176,16 @@ def main(argv=None):
             save("mutation-preimage.json", {"path": mutation["path"], "text": before})
             path.write_text(before.replace(mutation["needle"], mutation["replacement"], 1))
         elif args.case == "corrupt":
-            before = json.loads((args.evidence / "mutation-preimage.json").read_text())
-            (root / "source" / before["path"]).write_text(before["text"])
+            preimage = args.evidence / "mutation-preimage.json"
+            if preimage.exists():
+                before = json.loads(preimage.read_text())
+                (root / "source" / before["path"]).write_text(before["text"])
+            else:
+                initial = json.loads((args.evidence / "initial.json").read_text())
+                if {p: h for p, h in hashes(root).items() if p.startswith("source/")} != {
+                    p: h for p, h in initial.items() if p.startswith("source/")
+                }:
+                    raise ValueError("Independent corrupt case must start with frozen source")
             (root / "wiki/.llm-wiki-surface.json").write_text("{broken")
         subprocess.run(["git", "add", "source", "wiki"], check=True)
         if git(root, "status", "--porcelain"):

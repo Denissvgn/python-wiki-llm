@@ -1,7 +1,9 @@
 """Discriminating real caller selection/provenance and dispatch contracts."""
 
 import importlib.util
+import json
 from pathlib import Path
+import subprocess
 
 import pytest
 import yaml
@@ -75,6 +77,38 @@ def test_private_and_source_preimages_detect_private_changes_without_execution(t
     assert fixture.hashes(tmp_path) != before
 
 
+@pytest.mark.parametrize("changed", [False, True])
+def test_independent_corrupt_case_keeps_frozen_source(tmp_path, monkeypatch, changed):
+    for name in ("source", "wiki", "private", "evidence"):
+        (tmp_path / name).mkdir()
+    source = tmp_path / "source/caller.go"
+    source.write_text("package caller\n")
+    surface = tmp_path / "wiki/.llm-wiki-surface.json"
+    surface.write_text("{}")
+    (tmp_path / "evidence/initial.json").write_text(json.dumps(fixture.hashes(tmp_path)))
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(fixture, "require_provider", lambda *args: None)
+    monkeypatch.setattr(fixture, "git", lambda *args: "")
+    calls = []
+    def controlled(command, **kwargs):
+        calls.append(command)
+        return subprocess.CompletedProcess(command, 1 if "ci-check" in command else 0,
+                                           b'{"ok":false}', b"")
+    monkeypatch.setattr(fixture.subprocess, "run", controlled)
+    argv = ["mutate", "--project", "cobra", "--provider", str(tmp_path / "provider"),
+            "--evidence", str(tmp_path / "evidence"), "--case", "corrupt",
+            "--helper-cache", str(tmp_path / "cache")]
+    if changed:
+        source.write_text("package changed\n")
+        with pytest.raises(ValueError, match="start with frozen source"):
+            fixture.main(argv)
+        assert surface.read_text() == "{}" and calls == []
+    else:
+        fixture.main(argv)
+        assert source.read_text() == "package caller\n" and surface.read_text() == "{broken"
+        assert any("ci-check" in c and "--no-report" in c for c in calls)
+
+
 def test_dispatch_extends_owner_without_repeating_synthetic_jobs():
     value = yaml.safe_load((ROOT / ".github/workflows/action-selftest.yml").read_text())
     triggers = value.get("on", value.get(True))
@@ -87,11 +121,15 @@ def test_dispatch_extends_owner_without_repeating_synthetic_jobs():
     assert job["runs-on"] == "ubuntu-24.04" and job["strategy"]["max-parallel"] == 2
     matrix = job["strategy"]["matrix"]
     assert matrix["project"] == ["fastapi", "cobra"] and matrix["integration"] == ["context", "integrity"]
+    assert matrix["state"] == ["clean", "drift", "corrupt"]
     assert {row["source-sha"] for row in matrix["include"]} == {s["commit"] for s in fixture.specs().values()}
     steps = job["steps"]
     uses = [s for s in steps if s.get("uses", "").startswith("./.provider/integrations/")]
-    assert len(uses) == 6 and all(s["continue-on-error"] is True for s in uses)
+    assert len(uses) == 2 and all(s["continue-on-error"] is True for s in uses)
     checks = [s for s in steps if s.get("name", "").startswith("Verify real caller")]
-    assert len(checks) == 3 and all(not s.get("continue-on-error", False) for s in checks)
+    assert len(checks) == 1 and all(not s.get("continue-on-error", False) for s in checks)
+    bootstrap = next(s for s in steps if s.get("name") == "Prepare the matching locked caller toolchain")
+    assert '"${RUNNER_TEMP}/real-bootstrap-toolchains"' in bootstrap["run"]
+    assert '"${RUNNER_TEMP}/llm-wiki-toolchains"' not in bootstrap["run"]
     assert steps[-1]["if"] == "${{ always() }}"
     assert "github.run_id" in steps[-1]["with"]["name"]
