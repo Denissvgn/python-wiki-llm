@@ -31,6 +31,29 @@ def test_fixture_preparation_requires_one_exact_boundary(tmp_path):
             worker.preparation_source(path)
 
 
+def test_server_observer_preserves_original_return_and_captures_completion(tmp_path, monkeypatch):
+    from llm_wiki_cli.services.mcp_server import McpWikiService
+    result = SimpleNamespace(metadata=lambda: {"state": "full"})
+    calls = []
+    def original(self, *args, **kwargs):
+        calls.append((args, kwargs))
+        return result
+    monkeypatch.setattr(McpWikiService, "read_context_session", original)
+    monkeypatch.setattr(worker.faulthandler, "dump_traceback_later", lambda *args, **kwargs: None)
+    namespace = {}
+    exec(compile(worker.server_observer(tmp_path), "observer", "exec"), namespace)
+    try:
+        owner = SimpleNamespace(src_dir="src", wiki_dir="wiki", comparison_policy="auto")
+        assert namespace["_observed"](owner, "handle", request={"frozen": True}) is result
+        assert calls == [(("handle",), {"request": {"frozen": True}})]
+        record = json.loads((tmp_path / "server-read-1.json").read_text())
+        assert record["status"] == "complete" and record["release_acceptance"] is False
+        assert record["metadata"] == {"state": "full"}
+        assert (tmp_path / "server-read-1.pstats").is_file()
+    finally:
+        namespace["_stack"].close()
+
+
 @pytest.mark.parametrize("destination", ["harness", "provider", "caller"])
 def test_diagnostic_output_cannot_touch_protected_or_caller_roots(tmp_path, monkeypatch, destination):
     harness, work = tmp_path / "harness", tmp_path / "work"

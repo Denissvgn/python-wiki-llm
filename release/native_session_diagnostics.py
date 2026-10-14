@@ -7,6 +7,9 @@ consumer, with trusted fixture resources, after the full pinned harness fails.
 from __future__ import annotations
 
 import argparse
+import ast
+import asyncio
+from contextlib import asynccontextmanager
 import cProfile
 import faulthandler
 import hashlib
@@ -29,6 +32,80 @@ from urllib.parse import urlparse
 
 FIXTURE = "tests/fixtures/workflow-artifact-consumer.py"
 MARKER = "async def transport(transport_name):"
+
+
+def transport_source(path: Path) -> str:
+    text = path.read_text(encoding="utf-8")
+    nodes = [n for n in ast.parse(text).body if isinstance(n, ast.AsyncFunctionDef) and n.name == "transport"]
+    if len(nodes) != 1:
+        raise ValueError("trusted fixture transport is unavailable or ambiguous")
+    return ast.get_source_segment(text, nodes[0]) or ""
+
+
+def server_observer(output: Path) -> str:
+    """Observe the original service and the surrounding transport; never qualify it."""
+    return f'''
+import cProfile as _cp, faulthandler as _fh, json as _json, time as _time
+from pathlib import Path as _Path
+from llm_wiki_cli.services.mcp_server import McpWikiService as _Service
+_trace = _Path({str(output)!r})
+_trace.mkdir(parents=True, exist_ok=True)
+_stack = (_trace / 'server-stacks.log').open('w', encoding='utf-8')
+_fh.dump_traceback_later(5, repeat=True, file=_stack)
+_original = _Service.read_context_session
+_number = 0
+def _observed(self, *args, **kwargs):
+    global _number
+    _number += 1
+    _path = _trace / ('server-read-' + str(_number) + '.json')
+    _record = {{'status':'running', 'release_acceptance':False,
+                'source':str(self.src_dir), 'wiki':str(self.wiki_dir),
+                'comparison_policy':self.comparison_policy}}
+    _path.write_text(_json.dumps(_record, indent=2), encoding='utf-8')
+    _profile = _cp.Profile()
+    _started = _time.perf_counter()
+    try:
+        _profile.enable()
+        _result = _original(self, *args, **kwargs)
+        _profile.disable()
+        _record.update(status='complete', metadata=_result.metadata())
+        return _result
+    except Exception as _error:
+        _record.update(status='failed', error=str(_error))
+        raise
+    finally:
+        _profile.disable()
+        _record['seconds'] = _time.perf_counter() - _started
+        _profile.dump_stats(str(_path.with_suffix('.pstats')))
+        _path.write_text(_json.dumps(_record, indent=2), encoding='utf-8')
+_Service.read_context_session = _observed
+'''
+
+
+def capture_sdk_trace(namespace, harness: Path, output: Path, record, save) -> None:
+    import mcp.client.stdio as stdio
+
+    original = stdio.stdio_client
+    @asynccontextmanager
+    async def observed(parameters, *args, **kwargs):
+        if parameters.args[:2] != ["-I", "-c"]:
+            raise ValueError("unexpected trusted fixture server launch")
+        parameters = parameters.model_copy(update={"args": ["-I", "-c",
+            server_observer(output / "sdk-trace") + parameters.args[2]]})
+        async with original(parameters, *args, **kwargs) as streams:
+            yield streams
+    exec(compile(transport_source(harness / FIXTURE), str(harness / FIXTURE), "exec", dont_inherit=True), namespace)
+    record["sdk_trace"] = {"status": "running", "release_acceptance": False,
+                           "qualification": "Instrumented post-failure replay; not the acceptance owner."}
+    save()
+    try:
+        with patch.object(stdio, "stdio_client", observed):
+            asyncio.run(namespace["transport"]("stdio"))
+    except Exception as error:
+        record["sdk_trace"].update(status="failed", error={"type": type(error).__name__, "message": str(error)})
+    else:
+        record["sdk_trace"]["status"] = "complete"
+    save()
 
 
 def preparation_source(path: Path) -> str:
@@ -194,6 +271,9 @@ def main(argv=None) -> int:
                     raise ValueError("diagnostic reads changed caller files")
                 if installed_origin(args.version, args.archive_sha256) != origin:
                     raise ValueError("diagnostic provider origin changed")
+                capture_sdk_trace(namespace, harness, output, record, save)
+                if tree(project) != before:
+                    raise ValueError("diagnostic SDK replay changed caller files")
                 record.update(status="complete", caller_unchanged=True)
             finally:
                 faulthandler.cancel_dump_traceback_later()
