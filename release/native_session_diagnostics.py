@@ -42,10 +42,11 @@ def transport_source(path: Path) -> str:
     return ast.get_source_segment(text, nodes[0]) or ""
 
 
-def server_observer(output: Path) -> str:
+def server_observer(output: Path, *, isolated_git_stdin: bool = False) -> str:
     """Observe the original service and the surrounding transport; never qualify it."""
     return f'''
 import cProfile as _cp, faulthandler as _fh, json as _json, time as _time
+import subprocess as _subprocess
 from pathlib import Path as _Path
 from llm_wiki_cli.services.mcp_server import McpWikiService as _Service
 _trace = _Path({str(output)!r})
@@ -79,23 +80,34 @@ def _observed(self, *args, **kwargs):
         _profile.dump_stats(str(_path.with_suffix('.pstats')))
         _path.write_text(_json.dumps(_record, indent=2), encoding='utf-8')
 _Service.read_context_session = _observed
+_isolate_git_stdin = {isolated_git_stdin!r}
+if _isolate_git_stdin:
+    _run = _subprocess.run
+    def _isolated_run(command, *args, **kwargs):
+        if isinstance(command, (list, tuple)) and command and command[0] == 'git' and 'stdin' not in kwargs:
+            kwargs = {{**kwargs, 'stdin':_subprocess.DEVNULL}}
+        return _run(command, *args, **kwargs)
+    _subprocess.run = _isolated_run
 '''
 
 
-def capture_sdk_trace(namespace, harness: Path, output: Path, record, save) -> None:
+def capture_sdk_trace(namespace, harness: Path, output: Path, record, save, *, isolated_git_stdin=False) -> None:
     import mcp.client.stdio as stdio
 
     original = stdio.stdio_client
+    previous_receipt = namespace["receipt"]
+    namespace["receipt"] = str(output / "sdk-probe.json")
     @asynccontextmanager
     async def observed(parameters, *args, **kwargs):
         if parameters.args[:2] != ["-I", "-c"]:
             raise ValueError("unexpected trusted fixture server launch")
         parameters = parameters.model_copy(update={"args": ["-I", "-c",
-            server_observer(output / "sdk-trace") + parameters.args[2]]})
+            server_observer(output / "sdk-trace", isolated_git_stdin=isolated_git_stdin) + parameters.args[2]]})
         async with original(parameters, *args, **kwargs) as streams:
             yield streams
     exec(compile(transport_source(harness / FIXTURE), str(harness / FIXTURE), "exec", dont_inherit=True), namespace)
     record["sdk_trace"] = {"status": "running", "release_acceptance": False,
+                           "isolated_git_stdin": isolated_git_stdin,
                            "qualification": "Instrumented post-failure replay; not the acceptance owner."}
     save()
     try:
@@ -105,6 +117,8 @@ def capture_sdk_trace(namespace, harness: Path, output: Path, record, save) -> N
         record["sdk_trace"].update(status="failed", error={"type": type(error).__name__, "message": str(error)})
     else:
         record["sdk_trace"]["status"] = "complete"
+    finally:
+        namespace["receipt"] = previous_receipt
     save()
 
 
@@ -272,6 +286,11 @@ def main(argv=None) -> int:
                 if installed_origin(args.version, args.archive_sha256) != origin:
                     raise ValueError("diagnostic provider origin changed")
                 capture_sdk_trace(namespace, harness, output, record, save)
+                record["original_sdk_trace"] = record["sdk_trace"]
+                # Causal control: same pinned service/requests, fresh SDK server;
+                # alter only stdin inheritance for the unchanged Git probes.
+                capture_sdk_trace(namespace, harness, output / "git-stdin-control", record, save,
+                                  isolated_git_stdin=True)
                 if tree(project) != before:
                     raise ValueError("diagnostic SDK replay changed caller files")
                 record.update(status="complete", caller_unchanged=True)
