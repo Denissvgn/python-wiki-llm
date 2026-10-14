@@ -2345,3 +2345,25 @@ authority, evidence and maintenance guidance within its bounded presentation.
 ### Documentation notes
 
 Storage-size diagnostics retain bounded inspection gaps and separate active references from unvalidated retention candidates. Cleanup remains an explicit generation-bound operation with verified recovery copies.
+
+## 2026-10-14
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.5.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:61463690a7f5b82e0e490049d9e06d4b8ecc2fe0091889c51e7386d085159ae3`
+- Pages created: 0
+- Pages updated: 2
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1587
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none
+
+## 2026-10-14
+
+### Documentation notes
+
+Lint text now exposes bounded advisory data-flow and unfamiliar-category previews with raw-report access and explicit omissions. Successful blocking checks remain separate from analysis completeness and semantic correctness.

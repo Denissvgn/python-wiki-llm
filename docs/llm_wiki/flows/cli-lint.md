@@ -142,9 +142,9 @@ sequenceDiagram
     p0-->>p30: report.count (src/llm_wiki_cli/services/lint_service.py:run)('extractor_failure')
 ```
 
-> Call sequence diagram shows 30 of 3259 interactions; 3229 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3266 interactions; 3236 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 967 (966 omitted); unresolved 1 of 1115 (1114 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 971 (970 omitted); unresolved 1 of 1118 (1117 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -158,7 +158,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_source_root` | 24 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 24 | - | external | 11 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 36 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
-> Omission summary shows 8 of 866 groups; 858 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 867 groups; 859 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -225,35 +225,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | Path (src/llm_wiki_cli/services/lint_service.py:run) | 3242 | `Path(args.wiki_dir)` |
-| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3243 | `getattr(args, 'src_dir', '.')` |
-| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3244 | `bool(getattr(...))` |
-| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3244 | `getattr(args, 'knowledge_drift_report', False)` |
-| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3245 | `bool(...)` |
-| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3245 | `getattr(args, 'strict', False)` |
-| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3246 | `bool(getattr(...))` |
-| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3246 | `getattr(args, 'profile', False)` |
-| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3247 | `bool(getattr(...))` |
-| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3247 | `getattr(args, 'cache_stats', False)` |
-| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3248 | `bool(getattr(...))` |
+| run | Path (src/llm_wiki_cli/services/lint_service.py:run) | 3281 | `Path(args.wiki_dir)` |
+| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3282 | `getattr(args, 'src_dir', '.')` |
+| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3283 | `bool(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3283 | `getattr(args, 'knowledge_drift_report', False)` |
+| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3284 | `bool(...)` |
+| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3284 | `getattr(args, 'strict', False)` |
+| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3285 | `bool(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3285 | `getattr(args, 'profile', False)` |
+| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3286 | `bool(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3286 | `getattr(args, 'cache_stats', False)` |
+| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3287 | `bool(getattr(...))` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 3280 |
-| output | `print` | `run` | 3283 |
-| output | `print` | `run` | 3291 |
+| output | `print` | `run` | 3319 |
+| output | `print` | `run` | 3322 |
+| output | `print` | `run` | 3330 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `run` | `getattr` | 3243 |
-| external_call | `run` | `getattr` | 3244 |
-| external_call | `run` | `getattr` | 3245 |
-| external_call | `run` | `getattr` | 3246 |
-| external_call | `run` | `getattr` | 3247 |
+| external_call | `run` | `getattr` | 3282 |
+| external_call | `run` | `getattr` | 3283 |
+| external_call | `run` | `getattr` | 3284 |
+| external_call | `run` | `getattr` | 3285 |
+| external_call | `run` | `getattr` | 3286 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 
@@ -264,3 +264,6 @@ and renders human text or profiling data. Strict mode requires a complete,
 consistent managed wiki in addition to link and surface checks. Local metrics
 are best effort and never replace the report outcome; blocking findings produce
 a nonzero exit status.
+
+
+Text discloses data-flow and unfamiliar advisory categories with at most five escaped examples per category and explicit preview omissions. Full profile JSON and CI JSON/Markdown retain complete emitted records. Advisory gaps leave integrity exits unchanged and require source inspection when a task depends on missing observations; success reports no blocking issues rather than complete analysis.

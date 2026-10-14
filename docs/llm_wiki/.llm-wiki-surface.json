@@ -32008,7 +32008,7 @@
             "src/llm_wiki_cli/services/health_policy.py",
             "src/llm_wiki_cli/services/metrics.py"
           ],
-          "step_count": 4187,
+          "step_count": 4194,
           "truncated": true
         }
       },
@@ -33406,7 +33406,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3280,
+              "line": 3319,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -33414,7 +33414,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3283,
+              "line": 3322,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -33422,7 +33422,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3291,
+              "line": 3330,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -33431,31 +33431,31 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 3243,
+              "line": 3282,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 3244,
+              "line": 3283,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 3245,
+              "line": 3284,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 3246,
+              "line": 3285,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 3247,
+              "line": 3286,
               "step": "run",
               "target": "getattr"
             },
@@ -33545,7 +33545,7 @@
             "src/llm_wiki_cli/services/canonical_pages.py",
             "src/llm_wiki_cli/services/metrics.py"
           ],
-          "step_count": 3260,
+          "step_count": 3267,
           "truncated": true
         }
       },
@@ -66815,5 +66815,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:76d81de5498e3d798f14650e343b65eed7dad506ef7d3f7ce501176c8f88c03c"
+  "source_hash": "sha256:821e3036fce3cba31184cf3932bbcd9c7e8702004917995d071cda5d0279a6ef"
 }

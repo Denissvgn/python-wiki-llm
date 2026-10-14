@@ -21,6 +21,9 @@ source paths into the parser request. This preserves current module observations
 without discovering every unowned empty file. Parsing failures and unavailable
 coverage retain their explicit states rather than being presented as emptiness.
 
+
+Default text keeps blocking issues separate from advisory records. It exposes bounded escaped previews for data-flow and unfamiliar diagnostic categories, names omitted records and points to complete JSON/Markdown output. Passing blocking checks does not establish complete analysis or semantic correctness; rendering neither changes findings nor executes a repair.
+
 ## Imports
 
 | Source | Symbols |
