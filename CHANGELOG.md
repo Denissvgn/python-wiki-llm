@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Storage-size limit failures retain bounded inspection details and an actionable
+  prune-preview recovery route. Full reports distinguish active references from
+  unvalidated retention candidates without automatically cleaning files.
+
 ## [2.5.0] - 2026-10-13
 
 This release broadens JavaScript and YAML coverage, adds a portable default

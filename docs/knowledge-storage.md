@@ -226,6 +226,22 @@ objects, native records, routing and current Markdown; it also identifies
 unreferenced objects. Both commands return JSON and use a nonzero exit status for
 failed checks.
 
+Before capturing a release or another complete repository archive, run the size
+report and, when available, `storage-check --full`. Its `retention` fields
+separate namespace/size inspection from audited active references and
+unreferenced candidates. A quick report leaves reachability unknown. Candidates
+are not validated for deletion by this report; unrecognized namespace entries
+remain separately listed as `unknown_entries`.
+
+A `storage-limit` failure retains the observed size prefix, the unchanged budget
+and explicit incomplete inspection. It returns a `next_action` for the maintained
+`prune-storage` preview, while keeping the check failed. Preview independently
+validates the current generation and candidate bytes; it can also fail or exhaust
+its own budget. Review and save its plan, then explicitly apply approved
+candidates with verified recovery copies outside the wiki. Repeat the full audit
+before capture. Reads never prune files or increase limits, and small physical
+archives do not remove oversized objects from Git history.
+
 `storage-check --stream` audits every referenced storage object, native record
 shape, logical commitment, reference and routing membership using private spill
 files. It reports `complete-storage-and-routing`. Surface/Markdown/governance
