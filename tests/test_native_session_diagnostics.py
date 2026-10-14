@@ -54,6 +54,30 @@ def test_server_observer_preserves_original_return_and_captures_completion(tmp_p
         namespace["_stack"].close()
 
 
+def test_git_stdin_control_preserves_explicit_input(tmp_path, monkeypatch):
+    from llm_wiki_cli.services.mcp_server import McpWikiService
+    calls = []
+    def original(command, *args, **kwargs):
+        calls.append((command, kwargs))
+        return "original-result"
+    monkeypatch.setattr(worker.subprocess, "run", original)
+    monkeypatch.setattr(McpWikiService, "read_context_session", lambda *args, **kwargs: None)
+    monkeypatch.setattr(worker.faulthandler, "dump_traceback_later", lambda *args, **kwargs: None)
+    namespace = {}
+    exec(compile(worker.server_observer(tmp_path, isolated_git_stdin=True), "observer", "exec"), namespace)
+    try:
+        assert namespace["_isolated_run"](["git", "rev-parse"], timeout=5) == "original-result"
+        namespace["_isolated_run"](["git", "check-ignore", "--stdin"], input=b"source.py")
+        namespace["_isolated_run"](["git", "rev-parse"], stdin="owned")
+        namespace["_isolated_run"](["another-helper"], timeout=5)
+        assert calls == [(["git", "rev-parse"], {"timeout":5,"stdin":subprocess.DEVNULL}),
+                         (["git", "check-ignore", "--stdin"], {"input":b"source.py"}),
+                         (["git", "rev-parse"], {"stdin":"owned"}),
+                         (["another-helper"], {"timeout":5})]
+    finally:
+        namespace["_stack"].close()
+
+
 @pytest.mark.parametrize("destination", ["harness", "provider", "caller"])
 def test_diagnostic_output_cannot_touch_protected_or_caller_roots(tmp_path, monkeypatch, destination):
     harness, work = tmp_path / "harness", tmp_path / "work"

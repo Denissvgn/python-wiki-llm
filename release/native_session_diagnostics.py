@@ -84,7 +84,7 @@ _isolate_git_stdin = {isolated_git_stdin!r}
 if _isolate_git_stdin:
     _run = _subprocess.run
     def _isolated_run(command, *args, **kwargs):
-        if isinstance(command, (list, tuple)) and command and command[0] == 'git' and 'stdin' not in kwargs:
+        if isinstance(command, (list, tuple)) and command and command[0] == 'git' and 'stdin' not in kwargs and 'input' not in kwargs:
             kwargs = {{**kwargs, 'stdin':_subprocess.DEVNULL}}
         return _run(command, *args, **kwargs)
     _subprocess.run = _isolated_run
