@@ -1,0 +1,92 @@
+name: Native published artifact probe
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Stable published version (X.Y.Z)
+        required: true
+        default: '2.5.0'
+        type: string
+      harness-sha:
+        description: Full trusted repository SHA containing the artifact harness
+        required: true
+        default: '63c8fa7b264610b57f0f1e24c9327eb92d8b0819'
+        type: string
+      wheel-sha256:
+        description: Expected published wheel SHA256
+        required: true
+        default: '8fa5fc7f9522f2b5ca28b9aa3af23b2253ad8ea11f76049c3586fcc8cd7665ed'
+        type: string
+      sdist-sha256:
+        description: Expected published sdist SHA256
+        required: true
+        default: 'a368fd2db4beede6e69e49ff85cf84527dce4d0f5c29206722b98a25adf6289f'
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  native:
+    name: Published archives on native Windows
+    runs-on: windows-2025
+    timeout-minutes: 35
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Check out probe tools
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          path: probe-tools
+          persist-credentials: false
+      - name: Check out the pinned artifact harness
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ inputs.harness-sha }}
+          path: harness
+          persist-credentials: false
+      - name: Set up native Python
+        id: python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.13'
+      - name: Prepare the controller environment
+        env:
+          BOOTSTRAP_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          & $env:BOOTSTRAP_PYTHON -m venv probe-tools/.venv
+          if ($LASTEXITCODE -ne 0) { throw 'Virtual environment setup failed' }
+          & ./probe-tools/.venv/Scripts/python.exe -I -m pip install 'build==1.5.0' 'pyright==1.1.411'
+          if ($LASTEXITCODE -ne 0) { throw 'Native owner dependencies failed' }
+      - name: Probe the exact published archives
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROBE_REPOSITORY: ${{ github.repository }}
+          PROBE_VERSION: ${{ inputs.version }}
+          HARNESS_SHA: ${{ inputs.harness-sha }}
+          WHEEL_SHA256: ${{ inputs.wheel-sha256 }}
+          SDIST_SHA256: ${{ inputs.sdist-sha256 }}
+          PYTHONUTF8: '1'
+          PYTHONIOENCODING: utf-8
+          PIP_NO_INPUT: '1'
+          PIP_DISABLE_PIP_VERSION_CHECK: '1'
+        run: |
+          & ./probe-tools/.venv/Scripts/python.exe -I probe-tools/release/native_published_artifacts.py `
+            --repository $env:PROBE_REPOSITORY --version $env:PROBE_VERSION `
+            --harness-dir harness --harness-sha $env:HARNESS_SHA `
+            --wheel-sha256 $env:WHEEL_SHA256 --sdist-sha256 $env:SDIST_SHA256 `
+            --artifacts "$env:RUNNER_TEMP/published-archives" `
+            --work "$env:RUNNER_TEMP/published-native-consumers" `
+            --output "$env:RUNNER_TEMP/published-native-evidence"
+          if ($LASTEXITCODE -ne 0) { throw 'Native published archive acceptance failed' }
+      - name: Retain native results and incomplete attempts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          archive: true
+          name: published-native-provider-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/published-native-evidence
+          if-no-files-found: error
+          retention-days: 14
