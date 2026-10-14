@@ -154,6 +154,45 @@ def storage_report(wiki_dir: str | Path, *, full: bool = False,
                               "integrity": "not-audited", "artifacts": [], "warnings": [], "failures": [],
                               "objects": 0, "object_bytes": 0, "unreferenced_objects": None,
                               "unknown_entries": [], "git_history_changed": False}
+    report["retention"] = {
+        "namespace_complete": False, "size_inspection_complete": False,
+        "max_inspection_bytes": MAX_EXPANDED_BYTES,
+        "referenced_objects": None, "referenced_bytes": None,
+        "unreferenced_candidates": None, "unreferenced_candidate_bytes": None,
+        "candidate_validation": "not-performed",
+        "qualification": "Sizes and reachability are separate; only prune preview validates cleanup candidates. Incomplete inspection is not a deletion decision.",
+    }
+    try:
+        return _storage_report(root, report, full=full, git_base=git_base, git_head=git_head)
+    except KnowledgeStorageError as exc:
+        if exc.code != "storage-limit":
+            raise
+        # Preserve failure and bounded partial size observations without running
+        # another audit, reading orphan payloads or changing the inspection limit.
+        report["error"] = {"code": exc.code, "message": str(exc)}
+        report["failures"].append({"path": exc.field, "reason": exc.code, "message": exc.message})
+        report["next_action"] = _retention_recovery(root)
+        report["ok"] = False
+        return report
+
+
+def _retention_recovery(root: Path) -> dict[str, Any]:
+    """Offer the maintained preview route, never a size-based cleanup decision."""
+    return {
+        "operation": "prune-storage", "dry_run": True,
+        "argv": ["llm-wiki", "knowledge", "prune-storage", "--wiki-dir", str(root)],
+        "instructions": [
+            "Preview requires a valid committed indexed knowledge or manifest store; it can remain unavailable or budget-exhausted.",
+            "Review validated candidates, retained unknown files and budget_exhausted; save the exact plan outside the wiki with --save-plan.",
+            "Apply only explicitly approved candidates using --plan and --apply, with --recovery-dir outside the wiki; verified recovery copies precede deletion.",
+            "Repeat storage-check --full before release capture. Keep inspection and capture limits unchanged; preserve active anchors and Git history.",
+        ],
+    }
+
+
+def _storage_report(root: Path, report: dict[str, Any], *, full: bool,
+                    git_base: str | None, git_head: str | None) -> dict[str, Any]:
+    """Inspect within existing bounds; the caller retains storage-limit gaps."""
     for name in (ROOT_FILENAME, SURFACE_INDEX_FILENAME, MANIFEST_FILENAME):
         path = _absolute_path(root / name)
         if not path.exists():
@@ -198,9 +237,12 @@ def storage_report(wiki_dir: str | Path, *, full: bool = False,
                     report["failures"].append({"path": ROOT_FILENAME, "reason": "invalid-root", "message": str(exc)})
     owned, unknown = stored_object_paths(root)
     report["unknown_entries"] = unknown
+    report["retention"]["namespace_complete"] = True
     largest = []
+    object_sizes = {}
     for name in owned:
         size = (root / name).stat().st_size
+        object_sizes[name] = size
         report["objects"] += 1
         report["object_bytes"] += size
         if report["object_bytes"] > MAX_EXPANDED_BYTES:
@@ -210,6 +252,7 @@ def storage_report(wiki_dir: str | Path, *, full: bool = False,
         if size > ceiling:
             report["failures"].append({"path": name, "bytes": size, "reason": "object-ceiling"})
         largest.append({"path": name, "bytes": size})
+    report["retention"]["size_inspection_complete"] = True
     report["largest_objects"] = sorted(largest, key=lambda item: (-item["bytes"], item["path"]))[:10]
     if full and report["format"] != "lfs-pointer":
         try:
@@ -221,6 +264,14 @@ def storage_report(wiki_dir: str | Path, *, full: bool = False,
             report["unreferenced_objects"] = sorted(set(owned) - set(artifacts.storage_objects))
             report["logical_records"] = {"concepts": len(state.knowledge.concepts), "relationships": len(state.knowledge.relationships)}
             report["referenced_object_bytes"] = sum(map(len, artifacts.storage_objects.values()))
+            report["retention"].update(
+                referenced_objects=len(artifacts.storage_objects),
+                referenced_bytes=report["referenced_object_bytes"],
+                unreferenced_candidates=len(report["unreferenced_objects"]),
+                unreferenced_candidate_bytes=sum(object_sizes[name] for name in report["unreferenced_objects"]),
+            )
+            if report["unreferenced_objects"]:
+                report["next_action"] = _retention_recovery(root)
             _, raw = validated_artifact_bytes(artifacts)
             report["root_bytes"] = len(raw)
             from .knowledge_model import _concept_to_payload, _relationship_to_payload

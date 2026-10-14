@@ -13,6 +13,7 @@ and plugin projects with commands and expected output.
 - [Agent support](#agent-support), including [autonomous agents](#for-autonomous-agents)
 - [Installation options](#installation) and [setup details](#quick-start)
 - [Working from source](#working-from-source)
+- [Interpreting validation](#interpreting-validation)
 
 ## What It Creates
 
@@ -465,3 +466,22 @@ compatibility, and release behavior for documentation-surface work. Use
 `llm-wiki release` separately when stamping a real version.
 
 [native-knowledge]: native-knowledge.md
+
+## Interpreting validation
+
+A successful lint result means its blocking checks passed. Advisory diagnostics
+remain separate; success does not establish complete static analysis, correct
+prose or runtime behavior.
+
+Default text shows at most five examples for data-flow and unfamiliar advisory
+categories, with the emitted record count and the number omitted from that text
+preview. Excerpts escape control characters and are limited to 400 characters.
+These counts describe reported diagnostics, not all possible source observations;
+upstream analysis may also be bounded or incomplete.
+
+Read every retained diagnostic through `llm-wiki lint --profile` JSON or the CI
+JSON/Markdown report, using the same source/wiki roots, selection and helper
+options. Their records keep the original severity and content. For a data-flow
+gap, inspect the affected flow and source when the current task depends on the
+missing observation. A warning alone does not prove a source defect or authorize
+an automatic fix.

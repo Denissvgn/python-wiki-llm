@@ -1,0 +1,104 @@
+{
+  "fastapi": {
+    "repository": "fastapi/full-stack-fastapi-template",
+    "commit": "cb740b656d7a0a6c5e12c7bf8e50343ec94ee9c7",
+    "selection": {
+      "schema_version": "llm-wiki-source-selection/v1",
+      "include": [
+        "backend/app",
+        "frontend/src"
+      ],
+      "exclude": [
+        "backend/app/email-templates/test_email.html",
+        "frontend/src/client/client.gen.ts",
+        "frontend/src/client/client/client.gen.ts",
+        "frontend/src/client/client/index.ts",
+        "frontend/src/client/client/types.gen.ts",
+        "frontend/src/client/client/utils.gen.ts",
+        "frontend/src/client/core/auth.gen.ts",
+        "frontend/src/client/core/bodySerializer.gen.ts",
+        "frontend/src/client/core/params.gen.ts",
+        "frontend/src/client/core/pathSerializer.gen.ts",
+        "frontend/src/client/core/queryKeySerializer.gen.ts",
+        "frontend/src/client/core/serverSentEvents.gen.ts",
+        "frontend/src/client/core/types.gen.ts",
+        "frontend/src/client/core/utils.gen.ts",
+        "frontend/src/client/index.ts",
+        "frontend/src/client/sdk.gen.ts",
+        "frontend/src/client/types.gen.ts",
+        "frontend/src/routeTree.gen.ts"
+      ]
+    },
+    "helper_languages": [
+      "typescript"
+    ],
+    "expected_declarations": {
+      "backend/app/models.py": {
+        "classes": [
+          "Item"
+        ]
+      },
+      "frontend/src/utils.ts": {
+        "functions": [
+          "getInitials"
+        ]
+      }
+    },
+    "mutation": {
+      "path": "backend/app/models.py",
+      "needle": "class Item(ItemBase, table=True):",
+      "replacement": "class Item(ItemBase, table=True):\n    provider_note: str | None = None"
+    }
+  },
+  "cobra": {
+    "repository": "spf13/cobra",
+    "commit": "adbc8813901bba65827259daa8e22ff94ec1f30e",
+    "selection": {
+      "schema_version": "llm-wiki-source-selection/v1",
+      "include": [
+        "active_help.go",
+        "args.go",
+        "bash_completions.go",
+        "bash_completionsV2.go",
+        "cobra.go",
+        "command.go",
+        "command_notwin.go",
+        "command_win.go",
+        "completions.go",
+        "doc/man_docs.go",
+        "doc/md_docs.go",
+        "doc/rest_docs.go",
+        "doc/util.go",
+        "doc/yaml_docs.go",
+        "fish_completions.go",
+        "flag_groups.go",
+        "go.mod",
+        "go.sum",
+        "powershell_completions.go",
+        "shell_completions.go",
+        "zsh_completions.go"
+      ],
+      "exclude": []
+    },
+    "helper_languages": [
+      "go"
+    ],
+    "expected_declarations": {
+      "command.go": {
+        "classes": [
+          "Command"
+        ],
+        "methods": {
+          "Command": [
+            "Execute"
+          ]
+        }
+      }
+    },
+    "mutation": {
+      "path": "command.go",
+      "needle": "type Command struct {",
+      "replacement": "type Command struct {\n    ProviderNote string"
+    }
+  }
+}

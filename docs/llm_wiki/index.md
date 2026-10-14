@@ -1120,7 +1120,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [source_capture](workflows/source_capture.md) - entry: `task_context_v2._source_capture`
 - [source_path_diagnostics](workflows/source_path_diagnostics.md) - entry: `source_path_diagnostics.source_path_diagnostics`
 - [status_cmd_flow](workflows/status_cmd_flow.md) - entry: `status_cmd.run`
-- [storage_report](workflows/storage_report.md) - entry: `knowledge_storage_diagnostics.storage_report`
+- [storage_report](workflows/storage_report.md) - entry: `knowledge_storage_diagnostics._storage_report`
 - [sync_run_options_from_args](workflows/sync_run_options_from_args.md) - entry: `sync_cmd._sync_run_options_from_args`
 - [task_cmd_flow](workflows/task_cmd_flow.md) - entry: `task_cmd.run`
 - [try_sync_knowledge_reuse](workflows/try_sync_knowledge_reuse.md) - entry: `sync_cmd._try_sync_knowledge_reuse`

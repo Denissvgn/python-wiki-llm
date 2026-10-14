@@ -111,12 +111,12 @@ sequenceDiagram
     participant p20 as resolve_inventory_cache_path
     participant p21 as render_text
     participant p22 as _new_lint_report
-    participant p23 as _preflight_lint_inputs
-    participant p24 as _finalize_lint_report
-    participant p25 as _collect_lint_inputs
-    participant p26 as prepare_destination
-    participant p27 as _run_report_checks
-    participant p28 as windows_current_user_sid
+    participant p23 as _storage_report
+    participant p24 as _preflight_lint_inputs
+    participant p25 as _finalize_lint_report
+    participant p26 as _collect_lint_inputs
+    participant p27 as prepare_destination
+    participant p28 as _run_report_checks
     participant p29 as getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)
     participant p30 as storage.get
     p0->>p1: validate_source_root
@@ -141,19 +141,19 @@ sequenceDiagram
     p4->>p20: resolve_inventory_cache_path
     p9->>p21: render_text
     p6->>p22: _new_lint_report
-    p6->>p23: _preflight_lint_inputs
-    p6->>p24: _finalize_lint_report
-    p6->>p25: _collect_lint_inputs
-    p3->>p26: prepare_destination
-    p6->>p27: _run_report_checks
-    p1->>p28: windows_current_user_sid
+    p7->>p23: _storage_report
+    p6->>p24: _preflight_lint_inputs
+    p6->>p25: _finalize_lint_report
+    p6->>p26: _collect_lint_inputs
+    p3->>p27: prepare_destination
+    p6->>p28: _run_report_checks
     p0-->>p29: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'storage_git_base', None)
     p0-->>p30: storage.get('failures', [...])
 ```
 
-> Call sequence diagram shows 30 of 4410 interactions; 4380 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4193 interactions; 4163 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1352 (1351 omitted); unresolved 1 of 1342 (1341 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1264 (1263 omitted); unresolved 1 of 1319 (1318 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -167,7 +167,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_path` | 16 | - | external | 2 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 15 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 15 | - | external | 11 |
-> Omission summary shows 8 of 1116 groups; 1108 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1068 groups; 1060 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

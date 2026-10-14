@@ -2911,6 +2911,7 @@ def render_text(report: LintReport) -> str:
     for diagnostic in report.diagnostics:
         diagnostic_groups.setdefault(diagnostic.category, []).append(diagnostic)
     lines: list[str] = [f"Linting Wiki at: {report.wiki_dir}"]
+    rendered_categories: set[str] = set()
 
     if grouped.get("wiki_missing"):
         for issue in grouped["wiki_missing"]:
@@ -2926,6 +2927,7 @@ def render_text(report: LintReport) -> str:
         *,
         only_if_present: bool = False,
     ) -> None:
+        rendered_categories.add(category)
         issues = grouped.get(category, []) + diagnostic_groups.get(category, [])
         if issues:
             for issue in issues:
@@ -2937,6 +2939,7 @@ def render_text(report: LintReport) -> str:
             lines.append("")
 
     def emit_knowledge_group(category: str, found: str) -> None:
+        rendered_categories.add(category)
         issues = grouped.get(category, [])
         diagnostics = diagnostic_groups.get(category, [])
         if not issues and not diagnostics:
@@ -2949,6 +2952,33 @@ def render_text(report: LintReport) -> str:
             if diagnostic.hint is not None:
                 lines.append(f"       Hint: {diagnostic.hint}")
         lines.append(f"  {found.format(count=len(issues) + len(diagnostics))}")
+        lines.append("")
+
+    def emit_diagnostic_preview(category: str, guidance: str) -> None:
+        records = diagnostic_groups.get(category, [])
+        if not records:
+            return
+        rendered_categories.add(category)
+
+        def excerpt(value: str) -> str:
+            # Escape controls in bounded excerpts; complete original strings
+            # remain in JSON and Markdown rather than becoming display facts.
+            text = json.dumps(value, ensure_ascii=False)[1:-1]
+            return text if len(text) <= 400 else text[:397] + "..."
+
+        lines.append(f"  Advisory diagnostics [{excerpt(category)}]: {len(records)} record(s).")
+        for diagnostic in records[:5]:
+            marker = "INFO" if diagnostic.severity == "info" else diagnostic.severity.upper()
+            location = diagnostic.path or diagnostic.target
+            message = diagnostic.message + (f" ({location})" if location else "")
+            lines.append(f"    {marker}: {excerpt(message)}")
+            if diagnostic.hint is not None:
+                lines.append(f"      Hint: {excerpt(diagnostic.hint)}")
+        omitted = max(0, len(records) - 5)
+        lines.append(f"    Showing {min(5, len(records))} of {len(records)} record(s); {omitted} omitted from this text preview.")
+        lines.append(f"    Next action: {guidance}")
+        lines.append("    Full records: lint --profile JSON or CI JSON/Markdown with the same roots and options.")
+        lines.append("    Counts describe emitted diagnostics; upstream analysis can remain bounded or incomplete.")
         lines.append("")
 
     if grouped.get("extractor_failure"):
@@ -3179,9 +3209,18 @@ def render_text(report: LintReport) -> str:
             ]
         )
 
+    emit_diagnostic_preview(
+        "data_flow_gaps",
+        "Inspect the affected flow and source when the task needs the missing static observation; do not infer complete effects or runtime behavior.",
+    )
+    for category in sorted(set(diagnostic_groups) - rendered_categories):
+        emit_diagnostic_preview(category, "Review the reported scope and any supplied hint before deciding whether a source or documentation change is needed.")
+
     # ── Summary ───────────────────────────────────────────────────────
     if report.passed:
-        lines.append("✅ Lint passed: wiki is fully consistent.")
+        lines.append("✅ Lint passed: no blocking issues.")
+        if report.diagnostics:
+            lines.append(f"Advisory diagnostics: {len(report.diagnostics)} record(s); passing checks do not establish complete analysis or semantic correctness.")
     else:
         lines.append(f"❌ Lint found {report.issue_count} issue(s).")
     if report.cache_stats is not None:

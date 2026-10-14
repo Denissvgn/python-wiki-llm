@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Lint text output exposes bounded data-flow and unfamiliar advisory diagnostics,
+  with omitted counts and complete-report guidance. Passing lint reports no
+  blocking issues without implying complete analysis or semantic correctness.
+
+- Storage-size limit failures retain bounded inspection details and an actionable
+  prune-preview recovery route. Full reports distinguish active references from
+  unvalidated retention candidates without automatically cleaning files.
+
 ## [2.5.0] - 2026-10-13
 
 This release broadens JavaScript and YAML coverage, adds a portable default
