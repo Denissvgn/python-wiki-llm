@@ -71,7 +71,8 @@ def _git_identity(root, metrics=None):
             metrics["git_queries"] = metrics.get("git_queries", 0) + 1
         try:
             result = subprocess.run(["git", "-C", str(root), *args], capture_output=True,
-                                    timeout=5, check=False, env={**os.environ, "GIT_OPTIONAL_LOCKS": "0"})
+                                    stdin=subprocess.DEVNULL, timeout=5, check=False,
+                                    env={**os.environ, "GIT_OPTIONAL_LOCKS": "0"})
         except (OSError, subprocess.TimeoutExpired):
             return None
         return result.stdout.strip() if result.returncode == 0 else None

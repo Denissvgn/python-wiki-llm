@@ -23,6 +23,11 @@ on:
         required: true
         default: 'a368fd2db4beede6e69e49ff85cf84527dce4d0f5c29206722b98a25adf6289f'
         type: string
+      git-stdin-adapter:
+        description: Explicit external Git adapter (required for 2.5.0 scoped stdio sessions)
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -68,18 +73,21 @@ jobs:
           HARNESS_SHA: ${{ inputs.harness-sha }}
           WHEEL_SHA256: ${{ inputs.wheel-sha256 }}
           SDIST_SHA256: ${{ inputs.sdist-sha256 }}
+          GIT_STDIN_ADAPTER: ${{ inputs.git-stdin-adapter }}
           PYTHONUTF8: '1'
           PYTHONIOENCODING: utf-8
           PIP_NO_INPUT: '1'
           PIP_DISABLE_PIP_VERSION_CHECK: '1'
         run: |
+          $adapterArguments = @()
+          if ($env:GIT_STDIN_ADAPTER -eq 'true') { $adapterArguments = @('--git-stdin-adapter') }
           & ./probe-tools/.venv/Scripts/python.exe -I probe-tools/release/native_published_artifacts.py `
             --repository $env:PROBE_REPOSITORY --version $env:PROBE_VERSION `
             --harness-dir harness --harness-sha $env:HARNESS_SHA `
             --wheel-sha256 $env:WHEEL_SHA256 --sdist-sha256 $env:SDIST_SHA256 `
             --artifacts "$env:RUNNER_TEMP/published-archives" `
             --work "$env:RUNNER_TEMP/published-native-consumers" `
-            --output "$env:RUNNER_TEMP/published-native-evidence"
+            --output "$env:RUNNER_TEMP/published-native-evidence" @adapterArguments
           if ($LASTEXITCODE -ne 0) { throw 'Native published archive acceptance failed' }
       - name: Retain native results and incomplete attempts
         if: ${{ always() }}

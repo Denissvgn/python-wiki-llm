@@ -1,6 +1,6 @@
 # CompactSessionReply
 
-**Location:** `src/llm_wiki_cli/services/context_session.py:139`
+**Location:** `src/llm_wiki_cli/services/context_session.py:140`
 **Kind:** Class
 **Bases:** —
 **Module:** [context_session](../modules/context_session.md)

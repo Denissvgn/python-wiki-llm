@@ -1,6 +1,7 @@
 """Session invalidation, detached ownership, deltas and resource boundaries."""
 
 from dataclasses import replace
+import hashlib
 import os
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
@@ -14,6 +15,32 @@ from tests import test_task_context as task_fixtures
 from tests.test_task_context import request
 
 project = task_fixtures.project
+
+
+def test_read_only_git_identity_never_inherits_mcp_stdin(tmp_path, monkeypatch):
+    monkeypatch.setattr(context_session.shutil, "which", lambda name: "git")
+    index = tmp_path / "index"
+    index.write_bytes(b"independent index bytes")
+    calls = []
+    def controlled(command, **options):
+        assert options["stdin"] == subprocess.DEVNULL
+        assert options["timeout"] == 5 and options["capture_output"] is True
+        assert options["env"]["GIT_OPTIONAL_LOCKS"] == "0"
+        calls.append(command)
+        if "--absolute-git-dir" in command:
+            result = f"{tmp_path / '.git'}\n{index}\n".encode()
+        elif "symbolic-ref" in command:
+            result = b"refs/heads/codex/caller\n"
+        else:
+            result = b"a" * 40 + b"\n"
+        return subprocess.CompletedProcess(command, 0, result, b"")
+    monkeypatch.setattr(context_session.subprocess, "run", controlled)
+    identity = context_session._git_identity(tmp_path)
+    assert identity is not None
+    assert identity["head"] == (b"a" * 40).hex()
+    assert identity["branch"] == b"refs/heads/codex/caller".hex()
+    assert identity["index"] == hashlib.sha256(index.read_bytes()).hexdigest()
+    assert len(calls) == 3
 
 
 def _full(reply: api.SessionReply) -> api.TaskContext:

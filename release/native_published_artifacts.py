@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 import platform
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -108,6 +109,45 @@ def diagnose_failed_harness(args, record, run, save, environment) -> None:
     save()
 
 
+def prepare_git_adapter(harness: Path, output: Path, environment, run) -> tuple[dict, dict]:
+    """Prepare an explicit external helper; never patch installed Python code."""
+    real = shutil.which("git", path=environment.get("PATH"))
+    if real is None:
+        raise ProbeError("original Git executable is unavailable")
+    compiler = Path(environment.get("SystemRoot", r"C:\Windows")) / "Microsoft.NET/Framework64/v4.0.30319/csc.exe"
+    if not compiler.is_file():
+        raise ProbeError("native .NET Framework compiler is unavailable for explicit Git adapter")
+    folder = output / "git-adapter"
+    folder.mkdir()
+    executable = folder / "git.exe"
+    source = Path(__file__).with_name("git_stdin_adapter.cs")
+    run("git-adapter-build", [compiler, "/nologo", "/target:exe", "/platform:anycpu", "/optimize+",
+                             "/out:" + str(executable), source], env=environment)
+    adapted = {**environment, "AGENT_WIKI_REAL_GIT": str(Path(real).resolve()),
+               "PATH": str(folder) + os.pathsep + environment.get("PATH", "")}
+    assertions = []
+    for arguments in (["--version"], ["-C", str(harness), "rev-parse", "--absolute-git-dir", "--git-path", "index"],
+                      ["-C", str(harness), "rev-parse", "--verify", "HEAD"]):
+        original = run("git-original-" + str(len(assertions)), [real, *arguments], env=environment)
+        current = run("git-adapted-" + str(len(assertions)), [executable, *arguments], env=adapted)
+        if original != current:
+            raise ProbeError("external Git adapter changed original Git output")
+        assertions.append({"arguments": arguments, "stdout_sha256": hashlib.sha256(original).hexdigest()})
+    contracts = json.loads(run("git-adapter-contracts", [sys.executable, "-I",
+        Path(__file__).with_name("git_adapter_contracts.py"), executable, real, output], env=adapted))
+    if contracts.get("status") != "pass" or contracts.get("native") != "win32":
+        raise ProbeError("external Git adapter native contracts did not pass")
+    receipt = {"kind": "external-git-stdin-isolation/v1", "provider_modified": False,
+        "qualification": "Explicit external Git stdin adapter selected; archive acceptance still requires the complete gate. The plain 2.5.0 remains affected.",
+        "original_executable": str(real), "original_sha256": hashlib.sha256(Path(real).read_bytes()).hexdigest(),
+        "adapter_sha256": hashlib.sha256(executable.read_bytes()).hexdigest(),
+        "source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(), "parity": assertions,
+        "contracts": contracts,
+        "policy": "Only the three context-session identity probes receive EOF stdin; other commands retain owned stdin/stdout/stderr/arguments/exit codes."}
+    (output / "git-adapter.json").write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
+    return adapted, receipt
+
+
 ORIGIN = """
 from importlib.metadata import distribution
 from pathlib import Path
@@ -131,6 +171,7 @@ def main(argv=None) -> int:
     parser.add_argument("--artifacts", type=Path, required=True)
     parser.add_argument("--work", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--git-stdin-adapter", action="store_true")
     args = parser.parse_args(argv)
     harness = args.harness_dir.resolve()
     tools = Path(__file__).resolve().parents[1]
@@ -237,6 +278,10 @@ def main(argv=None) -> int:
         consumer_environment = dict(environment)
         for key in ("GH_TOKEN", "GITHUB_TOKEN"):
             consumer_environment.pop(key, None)
+        if args.git_stdin_adapter:
+            consumer_environment, receipt = prepare_git_adapter(harness, args.output, consumer_environment, run)
+            record["runtime_adapter"] = receipt
+            save()
         try:
             run("installed-artifact-harness", [sys.executable, "-I",
                 harness / "tests/run_provider_artifact_checks.py",
