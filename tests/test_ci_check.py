@@ -821,6 +821,8 @@ def test_ci_check_reports_missing_haskell_helper_failure(
 ):
     monkeypatch.chdir(tmp_path)
     (tmp_path / "wiki").mkdir()
+    empty_helper_cache = tmp_path / "unprepared-helper-cache"
+    empty_helper_cache.mkdir()
     app_dir = tmp_path / "hls-analysis" / "app"
     app_dir.mkdir(parents=True)
     (app_dir / "Main.hs").write_text("module Main where\n", encoding="utf-8")
@@ -833,6 +835,7 @@ def test_ci_check_reports_missing_haskell_helper_failure(
                 wiki_dir="wiki",
                 format="json",
                 report="report.md",
+                helper_cache_dir=str(empty_helper_cache),
             )
         )
 
@@ -842,7 +845,12 @@ def test_ci_check_reports_missing_haskell_helper_failure(
     assert payload["diagnostics"] == []
     assert payload["issues"][0]["category"] == "extractor_failure"
     assert payload["issues"][0]["target"] == "haskell"
-    assert_helper_recovery(payload["issues"][0]["message"], language="haskell")
+    assert_helper_recovery(
+        payload["issues"][0]["message"],
+        language="haskell",
+        cache_dir=str(empty_helper_cache),
+    )
+    assert list(empty_helper_cache.iterdir()) == []
     report_text = Path("report.md").read_text(encoding="utf-8")
     assert "haskell extraction failed" in report_text
     assert "Unsupported sources detected" not in report_text
