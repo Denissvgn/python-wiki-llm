@@ -90,6 +90,7 @@ def test_non_native_execution_stays_incomplete_without_starting_processes(tmp_pa
 
 def test_bad_download_is_rejected_before_any_consumer_install(tmp_path, monkeypatch):
     # This is an ordering unit control, not a native execution receipt.
+    monkeypatch.setattr(probe.sys, "prefix", str(tmp_path / "controller/.venv"))
     monkeypatch.setattr(probe, "is_native_windows", lambda: True)
     monkeypatch.setattr(probe.platform, "platform", lambda: "controlled-unit-fixture")
     monkeypatch.setattr(probe.platform, "machine", lambda: "controlled-unit-fixture")
@@ -144,6 +145,54 @@ def test_workflow_is_manual_native_read_only_and_does_not_rebuild():
     assert "-m build" not in commands and "pytest" not in commands and "git push" not in commands
     assert "Scripts/python.exe -I probe-tools/release/native_published_artifacts.py" in commands
     assert "--wheel-sha256 $env:WHEEL_SHA256" in commands and "--sdist-sha256 $env:SDIST_SHA256" in commands
+    assert "--git-stdin-adapter" in commands
+    inputs = value.get("on", value.get(True))["workflow_dispatch"]["inputs"]
+    assert inputs["git-stdin-adapter"]["default"] is False
     upload = steps[-1]
     assert upload["if"] == "${{ always() }}" and upload["with"]["if-no-files-found"] == "error"
     assert "github.run_id" in upload["with"]["name"] and "github.run_attempt" in upload["with"]["name"]
+
+
+@pytest.mark.parametrize("failure", ["compiler", "parity", "contracts", None])
+def test_adapter_requires_native_build_and_independent_contracts(tmp_path, monkeypatch, failure):
+    # Ordering/failure controls only; actual executable contracts run on Windows.
+    real = tmp_path / "original-git.exe"
+    real.write_bytes(b"original helper")
+    compiler = tmp_path / "Microsoft.NET/Framework64/v4.0.30319/csc.exe"
+    if failure != "compiler":
+        compiler.parent.mkdir(parents=True)
+        compiler.write_bytes(b"native compiler fixture")
+    monkeypatch.setattr(probe.shutil, "which", lambda *a, **kw: str(real))
+    output = tmp_path / "evidence"
+    output.mkdir()
+    environment = {"SystemRoot": str(tmp_path), "PATH": "original-path"}
+    calls = []
+    def run(label, command, *, env):
+        calls.append(label)
+        if label == "git-adapter-build":
+            (output / "git-adapter/git.exe").write_bytes(b"compiled adapter fixture")
+            assert env == environment
+            return b""
+        assert env == environment or env["AGENT_WIKI_REAL_GIT"] == str(real)
+        if label == "git-adapter-contracts":
+            return json.dumps({"status": "fail" if failure == "contracts" else "pass", "native": "win32"}).encode()
+        if failure == "parity" and label == "git-adapted-0":
+            return b"changed Git output"
+        return b"same original Git output"
+    if failure:
+        with pytest.raises(probe.ProbeError):
+            probe.prepare_git_adapter(tmp_path / "harness", output, environment, run)
+        assert not (output / "git-adapter.json").exists()
+        if failure == "compiler":
+            assert calls == []
+        elif failure == "parity":
+            assert "git-adapter-contracts" not in calls
+    else:
+        adapted, receipt = probe.prepare_git_adapter(tmp_path / "harness", output, environment, run)
+        assert adapted["PATH"].startswith(str(output / "git-adapter"))
+        assert adapted["AGENT_WIKI_REAL_GIT"] == str(real)
+        assert environment == {"SystemRoot": str(tmp_path), "PATH": "original-path"}
+        assert receipt["provider_modified"] is False
+        assert "plain 2.5.0 remains affected" in receipt["qualification"]
+        assert receipt["contracts"]["status"] == "pass"
+        assert receipt["source_sha256"] == hashlib.sha256((ROOT / "release/git_stdin_adapter.cs").read_bytes()).hexdigest()

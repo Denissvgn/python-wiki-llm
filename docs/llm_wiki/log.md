@@ -2367,3 +2367,19 @@ Storage-size diagnostics retain bounded inspection gaps and separate active refe
 ### Documentation notes
 
 Lint text now exposes bounded advisory data-flow and unfamiliar-category previews with raw-report access and explicit omissions. Successful blocking checks remain separate from analysis completeness and semantic correctness.
+
+## 2026-10-14
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.5.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:57214fde785763ad6a94e8a5c06f5772c4e9cdb2b6e7c4ddfc7d8aa967238bcc`
+- Pages created: 0
+- Pages updated: 3
+- Pages metadata-only: 7
+- Pages skipped (unchanged): 1582
+- Pages deprecated: 0
+- Semantic fields preserved: 4
+- Moved entities: none

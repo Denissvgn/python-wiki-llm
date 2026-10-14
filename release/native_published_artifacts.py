@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 import platform
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -73,6 +74,80 @@ def verify_comparison(output: Path, hashes: dict[str, str], version: str) -> Non
         raise ProbeError("complete native wheel/sdist comparison did not agree")
 
 
+def diagnose_failed_harness(args, record, run, save, environment) -> None:
+    """Attribute the original failure without substituting a passing fallback."""
+    attempt = record["commands"][-1]
+    if attempt.get("status") == "timeout" or attempt.get("seconds", 1800) > 1500:
+        record["diagnostic"] = {"status": "unavailable", "release_acceptance": False,
+                                "reason": "insufficient remaining native owner budget"}
+        save()
+        return
+    commands_path = args.output / "commands.json"
+    commands = json.loads(commands_path.read_text(encoding="utf-8")) if commands_path.exists() else []
+    kind = "sdist" if commands and commands[-1].get("label") == "sdist-smoke" else "wheel"
+    python = args.work / f"{kind}-mcp/.venv/Scripts/python.exe"
+    if not python.is_file():
+        record["diagnostic"] = {"status": "unavailable", "release_acceptance": False,
+                                "reason": "original installed MCP consumer unavailable"}
+        save()
+        return
+    record["diagnostic"] = {"status": "running", "release_acceptance": False, "artifact": kind}
+    save()
+    digest = args.wheel_sha256 if kind == "wheel" else args.sdist_sha256
+    try:
+        run("native-session-diagnostic", [python, "-I",
+            Path(__file__).with_name("native_session_diagnostics.py"),
+            "--harness", args.harness_dir, "--harness-sha", args.harness_sha,
+            "--work", args.work / "diagnostic-caller",
+            "--output", args.output / "native-session-diagnostic", "--version", args.version,
+            "--archive-sha256", digest], timeout=300,
+            env={**environment, "PYTHONDONTWRITEBYTECODE": "1"})
+    except (ProbeError, OSError, ValueError) as error:
+        record["diagnostic"].update(status="failed", reason=str(error))
+    else:
+        record["diagnostic"]["status"] = "complete"
+    save()
+
+
+def prepare_git_adapter(harness: Path, output: Path, environment, run) -> tuple[dict, dict]:
+    """Prepare an explicit external helper; never patch installed Python code."""
+    real = shutil.which("git", path=environment.get("PATH"))
+    if real is None:
+        raise ProbeError("original Git executable is unavailable")
+    compiler = Path(environment.get("SystemRoot", r"C:\Windows")) / "Microsoft.NET/Framework64/v4.0.30319/csc.exe"
+    if not compiler.is_file():
+        raise ProbeError("native .NET Framework compiler is unavailable for explicit Git adapter")
+    folder = output / "git-adapter"
+    folder.mkdir()
+    executable = folder / "git.exe"
+    source = Path(__file__).with_name("git_stdin_adapter.cs")
+    run("git-adapter-build", [compiler, "/nologo", "/target:exe", "/platform:anycpu", "/optimize+",
+                             "/out:" + str(executable), source], env=environment)
+    adapted = {**environment, "AGENT_WIKI_REAL_GIT": str(Path(real).resolve()),
+               "PATH": str(folder) + os.pathsep + environment.get("PATH", "")}
+    assertions = []
+    for arguments in (["--version"], ["-C", str(harness), "rev-parse", "--absolute-git-dir", "--git-path", "index"],
+                      ["-C", str(harness), "rev-parse", "--verify", "HEAD"]):
+        original = run("git-original-" + str(len(assertions)), [real, *arguments], env=environment)
+        current = run("git-adapted-" + str(len(assertions)), [executable, *arguments], env=adapted)
+        if original != current:
+            raise ProbeError("external Git adapter changed original Git output")
+        assertions.append({"arguments": arguments, "stdout_sha256": hashlib.sha256(original).hexdigest()})
+    contracts = json.loads(run("git-adapter-contracts", [sys.executable, "-I",
+        Path(__file__).with_name("git_adapter_contracts.py"), executable, real, output], env=adapted))
+    if contracts.get("status") != "pass" or contracts.get("native") != "win32":
+        raise ProbeError("external Git adapter native contracts did not pass")
+    receipt = {"kind": "external-git-stdin-isolation/v1", "provider_modified": False,
+        "qualification": "Explicit external Git stdin adapter selected; archive acceptance still requires the complete gate. The plain 2.5.0 remains affected.",
+        "original_executable": str(real), "original_sha256": hashlib.sha256(Path(real).read_bytes()).hexdigest(),
+        "adapter_sha256": hashlib.sha256(executable.read_bytes()).hexdigest(),
+        "source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(), "parity": assertions,
+        "contracts": contracts,
+        "policy": "Only the three context-session identity probes receive EOF stdin; other commands retain owned stdin/stdout/stderr/arguments/exit codes."}
+    (output / "git-adapter.json").write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
+    return adapted, receipt
+
+
 ORIGIN = """
 from importlib.metadata import distribution
 from pathlib import Path
@@ -96,6 +171,7 @@ def main(argv=None) -> int:
     parser.add_argument("--artifacts", type=Path, required=True)
     parser.add_argument("--work", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--git-stdin-adapter", action="store_true")
     args = parser.parse_args(argv)
     harness = args.harness_dir.resolve()
     tools = Path(__file__).resolve().parents[1]
@@ -202,11 +278,27 @@ def main(argv=None) -> int:
         consumer_environment = dict(environment)
         for key in ("GH_TOKEN", "GITHUB_TOKEN"):
             consumer_environment.pop(key, None)
-        run("installed-artifact-harness", [sys.executable, "-I",
-            harness / "tests/run_provider_artifact_checks.py",
-            "--artifacts", args.artifacts, "--work", args.work,
-            "--output", args.output, "--version", args.version],
-            timeout=1800, env=consumer_environment)
+        if args.git_stdin_adapter:
+            consumer_environment, receipt = prepare_git_adapter(harness, args.output, consumer_environment, run)
+            record["runtime_adapter"] = receipt
+            save()
+        try:
+            run("installed-artifact-harness", [sys.executable, "-I",
+                harness / "tests/run_provider_artifact_checks.py",
+                "--artifacts", args.artifacts, "--work", args.work,
+                "--output", args.output, "--version", args.version],
+                timeout=1800, env=consumer_environment)
+        except ProbeError:
+            # Profiling occurs only after the immutable acceptance owner fails.
+            # It cannot warm that attempt, replace its result or extend its limit.
+            try:
+                diagnose_failed_harness(args, record, run, save, consumer_environment)
+            except Exception as error:
+                # Optional attribution failures must preserve the primary gate
+                # failure, including malformed receipts or diagnostic defects.
+                record["diagnostic"] = {"status": "failed", "release_acceptance": False,
+                                        "reason": str(error)}
+            raise
         verify_archives(args.artifacts, names, hashes)
         verify_comparison(args.output, hashes, args.version)
         origins = {}

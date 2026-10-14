@@ -4,7 +4,7 @@
 
 ## Description
 
-Provides bounded context reuse with private workspace ownership and authoritative on-disk validation. Scoped entries may share identical immutable byte buffers while retaining separate dependency observations; retained-memory accounting counts shared objects once. Read-only Git discovery is batched, and mutable producer sources remain fully checked. Supported deltas reconstruct the exact request/result schema; events are hints and unsaved buffers remain outside the on-disk contract.
+Provides bounded context reuse with private workspace ownership and authoritative on-disk validation. Scoped entries may share identical immutable byte buffers while retaining separate dependency observations; retained-memory accounting counts shared objects once. Read-only Git discovery is batched and uses disconnected stdin, so session identity commands cannot inherit a host protocol stream. Branch and index observations remain authoritative, and mutable producer sources remain fully checked. Supported deltas reconstruct the exact request/result schema; events are hints and unsaved buffers remain outside the on-disk contract.
 
 ## Imports
 
@@ -62,12 +62,12 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [SessionReply](../entities/SessionReply.md) | 125 | — | Portable content and separate non-identity session work telemetry. |
-| [CompactSessionReply](../entities/CompactSessionReply.md) | 139 | — | — |
-| [CanonicalReceipt](../entities/CanonicalReceipt.md) | 153 | — | — |
-| [_Receipt](../entities/Receipt.md) | 165 | — | — |
-| [_Entry](../entities/Entry.md) | 178 | — | — |
-| [ContextSession](../entities/context_session_ContextSession.md) | 222 | — | A single trusted workspace. Methods serialize; events are hints only. |
+| [SessionReply](../entities/SessionReply.md) | 126 | — | Portable content and separate non-identity session work telemetry. |
+| [CompactSessionReply](../entities/CompactSessionReply.md) | 140 | — | — |
+| [CanonicalReceipt](../entities/CanonicalReceipt.md) | 154 | — | — |
+| [_Receipt](../entities/Receipt.md) | 166 | — | — |
+| [_Entry](../entities/Entry.md) | 179 | — | — |
+| [ContextSession](../entities/context_session_ContextSession.md) | 223 | — | A single trusted workspace. Methods serialize; events are hints only. |
 
 ## Functions
 
