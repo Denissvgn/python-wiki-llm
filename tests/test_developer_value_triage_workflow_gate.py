@@ -64,7 +64,7 @@ def _create(tmp_path, monkeypatch, capsys, *, adopted=True):
     monkeypatch.chdir(tmp_path)
     SOURCE.parent.mkdir()
     SOURCE.write_text(POLICY_SOURCE, encoding="utf-8")
-    api.bootstrap_wiki("src", "wiki")
+    api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
     if adopted:
         api.adopt_maintenance("src", "wiki", recovery_dir="recovery")
     capsys.readouterr()

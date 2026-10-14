@@ -10,6 +10,9 @@ point flows, infrastructure and dependency views, the landing page, and the
 architectural log. Finalization commits the manifest and generated knowledge
 artifacts only after the public Markdown surface has been written.
 
+
+Normal first use writes current compressed native knowledge immediately and establishes indexed ordinary maintenance ownership with pending review. It reuses the original source and helper capture rather than extracting a second scope. Explicit compatibility formats remain available, and the reported schema describes the final committed data.
+
 ## Imports
 
 | Source | Symbols |
@@ -21,6 +24,7 @@ artifacts only after the public Markdown surface has been written.
 | `.api_contracts` | `ApiContractError`, `attach_routes_to_entry_points`, `build_api_contracts`, `link_entry_point_flows`, `render_api_contracts_markdown`, `render_flow_api_contract_section` |
 | `.bootstrap_service` | `BootstrapContractError`, `BootstrapExtractionError`, `BootstrapRequestError`, `BootstrapRequest`, `BootstrapResult` |
 | `.contracts` | `BOOTSTRAP_SUMMARY_SCHEMA_VERSION`, `KNOWLEDGE_SCHEMA_VERSION` |
+| `.current_contracts` | `CURRENT_KNOWLEDGE_FORMAT`, `upgrade_current_knowledge` |
 | `.data_flow` | `_call_args`, `analyze_data_flow`, `analyze_data_flow_detailed`, `build_data_flow_context` |
 | `.dependencies` | `analyze_dependencies`, `build_dependency_observations`, `build_external_dependency_observations`, `package_dependency_graph`, `top_level_package` |
 | `.diagrams` | `GENERATED_DIAGRAM_CHAR_LIMIT`, `GENERATED_DIAGRAM_LINE_LIMIT`, `GENERATED_DIAGRAM_NODE_LIMIT`, `_DISPLAY_LABEL_LIMIT`, `_normalize_display_text`, `data_flow_diagram`, `flowchart`, `resolve_diagram_style`, `sequence_diagram` |
@@ -32,8 +36,10 @@ artifacts only after the public Markdown surface has been written.
 | `.infrastructure_sync` | `INFRASTRUCTURE_GENERATION_INPUT_KEY`, `INFRASTRUCTURE_SYNC_SCHEMA_VERSION`, `InfrastructureSyncError`, `build_infrastructure_page_map`, `build_infrastructure_sync_plan`, `validate_infrastructure_generation_input`, `with_infrastructure_generation_input` |
 | `.io` | `read_md`, `write_bytes_atomic`, `write_md` |
 | `.knowledge_artifacts` | `ArtifactWriteState`, `KnowledgeCommitResult` |
+| `.knowledge_consumption` | `load_knowledge_read_view` |
 | `.knowledge_governance` | `GOVERNANCE_FILENAME`, `GovernanceError`, `load_governance` |
 | `.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeKnowledgeInputs`, `collect_runtime_repository_evidence`, `committed_governance_bundle_id`, `finalize_runtime_knowledge`, `persist_runtime_generation_policy`, `runtime_generation_options`, `runtime_graph_analyzer_limitations`, `runtime_source_snapshot_hash` |
+| `.knowledge_packs` | `LOCAL_PACKED_SCHEMA` |
 | `.maintenance_protocol` | `guard_maintenance_owner`, `maintenance_write_operation` |
 | `.markdown_sections` | `GENERATED_INDEX_ENTRY_POINT_FLOWS_HEADING`, `GENERATED_INDEX_HTTP_API_CONTRACTS_HEADING`, `GENERATED_INDEX_INTRO_WITH_GUIDES`, `GENERATED_INDEX_INTRO_WITHOUT_GUIDES`, `preserve_level_two_section_exact` |
 | `.module_maps` | `build_module_dependency_maps` |
@@ -61,6 +67,7 @@ artifacts only after the public Markdown surface has been written.
 | `re` | `re` |
 | `shlex` | `shlex` |
 | `sys` | `sys` |
+| `types` | `SimpleNamespace` |
 | `typing` | `Any`, `TextIO` |
 
 ## Local dependency map
@@ -82,9 +89,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (17) |
-| Outbound | `src` (34) |
+| Outbound | `src` (37) |
 
-> All 51 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 54 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

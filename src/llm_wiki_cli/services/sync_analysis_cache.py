@@ -35,7 +35,6 @@ def input_key(options, snapshot, manifest, generation_inputs, *, explain=False):
         return None
 
     for excluded, reason in (
-        (manifest.maintenance_state is not None, "maintenance-state"),
         (bool(options.initialize_surfaces), "surface-initialization"),
         (options.knowledge_format is not None, "storage-format-requested"),
         (any((root / ".llm-wiki/plugins.lock.json").exists()
@@ -60,7 +59,7 @@ def input_key(options, snapshot, manifest, generation_inputs, *, explain=False):
         return skipped("unqualified-implementation")
     inputs = dict(generation_inputs)
     inputs.pop(REUSE_INPUT_KEY, None)
-    return {
+    key = {
         "schema_version": SCHEMA, "source_root": str(snapshot.root),
         "source_hashes": dict(snapshot.captured_content_hashes),
         "input_kinds": {k: list(v) for k, v in snapshot.captured_input_kinds.items()},
@@ -71,6 +70,11 @@ def input_key(options, snapshot, manifest, generation_inputs, *, explain=False):
         "preserve_semantic": options.preserve_semantic,
         "implementation": implementation, "analysis": analysis,
     }
+    if manifest.maintenance_state is not None:
+        # Cache only structural observations, never review state or actor history.
+        # Reconciliation still runs against the current guarded owner on every sync.
+        key["ordinary_owner"] = manifest.maintenance_state["adoption_id"]
+    return key
 
 
 def cache_destination(options, *, capture=False):

@@ -69,7 +69,7 @@ def workspace(tmp_path, monkeypatch):
     Path("src/app.py").write_text(blocks(source_section, "python")[0] + "\n")
     request = json.loads(blocks(source_section, "json")[0])
     Path("source-task.json").write_text(json.dumps(request))
-    native_section = section(WORKFLOW, "Native task with explicit storage adoption")
+    native_section = section(WORKFLOW, "Native task with current storage")
     native_request = json.loads(blocks(native_section, "json")[0])
     Path("native-task.json").write_text(json.dumps(native_request))
     return tmp_path, request, native_request
@@ -109,13 +109,13 @@ def test_flat_native_rejection_preserves_request_and_all_bytes(
     workspace, monkeypatch, capsys
 ):
     root, _, request = workspace
-    api.bootstrap_wiki("src", "wiki")
+    api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
     capsys.readouterr()
     before = tree(root)
     frozen = deepcopy(request)
     with pytest.raises(api.InvalidRequestError, match="explicit sharded or packed"):
         api.build_task_context(request, src_dir="src", wiki_dir="wiki")
-    native_section = section(WORKFLOW, "Native task with explicit storage adoption")
+    native_section = section(WORKFLOW, "Native task with current storage")
     code, _, error = run_cli(
         monkeypatch, capsys, command(native_section, "llm-wiki task-context ")
     )
@@ -123,84 +123,40 @@ def test_flat_native_rejection_preserves_request_and_all_bytes(
     assert request == frozen and tree(root) == before
 
 
-def test_existing_flat_dry_run_apply_checks_and_storage_recovery(
+def test_documented_upgrade_selects_current_storage_and_retains_preimages(
     workspace, monkeypatch, capsys
 ):
-    root, _, request = workspace
-    api.bootstrap_wiki("src", "wiki")
+    _, _, request = workspace
+    code, _, _ = run_cli(monkeypatch, capsys, ["init", "--agent", "generic", "--wiki-dir", "wiki"])
+    assert code == 0
+    api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
     capsys.readouterr()
     before = tree(Path("wiki"))
     source_before = tree(Path("src"))
-    original_pages = {
-        key: value for key, value in before.items() if key.endswith(".md")
-    }
-    native_section = section(WORKFLOW, "Native task with explicit storage adoption")
-    commands = [
-        shlex.split(line)[1:]
-        for block in blocks(native_section, "bash")
-        for line in block.splitlines()
-        if line.startswith("llm-wiki knowledge migrate ")
-    ]
-    assert len(commands) == 2
-    code, _, _ = run_cli(monkeypatch, capsys, commands[0])
-    assert code == 0 and tree(Path("wiki")) == before
-    assert not Path("storage-recovery").exists()
-    code, _, _ = run_cli(monkeypatch, capsys, commands[1])
+    native_section = section(WORKFLOW, "Native task with current storage")
+    code, text, _ = run_cli(monkeypatch, capsys, command(native_section, "llm-wiki upgrade "))
     assert code == 0
-    assert all(
-        Path("storage-recovery", key).read_bytes() == before[key]
-        for key in (
-            ".llm-wiki-knowledge.json",
-            ".llm-wiki-surface.json",
-            ".llm-wiki-manifest.json",
-        )
-    )
+    recovery = Path(next(line.split("Native upgrade recovery: ", 1)[1]
+                         for line in text.splitlines() if line.startswith("Native upgrade recovery: ")))
+    assert all((recovery / "adoption/before" / name).read_bytes() == raw
+               for name, raw in before.items() if name.endswith(".md"))
+    code, text, _ = run_cli(monkeypatch, capsys, command(native_section, "llm-wiki knowledge storage-check "))
+    assert code == 0 and json.loads(text)["ok"]
+    assert json.loads(text)["format"] == "packed-v4-deflate"
+    assert json.loads(Path("wiki/.llm-wiki-manifest.json").read_bytes())["version"] == 8
     after = tree(Path("wiki"))
-    assert {
-        key: value for key, value in after.items() if key.endswith(".md")
-    } == original_pages
-    code, text, _ = run_cli(
-        monkeypatch,
-        capsys,
-        command(native_section, "llm-wiki knowledge storage-check "),
-    )
-    assert code == 0
-    audit = json.loads(text)
-    assert audit["format"] == "sharded-v2"
-    code, text, _ = run_cli(
-        monkeypatch,
-        capsys,
-        command(native_section, "llm-wiki knowledge inspect-storage "),
-    )
-    assert (
-        code == 0
-        and json.loads(text)["validation_scope"] == "selected-records-and-policy"
-    )
-    code, text, _ = run_cli(
-        monkeypatch, capsys, command(native_section, "llm-wiki doctor ")
-    )
-    assert code == 0 and json.loads(text)["schema_version"] == "llm-wiki-doctor/v2"
+    assert {name: raw for name, raw in after.items() if name.endswith(".md")} == {
+        name: raw for name, raw in before.items() if name.endswith(".md")}
     result = api.build_task_context(request, src_dir="src", wiki_dir="wiki")
-    payload = api.validate_task_context(result.rendered, request)
-    assert payload["coverage"][0]["satisfied"]
-    assert payload["storage"]["whole_store_validated"] is False
-    recover_commands = [
-        shlex.split(line)[1:]
-        for block in blocks(native_section, "bash")
-        for line in block.splitlines()
-        if line.startswith("llm-wiki knowledge recover-storage ")
-    ]
-    adopted = tree(Path("wiki"))
-    code, _, _ = run_cli(monkeypatch, capsys, recover_commands[0])
-    assert code == 0 and tree(Path("wiki")) == adopted
-    code, _, _ = run_cli(monkeypatch, capsys, recover_commands[1])
-    assert code == 0
-    assert all(Path("wiki", key).read_bytes() == value for key, value in before.items())
+    assert api.validate_task_context(result.rendered, request)["coverage"][0]["satisfied"]
     assert tree(Path("src")) == source_before
+    code, text, _ = run_cli(monkeypatch, capsys, command(native_section, "llm-wiki upgrade "))
+    assert code == 0 and "Native upgrade recovery:" not in text
+    assert tree(Path("wiki")) == after
 
 
 def bootstrap_native(monkeypatch, capsys):
-    native_section = section(WORKFLOW, "Native task with explicit storage adoption")
+    native_section = section(WORKFLOW, "Native task with current storage")
     code, _, _ = run_cli(
         monkeypatch, capsys, command(native_section, "llm-wiki bootstrap ")
     )
@@ -263,7 +219,8 @@ def test_missing_maintenance_owner_blocks_seeding_then_complete_recovery(
     workspace, monkeypatch, capsys
 ):
     _, _, request = workspace
-    bootstrap_native(monkeypatch, capsys)
+    api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
+    capsys.readouterr()
     adopted = api.adopt_maintenance("src", "wiki", recovery_dir="maintenance-recovery")
     before = tree(Path("wiki"))
     Path("wiki/.llm-wiki-manifest.json").unlink()
@@ -275,7 +232,7 @@ def test_missing_maintenance_owner_blocks_seeding_then_complete_recovery(
     with pytest.raises(api.LlmWikiApiError):
         api.build_task_context(request, src_dir="src", wiki_dir="wiki")
     assert tree(Path("wiki")) == damaged
-    native_section = section(WORKFLOW, "Native task with explicit storage adoption")
+    native_section = section(WORKFLOW, "Native task with current storage")
     recovery = command(native_section, "llm-wiki maintenance recover ")
     recovery[-1] = adopted["adoption_id"]
     code, text, _ = run_cli(monkeypatch, capsys, recovery)
@@ -293,7 +250,6 @@ def test_optional_compact_recipe_exact_receipt_and_too_small_view(
     assert code == 0 and error == ""
     canonical = Path("receipts/source-context.json").read_text()
     options = {
-        "schema_version": "llm-wiki-task-view-request/v1",
         "budget_tokens": 32000,
     }
     expanded = api.expand_compact_task_context(
@@ -329,7 +285,7 @@ def test_expanded_generated_source_route_is_an_executable_request(workspace):
     )
     recipes = blocks(rendered, "json")
     request = next(
-        json.loads(text) for text in recipes if "llm-wiki-task-request/v2" in text
+        json.loads(text) for text in recipes if '"requirements"' in text
     )
     result = api.build_task_context(request, src_dir="src", wiki_dir="wiki")
     assert api.validate_task_context(result.rendered, request)["coverage"][0][

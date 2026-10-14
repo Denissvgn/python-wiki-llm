@@ -9,27 +9,22 @@ expanded instructions retain it when skills are disabled or unavailable.
 Package installation ships the reference; `llm-wiki init` establishes the
 project instructions, and `llm-wiki upgrade` refreshes them after a package update.
 
-The native interfaces below are explicit choices within that procedure.
-Initializing a project does not activate a workflow profile, session, storage
-adoption, or Git action. Small mechanical work can use proportionate inspection
-and checks while retaining applicable maintenance obligations.
+The library selects current data and workflow contracts. Normal task and compact
+view requests omit version fields. Bootstrap creates compressed packed knowledge
+and indexed ordinary maintenance ownership; project upgrade brings valid older
+snapshots forward with recovery preimages. Review starts pending and never
+implies human approval. Readers never migrate or repair data.
 
-Use a provider whose CLI and Python API expose the task request, storage and
-optional delivery interfaces you select. Check `llm-wiki task-context --help`
-and `llm-wiki knowledge migrate --help` in each environment; a version number
-alone does not establish support for every format.
-
-For large native snapshots, [knowledge storage](knowledge-storage.md) describes
-explicit sharded or packed storage adoption and task request v2 with selected validation.
-Task request v1 retains its existing full-validation behavior.
-
-Prefer task request v2 for compatible integrations. Canonical delivery stays
-the default; compact views, sessions and source-augmented discovery are explicit
-choices with their own limits and costs.
+Canonical delivery stays the default. Compact delivery, session reuse and source
+indexing remain explicit behavior choices with their own bounds and costs. MCP
+session tools are available by default; opening a session is still explicit.
+Workflow profiles, human governance, application execution and Git actions keep
+their existing authorization requirements. Older explicit contracts remain
+available for integrations that require compatibility.
 
 An explicit task request gathers qualified source and wiki evidence. The provider
 reads and reports; your coding host decides what to include, edit, execute and
-publish. Existing context calls retain their defaults.
+publish.
 
 ## Install the workflow in another project
 
@@ -116,8 +111,15 @@ managed instructions from that project's root:
 
 For a source checkout, replace the package update command with
 `.venv/bin/pip install --upgrade "/absolute/path/python-wiki-llm"`. Package
-updates alone do not refresh project instructions. For a custom wiki location,
+updates alone do not refresh project instructions or migrate project data. For a custom wiki location,
 use `.venv/bin/llm-wiki upgrade --wiki-dir .wiki`.
+
+Upgrade selects current storage formats and workflow contracts automatically.
+It preserves authored Markdown and existing governance, retains complete recovery
+preimages and prints their locations. Preserve those copies until the upgraded
+project is accepted. Damaged or unsupported authority requires recovery rather
+than automatic reseeding. Use `--src-dir src` when the source root is `src`, and
+carry the configured helper cache and source selection through setup.
 
 Upgrade retains the configured agent, source-selection preference and skills
 preference unless explicitly overridden. It refreshes the managed instruction
@@ -171,7 +173,7 @@ candidates and require exact inspection before a coding decision.
 Source text indexing is an explicit read and cost choice:
 
 ```bash
-llm-wiki search "retry failure" --src-dir src --wiki-dir wiki --mode ranked-v2 --include-source
+llm-wiki search "retry failure" --src-dir src --wiki-dir wiki --include-source
 ```
 
 It requires a valid committed manifest and indexes only its mapped module sources
@@ -228,7 +230,6 @@ Save this request as `source-task.json` outside `src`:
 
 ```json
 {
-  "schema_version": "llm-wiki-task-request/v2",
   "kind": "contract-change",
   "requirements": [
     {"id": "contract", "facet": "source-contract", "selector": "app.py:limit"}
@@ -262,47 +263,36 @@ Use your actual source root, configured selection and exact declaration instead
 of the example paths. Reads do not create the source file, install helpers or
 run the target project. One direct source read can be simpler for a tiny task.
 
-## Native task with explicit storage adoption
+<a id="native-task-with-explicit-storage-adoption"></a>
+
+## Native task with current storage
 
 Choose this route when a requirement needs committed concepts, semantic
-sections or typed relationships. For a new wiki, explicitly select bounded
-storage during authorized bootstrap:
+sections or typed relationships. Authorized bootstrap selects current bounded
+storage without a format argument:
 
 ```bash
-llm-wiki bootstrap --src-dir src --wiki-dir wiki --knowledge-format sharded-v2
+llm-wiki bootstrap --src-dir src --wiki-dir wiki
 ```
 
-For an existing flat wiki, keep its current pages and complete snapshot. A task
-v2 native read requires sharded or packed knowledge storage; a flat rejection
-does not authorize migration.
-
-For a captured valid flat model, the task CLI returns exit 2 with
-`error.details.reason: "flat-native-adoption-required"` and an authorized
-migration-preview next action. This identifies the storage prerequisite; it
-does not audit the complete snapshot. Unknown or damaged roots receive no
-adoption hint. Migration validates companion authority before applying.
-
-With migration authorized, preview and apply it using an empty recovery directory
-outside both `src` and `wiki`:
+For an existing project, update the package in every reader/writer environment,
+then run the authorized project upgrade with its actual roots:
 
 ```bash
-llm-wiki knowledge migrate --wiki-dir wiki --to sharded-v2 --dry-run --recovery-dir storage-recovery
-llm-wiki knowledge migrate --wiki-dir wiki --to sharded-v2 --recovery-dir storage-recovery
+llm-wiki upgrade --src-dir src --wiki-dir wiki
 llm-wiki knowledge storage-check --wiki-dir wiki --full
-llm-wiki knowledge inspect-storage --wiki-dir wiki --selector page:modules/app.md --limit 10
 llm-wiki doctor --capabilities --src-dir src --wiki-dir wiki --format json
 ```
 
-Dry-run does not write a recovery snapshot. Apply retains the prior snapshot;
-`storage-check --full` audits the result. Capability output can identify helper
-or producer prerequisites; resolve those only with setup authorization. Upgrade
-all readers and writers to support the selected schema before adoption.
+Upgrade chooses current formats and reports complete recovery locations. An
+explicit compatibility-format migration remains available through
+[knowledge storage](knowledge-storage.md). Missing, damaged or unsupported
+committed authority requires recovery; a failed read never authorizes migration.
 
 Save this native snapshot request as `native-task.json`:
 
 ```json
 {
-  "schema_version": "llm-wiki-task-request/v2",
   "requirements": [
     {"id": "concept", "facet": "concept", "selector": "llm-wiki://modules/app"}
   ],
@@ -332,8 +322,8 @@ refuses unrelated root edits, changed Markdown authority or newer committed
 work. Restore an authorized matching complete snapshot when that eligibility
 check fails; do not force a replacement.
 
-Storage adoption is separate from optional
-[ordinary review tracking](maintenance.md). A
+Current bootstrap and upgrade also establish pending
+[ordinary review tracking](maintenance.md), separate from human governance. A
 `.llm-wiki-maintenance-adoption.json` marker requires its matching maintenance
 owner. Restore missing or corrupt adopted authority through the complete
 [maintenance recovery route](maintenance.md#recover-complete-authority) before
@@ -435,7 +425,7 @@ Save the full canonical receipt outside the source and wiki trees and away
 from the request, profile, tokenizer and selection files:
 
 ```bash
-llm-wiki task-context --request source-task.json --src-dir src --wiki-dir wiki --view compact-v1 --view-budget-tokens 32000 --canonical-output receipts/source-context.json
+llm-wiki task-context --request source-task.json --src-dir src --wiki-dir wiki --view compact --view-budget-tokens 32000 --canonical-output receipts/source-context.json
 ```
 
 The compact view goes to stdout. Add `--output views/source-context.json` for a
@@ -445,7 +435,7 @@ are rejected. A canonical receipt is host custody, not permission to include
 both representations in the model prompt.
 
 ```python
-view_options = {"schema_version": "llm-wiki-task-view-request/v1", "budget_tokens": 32000}
+view_options = {"budget_tokens": 32000}
 view = api.build_compact_task_context(
     request, view_options=view_options, src_dir="src", wiki_dir="wiki"
 )
@@ -471,8 +461,9 @@ with the compact view can cost more than canonical output alone.
 
 ## Counting and MCP delivery
 
-The v3 MCP tool requires `protocol: "llm-wiki-context/v3"` and `changes`, which
-accepts explicit paths, a base/head range, or staged changes. Use
+The budgeted MCP tool uses the current context contract when `protocol` is
+omitted. It requires `changes`, which accepts explicit paths, a base/head range,
+or staged changes. Use
 `{"mode": "paths", "paths": []}` for no supplied changes. Old MCP context tools and
 resource URIs retain their response shapes.
 
@@ -512,7 +503,7 @@ full canonical context. Missing bases fall back to a full result. Wrong and
 out-of-order bases are rejected. Whole-value array replacement preserves deletions
 and changed qualifiers.
 
-MCP sessions require `--enable-sessions`. Handles belong to that server and its
+MCP sessions are available by default; `--disable-sessions` removes their tools. Handles belong to that server and its
 configured workspace. Full responses carry canonical context in text and separate
 session metadata in structured content. Delta text is a delta envelope; embedded
 accounting describes reconstructed context. Session delivery counters describe

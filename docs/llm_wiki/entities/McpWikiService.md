@@ -17,7 +17,7 @@ Pure read/check operations exposed through MCP tools and resources.
 
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
-| `__init__` | `(src_dir: str = '.', wiki_dir: str = 'docs/llm_wiki', *, source_selection: str \| None = None, comparison_policy: str = 'auto', allow_external_src: bool = False, counter: TokenCounter \| None = None, workflow_policy: WorkflowPolicy \| None = None, workflow_profile: WorkflowProfile \| None = None, enable_sessions: bool = False, max_sessions: int = 8)` | — | — |
+| `__init__` | `(src_dir: str = '.', wiki_dir: str = 'docs/llm_wiki', *, source_selection: str \| None = None, comparison_policy: str = 'auto', allow_external_src: bool = False, counter: TokenCounter \| None = None, workflow_policy: WorkflowPolicy \| None = None, workflow_profile: WorkflowProfile \| None = None, enable_sessions: bool = True, max_sessions: int = 8)` | — | — |
 | `_assert_source_selection_pin_current` | `() -> SourceSelectionPolicy \| None` | — | — |
 | `_assert_source_selection_current` | `() -> SourceSnapshot` | — | — |
 | `_source_selection_options` | `() -> _SourceSelectionOptions` | — | — |
@@ -43,7 +43,7 @@ Pure read/check operations exposed through MCP tools and resources.
 | `open_context_session` | `() -> dict` | `@ac.bound_comparison` | — |
 | `_session` | `(session_id)` | — | — |
 | `read_context_session` | `(session_id, request, *, if_result_id = None, delta = False)` | `@ac.bound_comparison` | — |
-| `read_compact_context_session` | `(session_id, request, view_options, *, if_result_id = None, if_view_id = None, delta = False)` | `@ac.bound_comparison` | — |
+| `read_compact_context_session` | `(session_id, request, view_options = None, *, if_result_id = None, if_view_id = None, delta = False)` | `@ac.bound_comparison` | — |
 | `get_task_context_receipt` | `(session_id, request_id, result_id, *, current = False)` | `@ac.bound_comparison` | — |
 | `hint_context_session` | `(session_id, *, unsaved_buffers = False)` | `@ac.bound_comparison` | — |
 | `close_context_session` | `(session_id)` | `@ac.bound_comparison` | — |

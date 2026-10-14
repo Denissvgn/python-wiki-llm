@@ -134,7 +134,7 @@ def prepare_combined(root: Path, variant: str) -> WorkflowProject:
         profile = project.source / ".llm-wiki/source-selection.json"
         profile.parent.mkdir()
         profile.write_bytes((json.dumps({"schema_version": "llm-wiki-source-selection/v1", "include": list(SOURCES), "exclude": []}) + "\n").encode("utf-8"))
-        api.bootstrap_wiki(str(project.source), str(project.wiki))
+        api.bootstrap_wiki(str(project.source), str(project.wiki), knowledge_format="v1")
         write_description(project, BEFORE_PROSE, "entities/Harbor.md")
         sync_workflow(project)
         if variant in ADOPTED:

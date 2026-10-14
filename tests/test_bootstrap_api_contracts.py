@@ -37,6 +37,7 @@ def _args(project: Path, wiki: Path, **overrides):
         "allow_external_src": False,
         "helper_cache_dir": None,
         "include_tests": None,
+        "knowledge_format": "v1",
     }
     values.update(overrides)
     return types.SimpleNamespace(**values)

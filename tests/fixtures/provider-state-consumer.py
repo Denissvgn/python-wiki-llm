@@ -64,11 +64,13 @@ def build_cases(root):
         "class Item:\n    value: int\n    label: str\n\n"
         "    def render(self, prefix: str = '') -> str:\n        return prefix + self.label\n",
         encoding="utf-8")
-    api.bootstrap_wiki(str(original / "src"), str(original / "wiki"))
+    run(["bootstrap", "--src-dir", str(original / "src"), "--wiki-dir", str(original / "wiki"),
+         "--knowledge-format", "v1"])
     foreign = root / "foreign"
     (foreign / "src").mkdir(parents=True)
     (foreign / "src/other.py").write_text("class Other:\n    pass\n", encoding="utf-8")
-    api.bootstrap_wiki(str(foreign / "src"), str(foreign / "wiki"))
+    run(["bootstrap", "--src-dir", str(foreign / "src"), "--wiki-dir", str(foreign / "wiki"),
+         "--knowledge-format", "v1"])
     cases = {}
     for name in STATES:
         case = root / name

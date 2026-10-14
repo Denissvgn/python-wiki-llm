@@ -340,8 +340,8 @@ def test_current_receipt_counter_cancellation_never_falls_back_historical(projec
 
 def test_view_request_is_strict_and_receipt_ids_are_session_owned(project):
     owner = session()
-    invalid_options: Any = None
-    with pytest.raises(api.InvalidRequestError, match="explicit compact"):
+    invalid_options: Any = {"budget_tokens": True}
+    with pytest.raises(api.InvalidRequestError, match="budget"):
         owner.read_compact(tiny_request(), view_options=invalid_options)
     first = owner.read_compact(tiny_request(), view_options=view_options())
     other = session()

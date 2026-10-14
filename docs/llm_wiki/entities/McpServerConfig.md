@@ -28,7 +28,7 @@ _Auto-generated from `McpServerConfig` in `src/llm_wiki_cli/services/mcp_server.
 | `tokenizer` | `str \| None` | `None` | — |
 | `workflow_policy` | `WorkflowPolicy \| None` | `None` | — |
 | `workflow_profile` | `WorkflowProfile \| None` | `None` | — |
-| `enable_sessions` | `bool` | `False` | — |
+| `enable_sessions` | `bool` | `True` | — |
 | `max_sessions` | `int` | `8` | — |
 | `comparison_policy` | `str` | `'auto'` | — |
 

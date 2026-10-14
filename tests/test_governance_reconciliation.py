@@ -719,6 +719,8 @@ def test_governed_collision_sync_preserves_identity_and_recovers_artifacts(
                 ".",
                 "--wiki-dir",
                 str(wiki),
+                "--knowledge-format",
+                "v1",
                 "--skip-workflows",
                 "--skip-flows",
                 "--skip-dependencies",

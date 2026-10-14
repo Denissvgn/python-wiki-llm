@@ -243,7 +243,7 @@ def real_project(tmp_path, monkeypatch):
     profile.write_text(json.dumps({"schema_version": "llm-wiki-source-selection/v1",
                                   "include": ["policy.py"], "exclude": []}) + "\n", encoding="utf-8")
     api.bootstrap_wiki(str(source), str(wiki), skip_workflows=True, skip_flows=True,
-                       skip_data_flow=True, skip_dependencies=True)
+                       skip_data_flow=True, skip_dependencies=True, knowledge_format="v1")
     return source, wiki, profile
 
 

@@ -55,7 +55,7 @@ def owned_wiki(tmp_path, monkeypatch):
                                    "include": ["selected"], "exclude": []}) + "\n", encoding="utf-8")
     wiki = tmp_path / "wiki"
     api.bootstrap_wiki(str(root), str(wiki), skip_workflows=True, skip_flows=True,
-                       skip_data_flow=True, skip_dependencies=True)
+                       skip_data_flow=True, skip_dependencies=True, knowledge_format="v1")
     manifest = SyncManifest.load(wiki)
     module = next(path for path, owner in manifest.page_source_mappings.items()
                   if owner.scope == "module" and owner.source_path == "selected/owner.py")
@@ -73,7 +73,7 @@ def _search(fixture, **options):
 
 
 @pytest.mark.parametrize("mode,include_source", [("ranked", False), ("ranked-v1", False), ("substring", False),
-                                                  ("ranked-v2", False), ("ranked-v2", True)])
+                                                  ("ranked-v2", False), ("ranked-v2", True), ("ranked", True)])
 def test_owned_public_cli_mcp_service_byte_parity(
     owned_wiki, monkeypatch, capsys,
     mode: Literal["ranked", "ranked-v1", "substring", "ranked-v2"], include_source: bool,
@@ -107,7 +107,7 @@ def test_owned_public_cli_mcp_service_byte_parity(
 
 
 @pytest.mark.parametrize("mode,include_source", [("ranked", False), ("ranked-v1", False), ("substring", False),
-                                                  ("ranked-v2", False), ("ranked-v2", True)])
+                                                  ("ranked-v2", False), ("ranked-v2", True), ("ranked", True)])
 def test_mcp_external_wiki_root_and_exactly_one_capture(
     owned_wiki, monkeypatch,
     mode: Literal["ranked", "ranked-v1", "substring", "ranked-v2"], include_source: bool,
@@ -215,7 +215,7 @@ def test_unselected_and_unmapped_pages_filtered_before_reads(owned_wiki, monkeyp
     assert all("hidden payload" not in match["snippet"] for match in result["results"])
 
 
-@pytest.mark.parametrize("bad", [True, 1, "yes", None])
+@pytest.mark.parametrize("bad", [1, "yes", None])
 def test_source_option_requires_explicit_boolean_and_candidate_before_capture(monkeypatch, bad):
     monkeypatch.setattr(search_service, "build_source_snapshot", lambda *a, **kw: pytest.fail("captured invalid request"))
     with pytest.raises(ValueError):
@@ -345,9 +345,9 @@ def test_combined_source_wiki_cap_fail_closed(owned_wiki, monkeypatch):
 def test_public_and_mcp_invalid_explicit_mode_have_no_output(owned_wiki):
     root, wiki, *_ = owned_wiki
     with pytest.raises(api.LlmWikiApiError):
-        api.search_wiki("owner", src_dir=str(root), wiki_dir=str(wiki), include_source=True)
+        api.search_wiki("owner", src_dir=str(root), wiki_dir=str(wiki), mode="ranked-v1", include_source=True)
     with pytest.raises(McpWikiError):
-        McpWikiService(src_dir=str(root), wiki_dir=str(wiki)).search_wiki("owner", include_source=True)
+        McpWikiService(src_dir=str(root), wiki_dir=str(wiki)).search_wiki("owner", mode="ranked-v1", include_source=True)
 
 
 def test_bundled_helper_owned_sentinels_are_excluded_without_execution(owned_wiki):

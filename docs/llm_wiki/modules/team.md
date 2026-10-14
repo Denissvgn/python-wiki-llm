@@ -6,6 +6,9 @@
 
 Shared team policy and conservative wiki conflict resolution.
 
+
+Text-conflict discovery skips immutable content-addressed storage objects, including compressed packs and index containers. Those objects are restored through their owning roots rather than decoded or merged as Markdown. Indexed-root conflicts retain the committed-root recovery boundary.
+
 ## Imports
 
 | Source | Symbols |
@@ -17,6 +20,7 @@ Shared team policy and conservative wiki conflict resolution.
 | `.immutable` | `freeze` |
 | `.infrastructure_inventory` | `get_yaml_infrastructure_inventory` |
 | `.io` | `read_md`, `write_json_atomic`, `write_md` |
+| `.knowledge_storage_lifecycle` | `is_storage_path` |
 | `.plugins` | `PluginError`, `iter_components` |
 | `.source_selection` | `with_source_selection_generation_input`, `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
@@ -51,9 +55,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (4) |
-| Outbound | `src` (12) |
+| Outbound | `src` (13) |
 
-> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 17 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

@@ -20,6 +20,7 @@ the preparation flag; it does not become a saved analysis preference.
 | Source | Symbols |
 |--------|---------|
 | `..config` | `AgentConfigState`, `CLI_AGENTS`, `DEFAULT_WIKI_DIR`, `config_requires_manual_recovery`, `get_agent_config_path`, `inspect_config`, `require_committed_config`, `require_config_inspection_unchanged`, `require_safe_config_path`, `validate_path`, `write_config` |
+| `..services.current_contracts` | `current_contract_defaults`, `upgrade_current_knowledge` |
 | `..services.extractor_helpers` | `helper_preparation_failure_hint` |
 | `..services.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory`, `unlink_guarded_bytes` |
 | `..services.helper_preparation` | `ensure_source_helpers` |
@@ -28,6 +29,7 @@ the preparation flag; it does not become a saved analysis preference.
 | `..services.skills` | `REFERENCE_SKILL_ID`, `ReferenceSkillState`, `_provision_reference_skill_guarded`, `list_bundled_skills`, `skills_install_dir`, `verify_reference_skill` |
 | `..services.source_selection` | `SourceSelectionError`, `resolve_source_selection` |
 | `..services.wiki_lifecycle` | `WikiScaffoldPathError`, `provision_wiki_scaffold`, `require_safe_wiki_scaffold` |
+| `.upgrade_cmd` | `_seed_legacy_for_current_defaults` |
 | `__future__` | `annotations` |
 | `pathlib` | `Path` |
 | `shutil` | `shutil` |
@@ -38,69 +40,23 @@ the preparation flag; it does not become a saved analysis preference.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/cli.py"]
-    n1["src/llm_wiki_cli/commands/__init__.py"]
-    n2["src/llm_wiki_cli/commands/init_cmd.py"]
-    n3["src/llm_wiki_cli/config.py"]
-    n4["src/llm_wiki_cli/services/extractor_helpers.py"]
-    n5["src/llm_wiki_cli/services/filesystem_guard.py"]
-    n6["src/llm_wiki_cli/services/helper_preparation.py"]
-    n7["src/llm_wiki_cli/services/rendering_lifecycle.py"]
-    n8["src/llm_wiki_cli/services/schema.py"]
-    n9["src/llm_wiki_cli/services/skills.py"]
-    n10["src/llm_wiki_cli/services/source_selection.py"]
-    n11["src/llm_wiki_cli/services/wiki_lifecycle.py"]
-    n0 --> n2
-    n0 --> n3
-    n1 --> n2
-    n2 --> n3
-    n2 --> n4
-    n2 --> n5
-    n2 --> n6
-    n2 --> n7
-    n2 --> n8
-    n2 --> n9
-    n2 --> n10
-    n2 --> n11
-    n3 --> n5
-    n6 --> n4
-    n7 --> n8
-    n7 --> n9
-    n8 --> n9
-    n10 --> n3
-    n11 --> n3
-    n11 --> n5
-    n11 --> n7
-    n11 --> n8
-    click n0 "../modules/cli.md"
-    click n1 "../modules/commands___init__.md"
-    click n2 "../modules/init_cmd.md"
-    click n3 "../modules/config.md"
-    click n4 "../modules/extractor_helpers.md"
-    click n5 "../modules/filesystem_guard.md"
-    click n6 "../modules/helper_preparation.md"
-    click n7 "../modules/rendering_lifecycle.md"
-    click n8 "../modules/services_schema.md"
-    click n9 "../modules/skills.md"
-    click n10 "../modules/source_selection.md"
-    click n11 "../modules/wiki_lifecycle.md"
+    n0["src"]
+    n1["src/llm_wiki_cli/commands/init_cmd.py"]
+    n0 --> n1
+    n1 --> n0
+    click n1 "../modules/init_cmd.md"
 ```
+
+> Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [cli](../modules/cli.md) |
-| Inbound | [commands___init__](../modules/commands___init__.md) |
-| Outbound | [config](../modules/config.md) |
-| Outbound | [extractor_helpers](../modules/extractor_helpers.md) |
-| Outbound | [filesystem_guard](../modules/filesystem_guard.md) |
-| Outbound | [helper_preparation](../modules/helper_preparation.md) |
-| Outbound | [rendering_lifecycle](../modules/rendering_lifecycle.md) |
-| Outbound | [services_schema](../modules/services_schema.md) |
-| Outbound | [skills](../modules/skills.md) |
-| Outbound | [source_selection](../modules/source_selection.md) |
-| Outbound | [wiki_lifecycle](../modules/wiki_lifecycle.md) |
+| Inbound | `src` (2) |
+| Outbound | `src` (11) |
+
+> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 

@@ -4653,6 +4653,7 @@ def _bootstrap_run_options_from_request(
         trust_source_plugins=request.trust_source_plugins,
         source_selection=request.source_selection,
         progress_stream=progress_stream,
+        knowledge_format=request.knowledge_format,
     )
 
 
@@ -5930,6 +5931,8 @@ def _finalize_bootstrap_artifacts(
     surfaces: Mapping[str, Mapping[str, object]],
     generation_inputs: Mapping[str, object],
 ) -> KnowledgeCommitResult:
+    from .current_contracts import CURRENT_KNOWLEDGE_FORMAT
+
     inventory = inventory_result.inventory
     surface = evaluate_surface_index(
         state.options.wiki_dir,
@@ -5969,7 +5972,8 @@ def _finalize_bootstrap_artifacts(
     committed = finalize_runtime_knowledge(
         RuntimeKnowledgeInputs(
             target_wiki_dir=state.options.wiki_dir,
-            knowledge_format=state.options.knowledge_format,
+            knowledge_format=(CURRENT_KNOWLEDGE_FORMAT if state.options.knowledge_format is None
+                              else state.options.knowledge_format),
             inventory=inventory,
             surface=surface,
             source_snapshot=state.source_snapshot,
@@ -6091,8 +6095,6 @@ def _emit_bootstrap_json_summary(
     if state.warnings:
         summary["warnings"] = state.warnings
     state.summary = summary
-    if state.options.json_mode:
-        print(json.dumps(summary, indent=2))
     return summary
 
 
@@ -6250,17 +6252,6 @@ def _finalize_bootstrap(
         surfaces=surfaces,
         generation_inputs=generation_inputs,
     )
-    _emit_bootstrap_complete(
-        state,
-        inventory,
-        result.entity,
-        result.workflow,
-        result.flow,
-        result.infrastructure,
-        result.dependency,
-        result.api_contract,
-        result.cross_reference_count,
-    )
     _emit_bootstrap_json_summary(
         state,
         inventory,
@@ -6272,6 +6263,41 @@ def _finalize_bootstrap(
         result.cross_reference_count,
         artifacts,
     )
+    if state.options.knowledge_format is None:
+        from types import SimpleNamespace
+        from .current_contracts import upgrade_current_knowledge
+        from .knowledge_consumption import load_knowledge_read_view
+
+        # Use the exact writer capture: no second inventory with different
+        # helper, plugin, include-tests or source-selection authority.
+        view = load_knowledge_read_view(state.options.wiki_dir, snapshot_only=True)
+        assert view.knowledge is not None
+        content = {concept.document.canonical_path:
+            (state.options.wiki_dir / concept.document.canonical_path).read_text(encoding="utf-8")
+            for concept in view.knowledge.concepts}
+        current = upgrade_current_knowledge(state.options.src_dir_for_scan, state.options.wiki_dir,
+            _captured=SimpleNamespace(inventory_result=inventory_result, source_snapshot=state.source_snapshot,
+                wiki_root=state.options.wiki_dir.resolve(), surface_evaluation=SimpleNamespace(content_by_path=content),
+                knowledge_view=view))
+        assert state.summary is not None
+        state.summary["current_contracts"] = current
+        from .knowledge_packs import LOCAL_PACKED_SCHEMA
+        state.summary["knowledge_schema_version"] = LOCAL_PACKED_SCHEMA
+        if current.get("recovery_dir"):
+            _emit_bootstrap(state, f"Native setup recovery: {current['recovery_dir']}")
+    _emit_bootstrap_complete(
+        state,
+        inventory,
+        result.entity,
+        result.workflow,
+        result.flow,
+        result.infrastructure,
+        result.dependency,
+        result.api_contract,
+        result.cross_reference_count,
+    )
+    if state.options.json_mode:
+        print(json.dumps(state.summary, indent=2))
     return _bootstrap_result(state)
 
 
@@ -6384,7 +6410,8 @@ def _execute_bootstrap_options(
         _preflight_public_bootstrap(options)
     _preflight_bootstrap_source_selection(options)
     with maintenance_write_operation(options.wiki_dir) as basis:
-        return _execute_bootstrap_options_locked(options, _workspace_refresh_authorized=_workspace_refresh_authorized, write_basis=basis)
+        result = _execute_bootstrap_options_locked(options, _workspace_refresh_authorized=_workspace_refresh_authorized, write_basis=basis)
+    return result
 
 
 def _execute_bootstrap_options_locked(

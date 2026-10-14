@@ -26,7 +26,7 @@ def owned(tmp_path, monkeypatch, capsys):
     monkeypatch.chdir(tmp_path)
     Path("src").mkdir()
     Path("src/policy.py").write_text(POLICY_SOURCE)
-    api.bootstrap_wiki("src", "wiki")
+    api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
     adopt_maintenance_authority("src", "wiki", recovery_dir="recovery")
     capsys.readouterr()
     return tmp_path

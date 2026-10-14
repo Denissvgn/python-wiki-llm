@@ -493,12 +493,13 @@ class ContextSession:
         return reply
 
     @ac.bound_comparison
-    def read_compact(self, request, *, view_options, if_result_id=None, if_view_id=None,
+    def read_compact(self, request, *, view_options=None, if_result_id=None, if_view_id=None,
                      delta=False, reuse=True, cancelled: Callable[[], bool] | None = None) -> CompactSessionReply:
         with self._lock:
             try:
                 if view_options is None:
-                    raise WorkflowRequestError("view_options", "an explicit compact view request is required")
+                    _, effective = normalize_task_request(request, profile=self._options["profile"], policy=self._options["policy"])
+                    view_options = {"budget_tokens": effective.settings["budget_tokens"]}
                 reply = self._read(request, if_result_id=if_result_id, delta=delta, reuse=reuse,
                                    cancelled=cancelled, view_options=view_options, if_view_id=if_view_id)
             except Exception:

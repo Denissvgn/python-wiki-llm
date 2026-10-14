@@ -75,6 +75,7 @@ def _make_bootstrap_args(**kwargs):
         "wiki_dir": "docs/llm_wiki",
         "overwrite": False,
         "depth": "full",
+        "knowledge_format": "v1",
         "skip_workflows": True,
     }
     defaults.update(kwargs)

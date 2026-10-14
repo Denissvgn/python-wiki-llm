@@ -98,12 +98,14 @@ def _write_fixture(project: Path) -> None:
 
 
 def _manifest(wiki: Path) -> dict:
-    return json.loads(
-        (wiki / ".llm-wiki-manifest.json").read_text(encoding="utf-8")
-    )
+    from llm_wiki_cli.services.sync_manifest import SyncManifest
+    return SyncManifest.load(wiki).to_payload()
 
 
 def _json_artifact(wiki: Path, filename: str) -> dict:
+    if filename == ".llm-wiki-knowledge.json":
+        from llm_wiki_cli.services.knowledge_model import knowledge_index_to_payload
+        return knowledge_index_to_payload(load_knowledge_state(wiki).knowledge)
     return json.loads((wiki / filename).read_text(encoding="utf-8"))
 
 

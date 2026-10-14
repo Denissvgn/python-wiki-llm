@@ -60,7 +60,10 @@ def client(command, *options):
     return json.loads(run(["client.py", command, *options]).stdout)
 
 
-client("prepare")
+# This sequence qualifies explicit legacy-to-current storage migrations.
+# The versionless current first-use route has its own installed acceptance.
+run(["-I", "-m", "llm_wiki_cli.cli", "bootstrap", "--src-dir", "src", "--wiki-dir", "wiki",
+     "--knowledge-format", "v1"])
 request = json.loads(Path("request.json").read_text())
 source, wiki = "src", "wiki"
 before = tree(project)

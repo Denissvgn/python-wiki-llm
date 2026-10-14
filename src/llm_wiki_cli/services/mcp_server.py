@@ -253,7 +253,7 @@ class McpServerConfig:
     tokenizer: str | None = None
     workflow_policy: WorkflowPolicy | None = None
     workflow_profile: WorkflowProfile | None = None
-    enable_sessions: bool = False
+    enable_sessions: bool = True
     max_sessions: int = 8
     comparison_policy: str = "auto"
 
@@ -421,7 +421,7 @@ class McpWikiService:
         counter: TokenCounter | None = None,
         workflow_policy: WorkflowPolicy | None = None,
         workflow_profile: WorkflowProfile | None = None,
-        enable_sessions: bool = False,
+        enable_sessions: bool = True,
         max_sessions: int = 8,
     ):
         self.comparison_policy = ac.selected_policy(comparison_policy)
@@ -753,8 +753,6 @@ class McpWikiService:
 
         try:
             normalized = validate_request(request)
-            if request.get("protocol") != "llm-wiki-context/v3":
-                raise ValueError("protocol must be llm-wiki-context/v3")
             if "changes" not in request:
                 raise context_cmd.ProtocolRequestError("The request-based tool requires explicit changes", "changes")
             if len(json.dumps(normalized, ensure_ascii=False, allow_nan=False).encode("utf-8")) > MAX_REQUEST_BYTES:
@@ -863,7 +861,7 @@ class McpWikiService:
 
     @ac.bound_comparison
     def read_compact_context_session(
-        self, session_id, request, view_options, *, if_result_id=None,
+        self, session_id, request, view_options=None, *, if_result_id=None,
         if_view_id=None, delta=False,
     ):
         try:
@@ -1635,7 +1633,7 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
     server.tool()(read_context_session)
 
     def read_compact_context_session(
-        session_id: str, request: dict, view_options: dict,
+        session_id: str, request: dict, view_options: dict | None = None,
         if_result_id: str | None = None, if_view_id: str | None = None,
         delta: bool = False,
         include_metadata: bool = False,
@@ -1650,7 +1648,7 @@ def _register_mcp_tools(server, service: McpWikiService) -> None:
         if isinstance(result, CallToolResult):
             return result
         metadata = result.metadata()
-        if view_options.get("schema_version") == "llm-wiki-task-view-request/v2" and not include_metadata:
+        if (view_options is None or view_options.get("schema_version", "llm-wiki-task-view-request/v2") == "llm-wiki-task-view-request/v2") and not include_metadata:
             from .task_compact_readable import readable_session_metadata
 
             metadata = readable_session_metadata(metadata)

@@ -2,7 +2,7 @@
 
 **Entry point:** `bootstrap_wiki` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [bootstrap_service](../modules/bootstrap_service.md), and 31 more
+**Modules touched:** [api](../modules/api.md), [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [bootstrap_service](../modules/bootstrap_service.md), and 38 more
 
 **Complete modules touched:**
 
@@ -12,6 +12,7 @@
 - [bootstrap_service](../modules/bootstrap_service.md)
 - [common](../modules/common.md)
 - [config](../modules/config.md)
+- [current_contracts](../modules/current_contracts.md)
 - [data_flow](../modules/data_flow.md)
 - [entrypoints](../modules/entrypoints.md)
 - [extraction_service](../modules/extraction_service.md)
@@ -20,13 +21,19 @@
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
 - [io](../modules/io.md)
+- [knowledge_artifacts](../modules/knowledge_artifacts.md)
+- [knowledge_consumption](../modules/knowledge_consumption.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
+- [knowledge_loader](../modules/knowledge_loader.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
 - [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md)
+- [knowledge_verification](../modules/knowledge_verification.md)
 - [maintenance_protocol](../modules/maintenance_protocol.md)
+- [maintenance_service](../modules/maintenance_service.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [module_maps](../modules/module_maps.md)
@@ -112,9 +119,9 @@ sequenceDiagram
     p5-->>p30: Path(…).expanduser().resolve (src/llm_wiki_cli/services…_run_options_from_request)
 ```
 
-> Call sequence diagram shows 30 of 1056 interactions; 1026 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1120 interactions; 1090 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 317 (316 omitted); unresolved 1 of 244 (243 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 334 (333 omitted); unresolved 1 of 264 (263 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -128,7 +135,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 22 | - | external | 4 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 22 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 25 | - | external | 20 |
-> Omission summary shows 8 of 281 groups; 273 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 300 groups; 292 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -189,10 +196,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| bootstrap_wiki | BootstrapRequest | 1092 | `BootstrapRequest(source_root=source_root, wiki_root=wiki_root, depth=depth, skip_workflows=skip_workflows, skip_flows=skip_flows, skip_data_flow=skip_data_flow, skip_dependencies=skip_dependencies, api_contracts=api_contracts, openapi_file=openapi_file, dependency_graph_detail=dependency_graph_detail, overwrite=overwrite, source_adapter=True, helper_cache_dir=helper_cache_dir, include_tests=include_tests, trust_source_plugins=trust_source_plugins, source_selection=source_selection)` |
-| bootstrap_wiki | execute_bootstrap | 1111 | `bootstrap_cmd.execute_bootstrap(request)` |
-| execute_bootstrap | io.StringIO | 6462 | `io.StringIO(data not statically known)` |
-| execute_bootstrap | _bootstrap_run_options_from_request | 6463 | `_bootstrap_run_options_from_request(request, progress_stream=stream)` |
+| bootstrap_wiki | BootstrapRequest | 1093 | `BootstrapRequest(source_root=source_root, wiki_root=wiki_root, depth=depth, skip_workflows=skip_workflows, skip_flows=skip_flows, skip_data_flow=skip_data_flow, skip_dependencies=skip_dependencies, api_contracts=api_contracts, openapi_file=openapi_file, dependency_graph_detail=dependency_graph_detail, overwrite=overwrite, source_adapter=True, helper_cache_dir=helper_cache_dir, include_tests=include_tests, trust_source_plugins=trust_source_plugins, source_selection=source_selection, knowledge_format=knowledge_format)` |
+| bootstrap_wiki | execute_bootstrap | 1113 | `bootstrap_cmd.execute_bootstrap(request)` |
+| execute_bootstrap | io.StringIO | 6489 | `io.StringIO(data not statically known)` |
+| execute_bootstrap | _bootstrap_run_options_from_request | 6490 | `_bootstrap_run_options_from_request(request, progress_stream=stream)` |
 | _bootstrap_run_options_from_request | Path(…).expanduser().resolve (src/llm_wiki_cli/services…_run_options_from_request) | 4617 | `Path(request.source_root).expanduser().resolve(data not statically known)` |
 | _bootstrap_run_options_from_request | Path(…).expanduser (src/llm_wiki_cli/services…_run_options_from_request) | 4617 | `Path(request.source_root).expanduser(data not statically known)` |
 | _bootstrap_run_options_from_request | Path (src/llm_wiki_cli/services…_run_options_from_request) | 4617 | `Path(request.source_root)` |
@@ -209,7 +216,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `execute_bootstrap` | `io.StringIO` | 6462 |
+| external_call | `execute_bootstrap` | `io.StringIO` | 6489 |
 | unresolved_call | `_bootstrap_run_options_from_request` | `Path(request.source_root).expanduser().resolve` | 4617 |
 | unresolved_call | `_bootstrap_run_options_from_request` | `Path(request.source_root).expanduser` | 4617 |
 | unresolved_call | `_bootstrap_run_options_from_request` | `source_root.is_dir` | 4618 |

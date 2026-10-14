@@ -581,6 +581,21 @@ def _upgrade_dirs(wiki_dir: str) -> StructureUpgradeResult:
     )
 
 
+def _seed_legacy_for_current_defaults(src_dir, wiki_dir, *, helper_cache_dir=None, source_selection=None):
+    """Keep legacy owning-command dispatch out of the storage service layer."""
+    from ..cli import _build_parser
+    from . import sync_cmd
+    from ..services.current_contracts import CURRENT_KNOWLEDGE_FORMAT
+
+    arguments = ["sync", "--src-dir", str(src_dir), "--wiki-dir", str(wiki_dir), "--force", "--no-plugins",
+                 "--knowledge-format", CURRENT_KNOWLEDGE_FORMAT]
+    if source_selection is not None:
+        arguments.extend(["--source-selection", str(source_selection)])
+    if helper_cache_dir is not None:
+        arguments.extend(["--helper-cache-dir", str(helper_cache_dir)])
+    sync_cmd.run(_build_parser().parse_args(arguments))
+
+
 def run(args):
     wiki_dir = getattr(args, "wiki_dir", DEFAULT_WIKI_DIR)
     validate_path(wiki_dir, "--wiki-dir")
@@ -840,6 +855,17 @@ def run(args):
     # preserves the established upgrade contract for expected regular files;
     # extras and unsafe/conflicting entries remain preserved and non-current.
     print("\n1. Agent Schema:")
+    from ..services.current_contracts import current_contract_defaults, upgrade_current_knowledge
+
+    try:
+        current = upgrade_current_knowledge(getattr(args, "src_dir", None) or stored.get("source_root", "."), wiki_dir,
+            source_selection=source_selection, helper_cache_dir=getattr(args, "helper_cache_dir", None),
+            _seed_legacy=_seed_legacy_for_current_defaults)
+    except (ValueError, OSError) as exc:
+        print(f"Error upgrading native defaults: {exc}", file=sys.stderr)
+        raise SystemExit(2) from exc
+    if current.get("recovery_dir"):
+        print(f"Native upgrade recovery: {current['recovery_dir']}")
     if reference_skill:
         pre_mutation_check = (
             (lambda: require_config_inspection_unchanged(wiki_dir, config_inspection))
@@ -930,6 +956,7 @@ def run(args):
             "rendered_profile": decision.profile.value,
             "render_profile_version": decision.version,
             "render_reason": decision.reason.value,
+            "contract_defaults": current_contract_defaults(),
         }
     )
     if cleanup_agent and cleanup_agent != agent:

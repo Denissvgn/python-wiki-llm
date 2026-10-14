@@ -22,7 +22,7 @@ def project(tmp_path, monkeypatch, capsys):
     monkeypatch.chdir(tmp_path)
     Path("src").mkdir()
     Path("src/owner.py").write_text('class Owner:\n    """Describe the cobalt boundary."""\n    def limit(self, values):\n        return values[:3]\n')
-    api.bootstrap_wiki("src", "wiki")
+    api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
     capsys.readouterr()
     return tmp_path
 
@@ -121,7 +121,7 @@ def selected(tmp_path, monkeypatch, capsys):
     (root / ".llm-wiki").mkdir()
     profile = root / ".llm-wiki/source-selection.json"
     profile.write_text(json.dumps({"schema_version": "llm-wiki-source-selection/v1", "include": ["selected"], "exclude": []}))
-    api.bootstrap_wiki("project", "wiki")
+    api.bootstrap_wiki("project", "wiki", knowledge_format="v1")
     capsys.readouterr()
     manifest = SyncManifest.load(Path("wiki"))
     module = next(path for path, owner in manifest.page_source_mappings.items() if owner.source_path == 'selected/owner.py')

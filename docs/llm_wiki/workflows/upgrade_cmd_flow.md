@@ -1,7 +1,7 @@
 # upgrade_cmd_flow
 
 **Entry point:** `upgrade_cmd.run`
-**Modules involved:** [config](../modules/config.md), [filesystem_guard](../modules/filesystem_guard.md), [knowledge_evidence](../modules/knowledge_evidence.md), [legacy_hooks](../modules/legacy_hooks.md), [rendering_lifecycle](../modules/rendering_lifecycle.md), [skills](../modules/skills.md), [source_selection](../modules/source_selection.md), [upgrade_cmd](../modules/upgrade_cmd.md), [wiki_lifecycle](../modules/wiki_lifecycle.md)
+**Modules involved:** [config](../modules/config.md), [current_contracts](../modules/current_contracts.md), [filesystem_guard](../modules/filesystem_guard.md), [knowledge_evidence](../modules/knowledge_evidence.md), [legacy_hooks](../modules/legacy_hooks.md), [rendering_lifecycle](../modules/rendering_lifecycle.md), [skills](../modules/skills.md), [source_selection](../modules/source_selection.md), [upgrade_cmd](../modules/upgrade_cmd.md), [wiki_lifecycle](../modules/wiki_lifecycle.md)
 
 ## Sequence
 
@@ -18,23 +18,26 @@
 10. `skills.verify_reference_skill`
 11. `skills.skills_install_dir`
 12. `skills.skills_install_dir`
-13. `config.require_config_inspection_unchanged`
-14. `skills._provision_reference_skill_guarded`
-15. `rendering_lifecycle.reference_recovery_command`
-16. `skills.skills_install_dir`
-17. `skills.verify_reference_skill`
-18. `rendering_lifecycle.select_render_profile`
-19. `knowledge_evidence.formatted_json_bytes`
-20. `config.write_config`
-21. `filesystem_guard.unlink_guarded_bytes`
-22. `config.require_committed_config`
-23. `config.write_config`
+13. `current_contracts.upgrade_current_knowledge`
+14. `config.require_config_inspection_unchanged`
+15. `skills._provision_reference_skill_guarded`
+16. `rendering_lifecycle.reference_recovery_command`
+17. `skills.skills_install_dir`
+18. `skills.verify_reference_skill`
+19. `rendering_lifecycle.select_render_profile`
+20. `current_contracts.current_contract_defaults`
+21. `knowledge_evidence.formatted_json_bytes`
+22. `config.write_config`
+23. `filesystem_guard.unlink_guarded_bytes`
 24. `config.require_committed_config`
-25. `config.require_committed_config`
+25. `config.write_config`
+26. `config.require_committed_config`
+27. `config.require_committed_config`
 
 ## Touches
 
 - [config](../modules/config.md)
+- [current_contracts](../modules/current_contracts.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [legacy_hooks](../modules/legacy_hooks.md)

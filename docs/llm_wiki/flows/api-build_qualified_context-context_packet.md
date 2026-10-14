@@ -187,7 +187,7 @@ flowchart LR
     s2 -->|"ProtocolRequestError('Request must be a JSON object.', 'request')"| s4
     s2 -. "deepcopy (src/llm_wiki_cli/services…et.py:_normalized_request)(dict(...))" .-> s5
     s2 -. "dict (src/llm_wiki_cli/services…et.py:_normalized_request)(request)" .-> s6
-    s2 -. "candidate.setdefault('protocol', ...)" .-> s7
+    s2 -. "candidate.setdefault('knowledge_mode', 'auto')" .-> s7
     s2 -. "candidate.setdefault('filters', {...})" .-> s8
     s2 -->|"_validate_protocol_request(candidate)"| s9
     s9 -. "isinstance (src/llm_wiki_cli/services…validate_protocol_request)(data, dict)" .-> s10
@@ -205,7 +205,7 @@ flowchart LR
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
 | `build_qualified_context` | `src_dir: str`, `wiki_dir: str`, `request: Mapping[str, Any] \| None`, `allow_external_src: bool`, `read_only: bool`, `job_request: ExtractionJobRequest \| None`, `plan_reporter: Callable[[ExtractionJobPlan], None] \| None`, `source_selection: str \| Path \| None` | `_KNOWLEDGE_PACKET_CONTRACT`, `_KNOWLEDGE_PACKET_CONTRACT`, `context_service`, `_KNOWLEDGE_PACKET_CONTRACT` | `response[...]` | `packet_from_captured_response(...)` |
-| `_normalized_request` | `request: Mapping[str, Any]` | `Mapping`, `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION`, `context_service` | - | `context_service._validate_protocol_request(...)` |
+| `_normalized_request` | `request: Mapping[str, Any]` | `Mapping`, `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION` | `candidate[...]` | `context_service._validate_protocol_request(...)` |
 | `isinstance (src/llm_wiki_cli/services…et.py:_normalized_request)` | - | - | - | - |
 | `ProtocolRequestError` | - | - | - | - |
 | `deepcopy (src/llm_wiki_cli/services…et.py:_normalized_request)` | - | - | - | - |
@@ -226,9 +226,9 @@ flowchart LR
 | _normalized_request | ProtocolRequestError | 1966 | `context_service.ProtocolRequestError('Request must be a JSON object.', 'request')` |
 | _normalized_request | deepcopy (src/llm_wiki_cli/services…et.py:_normalized_request) | 1970 | `deepcopy(dict(...))` |
 | _normalized_request | dict (src/llm_wiki_cli/services…et.py:_normalized_request) | 1970 | `dict(request)` |
-| _normalized_request | candidate.setdefault | 1971 | `candidate.setdefault('protocol', ...)` |
-| _normalized_request | candidate.setdefault | 1979 | `candidate.setdefault('filters', {...})` |
-| _normalized_request | _validate_protocol_request | 1980 | `context_service._validate_protocol_request(candidate)` |
+| _normalized_request | candidate.setdefault | 1973 | `candidate.setdefault('knowledge_mode', 'auto')` |
+| _normalized_request | candidate.setdefault | 1974 | `candidate.setdefault('filters', {...})` |
+| _normalized_request | _validate_protocol_request | 1975 | `context_service._validate_protocol_request(candidate)` |
 | _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 1110 | `isinstance(data, dict)` |
 | _validate_protocol_request | data.get (src/llm_wiki_cli/services…validate_protocol_request) | 1110 | `data.get('protocol')` |
 | _validate_protocol_request | _validate_protocol_request_impl | 1112 | `_validate_protocol_request_impl(data)` |
@@ -243,8 +243,8 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `_normalized_request` | `isinstance` | 1965 |
 | external_call | `_normalized_request` | `deepcopy` | 1970 |
-| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1971 |
-| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1979 |
+| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1973 |
+| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1974 |
 | external_call | `_validate_protocol_request` | `isinstance` | 1110 |
 | unresolved_call | `_validate_protocol_request` | `data.get` | 1110 |
 | step_limit | `build_qualified_context` | `first 12 steps` | 0 |

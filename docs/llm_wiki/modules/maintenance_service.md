@@ -57,10 +57,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (3) |
+| Inbound | `src` (4) |
 | Outbound | `src` (22) |
 
-> All 24 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 25 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 
@@ -70,7 +70,7 @@ flowchart LR
 | `capture_maintenance_observations` | `(captured, state = None, *, raw_pages = None, knowledge = None, manifest = None)` | — | — |
 | `_capture_basis` | `(root, files)` | `@contextmanager` | — |
 | `_outside_recovery` | `(directory, root, source)` | — | — |
-| `adopt_maintenance_authority` | `(src_dir, wiki_dir, *, recovery_dir, manifest_format = None, fault_injector = None, **capture_options)` | — | Explicitly adopt durable unreviewed authority without editing Markdown. |
+| `adopt_maintenance_authority` | `(src_dir, wiki_dir, *, recovery_dir, manifest_format = None, fault_injector = None, _captured = None, **capture_options)` | — | Explicitly adopt durable unreviewed authority without editing Markdown. |
 | `load_recovery_snapshot` | `(directory, *, allow_captured_preimage = False)` | — | — |
 | `_load_recovery_snapshot` | `(directory, *, allow_captured_preimage = False)` | — | — |
 | `recover_maintenance_authority` | `(wiki_dir, *, recovery_dir, expected_adoption_id, allow_prepared_adoption = False, allow_captured_preimage = False, src_dir = None)` | — | Restore one validated complete snapshot; never reconstruct review history. |

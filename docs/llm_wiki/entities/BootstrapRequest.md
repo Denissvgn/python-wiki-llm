@@ -39,6 +39,7 @@ extraction or target writes.
 | `include_tests` | `Iterable[str] \| None` | `None` | — |
 | `trust_source_plugins` | `bool` | `False` | — |
 | `source_selection` | `str \| Path \| None` | `None` | — |
+| `knowledge_format` | `str \| None` | `None` | — |
 
 ## Methods
 
@@ -72,7 +73,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [bootstrap_service](../modules/bootstrap_service.md) | 0 | `api_contracts`, `dependency_graph_detail`, `depth`, `helper_cache_dir`, `include_tests`, `openapi_file`, `overwrite`, `skip_data_flow`, `skip_dependencies`, `skip_flows`, `skip_workflows`, `source_adapter` |
+| [bootstrap_service](../modules/bootstrap_service.md) | 0 | `api_contracts`, `dependency_graph_detail`, `depth`, `helper_cache_dir`, `include_tests`, `knowledge_format`, `openapi_file`, `overwrite`, `skip_data_flow`, `skip_dependencies`, `skip_flows`, `skip_workflows` |
 
 ### References
 

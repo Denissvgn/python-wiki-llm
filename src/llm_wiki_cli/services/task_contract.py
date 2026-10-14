@@ -52,7 +52,7 @@ def normalize_task_request(
 ) -> tuple[dict[str, Any], WorkflowProfile]:
     raw = exact_fields(request, {"schema_version", "text", "kind", "task_ref", "anchors",
                                 "requirements", "changes", "options", "storage_options"}, "request")
-    request_schema = raw.get("schema_version")
+    request_schema = raw.get("schema_version", TASK_REQUEST_SCHEMA_V2)
     if not isinstance(request_schema, str) or request_schema not in {TASK_REQUEST_SCHEMA, TASK_REQUEST_SCHEMA_V2}:
         raise WorkflowRequestError("schema_version", "unsupported task request schema")
     text = bounded_text(raw.get("text", ""), "text", 16384, empty=True)
@@ -106,7 +106,11 @@ def normalize_task_request(
         for field, value in storage.items():
             if not isinstance(value, str) or value not in choices[field]:
                 raise WorkflowRequestError("storage_options." + field, "unsupported storage option")
-        normalized["storage_options"] = {"selection": "all-collections-v1", "receipt": "expanded-v1", **storage}
+        defaults = ({"selection": "all-collections-v1", "receipt": "expanded-v1"}
+                    if "schema_version" in raw else {"selection": "required-facets-v1", "receipt": "compact-v1"})
+        normalized["storage_options"] = {**defaults, **storage}
+    elif "schema_version" not in raw:
+        normalized["storage_options"] = {"selection": "required-facets-v1", "receipt": "compact-v1"}
     # The host label is attribution, not provider content identity.
     normalized["task_id"] = content_id("llm-wiki-task-intent/v2" if request_schema == TASK_REQUEST_SCHEMA_V2 else "llm-wiki-task-intent/v1", {
         key: value for key, value in normalized.items() if key not in {"task_ref", "profile"}})

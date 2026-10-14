@@ -42,7 +42,7 @@ def credential_named_wiki(tmp_path, monkeypatch, capsys, request):
     )
     root = tmp_path / "wiki"
     api.bootstrap_wiki(str(source), str(root), skip_workflows=True,
-                       skip_flows=True, skip_dependencies=True)
+                       skip_flows=True, skip_dependencies=True, knowledge_format="v1")
 
     def command(*args):
         monkeypatch.setattr(sys, "argv", ["llm-wiki", *args])

@@ -52,6 +52,9 @@ authentication and preservation checks. Decoder nesting behavior differs across
 Python versions; successful parsing on one runtime cannot make an unauthenticated
 payload reusable or make cache availability mandatory.
 
+
+Ordinary maintenance can reuse qualified structural observations, bound to its immutable adoption identity. Review state and actor history are not cached: every sync reconciles the current guarded owner with current prose. A prose edit reopens its reviewed basis while retaining acknowledgment history. Full snapshot reuse remains separate from this structural optimization.
+
 ## Imports
 
 | Source | Symbols |

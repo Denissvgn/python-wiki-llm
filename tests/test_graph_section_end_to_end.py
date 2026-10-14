@@ -30,9 +30,8 @@ def _sync(wiki_dir: Path) -> None:
 
 
 def _knowledge_payload(wiki_dir: Path) -> dict:
-    return json.loads(
-        (wiki_dir / ".llm-wiki-knowledge.json").read_text(encoding="utf-8")
-    )
+    from llm_wiki_cli.services.knowledge_model import knowledge_index_to_payload
+    return knowledge_index_to_payload(load_knowledge_state(wiki_dir).knowledge)
 
 
 def _concept_for_path(payload: dict, canonical_path: str) -> dict:
@@ -392,9 +391,8 @@ def test_bootstrap_sync_query_context_and_mcp_share_graph_and_section_state(
         if coverage["analyzer"] == "calls"
     )
     size_and_coverage = {
-        "knowledge_bytes": (
-            wiki_dir / ".llm-wiki-knowledge.json"
-        ).stat().st_size,
+        # Compare logical JSON to logical JSON; a packed physical root is only an index.
+        "knowledge_bytes": len(json.dumps(final, ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode("utf-8")),
         "graph_bytes": len(
             json.dumps(
                 graph,

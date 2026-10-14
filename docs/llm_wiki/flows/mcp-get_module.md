@@ -43,7 +43,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| get_module | service.get_module | 1385 | `service.get_module(module_id_or_source_path)` |
+| get_module | service.get_module | 1383 | `service.get_module(module_id_or_source_path)` |
 
 ### Boundary effects
 
@@ -53,7 +53,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `get_module` | `service.get_module` | 1385 |
+| unresolved_call | `get_module` | `service.get_module` | 1383 |
 
 ## Behavior
 

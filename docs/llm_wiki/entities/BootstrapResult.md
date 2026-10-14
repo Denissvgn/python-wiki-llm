@@ -1,6 +1,6 @@
 # BootstrapResult
 
-**Location:** `src/llm_wiki_cli/services/bootstrap_service.py:58`
+**Location:** `src/llm_wiki_cli/services/bootstrap_service.py:59`
 **Kind:** Class
 **Bases:** —
 **Module:** [bootstrap_service](../modules/bootstrap_service.md)

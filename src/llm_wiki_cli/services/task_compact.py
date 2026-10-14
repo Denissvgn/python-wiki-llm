@@ -118,17 +118,16 @@ class CompactTaskContext:
 
 
 def normalize_view_options(value, *, ceiling):
-    if not isinstance(value, Mapping) or set(value) != {
-        "schema_version",
-        "budget_tokens",
-    }:
+    if value is None:
+        value = {"budget_tokens": ceiling}
+    if not isinstance(value, Mapping) or set(value) - {"schema_version", "budget_tokens"} or "budget_tokens" not in value:
         raise TaskCompactError(
             "invalid-view-request",
-            "View options require schema_version and budget_tokens",
+            "View options require budget_tokens and may specify a compatibility schema_version",
         )
     budget = value["budget_tokens"]
     if (
-        value["schema_version"] not in (VIEW_REQUEST_SCHEMA, VIEW_REQUEST_SCHEMA_V2)
+        value.get("schema_version", VIEW_REQUEST_SCHEMA_V2) not in (VIEW_REQUEST_SCHEMA, VIEW_REQUEST_SCHEMA_V2)
         or type(budget) is not int
         or not 1 <= budget <= ceiling
     ):
@@ -136,7 +135,7 @@ def normalize_view_options(value, *, ceiling):
             "invalid-view-request",
             "Compact budget must narrow the trusted effective ceiling",
         )
-    return {"schema_version": value["schema_version"], "budget_tokens": budget}
+    return {"schema_version": value.get("schema_version", VIEW_REQUEST_SCHEMA_V2), "budget_tokens": budget}
 
 
 class _CheckedCounter:

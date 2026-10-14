@@ -17,7 +17,7 @@ def test_native_cli_adoption_hint_only_for_valid_captured_flat_model(
     source = Path("src")
     source.mkdir()
     (source / "app.py").write_text("def limit(value: int = 3) -> int:\n    return value\n")
-    api.bootstrap_wiki("src", "wiki")
+    api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
     capsys.readouterr()
     root = Path("wiki/.llm-wiki-knowledge.json")
     payload = json.loads(root.read_text())

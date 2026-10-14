@@ -15,7 +15,7 @@ from tests.test_search_source_interfaces import owned_wiki as owned_wiki
 
 @pytest.mark.parametrize("mode,include_source", [
     ("ranked", False), ("ranked-v1", False), ("ranked-v2", False),
-    ("ranked-v2", True), ("substring", False),
+    ("ranked-v2", True), ("ranked", True), ("substring", False),
 ])
 def test_qualified_api_cli_mcp_byte_parity(owned_wiki, monkeypatch, capsys, mode, include_source):
     root, wiki, *_ = owned_wiki

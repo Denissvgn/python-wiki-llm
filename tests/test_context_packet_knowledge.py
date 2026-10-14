@@ -352,6 +352,7 @@ def test_unread_noncanonical_wiki_symlink_remains_v1_compatible_but_v2_rejects(
     monkeypatch.chdir(root)
     legacy_request = _request("off")
     del legacy_request["knowledge_mode"]
+    legacy_request["protocol"] = "llm-wiki-context/v1"
 
     legacy = build_qualified_context(".", "docs/llm_wiki", legacy_request)
     assert (

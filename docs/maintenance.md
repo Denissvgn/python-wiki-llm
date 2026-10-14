@@ -12,9 +12,10 @@ explicitly unavailable.
 
 ## Adopt review tracking
 
-Start with a coherent wiki produced by bootstrap or sync. Adopt maintenance
-explicitly and retain its recovery directory outside both the source directory
-and the wiki:
+Current bootstrap and project upgrade establish maintenance ownership with
+pending review automatically. Existing human governance is preserved. For an
+older unadopted wiki, the explicit compatibility route below retains a recovery
+directory outside both the source directory and the wiki:
 
 ```bash
 llm-wiki maintenance adopt --src-dir src --wiki-dir docs/llm_wiki \

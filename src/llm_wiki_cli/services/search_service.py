@@ -107,8 +107,8 @@ def search_wiki(query, *, src_dir=".", wiki_dir="docs/llm_wiki", kinds=None,
                 include_source=False, reader=read_md, discovery=None):
     normalize_discovery(discovery)
     query, kinds, limit, mode = normalize_search(query, kinds, limit, mode)
-    if type(include_source) is not bool or (include_source and mode != "ranked-v2"):
-        raise ValueError("Explicit source indexing requires ranked-v2 and a boolean include_source")
+    if type(include_source) is not bool or (include_source and mode not in {"ranked", "ranked-v2"}):
+        raise ValueError("Explicit source indexing requires current ranked mode and a boolean include_source")
     source_root = validate_source_root(src_dir, "--src-dir", allow_external=allow_external_src)
     wiki_root = validate_path(wiki_dir, "--wiki-dir")
     return search_prevalidated_roots(query, source_root=source_root, wiki_root=wiki_root,
@@ -122,8 +122,8 @@ def search_prevalidated_roots(query, *, source_root: Path, wiki_root: Path, kind
     """Share capture/ranking while preserving trusted MCP configured-root boundaries."""
     normalize_discovery(discovery)
     query, kinds, limit, mode = normalize_search(query, kinds, limit, mode)
-    if type(include_source) is not bool or (include_source and mode != "ranked-v2"):
-        raise ValueError("Explicit source indexing requires ranked-v2 and a boolean include_source")
+    if type(include_source) is not bool or (include_source and mode not in {"ranked", "ranked-v2"}):
+        raise ValueError("Explicit source indexing requires current ranked mode and a boolean include_source")
     def root_stamp(path):
         try:
             value = path.lstat()

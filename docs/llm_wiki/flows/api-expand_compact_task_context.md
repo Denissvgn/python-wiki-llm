@@ -91,9 +91,9 @@ sequenceDiagram
     p3-->>p30: fact.pop('citation_refs')
 ```
 
-> Call sequence diagram shows 30 of 281 interactions; 251 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 283 interactions; 253 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 125 (124 omitted); unresolved 1 of 69 (68 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 125 (124 omitted); unresolved 1 of 71 (70 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -107,7 +107,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 10 | [src/llm_wiki_cli/services/task_contract.py](../modules/task_contract.md) | internal | 4 |
 | `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 10 | [src/llm_wiki_cli/services/change_selection.py](../modules/change_selection.md) | internal | 1 |
 | `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 10 | [src/llm_wiki_cli/services/documentation_query_builder.py](../modules/documentation_query_builder.md) | internal | 1 |
-> Omission summary shows 8 of 45 groups; 37 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 46 groups; 38 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -139,7 +139,7 @@ flowchart LR
     s5 -->|"TaskCompactError('canonical-invalid', 'Canonical context must be original text')"| s9
     s5 -->|"normalize_task_request(request, profile=profile, policy=policy)"| s10
     s10 -->|"exact_fields(request, {...}, 'request')"| s11
-    s10 -. "raw.get('schema_version')" .-> s12
+    s10 -. "raw.get('schema_version', TASK_REQUEST_SCHEMA_V2)" .-> s12
     b0["mutation anchors.append"]
     s10 -. "mutation anchors.append" .-> b0
     b1["mutation ids.add"]
@@ -177,7 +177,7 @@ flowchart LR
 | `TaskCompactError` | - | - | - | - |
 | `isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated)` | - | - | - | - |
 | `TaskCompactError` | - | - | - | - |
-| `normalize_task_request` | `request: Mapping[str, Any]`, `profile: WorkflowProfile \| Mapping[str, Any] \| None`, `policy: WorkflowPolicy \| None` | `TASK_REQUEST_SCHEMA`, `TASK_REQUEST_SCHEMA_V2`, `TASK_KINDS`, `ANCHOR_KINDS`, `canonical_json`, `FACETS`, `MAX_SELECTORS`, `TASK_REQUEST_SCHEMA_V2` | `changes[...]`, `normalized[...]`, `normalized[...]`, `normalized[...]` | `(...)` |
+| `normalize_task_request` | `request: Mapping[str, Any]`, `profile: WorkflowProfile \| Mapping[str, Any] \| None`, `policy: WorkflowPolicy \| None` | `TASK_REQUEST_SCHEMA_V2`, `TASK_REQUEST_SCHEMA`, `TASK_REQUEST_SCHEMA_V2`, `TASK_KINDS`, `ANCHOR_KINDS`, `canonical_json`, `FACETS`, `MAX_SELECTORS` | `changes[...]`, `normalized[...]`, `normalized[...]`, `normalized[...]`, `normalized[...]` | `(...)` |
 | `exact_fields` | `value: object`, `allowed: set[str]`, `field: str` | `Mapping` | - | `dict(...)` |
 | `raw.get` | - | - | - | - |
 
@@ -185,17 +185,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| expand_compact_task_context (src/llm_wiki_cli/api.py) | expand_compact_task_context (src/llm_wiki_cli/services/task_compact.py) | 1476 | `expand(compact_text, canonical_text, request, view_options=view_options, profile=profile, policy=policy, counter=counter)` |
-| expand_compact_task_context (src/llm_wiki_cli/services/task_compact.py) | validate_compact_task_context | 602 | `validate_compact_task_context(compact_text, canonical_text, request, view_options=view_options, profile=profile, policy=policy, counter=counter)` |
-| validate_compact_task_context | render_compact_task_context | 561 | `render_compact_task_context(canonical_text, request, view_options=view_options, profile=profile, policy=policy, counter=counter)` |
-| render_compact_task_context | _validated | 476 | `_validated(canonical_text, request, profile, policy, counter)` |
-| _validated | isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated) | 172 | `isinstance(canonical_text, TaskContext)` |
-| _validated | TaskCompactError | 174 | `TaskCompactError('canonical-unavailable', 'An unsuccessful canonical result has no compact context')` |
-| _validated | isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated) | 179 | `isinstance(canonical_text, str)` |
-| _validated | TaskCompactError | 180 | `TaskCompactError('canonical-invalid', 'Canonical context must be original text')` |
-| _validated | normalize_task_request | 183 | `normalize_task_request(request, profile=profile, policy=policy)` |
+| expand_compact_task_context (src/llm_wiki_cli/api.py) | expand_compact_task_context (src/llm_wiki_cli/services/task_compact.py) | 1478 | `expand(compact_text, canonical_text, request, view_options=view_options, profile=profile, policy=policy, counter=counter)` |
+| expand_compact_task_context (src/llm_wiki_cli/services/task_compact.py) | validate_compact_task_context | 601 | `validate_compact_task_context(compact_text, canonical_text, request, view_options=view_options, profile=profile, policy=policy, counter=counter)` |
+| validate_compact_task_context | render_compact_task_context | 560 | `render_compact_task_context(canonical_text, request, view_options=view_options, profile=profile, policy=policy, counter=counter)` |
+| render_compact_task_context | _validated | 475 | `_validated(canonical_text, request, profile, policy, counter)` |
+| _validated | isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated) | 171 | `isinstance(canonical_text, TaskContext)` |
+| _validated | TaskCompactError | 173 | `TaskCompactError('canonical-unavailable', 'An unsuccessful canonical result has no compact context')` |
+| _validated | isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated) | 178 | `isinstance(canonical_text, str)` |
+| _validated | TaskCompactError | 179 | `TaskCompactError('canonical-invalid', 'Canonical context must be original text')` |
+| _validated | normalize_task_request | 182 | `normalize_task_request(request, profile=profile, policy=policy)` |
 | normalize_task_request | exact_fields | 53 | `exact_fields(request, {...}, 'request')` |
-| normalize_task_request | raw.get | 55 | `raw.get('schema_version')` |
+| normalize_task_request | raw.get | 55 | `raw.get('schema_version', TASK_REQUEST_SCHEMA_V2)` |
 
 ### Boundary effects
 
@@ -210,8 +210,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_validated` | `isinstance` | 172 |
-| external_call | `_validated` | `isinstance` | 179 |
+| external_call | `_validated` | `isinstance` | 171 |
+| external_call | `_validated` | `isinstance` | 178 |
 | unresolved_call | `normalize_task_request` | `raw.get` | 55 |
 | step_limit | `expand_compact_task_context` | `first 12 steps` | 0 |
 | truncated_flow | `expand_compact_task_context` | `depth limit` | 0 |

@@ -54,6 +54,9 @@ def _make_args(**kwargs):
         "allow_external_src": False,
         "helper_cache_dir": None,
         "include_tests": None,
+        # These focused renderer/manifest fixtures retain their original wire
+        # oracle. Current first-use defaults have a separate end-to-end owner.
+        "knowledge_format": "v1",
     }
     defaults.update(kwargs)
     return types.SimpleNamespace(**defaults)

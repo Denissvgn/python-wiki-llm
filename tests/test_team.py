@@ -46,13 +46,15 @@ def _ns(**kwargs):
     return types.SimpleNamespace(**kwargs)
 
 
-def _bootstrap(wiki_dir: str = "docs/llm_wiki", *, skip_workflows: bool = True):
+def _bootstrap(wiki_dir: str = "docs/llm_wiki", *, skip_workflows: bool = True, knowledge_format="v1"):
+    # Merge-conflict vectors below deliberately exercise flat v5 authority.
     bootstrap_cmd.run(
         _ns(
             src_dir=".",
             wiki_dir=wiki_dir,
             overwrite=False,
             depth="full",
+            knowledge_format=knowledge_format,
             skip_workflows=skip_workflows,
         )
     )
@@ -230,7 +232,7 @@ class TestTeamLintAndCheck:
         )
 
     def test_team_check_passes_after_bootstrap(self, tmp_project, capsys):
-        _bootstrap()
+        _bootstrap(knowledge_format=None)
         team.write_default_team_config("docs/llm_wiki")
 
         team_cmd.run(

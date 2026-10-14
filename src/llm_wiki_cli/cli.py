@@ -287,7 +287,7 @@ def _add_task_context_command(subparsers):
     parser.add_argument("--allow-external-src", action="store_true")
     parser.add_argument("--allow-full-inventory", action="store_true", help="Permit explicit requests for a full source scan")
     parser.add_argument("--output", help="Write the selected context view to this file")
-    parser.add_argument("--view", choices=["canonical", "compact-v1", "compact-v2"], default="canonical",
+    parser.add_argument("--view", choices=["canonical", "compact", "compact-v1", "compact-v2"], default="canonical",
                         help="Explicit presentation; canonical remains the default")
     parser.add_argument("--view-budget-tokens", type=int,
                         help="Separate compact text budget within the host ceiling")
@@ -1435,7 +1435,7 @@ def _add_search_command(subparsers):
     )
     parser.add_argument("--mode", choices=["ranked", "ranked-v1", "ranked-v2", "substring"], default="ranked")
     parser.add_argument("--include-source", action="store_true",
-                        help="Explicit bounded selected-source indexing with ranked-v2")
+                        help="Explicit bounded selected-source indexing with current ranked mode")
     parser.add_argument("--discovery", choices=["qualified-v1"],
                         help="Group candidates with captured qualifications and exact inspection routes")
     parser.add_argument("--format", choices=["json", "text"], default="json")
@@ -1563,7 +1563,9 @@ def _add_mcp_command(subparsers):
     )
     _add_source_selection_argument(mcp_parser)
     mcp_parser.add_argument("--tokenizer", help="Trusted local tokenizer JSON for exact v3 counting")
-    mcp_parser.add_argument("--enable-sessions", action="store_true", help="Enable bounded in-memory task sessions")
+    sessions = mcp_parser.add_mutually_exclusive_group()
+    sessions.add_argument("--enable-sessions", action="store_true", default=True, help=argparse.SUPPRESS)
+    sessions.add_argument("--disable-sessions", dest="enable_sessions", action="store_false", help="Disable bounded in-memory task sessions")
 
 
 def _add_obsidian_command(subparsers):
@@ -1908,6 +1910,8 @@ def _add_upgrade_command(subparsers):
         default=DEFAULT_WIKI_DIR,
         help="Wiki directory path (default: docs/llm_wiki)",
     )
+    upgrade_parser.add_argument("--src-dir", default=None, help="Source root for native upgrade (default: installed root or .)")
+    _add_helper_cache_argument(upgrade_parser)
     upgrade_parser.add_argument(
         "--agent",
         choices=AGENT_CHOICES,

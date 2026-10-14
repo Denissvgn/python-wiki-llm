@@ -38,8 +38,9 @@ cost opt-in.
 
 ## Explicit task adoption routes
 
-Prefer `llm-wiki-task-request/v2` with canonical delivery for compatible task
-integrations. Task request v1 retains its full native-validation behavior;
+Use versionless task requests with canonical delivery. The library resolves
+the current task and storage contracts; agents do not choose versions.
+Explicit task request v1 retains its full native-validation behavior;
 legacy context calls retain their own response contracts. A task result and a
 broad context packet are different envelopes. Read coverage and gaps before
 treating either as sufficient for the declared task.
@@ -51,7 +52,6 @@ to it:
 
 ```json
 {
-  "schema_version": "llm-wiki-task-request/v2",
   "requirements": [
     {"id": "contract", "facet": "source-contract", "selector": "app.py:limit"}
   ],
@@ -67,14 +67,13 @@ llm-wiki task-context --request source-task.json --src-dir src --wiki-dir wiki
 route. Keep the user's actual roots, selection and permissions. The read does
 not create example source, install helpers or execute target code.
 
-A native task v2 requirement needs supported sharded or packed knowledge.
-For a new wiki, authorized bootstrap can explicitly choose
-`--knowledge-format sharded-v2`. For an existing flat wiki, preserve it and use
-an authorized dry-run/apply with an empty recovery directory outside source/wiki:
+A native requirement needs current supported native knowledge. New authorized
+bootstrap selects current storage and ordinary maintenance ownership. Existing
+projects use authorized upgrade after a package update; the library retains
+recovery copies and chooses compatible current formats:
 
 ```bash
-llm-wiki knowledge migrate --wiki-dir wiki --to sharded-v2 --dry-run --recovery-dir storage-recovery
-llm-wiki knowledge migrate --wiki-dir wiki --to sharded-v2 --recovery-dir storage-recovery
+llm-wiki upgrade --wiki-dir wiki
 llm-wiki knowledge storage-check --wiki-dir wiki --full
 llm-wiki doctor --capabilities --src-dir src --wiki-dir wiki --format json
 ```
@@ -85,10 +84,11 @@ Then request exact native evidence with `knowledge_mode: "required"`, for exampl
 use explicit source requirements with selected reads when needed. Missing,
 corrupt, unsupported or bounded native evidence remains a gap or failure. Never
 rewrite the requirements or switch native mode off to claim success. All readers
-and writers must support the chosen format. A read never migrates or syncs.
+and writers must support the current format. A read never migrates or syncs.
 
-Apply retains the prior storage snapshot; dry-run does not. For an interrupted
-or failed migration, preview and use its retained matching complete snapshot:
+Upgrade reports recovery locations. For an interrupted storage migration,
+use the reported matching storage preimage; ownership adoption has its separate
+complete recovery record. Never combine unrelated recovery snapshots:
 
 ```bash
 llm-wiki knowledge recover-storage --wiki-dir wiki --recovery-dir storage-recovery --dry-run
@@ -105,7 +105,7 @@ before manifestless seeding. `indexed-v8` requires an adopted owner and does not
 shard flat knowledge.
 
 Canonical delivery stays default. Optional compact CLI delivery adds
-`--view compact-v1 --view-budget-tokens N --canonical-output FILE`; both canonical
+`--view compact --view-budget-tokens N --canonical-output FILE`; both canonical
 receipt and optional `--output FILE` must be outside source/wiki and disjoint
 from request/profile/tokenizer/selection inputs and each other. For source root
 `.` that means outside the entire root. Choose a positive explicit budget; a
@@ -113,10 +113,10 @@ compact minimum can still fail to fit. No 1,000-token fit or fixed saving is
 promised. Canonical failure produces no receipt; compact-only cannot-fit returns
 its counted diagnostic and preserves a valid canonical receipt when available.
 
-Choose `--view compact-v2` for self-contained readable JSON with complete
+The current compact view is self-contained readable JSON with complete
 selected facts, citations, coverage, gaps and limitations. Use the same explicit
 view budget and disjoint canonical receipt path. Python/session `view_options`
-select `llm-wiki-task-view-request/v2`; validation/expansion remain bound to the
+omit version fields; validation/expansion remain bound to the
 original canonical text and request. The readable body may exceed compact-v1's
 encoded size. Its budget still covers emitted view text rather than host framing.
 MCP retains identity/base/state and validation qualifications in its smaller v2
@@ -124,8 +124,7 @@ envelope; `include_metadata: true` returns full telemetry. V1 and Python session
 metadata retain their existing shape. Count setup, transport and any necessary
 follow-up messages; never infer a universal fit or saving.
 
-Python uses `build_compact_task_context(..., view_options={"schema_version":
-"llm-wiki-task-view-request/v1", "budget_tokens": N})`, then validates/expands
+Python uses `build_compact_task_context(..., view_options={"budget_tokens": N})`, then validates/expands
 against that exact request and canonical text. Session `read_compact` and MCP
 `read_compact_context_session` return compact presentation; explicit
 `canonical_receipt(request_id, result_id)` or MCP `get_task_context_receipt`
@@ -152,7 +151,7 @@ candidates, including relaxed matches and source snippets.
 Choose source augmentation explicitly when source text is needed for discovery:
 
 ```bash
-llm-wiki search "retry failure" --src-dir src --wiki-dir wiki --mode ranked-v2 --include-source
+llm-wiki search "retry failure" --src-dir src --wiki-dir wiki --include-source
 ```
 
 It requires a valid committed manifest and indexes only mapped module sources

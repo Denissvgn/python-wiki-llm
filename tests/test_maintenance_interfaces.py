@@ -35,7 +35,7 @@ def _project(tmp_path, monkeypatch, capsys):
     monkeypatch.chdir(tmp_path)
     Path("src").mkdir()
     Path("src/policy.py").write_bytes(POLICY_SOURCE.encode())
-    api.bootstrap_wiki("src", "wiki")
+    api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
     capsys.readouterr()
     result = api.adopt_maintenance("src", "wiki", recovery_dir="recovery")
     assert result["changed"]

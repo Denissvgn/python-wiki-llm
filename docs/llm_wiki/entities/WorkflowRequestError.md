@@ -36,8 +36,8 @@ flowchart LR
     n9["ContextSession._read (src/llm_wiki_cli/services/context_session.py)"]
     n10["ContextSession._roots_current (src/llm_wiki_cli/services/context_session.py)"]
     n11["ContextSession.hint (src/llm_wiki_cli/services/context_session.py)"]
-    n12["ContextSession.read_compact (src/llm_wiki_cli/services/context_session.py)"]
-    n13["_counter (src/llm_wiki_cli/services/task_context.py)"]
+    n12["_counter (src/llm_wiki_cli/services/task_context.py)"]
+    n13["build_task_read (src/llm_wiki_cli/services/task_context.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -62,7 +62,7 @@ flowchart LR
     click n9 "../modules/context_session.md"
     click n10 "../modules/context_session.md"
     click n11 "../modules/context_session.md"
-    click n12 "../modules/context_session.md"
+    click n12 "../modules/task_context.md"
     click n13 "../modules/task_context.md"
 ```
 
@@ -92,7 +92,7 @@ flowchart LR
 | `ContextSession._read` | call | [context_session](../modules/context_session.md) | 8 |
 | `ContextSession._roots_current` | call | [context_session](../modules/context_session.md) | 2 |
 | `ContextSession.hint` | call | [context_session](../modules/context_session.md) | 1 |
-| `ContextSession.read_compact` | call | [context_session](../modules/context_session.md) | 1 |
 | `_counter` | call | [task_context](../modules/task_context.md) | 4 |
+| `build_task_read` | call | [task_context](../modules/task_context.md) | 1 |
 
-> References: showing 12 of 27 logical references; 15 omitted by the 12-row generated summary limit.
+> References: showing 12 of 26 logical references; 14 omitted by the 12-row generated summary limit.

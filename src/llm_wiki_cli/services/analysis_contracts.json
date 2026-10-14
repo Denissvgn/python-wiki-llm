@@ -102,6 +102,7 @@
     "services/context_service.py",
     "services/context_session.py",
     "services/contracts.py",
+    "services/current_contracts.py",
     "services/data_flow.py",
     "services/dependencies.py",
     "services/dependency_versions.py",

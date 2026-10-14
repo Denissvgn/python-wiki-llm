@@ -275,6 +275,12 @@ For substantive changes or investigations, use
 `{skills_dir}/wiki-reference/references/development-workflow.md` when available. This inline procedure
 also applies when skills are disabled or unavailable:
 
+- The library owns current schemas and storage formats. Omit task/view version
+  fields for normal work; do not choose older formats or downgrade evidence.
+  Project init/upgrade installs current workflow defaults; first bootstrap and
+  upgrade prepare current native storage with ordinary maintenance ownership.
+  Recovery paths are reported by the writer. Human review is never implied.
+
 - State intended behavior and independent acceptance criteria. Resolve the
   project's actual roots, source selection, executable, helper cache, and
   permitted actions. Inspect exact source owners and use the narrowest useful
@@ -333,7 +339,7 @@ also applies when skills are disabled or unavailable:
   maintenance or delivery obligations. Read-only work may mark change-dependent
   gates not applicable with a reason. Claim completion only when every required
   gate is satisfied. Profiles, sessions, compact delivery, task directories,
-  storage adoption, and Git actions remain explicit choices.
+  governance adoption, and Git actions remain explicit choices.
 
 """
 
@@ -358,7 +364,7 @@ without installing, guessing, or treating the missing file as authority.
 
 ## Before you start
 - For broad repository-wide work, run one serialized
-  `llm-wiki context --budget 8000 --src-dir . --wiki-dir {wiki_dir_arg} --format packet --focus changed --knowledge-mode auto --read-only{source_selection_args}`
+  `llm-wiki context --budget 8000 --budget-mode estimated --src-dir . --wiki-dir {wiki_dir_arg} --format packet --focus changed --knowledge-mode auto --read-only{source_selection_args}`
   qualified packet, then read only the source and wiki pages it selects.
 - For a narrow task with supplied files or a supplied diff, skip the full
   context scan. Use the bounded `query_documentation` API or MCP operation:
@@ -372,28 +378,27 @@ without installing, guessing, or treating the missing file as authority.
   `{skills_dir}/wiki-reference/references/context-query.md`.
 
 {development_instructions}## Explicit task routes
-- Source-only task: choose request `llm-wiki-task-request/v2`, exact coordinates
+- Source-only task: use a current task request with exact coordinates
   relative to the configured source root, and `options.knowledge_mode: "off"`.
   For a real `app.py:limit` declaration, save this request outside the source tree:
   ```json
-  {{"schema_version":"llm-wiki-task-request/v2","requirements":[{{"id":"contract","facet":"source-contract","selector":"app.py:limit"}}],"options":{{"knowledge_mode":"off","budget_tokens":32000}}}}
+  {{"requirements":[{{"id":"contract","facet":"source-contract","selector":"app.py:limit"}}],"options":{{"knowledge_mode":"off","budget_tokens":32000}}}}
   ```
   Read it with `llm-wiki task-context --request FILE --src-dir . --wiki-dir {wiki_dir_arg}{source_selection_args}`.
   The wiki may be absent. Replace the example coordinate with the actual source
   owner; the read never creates source, installs helpers or executes the target.
-- Native task v2 requirements need explicitly adopted sharded or packed storage.
-  Existing flat roots require an authorized `llm-wiki knowledge migrate
-  --wiki-dir {wiki_dir_arg} --to sharded-v2 --dry-run --recovery-dir RECOVERY`,
-  then the same command without `--dry-run`. Choose an empty recovery directory
-  outside source/wiki. Inspect `knowledge storage-check --full` with this wiki
-  and `doctor --capabilities` with the same roots/selection. All readers and
-  writers must support the chosen schema. Readers never migrate or bootstrap.
+- Native requirements use current storage created by bootstrap or project
+  upgrade. After updating the package, run authorized `llm-wiki upgrade
+  --wiki-dir {wiki_dir_arg}{source_selection_args}`; the library selects formats
+  and retains validated recovery copies. Check `knowledge storage-check --full`
+  with this wiki and `doctor --capabilities` with the same roots/selection.
+  Missing helpers require authorized setup. Readers never migrate or bootstrap.
 - Keep native requirements and `required` mode on missing, corrupt, unsupported
   or bounded evidence; disclose the gap rather than changing it into an off
   success. Snapshot scope is committed evidence, not live source proof.
-  `indexed-v8` needs a maintenance owner and does not shard flat knowledge.
+  Ordinary maintenance ownership remains distinct from human review.
 - Canonical delivery is default. Optional compact delivery requires
-  `--view compact-v1 --view-budget-tokens N --canonical-output FILE`.
+  `--view compact --view-budget-tokens N --canonical-output FILE`.
   Choose a positive budget and receipt path outside source/wiki and disjoint
   from request/profile/tokenizer/selection and any separate view output.
   With source root `.`, the artifact must be outside that entire root. A
@@ -765,13 +770,13 @@ def _compact_wiki_instructions(
     return f"""Source root: `.`. Wiki: `{wiki_dir}/`.
 
 ## Select evidence first
-- Source-only v2: exact relative selectors; `options.knowledge_mode: "off"`; no wiki/setup. `auto` differs.
-- Native v2: retain `required`; flat needs explicit adoption/recovery. Reads never migrate.
-- Canonical default. Compact-v1: budget/full receipt outside source/wiki/inputs; no fit promise; count metadata/framing/follow-ups.
-- Broad: one serialized read-only packet: `llm-wiki context --budget 8000 --src-dir . --wiki-dir {wiki_dir_arg} --format packet --focus changed --knowledge-mode auto --read-only{source_selection_args}`.
+- Source-only: exact relative selectors; `options.knowledge_mode: "off"`; no wiki/setup. `auto` differs.
+- Native: retain `required`; upgrade selects storage; damaged owners need recovery. Reads never migrate.
+- Contracts: omit versions. Canonical; `--view compact`: budget/receipt outside source/wiki/inputs; count framing/follow-ups; no fit promise.
+- Broad: one serialized read-only packet: `llm-wiki context --budget 8000 --budget-mode estimated --src-dir . --wiki-dir {wiki_dir_arg} --format packet --focus changed --knowledge-mode auto --read-only{source_selection_args}`.
 - Narrow: bounded API/MCP `query_documentation` (CLI `query --request FILE`): `concept`, `related`, `surface`, `typed`, or `impact` with `paths`/`diff`. `symbol`, `entrypoint`, `dependency` require `allow_full_inventory=true`.
 - Validated context/query only. Check availability/reason, `freshness_evaluated`, concept state/reason/live comparison, coverage/bounds/truncation, ambiguity/unresolved targets. Ready/current is consumable/unchanged, not true/complete/reviewed/secure/runtime-correct. Unavailable/bounded `found: false` is not a negative fact; snapshot is not live.
-- Gaps: disclose; use validated surface/Markdown, then targeted source/runtime evidence. Index: `{wiki_dir}/index.md`.
+- Gaps: disclose; use validated surface/Markdown, then source/runtime. Index: `{wiki_dir}/index.md`.
 - Bootstrap/sync own projections; never hand-edit or use `knowledge init` for repair. Governance needs owner approval/recovery. Adoption marker+missing owner: matching complete `maintenance recover` before seeding; never recreate history.
 - Helper failure: authorized remedy, one retry; otherwise disclose/use source/wiki. Reads never prepare helpers.
 
@@ -783,8 +788,8 @@ def _compact_wiki_instructions(
 {_REPOSITORY_CONTENT_HYGIENE}
 
 ## Managed routes and completion
-- Work: `{reference_root}/development-workflow.md`: criteria; scoped source; bounded edits; independent checks; refresh; qualified handoff. Recheck basis; keep failures/gaps.
-- Measure: `llm-wiki doctor --analysis-inputs --format json`. Review census/files, producer lists; unavailable stays pending. Never auto-classify or infer trust.
+- Work: `{reference_root}/development-workflow.md`: criteria; scoped source; bounded edits; independent checks; refresh; qualified handoff. Retain basis/failures/gaps.
+- Measure: `llm-wiki doctor --analysis-inputs --format json`. Census/files/producer lists; unavailable pending. No auto-classification/trust.
 - `{reference_root}/knowledge-consumption.md` and `{reference_root}/context-query.md`. Owner-authorized governance: `{reference_root}/governance.md`.
 - After every class/function/module/cross-module-flow change in this session, run full sync-then-lint at `{reference_root}/maintenance.md`: sync, semantic pass, sync after Markdown edits, strict validation/handoff. No lint errors.
 - Semantic prose only; generated blocks are CLI-owned. Naming: `{reference_root}/surfaces-naming.md`.

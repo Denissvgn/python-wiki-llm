@@ -157,7 +157,7 @@ def normalize_profile(
         raw = {"schema_version": PROFILE_SCHEMA, "settings": {}}
     else:
         raw = exact_fields(profile, {"schema_version", "settings"}, "profile")
-    if raw.get("schema_version") != PROFILE_SCHEMA:
+    if raw.get("schema_version", PROFILE_SCHEMA) != PROFILE_SCHEMA:
         raise WorkflowRequestError("schema_version", "unsupported profile schema")
     explicit = _settings(raw.get("settings", {}))
     requested = _settings({} if overrides is None else overrides)

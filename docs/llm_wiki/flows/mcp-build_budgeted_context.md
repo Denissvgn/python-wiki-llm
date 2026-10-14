@@ -84,15 +84,15 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_budgeted_context | _native_tool_call | 1572 | `_native_tool_call(service.build_budgeted_context, request)` |
-| _native_tool_call | callback | 1354 | `callback(..., **=kwargs)` |
-| _native_tool_call | str | 1362 | `str(exc)` |
-| _native_tool_call | CallToolResult (src/llm_wiki_cli/services…erver.py:_native_tool_call) | 1366 | `CallToolResult(isError=True, content=[...], structuredContent=failure)` |
-| _native_tool_call | TextContent (src/llm_wiki_cli/services…erver.py:_native_tool_call) | 1368 | `TextContent(type='text', text=json.dumps(...))` |
-| _native_tool_call | json.dumps | 1368 | `json.dumps(failure, sort_keys=True)` |
-| build_budgeted_context | isinstance | 1573 | `isinstance(result, str)` |
-| build_budgeted_context | CallToolResult (src/llm_wiki_cli/services….py:build_budgeted_context) | 1574 | `CallToolResult(content=[...])` |
-| build_budgeted_context | TextContent (src/llm_wiki_cli/services….py:build_budgeted_context) | 1574 | `TextContent(type='text', text=result)` |
+| build_budgeted_context | _native_tool_call | 1570 | `_native_tool_call(service.build_budgeted_context, request)` |
+| _native_tool_call | callback | 1352 | `callback(..., **=kwargs)` |
+| _native_tool_call | str | 1360 | `str(exc)` |
+| _native_tool_call | CallToolResult (src/llm_wiki_cli/services…erver.py:_native_tool_call) | 1364 | `CallToolResult(isError=True, content=[...], structuredContent=failure)` |
+| _native_tool_call | TextContent (src/llm_wiki_cli/services…erver.py:_native_tool_call) | 1366 | `TextContent(type='text', text=json.dumps(...))` |
+| _native_tool_call | json.dumps | 1366 | `json.dumps(failure, sort_keys=True)` |
+| build_budgeted_context | isinstance | 1571 | `isinstance(result, str)` |
+| build_budgeted_context | CallToolResult (src/llm_wiki_cli/services….py:build_budgeted_context) | 1572 | `CallToolResult(content=[...])` |
+| build_budgeted_context | TextContent (src/llm_wiki_cli/services….py:build_budgeted_context) | 1572 | `TextContent(type='text', text=result)` |
 
 ### Boundary effects
 
@@ -102,13 +102,13 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_native_tool_call` | `callback` | 1354 |
-| external_call | `_native_tool_call` | `CallToolResult` | 1366 |
-| external_call | `_native_tool_call` | `TextContent` | 1368 |
-| external_call | `_native_tool_call` | `json.dumps` | 1368 |
-| external_call | `build_budgeted_context` | `isinstance` | 1573 |
-| external_call | `build_budgeted_context` | `CallToolResult` | 1574 |
-| external_call | `build_budgeted_context` | `TextContent` | 1574 |
+| unresolved_call | `_native_tool_call` | `callback` | 1352 |
+| external_call | `_native_tool_call` | `CallToolResult` | 1364 |
+| external_call | `_native_tool_call` | `TextContent` | 1366 |
+| external_call | `_native_tool_call` | `json.dumps` | 1366 |
+| external_call | `build_budgeted_context` | `isinstance` | 1571 |
+| external_call | `build_budgeted_context` | `CallToolResult` | 1572 |
+| external_call | `build_budgeted_context` | `TextContent` | 1572 |
 
 ## Behavior
 
