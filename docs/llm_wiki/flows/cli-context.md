@@ -114,9 +114,9 @@ sequenceDiagram
     p1-->>p30: request.get (src/llm_wiki_cli/services…_service.py:_run_protocol)('knowledge_mode')
 ```
 
-> Call sequence diagram shows 30 of 1330 interactions; 1300 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1387 interactions; 1357 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 451 (450 omitted); unresolved 1 of 417 (416 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 486 (485 omitted); unresolved 1 of 434 (433 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -130,7 +130,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/context_packet.py:_normalized_request` | 13 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 1 |
 | `src/llm_wiki_cli/services/context_packet.py:_normalized_request` | 13 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 20 | - | external | 2 |
-> Omission summary shows 8 of 260 groups; 252 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 264 groups; 256 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -149,7 +149,7 @@ flowchart LR
     s7["7. Path(…).read_text"]
     s8["8. Path (src/llm_wiki_cli/services…py:_read_protocol_request)"]
     s9["9. ProtocolRequestError"]
-    s10["10. json.loads"]
+    s10["10. json.loads (src/llm_wiki_cli/services…py:_read_protocol_request)"]
     s11["11. ProtocolRequestError"]
     s12["12. isinstance (src/llm_wiki_cli/services…py:_read_protocol_request)"]
     s1 -. "getattr (src/llm_wiki_cli/services/context_service.py:run)(args, 'request', None)" .-> s2
@@ -160,7 +160,7 @@ flowchart LR
     s5 -. "Path(…).read_text(encoding='utf-8')" .-> s7
     s5 -. "Path (src/llm_wiki_cli/services…py:_read_protocol_request)(source)" .-> s8
     s5 -->|"ProtocolRequestError(..., 'request')"| s9
-    s5 -. "json.loads(raw)" .-> s10
+    s5 -. "json.loads (src/llm_wiki_cli/services…py:_read_protocol_request)(raw)" .-> s10
     s5 -->|"ProtocolRequestError(..., 'request')"| s11
     s5 -. "isinstance (src/llm_wiki_cli/services…py:_read_protocol_request)(data, dict)" .-> s12
     b0["output print"]
@@ -208,7 +208,7 @@ flowchart LR
 | `Path(…).read_text` | - | - | - | - |
 | `Path (src/llm_wiki_cli/services…py:_read_protocol_request)` | - | - | - | - |
 | `ProtocolRequestError` | - | - | - | - |
-| `json.loads` | - | - | - | - |
+| `json.loads (src/llm_wiki_cli/services…py:_read_protocol_request)` | - | - | - | - |
 | `ProtocolRequestError` | - | - | - | - |
 | `isinstance (src/llm_wiki_cli/services…py:_read_protocol_request)` | - | - | - | - |
 
@@ -224,7 +224,7 @@ flowchart LR
 | _read_protocol_request | Path(…).read_text | 1094 | `Path(source).read_text(encoding='utf-8')` |
 | _read_protocol_request | Path (src/llm_wiki_cli/services…py:_read_protocol_request) | 1094 | `Path(source)` |
 | _read_protocol_request | ProtocolRequestError | 1097 | `ProtocolRequestError(..., 'request')` |
-| _read_protocol_request | json.loads | 1100 | `json.loads(raw)` |
+| _read_protocol_request | json.loads (src/llm_wiki_cli/services…py:_read_protocol_request) | 1100 | `json.loads(raw)` |
 | _read_protocol_request | ProtocolRequestError | 1102 | `ProtocolRequestError(..., 'request')` |
 | _read_protocol_request | isinstance (src/llm_wiki_cli/services…py:_read_protocol_request) | 1104 | `isinstance(data, dict)` |
 

@@ -2113,7 +2113,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 249,
+              "line": 271,
               "step": "build_budgeted_context",
               "step_index": 2,
               "target": "legacy.update"
@@ -2249,9 +2249,10 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/immutable.py",
             "src/llm_wiki_cli/services/maintenance_evidence.py",
-            "src/llm_wiki_cli/services/bootstrap_runtime.py"
+            "src/llm_wiki_cli/services/bootstrap_runtime.py",
+            "src/llm_wiki_cli/services/packet_field_policy.py"
           ],
-          "step_count": 3401,
+          "step_count": 3667,
           "truncated": true
         }
       },
@@ -32211,7 +32212,7 @@
             "src/llm_wiki_cli/services/wiki_write_basis.py",
             "src/llm_wiki_cli/services/extraction_jobs.py"
           ],
-          "step_count": 1331,
+          "step_count": 1388,
           "truncated": true
         }
       },
@@ -36241,7 +36242,7 @@
             "src/llm_wiki_cli/services/task_implementation.py",
             "src/llm_wiki_cli/services/wiki_write_basis.py"
           ],
-          "step_count": 1425,
+          "step_count": 1434,
           "truncated": true
         }
       },
@@ -57562,6 +57563,7 @@
         "modules/maintenance_status.md",
         "modules/manifest_storage.md",
         "modules/packages.md",
+        "modules/packet_field_policy.md",
         "modules/plugins.md",
         "modules/python_bindings.md",
         "modules/python_calls.md",
@@ -67124,5 +67126,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:26342c0790a5969d5ab4aec10c6e33b651fd32c3e6b740f19cb64d68f7700094"
+  "source_hash": "sha256:70e2628b7c1a06c2c68cc8af01066d5e1e225d391b85477814dd8208921386e9"
 }

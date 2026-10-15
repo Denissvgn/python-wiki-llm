@@ -15,6 +15,12 @@ change provenance, and revalidates that basis before returning the rendered
 result. Exact mode requires a trusted exact counter; estimated mode labels its
 weaker accounting explicitly.
 
+Packet fitting measures internal candidates before applying final wire limits,
+then independently validates the selected packet and complete-output accounting.
+The built-in UTF-8 estimator can skip full rendering when the unchanged source
+JSON fragment alone already exceeds the entire delivery allowance. Custom and
+exact counters retain full-render fitting without assuming monotonic token cost.
+
 ## Imports
 
 | Source | Symbols |
@@ -69,7 +75,7 @@ flowchart LR
 |----------|-----------|------------|-------------|
 | `validate_request` | `(data: Mapping[str, Any]) -> dict[str, Any]` | — | — |
 | `_accounted_render` | `(render, accounting, counter)` | — | — |
-| `fit_payload` | `(payload, request, warnings, counter, *, packet_renderer = None, changes = None, envelope_renderer = None, freshness_rank_by_source = None)` | — | Select whole source entries; keep all enrichment and omission evidence. |
+| `fit_payload` | `(payload, request, warnings, counter, *, packet_renderer = None, changes = None, envelope_renderer = None, freshness_rank_by_source = None, source_json_lower_bound = False)` | — | Select whole source entries; keep all enrichment and omission evidence. |
 | `build_budgeted_context` | `(src_dir = '.', wiki_dir = DEFAULT_WIKI_DIR, request = None, *, counter: TokenCounter \| None = None, allow_external_src = False, source_selection = None) -> BudgetedContext` | — | — |
 | `request_identity` | `(request: Mapping[str, Any]) -> str` | — | — |
 | `validate_budgeted_context` | `(rendered: str, request: Mapping[str, Any], *, counter: TokenCounter) -> dict[str, Any]` | — | Independently validate the outer v3 binding, packet and emitted count. |
