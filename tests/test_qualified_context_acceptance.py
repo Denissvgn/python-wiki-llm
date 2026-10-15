@@ -62,7 +62,6 @@ def _managed_packet():
 def test_managed_cross_surface_acceptance(managed_packet_project, mode, prefer_fresh, format, budget, filters):
     root = managed_packet_project["root"]
     request = {
-        "protocol": "llm-wiki-context/v1" if mode is None else "llm-wiki-context/v2",
         "budget_tokens": budget, "format": format, "focus": ["all"], "filters": filters,
         "prefer_fresh": prefer_fresh,
     }
@@ -79,8 +78,10 @@ def test_managed_cross_surface_acceptance(managed_packet_project, mode, prefer_f
         knowledge_mode=mode, prefer_fresh=prefer_fresh,
     )
     assert packet.to_bytes() == result.stdout == canonical(mcp["packet"])
+    assert packet.to_payload()["schema_version"] == "llm-wiki-qualified-context-packet/v2"
     assert api.validate_context_packet(result.stdout).valid
-    legacy = api.build_context(budget=budget, format=format, focus="all", filters=filters, knowledge_mode=mode, prefer_fresh=prefer_fresh)
+    effective_mode = "auto" if mode is None else mode
+    legacy = api.build_context(budget=budget, format=format, focus="all", filters=filters, knowledge_mode=effective_mode, prefer_fresh=prefer_fresh)
     payload = legacy["payload"] if format == "markdown" else legacy
     response = packet.to_payload()["response"]
     assert response["used_tokens"] == payload["used"]
