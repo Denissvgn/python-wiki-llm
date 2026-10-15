@@ -50,9 +50,12 @@ def test_current_provider_adapter_exercises_frozen_cases(tmp_path, identity):
     spec = next(case for case in verify_corpus()["cases"] if case["id"] == identity)
     runtime.prepare_workspace(spec["project"], tmp_path)
     result = compare_cases.observe(api, spec, tmp_path)
-    assert result["status"] == ("unavailable" if identity == "L01" else "passed"), result
+    assert result["status"] == "passed", result
     assert result["direct_source"]["required_provider_behavior"] == "unavailable"
-    assert all(row["state"] == "passed" or (identity == "L01" and row["id"] == "changed-prose-review-pending" and row["state"] == "unavailable") for row in result["checks"])
+    assert all(row["state"] == "passed" for row in result["checks"])
+    if identity == "L01":
+        review = next(row for row in result["checks"] if row["id"] == "changed-prose-review-pending")
+        assert review["observed"] == "pending"
 
 
 def test_unchecked_scheduled_error_cannot_be_a_pass(tmp_path):

@@ -7,10 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [2.6.0] - 2026-10-15
+## [3.0.0] - 2026-10-15
 
 Installation and upgrade now select current knowledge storage and workflow
 contracts automatically, with guarded recovery for existing projects.
+
+### Compatibility
+
+- Qualified packet calls now default to v2 with automatic native-knowledge
+  selection. Clients consuming packets must accept the v2 contract before
+  upgrading from 2.5.0. API and CLI clients requiring canonical v1 packets can
+  supply `protocol: "llm-wiki-context/v1"` explicitly; existing v1 packet
+  validation remains supported. MCP packet calls use the current v2 contract.
+- New bootstrap and project upgrade use packed knowledge and indexed
+  maintenance roots. Integrations reading physical roots must support those
+  layouts before project upgrade. New projects can explicitly use
+  `bootstrap --knowledge-format v1` for compatibility.
 
 ### Changed
 
@@ -20,7 +32,7 @@ contracts automatically, with guarded recovery for existing projects.
 - Managed instructions for all supported agents, including the inline fallback,
   use current task and compact-view defaults without requiring version selection.
 - Versionless qualified packets use the current native-knowledge contract across
-  the API and MCP. Bounded MCP context sessions are available by default.
+  the API, CLI, and MCP. Bounded MCP context sessions are available by default.
 - Both composite Actions default to compatibility-aware v4 reports, so fresh
   native wikis need no report-version configuration.
 - Structural analysis caching remains available under ordinary maintenance
@@ -1443,8 +1455,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.6.0...HEAD
-[2.6.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.5.0...v2.6.0
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.0.0...HEAD
+[3.0.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.5.0...v3.0.0
 [2.5.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.3.2...v2.4.0
 [2.3.2]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.3.1...v2.3.2

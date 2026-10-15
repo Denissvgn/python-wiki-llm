@@ -54,6 +54,27 @@ def test_versionless_first_use_gets_current_storage_tasks_and_readable_views(pro
     assert files(project / "src") == source
 
 
+def test_first_use_packet_defaults_match_cli_and_mcp(project, capsys):
+    from llm_wiki_cli.services import context_service
+    from llm_wiki_cli.services.mcp_server import McpWikiService
+
+    api.bootstrap_wiki("src", "wiki")
+    capsys.readouterr()
+    before = files(project / "src"), files(project / "wiki")
+    expected = api.build_qualified_context("src", "wiki", request={"budget_tokens": 32000, "focus": ["all"]})
+    context_service.run(cli._build_parser().parse_args([
+        "context", "--src-dir", "src", "--wiki-dir", "wiki", "--budget", "32000",
+        "--focus", "all", "--format", "packet", "--read-only",
+    ]))
+    response = McpWikiService(src_dir="src", wiki_dir="wiki").get_context_packet(focus=["all"])
+    assert expected.to_payload()["schema_version"] == "llm-wiki-qualified-context-packet/v2"
+    knowledge = expected.to_payload()["response"]["knowledge"]
+    assert knowledge["mode"] == "auto" and knowledge["availability"] == "ready"
+    assert capsys.readouterr().out.encode("utf-8") == expected.to_bytes()
+    assert response["packet"] == expected.to_payload()
+    assert (files(project / "src"), files(project / "wiki")) == before
+
+
 def test_explicit_legacy_requests_and_goldens_remain_compatible(project):
     api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
     assert current_knowledge_format("wiki") == "v1"

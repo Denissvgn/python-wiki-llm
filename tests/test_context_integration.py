@@ -49,7 +49,6 @@ def tree_state(root):
 @pytest.mark.parametrize("format", ["json", "markdown"])
 def test_request_packet_real_api_cli_mcp_parity(packet_project, mode, format):
     request = {
-        "protocol": "llm-wiki-context/v1" if mode is None else "llm-wiki-context/v2",
         "budget_tokens": 32000, "focus": ["all"], "format": format,
         "filters": {"module": "app"}, "prefer_fresh": False,
     }
@@ -67,10 +66,38 @@ def test_request_packet_real_api_cli_mcp_parity(packet_project, mode, format):
         filters=request["filters"], knowledge_mode=mode,
     )
     assert packet.to_bytes() == result.stdout == canonical(response["packet"])
+    assert packet.to_payload()["schema_version"] == "llm-wiki-qualified-context-packet/v2"
     assert api.validate_context_packet(result.stdout).valid
     assert packet.to_payload()["request"]["filters"] == request["filters"]
     if format == "json":
         assert set(packet.to_payload()["response"]["files"]) == {"app.py"}
+    assert tree_state(packet_project) == before
+
+
+@pytest.mark.parametrize("protocol", ["llm-wiki-context/v1", "llm-wiki-context/v2"])
+def test_explicit_packet_protocol_keeps_api_cli_compatibility(packet_project, protocol):
+    request = {"protocol": protocol, "budget_tokens": 32000, "focus": ["all"]}
+    if protocol.endswith("/v2"):
+        request["knowledge_mode"] = "auto"
+    path = packet_project / "request.json"
+    path.write_bytes(canonical(request))
+    before = tree_state(packet_project)
+    expected = api.build_qualified_context(request=request)
+    result = cli_context(packet_project, "--request", str(path), "--format", "packet")
+    assert result.returncode == 0, result.stderr.decode()
+    assert result.stdout == expected.to_bytes()
+    assert expected.to_payload()["request"]["protocol"] == protocol
+    assert tree_state(packet_project) == before
+
+
+@pytest.mark.parametrize("protocol", [None, "llm-wiki-context/v99"])
+def test_packet_defaults_do_not_replace_explicit_invalid_protocol(packet_project, protocol):
+    path = packet_project / "request.json"
+    path.write_bytes(canonical({"protocol": protocol, "budget_tokens": 32000}))
+    before = tree_state(packet_project)
+    result = cli_context(packet_project, "--request", str(path), "--format", "packet")
+    assert result.returncode == 1 and result.stdout == b""
+    assert json.loads(result.stderr)["error"]["field"] == "protocol"
     assert tree_state(packet_project) == before
 
 
@@ -84,7 +111,6 @@ def test_packet_delivery_preserves_utf8_bytes_with_windows_stdout(
         '"""Café 雪."""\ndef greet():\n    return "hello"\n'.encode("utf-8")
     )
     request = {
-        "protocol": "llm-wiki-context/v1" if mode is None else "llm-wiki-context/v2",
         "budget_tokens": 32000,
         "focus": ["all"],
         "format": "json",

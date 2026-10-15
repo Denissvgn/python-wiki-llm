@@ -845,6 +845,8 @@ Text output shows these next steps directly.
 Use `--request FILE --format packet` to deliver a canonical v1/v2 packet from
 a filter-bearing request file. The file owns semantic options; explicit
 budget, focus, freshness-preference, or knowledge-mode overrides are rejected.
+Packet flags and request files with no protocol use the current v2 contract
+and automatic native-knowledge selection. Explicit v1 requests remain supported.
 The file's inner format remains JSON or Markdown. For v3 requests, the declared
 outer format must agree with any explicit format flag. See
 [qualified context packets](qualified-context-packets.md) for request examples,
