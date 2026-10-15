@@ -43,6 +43,9 @@ contracts automatically, with guarded recovery for existing projects.
 
 ### Fixed
 
+- Unresolved JavaScript imports and computed requires remain valid structural
+  gap evidence and render explicitly in generated import tables. Evidence
+  errors expose captured source paths and underlying causes for diagnosis.
 - Broad packet reads reduce oversized source detail before final packet
   validation, with less repeated rendering under estimated delivery budgets.
 - Read-only Git probes isolate stdin so scoped MCP sessions do not block while

@@ -338,6 +338,15 @@ llm-wiki extract --src-dir /path/to/repo --allow-external-src --summary
 
 The JSON output includes `schema_version: "llm-wiki-extract/v1"` plus
 `inventory` and optional `docker` and `unsupported_sources` objects.
+To inspect one file without rebuilding the wiki, use
+`llm-wiki extract --src-dir . --paths src/dyn.mjs --deep --read-only`.
+The command prints JSON and uses the same prepared helper cache as other source
+reads; it does not install helpers. If a helper is unavailable, follow its
+`prepare-extractors` recovery command and retry with the same cache base.
+Unresolved JavaScript `import()` and computed `require()` calls remain explicit
+gap records in `imports`; they do not establish a resolved dependency or runtime
+completeness. Generated import tables label these gaps with their reason and
+source line.
 Go `_test.go` files are omitted unless `--include-tests go` is supplied; Python
 test files remain part of normal Python extraction.
 JavaScript `.js` and `.jsx` files are handled by the TypeScript extractor
@@ -557,6 +566,16 @@ for the complete policy.
 to stdout containing the normal lint report, diagnostics, and phase timings.
 The JSON contract is preserved for extractor failures as well; lint still exits
 nonzero, but stdout remains machine-readable.
+Structural evidence errors retain their blocking policy. Where the manifest
+captures the information, the existing `message` field names the source path,
+extractor and underlying cause; `reason_code` retains the top-level category
+and `hint` gives the next action. For example, `promised-evidence-unknown`
+can report the underlying `invalid-inventory-shape` cause. The JSON finding
+fields remain unchanged for strict report consumers.
+Inspect the named source with the read-only
+single-file extraction command above, repair the underlying producer or source
+problem, then run owning sync before repeating strict validation. Editing a
+generated wiki table does not repair invalid extractor evidence.
 `lint --profile` and `ci-check --format json` additionally include this shape:
 
 ```json
