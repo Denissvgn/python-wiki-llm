@@ -29,6 +29,7 @@ from llm_wiki_cli.services.knowledge_loader import (
     load_knowledge_state,
 )
 from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
+from llm_wiki_cli.services.maintenance_protocol import ADOPTION_FILENAME
 from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
 from llm_wiki_cli.services.source_snapshot import build_source_snapshot
 from llm_wiki_cli.services.sync_manifest import (
@@ -41,7 +42,7 @@ from llm_wiki_cli.services.wiki_surface_index import (
 )
 
 
-def _bootstrap_native(tmp_path: Path) -> tuple[Path, Path]:
+def _bootstrap_native(tmp_path: Path, *, knowledge_format: str | None = None) -> tuple[Path, Path]:
     source = tmp_path / "source"
     source.mkdir()
     (source / "app.py").write_text(
@@ -61,6 +62,7 @@ def _bootstrap_native(tmp_path: Path) -> tuple[Path, Path]:
             source_root=source,
             wiki_root=wiki,
             source_adapter=True,
+            knowledge_format=knowledge_format,
         )
     )
     return source, wiki
@@ -459,7 +461,9 @@ def test_refresh_preserves_markdown_and_is_current_and_idempotent(tmp_path):
         SURFACE_INDEX_FILENAME,
         KNOWLEDGE_INDEX_FILENAME,
         MANIFEST_FILENAME,
+        ADOPTION_FILENAME,
     }
+    assert first.artifact_hashes_before[ADOPTION_FILENAME] == first.artifact_hashes_after[ADOPTION_FILENAME]
     assert first.artifact_hashes == first.artifact_hashes_after
     knowledge, manifest = _loaded_native(wiki)
     freshness = evaluate_documentation_native_freshness(
@@ -517,7 +521,7 @@ def test_refresh_upgrades_a_coherent_v4_pair_without_touching_markdown(
     tmp_path,
     surface_schema,
 ):
-    source, wiki = _bootstrap_native(tmp_path)
+    source, wiki = _bootstrap_native(tmp_path, knowledge_format="v1")
     manifest = SyncManifest.load(wiki)
     v4_payload = {
         "version": 4,
@@ -574,7 +578,7 @@ def test_refresh_upgrades_a_coherent_v4_pair_without_touching_markdown(
 def test_refresh_upgrades_a_markerless_v5_surface_without_touching_markdown(
     tmp_path,
 ):
-    source, wiki = _bootstrap_native(tmp_path)
+    source, wiki = _bootstrap_native(tmp_path, knowledge_format="v1")
     manifest = SyncManifest.load(wiki)
     (wiki / MANIFEST_FILENAME).write_text(
         manifest.without_artifact_hashes().to_json(),
@@ -605,7 +609,7 @@ def test_refresh_upgrades_a_markerless_v5_surface_without_touching_markdown(
 
 
 def test_refresh_rejects_a_corrupt_markerless_v5_surface(tmp_path):
-    source, wiki = _bootstrap_native(tmp_path)
+    source, wiki = _bootstrap_native(tmp_path, knowledge_format="v1")
     manifest = SyncManifest.load(wiki)
     (wiki / MANIFEST_FILENAME).write_text(
         manifest.without_artifact_hashes().to_json(),
