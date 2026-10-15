@@ -301,7 +301,8 @@ def build_budgeted_context(
         validate_budgeted_context(result.rendered, request, counter=counter)
     packets._assert_source_unchanged(captured.source_snapshot, captured.source_anchor)
     packets._assert_wiki_unchanged(
-        captured.wiki_root, captured.wiki_anchor, reject_all_symlinks=True
+        captured.wiki_root, captured.wiki_anchor, reject_all_symlinks=True,
+        expected_integrity=captured.wiki_integrity,
     )
     packets._assert_selection_unchanged(captured)
     return result

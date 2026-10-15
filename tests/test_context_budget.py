@@ -308,3 +308,32 @@ def test_custom_counter_does_not_assume_monotonic_utf8_size(tmp_path, monkeypatc
         result.rendered, request, counter=NonMonotonicCounter()
     )
     assert payload["packet"]["response"]["files"]["dense.py"]["detail"] == "deep"
+
+
+def test_fitted_packet_retains_captured_native_file_identity_guard(tmp_path, monkeypatch):
+    tree, _ = _materialize_ready_project(tmp_path, monkeypatch)
+    target = tree["wiki_root"] / ".llm-wiki-knowledge.json"
+    original = target.read_bytes()
+    capture = context_budget.packets.capture_context_read
+
+    def capture_with_integrity(*args, **kwargs):
+        return capture(*args, **kwargs, respect_ignores=True)
+
+    monkeypatch.setattr(context_budget.packets, "capture_context_read", capture_with_integrity)
+
+    class ReplacingCounter(ByteCounter):
+        replaced = False
+
+        def count(self, text):
+            if not self.replaced:
+                target.write_bytes(original)
+                self.replaced = True
+            return super().count(text)
+
+    with pytest.raises(context_budget.packets.ContextPacketSourceMutationError) as caught:
+        build_budgeted_context(".", str(tree["wiki_root"]), {
+            "budget_tokens": 300_000, "budget_mode": "exact", "format": "packet",
+            "knowledge_mode": "auto",
+        }, counter=ReplacingCounter())
+    assert caught.value.facet == "wiki"
+    assert target.read_bytes() == original
