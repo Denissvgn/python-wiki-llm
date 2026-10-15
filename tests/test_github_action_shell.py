@@ -134,12 +134,14 @@ def action_shell(tmp_path):
 
 @pytest.mark.parametrize("schema", [None, "v1", "v3", "v4"], ids=["default", "v1", "v3", "v4"])
 @pytest.mark.parametrize("scenario", ["clean", "drift", "corrupt"])
+@pytest.mark.parametrize("storage_format", [None, "v1"], ids=["current-storage", "legacy-storage"])
 def test_actual_action_commands_preserve_schema_scope_and_failure_receipts(
     tmp_path,
     monkeypatch,
     action_shell,
     schema,
     scenario,
+    storage_format,
 ):
     from tests.provider_conformance.action_fixture import hashes
 
@@ -161,7 +163,7 @@ def test_actual_action_commands_preserve_schema_scope_and_failure_receipts(
             skip_workflows=True,
             skip_flows=True,
             skip_dependencies=True,
-            knowledge_format=None if current else "v1",
+            knowledge_format=storage_format,
         )
     )
     if scenario == "drift":
