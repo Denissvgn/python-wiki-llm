@@ -25,7 +25,7 @@ Interpret every result under
 
 | Need | Supported route | Cost disclosure |
 | --- | --- | --- |
-| Broad repository orientation | CLI `context`, Python `build_context`/`build_qualified_context`, or MCP `get_context`/`get_context_packet` | Performs a deep source inventory. Budget and focus bound emitted output, not scan work. |
+| Broad repository orientation | CLI `context --budget-mode estimated`, or Python/MCP `build_budgeted_context` with estimated accounting and automatic knowledge selection | Performs a deep source inventory. The complete output budget and focus do not bound scan work. |
 | Exact concept, related concepts, canonical surface, or typed neighborhood | Python or MCP `query_documentation` with `concept`, `related`, `surface`, or `typed` | Reads the committed snapshot index only. Exact identity and native qualification remain visible. |
 | Supplied changed paths or unified diff | Python or MCP `query_documentation` with `impact` and `paths` or `diff` | Performs targeted extraction for supplied paths. It does not establish global live freshness. |
 | Symbol, entry point, or dependency discovery | Python or MCP `query_documentation` with `symbol`, `entrypoint`, or `dependency` | Requires `allow_full_inventory: true` and discloses `full-inventory` scope. |
@@ -186,18 +186,25 @@ maintenance scope and can report current review unavailable.
 For broad repository work, run one serialized read and reuse its selection:
 
 ```bash
-llm-wiki context --budget 8000 --src-dir . --wiki-dir docs/llm_wiki --format packet --focus changed --knowledge-mode auto --read-only
+llm-wiki context --budget 8000 --budget-mode estimated --src-dir . --wiki-dir docs/llm_wiki --format packet --focus changed --knowledge-mode auto --read-only
 ```
 
-`--format json` and `--format markdown` return a context response. CLI
-`--format packet`, Python `build_qualified_context`, and MCP
-`get_context_packet` return the full canonical Qualified Context Packet, which
-binds normalized request, source basis, wiki/knowledge basis, response,
-policies, and packet identity. Python `build_context` and MCP `get_context`
-return a response, not a packet. `query_documentation` returns a bounded query
-result, not either context envelope.
+The normal command accounts for the complete rendered result, including its
+envelope and native knowledge, using the UTF-8 estimate. It reports estimated
+compliance rather than exact tokenizer compliance. Its `packet` field contains
+the canonical Qualified Context Packet; select that field for packet validation
+or reuse. For Python/MCP `build_budgeted_context`, supply `budget_mode: "estimated"`
+and `knowledge_mode: "auto"` with the budget and scope; omit protocol versions.
 
-`--budget` bounds emitted token content. `--focus changed` prioritizes files
+Raw canonical delivery remains available through Python `build_qualified_context`,
+MCP `get_context_packet`, or CLI `--format packet` without complete-output
+accounting. The packet binds normalized request, source basis, wiki/knowledge
+basis, response, policies, and packet identity. Plain Python `build_context`
+and MCP `get_context` return context responses. `query_documentation` returns
+its bounded query result. Keep each representation's declared accounting scope.
+
+Under the normal route, `--budget` applies to the complete output estimate.
+`--focus changed` prioritizes files
 from the last Git commit, gives their import neighbors slimmer detail, and
 keeps other files names-only; `--focus all` gives equal priority. Neither
 option limits inventory work. A broad packet captures one coordinated

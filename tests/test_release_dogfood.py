@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 import json
+import shlex
 import sys
 import tarfile
 import zipfile
@@ -18,6 +19,7 @@ try:
 except ModuleNotFoundError:  # pragma: no cover - Python 3.10 compatibility
     import tomli as tomllib  # type: ignore[reportMissingImports]
 
+from llm_wiki_cli import api
 from llm_wiki_cli.commands import init_cmd, status_cmd, uninstall_cmd, upgrade_cmd
 from llm_wiki_cli.services.context_packet import build_qualified_context
 from llm_wiki_cli.services.knowledge_artifacts import (
@@ -43,6 +45,7 @@ from tests.knowledge_fixtures import (
     one_module_two_entities_fixture,
 )
 from tests.test_knowledge_artifacts import _plan as _knowledge_commit_plan
+from tests.test_context_integration import cli_context
 
 
 RECORD = Path(__file__).parent / "records" / "knowledge" / "release-dogfood.json"
@@ -398,11 +401,12 @@ def test_expanded_profile_retains_and_executes_the_knowledge_capable_route(
     block = classify_managed_schema_block(schema)
     assert block.state is ManagedSchemaBlockState.PROFILED
     assert block.profile is SchemaRenderProfile.EXPANDED_INLINE
-    assert (
-        "llm-wiki context --budget 8000 --src-dir . --wiki-dir "
+    broad_route = (
+        "llm-wiki context --budget 8000 --budget-mode estimated --src-dir . --wiki-dir "
         "docs/llm_wiki --format packet --focus changed --knowledge-mode auto "
         "--read-only"
-    ) in schema
+    )
+    assert broad_route in schema
     for fallback in (
         "independently validated surface",
         "canonical Markdown",
@@ -411,6 +415,14 @@ def test_expanded_profile_retains_and_executes_the_knowledge_capable_route(
         assert fallback in schema
 
     before = _tree_state(root)
+    actual = cli_context(root, *shlex.split(broad_route)[2:])
+    assert actual.returncode == 0, actual.stderr.decode()
+    envelope = json.loads(actual.stdout)
+    assert envelope["protocol"] == "llm-wiki-context/v3"
+    assert envelope["accounting"]["used_tokens"] <= 8000
+    assert envelope["packet"]["schema_version"] == "llm-wiki-qualified-context-packet/v2"
+    _assert_bounded_native_selection(envelope["packet"]["response"]["knowledge"])
+    assert _tree_state(root) == before
     packet = build_qualified_context(".", WIKI_DIR, _request()).to_payload()
     _assert_bounded_native_selection(packet["response"]["knowledge"])
     assert _tree_state(root) == before
@@ -420,19 +432,13 @@ def test_expanded_profile_retains_and_executes_the_knowledge_capable_route(
     manifest_bytes = manifest_path.read_bytes()
     tree["knowledge_path"].unlink()
     manifest_path.unlink()
-    legacy_before = _tree_state(root)
-    fallback_packet = build_qualified_context(".", WIKI_DIR, _request()).to_payload()
-    fallback = fallback_packet["response"]["knowledge"]
-    assert fallback["status"] == "fallback"
-    assert fallback["availability"] == "absent"
-    assert fallback["fallback"]["evidence"] == [
-        "independently-validated-surface",
-        "markdown",
-        "targeted-source-or-runtime",
-    ]
-    assert _tree_state(root) == legacy_before
+    damaged_before = _tree_state(root)
+    with pytest.raises(api.InvalidRequestError):
+        api.build_qualified_context(".", WIKI_DIR, _request())
+    assert _tree_state(root) == damaged_before
     tree["knowledge_path"].write_bytes(knowledge_bytes)
     manifest_path.write_bytes(manifest_bytes)
+    assert _tree_state(root) == before
 
     status_cmd.run(
         SimpleNamespace(
