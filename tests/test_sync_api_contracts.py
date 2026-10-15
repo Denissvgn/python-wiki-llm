@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import re
 import subprocess
 import textwrap
@@ -13,7 +12,7 @@ import pytest
 
 from llm_wiki_cli import cli
 from llm_wiki_cli.commands import bootstrap_cmd, sync_cmd
-from llm_wiki_cli.commands.sync_cmd import MANIFEST_FILENAME, SyncManifest
+from llm_wiki_cli.commands.sync_cmd import SyncManifest
 from llm_wiki_cli.services.inventory_cache import CACHE_FILENAME
 
 
@@ -282,9 +281,11 @@ def test_spec_only_change_bypasses_clean_source_return_and_updates_page(
     assert "Revised contract summary" in (wiki / "api-contracts.md").read_text(
         encoding="utf-8"
     )
-    knowledge = json.loads(
-        (wiki / ".llm-wiki-knowledge.json").read_text(encoding="utf-8")
-    )
+    from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
+    from llm_wiki_cli.services.knowledge_model import knowledge_index_to_payload
+    model = load_knowledge_state(wiki).knowledge
+    assert model is not None
+    knowledge = knowledge_index_to_payload(model)
     snapshot_hash = knowledge["bundle"]["snapshot"]["source_snapshot_hash"]
     assert f"- Source snapshot digest: `{snapshot_hash}`" in (
         wiki / "log.md"
@@ -332,11 +333,9 @@ def test_clear_openapi_file_returns_existing_surface_to_static_authority(
 
     sync_cmd.run(_sync_args(project, wiki, clear_openapi_file=True))
 
-    manifest = json.loads(
-        (wiki / MANIFEST_FILENAME).read_text(encoding="utf-8")
-    )
-    assert "openapi" not in manifest.get("generation_inputs", {})
-    assert manifest["surfaces"]["api_contracts"] == {"enabled": True}
+    manifest = SyncManifest.load(wiki)
+    assert "openapi" not in manifest.generation_inputs
+    assert manifest.surfaces["api_contracts"] == {"enabled": True}
     page = (wiki / "api-contracts.md").read_text(encoding="utf-8")
     assert "**Authority:** syntax-only static analysis" in page
     assert "`GET` | `/items` | Static list" in page

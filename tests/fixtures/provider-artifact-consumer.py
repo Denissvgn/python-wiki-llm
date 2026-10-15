@@ -70,7 +70,10 @@ for name, (source, wiki, target) in projects.items():
             "format": "json",
             "filters": {},
         }
-        if mode is not None:
+        if mode is None:
+            # Freeze the original source-only compatibility case explicitly.
+            request["protocol"] = "llm-wiki-context/v1"
+        else:
             request["knowledge_mode"] = mode
         packet = api.build_qualified_context(
             str(source), wiki_dir=str(wiki), request=request

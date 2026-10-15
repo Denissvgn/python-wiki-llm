@@ -201,17 +201,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_context | _normalise_focus | 1239 | `_normalise_focus(focus)` |
-| _normalise_focus | isinstance (src/llm_wiki_cli/api.py:_normalise_focus) | 3220 | `isinstance(focus, str)` |
-| _normalise_focus | list (src/llm_wiki_cli/api.py:_normalise_focus) | 3226 | `list(focus)` |
-| build_context | _normalize_optional_knowledge_mode | 1240 | `_normalize_optional_knowledge_mode(knowledge_mode)` |
+| build_context | _normalise_focus | 1241 | `_normalise_focus(focus)` |
+| _normalise_focus | isinstance (src/llm_wiki_cli/api.py:_normalise_focus) | 3222 | `isinstance(focus, str)` |
+| _normalise_focus | list (src/llm_wiki_cli/api.py:_normalise_focus) | 3228 | `list(focus)` |
+| build_context | _normalize_optional_knowledge_mode | 1242 | `_normalize_optional_knowledge_mode(knowledge_mode)` |
 | _normalize_optional_knowledge_mode | isinstance (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 397 | `isinstance(value, str)` |
 | _normalize_optional_knowledge_mode | ', '.join (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 398 | `', '.join(...)` |
 | _normalize_optional_knowledge_mode | repr (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 398 | `repr(item)` |
 | _normalize_optional_knowledge_mode | InvalidRequestError | 399 | `InvalidRequestError(..., code='invalid-request', details={...})` |
 | _normalize_optional_knowledge_mode | cast (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 404 | `cast(KnowledgeMode, value)` |
-| build_context | _validate_protocol_request | 1256 | `context_cmd._validate_protocol_request(request)` |
-| _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 1110 | `isinstance(data, dict)` |
+| build_context | _validate_protocol_request | 1258 | `context_cmd._validate_protocol_request(request)` |
+| _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 1114 | `isinstance(data, dict)` |
 
 ### Boundary effects
 
@@ -221,11 +221,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_normalise_focus` | `isinstance` | 3220 |
+| external_call | `_normalise_focus` | `isinstance` | 3222 |
 | external_call | `_normalize_optional_knowledge_mode` | `isinstance` | 397 |
 | unresolved_call | `_normalize_optional_knowledge_mode` | `', '.join` | 398 |
 | external_call | `_normalize_optional_knowledge_mode` | `cast` | 404 |
-| external_call | `_validate_protocol_request` | `isinstance` | 1110 |
+| external_call | `_validate_protocol_request` | `isinstance` | 1114 |
 | step_limit | `build_context` | `first 12 steps` | 0 |
 | truncated_flow | `build_context` | `depth limit` | 0 |
 

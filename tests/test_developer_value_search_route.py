@@ -734,8 +734,10 @@ def actual_command_case(tmp_path, *, selection=False, **options):
 @pytest.mark.parametrize("options,selection,message,cause", [
     ({"mode": "invented"}, False, "Search mode must", None),
     ({"query": ""}, False, "query must be a non-empty string", None),
+    ({"mode": "ranked-v1", "include_source": True}, False,
+     "Explicit source indexing requires current ranked mode", None),
     ({"mode": "ranked", "include_source": True}, False,
-     "Explicit source indexing requires ranked-v2", None),
+     "Selected search requires a valid committed ownership manifest", "storage-missing"),
     ({}, True, "Selected search requires a valid committed ownership manifest", "storage-missing"),
 ])
 def test_real_command_failure_boundaries_retained_without_publication(

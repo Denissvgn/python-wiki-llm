@@ -47,7 +47,7 @@ def _project(tmp_path, monkeypatch, capsys, *, manifest_format=None, crlf=False)
     monkeypatch.chdir(tmp_path)
     Path("src").mkdir()
     Path("src/policy.py").write_bytes(POLICY_SOURCE.encode())
-    api.bootstrap_wiki("src", "wiki")
+    api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
     capsys.readouterr()
     if crlf:
         for page in Path("wiki").rglob("*.md"):
@@ -147,7 +147,7 @@ def test_indexed_manifest_cli_requires_explicit_maintenance_adoption(
     monkeypatch.chdir(tmp_path)
     Path("src").mkdir()
     Path("src/policy.py").write_text(POLICY_SOURCE, encoding="utf-8")
-    api.bootstrap_wiki("src", "wiki")
+    api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
     capsys.readouterr()
     before = _bytes(Path("wiki"))
     with patch.object(sys, "argv", [

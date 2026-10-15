@@ -480,7 +480,7 @@ def test_selected_native_read_rejects_rehashed_inconsistent_commit(
     monkeypatch.chdir(tmp_path)
     Path("src").mkdir()
     Path("src/policy.py").write_text(SOURCE)
-    api.bootstrap_wiki("src", "wiki")
+    api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
     capsys.readouterr()
     loaded = load_knowledge_state(Path("wiki"))
     assert loaded.knowledge is not None
@@ -591,7 +591,7 @@ def test_full_artifact_parity_rejects_available_evidence_on_unmapped_retained_pa
     monkeypatch.chdir(tmp_path)
     Path("src").mkdir()
     Path("src/policy.py").write_text(SOURCE)
-    api.bootstrap_wiki("src", "wiki")
+    api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
     capsys.readouterr()
     loaded = load_knowledge_state(Path("wiki"))
     assert (

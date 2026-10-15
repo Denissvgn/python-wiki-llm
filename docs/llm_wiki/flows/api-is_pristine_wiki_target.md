@@ -2,7 +2,7 @@
 
 **Entry point:** `is_pristine_wiki_target` (`api`)
 **Source:** [wiki_lifecycle](../modules/wiki_lifecycle.md)
-**Modules touched:** [knowledge_evidence](../modules/knowledge_evidence.md), [wiki_lifecycle](../modules/wiki_lifecycle.md), [wiki_surface](../modules/wiki_surface.md)
+**Modules touched:** [current_contracts](../modules/current_contracts.md), [knowledge_evidence](../modules/knowledge_evidence.md), [wiki_lifecycle](../modules/wiki_lifecycle.md), [wiki_surface](../modules/wiki_surface.md)
 
 ## Call sequence
 
@@ -14,72 +14,73 @@ sequenceDiagram
     participant p0 as is_pristine_wiki_target
     participant p1 as formatted_json_bytes
     participant p2 as iter_page_kinds
-    participant p3 as formatted_json_text
-    participant p4 as Path
-    participant p5 as root.is_symlink
-    participant p6 as root.exists
-    participant p7 as root.is_dir
-    participant p8 as sorted
-    participant p9 as root.rglob
-    participant p10 as path.is_symlink
-    participant p11 as path.relative_to(…).as_posix
-    participant p12 as path.relative_to
-    participant p13 as set
-    participant p14 as paths_by_relative.items
-    participant p15 as path.is_dir
-    participant p16 as path.is_file
-    participant p17 as path.stat
-    participant p18 as path.read_text
-    participant p19 as json.loads
-    participant p20 as isinstance
-    participant p21 as frozenset
-    participant p22 as any
-    participant p23 as type
-    participant p24 as (…).encode
-    participant p25 as json.dumps (src/llm_wiki_cli/services…py:is_pristine_wiki_target)
+    participant p3 as current_contract_defaults
+    participant p4 as formatted_json_text
+    participant p5 as Path
+    participant p6 as root.is_symlink
+    participant p7 as root.exists
+    participant p8 as root.is_dir
+    participant p9 as sorted
+    participant p10 as root.rglob
+    participant p11 as path.is_symlink
+    participant p12 as path.relative_to(…).as_posix
+    participant p13 as path.relative_to
+    participant p14 as set
+    participant p15 as paths_by_relative.items
+    participant p16 as path.is_dir
+    participant p17 as path.is_file
+    participant p18 as path.stat
+    participant p19 as path.read_text
+    participant p20 as json.loads
+    participant p21 as isinstance
+    participant p22 as frozenset
+    participant p23 as any
+    participant p24 as type
     p0->>p1: formatted_json_bytes
     p0->>p2: iter_page_kinds
-    p1->>p3: formatted_json_text
-    p0-->>p4: Path(wiki_dir)
-    p0-->>p5: root.is_symlink
-    p0-->>p6: root.exists
-    p0-->>p7: root.is_dir
-    p0-->>p8: sorted(root.rglob(...))
-    p0-->>p9: root.rglob('*')
-    p0-->>p10: path.is_symlink
-    p0-->>p11: path.relative_to(…).as_posix
-    p0-->>p12: path.relative_to(root)
-    p0-->>p13: set(paths_by_relative)
-    p0-->>p14: paths_by_relative.items
-    p0-->>p15: path.is_dir
-    p0-->>p16: path.is_file
-    p0-->>p17: path.stat
-    p0-->>p18: path.read_text(encoding='utf-8')
-    p0-->>p18: path.read_text(encoding='utf-8')
-    p0-->>p18: path.read_text(encoding='utf-8')
-    p0-->>p19: json.loads(raw_config)
-    p0-->>p20: isinstance(config, dict)
-    p0-->>p21: frozenset(config)
-    p0-->>p21: frozenset(legacy_fields)
-    p0-->>p21: frozenset(profiled_fields)
-    p0-->>p22: any(...)
-    p0-->>p23: type(config[...])
-    p0-->>p13: set(config)
-    p0-->>p24: (…).encode
-    p0-->>p25: json.dumps (src/llm_wiki_cli/services…py:is_pristine_wiki_target)(legacy_config, indent=2)
+    p0->>p3: current_contract_defaults
+    p1->>p4: formatted_json_text
+    p0-->>p5: Path(wiki_dir)
+    p0-->>p6: root.is_symlink
+    p0-->>p7: root.exists
+    p0-->>p8: root.is_dir
+    p0-->>p9: sorted(root.rglob(...))
+    p0-->>p10: root.rglob('*')
+    p0-->>p11: path.is_symlink
+    p0-->>p12: path.relative_to(…).as_posix
+    p0-->>p13: path.relative_to(root)
+    p0-->>p14: set(paths_by_relative)
+    p0-->>p15: paths_by_relative.items
+    p0-->>p16: path.is_dir
+    p0-->>p17: path.is_file
+    p0-->>p18: path.stat
+    p0-->>p19: path.read_text(encoding='utf-8')
+    p0-->>p19: path.read_text(encoding='utf-8')
+    p0-->>p19: path.read_text(encoding='utf-8')
+    p0-->>p20: json.loads(raw_config)
+    p0-->>p21: isinstance(config, dict)
+    p0-->>p22: frozenset(config)
+    p0-->>p22: frozenset(legacy_fields)
+    p0-->>p22: frozenset(profiled_fields)
+    p0-->>p22: frozenset(current_fields)
+    p0-->>p23: any(...)
+    p0-->>p24: type(config[...])
+    p0-->>p21: isinstance(config[...], str)
 ```
 
-> Call sequence diagram shows 30 of 33 interactions; 3 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 37 interactions; 7 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 12 of 13 (1 omitted); unresolved 15 of 17 (2 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 12 of 15 (3 omitted); unresolved 14 of 17 (3 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_bytes` | 30 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_text` | 32 | - | external | 1 |
-| `src/llm_wiki_cli/services/wiki_lifecycle.py:is_pristine_wiki_target` | 1 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/wiki_lifecycle.py:is_pristine_wiki_target` | 1 | - | external | 2 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_bytes` | 31 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_text` | 33 | - | external | 1 |
+| `src/llm_wiki_cli/services/wiki_lifecycle.py:is_pristine_wiki_target` | 1 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/wiki_lifecycle.py:is_pristine_wiki_target` | 1 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow

@@ -7,28 +7,38 @@ envelope, generator version and policy, freshness evaluation state, bounds,
 warnings, limitations, path-policy receipt, and a domain-separated packet
 digest.
 
-Two schema versions are active. Omitting `knowledge_mode` retains
-`llm-wiki-qualified-context-packet/v1` and `llm-wiki-context/v1`. Supplying
-`knowledge_mode` as `off`, `auto`, or `required` selects
-`llm-wiki-qualified-context-packet/v2` and `llm-wiki-context/v2`. Version 2
+Two schema versions are supported. Starting with 3.0.0, omitted protocol and
+knowledge-mode options select `llm-wiki-qualified-context-packet/v2` and
+`llm-wiki-context/v2`, with `knowledge_mode: "auto"`. Supplying `knowledge_mode`
+as `off`, `auto`, or `required` also uses this current contract. Version 2
 uses `qualified-context-policy-v2`, separate packet and policy digest domains,
 a canonical source-priority binding, and bounded native-knowledge selection.
 
 ### Compatibility and migration
 
-Omission has the same v1 meaning across the CLI, Python API, MCP, and raw
-protocol. Explicit `knowledge_mode` is the opt-in migration boundary for v2;
-there is no alias, implicit conversion, or nullable wire value. A raw v1
-request must omit the field, while a raw v2 request must include one of the
-three exact lowercase values. Supplying both a packet request field and a
-separate Python mode argument is invalid.
+Version 3.0.0 changes the omission behavior provided by 2.5.0. Update packet
+consumers to accept v2 before upgrading. Normal CLI packet flags, versionless
+CLI packet request files, the Python packet API, and MCP packet calls share
+the current default. They disclose unavailable native knowledge through the
+qualified fallback; reads never initialize or upgrade storage.
 
-Omitted/default behavior is not deprecated in this release, and no default
-switch is scheduled. Before omission can select a different protocol, a
-release must first announce the deprecation and its migration window. Until
-then, clients that require canonical v1 bytes should continue to omit the
-field, while clients that require bounded native evidence should send an
-explicit mode and accept the v2 schema.
+API and CLI applications requiring canonical v1 packets must send an explicit
+`protocol: "llm-wiki-context/v1"` request and omit `knowledge_mode`. This returns
+the `llm-wiki-qualified-context-packet/v1` schema. Explicit raw v2 requests must
+include one of the three exact lowercase mode values;
+omitting the protocol uses the library's current defaults. Null and unknown
+versions remain invalid. Supplying both a packet request field and a separate
+Python mode argument is invalid. MCP `get_context_packet` uses v2; a client
+that only understands v1 must be updated before upgrading its server.
+
+`context_knowledge_contract()` from
+`llm_wiki_cli.services.context_knowledge_contract` returns the current
+`llm-wiki-context-knowledge-contract/v2` descriptor, including packet defaults
+for each interface. Plain context responses retain their separate compatibility
+contract. The frozen v1 descriptor remains available through
+`context_knowledge_contract(schema_version="llm-wiki-context-knowledge-contract/v1")`;
+its validator accepts both supported descriptor schemas without conversion.
+Selecting a descriptor does not change server behavior.
 
 The packet schema changed because v2 adds evidence-selection and response
 semantics. A v1 parser must not reinterpret v2 bytes, and a v2 producer must
@@ -64,7 +74,6 @@ packet = build_qualified_context(
         "format": "json",
         "filters": {},
         "prefer_fresh": False,
-        "knowledge_mode": "auto",
     },
 )
 
@@ -75,19 +84,17 @@ The command-line form uses the existing context command:
 
 ```console
 llm-wiki context --src-dir . --wiki-dir docs/llm_wiki \
-  --budget 32000 --focus changed --knowledge-mode auto --format packet
+  --budget 32000 --focus changed --format packet
 ```
 
 For filters or a reusable request, put the semantic options in `context-request.json`:
 
 ```json
 {
-  "protocol": "llm-wiki-context/v2",
   "budget_tokens": 32000,
   "focus": ["all"],
   "format": "json",
-  "filters": {"language": "python"},
-  "knowledge_mode": "auto"
+  "filters": {"language": "python"}
 }
 ```
 

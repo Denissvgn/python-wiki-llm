@@ -2574,7 +2574,6 @@ class TestProtocolRun:
         assert seen["src_dir"] == "."
         assert seen["wiki_dir"] == "agent_wiki"
         assert seen["request"] == {
-            "protocol": "llm-wiki-context/v1",
             "budget_tokens": 2048,
             "focus": ["all"],
             "format": "json",

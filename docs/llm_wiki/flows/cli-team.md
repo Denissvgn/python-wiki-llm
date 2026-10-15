@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [team_cmd](../modules/team_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 38 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 39 more
 
 **Complete modules touched:**
 
@@ -27,6 +27,7 @@
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [packages](../modules/packages.md)
@@ -118,9 +119,9 @@ sequenceDiagram
     p1-->>p30: path.exists (src/llm_wiki_cli/commands/team_cmd.py:_run_init)
 ```
 
-> Call sequence diagram shows 30 of 2418 interactions; 2388 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2425 interactions; 2395 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 687 (686 omitted); unresolved 1 of 819 (818 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 688 (687 omitted); unresolved 1 of 824 (823 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -134,7 +135,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/team.py:team_config_path` | 13 | - | external | 1 |
 | `src/llm_wiki_cli/services/team.py:write_default_team_config` | 17 | [src/llm_wiki_cli/services/team.py](../modules/team.md) | internal | 2 |
 | `src/llm_wiki_cli/services/io.py:write_json_atomic` | 19 | - | external | 1 |
-> Omission summary shows 8 of 614 groups; 606 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 617 groups; 609 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

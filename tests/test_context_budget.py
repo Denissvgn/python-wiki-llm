@@ -213,3 +213,127 @@ def test_cli_v3_and_cannot_fit(tmp_path, monkeypatch, capsys):
     output = capsys.readouterr()
     assert not output.out
     assert json.loads(output.err)["error"] == "cannot-fit"
+
+
+@pytest.mark.parametrize("counter", [EstimatedCounter(), ByteCounter()])
+def test_packet_budget_fits_before_applying_wire_item_limit(tmp_path, monkeypatch, counter):
+    """Large internal candidates are not deliverable packets until fitted."""
+    monkeypatch.chdir(tmp_path)
+    source = tmp_path / "dense.py"
+    source.write_text("def dense():\n" + "    record(1, 2, 3, 4)\n" * 1000)
+    original = source.read_bytes()
+    monkeypatch.setattr(context_budget.packets, "_MAX_JSON_ITEMS", 5000)
+    with pytest.raises(context_budget.packets.ContextPacketMalformedError,
+                       match="5000-item limit"):
+        context_budget.packets.build_qualified_context(request={
+            "budget_tokens": 1_000_000, "focus": ["all"],
+            "knowledge_mode": "off",
+        })
+    request = {
+        "budget_tokens": 8000, "budget_mode": "estimated",
+        "format": "packet", "focus": ["all"], "knowledge_mode": "off",
+    }
+    result = build_budgeted_context(request=request, counter=counter)
+    assert result.ok
+    validated = context_budget.validate_budgeted_context(
+        result.rendered, request, counter=counter
+    )
+    assert validated["packet"]["response"]["truncated"]
+    assert result.accounting["used_tokens"] <= 8000
+    assert source.read_bytes() == original
+
+
+def test_fitted_packet_still_requires_valid_packet_identity(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "app.py").write_text("def app():\n    return 1\n")
+    monkeypatch.setattr(context_budget.packets, "_packet_id", lambda body: "0" * 64)
+    with pytest.raises(context_budget.packets.ContextPacketError):
+        build_budgeted_context(request={
+            "budget_tokens": 8000, "budget_mode": "estimated", "format": "packet",
+        })
+
+
+@pytest.mark.parametrize("fmt", ["json", "packet"])
+def test_estimator_shortcut_preserves_full_render_selection(tmp_path, monkeypatch, fmt):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "雪.py").write_text(
+        "def dense():\n" + "    record('雪', 2, 3, 4)\n" * 1000, encoding="utf-8"
+    )
+    request = {
+        "budget_tokens": 8000, "budget_mode": "estimated", "format": fmt,
+        "focus": ["all"], "knowledge_mode": "off",
+    }
+    calls = []
+    render = context_budget.context._protocol_success_payload
+
+    def counted(*args, **kwargs):
+        calls.append(1)
+        return render(*args, **kwargs)
+
+    monkeypatch.setattr(context_budget.context, "_protocol_success_payload", counted)
+    optimized = build_budgeted_context(request=request, counter=EstimatedCounter())
+    optimized_calls = len(calls)
+    calls.clear()
+
+    class EquivalentCustomCounter(EstimatedCounter):
+        pass
+
+    reference = build_budgeted_context(request=request, counter=EquivalentCustomCounter())
+    assert optimized.ok and reference.ok
+    assert optimized.rendered == reference.rendered
+    assert optimized.accounting == reference.accounting
+    assert optimized_calls < len(calls)
+
+
+def test_custom_counter_does_not_assume_monotonic_utf8_size(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "dense.py").write_text(
+        "def dense():\n" + "    record(1, 2, 3, 4)\n" * 1000
+    )
+
+    class NonMonotonicCounter:
+        identity = "adversarial-trusted-counter/v1"
+        exact = True
+
+        def count(self, text):
+            return 1 if '"calls"' in text else 100_000
+
+    request = {
+        "budget_tokens": 8000, "budget_mode": "exact", "format": "packet",
+        "focus": ["all"], "knowledge_mode": "off",
+    }
+    result = build_budgeted_context(request=request, counter=NonMonotonicCounter())
+    assert result.ok and result.accounting["exact_compliance"]
+    payload = context_budget.validate_budgeted_context(
+        result.rendered, request, counter=NonMonotonicCounter()
+    )
+    assert payload["packet"]["response"]["files"]["dense.py"]["detail"] == "deep"
+
+
+def test_fitted_packet_retains_captured_native_file_identity_guard(tmp_path, monkeypatch):
+    tree, _ = _materialize_ready_project(tmp_path, monkeypatch)
+    target = tree["wiki_root"] / ".llm-wiki-knowledge.json"
+    original = target.read_bytes()
+    capture = context_budget.packets.capture_context_read
+
+    def capture_with_integrity(*args, **kwargs):
+        return capture(*args, **kwargs, respect_ignores=True)
+
+    monkeypatch.setattr(context_budget.packets, "capture_context_read", capture_with_integrity)
+
+    class ReplacingCounter(ByteCounter):
+        replaced = False
+
+        def count(self, text):
+            if not self.replaced:
+                target.write_bytes(original)
+                self.replaced = True
+            return super().count(text)
+
+    with pytest.raises(context_budget.packets.ContextPacketSourceMutationError) as caught:
+        build_budgeted_context(".", str(tree["wiki_root"]), {
+            "budget_tokens": 300_000, "budget_mode": "exact", "format": "packet",
+            "knowledge_mode": "auto",
+        }, counter=ReplacingCounter())
+    assert caught.value.facet == "wiki"
+    assert target.read_bytes() == original

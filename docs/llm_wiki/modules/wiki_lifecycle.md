@@ -11,6 +11,7 @@ Read-only classification for wiki bootstrap, sync, and migration routing.
 | Source | Symbols |
 |--------|---------|
 | `..config` | `AGENT_CHOICES` |
+| `.current_contracts` | `current_contract_defaults` |
 | `.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory` |
 | `.io` | `first_unsafe_path_component`, `formatted_json_bytes` |
 | `.rendering_lifecycle` | `RenderReason` |
@@ -46,10 +47,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (7) |
-| Outbound | `src` (8) |
+| Inbound | `src` (8) |
+| Outbound | `src` (9) |
 
-> All 15 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 16 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

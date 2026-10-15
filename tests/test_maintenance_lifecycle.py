@@ -29,7 +29,7 @@ def test_adopt_edit_sync_restart_retains_pending(tmp_path, monkeypatch, capsys):
     Path("src").mkdir()
     source = Path("src/policy.py")
     source.write_text(POLICY_SOURCE)
-    api.bootstrap_wiki("src", "wiki")
+    api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
     capsys.readouterr()
     result = adopt_maintenance_authority("src", "wiki", recovery_dir="recovery")
     assert result["records"] >= 2
@@ -56,7 +56,7 @@ def _legacy(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     Path("src").mkdir()
     Path("src/policy.py").write_text(POLICY_SOURCE)
-    api.bootstrap_wiki("src", "wiki")
+    api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
     return Path("wiki")
 
 

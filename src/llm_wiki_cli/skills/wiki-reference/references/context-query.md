@@ -25,7 +25,7 @@ Interpret every result under
 
 | Need | Supported route | Cost disclosure |
 | --- | --- | --- |
-| Broad repository orientation | CLI `context`, Python `build_context`/`build_qualified_context`, or MCP `get_context`/`get_context_packet` | Performs a deep source inventory. Budget and focus bound emitted output, not scan work. |
+| Broad repository orientation | CLI `context --budget-mode estimated`, or Python/MCP `build_budgeted_context` with estimated accounting and automatic knowledge selection | Performs a deep source inventory. The complete output budget and focus do not bound scan work. |
 | Exact concept, related concepts, canonical surface, or typed neighborhood | Python or MCP `query_documentation` with `concept`, `related`, `surface`, or `typed` | Reads the committed snapshot index only. Exact identity and native qualification remain visible. |
 | Supplied changed paths or unified diff | Python or MCP `query_documentation` with `impact` and `paths` or `diff` | Performs targeted extraction for supplied paths. It does not establish global live freshness. |
 | Symbol, entry point, or dependency discovery | Python or MCP `query_documentation` with `symbol`, `entrypoint`, or `dependency` | Requires `allow_full_inventory: true` and discloses `full-inventory` scope. |
@@ -38,8 +38,9 @@ cost opt-in.
 
 ## Explicit task adoption routes
 
-Prefer `llm-wiki-task-request/v2` with canonical delivery for compatible task
-integrations. Task request v1 retains its full native-validation behavior;
+Use versionless task requests with canonical delivery. The library resolves
+the current task and storage contracts; agents do not choose versions.
+Explicit task request v1 retains its full native-validation behavior;
 legacy context calls retain their own response contracts. A task result and a
 broad context packet are different envelopes. Read coverage and gaps before
 treating either as sufficient for the declared task.
@@ -51,7 +52,6 @@ to it:
 
 ```json
 {
-  "schema_version": "llm-wiki-task-request/v2",
   "requirements": [
     {"id": "contract", "facet": "source-contract", "selector": "app.py:limit"}
   ],
@@ -67,14 +67,13 @@ llm-wiki task-context --request source-task.json --src-dir src --wiki-dir wiki
 route. Keep the user's actual roots, selection and permissions. The read does
 not create example source, install helpers or execute target code.
 
-A native task v2 requirement needs supported sharded or packed knowledge.
-For a new wiki, authorized bootstrap can explicitly choose
-`--knowledge-format sharded-v2`. For an existing flat wiki, preserve it and use
-an authorized dry-run/apply with an empty recovery directory outside source/wiki:
+A native requirement needs current supported native knowledge. New authorized
+bootstrap selects current storage and ordinary maintenance ownership. Existing
+projects use authorized upgrade after a package update; the library retains
+recovery copies and chooses compatible current formats:
 
 ```bash
-llm-wiki knowledge migrate --wiki-dir wiki --to sharded-v2 --dry-run --recovery-dir storage-recovery
-llm-wiki knowledge migrate --wiki-dir wiki --to sharded-v2 --recovery-dir storage-recovery
+llm-wiki upgrade --wiki-dir wiki
 llm-wiki knowledge storage-check --wiki-dir wiki --full
 llm-wiki doctor --capabilities --src-dir src --wiki-dir wiki --format json
 ```
@@ -85,10 +84,11 @@ Then request exact native evidence with `knowledge_mode: "required"`, for exampl
 use explicit source requirements with selected reads when needed. Missing,
 corrupt, unsupported or bounded native evidence remains a gap or failure. Never
 rewrite the requirements or switch native mode off to claim success. All readers
-and writers must support the chosen format. A read never migrates or syncs.
+and writers must support the current format. A read never migrates or syncs.
 
-Apply retains the prior storage snapshot; dry-run does not. For an interrupted
-or failed migration, preview and use its retained matching complete snapshot:
+Upgrade reports recovery locations. For an interrupted storage migration,
+use the reported matching storage preimage; ownership adoption has its separate
+complete recovery record. Never combine unrelated recovery snapshots:
 
 ```bash
 llm-wiki knowledge recover-storage --wiki-dir wiki --recovery-dir storage-recovery --dry-run
@@ -105,7 +105,7 @@ before manifestless seeding. `indexed-v8` requires an adopted owner and does not
 shard flat knowledge.
 
 Canonical delivery stays default. Optional compact CLI delivery adds
-`--view compact-v1 --view-budget-tokens N --canonical-output FILE`; both canonical
+`--view compact --view-budget-tokens N --canonical-output FILE`; both canonical
 receipt and optional `--output FILE` must be outside source/wiki and disjoint
 from request/profile/tokenizer/selection inputs and each other. For source root
 `.` that means outside the entire root. Choose a positive explicit budget; a
@@ -113,10 +113,10 @@ compact minimum can still fail to fit. No 1,000-token fit or fixed saving is
 promised. Canonical failure produces no receipt; compact-only cannot-fit returns
 its counted diagnostic and preserves a valid canonical receipt when available.
 
-Choose `--view compact-v2` for self-contained readable JSON with complete
+The current compact view is self-contained readable JSON with complete
 selected facts, citations, coverage, gaps and limitations. Use the same explicit
 view budget and disjoint canonical receipt path. Python/session `view_options`
-select `llm-wiki-task-view-request/v2`; validation/expansion remain bound to the
+omit version fields; validation/expansion remain bound to the
 original canonical text and request. The readable body may exceed compact-v1's
 encoded size. Its budget still covers emitted view text rather than host framing.
 MCP retains identity/base/state and validation qualifications in its smaller v2
@@ -124,8 +124,7 @@ envelope; `include_metadata: true` returns full telemetry. V1 and Python session
 metadata retain their existing shape. Count setup, transport and any necessary
 follow-up messages; never infer a universal fit or saving.
 
-Python uses `build_compact_task_context(..., view_options={"schema_version":
-"llm-wiki-task-view-request/v1", "budget_tokens": N})`, then validates/expands
+Python uses `build_compact_task_context(..., view_options={"budget_tokens": N})`, then validates/expands
 against that exact request and canonical text. Session `read_compact` and MCP
 `read_compact_context_session` return compact presentation; explicit
 `canonical_receipt(request_id, result_id)` or MCP `get_task_context_receipt`
@@ -152,7 +151,7 @@ candidates, including relaxed matches and source snippets.
 Choose source augmentation explicitly when source text is needed for discovery:
 
 ```bash
-llm-wiki search "retry failure" --src-dir src --wiki-dir wiki --mode ranked-v2 --include-source
+llm-wiki search "retry failure" --src-dir src --wiki-dir wiki --include-source
 ```
 
 It requires a valid committed manifest and indexes only mapped module sources
@@ -187,18 +186,25 @@ maintenance scope and can report current review unavailable.
 For broad repository work, run one serialized read and reuse its selection:
 
 ```bash
-llm-wiki context --budget 8000 --src-dir . --wiki-dir docs/llm_wiki --format packet --focus changed --knowledge-mode auto --read-only
+llm-wiki context --budget 8000 --budget-mode estimated --src-dir . --wiki-dir docs/llm_wiki --format packet --focus changed --knowledge-mode auto --read-only
 ```
 
-`--format json` and `--format markdown` return a context response. CLI
-`--format packet`, Python `build_qualified_context`, and MCP
-`get_context_packet` return the full canonical Qualified Context Packet, which
-binds normalized request, source basis, wiki/knowledge basis, response,
-policies, and packet identity. Python `build_context` and MCP `get_context`
-return a response, not a packet. `query_documentation` returns a bounded query
-result, not either context envelope.
+The normal command accounts for the complete rendered result, including its
+envelope and native knowledge, using the UTF-8 estimate. It reports estimated
+compliance rather than exact tokenizer compliance. Its `packet` field contains
+the canonical Qualified Context Packet; select that field for packet validation
+or reuse. For Python/MCP `build_budgeted_context`, supply `budget_mode: "estimated"`
+and `knowledge_mode: "auto"` with the budget and scope; omit protocol versions.
 
-`--budget` bounds emitted token content. `--focus changed` prioritizes files
+Raw canonical delivery remains available through Python `build_qualified_context`,
+MCP `get_context_packet`, or CLI `--format packet` without complete-output
+accounting. The packet binds normalized request, source basis, wiki/knowledge
+basis, response, policies, and packet identity. Plain Python `build_context`
+and MCP `get_context` return context responses. `query_documentation` returns
+its bounded query result. Keep each representation's declared accounting scope.
+
+Under the normal route, `--budget` applies to the complete output estimate.
+`--focus changed` prioritizes files
 from the last Git commit, gives their import neighbors slimmer detail, and
 keeps other files names-only; `--focus all` gives equal priority. Neither
 option limits inventory work. A broad packet captures one coordinated

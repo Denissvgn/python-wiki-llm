@@ -14,6 +14,15 @@ It owns the development procedure, not its specialist operations. It does not
 authorize edits, execution, setup, Git actions, publication, or a wider read scope.
 User, repository, and host rules remain authoritative.
 
+The installed library owns current schema and storage selection. For normal
+work, omit task and compact-view version fields; supply requirements, budgets
+and scope. Init and project upgrade install current workflow defaults, and
+bootstrap/upgrade prepare current native storage with recovery preimages.
+Readers never upgrade data. Explicit older contracts are compatibility tools,
+not choices for an agent's ordinary work. Ordinary maintenance ownership does
+not invent human review, and optional publication/privacy settings remain under
+their existing authorization rules.
+
 Small mechanical work can use direct inspection and proportionate checks. This
 reduces retrieval and record ceremony, not relevant maintenance or delivery
 obligations. A read-only investigation can mark change-dependent steps not
@@ -164,7 +173,7 @@ is a separately reviewed change. Label estimated costs and unavailable model
 usage; do not infer a general speedup from a successful read.
 
 The conversation or an authorized local record can hold this handoff. Separate
-task files, profiles, sessions, compact delivery, storage/governance adoption,
+task files, profiles, sessions, compact delivery, governance adoption,
 automatic report files, and model orchestration are not prerequisites. The
 optional native-coding recipe adds explicitly selected interface details to this
 procedure; loading it does not activate a profile.

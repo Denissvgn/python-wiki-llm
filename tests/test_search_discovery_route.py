@@ -199,7 +199,7 @@ def test_native_capability_unavailable_never_becomes_source_only_success(tmp_pat
     monkeypatch.chdir(tmp_path)
     _source(tmp_path, selected=False)
     if native_layout == "flat":
-        api.bootstrap_wiki("src", "wiki")
+        api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
         capsys.readouterr()
     else:
         Path("wiki/entities").mkdir(parents=True)
@@ -224,7 +224,7 @@ def test_native_capability_unavailable_never_becomes_source_only_success(tmp_pat
 def test_declared_legacy_native_corruption_is_not_capability_unavailable(tmp_path, monkeypatch, capsys, mutation):
     monkeypatch.chdir(tmp_path)
     _source(tmp_path, selected=False)
-    api.bootstrap_wiki("src", "wiki")
+    api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
     capsys.readouterr()
     path = Path("wiki/.llm-wiki-knowledge.json")
     if mutation == "missing":

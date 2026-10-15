@@ -364,7 +364,9 @@ jobs:
         run: >-
           python -m pytest tests/test_wiki_review_snapshot.py
           tests/test_default_development_workflow.py
-          tests/test_storage_lock_diagnostics.py -q
+          tests/test_current_install_defaults.py
+          tests/test_storage_lock_diagnostics.py
+          tests/test_real_caller_action_fixture.py -q
           -p no:cacheprovider --strict-config --strict-markers -W error
           -o xfail_strict=true
 

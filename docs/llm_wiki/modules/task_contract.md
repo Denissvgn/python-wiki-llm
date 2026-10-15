@@ -88,7 +88,7 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [TaskContext](../entities/TaskContext.md) | 119 | — | Detached canonical task output; unsuccessful budgets contain no context. |
+| [TaskContext](../entities/TaskContext.md) | 123 | — | Detached canonical task output; unsuccessful budgets contain no context. |
 
 ## Functions
 

@@ -1299,7 +1299,6 @@ class TestMcpWikiService:
             "src_dir": "source-root",
             "wiki_dir": wiki_dir.as_posix(),
             "request": {
-                "protocol": "llm-wiki-context/v1",
                 "budget_tokens": 4096,
                 "focus": ["all"],
                 "format": "json",

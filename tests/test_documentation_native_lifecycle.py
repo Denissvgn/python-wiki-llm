@@ -36,6 +36,7 @@ from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
 from llm_wiki_cli.services.knowledge_consumption import load_knowledge_read_view
 from llm_wiki_cli.services.knowledge_governance import GOVERNANCE_FILENAME
 from llm_wiki_cli.services.knowledge_model import KnowledgeLoadState
+from llm_wiki_cli.services.maintenance_protocol import ADOPTION_FILENAME
 from llm_wiki_cli.services.sync_manifest import MANIFEST_FILENAME
 from llm_wiki_cli.services.wiki_surface_index import SURFACE_INDEX_FILENAME
 from llm_wiki_cli.services.verification_contracts import (
@@ -322,7 +323,8 @@ def test_source_backed_prepare_owns_a_valid_native_trio(tmp_path: Path) -> None:
     assert loaded.status is KnowledgeLoadState.VALID
     assert loaded.knowledge is not None
     assert loaded.manifest_basis is not None
-    assert _read_json(wiki / MANIFEST_FILENAME)["version"] == 5
+    assert _read_json(wiki / MANIFEST_FILENAME)["version"] == 8
+    assert (wiki / ADOPTION_FILENAME).is_file()
 
     ownership = _ownership_payload(workspace, run)
     assert NATIVE_ARTIFACTS <= set(ownership["fingerprints"])

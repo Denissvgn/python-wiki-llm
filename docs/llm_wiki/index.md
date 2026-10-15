@@ -7,8 +7,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 | Surface | Count | Start here |
 |---|---:|---|
 | Entities | 663 | [Open section](#entities) |
-| Modules | 244 | [Open section](#modules) |
-| Workflows | 215 | [Open section](#workflows) |
+| Modules | 245 | [Open section](#modules) |
+| Workflows | 218 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 465 | [Open section](#entry-point-flows) |
 | Infrastructure | 2 | [Open section](#infrastructure) |
@@ -716,6 +716,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [context_service](modules/context_service.md) - Structured context budgeting — return priority-ranked, token-budgeted codebase context for LLM agents.
 - [context_session](modules/context_session.md) - Explicit bounded sessions with authoritative validation and portable deltas.
 - [controller](modules/controller.md) - Evidence-backed admission and intake controller for documentation calibration.
+- [current_contracts](modules/current_contracts.md) - Library-owned current formats for authorized project setup and upgrade.
 - [data_flow](modules/data_flow.md) - Static data-flow summaries for generated user-flow pages.
 - [dependency_versions](modules/dependency_versions.md) - Lossless, scope-aware dependency version observations.
 - [detectors](modules/detectors.md) - Sample entry-point detector hooks for LLM Wiki plugins.
@@ -1034,9 +1035,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [impact_query](workflows/impact_query.md) - entry: `api._impact_query`
 - [index_needs_context](workflows/index_needs_context.md) - entry: `documentation_worklist._index_needs_context`
 - [init_cmd_flow](workflows/init_cmd_flow.md) - entry: `init_cmd.run`
+- [input_key](workflows/input_key.md) - entry: `sync_analysis_cache.input_key`
 - [inspect_native_concept](workflows/inspect_native_concept.md) - entry: `native_inspection.inspect_native_concept`
 - [install_cmd_flow](workflows/install_cmd_flow.md) - entry: `install_cmd.run`
 - [inventory_result](workflows/inventory_result.md) - entry: `sync_analysis_cache.inventory_result`
+- [is_pristine_wiki_target](workflows/is_pristine_wiki_target.md) - entry: `wiki_lifecycle.is_pristine_wiki_target`
 - [knowledge_projection](workflows/knowledge_projection.md) - entry: `obsidian_cmd._knowledge_projection`
 - [knowledge_storage_cmd_flow](workflows/knowledge_storage_cmd_flow.md) - entry: `knowledge_storage_cmd.run`
 - [lint_service_flow](workflows/lint_service_flow.md) - entry: `lint_service.run`
@@ -1126,6 +1129,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [try_sync_knowledge_reuse](workflows/try_sync_knowledge_reuse.md) - entry: `sync_cmd._try_sync_knowledge_reuse`
 - [unchanged_commit_result](workflows/unchanged_commit_result.md) - entry: `knowledge_reuse.unchanged_commit_result`
 - [upgrade_cmd_flow](workflows/upgrade_cmd_flow.md) - entry: `upgrade_cmd.run`
+- [upgrade_current_knowledge](workflows/upgrade_current_knowledge.md) - entry: `current_contracts.upgrade_current_knowledge`
 - [validate_builder_link](workflows/validate_builder_link.md) - entry: `knowledge_index._validate_builder_link`
 - [validate_default_selection_contract](workflows/validate_default_selection_contract.md) - entry: `ci_installer._validate_default_selection_contract`
 - [validate_knowledge_artifacts](workflows/validate_knowledge_artifacts.md) - entry: `knowledge_artifacts.validate_knowledge_artifacts`

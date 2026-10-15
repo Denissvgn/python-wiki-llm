@@ -196,35 +196,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| query_documentation | _validate_documentation_query_request | 3055 | `_validate_documentation_query_request(request)` |
-| _validate_documentation_query_request | isinstance (src/llm_wiki_cli/api.py:_…cumentation_query_request) | 2676 | `isinstance(request, Mapping)` |
-| _validate_documentation_query_request | InvalidRequestError | 2677 | `InvalidRequestError('request must be an object.', code='invalid-request', details={...})` |
-| _validate_documentation_query_request | next (src/llm_wiki_cli/api.py:_…cumentation_query_request) | 2682 | `next(..., None)` |
-| _validate_documentation_query_request | isinstance (src/llm_wiki_cli/api.py:_…cumentation_query_request) | 2682 | `isinstance(key, str)` |
-| _validate_documentation_query_request | InvalidRequestError | 2684 | `InvalidRequestError('request fields must be strings.', code='invalid-request', details={...})` |
-| _validate_documentation_query_request | request.get (src/llm_wiki_cli/api.py:_…cumentation_query_request) | 2689 | `request.get('operation')` |
-| _validate_documentation_query_request | isinstance (src/llm_wiki_cli/api.py:_…cumentation_query_request) | 2690 | `isinstance(operation, str)` |
-| _validate_documentation_query_request | ', '.join (src/llm_wiki_cli/api.py:_…cumentation_query_request) | 2691 | `', '.join(...)` |
-| _validate_documentation_query_request | repr (src/llm_wiki_cli/api.py:_…cumentation_query_request) | 2691 | `repr(item)` |
-| _validate_documentation_query_request | InvalidRequestError | 2692 | `InvalidRequestError(..., code='invalid-request', details={...})` |
+| query_documentation | _validate_documentation_query_request | 3057 | `_validate_documentation_query_request(request)` |
+| _validate_documentation_query_request | isinstance (src/llm_wiki_cli/api.py:_…cumentation_query_request) | 2678 | `isinstance(request, Mapping)` |
+| _validate_documentation_query_request | InvalidRequestError | 2679 | `InvalidRequestError('request must be an object.', code='invalid-request', details={...})` |
+| _validate_documentation_query_request | next (src/llm_wiki_cli/api.py:_…cumentation_query_request) | 2684 | `next(..., None)` |
+| _validate_documentation_query_request | isinstance (src/llm_wiki_cli/api.py:_…cumentation_query_request) | 2684 | `isinstance(key, str)` |
+| _validate_documentation_query_request | InvalidRequestError | 2686 | `InvalidRequestError('request fields must be strings.', code='invalid-request', details={...})` |
+| _validate_documentation_query_request | request.get (src/llm_wiki_cli/api.py:_…cumentation_query_request) | 2691 | `request.get('operation')` |
+| _validate_documentation_query_request | isinstance (src/llm_wiki_cli/api.py:_…cumentation_query_request) | 2692 | `isinstance(operation, str)` |
+| _validate_documentation_query_request | ', '.join (src/llm_wiki_cli/api.py:_…cumentation_query_request) | 2693 | `', '.join(...)` |
+| _validate_documentation_query_request | repr (src/llm_wiki_cli/api.py:_…cumentation_query_request) | 2693 | `repr(item)` |
+| _validate_documentation_query_request | InvalidRequestError | 2694 | `InvalidRequestError(..., code='invalid-request', details={...})` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `payload.update` | `query_documentation` | 3175 |
-| mutation | `payload.update` | `query_documentation` | 3199 |
+| mutation | `payload.update` | `query_documentation` | 3177 |
+| mutation | `payload.update` | `query_documentation` | 3201 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_validate_documentation_query_request` | `isinstance` | 2676 |
-| external_call | `_validate_documentation_query_request` | `next` | 2682 |
-| external_call | `_validate_documentation_query_request` | `isinstance` | 2682 |
-| unresolved_call | `_validate_documentation_query_request` | `request.get` | 2689 |
-| external_call | `_validate_documentation_query_request` | `isinstance` | 2690 |
-| unresolved_call | `_validate_documentation_query_request` | `', '.join` | 2691 |
+| external_call | `_validate_documentation_query_request` | `isinstance` | 2678 |
+| external_call | `_validate_documentation_query_request` | `next` | 2684 |
+| external_call | `_validate_documentation_query_request` | `isinstance` | 2684 |
+| unresolved_call | `_validate_documentation_query_request` | `request.get` | 2691 |
+| external_call | `_validate_documentation_query_request` | `isinstance` | 2692 |
+| unresolved_call | `_validate_documentation_query_request` | `', '.join` | 2693 |
 | step_limit | `query_documentation` | `first 12 steps` | 0 |
 | truncated_flow | `query_documentation` | `depth limit` | 0 |
 

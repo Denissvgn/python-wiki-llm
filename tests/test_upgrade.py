@@ -521,13 +521,13 @@ class TestUpgradeCreatesNewDirs:
             assert (wiki / rel).read_text(encoding="utf-8") == content
 
         snapshot = {
-            path.relative_to(wiki).as_posix(): path.read_text(encoding="utf-8")
+            path.relative_to(wiki).as_posix(): path.read_bytes()
             for path in wiki.rglob("*")
             if path.is_file()
         }
         upgrade_cmd.run(_make_args(agent="generic"))
         assert {
-            path.relative_to(wiki).as_posix(): path.read_text(encoding="utf-8")
+            path.relative_to(wiki).as_posix(): path.read_bytes()
             for path in wiki.rglob("*")
             if path.is_file()
         } == snapshot

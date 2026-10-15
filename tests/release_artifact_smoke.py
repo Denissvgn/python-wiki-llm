@@ -18,6 +18,7 @@ import shutil
 import subprocess
 import sys
 import tarfile
+import tempfile
 import time
 import zipfile
 from pathlib import Path
@@ -711,6 +712,70 @@ def _validate_workflow_consumer(python: Path, mcp_python: Path, work: Path, evid
     return {**results[0], "mcp_transports": ["stdio", "http"]}
 
 
+def _provider_state_result(value: Mapping, *, mode: str, version: str, digest: str) -> dict:
+    """Admit only the complete declared installed state vector, not a pass flag."""
+    expected = {"valid": "ready", "empty-selection": "ready", "absent": "workspace-state-error",
+                "surface-only": "absent", "declared-missing": "degraded", "malformed": "degraded",
+                "unsupported": "unsupported", "mixed": "degraded", "corrupt-surface": "artifact-integrity-error",
+                **{f"legacy-manifest-v{v}": "absent" for v in (1, 2, 3, 4)}}
+    if (value.get("status") != "pass" or value.get("mode") != mode
+            or value.get("version") != version or value.get("archive_sha256") != digest):
+        raise SmokeError("installed state consumer identity or verdict differs")
+    states = value.get("states", [])
+    if len(states) != len(expected) or {s["state"] for s in states} != set(expected):
+        raise SmokeError("installed state consumer omitted or duplicated a required vector")
+    normalized = []
+    for state in states:
+        name = state["state"]
+        if (state["availability"] != expected[name] or state["read_only"] is not True
+                or state["api_cli_parity"] is not True):
+            raise SmokeError("installed state consumer qualification differs")
+        if expected[name] == "ready":
+            if state["counts"] is None or state["counts"]["modeled"] <= 0 or state["found"] is not (name == "valid"):
+                raise SmokeError("empty native selection lost its ready denominator")
+        elif state["counts"] is not None or state["found"] is not False:
+            raise SmokeError("non-ready native state fabricated knowledge")
+        sdk = state["sdk"]
+        if mode == "mcp":
+            if (len(sdk) != 2 or {s["transport"] for s in sdk} != {"stdio", "http"}
+                    or any(s["parity"] is not True or s["safe_error"] is not True for s in sdk)):
+                raise SmokeError("installed state SDK vector is incomplete")
+        elif sdk:
+            raise SmokeError("base state consumer unexpectedly used the optional SDK")
+        normalized.append({k: v for k, v in state.items() if k != "sdk"})
+    names = {"context-packet-v1.json", "context-packet-v2.json",
+             "context-packet-v1-pre-bindings.json", "context-packet-v2-pre-bindings.json"}
+    goldens = value.get("goldens", [])
+    if len(goldens) != 4 or {g["name"] for g in goldens} != names or value.get("future_packet_rejected") is not True:
+        raise SmokeError("installed packet compatibility vector is incomplete")
+    for golden in goldens:
+        schema = "llm-wiki-qualified-context-packet/v" + ("1" if "-v1" in golden["name"] else "2")
+        if golden["sha256"] != _sha256(Path(__file__).parent / "fixtures" / golden["name"]) or golden["schema"] != schema:
+            raise SmokeError("installed compatibility receipt belongs to another golden")
+    upgrade = value.get("legacy_upgrade")
+    if upgrade != {"before": "absent", "after": "ready", "source_unchanged": True, "authored_preserved": True}:
+        raise SmokeError("installed legacy upgrade failed")
+    return {"states": normalized, "goldens": goldens, "future_packet_rejected": True, "legacy_upgrade": upgrade}
+
+
+def _validate_provider_states(python: Path, mcp_python: Path, artifact: Path, version: str, evidence: Path) -> Mapping:
+    fixtures = Path(__file__).parent / "fixtures"
+    results = []
+    evidence.mkdir(parents=True, exist_ok=True)
+    for executable, mode in ((python, "base"), (mcp_python, "mcp")):
+        # Foreign callers cannot inherit the provider checkout's Git/lock root.
+        with tempfile.TemporaryDirectory(prefix="provider-state-consumer-") as temporary:
+            completed = _run(_isolated_utf8_python_command(executable, str(fixtures / "provider-state-consumer.py"),
+                "--goldens", str(fixtures), "--archive-sha256", _sha256(artifact), "--version", version,
+                "--mode", mode), cwd=Path(temporary), timeout=COMMAND_TIMEOUT_SECONDS * 3)
+        value = dict(_json_output(completed, "installed state consumer"))
+        (evidence / f"provider-states-{mode}.json").write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8")
+        results.append(_provider_state_result(value, mode=mode, version=version, digest=_sha256(artifact)))
+    if results[0] != results[1]:
+        raise SmokeError("installed base and SDK state qualifications disagree")
+    return {**results[0], "mcp_transports": ["stdio", "http"]}
+
+
 def run_smoke(args: argparse.Namespace) -> int:
     if not Path(__file__).with_name("mcp_probe.py").is_file():
         raise SmokeError("MCP probe support is missing from the frozen harness")
@@ -890,6 +955,7 @@ def run_smoke(args: argparse.Namespace) -> int:
     packet_adapters = _validate_packet_adapter_parity(python, mcp_python, work, source, wiki, evidence)
     native_consumer = _validate_native_consumer(python, mcp_python, work, evidence)
     workflow_consumer = _validate_workflow_consumer(python, mcp_python, work, evidence)
+    provider_states = _validate_provider_states(python, mcp_python, artifact, args.expected_version, evidence)
 
     site = work / "site"
     _run(
@@ -999,6 +1065,7 @@ def run_smoke(args: argparse.Namespace) -> int:
             "native_consumer": native_consumer,
             "workflow_consumer": workflow_consumer,
             "provider_contract": provider_contract,
+            "provider_states": provider_states,
             "site_sha256": _tree_hash(site),
             "obsidian_sha256": _tree_hash(vault),
             "skills": skill_count,

@@ -36,6 +36,7 @@ def _bootstrap_args(project: Path, wiki: Path, **kwargs):
         "wiki_dir": str(wiki),
         "overwrite": False,
         "depth": "full",
+        "knowledge_format": "v1",
         "skip_workflows": True,
         "skip_flows": True,
         "skip_data_flow": False,

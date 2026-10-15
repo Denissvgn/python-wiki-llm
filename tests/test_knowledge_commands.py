@@ -73,6 +73,7 @@ def _bootstrap_args(project, wiki_dir):
         wiki_dir=str(wiki_dir),
         overwrite=False,
         depth="full",
+        knowledge_format="v1",
         skip_workflows=True,
     )
 

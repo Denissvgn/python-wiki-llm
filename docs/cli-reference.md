@@ -845,6 +845,8 @@ Text output shows these next steps directly.
 Use `--request FILE --format packet` to deliver a canonical v1/v2 packet from
 a filter-bearing request file. The file owns semantic options; explicit
 budget, focus, freshness-preference, or knowledge-mode overrides are rejected.
+Packet flags and request files with no protocol use the current v2 contract
+and automatic native-knowledge selection. Explicit v1 requests remain supported.
 The file's inner format remains JSON or Markdown. For v3 requests, the declared
 outer format must agree with any explicit format flag. See
 [qualified context packets](qualified-context-packets.md) for request examples,
@@ -1023,7 +1025,6 @@ For example, with `src/app.py` defining `limit`, save `source-task.json`:
 
 ```json
 {
-  "schema_version": "llm-wiki-task-request/v2",
   "kind": "contract-change",
   "requirements": [
     {"id": "contract", "facet": "source-contract", "selector": "app.py:limit"}
@@ -1034,7 +1035,7 @@ For example, with `src/app.py` defining `limit`, save `source-task.json`:
 
 ```bash
 llm-wiki task-context --request source-task.json --src-dir src --wiki-dir wiki
-llm-wiki task-context --request source-task.json --src-dir src --wiki-dir wiki --view compact-v1 --view-budget-tokens 32000 --canonical-output receipts/source-context.json
+llm-wiki task-context --request source-task.json --src-dir src --wiki-dir wiki --view compact --view-budget-tokens 32000 --canonical-output receipts/source-context.json
 ```
 
 Canonical text is the default. Compact delivery is opt-in and needs a separate
@@ -1043,11 +1044,11 @@ selection, tokenizer and output paths distinct. `--view-budget-tokens` chooses
 its separate presentation budget; no fixed token saving or small-budget fit is
 promised. Include the selected view once in the coding host.
 
-Use `--view compact-v2` for readable JSON containing complete selected facts,
+Use `--view compact` for the current readable JSON containing complete selected facts,
 citations, requirements, coverage, gaps and limitations. It requires the same
 explicit view budget and canonical receipt destination. Python and session
-calls select it with `schema_version: "llm-wiki-task-view-request/v2"` in
-`view_options`. Validation and expansion require the original canonical text,
+calls omit the version field in `view_options`; an omitted view object uses
+the effective host budget. Explicit `compact-v1` and `compact-v2` remain compatibility aliases. Validation and expansion require the original canonical text,
 request and view options. The body is self-contained and may be larger than
 compact-v1's encoded body. Canonical delivery remains the default.
 
@@ -1059,8 +1060,8 @@ framing, setup and any required receipt/metadata follow-ups in addition to the
 view budget; no complete-host token cap is implied by `--view-budget-tokens`.
 
 Choose `knowledge_mode: "off"` only when no native evidence is required; this
-route works without a wiki. Native v2 requirements need explicitly adopted
-sharded or packed knowledge. Keep `required` mode and the native requirements
+route works without a wiki. Native requirements use current bounded storage from bootstrap or project
+upgrade. Keep `required` mode and the native requirements
 when a read fails; a failure never authorizes bootstrap or migration.
 `snapshot` reads committed native evidence, while `selected` captures declared
 source scope. `--allow-full-inventory` permits an explicitly requested broader

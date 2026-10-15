@@ -110,7 +110,7 @@ flowchart LR
 |-------|------|-------|-------------|
 | [TaskCompactError](../entities/TaskCompactError.md) | 78 | `ValueError` | — |
 | [CompactTaskContext](../entities/CompactTaskContext.md) | 85 | — | — |
-| [_CheckedCounter](../entities/CheckedCounter.md) | 142 | — | — |
+| [_CheckedCounter](../entities/CheckedCounter.md) | 141 | — | — |
 
 ## Functions
 

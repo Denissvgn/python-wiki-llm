@@ -2,7 +2,7 @@
 
 **Entry point:** `classify_wiki_lifecycle` (`api`)
 **Source:** [wiki_lifecycle](../modules/wiki_lifecycle.md)
-**Modules touched:** [knowledge_evidence](../modules/knowledge_evidence.md), [wiki_lifecycle](../modules/wiki_lifecycle.md), [wiki_surface](../modules/wiki_surface.md)
+**Modules touched:** [current_contracts](../modules/current_contracts.md), [knowledge_evidence](../modules/knowledge_evidence.md), [wiki_lifecycle](../modules/wiki_lifecycle.md), [wiki_surface](../modules/wiki_surface.md)
 
 ## Call sequence
 
@@ -15,75 +15,76 @@ sequenceDiagram
     participant p1 as is_pristine_wiki_target
     participant p2 as formatted_json_bytes
     participant p3 as iter_page_kinds
-    participant p4 as formatted_json_text
-    participant p5 as Path (src/llm_wiki_cli/services…py:classify_wiki_lifecycle)
-    participant p6 as manifest.exists
-    participant p7 as manifest.is_symlink
-    participant p8 as root.is_dir (src/llm_wiki_cli/services…py:classify_wiki_lifecycle)
-    participant p9 as index.is_file
-    participant p10 as index.is_symlink
-    participant p11 as Path (src/llm_wiki_cli/services…py:is_pristine_wiki_target)
-    participant p12 as root.is_symlink
-    participant p13 as root.exists
-    participant p14 as root.is_dir (src/llm_wiki_cli/services…py:is_pristine_wiki_target)
-    participant p15 as sorted
-    participant p16 as root.rglob
-    participant p17 as path.is_symlink
-    participant p18 as path.relative_to(…).as_posix
-    participant p19 as path.relative_to
-    participant p20 as set
-    participant p21 as paths_by_relative.items
-    participant p22 as path.is_dir
-    participant p23 as path.is_file
-    participant p24 as path.stat
-    participant p25 as path.read_text
-    participant p26 as json.loads
-    participant p27 as isinstance
-    participant p28 as frozenset
+    participant p4 as current_contract_defaults
+    participant p5 as formatted_json_text
+    participant p6 as Path (src/llm_wiki_cli/services…py:classify_wiki_lifecycle)
+    participant p7 as manifest.exists
+    participant p8 as manifest.is_symlink
+    participant p9 as root.is_dir (src/llm_wiki_cli/services…py:classify_wiki_lifecycle)
+    participant p10 as index.is_file
+    participant p11 as index.is_symlink
+    participant p12 as Path (src/llm_wiki_cli/services…py:is_pristine_wiki_target)
+    participant p13 as root.is_symlink
+    participant p14 as root.exists
+    participant p15 as root.is_dir (src/llm_wiki_cli/services…py:is_pristine_wiki_target)
+    participant p16 as sorted
+    participant p17 as root.rglob
+    participant p18 as path.is_symlink
+    participant p19 as path.relative_to(…).as_posix
+    participant p20 as path.relative_to
+    participant p21 as set
+    participant p22 as paths_by_relative.items
+    participant p23 as path.is_dir
+    participant p24 as path.is_file
+    participant p25 as path.stat
+    participant p26 as path.read_text
+    participant p27 as json.loads
+    participant p28 as isinstance
     p0->>p1: is_pristine_wiki_target
     p1->>p2: formatted_json_bytes
     p1->>p3: iter_page_kinds
-    p2->>p4: formatted_json_text
-    p0-->>p5: Path (src/llm_wiki_cli/services…py:classify_wiki_lifecycle)(wiki_dir)
-    p0-->>p6: manifest.exists
-    p0-->>p7: manifest.is_symlink
-    p0-->>p8: root.is_dir (src/llm_wiki_cli/services…py:classify_wiki_lifecycle)
-    p0-->>p9: index.is_file
-    p0-->>p10: index.is_symlink
-    p1-->>p11: Path (src/llm_wiki_cli/services…py:is_pristine_wiki_target)(wiki_dir)
-    p1-->>p12: root.is_symlink
-    p1-->>p13: root.exists
-    p1-->>p14: root.is_dir (src/llm_wiki_cli/services…py:is_pristine_wiki_target)
-    p1-->>p15: sorted(root.rglob(...))
-    p1-->>p16: root.rglob('*')
-    p1-->>p17: path.is_symlink
-    p1-->>p18: path.relative_to(…).as_posix
-    p1-->>p19: path.relative_to(root)
-    p1-->>p20: set(paths_by_relative)
-    p1-->>p21: paths_by_relative.items
-    p1-->>p22: path.is_dir
-    p1-->>p23: path.is_file
-    p1-->>p24: path.stat
-    p1-->>p25: path.read_text(encoding='utf-8')
-    p1-->>p25: path.read_text(encoding='utf-8')
-    p1-->>p25: path.read_text(encoding='utf-8')
-    p1-->>p26: json.loads(raw_config)
-    p1-->>p27: isinstance(config, dict)
-    p1-->>p28: frozenset(config)
+    p1->>p4: current_contract_defaults
+    p2->>p5: formatted_json_text
+    p0-->>p6: Path (src/llm_wiki_cli/services…py:classify_wiki_lifecycle)(wiki_dir)
+    p0-->>p7: manifest.exists
+    p0-->>p8: manifest.is_symlink
+    p0-->>p9: root.is_dir (src/llm_wiki_cli/services…py:classify_wiki_lifecycle)
+    p0-->>p10: index.is_file
+    p0-->>p11: index.is_symlink
+    p1-->>p12: Path (src/llm_wiki_cli/services…py:is_pristine_wiki_target)(wiki_dir)
+    p1-->>p13: root.is_symlink
+    p1-->>p14: root.exists
+    p1-->>p15: root.is_dir (src/llm_wiki_cli/services…py:is_pristine_wiki_target)
+    p1-->>p16: sorted(root.rglob(...))
+    p1-->>p17: root.rglob('*')
+    p1-->>p18: path.is_symlink
+    p1-->>p19: path.relative_to(…).as_posix
+    p1-->>p20: path.relative_to(root)
+    p1-->>p21: set(paths_by_relative)
+    p1-->>p22: paths_by_relative.items
+    p1-->>p23: path.is_dir
+    p1-->>p24: path.is_file
+    p1-->>p25: path.stat
+    p1-->>p26: path.read_text(encoding='utf-8')
+    p1-->>p26: path.read_text(encoding='utf-8')
+    p1-->>p26: path.read_text(encoding='utf-8')
+    p1-->>p27: json.loads(raw_config)
+    p1-->>p28: isinstance(config, dict)
 ```
 
-> Call sequence diagram shows 30 of 40 interactions; 10 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 44 interactions; 14 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 7 of 14 (7 omitted); unresolved 19 of 22 (3 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 6 of 16 (10 omitted); unresolved 19 of 22 (3 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/wiki_lifecycle.py:is_pristine_wiki_target` | 5 | - | external | 6 |
+| `src/llm_wiki_cli/services/wiki_lifecycle.py:is_pristine_wiki_target` | 5 | - | external | 9 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_bytes` | 35 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_text` | 37 | - | external | 1 |
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:is_pristine_wiki_target` | 5 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_bytes` | 34 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:formatted_json_text` | 36 | - | external | 1 |
+| `src/llm_wiki_cli/services/wiki_lifecycle.py:is_pristine_wiki_target` | 5 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
@@ -150,10 +151,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| classify_wiki_lifecycle | Path (src/llm_wiki_cli/services…py:classify_wiki_lifecycle) | 276 | `Path(wiki_dir)` |
-| classify_wiki_lifecycle | manifest.exists | 278 | `manifest.exists(data not statically known)` |
-| classify_wiki_lifecycle | manifest.is_symlink | 278 | `manifest.is_symlink(data not statically known)` |
-| classify_wiki_lifecycle | is_pristine_wiki_target | 280 | `is_pristine_wiki_target(root)` |
+| classify_wiki_lifecycle | Path (src/llm_wiki_cli/services…py:classify_wiki_lifecycle) | 287 | `Path(wiki_dir)` |
+| classify_wiki_lifecycle | manifest.exists | 289 | `manifest.exists(data not statically known)` |
+| classify_wiki_lifecycle | manifest.is_symlink | 289 | `manifest.is_symlink(data not statically known)` |
+| classify_wiki_lifecycle | is_pristine_wiki_target | 291 | `is_pristine_wiki_target(root)` |
 | is_pristine_wiki_target | Path (src/llm_wiki_cli/services…py:is_pristine_wiki_target) | 156 | `Path(wiki_dir)` |
 | is_pristine_wiki_target | root.is_symlink | 157 | `root.is_symlink(data not statically known)` |
 | is_pristine_wiki_target | root.exists | 159 | `root.exists(data not statically known)` |
@@ -174,8 +175,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `classify_wiki_lifecycle` | `manifest.exists` | 278 |
-| unresolved_call | `classify_wiki_lifecycle` | `manifest.is_symlink` | 278 |
+| unresolved_call | `classify_wiki_lifecycle` | `manifest.exists` | 289 |
+| unresolved_call | `classify_wiki_lifecycle` | `manifest.is_symlink` | 289 |
 | unresolved_call | `is_pristine_wiki_target` | `root.is_symlink` | 157 |
 | unresolved_call | `is_pristine_wiki_target` | `root.exists` | 159 |
 | unresolved_call | `is_pristine_wiki_target` | `root.is_dir` | 161 |

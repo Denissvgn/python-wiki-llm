@@ -283,7 +283,7 @@ def test_real_duplicate_owner_ambiguity_and_bounded_graph_are_not_complete(
 @pytest.mark.parametrize("state", ["flat", "corrupt", "required-absent"])
 def test_rejected_real_native_input_has_no_compact_success(tiny, capsys, state):
     if state != "required-absent":
-        api.bootstrap_wiki("src", "wiki")
+        api.bootstrap_wiki("src", "wiki", knowledge_format="v1")
         capsys.readouterr()
     if state == "corrupt":
         migrate_knowledge_storage(

@@ -37,7 +37,7 @@ The bounded session implementation owns capture and rendering reuse, input reval
 | `_build` | `(request, *, cancelled, shared = None)` | — | — |
 | `_compatible_capture` | `(normalized, profile, environment)` | — | — |
 | `read` | `(request, *, if_result_id = None, delta = False, reuse = True, cancelled: Callable[[], bool] \| None = None) -> SessionReply` | `@ac.bound_comparison` | — |
-| `read_compact` | `(request, *, view_options, if_result_id = None, if_view_id = None, delta = False, reuse = True, cancelled: Callable[[], bool] \| None = None) -> CompactSessionReply` | `@ac.bound_comparison` | — |
+| `read_compact` | `(request, *, view_options = None, if_result_id = None, if_view_id = None, delta = False, reuse = True, cancelled: Callable[[], bool] \| None = None) -> CompactSessionReply` | `@ac.bound_comparison` | — |
 | `_read` | `(request, *, if_result_id = None, delta = False, reuse = True, cancelled = None, view_options = None, if_view_id = None)` | — | — |
 | `canonical_receipt` | `(request_id, result_id, *, current = False, cancelled: Callable[[], bool] \| None = None) -> CanonicalReceipt` | `@ac.bound_comparison` | — |
 | `_canonical_receipt` | `(request_id, result_id, *, current, cancelled)` | — | — |

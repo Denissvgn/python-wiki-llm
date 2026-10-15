@@ -252,6 +252,12 @@ jobs:
             tests/fixtures/provider-typing-valid.py \
             tests/fixtures/provider-typing-invalid.txt \
             tests/fixtures/provider-artifact-consumer.py \
+            tests/fixtures/provider-state-consumer.py \
+            tests/fixtures/context-packet-v1.json \
+            tests/fixtures/context-packet-v2.json \
+            tests/fixtures/context-packet-v1-pre-bindings.json \
+            tests/fixtures/context-packet-v2-pre-bindings.json \
+            tests/fixtures/knowledge-bootstrap/legacy-bootstrap \
             examples/native-knowledge \
             examples/native-workflow
           harness_sha256="$(sha256sum \

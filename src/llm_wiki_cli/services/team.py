@@ -1102,14 +1102,20 @@ def resolve_conflicts(
     resolved: list[dict[str, str]] = []
     unresolved: list[dict[str, str]] = []
 
+    from .knowledge_storage_lifecycle import is_storage_path
+
     for path in sorted(p for p in wiki_path.rglob("*") if p.is_file()):
+        rel_path = path.relative_to(wiki_path).as_posix()
+        # Immutable storage objects are restored through their owning roots;
+        # they are neither Markdown nor supported textual merge targets.
+        if is_storage_path(rel_path):
+            continue
         try:
             text = read_md(path)
         except OSError:
             continue
         if not has_conflict_markers(text):
             continue
-        rel_path = path.relative_to(wiki_path).as_posix()
         new_content, reason = _resolution_for_path(
             rel_path,
             path,

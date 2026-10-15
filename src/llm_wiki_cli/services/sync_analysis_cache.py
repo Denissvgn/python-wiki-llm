@@ -34,8 +34,20 @@ def input_key(options, snapshot, manifest, generation_inputs, *, explain=False):
             report_capture(options, "skipped", reason)
         return None
 
+    ordinary_owner = None
+    if manifest.maintenance_state is not None:
+        from .maintenance_state import MaintenanceError, _identity
+
+        state = manifest.maintenance_state
+        ordinary_owner = state.get("adoption_id") if isinstance(state, Mapping) else None
+        if not isinstance(ordinary_owner, str) or len(ordinary_owner) != 36:
+            return skipped("maintenance-state")
+        try:
+            _identity(ordinary_owner)
+        except MaintenanceError:
+            return skipped("maintenance-state")
+
     for excluded, reason in (
-        (manifest.maintenance_state is not None, "maintenance-state"),
         (bool(options.initialize_surfaces), "surface-initialization"),
         (options.knowledge_format is not None, "storage-format-requested"),
         (any((root / ".llm-wiki/plugins.lock.json").exists()
@@ -60,7 +72,7 @@ def input_key(options, snapshot, manifest, generation_inputs, *, explain=False):
         return skipped("unqualified-implementation")
     inputs = dict(generation_inputs)
     inputs.pop(REUSE_INPUT_KEY, None)
-    return {
+    key = {
         "schema_version": SCHEMA, "source_root": str(snapshot.root),
         "source_hashes": dict(snapshot.captured_content_hashes),
         "input_kinds": {k: list(v) for k, v in snapshot.captured_input_kinds.items()},
@@ -71,6 +83,11 @@ def input_key(options, snapshot, manifest, generation_inputs, *, explain=False):
         "preserve_semantic": options.preserve_semantic,
         "implementation": implementation, "analysis": analysis,
     }
+    if ordinary_owner is not None:
+        # Cache only structural observations, never review state or actor history.
+        # Reconciliation still runs against the current guarded owner on every sync.
+        key["ordinary_owner"] = ordinary_owner
+    return key
 
 
 def cache_destination(options, *, capture=False):

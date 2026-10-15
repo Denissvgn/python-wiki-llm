@@ -1968,14 +1968,9 @@ def _normalized_request(request: Mapping[str, Any]) -> dict[str, Any]:
             "request",
         )
     candidate = deepcopy(dict(request))
-    candidate.setdefault(
-        "protocol",
-        (
-            CONTEXT_KNOWLEDGE_PROTOCOL_VERSION
-            if "knowledge_mode" in candidate
-            else context_service.PROTOCOL_VERSION
-        ),
-    )
+    if "protocol" not in candidate:
+        candidate["protocol"] = CONTEXT_KNOWLEDGE_PROTOCOL_VERSION
+        candidate.setdefault("knowledge_mode", "auto")
     candidate.setdefault("filters", {})
     return context_service._validate_protocol_request(candidate)
 

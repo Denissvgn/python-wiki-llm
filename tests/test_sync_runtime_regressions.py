@@ -392,7 +392,7 @@ def test_legacy_manifest_refreshes_package_facts_before_adopting_provenance(
         encoding="utf-8",
     )
     monkeypatch.chdir(project)
-    bootstrap_cmd.run(_bootstrap_args(src_dir=str(project), wiki_dir=str(wiki_dir)))
+    bootstrap_cmd.run(_bootstrap_args(src_dir=str(project), wiki_dir=str(wiki_dir), knowledge_format="v1"))
     module_path = wiki_dir / "modules" / "app.md"
     assert "| python | 1 | 1 |" in module_path.read_text(encoding="utf-8")
 

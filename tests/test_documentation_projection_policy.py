@@ -16,7 +16,10 @@ from llm_wiki_cli.services.documentation_run import (
     load_documentation_run,
     save_documentation_run,
 )
-from llm_wiki_cli.services.knowledge_artifacts import build_knowledge_commit_plan
+from llm_wiki_cli.services.knowledge_artifacts import (
+    build_knowledge_commit_plan,
+    validate_knowledge_artifacts,
+)
 from llm_wiki_cli.services.knowledge_consumption import (
     build_knowledge_read_view,
     load_knowledge_read_view,
@@ -57,13 +60,27 @@ def _governed_snapshot_view(wiki_root):
         knowledge_index_bytes=serialize_knowledge_index(governed).encode("utf-8"),
         manifest=replace(current.manifest_basis, artifact_hashes=None),
     )
+    planned_objects = {item.relative_path: item.content for item in plan.storage_objects}
+
+    def read_object(name, maximum):
+        content = planned_objects[name] if name in planned_objects else (wiki_root / name).read_bytes()
+        assert len(content) <= maximum
+        return content
+
+    artifacts = validate_knowledge_artifacts(
+        surface_index_bytes=plan.surface_index.content,
+        knowledge_index_bytes=plan.knowledge_index.content,
+        manifest=plan.committed_manifest,
+        object_reader=read_object,
+    )
     return build_knowledge_read_view(
         KnowledgeLoadResult(
             status=KnowledgeLoadState.VALID,
-            surface=dict(current.surface),
-            knowledge=governed,
+            surface=artifacts.surface_payload,
+            knowledge=artifacts.knowledge,
             manifest_basis=plan.committed_manifest,
             issues=(),
+            validated_artifacts=artifacts,
         ),
         snapshot_only=True,
     )
@@ -149,80 +166,81 @@ def test_off_projection_mode_performs_no_native_read(tmp_path, monkeypatch):
     )
 
 
+@pytest.mark.parametrize("mode", ["off", "public-portable", "internal"])
 def test_standalone_export_reuses_persisted_projection_policy_and_hash(
     tmp_path,
     monkeypatch,
+    mode,
 ):
-    for mode in ("off", "public-portable", "internal"):
-        case_root = tmp_path / mode
-        case_root.mkdir()
-        workspace, prepared = _prepare_source_run_at_review(case_root)
-        assert prepared.publication["knowledge_mode"] == "off"
-        assert prepared.publication["knowledge_public_repository_identity"] is None
-        governed_view = _governed_snapshot_view(workspace / "wiki")
-        monkeypatch.setattr(
-            "llm_wiki_cli.services.knowledge_consumption.load_knowledge_read_view",
-            lambda *_args, _view=governed_view, **_kwargs: _view,
-        )
-        run = load_documentation_run(workspace)
-        run.publication["knowledge_mode"] = mode
-        run.publication["knowledge_public_repository_identity"] = None
-        save_documentation_run(workspace, run)
+    case_root = tmp_path / mode
+    case_root.mkdir()
+    workspace, prepared = _prepare_source_run_at_review(case_root)
+    assert prepared.publication["knowledge_mode"] == "off"
+    assert prepared.publication["knowledge_public_repository_identity"] is None
+    governed_view = _governed_snapshot_view(workspace / "wiki")
+    monkeypatch.setattr(
+        "llm_wiki_cli.services.knowledge_consumption.load_knowledge_read_view",
+        lambda *_args, _view=governed_view, **_kwargs: _view,
+    )
+    run = load_documentation_run(workspace)
+    run.publication["knowledge_mode"] = mode
+    run.publication["knowledge_public_repository_identity"] = None
+    save_documentation_run(workspace, run)
 
-        report = export_documentation_run(workspace, knowledge_mode=mode)
-        persisted = load_documentation_run(workspace)
-        export_payload = json.loads(
-            (workspace / persisted.evidence["site_export"]).read_text(
-                encoding="utf-8"
-            )
+    report = export_documentation_run(workspace, knowledge_mode=mode)
+    persisted = load_documentation_run(workspace)
+    export_payload = json.loads(
+        (workspace / persisted.evidence["site_export"]).read_text(
+            encoding="utf-8"
         )
-        check_payload = json.loads(
-            (workspace / persisted.evidence["site_check"]).read_text(
-                encoding="utf-8"
-            )
+    )
+    check_payload = json.loads(
+        (workspace / persisted.evidence["site_check"]).read_text(
+            encoding="utf-8"
         )
-        exported = export_payload["knowledge_projection"]
-        checked = check_payload["knowledge_projection"]
+    )
+    exported = export_payload["knowledge_projection"]
+    checked = check_payload["knowledge_projection"]
 
-        assert exported["mode"] == checked["mode"] == mode
-        assert exported["source_knowledge_hash"] == checked[
-            "source_knowledge_hash"
-        ]
-        assert exported["freshness_scope"] == "snapshot-only"
-        assert exported["freshness_evaluated"] is False
-        assert exported["canonical_body_media_review"] == "separate-required"
-        assert exported["derived_output"] == "disposable-rebuildable"
-        final_projection = report["validation"]["knowledge_projection"]
-        assert final_projection["mode"] == mode
-        assert final_projection["export_source_knowledge_hash"] == exported[
-            "source_knowledge_hash"
-        ]
-        assert final_projection["check_source_knowledge_hash"] == checked[
-            "source_knowledge_hash"
-        ]
-        assert final_projection["source_knowledge_hashes_match"] is True
-        assert final_projection["freshness"] == exported["freshness"]
-        assert final_projection["check_freshness"] == checked["freshness"]
-        assert final_projection["freshness_disclosures_match"] is True
-        if mode == "off":
-            assert exported["knowledge_metadata"] == "off"
-            assert exported["source_knowledge_hash"] is None
-            assert exported["freshness"] is None
-        else:
-            assert exported["knowledge_metadata"] == "summary"
-            assert exported["profile"] == mode
-            assert exported["source_knowledge_hash"].startswith("sha256:")
-            assert exported["freshness"] == (
-                "unevaluated (snapshot-only read)"
-            )
-            final_markdown = (
-                workspace
-                / persisted.evidence["final_report"]
-            ).with_suffix(".md").read_text(encoding="utf-8")
-            assert (
-                "- Freshness: unevaluated (snapshot-only read)"
-                in final_markdown
-            )
+    assert exported["mode"] == checked["mode"] == mode
+    assert exported["source_knowledge_hash"] == checked[
+        "source_knowledge_hash"
+    ]
+    assert exported["freshness_scope"] == "snapshot-only"
+    assert exported["freshness_evaluated"] is False
+    assert exported["canonical_body_media_review"] == "separate-required"
+    assert exported["derived_output"] == "disposable-rebuildable"
+    final_projection = report["validation"]["knowledge_projection"]
+    assert final_projection["mode"] == mode
+    assert final_projection["export_source_knowledge_hash"] == exported[
+        "source_knowledge_hash"
+    ]
+    assert final_projection["check_source_knowledge_hash"] == checked[
+        "source_knowledge_hash"
+    ]
+    assert final_projection["source_knowledge_hashes_match"] is True
+    assert final_projection["freshness"] == exported["freshness"]
+    assert final_projection["check_freshness"] == checked["freshness"]
+    assert final_projection["freshness_disclosures_match"] is True
+    if mode == "off":
+        assert exported["knowledge_metadata"] == "off"
+        assert exported["source_knowledge_hash"] is None
+        assert exported["freshness"] is None
+    else:
+        assert exported["knowledge_metadata"] == "summary"
+        assert exported["profile"] == mode
+        assert exported["source_knowledge_hash"].startswith("sha256:")
+        assert exported["freshness"] == (
+            "unevaluated (snapshot-only read)"
+        )
+        final_markdown = (
+            workspace
+            / persisted.evidence["final_report"]
+        ).with_suffix(".md").read_text(encoding="utf-8")
+        assert (
+            "- Freshness: unevaluated (snapshot-only read)"
+            in final_markdown
+        )
 
 
 def test_standalone_export_rejects_policy_mismatch_before_writing(tmp_path):

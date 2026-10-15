@@ -2,8 +2,9 @@
 
 import importlib.util
 import json
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 import subprocess
+import warnings
 
 import pytest
 import yaml
@@ -49,7 +50,7 @@ def test_receiver_method_must_be_observed_in_selected_go_class():
         fixture.check_declarations(wrong_owner, expected)
 
 
-@pytest.mark.parametrize("case", ["wrong-path", "editable", "wrong-version"])
+@pytest.mark.parametrize("case", ["wrong-path", "editable", "wrong-version", "remote-authority", "non-file"])
 def test_runtime_cannot_borrow_another_provider_source(tmp_path, case):
     provider = tmp_path / "provider"
     value = {"version": "2.5.0", "direct_url": {"url": provider.as_uri(), "dir_info": {}}}
@@ -58,10 +59,49 @@ def test_runtime_cannot_borrow_another_provider_source(tmp_path, case):
         value["direct_url"]["url"] = (tmp_path / "another-source").as_uri()
     elif case == "editable":
         value["direct_url"]["dir_info"]["editable"] = True
-    else:
+    elif case == "wrong-version":
         value["version"] = "2.4.0"
+    elif case == "remote-authority":
+        value["direct_url"]["url"] = "file://another-host/provider"
+    else:
+        value["direct_url"]["url"] = "https://example.invalid/provider"
     with pytest.raises(ValueError, match="pinned provider source install"):
         fixture.validate_origin(value, provider)
+
+
+@pytest.mark.parametrize("name,uri", [
+    ("provider", "file:///C:/workspace/provider"),
+    ("provider with spaces", "file:///C:/workspace/provider%20with%20spaces"),
+    ("provider π%20 #", "file:///C:/workspace/provider%20%CF%80%2520%20%23"),
+])
+def test_windows_file_uri_is_not_a_native_path(monkeypatch, name, uri):
+    # Exercise Windows URI spelling on every host; native resolution remains
+    # covered by the positive/negative controls in the actual Windows lane.
+    with warnings.catch_warnings(record=True) as captured:
+        warnings.simplefilter("always", DeprecationWarning)
+        import nturl2path
+    assert all("nturl2path" in str(item.message) for item in captured)
+
+    class ResolvedWindowsPath(PureWindowsPath):
+        def resolve(self):
+            return self
+
+    monkeypatch.setattr(fixture, "Path", ResolvedWindowsPath)
+    monkeypatch.setattr(fixture, "url2pathname", nturl2path.url2pathname, raising=False)
+    provider = ResolvedWindowsPath("C:/workspace") / name
+    value = {"version": "2.5.0", "direct_url": {"url": uri, "dir_info": {}}}
+    fixture.validate_origin(value, provider)
+    value["direct_url"]["url"] = "file:///C:/workspace/different-provider"
+    with pytest.raises(ValueError, match="pinned provider source install"):
+        fixture.validate_origin(value, provider)
+
+
+@pytest.mark.parametrize("name", ["provider", "provider with spaces", "provider π%20 #"])
+def test_native_local_uri_preserves_escaped_path_identity(tmp_path, name):
+    provider = tmp_path / name
+    provider.mkdir()
+    value = {"version": "2.5.0", "direct_url": {"url": provider.as_uri(), "dir_info": {}}}
+    fixture.validate_origin(value, provider)
 
 
 def test_private_and_source_preimages_detect_private_changes_without_execution(tmp_path):

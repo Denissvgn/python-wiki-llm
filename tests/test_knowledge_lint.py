@@ -659,6 +659,7 @@ def test_report_mode_distinguishes_invalid_live_policy_from_committed_tampering(
             wiki_dir="docs/llm_wiki",
             overwrite=False,
             depth="full",
+            knowledge_format="v1" if mutate_committed_manifest else None,
             skip_workflows=True,
         )
     )

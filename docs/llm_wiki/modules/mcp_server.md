@@ -11,6 +11,11 @@ SDK, while server construction registers tools and resources only after the
 runtime is available. HTTP transport is restricted to loopback and applies
 origin validation; stdio remains the default.
 
+Qualified packet calls leave omitted protocol selection to the library, matching
+the API's current native-knowledge packet and automatic availability disclosure.
+Plain context responses retain their separate compatibility contract. Packet
+revalidation still rebuilds the current basis before reporting an unchanged ID.
+
 ## Imports
 
 | Source | Symbols |

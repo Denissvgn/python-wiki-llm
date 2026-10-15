@@ -188,7 +188,7 @@ def build_task_read(
     _defer_scoped_validation: bool = False,
     _wiki_byte_budget: int | None = None,
 ) -> TaskRead:
-    if isinstance(request, Mapping) and request.get("schema_version") == TASK_REQUEST_SCHEMA_V2:
+    if isinstance(request, Mapping) and request.get("schema_version", TASK_REQUEST_SCHEMA_V2) == TASK_REQUEST_SCHEMA_V2:
         from .task_context_v2 import build_scoped_task_read
         return build_scoped_task_read(request, src_dir=src_dir, wiki_dir=wiki_dir,
             profile=profile, policy=policy, counter=counter, allow_external_src=allow_external_src,

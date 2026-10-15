@@ -223,7 +223,7 @@ flowchart LR
 | run | getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 29 | `getattr(args, 'analysis_inputs', False)` |
 | run | ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 31 | `ValueError('--analysis-inputs and --report-schema are mutually exclusive')` |
 | run | get_analysis_input_status | 34 | `get_analysis_input_status(data not statically known)` |
-| get_analysis_input_status | analysis_input_status | 1844 | `analysis_input_status(limit=limit)` |
+| get_analysis_input_status | analysis_input_status | 1846 | `analysis_input_status(limit=limit)` |
 | analysis_input_status | type (src/llm_wiki_cli/services….py:analysis_input_status) | 97 | `type(limit)` |
 | analysis_input_status | ValueError (src/llm_wiki_cli/services….py:analysis_input_status) | 98 | `ValueError('analysis input path limit must be an integer from 1 to 100')` |
 | analysis_input_status | Path (src/llm_wiki_cli/services….py:analysis_input_status) | 99 | `Path(package_root)` |

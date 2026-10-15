@@ -1085,7 +1085,7 @@ def _graph_status(result: object, collection_key: str) -> str:
 # ── Wiki-as-Context protocol ──────────────────────────────────────────
 
 
-def _read_protocol_request(source: str) -> dict:
+def _read_protocol_request(source: str, *, packet_defaults: bool = False) -> dict:
     """Read and validate a Wiki-as-Context protocol request."""
     try:
         raw = (
@@ -1101,6 +1101,10 @@ def _read_protocol_request(source: str) -> dict:
     except json.JSONDecodeError as exc:
         raise ProtocolRequestError(f"Invalid JSON: {exc.msg}", "request") from exc
 
+    if packet_defaults and isinstance(data, dict) and "protocol" not in data:
+        from .context_packet import _normalized_request
+
+        return _normalized_request(data)
     return _validate_protocol_request(data)
 
 
@@ -3428,7 +3432,9 @@ def _run_protocol(args) -> None:
     output_path: str | None = getattr(args, "output", None)
     request: dict[str, Any] | None = None
     try:
-        request = _read_protocol_request(args.request)
+        request = _read_protocol_request(
+            args.request, packet_defaults=getattr(args, "format", None) == "packet"
+        )
         _validate_request_cli_options(args, request)
         if getattr(args, "knowledge_mode", None) is not None:
             raise ProtocolRequestError(
@@ -3545,11 +3551,6 @@ def _run_packet_output(
 
     if request is None:
         request = {
-            "protocol": (
-                KNOWLEDGE_PROTOCOL_VERSION
-                if knowledge_mode is not None
-                else PROTOCOL_VERSION
-            ),
             "budget_tokens": budget,
             "focus": focus_values,
             "format": "json",
@@ -3573,7 +3574,7 @@ def _run_packet_output(
         ContextPacketError, PathValidationError, ProtocolRequestError,
         KnowledgeRequiredUnavailableError,
     ) as exc:
-        _emit_packet_error(exc, protocol=request["protocol"])
+        _emit_packet_error(exc, protocol=request.get("protocol", KNOWLEDGE_PROTOCOL_VERSION))
 
     rendered = packet.to_bytes().decode("utf-8")
     if output_path:

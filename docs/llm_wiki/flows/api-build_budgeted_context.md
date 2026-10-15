@@ -2,7 +2,7 @@
 
 **Entry point:** `build_budgeted_context` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 58 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 59 more
 
 **Complete modules touched:**
 
@@ -50,6 +50,7 @@
 - [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [packages](../modules/packages.md)
+- [packet_field_policy](../modules/packet_field_policy.md)
 - [plugins](../modules/plugins.md)
 - [python_bindings](../modules/python_bindings.md)
 - [python_calls](../modules/python_calls.md)
@@ -84,27 +85,27 @@ sequenceDiagram
     participant p5 as affected_page_map
     participant p6 as build_context_from_captured_read
     participant p7 as fit_payload
-    participant p8 as _assert_selection_unchanged
-    participant p9 as _normalized_request
-    participant p10 as request_identity
-    participant p11 as _build_legacy_context_from_captured_read
-    participant p12 as _build_knowledge_context_from_captured_read
-    participant p13 as build_module_page_map
-    participant p14 as source_relative_paths
-    participant p15 as build_entity_page_map
-    participant p16 as validate_source_root
-    participant p17 as resolve_source_selection
-    participant p18 as _validate_protocol_request
-    participant p19 as capture_source_selection_inputs
-    participant p20 as validate_live_query_source_selection
-    participant p21 as build_source_snapshot
-    participant p22 as validate_changes
-    participant p23 as _guard_windows_inputs
-    participant p24 as _assert_source_unchanged
-    participant p25 as retained_empty_module_paths_from_wiki
-    participant p26 as _assert_source_inputs_unchanged
-    participant p27 as _wiki_anchor
-    participant p28 as get_entry_points
+    participant p8 as validate_budgeted_context
+    participant p9 as _assert_selection_unchanged
+    participant p10 as _normalized_request
+    participant p11 as request_identity
+    participant p12 as _build_legacy_context_from_captured_read
+    participant p13 as _build_knowledge_context_from_captured_read
+    participant p14 as build_module_page_map
+    participant p15 as source_relative_paths
+    participant p16 as build_entity_page_map
+    participant p17 as validate_source_root
+    participant p18 as resolve_source_selection
+    participant p19 as _validate_protocol_request
+    participant p20 as capture_source_selection_inputs
+    participant p21 as validate_live_query_source_selection
+    participant p22 as build_source_snapshot
+    participant p23 as validate_changes
+    participant p24 as _guard_windows_inputs
+    participant p25 as _assert_source_unchanged
+    participant p26 as retained_empty_module_paths_from_wiki
+    participant p27 as validate_context_packet
+    participant p28 as _assert_source_inputs_unchanged
     participant p29 as ValueError (src/llm_wiki_cli/services…py:build_budgeted_context)
     participant p30 as request.get (src/llm_wiki_cli/services…py:build_budgeted_context)
     p0->>p1: build_budgeted_context (src/llm_wiki_cli/services/context_budget.py)
@@ -114,34 +115,34 @@ sequenceDiagram
     p1->>p5: affected_page_map
     p1->>p6: build_context_from_captured_read
     p1->>p7: fit_payload
-    p1->>p8: _assert_selection_unchanged
-    p6->>p9: _normalized_request
-    p7->>p10: request_identity
-    p6->>p11: _build_legacy_context_from_captured_read
-    p6->>p12: _build_knowledge_context_from_captured_read
-    p5->>p13: build_module_page_map
-    p4->>p14: source_relative_paths
-    p5->>p15: build_entity_page_map
-    p3->>p16: validate_source_root
-    p3->>p17: resolve_source_selection
-    p2->>p18: _validate_protocol_request
-    p3->>p19: capture_source_selection_inputs
-    p3->>p20: validate_live_query_source_selection
-    p3->>p21: build_source_snapshot
-    p2->>p22: validate_changes
-    p3->>p23: _guard_windows_inputs
-    p3->>p24: _assert_source_unchanged
-    p3->>p25: retained_empty_module_paths_from_wiki
-    p3->>p26: _assert_source_inputs_unchanged
-    p3->>p27: _wiki_anchor
-    p3->>p28: get_entry_points
+    p1->>p8: validate_budgeted_context
+    p1->>p9: _assert_selection_unchanged
+    p6->>p10: _normalized_request
+    p7->>p11: request_identity
+    p6->>p12: _build_legacy_context_from_captured_read
+    p6->>p13: _build_knowledge_context_from_captured_read
+    p5->>p14: build_module_page_map
+    p4->>p15: source_relative_paths
+    p5->>p16: build_entity_page_map
+    p3->>p17: validate_source_root
+    p3->>p18: resolve_source_selection
+    p2->>p19: _validate_protocol_request
+    p3->>p20: capture_source_selection_inputs
+    p3->>p21: validate_live_query_source_selection
+    p3->>p22: build_source_snapshot
+    p2->>p23: validate_changes
+    p3->>p24: _guard_windows_inputs
+    p3->>p25: _assert_source_unchanged
+    p3->>p26: retained_empty_module_paths_from_wiki
+    p8->>p27: validate_context_packet
+    p3->>p28: _assert_source_inputs_unchanged
     p1-->>p29: ValueError (src/llm_wiki_cli/services…py:build_budgeted_context)('Exact mode requires an explicit trusted counter or --tokenizer FILE')
     p1-->>p30: request.get (src/llm_wiki_cli/services…py:build_budgeted_context)('counter_id')
 ```
 
-> Call sequence diagram shows 30 of 3400 interactions; 3370 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3666 interactions; 3636 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1205 (1204 omitted); unresolved 1 of 1098 (1097 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1278 (1277 omitted); unresolved 1 of 1162 (1161 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -155,7 +156,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 21 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 1 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 24 | - | external | 11 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 24 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 12 |
-> Omission summary shows 8 of 810 groups; 802 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 869 groups; 861 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -230,8 +231,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_budgeted_context (src/llm_wiki_cli/api.py) | build_budgeted_context (src/llm_wiki_cli/services/context_budget.py) | 1334 | `build(src_dir, wiki_dir, request, counter=counter, allow_external_src=allow_external_src, source_selection=source_selection)` |
-| build_budgeted_context (src/llm_wiki_cli/services/context_budget.py) | validate_request | 208 | `validate_request(...)` |
+| build_budgeted_context (src/llm_wiki_cli/api.py) | build_budgeted_context (src/llm_wiki_cli/services/context_budget.py) | 1336 | `build(src_dir, wiki_dir, request, counter=counter, allow_external_src=allow_external_src, source_selection=source_selection)` |
+| build_budgeted_context (src/llm_wiki_cli/services/context_budget.py) | validate_request | 230 | `validate_request(...)` |
 | validate_request | isinstance (src/llm_wiki_cli/services…udget.py:validate_request) | 34 | `isinstance(data, Mapping)` |
 | validate_request | any (src/llm_wiki_cli/services…udget.py:validate_request) | 34 | `any(...)` |
 | validate_request | isinstance (src/llm_wiki_cli/services…udget.py:validate_request) | 34 | `isinstance(key, str)` |
@@ -246,7 +247,7 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `legacy.update` | `build_budgeted_context` | 249 |
+| mutation | `legacy.update` | `build_budgeted_context` | 271 |
 | mutation | `legacy.pop` | `validate_request` | 50 |
 | mutation | `legacy.pop` | `validate_request` | 51 |
 | mutation | `legacy.pop` | `validate_request` | 52 |

@@ -71,6 +71,7 @@ def synced(tmp_path, monkeypatch, capsys, request):
                 wiki_dir="wiki",
                 depth="full",
                 overwrite=False,
+                knowledge_format="v1",
                 source_adapter=True,
                 skip_workflows=False,
             )
@@ -78,6 +79,7 @@ def synced(tmp_path, monkeypatch, capsys, request):
     else:
         bootstrap_cmd.execute_bootstrap(
             BootstrapRequest(
+                knowledge_format="v1",
                 source_root=tmp_path / "src",
                 wiki_root=tmp_path / "wiki",
                 source_adapter=True,
@@ -132,7 +134,7 @@ def test_first_sync_respects_bootstrap_surface_and_source_policies(
         "from app import ping\ndef test_ping():\n    assert ping() == 'pong'\n",
         encoding="utf-8",
     )
-    request = BootstrapRequest(source_root=source, wiki_root=tmp_path / "wiki")
+    request = BootstrapRequest(source_root=source, wiki_root=tmp_path / "wiki", knowledge_format="v1")
     if profile == "no_flows":
         request = replace(request, skip_flows=True)
     elif profile == "no_dependencies":
@@ -187,6 +189,7 @@ def test_shallow_bootstrap_does_not_authorize_knowledge_reuse(tmp_path, monkeypa
     (source / "app.py").write_text("class Item:\n    pass\n", encoding="utf-8")
     bootstrap_cmd.execute_bootstrap(
         BootstrapRequest(
+                knowledge_format="v1",
             source_root=source, wiki_root=tmp_path / "wiki", depth="shallow"
         )
     )

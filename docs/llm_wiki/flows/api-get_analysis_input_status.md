@@ -147,7 +147,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| get_analysis_input_status | analysis_input_status | 1844 | `analysis_input_status(limit=limit)` |
+| get_analysis_input_status | analysis_input_status | 1846 | `analysis_input_status(limit=limit)` |
 | analysis_input_status | type | 97 | `type(limit)` |
 | analysis_input_status | ValueError (src/llm_wiki_cli/services…e.py:analysis_input_status) | 98 | `ValueError('analysis input path limit must be an integer from 1 to 100')` |
 | analysis_input_status | Path | 99 | `Path(package_root)` |

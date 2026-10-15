@@ -7,7 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-10-15
+
+Installation and upgrade now select current knowledge storage and workflow
+contracts automatically, with guarded recovery for existing projects.
+
+### Compatibility
+
+- Qualified packet calls now default to v2 with automatic native-knowledge
+  selection. Clients consuming packets must accept the v2 contract before
+  upgrading from 2.5.0. API and CLI clients requiring canonical v1 packets can
+  supply `protocol: "llm-wiki-context/v1"` explicitly; existing v1 packet
+  validation remains supported. MCP packet calls use the current v2 contract.
+- New bootstrap and project upgrade use packed knowledge and indexed
+  maintenance roots. Integrations reading physical roots must support those
+  layouts before project upgrade. New projects can explicitly use
+  `bootstrap --knowledge-format v1` for compatibility.
+
+### Changed
+
+- Normal bootstrap and project upgrade prepare packed knowledge, indexed
+  ordinary maintenance, and pending review while preserving authored pages and
+  existing governance. Explicit compatibility formats remain available.
+- Managed instructions for all supported agents, including the inline fallback,
+  use current task and compact-view defaults without requiring version selection.
+- Versionless qualified packets use the current native-knowledge contract across
+  the API, CLI, and MCP. Bounded MCP context sessions are available by default.
+  The current contract descriptor advertises those packet defaults while
+  retaining the frozen legacy descriptor for explicit compatibility use.
+- Both composite Actions default to compatibility-aware v4 reports, so fresh
+  native wikis need no report-version configuration.
+- Structural analysis caching remains available under ordinary maintenance
+  ownership; changed prose still reopens review and preserves acknowledgment
+  history.
+
 ### Fixed
+
+- Broad packet reads reduce oversized source detail before final packet
+  validation, with less repeated rendering under estimated delivery budgets.
+- Read-only Git probes isolate stdin so scoped MCP sessions do not block while
+  waiting for client input on Windows.
+- Conflict discovery leaves immutable native storage objects to their guarded
+  restoration routes instead of decoding them as text.
 
 - Lint text output exposes bounded data-flow and unfamiliar advisory diagnostics,
   with omitted counts and complete-report guidance. Passing lint reports no
@@ -1418,7 +1459,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.5.0...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.0.0...HEAD
+[3.0.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.5.0...v3.0.0
 [2.5.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.3.2...v2.4.0
 [2.3.2]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.3.1...v2.3.2

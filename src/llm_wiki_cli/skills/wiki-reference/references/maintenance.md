@@ -56,9 +56,11 @@ directory remains inside the current project write boundary.
 
 ## Optional ordinary review tracking
 
-Ordinary durable review is explicit adoption, independent of storage migration
-and human governance. Start with a coherent generated wiki and retain an empty
-recovery directory outside source/wiki:
+Current bootstrap and project upgrade establish ordinary maintenance ownership
+with pending review by default. Human governance remains separate. The explicit
+adoption route below serves older unadopted wikis and compatibility workflows.
+Start with a coherent generated wiki and retain an empty recovery directory
+outside source/wiki:
 
 ```bash
 llm-wiki maintenance adopt --src-dir src --wiki-dir wiki --recovery-dir maintenance-recovery

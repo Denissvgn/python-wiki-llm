@@ -2,13 +2,14 @@
 
 **Entry point:** `prepare_documentation_run` (`api`)
 **Source:** [prepare](../modules/prepare.md)
-**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [bootstrap_service](../modules/bootstrap_service.md), and 29 more
+**Modules touched:** [api_contracts](../modules/api_contracts.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), [bootstrap_service](../modules/bootstrap_service.md), [current_contracts](../modules/current_contracts.md), and 30 more
 
 **Complete modules touched:**
 
 - [api_contracts](../modules/api_contracts.md)
 - [bootstrap_runtime](../modules/bootstrap_runtime.md)
 - [bootstrap_service](../modules/bootstrap_service.md)
+- [current_contracts](../modules/current_contracts.md)
 - [documentation_native](../modules/documentation_native.md)
 - [documentation_wiki_input](../modules/documentation_wiki_input.md)
 - [extraction_service](../modules/extraction_service.md)
@@ -16,6 +17,7 @@
 - [infrastructure_sync](../modules/infrastructure_sync.md)
 - [io](../modules/io.md)
 - [knowledge_artifacts](../modules/knowledge_artifacts.md)
+- [knowledge_consumption](../modules/knowledge_consumption.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_freshness](../modules/knowledge_freshness.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
@@ -109,9 +111,9 @@ sequenceDiagram
     p0-->>p30: _RefreshArchiveTransaction
 ```
 
-> Call sequence diagram shows 30 of 1115 interactions; 1085 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1125 interactions; 1095 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 263 (262 omitted); unresolved 1 of 353 (352 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 267 (266 omitted); unresolved 1 of 356 (355 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -125,7 +127,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/bootstrap_runtime.py:_bootstrap_run_options_from_request` | 59 | [src/llm_wiki_cli/services/bootstrap_runtime.py](../modules/bootstrap_runtime.md) | internal | 1 |
 | `src/llm_wiki_cli/services/maintenance_protocol.py:guard_maintenance_owner` | 75 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 76 | - | external | 4 |
-> Omission summary shows 8 of 264 groups; 256 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 268 groups; 260 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

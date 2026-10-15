@@ -55,6 +55,7 @@ PUBLIC_DOC_PATH = REPO_ROOT / "docs" / "qualified-context-packets.md"
 
 def _request(**overrides: Any) -> dict[str, Any]:
     value: dict[str, Any] = {
+        "protocol": "llm-wiki-context/v1",
         "budget_tokens": 32_000,
         "focus": ["all"],
         "format": "json",
@@ -250,6 +251,7 @@ def test_runtime_producer_version_is_bound_to_packet_identity(
     request = _request()
     if knowledge_mode is not None:
         request["knowledge_mode"] = knowledge_mode
+        request["protocol"] = "llm-wiki-context/v2"
 
     current = build_qualified_context(".", "docs/llm_wiki", request)
     assert current.to_payload()["basis"]["generator"]["version"] == __version__

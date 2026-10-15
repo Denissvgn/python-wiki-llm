@@ -89,9 +89,9 @@ sequenceDiagram
     p0-->>p30: parser.parse_args
 ```
 
-> Call sequence diagram shows 30 of 709 interactions; 679 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 713 interactions; 683 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 24 (23 omitted); unresolved 1 of 551 (550 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 24 (23 omitted); unresolved 1 of 554 (553 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -182,7 +182,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| main | _build_parser | 2628 | `_build_parser(data not statically known)` |
+| main | _build_parser | 2632 | `_build_parser(data not statically known)` |
 | _build_parser | argparse.ArgumentParser | 261 | `argparse.ArgumentParser(description='LLM Wiki CLI')` |
 | _build_parser | parser.add_argument (src/llm_wiki_cli/cli.py:_build_parser) | 262 | `parser.add_argument('--version', action='version', version=...)` |
 | _build_parser | parser.add_subparsers (src/llm_wiki_cli/cli.py:_build_parser) | 265 | `parser.add_subparsers(dest='command', required=True)` |
@@ -198,12 +198,12 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `main` | 2636 |
-| output | `print` | `main` | 2639 |
-| output | `print` | `main` | 2642 |
-| environment_read | `os.environ.get` | `main` | 2645 |
-| output | `print` | `main` | 2647 |
-| output | `print` | `main` | 2650 |
+| output | `print` | `main` | 2640 |
+| output | `print` | `main` | 2643 |
+| output | `print` | `main` | 2646 |
+| environment_read | `os.environ.get` | `main` | 2649 |
+| output | `print` | `main` | 2651 |
+| output | `print` | `main` | 2654 |
 
 ### Static analysis gaps
 

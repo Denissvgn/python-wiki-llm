@@ -1,6 +1,6 @@
 # ContextSession
 
-**Location:** `src/llm_wiki_cli/api.py:1498`
+**Location:** `src/llm_wiki_cli/api.py:1500`
 **Kind:** Class
 **Bases:** `_ContextSession`
 **Module:** [api](../modules/api.md)
@@ -18,7 +18,7 @@ Public session facade with the established API error contract. Each instance bin
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
 | `read` | `(request: Mapping[str, Any], *, if_result_id: str \| None = None, delta: bool = False, reuse: bool = True, cancelled: Callable[[], bool] \| None = None) -> SessionReply` | `@_api_boundary` | — |
-| `read_compact` | `(request: Mapping[str, Any], *, view_options: Mapping[str, Any], if_result_id: str \| None = None, if_view_id: str \| None = None, delta: bool = False, reuse: bool = True, cancelled: Callable[[], bool] \| None = None) -> CompactSessionReply` | `@_api_boundary` | — |
+| `read_compact` | `(request: Mapping[str, Any], *, view_options: Mapping[str, Any] \| None = None, if_result_id: str \| None = None, if_view_id: str \| None = None, delta: bool = False, reuse: bool = True, cancelled: Callable[[], bool] \| None = None) -> CompactSessionReply` | `@_api_boundary` | — |
 | `canonical_receipt` | `(request_id: str, result_id: str, *, current: bool = False, cancelled: Callable[[], bool] \| None = None) -> CanonicalReceipt` | `@_api_boundary` | — |
 | `hint` | `(*, unsaved_buffers: bool = False) -> None` | `@_api_boundary` | — |
 | `close` | `() -> None` | `@_api_boundary` | — |

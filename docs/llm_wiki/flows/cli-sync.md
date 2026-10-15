@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [sync_cmd](../modules/sync_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api_contracts](../modules/api_contracts.md), and 63 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api_contracts](../modules/api_contracts.md), and 64 more
 
 **Complete modules touched:**
 
@@ -13,6 +13,7 @@
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
 - [config](../modules/config.md)
+- [current_contracts](../modules/current_contracts.md)
 - [data_flow](../modules/data_flow.md)
 - [entrypoints](../modules/entrypoints.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
@@ -143,9 +144,9 @@ sequenceDiagram
     p3-->>p30: write_basis.assert_current
 ```
 
-> Call sequence diagram shows 30 of 5735 interactions; 5705 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 5750 interactions; 5720 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1978 (1977 omitted); unresolved 1 of 1794 (1793 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1985 (1984 omitted); unresolved 1 of 1797 (1796 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -159,7 +160,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/commands/sync_cmd.py:_sync_run_options_from_args` | 2 | [src/llm_wiki_cli/services/inventory_cache.py](../modules/inventory_cache.md) | internal | 1 |
 | `src/llm_wiki_cli/services/extraction_jobs.py:extraction_job_request_from_args` | 28 | - | external | 5 |
 | `src/llm_wiki_cli/services/extraction_jobs.py:extraction_job_request_from_args` | 28 | [src/llm_wiki_cli/services/extraction_jobs.py](../modules/extraction_jobs.md) | internal | 1 |
-> Omission summary shows 8 of 1272 groups; 1264 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1276 groups; 1268 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

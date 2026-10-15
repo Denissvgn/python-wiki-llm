@@ -56,7 +56,7 @@ sequenceDiagram
     p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'allowed_origin', None)
     p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'source_selection', None)
     p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'tokenizer', None)
-    p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'enable_sessions', False)
+    p0-->>p11: getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)(args, 'enable_sessions', True)
     p0-->>p16: runner(config)
     p0-->>p17: print(..., file=sys.stderr)
     p0-->>p18: SystemExit(1)

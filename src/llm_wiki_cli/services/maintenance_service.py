@@ -73,7 +73,7 @@ def _outside_recovery(directory, root, source):
 
 
 def adopt_maintenance_authority(src_dir, wiki_dir, *, recovery_dir, manifest_format=None,
-                                fault_injector=None, **capture_options):
+                                fault_injector=None, _captured=None, **capture_options):
     """Explicitly adopt durable unreviewed authority without editing Markdown."""
     from .maintenance_state import new_identity
     from .maintenance_evidence import reconcile_pending_maintenance
@@ -91,7 +91,13 @@ def adopt_maintenance_authority(src_dir, wiki_dir, *, recovery_dir, manifest_for
         guard_maintenance_owner(root)
         files = snapshot_wiki(root)
         with _capture_basis(root, files) as basis:
-            captured = _capture(str(source), root, **capture_options)
+            captured = _capture(str(source), root, **capture_options) if _captured is None else _captured
+            if captured.source_snapshot.root.resolve() != source:
+                raise MaintenanceProtocolError("source-mismatch", "Adoption capture belongs to another source root")
+            if captured.wiki_root.resolve() != root:
+                raise MaintenanceProtocolError("wiki-mismatch", "Adoption capture belongs to another wiki root")
+            if not source_snapshot_matches_current_files(captured.source_snapshot):
+                raise MaintenanceProtocolError("source-changed", "Source changed before adoption capture")
             basis.source_snapshot = captured.source_snapshot
             marker = {"schema_version": "llm-wiki-maintenance-adoption/v1", "adoption_id": new_identity(),
                       "min_manifest_version": 7, "features": {"implementation_evidence": 1, "maintenance_state": 1, "ordinary_acknowledgment": 1}}

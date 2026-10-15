@@ -52,6 +52,7 @@ class BootstrapRequest:
     include_tests: Iterable[str] | None = None
     trust_source_plugins: bool = False
     source_selection: str | Path | None = None
+    knowledge_format: str | None = None
 
 
 @dataclass(frozen=True)

@@ -68,6 +68,33 @@ def test_each_context_exit_is_explained(eligible, capsys, owner, field, value, r
     assert len(output) < 250
 
 
+@pytest.mark.parametrize('state', [
+    [], 'unqualified', {'adoption_id': None}, {'adoption_id': ''},
+    {'adoption_id': 'not-a-uuid'},
+    {'adoption_id': '6B112C17-47C1-42B7-8D9E-BF21BFA62C04'},
+    {'adoption_id': '6b112c17-47c1-12b7-8d9e-bf21bfa62c04'},
+])
+def test_unqualified_owner_skips_without_analysis_probe(eligible, capsys, monkeypatch, state):
+    options, prepared, surface = eligible
+    prepared.manifest.maintenance_state = state
+    monkeypatch.setattr(cache, 'capture_analysis', lambda *a, **k: pytest.fail('unqualified owner must not probe analysis'))
+    assert cache.build_payload(options, prepared, surface) is None
+    output = capsys.readouterr().out
+    assert 'skipped (maintenance-state)' in output and len(output) < 250
+
+
+def test_owner_key_binds_identity_without_caching_review_history(eligible):
+    options, prepared, _ = eligible
+    owner = '6b112c17-47c1-42b7-8d9e-bf21bfa62c04'
+    prepared.manifest.maintenance_state = {'adoption_id': owner, 'records': {'item': 'pending'}}
+    first = cache.input_key(options, prepared.source_snapshot, prepared.manifest, {})
+    assert first is not None and first['ordinary_owner'] == owner
+    prepared.manifest.maintenance_state['records'] = {'item': 'acknowledged'}
+    assert cache.input_key(options, prepared.source_snapshot, prepared.manifest, {}) == first
+    prepared.manifest.maintenance_state['adoption_id'] = '8b4d6c3a-69f1-48f3-8b10-8472e73f09b8'
+    assert cache.input_key(options, prepared.source_snapshot, prepared.manifest, {}) != first
+
+
 @pytest.mark.parametrize('reason', ['plugin-lock-present', 'governance-present',
                                   'unqualified-analysis', 'unqualified-implementation'])
 def test_qualification_exits_remain_visible(eligible, capsys, monkeypatch, reason):

@@ -33,6 +33,8 @@ def main(argv=None):
     args.evidence.mkdir(parents=True, exist_ok=True)
     if args.operation == "prepare":
         from llm_wiki_cli import api
+        from llm_wiki_cli.services.sync_manifest import SyncManifest
+        from llm_wiki_cli.services.manifest_storage import current_manifest_format
 
         if (
             (root / ".git").exists()
@@ -68,8 +70,9 @@ def main(argv=None):
             check=True,
         )
         api.bootstrap_wiki("source", "wiki", helper_cache_dir=str(args.helper_cache))
-        manifest = json.loads((root / "wiki/.llm-wiki-manifest.json").read_text())
-        assert set(manifest["sources"]) == {"caller.py", "go/hook.go"}
+        manifest = SyncManifest.load(root / "wiki")
+        assert current_manifest_format(root / "wiki") == "indexed-v8"
+        assert set(manifest.sources) == {"caller.py", "go/hook.go"}
         if args.case == "drift":
             source = root / "source/caller.py"
             source.write_text(source.read_text().replace("value: int", "value: str"))

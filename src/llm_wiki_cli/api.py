@@ -1080,6 +1080,7 @@ def bootstrap_wiki(
     include_tests: list[str] | None = None,
     trust_source_plugins: bool = False,
     source_selection: str | Path | None = None,
+    knowledge_format: str | None = None,
 ) -> BootstrapResult:
     """Build a first-use deterministic wiki through the typed service boundary.
 
@@ -1106,6 +1107,7 @@ def bootstrap_wiki(
         include_tests=include_tests,
         trust_source_plugins=trust_source_plugins,
         source_selection=source_selection,
+        knowledge_format=knowledge_format,
     )
     try:
         return bootstrap_cmd.execute_bootstrap(request)
@@ -1422,7 +1424,7 @@ def expand_task_storage_receipt(receipt: Mapping[str, Any]) -> dict[str, Any]:
 @_api_boundary
 @ac.comparison_entrypoint
 def build_compact_task_context(
-    request: Mapping[str, Any], *, view_options: Mapping[str, Any],
+    request: Mapping[str, Any], *, view_options: Mapping[str, Any] | None = None,
     src_dir: str = ".", wiki_dir: str = DEFAULT_WIKI_DIR,
     profile: WorkflowProfile | Mapping[str, Any] | None = None,
     policy: WorkflowPolicy | None = None, counter: TokenCounter | None = None,
@@ -1506,7 +1508,7 @@ class ContextSession(_ContextSession):
 
     @_api_boundary
     def read_compact(
-        self, request: Mapping[str, Any], *, view_options: Mapping[str, Any],
+        self, request: Mapping[str, Any], *, view_options: Mapping[str, Any] | None = None,
         if_result_id: str | None = None, if_view_id: str | None = None,
         delta: bool = False, reuse: bool = True,
         cancelled: Callable[[], bool] | None = None,

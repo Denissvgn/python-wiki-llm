@@ -67,7 +67,7 @@ def run(args) -> None:
         allowed_origins=tuple(getattr(args, "allowed_origin", None) or ()),
         source_selection=getattr(args, "source_selection", None),
         tokenizer=getattr(args, "tokenizer", None),
-        enable_sessions=getattr(args, "enable_sessions", False),
+        enable_sessions=getattr(args, "enable_sessions", True),
     )
     try:
         runner(config)

@@ -36,6 +36,7 @@ startup does not require their runtime packages.
 flowchart LR
     n0["src"]
     n1["src/llm_wiki_cli/cli.py"]
+    n0 --> n1
     n1 --> n0
     click n1 "../modules/cli.md"
 ```
@@ -46,6 +47,7 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
+| Inbound | `src` (1) |
 | Outbound | `src` (44) |
 
 > All 44 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.

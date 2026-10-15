@@ -61,4 +61,4 @@ flowchart LR
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `build_compact_task_context` | `(request, *, view_options, src_dir = '.', wiki_dir = DEFAULT_WIKI_DIR, profile = None, policy = None, counter = None, allow_external_src = False, source_selection = None, helper_cache_dir = None, cancelled = None) -> CompactTaskContext` | `@ac.bound_comparison` | Return a complete current view and its exact separately budgeted receipt. |
+| `build_compact_task_context` | `(request, *, view_options = None, src_dir = '.', wiki_dir = DEFAULT_WIKI_DIR, profile = None, policy = None, counter = None, allow_external_src = False, source_selection = None, helper_cache_dir = None, cancelled = None) -> CompactTaskContext` | `@ac.bound_comparison` | Return a complete current view and its exact separately budgeted receipt. |

@@ -45,6 +45,7 @@ flowchart LR
     n9["src/llm_wiki_cli/services/schema.py"]
     n10["src/llm_wiki_cli/services/skills.py"]
     n11["src/llm_wiki_cli/services/validation.py"]
+    n0 --> n4
     n0 --> n8
     n0 --> n9
     n0 --> n10

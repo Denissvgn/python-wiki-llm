@@ -46,7 +46,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `build_compact_task_context (src/llm_wiki_cli/api.py)` | `request: Mapping[str, Any]`, `view_options: Mapping[str, Any]`, `src_dir: str`, `wiki_dir: str`, `profile: WorkflowProfile \| Mapping[str, Any] \| None`, `policy: WorkflowPolicy \| None`, `counter: TokenCounter \| None`, `allow_external_src: bool` | - | - | `build(...)` |
+| `build_compact_task_context (src/llm_wiki_cli/api.py)` | `request: Mapping[str, Any]`, `view_options: Mapping[str, Any] \| None`, `src_dir: str`, `wiki_dir: str`, `profile: WorkflowProfile \| Mapping[str, Any] \| None`, `policy: WorkflowPolicy \| None`, `counter: TokenCounter \| None`, `allow_external_src: bool` | - | - | `build(...)` |
 | `build_compact_task_context (src/llm_wiki_cli/services/task_compact_delivery.py)` | `request`, `view_options`, `src_dir`, `wiki_dir`, `profile`, `policy`, `counter`, `allow_external_src` | - | - | `reply.view` |
 | `ContextSession` | - | - | - | - |
 | `session.read_compact` | - | - | - | - |
@@ -55,7 +55,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_compact_task_context (src/llm_wiki_cli/api.py) | build_compact_task_context (src/llm_wiki_cli/services/task_compact_delivery.py) | 1436 | `build(request, view_options=view_options, src_dir=src_dir, wiki_dir=wiki_dir, profile=profile, policy=policy, counter=counter, allow_external_src=allow_external_src, source_selection=source_selection, helper_cache_dir=helper_cache_dir, cancelled=cancelled)` |
+| build_compact_task_context (src/llm_wiki_cli/api.py) | build_compact_task_context (src/llm_wiki_cli/services/task_compact_delivery.py) | 1438 | `build(request, view_options=view_options, src_dir=src_dir, wiki_dir=wiki_dir, profile=profile, policy=policy, counter=counter, allow_external_src=allow_external_src, source_selection=source_selection, helper_cache_dir=helper_cache_dir, cancelled=cancelled)` |
 | build_compact_task_context (src/llm_wiki_cli/services/task_compact_delivery.py) | ContextSession | 18 | `ContextSession(src_dir=src_dir, wiki_dir=wiki_dir, profile=profile, policy=policy, counter=counter, allow_external_src=allow_external_src, source_selection=source_selection, helper_cache_dir=helper_cache_dir, max_entries=0, max_bytes=0)` |
 | build_compact_task_context (src/llm_wiki_cli/services/task_compact_delivery.py) | session.read_compact | 22 | `session.read_compact(request, view_options=view_options, reuse=False, cancelled=cancelled)` |
 

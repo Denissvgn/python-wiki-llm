@@ -2,25 +2,74 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [upgrade_cmd](../modules/upgrade_cmd.md)
-**Modules touched:** [config](../modules/config.md), [filesystem_guard](../modules/filesystem_guard.md), [io](../modules/io.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 12 more
+**Modules touched:** [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 61 more
 
 **Complete modules touched:**
 
+- [canonical_json](../modules/canonical_json.md)
+- [common](../modules/common.md)
 - [config](../modules/config.md)
+- [context_packet](../modules/context_packet.md)
+- [context_service](../modules/context_service.md)
+- [current_contracts](../modules/current_contracts.md)
+- [data_flow](../modules/data_flow.md)
+- [documentation_queries](../modules/documentation_queries.md)
+- [documentation_query_builder](../modules/documentation_query_builder.md)
+- [entrypoints](../modules/entrypoints.md)
+- [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [immutable](../modules/immutable.md)
+- [implementation_evidence](../modules/implementation_evidence.md)
+- [imports](../modules/imports.md)
+- [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [io](../modules/io.md)
+- [knowledge_artifacts](../modules/knowledge_artifacts.md)
+- [knowledge_consumption](../modules/knowledge_consumption.md)
+- [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
+- [knowledge_freshness](../modules/knowledge_freshness.md)
+- [knowledge_governance](../modules/knowledge_governance.md)
+- [knowledge_graph](../modules/knowledge_graph.md)
+- [knowledge_index](../modules/knowledge_index.md)
+- [knowledge_loader](../modules/knowledge_loader.md)
+- [knowledge_model](../modules/knowledge_model.md)
+- [knowledge_orchestration](../modules/knowledge_orchestration.md)
+- [knowledge_packs](../modules/knowledge_packs.md)
+- [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
+- [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md)
+- [knowledge_verification](../modules/knowledge_verification.md)
 - [legacy_hooks](../modules/legacy_hooks.md)
+- [maintenance_evidence](../modules/maintenance_evidence.md)
+- [maintenance_projection](../modules/maintenance_projection.md)
+- [maintenance_protocol](../modules/maintenance_protocol.md)
+- [maintenance_service](../modules/maintenance_service.md)
+- [maintenance_shapes](../modules/maintenance_shapes.md)
+- [maintenance_state](../modules/maintenance_state.md)
+- [maintenance_status](../modules/maintenance_status.md)
+- [manifest_storage](../modules/manifest_storage.md)
+- [markdown_sections](../modules/markdown_sections.md)
 - [paths](../modules/paths.md)
 - [plugins](../modules/plugins.md)
+- [python_implementation](../modules/python_implementation.md)
 - [rendering_lifecycle](../modules/rendering_lifecycle.md)
+- [section_ownership](../modules/section_ownership.md)
+- [services_dependencies](../modules/services_dependencies.md)
 - [services_schema](../modules/services_schema.md)
 - [skills](../modules/skills.md)
+- [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
+- [source_snapshot](../modules/source_snapshot.md)
+- [storage_spool](../modules/storage_spool.md)
+- [sync_manifest](../modules/sync_manifest.md)
 - [upgrade_cmd](../modules/upgrade_cmd.md)
 - [validation](../modules/validation.md)
+- [verification_contracts](../modules/verification_contracts.md)
 - [wiki_lifecycle](../modules/wiki_lifecycle.md)
+- [wiki_media](../modules/wiki_media.md)
 - [wiki_surface](../modules/wiki_surface.md)
+- [wiki_surface_index](../modules/wiki_surface_index.md)
 - [wiki_write_basis](../modules/wiki_write_basis.md)
 
 ## Call sequence
@@ -41,12 +90,12 @@ sequenceDiagram
     participant p8 as _require_replaceable_schema_path
     participant p9 as _preflight_cleanup_agent
     participant p10 as verify_reference_skill
-    participant p11 as require_config_inspection_unchanged
-    participant p12 as _provision_reference_skill_guarded
-    participant p13 as select_render_profile
-    participant p14 as _upgrade_schema
-    participant p15 as _upgrade_dirs
-    participant p16 as formatted_json_bytes
+    participant p11 as upgrade_current_knowledge
+    participant p12 as require_config_inspection_unchanged
+    participant p13 as _provision_reference_skill_guarded
+    participant p14 as select_render_profile
+    participant p15 as _upgrade_schema
+    participant p16 as _upgrade_dirs
     participant p17 as write_config
     participant p18 as require_committed_config
     participant p19 as _target_cleanup_is_ready
@@ -56,9 +105,9 @@ sequenceDiagram
     participant p23 as config_requires_manual_recovery
     participant p24 as skills_install_dir
     participant p25 as reference_recovery_command
-    participant p26 as unlink_guarded_bytes
-    participant p27 as require_safe_schema_path
-    participant p28 as _reference_install_path
+    participant p26 as current_contract_defaults
+    participant p27 as formatted_json_bytes
+    participant p28 as unlink_guarded_bytes
     participant p29 as getattr (src/llm_wiki_cli/commands/upgrade_cmd.py:run)
     participant p30 as stored.get
     p0->>p1: validate_path
@@ -71,12 +120,12 @@ sequenceDiagram
     p0->>p8: _require_replaceable_schema_path
     p0->>p9: _preflight_cleanup_agent
     p0->>p10: verify_reference_skill
-    p0->>p11: require_config_inspection_unchanged
-    p0->>p12: _provision_reference_skill_guarded
-    p0->>p13: select_render_profile
-    p0->>p14: _upgrade_schema
-    p0->>p15: _upgrade_dirs
-    p0->>p16: formatted_json_bytes
+    p0->>p11: upgrade_current_knowledge
+    p0->>p12: require_config_inspection_unchanged
+    p0->>p13: _provision_reference_skill_guarded
+    p0->>p14: select_render_profile
+    p0->>p15: _upgrade_schema
+    p0->>p16: _upgrade_dirs
     p0->>p17: write_config
     p0->>p18: require_committed_config
     p0->>p19: _target_cleanup_is_ready
@@ -86,16 +135,16 @@ sequenceDiagram
     p0->>p23: config_requires_manual_recovery
     p0->>p24: skills_install_dir
     p0->>p25: reference_recovery_command
-    p0->>p26: unlink_guarded_bytes
-    p8->>p27: require_safe_schema_path
-    p10->>p28: _reference_install_path
+    p0->>p26: current_contract_defaults
+    p0->>p27: formatted_json_bytes
+    p0->>p28: unlink_guarded_bytes
     p0-->>p29: getattr (src/llm_wiki_cli/commands/upgrade_cmd.py:run)(args, 'wiki_dir', DEFAULT_WIKI_DIR)
     p0-->>p30: stored.get('source_selection')
 ```
 
-> Call sequence diagram shows 30 of 1687 interactions; 1657 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3900 interactions; 3870 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 737 (736 omitted); unresolved 1 of 357 (356 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1393 (1392 omitted); unresolved 1 of 849 (848 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -109,7 +158,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/wiki_surface.py:iter_directory_kinds` | 14 | - | external | 1 |
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 11 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 17 | - | external | 20 |
-> Omission summary shows 8 of 372 groups; 364 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 948 groups; 940 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -195,8 +244,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr (src/llm_wiki_cli/commands/upgrade_cmd.py:run) | 585 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
-| run | validate_path | 586 | `validate_path(wiki_dir, '--wiki-dir')` |
+| run | getattr (src/llm_wiki_cli/commands/upgrade_cmd.py:run) | 600 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
+| run | validate_path | 601 | `validate_path(wiki_dir, '--wiki-dir')` |
 | validate_path | PathValidationError | 134 | `PathValidationError(...)` |
 | validate_path | (…).resolve | 135 | `(Path.cwd() / path).resolve(data not statically known)` |
 | validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 135 | `Path.cwd(data not statically known)` |
@@ -204,27 +253,27 @@ flowchart LR
 | validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd(data not statically known)` |
 | validate_path | resolved.relative_to | 138 | `resolved.relative_to(cwd)` |
 | validate_path | PathValidationError | 140 | `PathValidationError(...)` |
-| run | require_safe_wiki_scaffold | 588 | `require_safe_wiki_scaffold(wiki_dir)` |
+| run | require_safe_wiki_scaffold | 603 | `require_safe_wiki_scaffold(wiki_dir)` |
 | require_safe_wiki_scaffold | Path (src/llm_wiki_cli/services…equire_safe_wiki_scaffold) | 43 | `Path(wiki_dir)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 591 |
-| output | `print` | `run` | 596 |
-| output | `print` | `run` | 600 |
-| output | `print` | `run` | 602 |
-| output | `print` | `run` | 619 |
-| output | `print` | `run` | 631 |
-| output | `print` | `run` | 642 |
-| output | `print` | `run` | 650 |
+| output | `print` | `run` | 606 |
+| output | `print` | `run` | 611 |
+| output | `print` | `run` | 615 |
+| output | `print` | `run` | 617 |
+| output | `print` | `run` | 634 |
+| output | `print` | `run` | 646 |
+| output | `print` | `run` | 657 |
+| output | `print` | `run` | 665 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `run` | `getattr` | 585 |
+| external_call | `run` | `getattr` | 600 |
 | unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 135 |
 | external_call | `validate_path` | `Path.cwd` | 135 |
 | unresolved_call | `validate_path` | `Path.cwd().resolve` | 136 |

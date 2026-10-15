@@ -23,7 +23,7 @@ their source locations, defaults and coverage. The provider reads source without
 importing the application. `bridge.py` shows an on-demand host adapter. The host
 chooses whether to include its result in a model conversation.
 
-For MCP, start `llm-wiki mcp --src-dir src --wiki-dir wiki --enable-sessions`.
+For MCP, start `llm-wiki mcp --src-dir src --wiki-dir wiki`.
 Call `build_task_context` with `request.json`. For optional reuse, call
 `open_context_session`, then `read_context_session` with the handle and request.
 Include canonical text once and keep session metadata separate.

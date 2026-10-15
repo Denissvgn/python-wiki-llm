@@ -50,6 +50,12 @@ a package upgrade or use `llm-wiki prepare-extractors --src-dir .` separately.
 llm-wiki bootstrap --src-dir . --wiki-dir docs/llm_wiki
 ```
 
+Bootstrap selects current compressed native storage and indexed maintenance
+ownership automatically. Task and compact-view requests can omit version fields;
+the library selects current contracts. Existing projects receive these defaults
+by updating the package and running `llm-wiki upgrade` from their project root.
+Upgrade retains recovery copies and reports their locations.
+
 Open `docs/llm_wiki/index.md` to browse the wiki. Use your coding agent to enrich
 semantic descriptions, guides, and behavior notes; generated diagrams, tables,
 and machine-readable artifacts are maintained by the CLI.
@@ -143,7 +149,7 @@ Use `llm-wiki <command> --help` for available options.
 | [Standalone documentation](docs/standalone-documentation.md) | An isolated documentation workspace, agent handoffs, and export |
 | [Native knowledge](docs/native-knowledge.md) | Evidence, freshness, durable identity, and read APIs |
 | [Native coding workflow](docs/native-agent-workflow.md) | Explicit task evidence, bounded context, sessions, and resumable handoffs |
-| [Knowledge storage](docs/knowledge-storage.md) | Sharded snapshots, explicit migration, bounded reads, and Git size checks |
+| [Knowledge storage](docs/knowledge-storage.md) | Current compressed snapshots, recoverable upgrades, bounded reads, and Git size checks |
 | [Qualified context packets](docs/qualified-context-packets.md) | Validated context handoffs and packet contracts |
 | [Automation](docs/automation.md) | CI integrity, diagnostics, and explicit triggers |
 | [Changelog](CHANGELOG.md) | Release history and compatibility changes |

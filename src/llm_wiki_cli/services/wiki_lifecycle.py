@@ -228,10 +228,11 @@ def is_pristine_wiki_target(wiki_dir: Union[str, Path]) -> bool:
                     "render_reason",
                     "rendered_profile",
                 }
+                current_fields = profiled_fields | {"contract_defaults"}
                 if (
                     not isinstance(config, dict)
-                    or frozenset(config)
-                    not in {frozenset(legacy_fields), frozenset(profiled_fields)}
+                    or (frozenset(config) - {"source_selection"})
+                    not in {frozenset(legacy_fields), frozenset(profiled_fields), frozenset(current_fields)}
                     or config["agent"] not in AGENT_CHOICES
                     or any(
                         type(config[key]) is not bool
@@ -243,14 +244,24 @@ def is_pristine_wiki_target(wiki_dir: Union[str, Path]) -> bool:
                     )
                 ):
                     return False
+                if "source_selection" in config and (
+                    not isinstance(config["source_selection"], str) or not config["source_selection"]
+                ):
+                    return False
+                if "contract_defaults" in config:
+                    from .current_contracts import current_contract_defaults
+
+                    if config["contract_defaults"] != current_contract_defaults():
+                        return False
                 legacy_config = {
                     "agent": config["agent"],
                     "quality_hints": config["quality_hints"],
                     "reference_skill": config["reference_skill"],
                     "issue_reporting": config["issue_reporting"],
                 }
-                if set(config) == legacy_fields:
-                    expected = (json.dumps(legacy_config, indent=2) + "\n").encode()
+                if set(config) - {"source_selection"} == legacy_fields:
+                    expected = (formatted_json_bytes(config) if "source_selection" in config
+                                else (json.dumps(legacy_config, indent=2) + "\n").encode())
                 else:
                     if (
                         config["rendered_profile"]

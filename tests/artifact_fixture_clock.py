@@ -7,6 +7,10 @@ output byte and digest under comparison. Runtime clocks and deadlines stay real.
 """
 
 from datetime import date
+import hashlib
+import itertools
+import json
+from uuid import UUID
 import runpy
 import sys
 from types import ModuleType
@@ -36,11 +40,22 @@ def main():
     # Imports still resolve from the consumer interpreter's installed package.
     # This helper is invoked with -I, outside the candidate source tree.
     from llm_wiki_cli.commands import sync_cmd
-    from llm_wiki_cli.services import bootstrap_runtime
+    from llm_wiki_cli.services import bootstrap_runtime, maintenance_state
+
+    # Adoption identity is a generated input, just like the architectural date.
+    # Freeze only this fixture allocation; compare all resulting bytes unchanged.
+    # Different operation arguments get distinct namespaces and allocations within
+    # an operation remain distinct, valid UUIDv4 values. Runtime randomness stays real.
+    identity_seed = json.dumps(sys.argv[1:], ensure_ascii=True).encode()
+    sequence = itertools.count()
+
+    def fixture_identity():
+        digest = hashlib.sha256(identity_seed + str(next(sequence)).encode()).digest()
+        return UUID(bytes=digest[:16], version=4)
 
     with patch.object(bootstrap_runtime, "date", FixtureDate), patch.object(
         sync_cmd, "date", FixtureDate
-    ):
+    ), patch.object(maintenance_state, "uuid4", fixture_identity):
         if sys.argv[1:3] == ["-m", "llm_wiki_cli.cli"]:
             from llm_wiki_cli import cli
 

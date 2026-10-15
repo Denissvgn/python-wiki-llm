@@ -89,12 +89,14 @@ def test_api_and_typed_service_produce_equivalent_native_wiki_trees(
         BootstrapRequest(
             source_root=source,
             wiki_root=service_wiki,
+            knowledge_format="v1",
         )
     )
     api_result = bootstrap_wiki(
         str(source),
         str(api_wiki),
         depth="full",
+        knowledge_format="v1",
     )
 
     assert isinstance(service_result, BootstrapResult)

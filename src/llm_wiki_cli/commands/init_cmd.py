@@ -337,6 +337,17 @@ def run(args):
             print("No extractor helpers required for the selected source files.")
 
     print(f"Initializing LLM Wiki with {agent} schema...")
+    from ..services.current_contracts import current_contract_defaults, upgrade_current_knowledge
+    from .upgrade_cmd import _seed_legacy_for_current_defaults
+
+    try:
+        current = upgrade_current_knowledge(".", wiki_dir, helper_cache_dir=helper_cache_dir,
+                                            source_selection=source_selection, _seed_legacy=_seed_legacy_for_current_defaults)
+    except (ValueError, OSError) as exc:
+        print(f"Error upgrading native defaults: {exc}", file=sys.stderr)
+        raise SystemExit(2) from exc
+    if current.get("recovery_dir"):
+        print(f"Native upgrade recovery: {current['recovery_dir']}")
 
     # Warn if the agent has a CLI executable that isn't installed.
     executable = _CLI_AGENTS.get(agent)
@@ -493,6 +504,7 @@ def run(args):
             "rendered_profile": decision.profile.value,
             "render_profile_version": decision.version,
             "render_reason": decision.reason.value,
+            "contract_defaults": current_contract_defaults(),
         }
     )
     if source_selection is not None:

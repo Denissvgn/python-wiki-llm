@@ -105,9 +105,9 @@ sequenceDiagram
     p4-->>p30: facts[…][…].items
 ```
 
-> Call sequence diagram shows 30 of 881 interactions; 851 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 883 interactions; 853 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 447 (446 omitted); unresolved 1 of 209 (208 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 447 (446 omitted); unresolved 1 of 211 (210 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -121,7 +121,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 8 | - | external | 10 |
 | `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 8 | [src/llm_wiki_cli/services/workflow_profile.py](../modules/workflow_profile.md) | internal | 16 |
 | `src/llm_wiki_cli/services/workflow_profile.py:bounded_text` | 20 | - | external | 2 |
-> Omission summary shows 8 of 158 groups; 150 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 159 groups; 151 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -187,7 +187,7 @@ flowchart LR
 | `TaskCompactError` | - | - | - | - |
 | `isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated)` | - | - | - | - |
 | `TaskCompactError` | - | - | - | - |
-| `normalize_task_request` | `request: Mapping[str, Any]`, `profile: WorkflowProfile \| Mapping[str, Any] \| None`, `policy: WorkflowPolicy \| None` | `TASK_REQUEST_SCHEMA`, `TASK_REQUEST_SCHEMA_V2`, `TASK_KINDS`, `ANCHOR_KINDS`, `canonical_json`, `FACETS`, `MAX_SELECTORS`, `TASK_REQUEST_SCHEMA_V2` | `changes[...]`, `normalized[...]`, `normalized[...]`, `normalized[...]` | `(...)` |
+| `normalize_task_request` | `request: Mapping[str, Any]`, `profile: WorkflowProfile \| Mapping[str, Any] \| None`, `policy: WorkflowPolicy \| None` | `TASK_REQUEST_SCHEMA_V2`, `TASK_REQUEST_SCHEMA`, `TASK_REQUEST_SCHEMA_V2`, `TASK_KINDS`, `ANCHOR_KINDS`, `canonical_json`, `FACETS`, `MAX_SELECTORS` | `changes[...]`, `normalized[...]`, `normalized[...]`, `normalized[...]`, `normalized[...]` | `(...)` |
 | `exact_fields` | `value: object`, `allowed: set[str]`, `field: str` | `Mapping` | - | `dict(...)` |
 | `isinstance (src/llm_wiki_cli/services…w_profile.py:exact_fields)` | - | - | - | - |
 | `any (src/llm_wiki_cli/services…w_profile.py:exact_fields)` | - | - | - | - |
@@ -197,13 +197,13 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| render_compact_task_context (src/llm_wiki_cli/api.py) | render_compact_task_context (src/llm_wiki_cli/services/task_compact.py) | 1450 | `render(canonical_text, request, view_options=view_options, profile=profile, policy=policy, counter=counter)` |
-| render_compact_task_context (src/llm_wiki_cli/services/task_compact.py) | _validated | 476 | `_validated(canonical_text, request, profile, policy, counter)` |
-| _validated | isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated) | 172 | `isinstance(canonical_text, TaskContext)` |
-| _validated | TaskCompactError | 174 | `TaskCompactError('canonical-unavailable', 'An unsuccessful canonical result has no compact context')` |
-| _validated | isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated) | 179 | `isinstance(canonical_text, str)` |
-| _validated | TaskCompactError | 180 | `TaskCompactError('canonical-invalid', 'Canonical context must be original text')` |
-| _validated | normalize_task_request | 183 | `normalize_task_request(request, profile=profile, policy=policy)` |
+| render_compact_task_context (src/llm_wiki_cli/api.py) | render_compact_task_context (src/llm_wiki_cli/services/task_compact.py) | 1452 | `render(canonical_text, request, view_options=view_options, profile=profile, policy=policy, counter=counter)` |
+| render_compact_task_context (src/llm_wiki_cli/services/task_compact.py) | _validated | 475 | `_validated(canonical_text, request, profile, policy, counter)` |
+| _validated | isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated) | 171 | `isinstance(canonical_text, TaskContext)` |
+| _validated | TaskCompactError | 173 | `TaskCompactError('canonical-unavailable', 'An unsuccessful canonical result has no compact context')` |
+| _validated | isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated) | 178 | `isinstance(canonical_text, str)` |
+| _validated | TaskCompactError | 179 | `TaskCompactError('canonical-invalid', 'Canonical context must be original text')` |
+| _validated | normalize_task_request | 182 | `normalize_task_request(request, profile=profile, policy=policy)` |
 | normalize_task_request | exact_fields | 53 | `exact_fields(request, {...}, 'request')` |
 | exact_fields | isinstance (src/llm_wiki_cli/services…w_profile.py:exact_fields) | 67 | `isinstance(value, Mapping)` |
 | exact_fields | any (src/llm_wiki_cli/services…w_profile.py:exact_fields) | 67 | `any(...)` |
@@ -222,8 +222,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_validated` | `isinstance` | 172 |
-| external_call | `_validated` | `isinstance` | 179 |
+| external_call | `_validated` | `isinstance` | 171 |
+| external_call | `_validated` | `isinstance` | 178 |
 | external_call | `exact_fields` | `isinstance` | 67 |
 | external_call | `exact_fields` | `any` | 67 |
 | step_limit | `render_compact_task_context` | `first 12 steps` | 0 |
