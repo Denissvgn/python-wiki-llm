@@ -17,6 +17,7 @@ import pytest
 from llm_wiki_cli import cli
 from llm_wiki_cli.extractors import common as extractor_common
 from llm_wiki_cli.extractors.ts_extractor import TypeScriptExtractor
+from llm_wiki_cli.services.sync_manifest import SyncManifest
 from llm_wiki_cli.services.extractor_helpers import (
     resolve_helper_cache_root,
     typescript_dependencies_ready,
@@ -692,8 +693,7 @@ class TestTypeScriptExtractor:
             "| `events_incomplete` | `boolean` | No | — | Omission means unavailable. |",
         )
         page.write_text(content, encoding="utf-8")
-        manifest_path = tmp_path / "wiki/.llm-wiki-manifest.json"
-        before = json.loads(manifest_path.read_text(encoding="utf-8"))
+        before = SyncManifest.load(tmp_path / "wiki").sources
         source.write_text(
             source.read_text(encoding="utf-8").replace("change_me:", "change_me?:"),
             encoding="utf-8",
@@ -701,10 +701,10 @@ class TestTypeScriptExtractor:
         capsys.readouterr()
         run("sync")
         assert "UPDATE entity: EvidenceSignals" in capsys.readouterr().out
-        after = json.loads(manifest_path.read_text(encoding="utf-8"))
+        after = SyncManifest.load(tmp_path / "wiki").sources
         assert (
-            before["sources"]["types.ts"]["semantic_hash"]
-            != after["sources"]["types.ts"]["semantic_hash"]
+            before["types.ts"]["semantic_hash"]
+            != after["types.ts"]["semantic_hash"]
         )
         content = page.read_text(encoding="utf-8")
         assert "| `change_me` | `number` | No | — |" in content
