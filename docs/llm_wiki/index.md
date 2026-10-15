@@ -8,7 +8,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 |---|---:|---|
 | Entities | 663 | [Open section](#entities) |
 | Modules | 245 | [Open section](#modules) |
-| Workflows | 217 | [Open section](#workflows) |
+| Workflows | 218 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 465 | [Open section](#entry-point-flows) |
 | Infrastructure | 2 | [Open section](#infrastructure) |
@@ -1035,6 +1035,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [impact_query](workflows/impact_query.md) - entry: `api._impact_query`
 - [index_needs_context](workflows/index_needs_context.md) - entry: `documentation_worklist._index_needs_context`
 - [init_cmd_flow](workflows/init_cmd_flow.md) - entry: `init_cmd.run`
+- [input_key](workflows/input_key.md) - entry: `sync_analysis_cache.input_key`
 - [inspect_native_concept](workflows/inspect_native_concept.md) - entry: `native_inspection.inspect_native_concept`
 - [install_cmd_flow](workflows/install_cmd_flow.md) - entry: `install_cmd.run`
 - [inventory_result](workflows/inventory_result.md) - entry: `sync_analysis_cache.inventory_result`

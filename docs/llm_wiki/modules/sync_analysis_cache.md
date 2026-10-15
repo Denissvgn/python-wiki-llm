@@ -16,6 +16,12 @@ analysis basis, the cache remains unqualified and emits the bounded analysis
 input diagnostic with its review route. That informational record cannot
 authorize reuse or synthesize a producer identity.
 
+Valid ordinary-maintenance snapshots bind structural reuse to their canonical
+adoption identity. An unavailable identity skips capture before analysis probes.
+Mutable review state and actor history remain outside the cache and under current
+owner reconciliation. Cache eligibility never authorizes authority repair or
+adoption.
+
 Capture first considers full coverage, then inventory coverage when graph data
 exceeds the budget. The complete selected payload must fit the unchanged 64 MiB
 physical and decoded JSON limit. Compact UTF-8 JSON is uncompressed; bounded
@@ -71,6 +77,7 @@ Ordinary maintenance can reuse qualified structural observations, bound to its i
 | `.knowledge_reuse` | `implementation_hash`, `REUSE_INPUT_KEY` |
 | `.knowledge_storage` | `KnowledgeStorageError` |
 | `.knowledge_storage_io` | `read_guarded` |
+| `.maintenance_state` | `MaintenanceError`, `_identity` |
 | `.progress` | `observed_phase`, `record_counts` |
 | `.runtime_output` | `warn` |
 | `.section_ownership` | `observe_page_sections` |
@@ -99,9 +106,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (3) |
-| Outbound | `src` (15) |
+| Outbound | `src` (16) |
 
-> All 17 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 18 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

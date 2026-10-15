@@ -69,12 +69,12 @@ flowchart TD
 | [documentation_run_dependencies](modules/documentation_run_dependencies.md) | 11 | 24 |
 | [extraction_jobs](modules/extraction_jobs.md) | 11 | 0 |
 | [knowledge_packs](modules/knowledge_packs.md) | 11 | 3 |
+| [maintenance_state](modules/maintenance_state.md) | 11 | 4 |
 | [section_ownership](modules/section_ownership.md) | 11 | 5 |
 | [documentation_run_contracts](modules/documentation_run_contracts.md) | 10 | 3 |
 | [documentation_run_schema](modules/documentation_run_schema.md) | 10 | 2 |
 | [extractor_helpers](modules/extractor_helpers.md) | 10 | 2 |
 | [knowledge_loader](modules/knowledge_loader.md) | 10 | 10 |
-| [maintenance_state](modules/maintenance_state.md) | 10 | 4 |
 | [python_implementation](modules/python_implementation.md) | 10 | 1 |
 | [services_schema](modules/services_schema.md) | 10 | 4 |
 | [change_selection](modules/change_selection.md) | 9 | 2 |
@@ -156,7 +156,7 @@ flowchart TD
 | [knowledge_storage_access](modules/knowledge_storage_access.md) | 3 | 16 |
 | [maintenance_queue](modules/maintenance_queue.md) | 3 | 7 |
 | [search_rank](modules/search_rank.md) | 3 | 0 |
-| [sync_analysis_cache](modules/sync_analysis_cache.md) | 3 | 15 |
+| [sync_analysis_cache](modules/sync_analysis_cache.md) | 3 | 16 |
 | [task_compact](modules/task_compact.md) | 3 | 7 |
 | [docs_cmd](modules/docs_cmd.md) | 2 | 5 |
 | [init_cmd](modules/init_cmd.md) | 2 | 11 |

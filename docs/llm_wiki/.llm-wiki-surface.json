@@ -26,10 +26,10 @@
       "load-order": 1,
       "log": 1,
       "modules": 245,
-      "workflows": 217
+      "workflows": 218
     },
     "dependency_architecture": 2,
-    "total": 1607
+    "total": 1608
   },
   "dependency_pages": {
     "count": 2,
@@ -36054,7 +36054,7 @@
             "src/llm_wiki_cli/services/data_flow.py",
             "src/llm_wiki_cli/services/wiki_surface_index.py"
           ],
-          "step_count": 5740,
+          "step_count": 5751,
           "truncated": true
         }
       },
@@ -39979,6 +39979,7 @@
         "workflows/impact_query.md",
         "workflows/index_needs_context.md",
         "workflows/init_cmd_flow.md",
+        "workflows/input_key.md",
         "workflows/inspect_native_concept.md",
         "workflows/install_cmd_flow.md",
         "workflows/inventory_result.md",
@@ -54747,6 +54748,21 @@
       "title": "init_cmd_flow"
     },
     {
+      "canonical_path": "workflows/input_key.md",
+      "id": "input_key",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/input_key",
+      "outgoing_internal_links": [
+        "modules/analysis_capture.md",
+        "modules/knowledge_reuse.md",
+        "modules/maintenance_state.md",
+        "modules/sync_analysis_cache.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/sync_analysis_cache.py",
+      "title": "input_key"
+    },
+    {
       "canonical_path": "workflows/inspect_native_concept.md",
       "id": "inspect_native_concept",
       "kind": "workflows",
@@ -67108,5 +67124,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:5577309a7b1951b28325e6f35adff96845f1f7c51c1489dfbe03a5cffde2ba4e"
+  "source_hash": "sha256:26342c0790a5969d5ab4aec10c6e33b651fd32c3e6b740f19cb64d68f7700094"
 }
