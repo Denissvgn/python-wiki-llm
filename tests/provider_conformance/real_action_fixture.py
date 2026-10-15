@@ -12,7 +12,8 @@ import re
 import subprocess
 import sys
 import tarfile
-from urllib.parse import unquote, urlparse
+from urllib.parse import urlparse
+from urllib.request import url2pathname
 
 
 PROVIDER_SHA = "63c8fa7b264610b57f0f1e24c9327eb92d8b0819"
@@ -88,7 +89,7 @@ def validate_origin(value, provider):
     url = urlparse(value["direct_url"]["url"])
     if (
         value["version"] != "2.5.0" or url.scheme != "file" or url.netloc
-        or Path(unquote(url.path)).resolve() != provider.resolve()
+        or Path(url2pathname(url.path)).resolve() != provider.resolve()
         or value["direct_url"].get("dir_info", {}).get("editable") is True
     ):
         raise ValueError("Action runtime is not the pinned provider source install")

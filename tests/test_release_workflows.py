@@ -295,6 +295,16 @@ def test_windows_provider_acceptance_uses_installed_artifacts_and_preserves_evid
     assert upload["with"]["if-no-files-found"] == "error"
 
 
+def test_native_origin_contract_runs_before_the_full_windows_suite():
+    steps = _yaml("ci.yml")["jobs"]["test"]["steps"]
+    early = _named_step({"steps": steps}, "Check release corrections on native Windows")
+    assert "tests/test_real_caller_action_fixture.py" in early["run"]
+    assert early["if"] == "${{ matrix.lane == 'core-windows-3.13' }}"
+    assert steps.index(early) < next(
+        index for index, step in enumerate(steps) if step.get("name") == "Run strict suite"
+    )
+
+
 def test_foreign_action_matrix_keeps_provider_separate_and_checks_negative_evidence():
     job = _yaml("action-selftest.yml")["jobs"]["foreign-caller"]
     assert job["strategy"]["matrix"] == {
