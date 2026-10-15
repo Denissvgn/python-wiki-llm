@@ -143,9 +143,9 @@ sequenceDiagram
     p0-->>p30: report.count (src/llm_wiki_cli/services/lint_service.py:run)('extractor_failure')
 ```
 
-> Call sequence diagram shows 30 of 3270 interactions; 3240 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3272 interactions; 3242 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 973 (972 omitted); unresolved 1 of 1118 (1117 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 973 (972 omitted); unresolved 1 of 1120 (1119 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -226,35 +226,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | Path (src/llm_wiki_cli/services/lint_service.py:run) | 3281 | `Path(args.wiki_dir)` |
-| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3282 | `getattr(args, 'src_dir', '.')` |
-| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3283 | `bool(getattr(...))` |
-| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3283 | `getattr(args, 'knowledge_drift_report', False)` |
-| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3284 | `bool(...)` |
-| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3284 | `getattr(args, 'strict', False)` |
-| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3285 | `bool(getattr(...))` |
-| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3285 | `getattr(args, 'profile', False)` |
-| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3286 | `bool(getattr(...))` |
-| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3286 | `getattr(args, 'cache_stats', False)` |
-| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3287 | `bool(getattr(...))` |
+| run | Path (src/llm_wiki_cli/services/lint_service.py:run) | 3306 | `Path(args.wiki_dir)` |
+| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3307 | `getattr(args, 'src_dir', '.')` |
+| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3308 | `bool(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3308 | `getattr(args, 'knowledge_drift_report', False)` |
+| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3309 | `bool(...)` |
+| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3309 | `getattr(args, 'strict', False)` |
+| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3310 | `bool(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3310 | `getattr(args, 'profile', False)` |
+| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3311 | `bool(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3311 | `getattr(args, 'cache_stats', False)` |
+| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3312 | `bool(getattr(...))` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 3319 |
-| output | `print` | `run` | 3322 |
-| output | `print` | `run` | 3330 |
+| output | `print` | `run` | 3344 |
+| output | `print` | `run` | 3347 |
+| output | `print` | `run` | 3355 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `run` | `getattr` | 3282 |
-| external_call | `run` | `getattr` | 3283 |
-| external_call | `run` | `getattr` | 3284 |
-| external_call | `run` | `getattr` | 3285 |
-| external_call | `run` | `getattr` | 3286 |
+| external_call | `run` | `getattr` | 3307 |
+| external_call | `run` | `getattr` | 3308 |
+| external_call | `run` | `getattr` | 3309 |
+| external_call | `run` | `getattr` | 3310 |
+| external_call | `run` | `getattr` | 3311 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

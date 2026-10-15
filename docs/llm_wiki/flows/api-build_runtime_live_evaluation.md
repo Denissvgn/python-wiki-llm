@@ -89,9 +89,9 @@ sequenceDiagram
     p0-->>p30: inputs.infrastructure_inventory.items
 ```
 
-> Call sequence diagram shows 30 of 574 interactions; 544 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 581 interactions; 551 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 212 (211 omitted); unresolved 1 of 111 (110 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 214 (213 omitted); unresolved 1 of 116 (115 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

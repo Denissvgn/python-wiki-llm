@@ -2603,3 +2603,55 @@ Project setup and upgrade select current workflow and storage contracts. First-u
 - Pages deprecated: 0
 - Semantic fields preserved: 1
 - Moved entities: none
+
+## 2026-10-16
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.0.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:99fe8dc961a2a9287a1ec268f9dc5519b3f61aede11ae8f1d0a8798aa588d749`
+- Pages created: 0
+- Pages updated: 44
+- Pages metadata-only: 2
+- Pages skipped (unchanged): 1547
+- Pages deprecated: 0
+- Semantic fields preserved: 3
+- Moved entities: none
+
+## 2026-10-16
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.0.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:99fe8dc961a2a9287a1ec268f9dc5519b3f61aede11ae8f1d0a8798aa588d749`
+- Pages created: 0
+- Pages updated: 1
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1592
+- Pages deprecated: 0
+- Semantic fields preserved: 3
+- Moved entities: none
+
+### Unresolved import evidence
+
+Preserve explicit JavaScript import gaps as structural observations, label unknown targets in generated import tables, and expose captured evidence causes through the existing diagnostic message and hint fields. Invalid inventory remains blocking; single-file extraction uses prepared helpers without rebuilding the wiki.
+
+## 2026-10-16
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.0.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:e9f2dca48e9cd34d597b31eb9f0b679fb3591f1713c5391e760314caa4d8d045`
+- Pages created: 0
+- Pages updated: 11
+- Pages metadata-only: 2
+- Pages skipped (unchanged): 1580
+- Pages deprecated: 0
+- Semantic fields preserved: 2
+- Moved entities: none
