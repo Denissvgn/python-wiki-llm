@@ -997,11 +997,6 @@ class McpWikiService:
             )
         selected_mode = _normalize_knowledge_mode(knowledge_mode)
         request = {
-            "protocol": (
-                context_cmd.PROTOCOL_VERSION
-                if selected_mode is None
-                else RESERVED_CONTEXT_KNOWLEDGE_PROTOCOL_VERSION
-            ),
             "budget_tokens": budget_tokens,
             "focus": ["changed", "neighbors"] if focus is None else focus,
             "format": format,

@@ -59,7 +59,7 @@ def test_full_integrity_action_has_bounded_portable_inputs() -> None:
         "report-schema": {
             "description": "CI report contract, v2, v3 or compatibility-aware v4.",
             "required": False,
-            "default": "v2",
+            "default": "v4",
         },
         "wiki-dir": {
             "description": (

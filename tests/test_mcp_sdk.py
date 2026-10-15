@@ -84,6 +84,7 @@ def test_optional_sdk_registration_when_installed(
         }, knowledge_mode=mode)
         raw = (json.dumps(response["packet"], sort_keys=True, separators=(",", ":"),
                           ensure_ascii=False, allow_nan=False) + "\n").encode()
+        assert response["packet"]["schema_version"] == "llm-wiki-qualified-context-packet/v2"
         assert raw == expected.to_bytes()
         assert api.validate_context_packet(raw).packet_id == response["packet_id"]
         unchanged = packet_payload(asyncio.run(call_packet({**arguments, "if_packet_id": response["packet_id"]})))

@@ -283,7 +283,9 @@ def test_spec_only_change_bypasses_clean_source_return_and_updates_page(
     )
     from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
     from llm_wiki_cli.services.knowledge_model import knowledge_index_to_payload
-    knowledge = knowledge_index_to_payload(load_knowledge_state(wiki).knowledge)
+    model = load_knowledge_state(wiki).knowledge
+    assert model is not None
+    knowledge = knowledge_index_to_payload(model)
     snapshot_hash = knowledge["bundle"]["snapshot"]["source_snapshot_hash"]
     assert f"- Source snapshot digest: `{snapshot_hash}`" in (
         wiki / "log.md"
@@ -331,9 +333,9 @@ def test_clear_openapi_file_returns_existing_surface_to_static_authority(
 
     sync_cmd.run(_sync_args(project, wiki, clear_openapi_file=True))
 
-    manifest = SyncManifest.load(wiki).to_payload()
-    assert "openapi" not in manifest.get("generation_inputs", {})
-    assert manifest["surfaces"]["api_contracts"] == {"enabled": True}
+    manifest = SyncManifest.load(wiki)
+    assert "openapi" not in manifest.generation_inputs
+    assert manifest.surfaces["api_contracts"] == {"enabled": True}
     page = (wiki / "api-contracts.md").read_text(encoding="utf-8")
     assert "**Authority:** syntax-only static analysis" in page
     assert "`GET` | `/items` | Static list" in page

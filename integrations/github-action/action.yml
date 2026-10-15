@@ -29,7 +29,7 @@ inputs:
   report-schema:
     description: Health report contract, v1, v3 or compatibility-aware v4.
     required: false
-    default: v1
+    default: v4
   evidence-id:
     description: Safe unique suffix when the action is invoked more than once in one job.
     required: false

@@ -54,7 +54,7 @@ fixed, allowlisted set of validation, cache-measurement, and toolchain evidence
 even when validation fails.
 
 When called directly without schema inputs, the full-integrity Action defaults
-to `report-schema: v2` and `comparison-policy: auto`. The generated workflow
+to `report-schema: v4` and `comparison-policy: auto`. The generated workflow
 explicitly selects v4; the CLI's unpinned output instead selects v1 for legacy
 knowledge and v4 for migrated knowledge. For migrated knowledge in a custom
 workflow, set `report-schema: v4` and `comparison-policy: auto` together.
@@ -357,15 +357,15 @@ required fields and documented state values remain strict while additive
 object fields are ignored. A wiki that has not been initialized is reported as
 `absent` and fails either threshold.
 
-Without explicit inputs, the dashboard Action defaults to `report-schema: v1`
-(the `llm-wiki-doctor/v1` contract) and `comparison-policy: auto`.
+Without explicit inputs, the dashboard Action defaults to `report-schema: v4`
+(the `llm-wiki-doctor/v4` contract) and `comparison-policy: auto`.
 For migrated knowledge, use the v4/auto inputs
 shown above, or select `comparison-policy: exact-v1` with an older report schema.
 Select `report-schema: v3` for
 detailed JSON coverage, primary concept reason counts and captured producer
 versions. V3 and v4 reject unknown fields in their closed contracts and use a
-`llm-wiki-doctor-dashboard/v2` receipt bound to the report bytes. The default
-report and receipt retain their v1 contracts. These versions preserve the
+`llm-wiki-doctor-dashboard/v2` receipt bound to the report bytes. Explicit
+`llm-wiki-doctor/v1` reports retain their v1 receipt contract. These versions preserve the
 configured strictness and failure threshold.
 The v3 dashboard and CLI text show the same captured coverage, old/new producer
 versions and remediation guidance. Optional governance and verification absence

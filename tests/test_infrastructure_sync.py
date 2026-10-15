@@ -105,7 +105,9 @@ def _manifest(wiki: Path) -> dict:
 def _json_artifact(wiki: Path, filename: str) -> dict:
     if filename == ".llm-wiki-knowledge.json":
         from llm_wiki_cli.services.knowledge_model import knowledge_index_to_payload
-        return knowledge_index_to_payload(load_knowledge_state(wiki).knowledge)
+        knowledge = load_knowledge_state(wiki).knowledge
+        assert knowledge is not None
+        return knowledge_index_to_payload(knowledge)
     return json.loads((wiki / filename).read_text(encoding="utf-8"))
 
 

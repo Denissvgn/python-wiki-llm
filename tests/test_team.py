@@ -46,7 +46,7 @@ def _ns(**kwargs):
     return types.SimpleNamespace(**kwargs)
 
 
-def _bootstrap(wiki_dir: str = "docs/llm_wiki", *, skip_workflows: bool = True, knowledge_format="v1"):
+def _bootstrap(wiki_dir: str = "docs/llm_wiki", *, skip_workflows: bool = True, knowledge_format: str | None = "v1"):
     # Merge-conflict vectors below deliberately exercise flat v5 authority.
     bootstrap_cmd.run(
         _ns(

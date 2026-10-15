@@ -144,7 +144,8 @@ def test_actual_action_commands_preserve_schema_scope_and_failure_receipts(
     from tests.provider_conformance.action_fixture import hashes
 
     run, inputs, evidence = action_shell
-    inputs["comparison-policy"] = "analysis-v1" if schema == "v4" else "exact-v1"
+    current = schema in {None, "v4"}
+    inputs["comparison-policy"] = "auto" if current else "exact-v1"
     if schema is not None:
         inputs["report-schema"] = schema
     shutil.copytree(
@@ -160,6 +161,7 @@ def test_actual_action_commands_preserve_schema_scope_and_failure_receipts(
             skip_workflows=True,
             skip_flows=True,
             skip_dependencies=True,
+            knowledge_format=None if current else "v1",
         )
     )
     if scenario == "drift":
@@ -189,7 +191,7 @@ def test_actual_action_commands_preserve_schema_scope_and_failure_receipts(
     assert rendered.returncode == (0 if scenario == "clean" else 1), rendered.stderr
     report = json.loads((evidence / "doctor.json").read_text())
     receipt = json.loads((evidence / "dashboard-receipt.json").read_text())
-    assert report["schema_version"] == "llm-wiki-doctor/" + (schema or "v1")
+    assert report["schema_version"] == "llm-wiki-doctor/" + (schema or "v4")
     assert report["src_dir"] == "source" and report["wiki_dir"] == "wiki"
     assert report["status"] == ("healthy" if scenario == "clean" else "unhealthy")
     if scenario == "drift":
@@ -199,7 +201,7 @@ def test_actual_action_commands_preserve_schema_scope_and_failure_receipts(
         assert report["snapshot_parity"]["state"] == "not-available"
     assert receipt["report_schema_version"] == report["schema_version"]
     assert receipt["schema_version"] == "llm-wiki-doctor-dashboard/" + (
-        "v2" if schema in {"v3", "v4"} else "v1"
+        "v2" if schema in {None, "v3", "v4"} else "v1"
     )
     assert receipt["doctor_exit_code"] == report["exit_code"]
     assert receipt["dashboard_exit_code"] == rendered.returncode

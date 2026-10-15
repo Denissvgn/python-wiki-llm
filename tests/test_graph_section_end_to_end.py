@@ -31,7 +31,9 @@ def _sync(wiki_dir: Path) -> None:
 
 def _knowledge_payload(wiki_dir: Path) -> dict:
     from llm_wiki_cli.services.knowledge_model import knowledge_index_to_payload
-    return knowledge_index_to_payload(load_knowledge_state(wiki_dir).knowledge)
+    knowledge = load_knowledge_state(wiki_dir).knowledge
+    assert knowledge is not None
+    return knowledge_index_to_payload(knowledge)
 
 
 def _concept_for_path(payload: dict, canonical_path: str) -> dict:

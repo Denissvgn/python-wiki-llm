@@ -165,7 +165,8 @@ def test_current_ranked_source_discovery_needs_no_version_choice(project):
     explicit = api.search_wiki("Item", src_dir="src", wiki_dir="wiki", include_source=True, mode="ranked-v2")
     assert default.pop("mode") == "ranked"
     assert explicit.pop("mode") == "ranked-v2"
-    assert default == explicit and default["source_indexing"]["source_files"] == 1
+    assert default == explicit
+    assert default.get("source_indexing", {}).get("source_files") == 1
     assert (files(project / "wiki"), files(project / "src")) == before
 
 
@@ -209,6 +210,7 @@ def test_default_current_ownership_survives_noop_and_changed_source_sync(project
     assert current_knowledge_format("wiki") == "packed-v4-deflate"
     assert current_manifest_format("wiki") == "indexed-v8"
     state, _, _ = _committed_inputs("wiki")
+    assert state.manifest_basis is not None
     assert state.manifest_basis.maintenance_state is not None
     result = api.build_task_context(source_request(), src_dir="src", wiki_dir="wiki")
     assert result.ok and 'str' in result.rendered
@@ -277,16 +279,20 @@ def test_current_static_cache_reuses_observations_but_reconciles_prose(project, 
     status = api.get_maintenance_status("src", "wiki")
     record = next(row for row in status["records"] if row["expected_basis"] is not None
                   and row["expected_basis"]["target"]["canonical_path"] == "modules/app.md")
+    assert status["state_hash"] is not None
+    assert record["expected_basis"] is not None
     api.acknowledge_maintenance("src", "wiki", record_id=record["record_id"],
         expected_state_hash=status["state_hash"], expected_basis=record["expected_basis"],
         actor_kind="agent", actor_id="explicit-fixture-review")
     before = SyncManifest.load(Path("wiki")).maintenance_state
+    assert before is not None
     assert before["records"][record["record_id"]]["status"] == "acknowledged"
     page.write_text(page.read_text().replace("## Description", "## Description\n\nSecond authored purpose."))
     with monkeypatch.context() as hit:
         hit.setattr(sync_cmd, "_extract_current_inventory", lambda *a, **k: pytest.fail("unchanged source must reuse qualified observations"))
         sync_cmd.run(cli._build_parser().parse_args(command))
     after = SyncManifest.load(Path("wiki")).maintenance_state
+    assert after is not None
     assert before != after and before["adoption_id"] == after["adoption_id"]
     assert "Second authored purpose." in page.read_text()
     assert after["records"][record["record_id"]]["status"] == "pending"

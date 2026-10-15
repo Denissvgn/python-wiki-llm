@@ -241,7 +241,7 @@ def test_action_metadata_defines_the_public_inputs_and_composite_steps() -> None
     assert action["inputs"]["source-selection"]["default"] == ""
     assert action["inputs"]["strict"]["default"] == "true"
     assert action["inputs"]["fail-on"]["default"] == "unhealthy"
-    assert action["inputs"]["report-schema"]["default"] == "v1"
+    assert action["inputs"]["report-schema"]["default"] == "v4"
     assert action["inputs"]["evidence-id"]["default"] == "default"
     steps = action["runs"]["steps"]
     scalar_validation = steps[0]

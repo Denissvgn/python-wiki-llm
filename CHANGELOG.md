@@ -7,7 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.6.0] - 2026-10-15
+
+Installation and upgrade now select current knowledge storage and workflow
+contracts automatically, with guarded recovery for existing projects.
+
+### Changed
+
+- Normal bootstrap and project upgrade prepare packed knowledge, indexed
+  ordinary maintenance, and pending review while preserving authored pages and
+  existing governance. Explicit compatibility formats remain available.
+- Managed instructions for all supported agents, including the inline fallback,
+  use current task and compact-view defaults without requiring version selection.
+- Versionless qualified packets use the current native-knowledge contract across
+  the API and MCP. Bounded MCP context sessions are available by default.
+- Both composite Actions default to compatibility-aware v4 reports, so fresh
+  native wikis need no report-version configuration.
+- Structural analysis caching remains available under ordinary maintenance
+  ownership; changed prose still reopens review and preserves acknowledgment
+  history.
+
 ### Fixed
+
+- Read-only Git probes isolate stdin so scoped MCP sessions do not block while
+  waiting for client input on Windows.
+- Conflict discovery leaves immutable native storage objects to their guarded
+  restoration routes instead of decoding them as text.
 
 - Lint text output exposes bounded data-flow and unfamiliar advisory diagnostics,
   with omitted counts and complete-report guidance. Passing lint reports no
@@ -1418,7 +1443,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.5.0...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.6.0...HEAD
+[2.6.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.5.0...v2.6.0
 [2.5.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.3.2...v2.4.0
 [2.3.2]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.3.1...v2.3.2
