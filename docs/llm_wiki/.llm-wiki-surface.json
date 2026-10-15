@@ -36907,43 +36907,43 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1352,
+              "line": 1347,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1364,
+              "line": 1359,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1366,
+              "line": 1361,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1366,
+              "line": 1361,
               "step": "_native_tool_call",
               "target": "json.dumps"
             },
             {
               "kind": "external_call",
-              "line": 1571,
+              "line": 1566,
               "step": "build_budgeted_context",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1572,
+              "line": 1567,
               "step": "build_budgeted_context",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1572,
+              "line": 1567,
               "step": "build_budgeted_context",
               "target": "TextContent"
             }
@@ -36978,43 +36978,43 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1352,
+              "line": 1347,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1364,
+              "line": 1359,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1366,
+              "line": 1361,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1366,
+              "line": 1361,
               "step": "_native_tool_call",
               "target": "json.dumps"
             },
             {
               "kind": "external_call",
-              "line": 1604,
+              "line": 1599,
               "step": "build_task_context",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1604,
+              "line": 1599,
               "step": "build_task_context",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1604,
+              "line": 1599,
               "step": "build_task_context",
               "target": "TextContent"
             }
@@ -37049,7 +37049,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1554,
+              "line": 1549,
               "step": "check_wiki",
               "target": "service.check_wiki"
             }
@@ -37084,25 +37084,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1352,
+              "line": 1347,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1364,
+              "line": 1359,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1366,
+              "line": 1361,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1366,
+              "line": 1361,
               "step": "_native_tool_call",
               "target": "json.dumps"
             }
@@ -37137,25 +37137,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1352,
+              "line": 1347,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1364,
+              "line": 1359,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1366,
+              "line": 1361,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1366,
+              "line": 1361,
               "step": "_native_tool_call",
               "target": "json.dumps"
             }
@@ -37190,7 +37190,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1393,
+              "line": 1388,
               "step": "get_architecture_page",
               "target": "service.get_architecture_page"
             }
@@ -37225,25 +37225,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1352,
+              "line": 1347,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1364,
+              "line": 1359,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1366,
+              "line": 1361,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1366,
+              "line": 1361,
               "step": "_native_tool_call",
               "target": "json.dumps"
             }
@@ -37278,7 +37278,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1520,
+              "line": 1515,
               "step": "get_context",
               "target": "service.get_context"
             }
@@ -37313,25 +37313,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1352,
+              "line": 1347,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1364,
+              "line": 1359,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1366,
+              "line": 1361,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1366,
+              "line": 1361,
               "step": "_native_tool_call",
               "target": "json.dumps"
             }
@@ -37366,7 +37366,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1378,
+              "line": 1373,
               "step": "get_entity",
               "target": "service.get_entity"
             }
@@ -37401,7 +37401,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1388,
+              "line": 1383,
               "step": "get_flow",
               "target": "service.get_flow"
             }
@@ -37436,25 +37436,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1352,
+              "line": 1347,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1364,
+              "line": 1359,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1366,
+              "line": 1361,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1366,
+              "line": 1361,
               "step": "_native_tool_call",
               "target": "json.dumps"
             }
@@ -37489,7 +37489,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1383,
+              "line": 1378,
               "step": "get_module",
               "target": "service.get_module"
             }
@@ -37524,7 +37524,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1563,
+              "line": 1558,
               "step": "get_status",
               "target": "service.get_status"
             }
@@ -37559,25 +37559,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1352,
+              "line": 1347,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1364,
+              "line": 1359,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1366,
+              "line": 1361,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1366,
+              "line": 1361,
               "step": "_native_tool_call",
               "target": "json.dumps"
             }
@@ -37612,25 +37612,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1352,
+              "line": 1347,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1364,
+              "line": 1359,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1366,
+              "line": 1361,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1366,
+              "line": 1361,
               "step": "_native_tool_call",
               "target": "json.dumps"
             }
@@ -37665,25 +37665,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1352,
+              "line": 1347,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1364,
+              "line": 1359,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1366,
+              "line": 1361,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1366,
+              "line": 1361,
               "step": "_native_tool_call",
               "target": "json.dumps"
             }
@@ -37718,25 +37718,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1352,
+              "line": 1347,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1364,
+              "line": 1359,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1366,
+              "line": 1361,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1366,
+              "line": 1361,
               "step": "_native_tool_call",
               "target": "json.dumps"
             }
@@ -37771,7 +37771,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1398,
+              "line": 1393,
               "step": "query_graph",
               "target": "service.query_graph"
             }
@@ -37806,25 +37806,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1352,
+              "line": 1347,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1364,
+              "line": 1359,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1366,
+              "line": 1361,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1366,
+              "line": 1361,
               "step": "_native_tool_call",
               "target": "json.dumps"
             }
@@ -37859,7 +37859,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1498,
+              "line": 1493,
               "step": "search_wiki",
               "target": "service.search_wiki"
             }
@@ -37894,25 +37894,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1352,
+              "line": 1347,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1364,
+              "line": 1359,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1366,
+              "line": 1361,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1366,
+              "line": 1361,
               "step": "_native_tool_call",
               "target": "json.dumps"
             }
@@ -67102,5 +67102,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:2d610d724ac35dffbb050770ebe9a6bed294ae6255730cee701b373cf3ca38ce"
+  "source_hash": "sha256:072a51b36ed8e5163b6a4d56d3091bbbcdc490466743b71901d6702e07356797"
 }

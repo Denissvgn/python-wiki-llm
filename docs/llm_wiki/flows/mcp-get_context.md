@@ -43,7 +43,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| get_context | service.get_context | 1520 | `service.get_context(**=options)` |
+| get_context | service.get_context | 1515 | `service.get_context(**=options)` |
 
 ### Boundary effects
 
@@ -53,7 +53,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `get_context` | `service.get_context` | 1520 |
+| unresolved_call | `get_context` | `service.get_context` | 1515 |
 
 ## Behavior
 

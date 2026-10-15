@@ -2462,3 +2462,60 @@ Lint text now exposes bounded advisory data-flow and unfamiliar-category preview
 ### Library-owned current setup
 
 Project setup and upgrade select current workflow and storage contracts. First-use generation prepares compressed native knowledge and pending ordinary maintenance. Versionless task and compact-view requests use current contracts; read-only consumption never upgrades data. Qualified structural caching retains fresh review reconciliation and explicit history.
+
+## 2026-10-15
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.5.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:b719f5fc6aa15a3e9d4ec2a7a0276fbcbb88ec0ff5be7754c22f69e140e19548`
+- Pages created: 0
+- Pages updated: 22
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1570
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none
+
+## 2026-10-15
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.5.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:b719f5fc6aa15a3e9d4ec2a7a0276fbcbb88ec0ff5be7754c22f69e140e19548`
+- Pages created: 0
+- Pages updated: 0
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1592
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none
+
+## 2026-10-15
+
+### Wiki sync
+- Source: `.`
+- Generator version: `2.6.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:c6604140b84557b1f310b46e8a476287095c9a5e4a4e74067e7cf30b55e64578`
+- Pages created: 0
+- Pages updated: 105
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1539
+- Pages deprecated: 0
+- Semantic fields preserved: 147
+- Moved entities: none
+- Flow pages initialized: 0 (none)
+- Workflow pages created: 0
+- Dependency pages initialized: 0
+- Surface policy updated: no
+- Infrastructure added: 0
+- Infrastructure changed: 2
+- Infrastructure moved: 0
+- Infrastructure removed: 0
+- Unsupported infrastructure YAML: 0
