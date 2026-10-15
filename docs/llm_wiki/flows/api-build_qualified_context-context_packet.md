@@ -229,9 +229,9 @@ flowchart LR
 | _normalized_request | candidate.setdefault | 1973 | `candidate.setdefault('knowledge_mode', 'auto')` |
 | _normalized_request | candidate.setdefault | 1974 | `candidate.setdefault('filters', {...})` |
 | _normalized_request | _validate_protocol_request | 1975 | `context_service._validate_protocol_request(candidate)` |
-| _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 1110 | `isinstance(data, dict)` |
-| _validate_protocol_request | data.get (src/llm_wiki_cli/services…validate_protocol_request) | 1110 | `data.get('protocol')` |
-| _validate_protocol_request | _validate_protocol_request_impl | 1112 | `_validate_protocol_request_impl(data)` |
+| _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 1114 | `isinstance(data, dict)` |
+| _validate_protocol_request | data.get (src/llm_wiki_cli/services…validate_protocol_request) | 1114 | `data.get('protocol')` |
+| _validate_protocol_request | _validate_protocol_request_impl | 1116 | `_validate_protocol_request_impl(data)` |
 
 ### Boundary effects
 
@@ -245,8 +245,8 @@ flowchart LR
 | external_call | `_normalized_request` | `deepcopy` | 1970 |
 | unresolved_call | `_normalized_request` | `candidate.setdefault` | 1973 |
 | unresolved_call | `_normalized_request` | `candidate.setdefault` | 1974 |
-| external_call | `_validate_protocol_request` | `isinstance` | 1110 |
-| unresolved_call | `_validate_protocol_request` | `data.get` | 1110 |
+| external_call | `_validate_protocol_request` | `isinstance` | 1114 |
+| unresolved_call | `_validate_protocol_request` | `data.get` | 1114 |
 | step_limit | `build_qualified_context` | `first 12 steps` | 0 |
 | truncated_flow | `build_qualified_context` | `depth limit` | 0 |
 

@@ -8,6 +8,10 @@ Builds priority-ranked codebase context for LLM agents. The existing v1/v2
 contracts retain their estimated allocation behavior; opt-in v3 requests use
 [context_budget](context_budget.md) to account for the complete rendered output.
 
+Qualified packet flags and versionless packet request files share the packet
+builder's current protocol and automatic native-knowledge defaults. Explicit
+protocol requests retain their strict validation and compatibility behavior.
+
 Priority tiers:
 
 - **high**: selected changed files (the last commit by default) → full deep inventory detail
@@ -34,7 +38,7 @@ coverage retain their explicit states rather than being presented as emptiness.
 | `.change_selection` | `changes_from_args`, `changes_from_args` |
 | `.context_budget` | `validate_request`, `run`, `run` |
 | `.context_knowledge_contract` | `KNOWLEDGE_MODE_VALUES` |
-| `.context_packet` | `describe_context_packet_error`, `ContextPacketError`, `build_qualified_context` |
+| `.context_packet` | `_normalized_request`, `describe_context_packet_error`, `ContextPacketError`, `build_qualified_context` |
 | `.contracts` | `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION`, `CONTEXT_PROTOCOL_VERSION` |
 | `.dependencies` | `analyze_dependencies` |
 | `.documentation_queries` | `DocumentationGraphQueryService`, `DocumentationQueryError`, `knowledge_view_selection_eligible` |
@@ -100,7 +104,7 @@ flowchart LR
 |-------|------|-------|-------------|
 | [ProtocolRequestError](../entities/ProtocolRequestError.md) | 176 | `ValueError` | Validation error for Wiki-as-Context protocol requests. |
 | [KnowledgeRequiredUnavailableError](../entities/KnowledgeRequiredUnavailableError.md) | 191 | `RuntimeError` | Explicit required mode could not produce ready qualified knowledge. |
-| [_ProtocolEnrichmentSession](../entities/ProtocolEnrichmentSession.md) | 1817 | — | Operation-scoped query state captured from one knowledge read. |
+| [_ProtocolEnrichmentSession](../entities/ProtocolEnrichmentSession.md) | 1821 | — | Operation-scoped query state captured from one knowledge read. |
 
 ## Functions
 
@@ -130,7 +134,7 @@ flowchart LR
 | `_typed_graph_page_badge` | `(page: Mapping[str, Any]) -> str` | — | — |
 | `_graph_query` | `(result: object) -> str` | — | — |
 | `_graph_status` | `(result: object, collection_key: str) -> str` | — | — |
-| `_read_protocol_request` | `(source: str) -> dict` | — | Read and validate a Wiki-as-Context protocol request. |
+| `_read_protocol_request` | `(source: str, *, packet_defaults: bool = False) -> dict` | — | Read and validate a Wiki-as-Context protocol request. |
 | `_validate_protocol_request` | `(data: object) -> dict` | — | Return a normalised protocol request or raise ``ProtocolRequestError``. |
 | `_validate_protocol_request_impl` | `(data: object) -> dict` | — | — |
 | `_normalise_protocol_focus` | `(raw_focus: object) -> list[str]` | — | — |

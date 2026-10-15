@@ -2451,7 +2451,7 @@
             },
             {
               "kind": "external_call",
-              "line": 1110,
+              "line": 1114,
               "step": "_validate_protocol_request",
               "target": "isinstance"
             },
@@ -2580,7 +2580,7 @@
             },
             {
               "kind": "external_call",
-              "line": 1110,
+              "line": 1114,
               "step": "_validate_protocol_request",
               "target": "isinstance"
             },
@@ -4684,13 +4684,13 @@
             },
             {
               "kind": "external_call",
-              "line": 1110,
+              "line": 1114,
               "step": "_validate_protocol_request",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 1110,
+              "line": 1114,
               "step": "_validate_protocol_request",
               "target": "data.get"
             },
@@ -32054,7 +32054,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3607,
+              "line": 3608,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32062,7 +32062,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3610,
+              "line": 3611,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32070,7 +32070,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3654,
+              "line": 3655,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32078,7 +32078,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3657,
+              "line": 3658,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32086,7 +32086,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3664,
+              "line": 3665,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32094,7 +32094,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3666,
+              "line": 3667,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32102,7 +32102,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3675,
+              "line": 3676,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32110,7 +32110,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3677,
+              "line": 3678,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32119,13 +32119,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 3590,
+              "line": 3591,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 3428,
+              "line": 3432,
               "step": "_run_protocol",
               "target": "getattr"
             },
@@ -32148,6 +32148,12 @@
               "target": "json.loads"
             },
             {
+              "kind": "external_call",
+              "line": 1104,
+              "step": "_read_protocol_request",
+              "target": "isinstance"
+            },
+            {
               "kind": "step_limit",
               "line": 0,
               "step": "run",
@@ -32168,10 +32174,10 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/services/context_service.py",
+            "src/llm_wiki_cli/services/context_packet.py",
             "src/llm_wiki_cli/services/context_budget.py",
             "src/llm_wiki_cli/services/change_selection.py",
             "src/llm_wiki_cli/services/token_counting.py",
-            "src/llm_wiki_cli/services/context_packet.py",
             "src/llm_wiki_cli/config.py",
             "src/llm_wiki_cli/services/filesystem_guard.py",
             "src/llm_wiki_cli/services/io.py",
@@ -32205,7 +32211,7 @@
             "src/llm_wiki_cli/services/wiki_write_basis.py",
             "src/llm_wiki_cli/services/extraction_jobs.py"
           ],
-          "step_count": 1369,
+          "step_count": 1331,
           "truncated": true
         }
       },
@@ -67102,5 +67108,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:072a51b36ed8e5163b6a4d56d3091bbbcdc490466743b71901d6702e07356797"
+  "source_hash": "sha256:ca4070fb6f38d857c1bd9cba66cc25449f34e17345d224b230fcdafaaa60cd3f"
 }

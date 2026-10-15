@@ -2519,3 +2519,19 @@ Project setup and upgrade select current workflow and storage contracts. First-u
 - Infrastructure moved: 0
 - Infrastructure removed: 0
 - Unsupported infrastructure YAML: 0
+
+## 2026-10-15
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.0.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:5ff1b92d9e9084f57e1a9eb0e6164a7e8e4b404125de97816deccda20abec456`
+- Pages created: 0
+- Pages updated: 106
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1536
+- Pages deprecated: 0
+- Semantic fields preserved: 147
+- Moved entities: none
