@@ -43,6 +43,8 @@ contracts automatically, with guarded recovery for existing projects.
 
 ### Fixed
 
+- Broad packet reads reduce oversized source detail before final packet
+  validation, with less repeated rendering under estimated delivery budgets.
 - Read-only Git probes isolate stdin so scoped MCP sessions do not block while
   waiting for client input on Windows.
 - Conflict discovery leaves immutable native storage objects to their guarded

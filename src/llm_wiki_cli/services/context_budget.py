@@ -95,6 +95,7 @@ def fit_payload(
     payload, request, warnings, counter, *, packet_renderer=None, changes=None,
     envelope_renderer=None,
     freshness_rank_by_source=None,
+    source_json_lower_bound=False,
 ):
     """Select whole source entries; keep all enrichment and omission evidence."""
     payload = copy.deepcopy(payload)
@@ -166,10 +167,26 @@ def fit_payload(
             + "\n"
         )
 
+    def entry_bytes(path, entry):
+        return len(json.dumps(
+            {path: entry}, ensure_ascii=False, sort_keys=True,
+            separators=(",", ":"), allow_nan=False,
+        ).encode("utf-8")) - 2
+
+    sizes = None
+    if (source_json_lower_bound and type(counter) is EstimatedCounter
+            and request["format"] in {"json", "packet"} and envelope_renderer is None):
+        # The files object is an unchanged fragment of the full JSON output.
+        # Its UTF-8 bytes are a lower bound only for this built-in counter;
+        # arbitrary tokenizers/counters need complete rendering on every step.
+        sizes = {path: entry_bytes(path, entry) for path, entry in payload["files"].items()}
+    size_total = sum(sizes.values()) if sizes is not None else 0
+
     while True:
-        rendered = _accounted_render(render, accounting, counter)
-        if accounting["used_tokens"] <= budget:
-            return BudgetedContext(True, rendered, dict(accounting))
+        if sizes is None or size_total + max(0, len(sizes) - 1) + 2 <= budget * 4:
+            rendered = _accounted_render(render, accounting, counter)
+            if accounting["used_tokens"] <= budget:
+                return BudgetedContext(True, rendered, dict(accounting))
         files = payload["files"]
         if not files:
             return BudgetedContext(
@@ -193,6 +210,11 @@ def fit_payload(
             detail = "slim" if detail == "deep" else "summary"
             files[path] = context._build_entry(entry, entry["priority"], detail)
             payload["downgraded_files"][path] = detail
+        if sizes is not None:
+            size_total -= sizes.pop(path)
+            if path in files:
+                sizes[path] = entry_bytes(path, files[path])
+                size_total += sizes[path]
         payload["truncated"] = True
 
 
@@ -256,9 +278,14 @@ def build_budgeted_context(
                                                                freshness_ranking_out=freshness_ranks)
 
     def packet_renderer(legacy, response):
-        return packets.packet_from_captured_response(
-            captured, legacy, response
-        ).to_payload()
+        # Fitting starts with an unbounded internal candidate. Apply wire limits
+        # only to the selected output, rather than rejecting before reduction.
+        contract = packets._packet_contract_for_request(legacy)
+        body = {
+            "schema_version": contract.schema_version,
+            **packets._packet_body(captured, legacy, response, contract),
+        }
+        return {**body, "packet_id": packets._packet_id(body)}
 
     result = fit_payload(
         payload,
@@ -268,7 +295,10 @@ def build_budgeted_context(
         packet_renderer=packet_renderer if request["format"] == "packet" else None,
         changes=changes,
         freshness_rank_by_source=freshness_ranks,
+        source_json_lower_bound=True,
     )
+    if result.ok and request["format"] == "packet":
+        validate_budgeted_context(result.rendered, request, counter=counter)
     packets._assert_source_unchanged(captured.source_snapshot, captured.source_anchor)
     packets._assert_wiki_unchanged(
         captured.wiki_root, captured.wiki_anchor, reject_all_symlinks=True

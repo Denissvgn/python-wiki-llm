@@ -213,3 +213,98 @@ def test_cli_v3_and_cannot_fit(tmp_path, monkeypatch, capsys):
     output = capsys.readouterr()
     assert not output.out
     assert json.loads(output.err)["error"] == "cannot-fit"
+
+
+@pytest.mark.parametrize("counter", [EstimatedCounter(), ByteCounter()])
+def test_packet_budget_fits_before_applying_wire_item_limit(tmp_path, monkeypatch, counter):
+    """Large internal candidates are not deliverable packets until fitted."""
+    monkeypatch.chdir(tmp_path)
+    source = tmp_path / "dense.py"
+    source.write_text("def dense():\n" + "    record(1, 2, 3, 4)\n" * 1000)
+    original = source.read_bytes()
+    monkeypatch.setattr(context_budget.packets, "_MAX_JSON_ITEMS", 5000)
+    with pytest.raises(context_budget.packets.ContextPacketMalformedError,
+                       match="5000-item limit"):
+        context_budget.packets.build_qualified_context(request={
+            "budget_tokens": 1_000_000, "focus": ["all"],
+            "knowledge_mode": "off",
+        })
+    request = {
+        "budget_tokens": 8000, "budget_mode": "estimated",
+        "format": "packet", "focus": ["all"], "knowledge_mode": "off",
+    }
+    result = build_budgeted_context(request=request, counter=counter)
+    assert result.ok
+    validated = context_budget.validate_budgeted_context(
+        result.rendered, request, counter=counter
+    )
+    assert validated["packet"]["response"]["truncated"]
+    assert result.accounting["used_tokens"] <= 8000
+    assert source.read_bytes() == original
+
+
+def test_fitted_packet_still_requires_valid_packet_identity(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "app.py").write_text("def app():\n    return 1\n")
+    monkeypatch.setattr(context_budget.packets, "_packet_id", lambda body: "0" * 64)
+    with pytest.raises(context_budget.packets.ContextPacketError):
+        build_budgeted_context(request={
+            "budget_tokens": 8000, "budget_mode": "estimated", "format": "packet",
+        })
+
+
+@pytest.mark.parametrize("fmt", ["json", "packet"])
+def test_estimator_shortcut_preserves_full_render_selection(tmp_path, monkeypatch, fmt):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "雪.py").write_text(
+        "def dense():\n" + "    record('雪', 2, 3, 4)\n" * 1000, encoding="utf-8"
+    )
+    request = {
+        "budget_tokens": 8000, "budget_mode": "estimated", "format": fmt,
+        "focus": ["all"], "knowledge_mode": "off",
+    }
+    calls = []
+    render = context_budget.context._protocol_success_payload
+
+    def counted(*args, **kwargs):
+        calls.append(1)
+        return render(*args, **kwargs)
+
+    monkeypatch.setattr(context_budget.context, "_protocol_success_payload", counted)
+    optimized = build_budgeted_context(request=request, counter=EstimatedCounter())
+    optimized_calls = len(calls)
+    calls.clear()
+
+    class EquivalentCustomCounter(EstimatedCounter):
+        pass
+
+    reference = build_budgeted_context(request=request, counter=EquivalentCustomCounter())
+    assert optimized.ok and reference.ok
+    assert optimized.rendered == reference.rendered
+    assert optimized.accounting == reference.accounting
+    assert optimized_calls < len(calls)
+
+
+def test_custom_counter_does_not_assume_monotonic_utf8_size(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "dense.py").write_text(
+        "def dense():\n" + "    record(1, 2, 3, 4)\n" * 1000
+    )
+
+    class NonMonotonicCounter:
+        identity = "adversarial-trusted-counter/v1"
+        exact = True
+
+        def count(self, text):
+            return 1 if '"calls"' in text else 100_000
+
+    request = {
+        "budget_tokens": 8000, "budget_mode": "exact", "format": "packet",
+        "focus": ["all"], "knowledge_mode": "off",
+    }
+    result = build_budgeted_context(request=request, counter=NonMonotonicCounter())
+    assert result.ok and result.accounting["exact_compliance"]
+    payload = context_budget.validate_budgeted_context(
+        result.rendered, request, counter=NonMonotonicCounter()
+    )
+    assert payload["packet"]["response"]["files"]["dense.py"]["detail"] == "deep"
