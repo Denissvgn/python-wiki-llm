@@ -109,21 +109,26 @@ async def sdk_parity(expected):
 
 cases = {}
 expected_mcp = []
-for version in (1, 2):
+for version in (None, 1, 2):
     for format in ("json", "markdown"):
-        label = f"v{version}-{format}"
+        label = f"{'default' if version is None else 'v' + str(version)}-{format}"
         request = {
-            "protocol": f"llm-wiki-context/v{version}",
             "budget_tokens": 2000,
             "focus": ["all"],
             "format": format,
             "filters": {"module": "app/service"},
         }
+        if version is not None:
+            request["protocol"] = f"llm-wiki-context/v{version}"
         if version == 2:
             request["knowledge_mode"] = "auto"
         request_path = Path.cwd() / f"packet-request-{label}.json"
         request_path.write_bytes(canonical(request))
         packet = api.build_qualified_context(str(source), str(wiki), request)
+        assert packet.to_payload()["schema_version"] == (
+            "llm-wiki-qualified-context-packet/v1" if version == 1
+            else "llm-wiki-qualified-context-packet/v2"
+        )
         if format == "json":
             assert "app/service.py" in packet.to_payload()["response"]["files"]
         else:
@@ -153,7 +158,7 @@ for version in (1, 2):
         )
         assert result.stdout == packet.to_bytes()
         assert api.validate_context_packet(result.stdout).packet_id == packet.packet_id
-        if with_sdk:
+        if with_sdk and version != 1:
             arguments = {
                 "budget_tokens": 2000,
                 "focus": ["all"],
