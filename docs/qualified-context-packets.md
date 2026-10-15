@@ -23,12 +23,22 @@ the current default. They disclose unavailable native knowledge through the
 qualified fallback; reads never initialize or upgrade storage.
 
 API and CLI applications requiring canonical v1 packets must send an explicit
-`protocol: "llm-wiki-context/v1"` request and omit `knowledge_mode`. Explicit
-raw v2 requests must include one of the three exact lowercase mode values;
+`protocol: "llm-wiki-context/v1"` request and omit `knowledge_mode`. This returns
+the `llm-wiki-qualified-context-packet/v1` schema. Explicit raw v2 requests must
+include one of the three exact lowercase mode values;
 omitting the protocol uses the library's current defaults. Null and unknown
 versions remain invalid. Supplying both a packet request field and a separate
 Python mode argument is invalid. MCP `get_context_packet` uses v2; a client
 that only understands v1 must be updated before upgrading its server.
+
+`context_knowledge_contract()` from
+`llm_wiki_cli.services.context_knowledge_contract` returns the current
+`llm-wiki-context-knowledge-contract/v2` descriptor, including packet defaults
+for each interface. Plain context responses retain their separate compatibility
+contract. The frozen v1 descriptor remains available through
+`context_knowledge_contract(schema_version="llm-wiki-context-knowledge-contract/v1")`;
+its validator accepts both supported descriptor schemas without conversion.
+Selecting a descriptor does not change server behavior.
 
 The packet schema changed because v2 adds evidence-selection and response
 semantics. A v1 parser must not reinterpret v2 bytes, and a v2 producer must

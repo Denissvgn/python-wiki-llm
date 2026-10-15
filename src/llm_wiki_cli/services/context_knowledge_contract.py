@@ -1,9 +1,9 @@
 """Frozen compatibility and failure contracts for context knowledge selection.
 
-The v1 context and packet contracts remain frozen for omitted knowledge mode,
-while explicit knowledge mode activates the v2 wire contract across the CLI,
-Python API, MCP, raw protocol, and qualified packets.  This module keeps those
-interfaces on one naming, fallback, recovery, and evidence contract.
+The frozen v1 descriptor remains available for compatibility evidence. The
+current v2 descriptor distinguishes legacy context responses from the current
+qualified-packet default, including automatic native knowledge selection.
+This module keeps naming, fallback, recovery, and evidence contracts together.
 
 The lifecycle and evidence matrices are data rather than prose.  Consumers can
 validate a serialized copy before using it as implementation or release
@@ -26,7 +26,8 @@ from .contracts import (
 )
 
 
-CONTEXT_KNOWLEDGE_CONTRACT_SCHEMA_VERSION = "llm-wiki-context-knowledge-contract/v1"
+LEGACY_CONTEXT_KNOWLEDGE_CONTRACT_SCHEMA_VERSION = "llm-wiki-context-knowledge-contract/v1"
+CONTEXT_KNOWLEDGE_CONTRACT_SCHEMA_VERSION = "llm-wiki-context-knowledge-contract/v2"
 # Compatibility aliases retained for consumers of the foundation contract.
 RESERVED_CONTEXT_KNOWLEDGE_PROTOCOL_VERSION = CONTEXT_KNOWLEDGE_PROTOCOL_VERSION
 RESERVED_QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION = (
@@ -226,7 +227,7 @@ def _combined_recovery_routes(
 
 
 _CONTRACT: dict[str, Any] = {
-    "schema_version": CONTEXT_KNOWLEDGE_CONTRACT_SCHEMA_VERSION,
+    "schema_version": LEGACY_CONTEXT_KNOWLEDGE_CONTRACT_SCHEMA_VERSION,
     "runtime_state": {
         "knowledge_mode": "active",
         "render_profiles": "active",
@@ -1365,9 +1366,40 @@ _CANONICAL_CONTRACT_JSON = json.dumps(
     sort_keys=True,
 )
 
+_CURRENT_CANONICAL_CONTRACT = deepcopy(_CANONICAL_CONTRACT)
+_CURRENT_CANONICAL_CONTRACT["schema_version"] = CONTEXT_KNOWLEDGE_CONTRACT_SCHEMA_VERSION
+_CURRENT_CANONICAL_CONTRACT["runtime_state"]["default_packet_schema"] = QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION
+_PACKET_DEFAULTS = {
+    "context_protocol": CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
+    "packet_schema": QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION,
+    "knowledge_mode": "auto",
+}
+_CURRENT_CANONICAL_CONTRACT["versioning"]["packet_default"] = {
+    **_PACKET_DEFAULTS, "introduced_in": "3.0.0", "legacy_interfaces": ["cli", "python-api"],
+}
+_CURRENT_CANONICAL_CONTRACT["request"]["omitted_behavior"] = "interface-specific"
+_CURRENT_CANONICAL_CONTRACT["request"]["normalization"]["omitted"] = "interface-specific-default"
+for _interface in ("cli", "python-api", "mcp"):
+    _CURRENT_CANONICAL_CONTRACT["interfaces"][_interface]["omission"] = "legacy-context-current-packet"
+    _CURRENT_CANONICAL_CONTRACT["interfaces"][_interface]["packet_default"] = deepcopy(_PACKET_DEFAULTS)
+_CURRENT_CANONICAL_CONTRACT["interfaces"]["packet"]["default"] = "auto"
+_CURRENT_CANONICAL_CONTRACT["interfaces"]["packet"]["omission"] = "use-current-v2-packet"
+_CURRENT_CANONICAL_CONTRACT_JSON = json.dumps(
+    _CURRENT_CANONICAL_CONTRACT, allow_nan=False, ensure_ascii=False,
+    separators=(",", ":"), sort_keys=True,
+)
+
 
 class ContextKnowledgeContractError(ValueError):
     """A serialized context-knowledge contract violates the frozen shape."""
+
+
+def _contract_snapshot(schema_version) -> tuple[dict[str, Any], str]:
+    if schema_version == LEGACY_CONTEXT_KNOWLEDGE_CONTRACT_SCHEMA_VERSION:
+        return _CANONICAL_CONTRACT, _CANONICAL_CONTRACT_JSON
+    if schema_version == CONTEXT_KNOWLEDGE_CONTRACT_SCHEMA_VERSION:
+        return _CURRENT_CANONICAL_CONTRACT, _CURRENT_CANONICAL_CONTRACT_JSON
+    raise ContextKnowledgeContractError("schema_version is unsupported")
 
 
 def _matrix_by_state(
@@ -1413,26 +1445,9 @@ def _validate_context_knowledge_contract(contract: Mapping[str, Any]) -> None:
         raise ContextKnowledgeContractError(
             f"contract is missing {missing_contract_fields[0]}"
         )
-    if contract.get("schema_version") != CONTEXT_KNOWLEDGE_CONTRACT_SCHEMA_VERSION:
-        raise ContextKnowledgeContractError("schema_version is unsupported")
+    canonical, canonical_json = _contract_snapshot(contract.get("schema_version"))
     runtime_state = contract.get("runtime_state")
-    if not isinstance(runtime_state, Mapping) or runtime_state != {
-        "knowledge_mode": "active",
-        "render_profiles": "active",
-        "lifecycle_behavior": "active",
-        "active_context_protocols": [
-            CONTEXT_PROTOCOL_VERSION,
-            CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
-        ],
-        "active_packet_schemas": [
-            QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION,
-            QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION,
-        ],
-        "default_context_protocol": CONTEXT_PROTOCOL_VERSION,
-        "default_packet_schema": QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION,
-        "explicit_context_protocol": CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
-        "explicit_packet_schema": QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION,
-    }:
+    if not isinstance(runtime_state, Mapping) or runtime_state != canonical["runtime_state"]:
         raise ContextKnowledgeContractError(
             "knowledge mode, render profiles, and lifecycle behavior must be active"
         )
@@ -1448,13 +1463,7 @@ def _validate_context_knowledge_contract(contract: Mapping[str, Any]) -> None:
         raise ContextKnowledgeContractError("request aliases are not supported")
     if request.get("omitted_value", object()) is not None:
         raise ContextKnowledgeContractError("request.omitted_value must be null")
-    if request.get("normalization") != {
-        "omitted": "do-not-add-field",
-        "explicit": "exact-lowercase-value",
-        "cli-option-with-request-file": "invalid-request",
-        "api-parameter-with-request-field": "invalid-request",
-        "duplicate": "invalid-request",
-    }:
+    if request.get("normalization") != canonical["request"]["normalization"]:
         raise ContextKnowledgeContractError("request.normalization is incomplete")
 
     interfaces = contract.get("interfaces")
@@ -1792,7 +1801,7 @@ def _validate_context_knowledge_contract(contract: Mapping[str, Any]) -> None:
         raise ContextKnowledgeContractError(
             "context and recovery contracts must not initialize governance"
         )
-    if contract != _CANONICAL_CONTRACT or candidate_json != _CANONICAL_CONTRACT_JSON:
+    if contract != canonical or candidate_json != canonical_json:
         raise ContextKnowledgeContractError(
             "contract differs from the frozen canonical contract"
         )
@@ -1811,12 +1820,14 @@ def validate_context_knowledge_contract(contract: Mapping[str, Any]) -> None:
         ) from exc
 
 
-def context_knowledge_contract() -> dict[str, Any]:
-    """Return a detached JSON-compatible copy of the frozen contract."""
+def context_knowledge_contract(*, schema_version: str | None = None) -> dict[str, Any]:
+    """Return current defaults, or an explicitly selected frozen legacy descriptor."""
 
-    contract = deepcopy(_CANONICAL_CONTRACT)
+    selected = CONTEXT_KNOWLEDGE_CONTRACT_SCHEMA_VERSION if schema_version is None else schema_version
+    contract = deepcopy(_contract_snapshot(selected)[0])
     validate_context_knowledge_contract(contract)
     return contract
 
 
 validate_context_knowledge_contract(_CANONICAL_CONTRACT)
+validate_context_knowledge_contract(_CURRENT_CANONICAL_CONTRACT)

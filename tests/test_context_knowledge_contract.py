@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import inspect
+import hashlib
 import json
 import shlex
 from copy import deepcopy
@@ -15,6 +16,7 @@ from llm_wiki_cli import api, cli
 from llm_wiki_cli.services import context_service, schema
 from llm_wiki_cli.services.context_knowledge_contract import (
     CONTEXT_KNOWLEDGE_CONTRACT_SCHEMA_VERSION,
+    LEGACY_CONTEXT_KNOWLEDGE_CONTRACT_SCHEMA_VERSION,
     KNOWLEDGE_MODE_CLI_OPTION,
     KNOWLEDGE_MODE_REQUEST_FIELD,
     KNOWLEDGE_MODE_VALUES,
@@ -35,7 +37,8 @@ from llm_wiki_cli.services.mcp_server import McpWikiService
 
 
 FIXTURE_DIR = Path(__file__).parent / "fixtures"
-CONTRACT_FIXTURE = FIXTURE_DIR / "context-knowledge-contract-v1.json"
+CONTRACT_FIXTURE = FIXTURE_DIR / "context-knowledge-contract-v2.json"
+LEGACY_CONTRACT_FIXTURE = FIXTURE_DIR / "context-knowledge-contract-v1.json"
 LEGACY_CONTEXT_FIXTURE = FIXTURE_DIR / "context-prefer-fresh-off-v1.json"
 LEGACY_PACKET_FIXTURE = FIXTURE_DIR / "context-packet-v1.json"
 
@@ -75,6 +78,20 @@ def test_frozen_contract_matches_its_canonical_fixture() -> None:
     assert b"\r" not in CONTRACT_FIXTURE.read_bytes()
 
 
+def test_frozen_legacy_descriptor_remains_available_and_valid() -> None:
+    raw = LEGACY_CONTRACT_FIXTURE.read_bytes()
+    assert hashlib.sha256(raw).hexdigest() == "fc22ae3b480ccfab87c911ddc79c581d134fd7a650393e4ff08129412997aaaf"
+    fixture = json.loads(raw)
+    validate_context_knowledge_contract(fixture)
+    assert context_knowledge_contract(schema_version=LEGACY_CONTEXT_KNOWLEDGE_CONTRACT_SCHEMA_VERSION) == fixture
+
+
+@pytest.mark.parametrize("version", ["future/v99", "", 1])
+def test_descriptor_does_not_downgrade_unknown_explicit_versions(version) -> None:
+    with pytest.raises(ContextKnowledgeContractError, match="schema_version is unsupported"):
+        context_knowledge_contract(schema_version=version)
+
+
 def test_knowledge_render_profiles_and_lifecycle_are_active() -> None:
     contract = context_knowledge_contract()
 
@@ -92,7 +109,7 @@ def test_knowledge_render_profiles_and_lifecycle_are_active() -> None:
             QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION,
         ],
         "default_context_protocol": CONTEXT_PROTOCOL_VERSION,
-        "default_packet_schema": QUALIFIED_CONTEXT_PACKET_SCHEMA_VERSION,
+        "default_packet_schema": QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION,
         "explicit_context_protocol": CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
         "explicit_packet_schema": (QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION),
     }
@@ -139,11 +156,18 @@ def test_reserved_names_and_request_normalization_are_identical() -> None:
     assert interfaces["mcp"]["name"] == KNOWLEDGE_MODE_REQUEST_FIELD
     assert interfaces["raw-protocol"]["path"] == KNOWLEDGE_MODE_REQUEST_FIELD
     assert interfaces["packet"]["path"] == "request.knowledge_mode"
-    assert all(surface["default"] is None for surface in interfaces.values())
+    assert all(interfaces[name]["default"] is None for name in ("cli", "python-api", "mcp", "raw-protocol"))
+    assert interfaces["packet"]["default"] == "auto"
+    assert contract["versioning"]["packet_default"] == {
+        "context_protocol": CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
+        "packet_schema": QUALIFIED_CONTEXT_PACKET_KNOWLEDGE_SCHEMA_VERSION,
+        "knowledge_mode": "auto", "introduced_in": "3.0.0",
+        "legacy_interfaces": ["cli", "python-api"],
+    }
     assert contract["request"]["accepted_values"] == list(KNOWLEDGE_MODE_VALUES)
     assert contract["request"]["aliases"] == []
     assert contract["request"]["normalization"] == {
-        "omitted": "do-not-add-field",
+        "omitted": "interface-specific-default",
         "explicit": "exact-lowercase-value",
         "cli-option-with-request-file": "invalid-request",
         "api-parameter-with-request-field": "invalid-request",

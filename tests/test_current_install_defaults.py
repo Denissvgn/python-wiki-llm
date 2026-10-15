@@ -56,6 +56,7 @@ def test_versionless_first_use_gets_current_storage_tasks_and_readable_views(pro
 
 def test_first_use_packet_defaults_match_cli_and_mcp(project, capsys):
     from llm_wiki_cli.services import context_service
+    from llm_wiki_cli.services.context_knowledge_contract import context_knowledge_contract
     from llm_wiki_cli.services.mcp_server import McpWikiService
 
     api.bootstrap_wiki("src", "wiki")
@@ -70,6 +71,9 @@ def test_first_use_packet_defaults_match_cli_and_mcp(project, capsys):
     assert expected.to_payload()["schema_version"] == "llm-wiki-qualified-context-packet/v2"
     knowledge = expected.to_payload()["response"]["knowledge"]
     assert knowledge["mode"] == "auto" and knowledge["availability"] == "ready"
+    descriptor = context_knowledge_contract()
+    assert descriptor["runtime_state"]["default_packet_schema"] == expected.to_payload()["schema_version"]
+    assert descriptor["interfaces"]["packet"]["default"] == knowledge["mode"]
     assert capsys.readouterr().out.encode("utf-8") == expected.to_bytes()
     assert response["packet"] == expected.to_payload()
     assert (files(project / "src"), files(project / "wiki")) == before

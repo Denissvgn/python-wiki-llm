@@ -33,6 +33,8 @@ contracts automatically, with guarded recovery for existing projects.
   use current task and compact-view defaults without requiring version selection.
 - Versionless qualified packets use the current native-knowledge contract across
   the API, CLI, and MCP. Bounded MCP context sessions are available by default.
+  The current contract descriptor advertises those packet defaults while
+  retaining the frozen legacy descriptor for explicit compatibility use.
 - Both composite Actions default to compatibility-aware v4 reports, so fresh
   native wikis need no report-version configuration.
 - Structural analysis caching remains available under ordinary maintenance

@@ -6,7 +6,6 @@ import shlex
 from pathlib import Path
 
 from llm_wiki_cli import cli
-from llm_wiki_cli.services import context_service
 from llm_wiki_cli.services.context_knowledge_contract import (
     context_knowledge_contract,
 )
@@ -107,8 +106,12 @@ def test_native_context_docs_match_the_active_mode_and_version_contract() -> Non
 
     required_error = contract["output_fields"]["required_error"]
     assert f"`{required_error['code']}`" in combined
-    assert "Omitted/default behavior is not deprecated in this release" in packet
-    assert "release must first announce the deprecation" in packet
+    normalized = " ".join(packet.split())
+    assert "Starting with 3.0.0" in normalized
+    assert 'knowledge_mode: "auto"' in packet
+    assert "Update packet consumers to accept v2 before upgrading." in normalized
+    assert "MCP `get_context_packet` uses v2" in normalized
+    assert "Omitted/default behavior is not deprecated in this release" not in packet
 
 
 def test_every_complete_command_in_native_context_docs_parses() -> None:
@@ -132,9 +135,18 @@ def test_every_complete_command_in_native_context_docs_parses() -> None:
             assert f"`{args.request}`" in preceding
             blocks = re.findall(r"```json\s*\n(.*?)\n```", preceding, flags=re.DOTALL)
             assert blocks, example.location.label
-            request = context_service._validate_protocol_request(json.loads(blocks[-1]))
+            from llm_wiki_cli.services.context_packet import _normalized_request
+
+            request = _normalized_request(json.loads(blocks[-1]))
             assert request["protocol"] == CONTEXT_KNOWLEDGE_PROTOCOL_VERSION
             context_modes.add(request["knowledge_mode"])
+        elif args.format == "packet":
+            from llm_wiki_cli.services.context_packet import _normalized_request
+
+            raw = {"budget_tokens": args.budget}
+            if args.knowledge_mode is not None:
+                raw["knowledge_mode"] = args.knowledge_mode
+            context_modes.add(_normalized_request(raw)["knowledge_mode"])
         else:
             context_modes.add(args.knowledge_mode)
     assert context_modes == {"auto"}
