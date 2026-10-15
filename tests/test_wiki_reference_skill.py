@@ -120,14 +120,16 @@ def test_reference_documents_site_export_and_context():
     assert "--profile reference" in publishing
     assert "--file-friendly" in publishing
     assert (
-        "llm-wiki context --budget 8000 --src-dir . "
+        "llm-wiki context --budget 8000 --budget-mode estimated --src-dir . "
         "--wiki-dir docs/llm_wiki --format packet --focus changed "
         "--knowledge-mode auto --read-only" in context_text
     )
     assert '"protocol": "llm-wiki-context/v2"' in context
     assert "`prefer_fresh` is independent" in context
     assert "Python or MCP `query_documentation`" in context
-    assert "Budget and focus bound emitted output, not scan work" in context_text
+    assert "The complete output budget and focus do not bound scan work" in context_text
+    assert "Its `packet` field contains the canonical Qualified Context Packet" in context_text
+    assert "using the UTF-8 estimate" in context_text
     assert "Broad repository orientation" in context
     assert "Exact concept" in context
     assert "Supplied changed paths or unified diff" in context
