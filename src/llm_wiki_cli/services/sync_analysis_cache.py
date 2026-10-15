@@ -34,6 +34,19 @@ def input_key(options, snapshot, manifest, generation_inputs, *, explain=False):
             report_capture(options, "skipped", reason)
         return None
 
+    ordinary_owner = None
+    if manifest.maintenance_state is not None:
+        from .maintenance_state import MaintenanceError, _identity
+
+        state = manifest.maintenance_state
+        ordinary_owner = state.get("adoption_id") if isinstance(state, Mapping) else None
+        if not isinstance(ordinary_owner, str) or len(ordinary_owner) != 36:
+            return skipped("maintenance-state")
+        try:
+            _identity(ordinary_owner)
+        except MaintenanceError:
+            return skipped("maintenance-state")
+
     for excluded, reason in (
         (bool(options.initialize_surfaces), "surface-initialization"),
         (options.knowledge_format is not None, "storage-format-requested"),
@@ -70,10 +83,10 @@ def input_key(options, snapshot, manifest, generation_inputs, *, explain=False):
         "preserve_semantic": options.preserve_semantic,
         "implementation": implementation, "analysis": analysis,
     }
-    if manifest.maintenance_state is not None:
+    if ordinary_owner is not None:
         # Cache only structural observations, never review state or actor history.
         # Reconciliation still runs against the current guarded owner on every sync.
-        key["ordinary_owner"] = manifest.maintenance_state["adoption_id"]
+        key["ordinary_owner"] = ordinary_owner
     return key
 
 
