@@ -6,10 +6,11 @@
 
 Frozen compatibility and failure contracts for context knowledge selection.
 
-The v1 context and packet contracts remain frozen for omitted knowledge mode,
-while explicit knowledge mode activates the v2 wire contract across the CLI,
-Python API, MCP, raw protocol, and qualified packets.  This module keeps those
-interfaces on one naming, fallback, recovery, and evidence contract.
+The current v2 descriptor distinguishes plain compatibility context responses
+from qualified packets, which default to v2 with automatic native knowledge.
+An explicitly requested v1 descriptor retains its original canonical contents.
+Both versions enforce the same complete safety and recovery matrices; unknown
+descriptor versions fail instead of being interpreted as a supported version.
 
 The lifecycle and evidence matrices are data rather than prose.  Consumers can
 validate a serialized copy before using it as implementation or release
@@ -66,7 +67,7 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ContextKnowledgeContractError](../entities/ContextKnowledgeContractError.md) | 1369 | `ValueError` | A serialized context-knowledge contract violates the frozen shape. |
+| [ContextKnowledgeContractError](../entities/ContextKnowledgeContractError.md) | 1393 | `ValueError` | A serialized context-knowledge contract violates the frozen shape. |
 
 ## Functions
 
@@ -76,7 +77,8 @@ flowchart LR
 | `_wire_mapping` | `(*, availability: str, reason: str, auto_status: str, required_status: str, basis_state: str, basis_availability: str, basis_reason: str) -> dict[str, Any]` | — | — |
 | `_combined_signals` | `(lifecycle: Mapping[str, Any], evidence: Mapping[str, Any]) -> dict[str, list[dict[str, str]]]` | — | — |
 | `_combined_recovery_routes` | `(lifecycle: Mapping[str, Any], evidence: Mapping[str, Any]) -> list[dict[str, Any]]` | — | — |
+| `_contract_snapshot` | `(schema_version) -> tuple[dict[str, Any], str]` | — | — |
 | `_matrix_by_state` | `(value: object, *, field: str, expected_states: Sequence[str], required_fields: frozenset[str]) -> dict[str, Mapping[str, Any]]` | — | — |
 | `_validate_context_knowledge_contract` | `(contract: Mapping[str, Any]) -> None` | — | Validate completeness and the fail-safe cross-row invariants. |
 | `validate_context_knowledge_contract` | `(contract: Mapping[str, Any]) -> None` | — | Reject every non-canonical candidate with the declared error type. |
-| `context_knowledge_contract` | `() -> dict[str, Any]` | — | Return a detached JSON-compatible copy of the frozen contract. |
+| `context_knowledge_contract` | `(*, schema_version: str \| None = None) -> dict[str, Any]` | — | Return current defaults, or an explicitly selected frozen legacy descriptor. |

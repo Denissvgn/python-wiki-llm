@@ -2535,3 +2535,19 @@ Project setup and upgrade select current workflow and storage contracts. First-u
 - Pages deprecated: 0
 - Semantic fields preserved: 147
 - Moved entities: none
+
+## 2026-10-15
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.0.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:f167ef22164d8c59eab770c53d5d5b0ab32095c990b13a8be8457597a8a7c082`
+- Pages created: 0
+- Pages updated: 3
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1589
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none
