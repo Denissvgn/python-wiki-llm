@@ -391,6 +391,48 @@ def test_logical_review_is_format_independent_and_output_bounded(tmp_path):
     assert full["records"] and full["total"] > 1
 
 
+@pytest.mark.parametrize("mode", ["v1", "packed-v3-deflate", "packed-v4-deflate"])
+@pytest.mark.parametrize("before,after", [
+    pytest.param(False, 0, id="false-versus-zero"),
+    pytest.param(True, 1, id="true-versus-one"),
+    pytest.param({"items": [False]}, {"items": [0]}, id="nested-boolean-versus-number"),
+])
+def test_logical_review_distinguishes_json_boolean_and_number(tmp_path, mode, before, after):
+    from llm_wiki_cli.services.knowledge_index import serialize_knowledge_index
+    from llm_wiki_cli.services.knowledge_model import knowledge_index_to_payload
+    from llm_wiki_cli.services.sync_manifest import SyncManifest
+
+    left = tmp_path / "before"
+    left.mkdir()
+    _committed_state(left)
+    right = tmp_path / "after"
+    shutil.copytree(left, right)
+    loaded = load_knowledge_state(left)
+    assert loaded.knowledge is not None
+    logical = knowledge_index_to_payload(loaded.knowledge)
+    surface = (left / ".llm-wiki-surface.json").read_bytes()
+    for root, value in ((left, before), (right, after)):
+        payload = deepcopy(logical)
+        payload.setdefault("extensions", {})["acme/scalar"] = {"enabled": value}
+        manifest = SyncManifest.load(root)
+        assert manifest is not None
+        plan = build_knowledge_commit_plan(
+            root, surface_index_bytes=surface,
+            knowledge_index_bytes=serialize_knowledge_index(payload).encode("utf-8"),
+            manifest=manifest, knowledge_format=mode,
+        )
+        commit_knowledge_artifacts(plan)
+        assert storage_report(root, full=True)["ok"]
+    result = review_storage(right, against=left)
+    assert result["ok"] and result["complete"]
+    assert result["total"] == 1
+    row = result["records"][0]
+    assert row["key"] == "extension:acme/scalar" and row["change"] == "modified"
+    assert row["before"]["hash"] != row["after"]["hash"]
+    assert json.dumps(row["values"]["before"], sort_keys=True) != json.dumps(row["values"]["after"], sort_keys=True)
+    assert review_storage(left, against=left)["total"] == 0
+
+
 def test_cli_bootstrap_and_sync_keep_packed_adoption(tmp_path, monkeypatch, capsys, compression):
     monkeypatch.chdir(tmp_path)
     (tmp_path / "app.py").write_text("def limit(value=3):\n    return value\n")

@@ -370,7 +370,8 @@ def review_storage(wiki_dir: str | Path, *, against: str | Path | None = None,
                       whole_snapshot_validated=False)
     used = len(canonical_bytes(result)) + 128
     for key in sorted(current.keys() | previous.keys()):
-        if against is not None and current.get(key) == previous.get(key) and (key in current) == (key in previous):
+        if (against is not None and (key in current) == (key in previous)
+                and canonical_bytes(current.get(key)) == canonical_bytes(previous.get(key))):
             continue
         result["total"] += 1
         if len(result["records"]) >= limit:

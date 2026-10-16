@@ -43,6 +43,8 @@ contracts automatically, with guarded recovery for existing projects.
 
 ### Fixed
 
+- Logical storage comparisons distinguish JSON booleans from numeric zero and
+  one, including nested extension values.
 - Unresolved JavaScript imports and computed requires remain valid structural
   gap evidence and render explicitly in generated import tables. Evidence
   errors expose captured source paths and underlying causes for diagnosis.
