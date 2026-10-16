@@ -305,6 +305,48 @@ def test_native_origin_contract_runs_before_the_full_windows_suite():
     )
 
 
+def test_javascript_evidence_has_exact_conditional_owners_and_native_zero_skip_gate():
+    cases = {
+        "tests/test_ts_extract.py::test_dynamic_import_gap_survives_bootstrap_sync_and_strict_gates",
+        *(f"tests/test_ts_extract.py::test_unresolved_import_producer_consumer_contract[{ext}]"
+          for ext in ("js", "jsx", "mjs", "cjs", "ts", "tsx")),
+    }
+    entries = json.loads((ROOT / "release/skip-allowlist.json").read_text())["entries"]
+    owned = [item for item in entries if item["node_id"] in cases]
+    assert len(owned) == 21
+    assert {(item["lane"], item["node_id"], item["owner_lane"], item["reason"])
+            for item in owned} == {
+        (lane, case, "toolchains", "Node.js/ts-morph dependencies not installed — TypeScript extractor tests skipped")
+        for lane in ("core-macos-3.14", "core-ubuntu-3.10", "core-windows-3.13")
+        for case in cases
+    }
+    owner = _named_step(_yaml("release-qualification.yml")["jobs"]["toolchains"], "Run toolchain owner suites")
+    assert "tests/test_ts_extract.py" in owner["run"]
+    for workflow, job_name in (("ci.yml", "test"), ("release-qualification.yml", "core-windows")):
+        job = _yaml(workflow)["jobs"][job_name]
+        steps = job["steps"]
+        probe = _named_step(job, "Verify JavaScript evidence on native Windows")
+        assert probe["env"]["LLM_WIKI_CACHE_DIR"] == "${{ runner.temp }}/javascript-evidence-helpers"
+        assert "LLM_WIKI_CACHE_DIR" not in job.get("env", {})
+        script = probe["run"]
+        assert 'prepare-extractors --src-dir .' in script
+        assert '--language typescript --cache-dir "${LLM_WIKI_CACHE_DIR}"' in script
+        assert 'test_unresolved_import_producer_consumer_contract' in script
+        assert 'test_dynamic_import_gap_survives_bootstrap_sync_and_strict_gates' in script
+        assert '--lane javascript-evidence-windows' in script
+        assert '--minimum-collected 7 --minimum-passed 7' in script
+        assert '--discovery' not in script
+        assert not any(item["lane"] == "javascript-evidence-windows" for item in entries)
+        assert 'GITHUB_ENV' not in script
+        if workflow == "ci.yml":
+            assert probe["if"] == "${{ matrix.lane == 'core-windows-3.13' }}"
+            assert steps.index(probe) < next(i for i, s in enumerate(steps) if s.get("name") == "Run strict suite")
+        else:
+            assert probe["working-directory"] == "candidate"
+            assert "if" not in probe
+            assert steps.index(probe) < next(i for i, s in enumerate(steps) if s.get("name") == "Verify and aggregate the complete Windows core lane")
+
+
 def test_foreign_action_matrix_keeps_provider_separate_and_checks_negative_evidence():
     job = _yaml("action-selftest.yml")["jobs"]["foreign-caller"]
     assert job["strategy"]["matrix"] == {
