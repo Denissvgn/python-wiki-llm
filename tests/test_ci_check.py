@@ -1185,6 +1185,26 @@ def test_ci_report_validator_checks_optional_finding_fields() -> None:
         ci_report.validate_ci_check_payload(payload, cli_exit=1)
 
 
+def test_ci_report_retains_evidence_details_without_new_wire_fields() -> None:
+    report = LintReport(wiki_dir="missing-wiki", src_dir=".", strict=True)
+    report.issues.append(LintIssue(
+        category="knowledge_evidence",
+        message="Unknown structural evidence. Source: 'src/dyn.mjs'. Cause: invalid-inventory-shape.",
+        path="modules/dyn.md", target="llm-wiki://modules/dyn",
+        reason_code="promised-evidence-unknown",
+        hint="Inspect src/dyn.mjs with llm-wiki extract --deep --read-only --paths <source-path>.",
+    ))
+    payload = ci_report.build_ci_check_payload(report)
+    ci_report.validate_ci_check_payload(payload, cli_exit=1)
+    issues = payload["issues"]
+    assert isinstance(issues, list)
+    finding = issues[0]
+    assert isinstance(finding, dict)
+    assert set(finding) == {"category", "message", "severity", "path", "target", "reason_code", "hint"}
+    assert "src/dyn.mjs" in finding["message"]
+    assert "invalid-inventory-shape" in finding["message"]
+
+
 @pytest.mark.parametrize(
     ("changes", "message"),
     [

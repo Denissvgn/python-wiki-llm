@@ -13,6 +13,8 @@ artifacts only after the public Markdown surface has been written.
 
 Normal first use writes current compressed native knowledge immediately and establishes indexed ordinary maintenance ownership with pending review. It reuses the original source and helper capture rather than extracting a second scope. Explicit compatibility formats remain available, and the reported schema describes the final committed data.
 
+Generated import tables label unresolved JavaScript imports with their gap reason, source line and deferred scope. They preserve the distinction between an unknown target and a resolved module; imports without named symbols render a dash rather than an empty code span.
+
 ## Imports
 
 | Source | Symbols |
@@ -99,17 +101,17 @@ flowchart LR
 |-------|------|-------|-------------|
 | [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 737 | — | — |
 | [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 1015 | — | — |
-| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3147 | — | — |
-| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4440 | — | — |
-| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4466 | — | — |
-| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4479 | — | — |
-| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4486 | — | — |
-| [_WorkflowResult](../entities/WorkflowResult.md) | 4494 | — | — |
-| [_FlowResult](../entities/FlowResult.md) | 4500 | — | — |
-| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4511 | — | — |
-| [_DependencyResult](../entities/DependencyResult.md) | 4522 | — | — |
-| [_ApiContractResult](../entities/ApiContractResult.md) | 4530 | — | — |
-| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4537 | — | — |
+| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3156 | — | — |
+| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4449 | — | — |
+| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4475 | — | — |
+| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4488 | — | — |
+| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4495 | — | — |
+| [_WorkflowResult](../entities/WorkflowResult.md) | 4503 | — | — |
+| [_FlowResult](../entities/FlowResult.md) | 4509 | — | — |
+| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4520 | — | — |
+| [_DependencyResult](../entities/DependencyResult.md) | 4531 | — | — |
+| [_ApiContractResult](../entities/ApiContractResult.md) | 4539 | — | — |
+| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4546 | — | — |
 
 ## Functions
 

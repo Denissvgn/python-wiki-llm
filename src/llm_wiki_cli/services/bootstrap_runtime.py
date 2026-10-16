@@ -1520,14 +1520,23 @@ def _append_import_section(
         return
 
     grouped: dict[str, list[str]] = defaultdict(list)
+    unresolved: list[dict] = []
     for imp in imports:
+        if not imp.get("module") and imp.get("resolution") == "unresolved":
+            unresolved.append(imp)
+            continue
         grouped[imp["module"]].append(imp["name"])
 
     lines.append("| Source | Symbols |")
     lines.append("|--------|---------|")
     for module, names in sorted(grouped.items()):
-        symbols = ", ".join(f"`{n}`" for n in names) if names else "—"
+        symbols = ", ".join(f"`{n}`" for n in names if n) or "—"
         lines.append(f"| `{module}` | {symbols} |")
+    for imp in unresolved:
+        reason = _md_cell(imp.get("reason"))
+        location = f"line {_md_cell(imp.get('line'))}"
+        scope = "; deferred" if imp.get("scope") == "deferred" else ""
+        lines.append(f"| Unresolved `{reason}` | — ({location}{scope}) |")
     lines.append("")
 
 

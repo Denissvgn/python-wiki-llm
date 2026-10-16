@@ -32,8 +32,8 @@ sequenceDiagram
     participant p18 as require_nonempty_text
     participant p19 as _structural_copy
     participant p20 as _validate_optional_string_array
-    participant p21 as _validate_optional_strings
-    participant p22 as _optional_record_array
+    participant p21 as _optional_record_array
+    participant p22 as _validate_optional_strings
     participant p23 as _validate_optional_booleans
     participant p24 as require_string_list
     participant p25 as require_mapping_list
@@ -62,11 +62,11 @@ sequenceDiagram
     p10->>p18: require_nonempty_text
     p12->>p19: _structural_copy
     p11->>p20: _validate_optional_string_array
-    p9->>p21: _validate_optional_strings
-    p13->>p22: _optional_record_array
+    p13->>p21: _optional_record_array
+    p9->>p22: _validate_optional_strings
     p9->>p23: _validate_optional_booleans
     p20->>p24: require_string_list
-    p22->>p25: require_mapping_list
+    p21->>p25: require_mapping_list
     p1->>p26: require_bool
     p5->>p27: sha256_bytes
     p4->>p28: _InventoryNormalizationError
@@ -74,9 +74,9 @@ sequenceDiagram
     p4-->>p30: seen_names.get(name, 0)
 ```
 
-> Call sequence diagram shows 30 of 129 interactions; 99 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 136 interactions; 106 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 27 (26 omitted); unresolved 1 of 22 (21 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 29 (28 omitted); unresolved 1 of 27 (26 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -167,9 +167,9 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | module_observation_hash | _validate_inventory_complete | 256 | `_validate_inventory_complete(inventory_complete)` |
-| _validate_inventory_complete | require_bool | 853 | `require_bool(inventory_complete, error=TypeError(...))` |
+| _validate_inventory_complete | require_bool | 869 | `require_bool(inventory_complete, error=TypeError(...))` |
 | require_bool | isinstance (src/llm_wiki_cli/services…alidation.py:require_bool) | 810 | `isinstance(value, bool)` |
-| _validate_inventory_complete | TypeError | 855 | `TypeError('inventory_complete must be a boolean')` |
+| _validate_inventory_complete | TypeError | 871 | `TypeError('inventory_complete must be a boolean')` |
 | module_observation_hash | normalize_module_observation | 259 | `normalize_module_observation(file_data)` |
 | normalize_module_observation | _normalize_module_observation | 220 | `_normalize_module_observation(file_data)` |
 | _normalize_module_observation | _inventory_language | 427 | `_inventory_language(file_data)` |
@@ -192,7 +192,7 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `require_bool` | `isinstance` | 810 |
-| external_call | `_validate_inventory_complete` | `TypeError` | 855 |
+| external_call | `_validate_inventory_complete` | `TypeError` | 871 |
 | external_call | `_inventory_language` | `isinstance` | 543 |
 | unresolved_call | `_inventory_language` | `file_data.get` | 545 |
 | external_call | `_inventory_language` | `isinstance` | 546 |

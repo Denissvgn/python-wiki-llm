@@ -430,7 +430,7 @@ def _normalize_module_observation(
     functions = _record_array(file_data, "functions", required=True)
     imports = _record_array(file_data, "imports", required=False)
     for record in imports:
-        _validate_import_record(record)
+        _validate_import_record(record, language=language)
 
     class_summaries: list[dict[str, Any]] = []
     seen_names: dict[str, int] = {}
@@ -654,9 +654,25 @@ def _validate_callable_record(record: Mapping[str, Any]) -> None:
         _validate_optional_strings(param, ("default", "kind", "type"))
 
 
-def _validate_import_record(record: Mapping[str, Any]) -> None:
+def _validate_import_record(record: Mapping[str, Any], *, language: str) -> None:
     module = record.get("module")
-    if not isinstance(module, str) or not module:
+    # JavaScript's deliberately unresolved calls are structural gap evidence.
+    # Admit only the producer's explicit shape, never an arbitrary empty import.
+    gap_type = record.get("type")
+    gap_reasons = {"dynamic-import": "dynamic-import", "require": "dynamic-require"}
+    unresolved_gap = (
+        language in {"javascript", "typescript"}
+        and module == ""
+        and isinstance(gap_type, str)
+        and gap_type in gap_reasons
+        and record.get("resolution") == "unresolved"
+        and record.get("reason") == gap_reasons[gap_type]
+        and record.get("name") == ""
+        and type(record.get("line")) is int
+        and record["line"] > 0
+        and ("scope" not in record or record["scope"] == "deferred")
+    )
+    if not isinstance(module, str) or (not module and not unresolved_gap):
         raise _InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)
     _validate_optional_strings(record, ("name", "type"))
     if "alias" in record and record["alias"] is not None:

@@ -436,6 +436,46 @@ def test_malformed_selected_entity_structural_fields_are_unknown():
     assert basis.unknown_reason == UNKNOWN_INVALID_INVENTORY
 
 
+@pytest.mark.parametrize("language", ["javascript", "typescript"])
+@pytest.mark.parametrize("kind,reason", [("dynamic-import", "dynamic-import"), ("require", "dynamic-require")])
+def test_explicit_unresolved_imports_are_known_structural_gap_evidence(language, kind, reason):
+    gap = {"module": "", "name": "", "type": kind, "resolution": "unresolved",
+           "reason": reason, "line": 2, "scope": "deferred"}
+    inventory = {"language": language, "classes": [], "functions": [], "imports": [gap]}
+    normalized = normalize_module_observation(inventory)
+    assert normalized is not None
+    assert normalized["imports"] == [{k: v for k, v in gap.items() if k != "line"}]
+    assert _module_basis(inventory).is_known
+    assert _module_hash(inventory) != _module_hash({**inventory, "imports": []})
+    shifted = deepcopy(inventory)
+    shifted["imports"][0]["line"] = 99
+    assert _module_hash(shifted) == _module_hash(inventory)
+    eager = deepcopy(inventory)
+    del eager["imports"][0]["scope"]
+    assert _module_basis(eager).is_known
+    assert _module_hash(eager) != _module_hash(inventory)
+
+
+@pytest.mark.parametrize("override", [
+    {"module": None}, {"module": 0}, {"resolution": "resolved"},
+    {"resolution": None}, {"type": "named"}, {"type": []},
+    {"reason": ""}, {"reason": "dynamic-require"}, {"name": "invented"},
+    {"line": 0}, {"line": True}, {"line": "2"}, {"scope": "unknown"},
+])
+def test_empty_import_does_not_bypass_validation_with_malformed_gap(override):
+    gap = {"module": "", "name": "", "type": "dynamic-import", "line": 2,
+           "resolution": "unresolved", "reason": "dynamic-import", **override}
+    basis = _module_basis({"language": "javascript", "classes": [], "functions": [], "imports": [gap]})
+    assert basis.unknown_reason == UNKNOWN_INVALID_INVENTORY
+
+
+@pytest.mark.parametrize("language", ["python", "go", "rust", "haskell"])
+def test_empty_javascript_gap_shape_does_not_relax_other_languages(language):
+    gap = {"module": "", "name": "", "type": "dynamic-import", "line": 2,
+           "resolution": "unresolved", "reason": "dynamic-import"}
+    assert _module_basis({"language": language, "classes": [], "functions": [], "imports": [gap]}).unknown_reason == UNKNOWN_INVALID_INVENTORY
+
+
 @pytest.mark.parametrize("value", [None, 0, 1, "true", [], {}])
 def test_malformed_attribute_optionality_is_explicit_unknown(value):
     inventory = {

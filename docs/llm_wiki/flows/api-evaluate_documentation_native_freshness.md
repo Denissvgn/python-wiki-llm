@@ -125,9 +125,9 @@ sequenceDiagram
     p0-->>p30: (…).lstat
 ```
 
-> Call sequence diagram shows 30 of 3462 interactions; 3432 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3469 interactions; 3439 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 970 (969 omitted); unresolved 1 of 866 (865 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 972 (971 omitted); unresolved 1 of 871 (870 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

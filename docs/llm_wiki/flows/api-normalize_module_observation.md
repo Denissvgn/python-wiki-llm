@@ -27,8 +27,8 @@ sequenceDiagram
     participant p13 as require_nonempty_text
     participant p14 as _structural_copy
     participant p15 as _validate_optional_string_array
-    participant p16 as _validate_optional_strings
-    participant p17 as _optional_record_array
+    participant p16 as _optional_record_array
+    participant p17 as _validate_optional_strings
     participant p18 as _validate_optional_booleans
     participant p19 as require_string_list
     participant p20 as require_mapping_list
@@ -57,14 +57,14 @@ sequenceDiagram
     p5->>p13: require_nonempty_text
     p7->>p14: _structural_copy
     p6->>p15: _validate_optional_string_array
-    p4->>p16: _validate_optional_strings
-    p8->>p17: _optional_record_array
+    p8->>p16: _optional_record_array
+    p4->>p17: _validate_optional_strings
     p4->>p18: _validate_optional_booleans
     p15->>p19: require_string_list
-    p17->>p20: require_mapping_list
+    p16->>p20: require_mapping_list
     p1->>p21: _InventoryNormalizationError
     p9->>p22: require_list
-    p16->>p23: require_string
+    p17->>p23: require_string
     p18->>p24: require_bool
     p13->>p25: contains_control_character
     p20->>p26: require_mapping
@@ -74,9 +74,9 @@ sequenceDiagram
     p1-->>p30: function_summaries.append(_copy_selected_fields(...))
 ```
 
-> Call sequence diagram shows 30 of 120 interactions; 90 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 127 interactions; 97 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 27 (26 omitted); unresolved 3 of 21 (18 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 29 (28 omitted); unresolved 3 of 26 (23 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -88,8 +88,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_record_array` | 11 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 3 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_record_array` | 11 | - | external | 3 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_normalize_module_observation` | 2 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 9 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:_validate_import_record` | 20 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:_validate_import_record` | 20 | - | external | 1 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:_validate_import_record` | 20 | - | unresolved | 6 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:_validate_import_record` | 20 | - | external | 3 |
 > Omission summary shows 8 of 43 groups; 35 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

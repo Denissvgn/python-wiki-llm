@@ -115,6 +115,46 @@ def _loaded_knowledge(tmp_path):
     return loaded, loaded.knowledge
 
 
+def test_unknown_evidence_reports_captured_source_and_cause_without_relaxing_gate(tmp_path):
+    from llm_wiki_cli.services.knowledge_evidence import ConceptObservationBasis
+    from llm_wiki_cli.services.sync_manifest import ManifestEvidenceBaseline
+
+    loaded, knowledge = _loaded_knowledge(tmp_path)
+    assert loaded.manifest_basis is not None
+    original = next(c for c in knowledge.concepts if c.locator == MODULE_LOCATOR)
+    path = original.document.canonical_path
+    old = loaded.manifest_basis.evidence_baselines[path].basis
+    assert old is not None
+    unknown_basis = ConceptObservationBasis(
+        scope=old.scope, source_path=old.source_path, extractor_ref=old.extractor_ref,
+        source_content_hash=old.source_content_hash, concept_observation_hash=None,
+        unknown_reason="invalid-inventory-shape",
+    )
+    unknown = replace(original, facets=replace(original.facets, structure=replace(
+        original.facets.structure, evidence=EvidenceState.UNKNOWN, basis=None,
+    )))
+    baselines = dict(loaded.manifest_basis.evidence_baselines)
+    baselines[path] = ManifestEvidenceBaseline.from_basis(unknown_basis)
+    modified = replace(knowledge, concepts=tuple(unknown if c.locator == MODULE_LOCATOR else c for c in knowledge.concepts))
+    view = build_knowledge_read_view(replace(
+        loaded, knowledge=modified, manifest_basis=replace(loaded.manifest_basis, evidence_baselines=baselines),
+    ), live_evaluation=_live_evaluation(modified))
+    report = _report_for_view(view)
+    issue = next(i for i in report.issues if i.target == MODULE_LOCATOR)
+    assert not report.passed
+    assert issue.severity == "error"
+    assert issue.reason_code == "promised-evidence-unknown"
+    assert old.source_path in issue.message
+    assert "Cause: invalid-inventory-shape" in issue.message
+    assert old.extractor_ref in issue.message
+    payload = lint_cmd.report_to_dict(report)
+    emitted = next(i for i in payload["issues"] if i["target"] == MODULE_LOCATOR)
+    assert set(emitted) == {"category", "message", "severity", "path", "target", "reason_code", "hint"}
+    assert old.source_path in emitted["message"]
+    assert "Cause: invalid-inventory-shape" in emitted["message"]
+    assert "--read-only" in emitted["hint"]
+
+
 def _verification_context(loaded, knowledge, *, knowledge_hash=None):
     assert loaded.manifest_basis is not None
     assert loaded.manifest_basis.artifact_hashes is not None

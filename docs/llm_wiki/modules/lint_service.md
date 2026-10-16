@@ -24,6 +24,8 @@ coverage retain their explicit states rather than being presented as emptiness.
 
 Default text keeps blocking issues separate from advisory records. It exposes bounded escaped previews for data-flow and unfamiliar diagnostic categories, names omitted records and points to complete JSON/Markdown output. Passing blocking checks does not establish complete analysis or semantic correctness; rendering neither changes findings nor executes a repair.
 
+Promised-evidence failures preserve the blocking result while exposing the manifest-captured source, underlying unknown reason and extractor in the existing message field. The existing reason_code and hint fields identify the category and the supported single-file read-only extraction route. Missing captured details are not invented, and diagnostic enrichment does not extend the serialized finding field set.
+
 ## Imports
 
 | Source | Symbols |

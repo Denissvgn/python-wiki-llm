@@ -128,9 +128,9 @@ sequenceDiagram
     p0-->>p30: report.to_payload(**=...)
 ```
 
-> Call sequence diagram shows 30 of 1668 interactions; 1638 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1670 interactions; 1640 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 531 (530 omitted); unresolved 1 of 512 (511 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 531 (530 omitted); unresolved 1 of 514 (513 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

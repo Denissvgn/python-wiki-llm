@@ -10,6 +10,8 @@ The module and entity builders operate only on an already evaluated inventory
 and source-content hash. They do not scan source, invoke extractors, compute
 live freshness, or write artifacts.
 
+JavaScript and TypeScript module observations retain explicit unresolved import gaps as structural evidence. An empty module is accepted only for the bundled dynamic-import or computed-require shape, with a matching reason, positive source line and optional deferred scope. Gap reasons, multiplicity and execution scope remain hash inputs; source line numbers remain location metadata. Other malformed imports still produce unknown evidence.
+
 ## Imports
 
 | Source | Symbols |
@@ -82,7 +84,7 @@ flowchart LR
 | `_validate_module_entity_record` | `(record: Mapping[str, Any]) -> None` | — | — |
 | `_validate_entity_record` | `(record: Mapping[str, Any]) -> None` | — | — |
 | `_validate_callable_record` | `(record: Mapping[str, Any]) -> None` | — | — |
-| `_validate_import_record` | `(record: Mapping[str, Any]) -> None` | — | — |
+| `_validate_import_record` | `(record: Mapping[str, Any], *, language: str) -> None` | — | — |
 | `_validate_constant_record` | `(record: Mapping[str, Any]) -> None` | — | — |
 | `_validate_module_call_record` | `(record: Mapping[str, Any]) -> None` | — | — |
 | `_validate_optional_strings` | `(record: Mapping[str, Any], fields: tuple[str, ...]) -> None` | — | — |

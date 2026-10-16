@@ -13,8 +13,8 @@ belong in the TypeScript source and are carried here by the integration build.
 
 | Source | Symbols |
 |--------|---------|
-| `child_process` | `` |
-| `obsidian` | `` |
+| `child_process` | — |
+| `obsidian` | — |
 
 ## Module Signals
 

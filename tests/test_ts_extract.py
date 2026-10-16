@@ -61,6 +61,74 @@ skip_no_node = pytest.mark.skipif(
     reason="Node.js/ts-morph dependencies not installed — TypeScript extractor tests skipped",
 )
 
+
+@skip_no_node
+@pytest.mark.parametrize("extension", ["js", "jsx", "mjs", "cjs", "ts", "tsx"])
+def test_unresolved_import_producer_consumer_contract(tmp_path, extension):
+    from llm_wiki_cli.services.bootstrap_runtime import _generate_module_md
+    from llm_wiki_cli.services.dependencies import build_dependency_graph
+    from llm_wiki_cli.services.knowledge_evidence import normalize_module_observation
+
+    filename = f"dynamic.{extension}"
+    _make_ts(tmp_path, filename, """\
+        async function load(name) { return await import(name); }
+        function read(name) { return require(name); }
+        module.exports = { load, read };
+        const eager = import(process.env.NAME);
+        const literal = import('./known.js');
+        const required = require('known-package');
+    """)
+    inventory = TypeScriptExtractor().extract(str(tmp_path), deep=True)
+    data = inventory[filename]
+    normalized = normalize_module_observation(data)
+    assert normalized is not None
+    gaps = [record for record in data["imports"] if record.get("resolution") == "unresolved"]
+    assert len(gaps) == 4
+    assert {gap["reason"] for gap in gaps} == {"dynamic-import", "dynamic-require"}
+    assert sum(gap.get("scope") == "deferred" for gap in gaps) == 2
+    assert sum(record.get("resolution") == "unresolved" for record in normalized["imports"]) == 4
+    graph = build_dependency_graph(inventory)
+    assert not graph["edges"]
+    assert sum(item.get("reason") in {"dynamic-import", "dynamic-require"} for item in graph["unresolved"]) == 4
+    page = _generate_module_md(filename, data)
+    assert "| `` |" not in page
+    assert "Unresolved `dynamic-import`" in page
+    assert "Unresolved `dynamic-require`" in page
+    assert "(line 1; deferred)" in page
+    assert "| `known-package` | — |" in page
+
+
+@skip_no_node
+def test_dynamic_import_gap_survives_bootstrap_sync_and_strict_gates(tmp_path, monkeypatch, capsys):
+    helper_root = resolve_helper_cache_root(PROJECT_ROOT)
+    assert helper_root is not None
+    _make_ts(tmp_path, "dyn.mjs", "export async function load(name) { return await import(name); }\n")
+    monkeypatch.chdir(tmp_path)
+
+    def run(command, *options):
+        monkeypatch.setattr(sys, "argv", [
+            "llm-wiki", command, "--src-dir", ".", "--wiki-dir", "wiki",
+            "--helper-cache-dir", str(helper_root.parent), *options,
+            *([] if command == "bootstrap" else ["--jobs", "1"]),
+        ])
+        cli.main()
+        return capsys.readouterr().out
+
+    run("bootstrap", "--source-adapter")
+    page = tmp_path / "wiki/modules/dyn.md"
+    assert "Unresolved `dynamic-import`" in page.read_text(encoding="utf-8")
+    run("sync", "--no-plugins")
+    lint = json.loads(run("lint", "--strict", "--profile"))
+    assert lint["ok"]
+    assert not [issue for issue in lint["issues"] if issue["category"] == "knowledge_evidence"]
+    ci = json.loads(run("ci-check", "--format", "json", "--no-report", "--no-plugins"))
+    assert ci["ok"]
+    manifest = SyncManifest.load(tmp_path / "wiki")
+    assert manifest is not None
+    basis = manifest.evidence_baselines["modules/dyn.md"].basis
+    assert basis is not None
+    assert basis.is_known
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

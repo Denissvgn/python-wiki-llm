@@ -2118,15 +2118,40 @@ def _check_knowledge_concepts(
             continue
         evidence_reason = _promised_evidence_reason(concept, expected_scope)
         if evidence_reason is not None:
+            baseline = manifest.evidence_baselines.get(page_path)
+            mapping = manifest.page_source_mappings.get(page_path)
+            basis = baseline.basis if baseline is not None else None
+            source_path = (
+                basis.source_path if basis is not None
+                else mapping.source_path if mapping is not None else None
+            )
+            cause = (
+                baseline.unknown_reason
+                if baseline is not None and evidence_reason == "promised-evidence-unknown"
+                else None
+            )
+            detail = f" Source: {source_path!r}." if source_path is not None else ""
+            if cause is not None:
+                detail += f" Cause: {cause}."
+            if basis is not None:
+                detail += f" Extractor: {basis.extractor_ref!r}."
             _add(
                 report,
                 "knowledge_evidence",
                 (
                     f"Promised structural evidence for {concept.locator!r} is "
-                    f"not valid [reason={evidence_reason}]."
+                    f"not valid [reason={evidence_reason}].{detail}"
                 ),
                 path=concept.document.canonical_path,
                 target=concept.locator,
+                reason_code=evidence_reason,
+                hint=(
+                    "Inspect the source using llm-wiki extract --deep --read-only "
+                    "--paths <source-path>, retaining the same --src-dir, "
+                    "source selection and prepared helper cache. Repair the cause "
+                    "and run owning sync before repeating strict validation."
+                    if source_path is not None else None
+                ),
             )
             continue
         if view.freshness is None:
