@@ -24976,7 +24976,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4356,
+          "step_count": 4358,
           "truncated": true
         }
       },
@@ -33466,7 +33466,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4356,
+          "step_count": 4358,
           "truncated": true
         }
       },
@@ -67126,5 +67126,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:54d583da294ecb1653215fd3526f55bd34626b9efbc8d0043c9584b72ffe5963"
+  "source_hash": "sha256:60bf7ebfb250e025f9a942b4e797e602c03d9631b977d639c76656e03df2f87f"
 }

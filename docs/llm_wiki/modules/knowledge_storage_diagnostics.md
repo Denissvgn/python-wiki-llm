@@ -9,6 +9,8 @@ Reports physical sizes and complete integrity through one native materialization
 
 Storage reporting retains a failed storage-limit result with bounded size observations and an explicit prune-preview recovery route. Quick inspection leaves reachability unknown; a full valid snapshot separates active references from unreferenced candidates, whose bytes are not validated for deletion. Namespace unknowns and incomplete inspection never authorize cleanup.
 
+Logical comparison uses canonical JSON values, preserving Boolean-versus-number distinctions even inside nested extension data. Equivalent records remain independent of physical packing and object-key order. Output item and byte bounds still disclose omitted records or values; a partial result never establishes complete review.
+
 ## Imports
 
 | Source | Symbols |

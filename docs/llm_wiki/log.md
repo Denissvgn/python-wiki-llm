@@ -2655,3 +2655,23 @@ Preserve explicit JavaScript import gaps as structural observations, label unkno
 - Pages deprecated: 0
 - Semantic fields preserved: 2
 - Moved entities: none
+
+## 2026-10-16
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.0.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:eca7efef7c57e5ed1153633e351af77bf4f21f9844a2f1147e326443f23066c2`
+- Pages created: 0
+- Pages updated: 2
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1591
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none
+
+### Logical storage value identity
+
+Compare canonical JSON records so Boolean false/true remain distinct from numeric zero/one, including nested extension values, while preserving layout-independent equality and bounded review disclosures.
