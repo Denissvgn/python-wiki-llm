@@ -284,3 +284,44 @@ def test_symlinked_requested_source_cannot_escape_selection(tmp_path, monkeypatc
         sync_cmd.run(_args('--repair-evidence', 'f000.py', '--force'))
     assert stopped.value.code != 0
     assert snapshot_wiki(wiki) == before
+
+
+@pytest.mark.parametrize('page', ['modules/f000.md', 'modules/f001.md', 'log.md'])
+def test_markdown_mutation_at_publication_checkpoint_is_refused(tmp_path, monkeypatch, page):
+    from llm_wiki_cli.services.knowledge_artifacts import CommitStage
+
+    wiki = _project(tmp_path, monkeypatch)
+    before = snapshot_wiki(wiki)
+    finalize = sync_cmd.finalize_runtime_knowledge
+    triggered = []
+    def checked(inputs, *, dry_run=False):
+        def mutation(stage):
+            if stage is CommitStage.KNOWLEDGE_OBJECTS_WRITTEN:
+                triggered.append(True)
+                target = wiki / page
+                target.write_bytes(target.read_bytes() + b'\nExternal publication edit\n')
+        return finalize(inputs, dry_run=dry_run, fault_injector=None if dry_run else mutation)
+    monkeypatch.setattr(sync_cmd, 'finalize_runtime_knowledge', checked)
+    with pytest.raises(SystemExit) as stopped:
+        sync_cmd.run(_args('--repair-evidence', 'f000.py'))
+    assert stopped.value.code == 2 and triggered == [True]
+    assert (wiki / '.llm-wiki-manifest.json').read_bytes() == before['.llm-wiki-manifest.json']
+
+
+def test_selected_markdown_after_render_must_match_isolated_preflight(tmp_path, monkeypatch):
+    wiki = _project(tmp_path, monkeypatch)
+    before = snapshot_wiki(wiki)
+    apply = sync_cmd._apply_prepared_sync
+    triggered = []
+    def race(options, prepared):
+        result = apply(options, prepared)
+        if options.wiki_dir.resolve() == wiki.resolve():
+            triggered.append(True)
+            page = wiki / 'modules/f000.md'
+            page.write_bytes(page.read_bytes().replace(b'Preserve this authored explanation.', b'External selected edit.'))
+        return result
+    monkeypatch.setattr(sync_cmd, '_apply_prepared_sync', race)
+    with pytest.raises(SystemExit) as stopped:
+        sync_cmd.run(_args('--repair-evidence', 'f000.py'))
+    assert stopped.value.code == 2 and triggered == [True]
+    assert (wiki / '.llm-wiki-manifest.json').read_bytes() == before['.llm-wiki-manifest.json']
