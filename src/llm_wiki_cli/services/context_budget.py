@@ -416,14 +416,18 @@ def run(args, request=None):
         if getattr(args, "tokenizer", None)
         else None
     )
-    result = build_budgeted_context(
-        args.src_dir,
-        args.wiki_dir,
-        request,
-        counter=counter,
-        allow_external_src=args.allow_external_src,
-        source_selection=args.source_selection,
-    )
+    try:
+        result = build_budgeted_context(
+            args.src_dir,
+            args.wiki_dir,
+            request,
+            counter=counter,
+            allow_external_src=args.allow_external_src,
+            source_selection=args.source_selection,
+        )
+    except packets.ContextPacketAuthorityError as exc:
+        context._emit_packet_error(exc, protocol=CONTEXT_BUDGET_PROTOCOL_VERSION)
+        raise
     if not result.ok:
         print(
             json.dumps(

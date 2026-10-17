@@ -173,6 +173,7 @@ attributes. `PathPolicyError` remains an alias of `InvalidRequestError`.
 | `context-packet-unavailable` | A required input or read capability is unavailable. |
 | `context-read-mutated` | Source or wiki state changed during the read; retry is required. |
 | `workspace-state-error` | The workspace could not be read. |
+| `maintenance-authority-unavailable` | Declared ordinary maintenance authority is missing, invalid or inconsistent; complete matching recovery is required. |
 | `knowledge-required-unavailable` | Required native knowledge cannot be supplied; details explain the reason. |
 
 Field-oriented failure records omit resolved machine roots and offending
@@ -182,6 +183,30 @@ with exit code `1`; usage errors retain exit code `2`. The raw non-packet
 protocol retains its existing JSON error envelope. MCP semantic packet errors
 use `isError: true` with structured code/details and JSON text content;
 transport argument validation remains the MCP SDK's responsibility.
+
+Owned-authority refusal uses `maintenance-authority-unavailable` with the
+original safe `maintenance-*` cause code, unavailable native evidence and a
+bounded `recovery` object. The Python packet API retains its
+`InvalidRequestError` catch point for this refusal. Full loader or maintenance
+causes remain chained locally; structured results omit raw metadata and machine
+roots. Raw and budgeted packet failures carry the same recovery requirements.
+
+The recovery object supplies an `argv_template` for `llm-wiki maintenance recover`.
+Bind `wiki_dir` to the original request's wiki root, `recovery_dir` to a complete
+matching committed backup, and `expected_adoption_id` to the same existing
+identity from a validated immutable marker or that matching backup. These are
+caller-supplied facts; the reader does not discover a backup or allocate an ID.
+Keep the original source root and selection for subsequent owning sync and
+validation, and keep recovery bytes outside the wiki and source inputs.
+
+A complete backup is necessary but does not guarantee that the current recovery
+operation accepts the damaged tree. Missing projection files, conflicting
+authored edits or newer authority can cause refusal; preserve that refusal and
+the exact bytes for authorized complete restoration. Do not initialize another
+marker, mix backups, or enable interrupted-recovery modes to bypass a guard.
+The diagnostic grants no write permission and a read never repairs authority.
+Required native evidence remains unsatisfied. Packet `off` retains its packet
+integrity requirements; an explicitly source-only task remains a separate route.
 
 Structural validation is offline:
 

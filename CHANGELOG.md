@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Packet refusals identify damaged ordinary maintenance authority with a shared
+  domain cause and explicit matching-recovery requirements across Python, CLI
+  and MCP, preserving strict refusal and read-only behavior.
+
 - Rejected syncs retain a hash-bound recovery journal for newly created pages.
   Explicit recovery preserves their bytes and refuses edited pages or changed
   authority, allowing a later sync to proceed without replacing existing prose.
