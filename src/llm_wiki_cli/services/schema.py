@@ -146,9 +146,10 @@ install Git hooks; `llm-wiki upgrade` removes unmodified legacy hooks.
 4. **Never skip the update** — a stale wiki defeats the purpose of the system.
 
 ## Using `llm-wiki sync` for incremental updates
-`sync` compares source file hashes against a stored manifest and regenerates only
-the wiki pages whose source has changed. Use it for every update after the first
-bootstrap. The complete procedure and its failure branches are at
+`sync` compares source file hashes against a stored manifest. Generator upgrades
+can also refresh managed pages and evidence with unchanged source bytes; matching
+pages are not rewritten. Use it for every update after the first bootstrap.
+The complete procedure and its failure branches are at
 `{skills_dir}/wiki-reference/references/maintenance.md`:
 
 ```
@@ -173,8 +174,13 @@ llm-wiki sync --jobs 1{wiki_args}{source_selection_args}
 - If no manifest or maintenance-adoption marker exists yet (project bootstrapped by an older version), sync will
   **seed a baseline manifest** from the current source state without modifying
   pages. Subsequent runs then work incrementally.
-- Sync has a large-diff guard to prevent accidental mass rewrites. Use
-  `llm-wiki sync --force{wiki_args}{source_selection_args}` only after confirming the broad update is expected.
+- If sync's large-diff guard refuses a broad update, run the supplied dry-run route and review all
+  page/artifact actions, including removals. With explicit authority, repeat that
+  same invocation with `--force` replacing `--dry-run`; never force automatically
+  on upgrade. Force replans current inputs, not a saved approval: changed source,
+  helper, selection, provider or wiki inputs require another preview and review.
+  Ownership, integrity and recovery checks still apply. Force also authorizes
+  stale generated surface retirement, including authored Behavior on those pages.
 - After the deterministic sync, complete the semantic pass. If canonical
   Markdown changed, run the same owning `llm-wiki sync --jobs 1{wiki_args}{source_selection_args}` again so the
   surface, knowledge, Markdown, and manifest snapshot are re-anchored; then run
@@ -618,9 +624,12 @@ labels, hrefs, or raw Mermaid content.
   uses the project-root write guard.
 - If sync repairs only the manifest (its stored hashes were invalid, and no
   pages were modified), run the same sync command again before linting.
-- If sync stops on a large diff, inspect the affected files. Use
-  `llm-wiki sync --force --jobs 1 --wiki-dir {wiki_dir_arg} --src-dir .{source_selection_args}` only when
-  the broad update is intentional.
+- If sync stops on a large diff, use its dry-run route and review page/artifact
+  actions. Only with explicit authority, repeat the same invocation with `--force`
+  replacing `--dry-run`. Never force automatically on upgrade. Force replans;
+  changed source, helper, selection, provider or wiki inputs need another preview
+  and review. Ownership, integrity and recovery checks still apply; force also
+  authorizes stale generated surface retirement, including authored Behavior.
 - Then inspect the pages sync created or updated. Sync produces deterministic
   AST/docstring skeletons; you are responsible for the semantic pass.
 - If `{wiki_dir}/dependencies.md` or `{wiki_dir}/load-order.md` exists, inspect

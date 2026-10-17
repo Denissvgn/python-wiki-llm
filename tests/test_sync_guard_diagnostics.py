@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import re
 import shlex
+from typing import cast
 
 import pytest
 
@@ -15,6 +16,8 @@ from llm_wiki_cli.commands import bootstrap_cmd, sync_cmd
 from llm_wiki_cli.services.extraction_service import InventoryResult
 from llm_wiki_cli.services.infrastructure_sync import InfrastructureSyncPlan
 from llm_wiki_cli.services.knowledge_evidence import normalize_module_observation
+from llm_wiki_cli.services import knowledge_orchestration
+from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
 from llm_wiki_cli.services.sync_analysis import SyncDiff, compute_sync_diff
 from llm_wiki_cli.services.sync_manifest import SourceSelectionPruneResult, SyncManifest
 
@@ -217,7 +220,8 @@ def test_hostile_and_large_values_have_bounded_truthful_output(tmp_path, monkeyp
     assert 'captured version=' in refusal
 
 
-def test_generator_transition_refusal_and_preview_share_plan_without_active_writes(tmp_path, monkeypatch, capsys):
+@pytest.mark.parametrize('changed_renderer', [False, True])
+def test_generator_transition_reviewed_route_converges(tmp_path, monkeypatch, capsys, changed_renderer):
     monkeypatch.chdir(tmp_path)
     (tmp_path / 'src').mkdir()
     for number in range(61):
@@ -226,12 +230,20 @@ def test_generator_transition_refusal_and_preview_share_plan_without_active_writ
         'bootstrap', '--src-dir', 'src', '--wiki-dir', 'wiki', '--source-adapter',
         '--knowledge-format', 'v1', '--skip-workflows',
     ]))
+    page = tmp_path / 'wiki/modules/f000.md'
+    page.write_bytes(page.read_bytes().replace(b'## Description', b'## Description\n\nAuthored explanation to preserve.', 1))
+    args = ['sync', '--src-dir', 'src', '--wiki-dir', 'wiki', '--jobs', '1', '--no-cache', '--no-plugins']
+    sync_cmd.run(cli._build_parser().parse_args(args))
     capsys.readouterr()
     before = _files(tmp_path)
+    page_mtimes = {p: p.stat().st_mtime_ns for p in (tmp_path / 'wiki').rglob('*.md')}
     prior_version = sync_cmd.__version__
     monkeypatch.setattr(sync_cmd, '__version__', '9.8.7')
-    # The version transition is synthetic; all other producing bytes stay current.
-    args = ['sync', '--src-dir', 'src', '--wiki-dir', 'wiki', '--jobs', '1', '--no-cache', '--no-plugins']
+    monkeypatch.setattr(bootstrap_cmd, '__version__', '9.8.7')
+    monkeypatch.setattr(knowledge_orchestration, '__version__', '9.8.7')
+    if changed_renderer:
+        render = sync_cmd._generate_module_md
+        monkeypatch.setattr(sync_cmd, '_generate_module_md', lambda *a, **kw: render(*a, **kw).replace('# ', '# Updated ', 1))
     with pytest.raises(SystemExit) as stopped:
         sync_cmd.run(cli._build_parser().parse_args(args))
     assert stopped.value.code == 1
@@ -253,7 +265,64 @@ def test_generator_transition_refusal_and_preview_share_plan_without_active_writ
     assert '"f060.py" [generator-refresh-additional]' in preview
     assert 'requires --force: yes' in preview
     assert 'DRY-RUN: no files modified.' in preview
+    assert 'Preview completed. After reviewing' in preview
+    assert 'this preview is not an approval token' in preview
+    assert 'source, helper, selection, provider or wiki inputs change' in preview
     assert _files(tmp_path) == before
+    if not changed_renderer:
+        # A completed preview grants no persistent authorization. A later source
+        # edit is replanned, still guarded, and needs a fresh review.
+        source = tmp_path / 'src/f060.py'
+        source.write_bytes(b'class Item60:\n    def fresh(self):\n        return 42\n')
+        with pytest.raises(SystemExit) as stopped:
+            sync_cmd.run(cli._build_parser().parse_args(args))
+        assert stopped.value.code == 1
+        assert 'changed=1' in capsys.readouterr().err
+        sync_cmd.run(cli._build_parser().parse_args([*args, '--dry-run']))
+        revised = capsys.readouterr().out
+        assert '0 new, 1 changed, 0 metadata-only' in revised
+        assert 'requires --force: yes' in revised
+        before['src/f060.py'] = source.read_bytes()
+    # Review the actual output, then explicitly authorize this broad write.
+    sync_cmd.run(cli._build_parser().parse_args([*args, '--force']))
+    capsys.readouterr()
+    after = _files(tmp_path)
+    assert {k: v for k, v in before.items() if k.startswith('src/')} == {
+        k: v for k, v in after.items() if k.startswith('src/')
+    }
+    assert 'Authored explanation to preserve.' in page.read_text(encoding='utf-8')
+    for p, mtime in page_mtimes.items():
+        relative = p.relative_to(tmp_path).as_posix()
+        if p.parent.name in {'entities', 'modules'} and before[relative] == after[relative]:
+            assert p.stat().st_mtime_ns == mtime
+    if changed_renderer:
+        assert sum(before[k] != after[k] for k in before if k.startswith('wiki/modules/')) == 61
+        assert page.read_text(encoding='utf-8').startswith('# Updated ')
+    state = load_knowledge_state(tmp_path / 'wiki')
+    assert state.knowledge is not None
+    assert state.knowledge.bundle.producer.tool.version == '9.8.7'
+    manifest = SyncManifest.load(tmp_path / 'wiki')
+    assert manifest is not None
+    assert all(baseline.is_known for baseline in manifest.evidence_baselines.values())
+    sync_cmd.run(cli._build_parser().parse_args(args))
+    assert _files(tmp_path) == after
+    assert 'Preview completed.' not in capsys.readouterr().out
+
+
+def test_failed_preview_does_not_offer_completed_review_route(tmp_path, monkeypatch, capsys):
+    # A failed staged execution is not a successfully reviewed application plan.
+    monkeypatch.setattr(sync_cmd, '_print_dry_run_plan', lambda *a, **kw: True)
+    monkeypatch.setattr(sync_cmd, '_execute_prepared_sync', lambda *a, **kw: (_ for _ in ()).throw(ValueError('staged failure')))
+    from types import SimpleNamespace
+    prepared = SimpleNamespace(**dict.fromkeys([
+        'diff', 'application_diff', 'surface_plan', 'infrastructure_plan',
+        'source_selection_prune', 'manifest', 'seed_manifest', 'repair_only',
+        'runtime_provenance_changed', 'generator_refresh_required', 'prior_generator_version',
+    ]))
+    monkeypatch.chdir(tmp_path)
+    with pytest.raises(ValueError, match='staged failure'):
+        sync_cmd._run_sync_dry_run(_options('--dry-run'), cast(sync_cmd._PreparedSyncRun, prepared))
+    assert 'Preview completed.' not in capsys.readouterr().out
 
 
 def test_complete_preview_reveals_omitted_paths_and_selection_pruning():

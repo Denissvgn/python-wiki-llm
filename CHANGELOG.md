@@ -17,7 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Broad sync refusals explain source-change and generator-refresh reasons, show
   bounded affected-path samples, and preserve the caller's options in preview
-  guidance.
+  guidance. Successful broad previews explain the explicitly reviewed refresh
+  route and the need to review again when inputs change.
 
 - Explicit committed maintenance recovery restores absent validated projection
   roots and referenced native objects under the retained ownership anchor,

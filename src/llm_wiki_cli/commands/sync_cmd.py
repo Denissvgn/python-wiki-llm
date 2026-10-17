@@ -2192,7 +2192,7 @@ def _print_dry_run_plan(
     runtime_provenance_changed: bool,
     generator_refresh_required: bool = False,
     prior_generator_version: str | None = None,
-) -> None:
+) -> bool:
     print("\nSync dry-run plan:")
     source_label = (
         "deferred source files" if options.initialize_surfaces else "source files"
@@ -2326,6 +2326,7 @@ def _print_dry_run_plan(
     requires_force = source_requires_force or surface_requires_force
     print(f"  requires --force: {'yes' if requires_force else 'no'}")
     print("DRY-RUN: no files modified.")
+    return requires_force
 
 
 def _surface_args(value: object) -> frozenset[str]:
@@ -5115,7 +5116,7 @@ def _run_sync_dry_run(
             file=sys.stderr,
         )
         sys.exit(2)
-    _print_dry_run_plan(
+    requires_force = _print_dry_run_plan(
         options,
         prepared.diff,
         prepared.application_diff,
@@ -5148,6 +5149,17 @@ def _run_sync_dry_run(
             staged_options, prepared,
             target_wiki_dir=options.wiki_dir,
             dry_run=True,
+        )
+    if requires_force:
+        print(
+            "\nPreview completed. After reviewing the page and artifact actions, "
+            "explicitly authorize a broad update by repeating the same invocation "
+            "with --force instead of --dry-run."
+        )
+        print(
+            "--force replans current inputs; this preview is not an approval token. "
+            "If source, helper, selection, provider or wiki inputs change, preview "
+            "and review again. Ownership, validation and recovery checks still apply."
         )
     _print_cache_stats(
         prepared.inventory_result.cache_stats,

@@ -277,6 +277,26 @@ An oversized, control-containing or non-UTF-8 command is not
 printed; repeat the original invocation with `--dry-run` and omit `--force`.
 The path sample bounds the diagnostic output, not extraction or preview work.
 
+For a generator upgrade, review the complete dry-run page and artifact actions,
+including removals, before explicitly repeating the same invocation with
+`--force` in place of `--dry-run`. Keep the source/wiki roots, selection,
+helper/cache bindings and generation options unchanged. This is an owning
+refresh: it regenerates evidence with the current provider and commits matching
+projections and provenance. Already matching managed pages keep their bytes and
+are not rewritten. Changed generated content still appears as a page update;
+it is not classified as a source metadata edit merely because sources match.
+
+A preview is not a saved approval token. `--force` computes a new plan from
+current inputs; repeat preview and review if source, helper, selection, provider
+or wiki inputs change. It can authorize broad changes and stale generated
+surface removal, including authored Behavior on those retired surfaces. It does
+not waive ownership or integrity checks, adopt foreign state or recover missing
+authority. After the refresh and semantic review, re-anchor any prose edits with
+ordinary sync, then run strict lint and CI integrity validation using the same
+roots and selection. A subsequent sync with unchanged inputs should be a no-op.
+If publication is rejected, follow its explicit recovery diagnostic before
+retrying; do not delete authority files or reinitialize an established wiki.
+
 `--initialize-surfaces` enters a surface-only backfill mode for `flows`,
 `dependencies`, and/or `api-contracts`: ordinary entity/module source changes
 are reported but deferred. `--flow-category` is repeatable, `--exclude-tests`

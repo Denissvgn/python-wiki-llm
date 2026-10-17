@@ -49,6 +49,21 @@ and other options. Omit selection on source-reading commands only when the
 project has no configured profile. Never replace it with discovery or a
 broader scan during the same maintenance run.
 
+A generator upgrade can refresh many managed inputs even when source bytes
+match. This differs from a physical storage repack. If the broad-change guard
+refuses sync, run its exact dry-run route and review the complete page/artifact
+actions, including removals. With explicit authority for that reviewed broad
+write, repeat the same invocation with `--force` replacing `--dry-run`; never
+apply force automatically as an upgrade step. Matching managed pages are not
+rewritten, while current evidence and provenance are committed coherently.
+Force also authorizes stale generated surface retirement, including authored
+Behavior on those retired pages; ownership and integrity checks remain required.
+The preview is not a saved approval token: force replans current inputs. Changed
+source, helper, selection, provider or wiki inputs require another preview and
+review. Follow the owning loop below, then confirm an unchanged second sync is
+a no-op. A refused publication follows its explicit recovery route, including
+new-page recovery where reported; never reinitialize missing or corrupt authority.
+
 For a trusted source root outside the working directory, pass the same external
 `--src-dir` with `--allow-external-src` to `sync`, `lint`, and `ci-check`.
 Apply the same pair to `team check` when that policy is configured. The wiki
