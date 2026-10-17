@@ -221,6 +221,7 @@
     "services/review_service.py",
     "services/runtime_output.py",
     "services/schema.py",
+    "services/scoped_sync_repair.py",
     "services/search_discovery.py",
     "services/search_discovery_capture.py",
     "services/search_lexical.py",

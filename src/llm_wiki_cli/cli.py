@@ -1995,6 +1995,10 @@ def _add_sync_command(subparsers):
         help="Incrementally update wiki pages for files that changed since last bootstrap/sync",
     )
     _add_progress_arguments(sync_parser)
+    sync_parser.add_argument(
+        "--repair-evidence", nargs="+", action="extend", default=None, metavar="SOURCE",
+        help="Repair owned unchanged evidence with --no-plugins (POSIX paths relative to --src-dir); full analysis still runs",
+    )
     sync_parser.add_argument("--knowledge-format", choices=["v1", "sharded-v2", "packed-v3", "packed-v3-deflate", "packed-v4", "packed-v4-deflate"], default=None,
                             help="Explicit native storage format; otherwise preserve the adopted format")
     sync_parser.add_argument(

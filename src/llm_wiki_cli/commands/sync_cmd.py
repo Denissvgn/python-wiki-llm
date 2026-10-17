@@ -86,6 +86,7 @@ from ..services.infrastructure_sync import (
 )
 from ..services.io import read_md, write_md
 from ..services.paths import render_shell_command
+from ..services.scoped_sync_repair import ScopedRepairBoundary, ScopedRepairError, prepare_boundary, repair_paths
 from ..services.validation import portable_path_key
 from ..services.source_retirement import (
     SOURCE_MEMBER_REMOVED_HEADER,
@@ -1732,6 +1733,7 @@ class _SyncRunOptions:
     rebuild_knowledge: bool = False
     knowledge_format: str | None = None
     capture_cache_options: InventoryCacheOptions | None = None
+    repair_paths: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -1842,6 +1844,7 @@ class _PreparedSyncRun:
     analysis_input_key: dict | None = None
     page_transitions: PageTransitionPlan | None = None
     transition_execution: PageTransitionExecution | None = None
+    repair_boundary: ScopedRepairBoundary | None = None
 
 
 @dataclass(frozen=True)
@@ -2439,6 +2442,16 @@ def _sync_run_options_from_args(args) -> _SyncRunOptions:
     openapi_file = getattr(args, "openapi_file", None)
     clear_openapi_file = bool(getattr(args, "clear_openapi_file", False))
     source_selection = getattr(args, "source_selection", None)
+    try:
+        scoped_paths = repair_paths(getattr(args, "repair_evidence", None))
+        if scoped_paths and include_plugins:
+            raise ScopedRepairError("--repair-evidence requires --no-plugins and an existing matching built-in producer")
+        if scoped_paths and (initialize_surfaces or not preserve_semantic or openapi_file or clear_openapi_file
+                             or getattr(args, "knowledge_format", None) or getattr(args, "rebuild_knowledge", False)):
+            raise ScopedRepairError("--repair-evidence cannot change generation/storage policy or initialize surfaces")
+    except ScopedRepairError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        sys.exit(2)
     if openapi_file and clear_openapi_file:
         print(
             "Error: --openapi-file and --clear-openapi-file are mutually exclusive.",
@@ -2489,6 +2502,7 @@ def _sync_run_options_from_args(args) -> _SyncRunOptions:
         openapi_file=str(openapi_file) if openapi_file else None,
         clear_openapi_file=clear_openapi_file,
         source_selection=source_selection,
+        repair_paths=scoped_paths,
     )
 
 
@@ -2883,6 +2897,8 @@ def _sync_preview_argv(options: _SyncRunOptions) -> list[str]:
         argv.extend(("--flow-category", category))
     for language in sorted(options.include_tests or ()):
         argv.extend(("--include-tests", language))
+    if options.repair_paths:
+        argv.extend(f"--repair-evidence={path}" for path in options.repair_paths)
     return argv
 
 
@@ -4248,6 +4264,7 @@ def _prepare_sync_run(
     )
     if (
         not options.rebuild_knowledge
+        and not options.repair_paths
         and options.knowledge_format is None
         and not options.initialize_surfaces
         and not seed_manifest
@@ -4970,6 +4987,8 @@ def _finalize_prepared_sync(
         RuntimeKnowledgeInputs(
             target_wiki_dir=target,
             knowledge_format=options.knowledge_format,
+            _plan_check=prepared.repair_boundary.validate_plan if prepared.repair_boundary is not None else None,
+            _publication_check=prepared.repair_boundary.assert_analysis_current if prepared.repair_boundary is not None else None,
             maintenance_page_transitions=prepared.page_transitions,
             inventory=prepared.inventory,
             surface=surface,
@@ -5207,6 +5226,8 @@ def _run_sync_dry_run(
             target_wiki_dir=options.wiki_dir,
             dry_run=True,
         )
+        if prepared.repair_boundary is not None:
+            prepared.repair_boundary.validate_markdown(staged_wiki)
     if requires_force:
         print(
             "\nPreview completed. After reviewing the page and artifact actions, "
@@ -5311,13 +5332,33 @@ def _run_prepared_sync(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> 
     from ..services.sync_recovery import capture_new_sync_pages, SyncRecoveryError
 
     try:
+        if prepared.repair_boundary is not None:
+            print(f"Scoped evidence repair: {len(options.repair_paths)} selected source(s); "
+                  f"full analysis used {len(prepared.inventory)} inventory file(s). "
+                  "Global projections, cache metadata and recovery preimages remain in scope.")
+            outside = sum(not baseline.is_known for page, baseline in prepared.manifest.evidence_baselines.items()
+                          if page not in prepared.repair_boundary.pages)
+            print(f"Unselected unavailable source evidence: {outside} page(s) retained. "
+                  "Repeat strict validation afterward; scoped success does not certify the whole wiki.")
+            if not prepared.evidence_refresh_sources:
+                prepared.repair_boundary.assert_current()
+                print("Requested sources have no captured invalid evidence to refresh; no scoped publication performed.")
+                return
         if options.dry_run:
             _run_sync_dry_run(options, prepared)
             return
         _enforce_sync_write_safety(options, prepared)
+        if prepared.repair_boundary is not None:
+            from contextlib import redirect_stdout
+
+            print("Preflighting global reconciliation on an isolated wiki copy.")
+            prepared.repair_boundary.assert_current()
+            with open(os.devnull, "w") as sink, redirect_stdout(sink):
+                _run_sync_dry_run(options, prepared)
+            prepared.repair_boundary.assert_current()
         with capture_new_sync_pages(options.wiki_dir, prepared.source_snapshot, prepared.manifest):
             _execute_prepared_sync(options, prepared)
-    except (SyncOwnershipError, SourceRetirementError, sync_analysis_cache.SyncAnalysisMutationError, SyncRecoveryError) as exc:
+    except (SyncOwnershipError, SourceRetirementError, sync_analysis_cache.SyncAnalysisMutationError, SyncRecoveryError, ScopedRepairError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(2)
 
@@ -5335,8 +5376,38 @@ def run(args) -> None:
 
 
 def _run_sync_options(options, write_basis=None) -> None:
+    from ..services.knowledge_artifacts import KnowledgeArtifactError
+
     try:
-        prepared = _prepare_sync_run(options)
+        try:
+            prepared = _prepare_sync_run(options)
+        except KnowledgeArtifactError as exc:
+            if options.repair_paths:
+                raise ScopedRepairError(
+                    "Scoped evidence repair requires complete valid committed authority; "
+                    "use the existing explicit recovery route before retrying"
+                ) from exc
+            raise
+        if options.repair_paths:
+            if not isinstance(prepared, _PreparedSyncRun):
+                raise ScopedRepairError("Scoped evidence repair requires a complete owned committed snapshot")
+            boundary = prepare_boundary(options, prepared)
+            selected = tuple(path for path in prepared.evidence_refresh_sources if path in options.repair_paths)
+            application = deepcopy(prepared.diff)
+            application.changed_files.extend(selected)
+            application.unchanged_files = [p for p in application.unchanged_files if p not in selected]
+            maps = prepared.page_maps
+            transitions = _plan_source_page_transitions(
+                options.wiki_dir, prepared.manifest, prepared.inventory, application,
+                maps.module_page_map, maps.entity_occurrence_page_cache,
+                source_selection_policy=prepared.source_snapshot.source_selection_policy,
+            )
+            if transitions.staged_moves or transitions.retained_page_repairs or any(
+                p.action in {"create", "rename"} or p.owner != p.previous_owner for p in transitions.transitions
+            ):
+                raise ScopedRepairError("Scoped evidence repair cannot create, retire, rename or adopt pages; use ordinary sync --dry-run")
+            prepared = replace(prepared, application_diff=application, evidence_refresh_sources=selected,
+                               page_transitions=transitions, repair_boundary=boundary)
     except (
         ApiContractError,
         GeneratedSurfacePruneError,
@@ -5346,6 +5417,7 @@ def _run_sync_options(options, write_basis=None) -> None:
         SourceRetirementError,
         SyncRuntimeRefreshError,
         sync_analysis_cache.SyncAnalysisMutationError,
+        ScopedRepairError,
     ) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(2)

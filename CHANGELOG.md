@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Scoped evidence repair for unchanged owned sources with matching producer
+  commitments, preserving unselected evidence and normal review/recovery guards
+  while disclosing full analysis and global reconciliation.
+
 - Logical storage inspection and comparison support snapshot-bound continuation
   and bounded exact-record reads, so omitted changes and oversized values can be
   reviewed without increasing output limits.

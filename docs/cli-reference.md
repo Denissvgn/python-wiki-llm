@@ -297,6 +297,40 @@ roots and selection. A subsequent sync with unchanged inputs should be a no-op.
 If publication is rejected, follow its explicit recovery diagnostic before
 retrying; do not delete authority files or reinitialize an established wiki.
 
+For a narrowly authorized repair of captured invalid evidence, use
+`--repair-evidence` with canonical POSIX source paths relative to `--src-dir`:
+
+```bash
+llm-wiki sync --src-dir src --wiki-dir wiki --no-plugins --repair-evidence package/module.py --dry-run
+llm-wiki sync --src-dir src --wiki-dir wiki --no-plugins --repair-evidence package/module.py
+```
+
+Keep the project's source selection, helper/cache bindings and other applicable
+options on both invocations. This mode requires an already adopted, coherent
+wiki, unchanged source and generation policy, and matching complete built-in
+producer/helper/runtime commitments. Run the authorized ordinary owning update
+first after a generator or producer transition. Missing or corrupt authority
+requires its explicit recovery route; scoped repair never adopts or migrates it.
+
+The writer repairs a selected source's existing module and entity evidence
+together, preserves unselected captured failures and review history, and does
+not acknowledge review. It refuses mixed source/prose edits, missing or renamed
+pages, new/retired identities, and any reconciliation that changes unselected
+facts or the global typed graph. `--force` can authorize a reviewed broad input
+count; it cannot override these scope conditions. A selected known basis must
+match the fresh observation; otherwise use ordinary owning sync for full review.
+
+This is scoped application after **full analysis**, not one-file extraction.
+Source verification, global graph/projection reconciliation, an isolated wiki
+copy, native objects, log/cache metadata and complete recovery preimages still
+require global work. The command checks its candidate before live application
+and again before publication. A changed source, helper, provider, selection or
+wiki invalidates the prepared operation. Existing publication recovery remains
+active; the isolated preflight does not replace a recoverable owning commit.
+Already matching selected evidence produces no scoped publication. Success
+does not certify the whole wiki: unselected unknown evidence remains unknown,
+so repeat strict lint and CI validation afterward.
+
 `--initialize-surfaces` enters a surface-only backfill mode for `flows`,
 `dependencies`, and/or `api-contracts`: ordinary entity/module source changes
 are reported but deferred. `--flow-category` is repeatable, `--exclude-tests`

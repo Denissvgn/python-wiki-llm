@@ -15,7 +15,7 @@ from .progress import observed_phase
 
 import re
 import json
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from collections.abc import Set as AbstractSet
 from dataclasses import dataclass, field, replace
 from pathlib import Path
@@ -181,6 +181,8 @@ class RuntimeKnowledgeInputs:
     )
     reuse_input_basis: Mapping[str, object] | None = None
     sync_analysis_commitment: Mapping[str, object] | None = None
+    _plan_check: Callable[[KnowledgeCommitPlan], None] | None = field(default=None, repr=False, compare=False)
+    _publication_check: Callable[[], None] | None = field(default=None, repr=False, compare=False)
     reuse_typed_graph: bool = False
     knowledge_format: str | None = None
 
@@ -826,6 +828,8 @@ def _commit_runtime_knowledge(
     dry_run: bool,
     fault_injector: FaultInjector | None,
 ) -> KnowledgeCommitResult:
+    if inputs._plan_check is not None:
+        inputs._plan_check(plan)
     assert inputs.committed_state is not None
     inputs.committed_state.assert_current()
     _require_runtime_source_current(inputs.source_snapshot)
@@ -834,6 +838,8 @@ def _commit_runtime_knowledge(
         if fault_injector is not None:
             fault_injector(stage)
         _require_runtime_source_current(inputs.source_snapshot)
+        if inputs._publication_check is not None:
+            inputs._publication_check()
 
     result = commit_knowledge_artifacts(
         plan, dry_run=dry_run, fault_injector=checked_stage
