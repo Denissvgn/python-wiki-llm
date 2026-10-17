@@ -273,7 +273,7 @@ Use the supplied `--dry-run` command with the same source/wiki roots, source
 selection and cache bindings to inspect the full page and artifact plan before
 authorizing a broad write. The preview lists complete affected input paths and
 their reasons, including paths omitted from the refusal sample.
-An oversized or control-containing command is not
+An oversized, control-containing or non-UTF-8 command is not
 printed; repeat the original invocation with `--dry-run` and omit `--force`.
 The path sample bounds the diagnostic output, not extraction or preview work.
 

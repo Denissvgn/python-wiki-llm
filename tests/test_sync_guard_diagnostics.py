@@ -282,8 +282,8 @@ def test_unavailable_captured_generator_is_not_invented(tmp_path, monkeypatch, c
     assert 'captured version="2.5.0"' not in refusal
 
 
-@pytest.mark.parametrize('cache', ['cache\nline', 'cache\x1b[31m'])
-def test_control_containing_command_uses_repeat_original_guidance(tmp_path, monkeypatch, cache):
+@pytest.mark.parametrize('cache', ['cache\nline', 'cache\x1b[31m', 'cache\udc80'])
+def test_unsafe_command_text_uses_repeat_original_guidance(tmp_path, monkeypatch, cache):
     monkeypatch.chdir(tmp_path)
     hint = sync_cmd._sync_preview_hint(_options('--helper-cache-dir', cache))
     assert 'command display bounded' in hint

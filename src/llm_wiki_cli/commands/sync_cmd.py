@@ -2847,7 +2847,8 @@ def _sync_preview_argv(options: _SyncRunOptions) -> list[str]:
 def _sync_preview_hint(options: _SyncRunOptions) -> str:
     argv = _sync_preview_argv(options)
     command = render_shell_command(argv, windows=os.name == "nt")
-    if len(command.encode("utf-8")) > _GUARD_PREVIEW_COMMAND_LIMIT or any(ord(c) < 32 or ord(c) == 127 for c in command):
+    unsafe_text = any(ord(c) < 32 or ord(c) == 127 or 0xD800 <= ord(c) <= 0xDFFF for c in command)
+    if unsafe_text or len(command.encode("utf-8")) > _GUARD_PREVIEW_COMMAND_LIMIT:
         preview = "Repeat the same sync invocation with --dry-run, preserving all roots/options and omitting --force (command display bounded)."
     else:
         preview = f"Preview the complete plan ({'PowerShell' if os.name == 'nt' else 'POSIX shell'}): {command}"
