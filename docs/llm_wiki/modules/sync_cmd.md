@@ -57,6 +57,16 @@ recovery hash; it does not silently roll back pages or let later ownership check
 accept an unowned target. Explicit new-page recovery must precede an otherwise
 blocked retry. Dry-run does not create a recovery journal.
 
+Broad-update diagnosis keeps the raw source delta separate from generator
+refresh expansion. Counts identify affected inputs, not source rewrites;
+overlapping reasons are distinct from the deduplicated safety count. Refusal
+shows a bounded path sample and captured/current generator versions when known.
+Its literal preview command preserves roots, selection, helper/cache bindings
+and planning options without granting force approval. Unprintable or oversized
+command text uses repeat-original guidance instead. Dry-run uses that same
+prepared plan and lists complete affected input paths, selection pruning,
+page repairs and artifact actions. The sample bounds output, not analysis work.
+
 ## Imports
 
 | Source | Symbols |
@@ -86,7 +96,7 @@ blocked retry. Dry-run does not create a recovery journal.
 | `..services.maintenance_protocol` | `unlink_maintenance_page`, `guard_maintenance_owner`, `maintenance_write_operation`, `MaintenanceProtocolError` |
 | `..services.markdown_sections` | `format_table_row`, `is_placeholder_description`, `is_table_separator`, `normalize_markdown`, `preserve_index_custom_sections`, `preserve_level_two_section_exact`, `preserve_table_description_cells`, `replace_section_body`, `section_body`, `section_bounds`, `semantic_table_key`, `should_preserve_semantic_value`, `split_table_row`, `table_description_cells`, `trim_blank_lines`, `parse_markdown_document` |
 | `..services.module_maps` | `build_module_dependency_maps` |
-| `..services.paths` | `is_test_source_path`, `portable_source_root_label` |
+| `..services.paths` | `render_shell_command`, `is_test_source_path`, `portable_source_root_label` |
 | `..services.plugins` | `runtime_plugin_fallback_root`, `runtime_project_plugins_enabled` |
 | `..services.progress` | `observed_phase`, `record_counts` |
 | `..services.section_ownership` | `SemanticMergeResult`, `merge_entity_semantics`, `merge_module_semantics`, `merge_semantic_markdown`, `replace_generated_section` |
@@ -145,20 +155,20 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [GeneratedSurfacePruneError](../entities/GeneratedSurfacePruneError.md) | 292 | `ValueError` | A stale generated page cannot be removed without explicit authority. |
-| [SyncRuntimeRefreshError](../entities/SyncRuntimeRefreshError.md) | 296 | `ValueError` | A runtime-basis transition cannot be applied in the requested mode. |
-| [SyncResult](../entities/SyncResult.md) | 628 | — | — |
-| [_ApplyDiffContext](../entities/ApplyDiffContext.md) | 667 | — | — |
-| [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 689 | — | — |
-| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1708 | — | — |
-| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1735 | — | — |
-| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1742 | — | — |
-| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1748 | — | — |
-| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1754 | — | — |
-| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1770 | — | — |
-| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1813 | — | — |
-| [_ReusedSync](../entities/ReusedSync.md) | 1843 | — | — |
-| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1849 | — | Prior ownership proof and generated pages that cross the live boundary. |
+| [GeneratedSurfacePruneError](../entities/GeneratedSurfacePruneError.md) | 295 | `ValueError` | A stale generated page cannot be removed without explicit authority. |
+| [SyncRuntimeRefreshError](../entities/SyncRuntimeRefreshError.md) | 299 | `ValueError` | A runtime-basis transition cannot be applied in the requested mode. |
+| [SyncResult](../entities/SyncResult.md) | 631 | — | — |
+| [_ApplyDiffContext](../entities/ApplyDiffContext.md) | 670 | — | — |
+| [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 692 | — | — |
+| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1711 | — | — |
+| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1738 | — | — |
+| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1745 | — | — |
+| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1751 | — | — |
+| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1757 | — | — |
+| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1773 | — | — |
+| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1816 | — | — |
+| [_ReusedSync](../entities/ReusedSync.md) | 1847 | — | — |
+| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1853 | — | Prior ownership proof and generated pages that cross the live boundary. |
 
 ## Functions
 
@@ -238,7 +248,7 @@ flowchart LR
 | `_build_surface_initialization_plan` | `(options: _SyncRunOptions, manifest: 'SyncManifest', inventory: dict, entry_points: list[dict], *, source_changed: bool, api_contracts: dict \| None, generation_inputs: Mapping[str, object], source_snapshot: SourceSnapshot \| None = None, cached_dependency_analysis: dict \| None = None) -> _SurfaceInitializationPlan` | — | — |
 | `_large_surface_message` | `(plan: _SurfaceInitializationPlan, wiki_dir: Path, *, removed_pages: int = 0) -> str \| None` | — | — |
 | `_exit_if_large_unforced_surface_plan` | `(options: _SyncRunOptions, plan: _SurfaceInitializationPlan, *, removed_pages: int = 0) -> None` | — | — |
-| `_print_dry_run_plan` | `(options: _SyncRunOptions, diff: 'SyncDiff', application_diff: 'SyncDiff', plan: _SurfaceInitializationPlan, infrastructure_plan: InfrastructureSyncPlan, source_selection_prune: SourceSelectionPruneResult, manifest: SyncManifest, *, seed_manifest: bool, repair_only: bool, runtime_provenance_changed: bool) -> None` | — | — |
+| `_print_dry_run_plan` | `(options: _SyncRunOptions, diff: 'SyncDiff', application_diff: 'SyncDiff', plan: _SurfaceInitializationPlan, infrastructure_plan: InfrastructureSyncPlan, source_selection_prune: SourceSelectionPruneResult, manifest: SyncManifest, *, seed_manifest: bool, repair_only: bool, runtime_provenance_changed: bool, generator_refresh_required: bool = False, prior_generator_version: str \| None = None) -> None` | — | — |
 | `_surface_args` | `(value: object) -> frozenset[str]` | — | — |
 | `_flow_category_args` | `(value: object) -> frozenset[str] \| None` | — | — |
 | `_manifest_openapi_path` | `(manifest: 'SyncManifest') -> str \| None` | — | Return the persisted OpenAPI path, rejecting malformed v4 state. |
@@ -253,7 +263,12 @@ flowchart LR
 | `_compute_sync_diff` | `(manifest: 'SyncManifest', inventory: dict, options: _SyncRunOptions, page_maps: _SyncPageMaps, source_content_hashes: Mapping[str, str]) -> 'SyncDiff'` | — | — |
 | `_generator_refresh_diff` | `(diff: 'SyncDiff', inventory: Mapping[str, Mapping]) -> 'SyncDiff'` | — | Return an apply-only diff that regenerates every live managed concept page. |
 | `_mark_pending_repair_sources_changed` | `(manifest: SyncManifest, inventory: Mapping[str, Mapping], diff: 'SyncDiff') -> None` | — | Force one trusted regeneration for recoverable unknown evidence. |
-| `_exit_if_large_unforced_diff` | `(options: _SyncRunOptions, diff: 'SyncDiff', manifest: 'SyncManifest', inventory_result: InventoryResult, infrastructure_plan: InfrastructureSyncPlan, *, include_infrastructure: bool = True) -> None` | — | — |
+| `_guard_display_value` | `(value: str) -> str` | — | Keep untrusted paths/producer labels bounded and escape terminal controls. |
+| `_sync_guard_detail_lines` | `(diff: SyncDiff, application_diff: SyncDiff, infrastructure_plan: InfrastructureSyncPlan, *, generator_refresh_required: bool, prior_generator_version: str \| None, source_selection_prune: SourceSelectionPruneResult \| None = None, infrastructure_deferred: bool = False, complete_paths: bool = False) -> list[str]` | — | Explain the already computed plan; this does not reclassify or approve it. |
+| `_guard_path_sample_lines` | `(kind: str, reasons: Mapping[str, str], *, limit: int \| None = _GUARD_PATH_SAMPLE_LIMIT) -> list[str]` | — | — |
+| `_sync_preview_argv` | `(options: _SyncRunOptions) -> list[str]` | — | Retain the caller's planning bindings without granting write approval. |
+| `_sync_preview_hint` | `(options: _SyncRunOptions) -> str` | — | — |
+| `_exit_if_large_unforced_diff` | `(options: _SyncRunOptions, diff: 'SyncDiff', manifest: 'SyncManifest', inventory_result: InventoryResult, infrastructure_plan: InfrastructureSyncPlan, *, include_infrastructure: bool = True, source_diff: SyncDiff \| None = None, generator_refresh_required: bool = False, prior_generator_version: str \| None = None, source_selection_prune: SourceSelectionPruneResult \| None = None) -> None` | — | — |
 | `_apply_sync_changes` | `(options: _SyncRunOptions, manifest: 'SyncManifest', inventory: dict, diff: 'SyncDiff', page_maps: _SyncPageMaps, surface_plan: _SurfaceInitializationPlan, graph_observations: _RuntimeGraphObservations, infrastructure_plan: InfrastructureSyncPlan, source_snapshot: SourceSnapshot, inventory_result: InventoryResult, source_selection_prune: SourceSelectionPruneResult, *, log_diff: SyncDiff \| None = None, apply_infrastructure: bool = True, transition_execution: PageTransitionExecution \| None = None, refresh_unchanged_sections: bool = True) -> 'SyncResult'` | `@observed_phase('page_application')` | — |
 | `_apply_source_selection_prune` | `(wiki_dir: Path, prune: SourceSelectionPruneResult, page_maps: _SyncPageMaps, result: SyncResult) -> None` | — | — |
 | `_planned_generated_surface_prune` | `(wiki_dir: Path, source_snapshot: SourceSnapshot, inventory: Mapping[str, Mapping], graph_observations: _RuntimeGraphObservations, *, force: bool = False, defer_detector_retirement: bool = False) -> _GeneratedSurfaceTransition` | — | Prove managed live workflows and generated pages absent from the live set. |

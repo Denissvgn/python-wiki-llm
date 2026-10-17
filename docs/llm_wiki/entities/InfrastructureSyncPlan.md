@@ -110,4 +110,4 @@ flowchart LR
 | `_print_sync_summary` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_qualify_infrastructure_page_drift` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 
-> References: showing 12 of 20 logical references; 8 omitted by the 12-row generated summary limit.
+> References: showing 12 of 21 logical references; 9 omitted by the 12-row generated summary limit.

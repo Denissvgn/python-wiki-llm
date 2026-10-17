@@ -1,6 +1,6 @@
 # _SyncPageMaps
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1735`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1738`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)

@@ -2773,3 +2773,57 @@ select backups, allocate identities, restore history or relax recovery guards.
 Explicit recovery can restore absent validated roots and referenced storage
 objects under the retained ownership anchor. Authored changes, unknown files
 and newer authority remain protected; history is restored rather than rebuilt.
+
+### Broad sync planning and diagnosis
+
+Broad-update refusals distinguish source changes, generator refresh, pruning
+and repairs. Bounded path samples lead to a scoped preview that preserves the
+caller bindings and reveals complete input paths without approving writes.
+
+## 2026-10-17
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.0.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:a3d0edbc3d58182a5ea42ed5300650afbd716bdae56f806f4159546686ceda47`
+- Pages created: 0
+- Pages updated: 20
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1585
+- Pages deprecated: 0
+- Semantic fields preserved: 2
+- Moved entities: none
+
+## 2026-10-17
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.0.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:a3d0edbc3d58182a5ea42ed5300650afbd716bdae56f806f4159546686ceda47`
+- Pages created: 0
+- Pages updated: 2
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1603
+- Pages deprecated: 0
+- Semantic fields preserved: 2
+- Moved entities: none
+
+## 2026-10-17
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.0.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:b6b599ef4a7656789a1424dfe770a1aaefe7d385da56f510bcc38bf8288fec5e`
+- Pages created: 0
+- Pages updated: 4
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1601
+- Pages deprecated: 0
+- Semantic fields preserved: 2
+- Moved entities: none

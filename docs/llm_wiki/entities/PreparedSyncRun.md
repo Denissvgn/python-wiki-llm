@@ -1,6 +1,6 @@
 # _PreparedSyncRun
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1813`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1816`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)
@@ -15,6 +15,11 @@ application diffs, canonical page maps, optional-surface and infrastructure
 plans, graph observations, and the flags that distinguish seeding, repair, or a
 runtime-basis refresh. Keeping this state together prevents later steps from
 recomputing against a different source tree.
+
+`prior_generator_version` retains the version from the validated prior
+projection so refusal and preview can explain a generator transition without
+reloading authority. Missing provenance stays explicit. A version label is not
+an artifact identity and does not refresh captured evidence.
 
 ## Attributes
 
@@ -38,6 +43,7 @@ recomputing against a different source tree.
 | `generator_refresh_required` | `bool` | *required* | — |
 | `runtime_basis_refresh` | `bool` | *required* | — |
 | `log_missing` | `bool` | *required* | — |
+| `prior_generator_version` | `str \| None` | `None` | — |
 | `committed_state` | `CommittedKnowledgeState \| None` | `None` | — |
 | `reuse_observations_hash` | `str \| None` | `None` | — |
 | `entrypoint_analysis` | `_SyncEntryPointAnalysis \| None` | `None` | — |

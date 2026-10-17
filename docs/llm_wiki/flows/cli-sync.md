@@ -145,9 +145,9 @@ sequenceDiagram
     p3-->>p30: write_basis.assert_current
 ```
 
-> Call sequence diagram shows 30 of 5773 interactions; 5743 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 5830 interactions; 5800 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1994 (1993 omitted); unresolved 1 of 1806 (1805 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 2026 (2025 omitted); unresolved 1 of 1818 (1817 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -161,7 +161,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/commands/sync_cmd.py:_sync_run_options_from_args` | 2 | [src/llm_wiki_cli/services/inventory_cache.py](../modules/inventory_cache.md) | internal | 1 |
 | `src/llm_wiki_cli/services/extraction_jobs.py:extraction_job_request_from_args` | 28 | - | external | 5 |
 | `src/llm_wiki_cli/services/extraction_jobs.py:extraction_job_request_from_args` | 28 | [src/llm_wiki_cli/services/extraction_jobs.py](../modules/extraction_jobs.md) | internal | 1 |
-> Omission summary shows 8 of 1282 groups; 1274 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1289 groups; 1281 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -234,35 +234,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | _sync_run_options_from_args | 5095 | `_sync_run_options_from_args(args)` |
-| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2405 | `getattr(args, 'src_dir', '.')` |
-| _sync_run_options_from_args | Path (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2406 | `Path(getattr(...))` |
-| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2406 | `getattr(args, 'wiki_dir', 'docs/llm_wiki')` |
-| _sync_run_options_from_args | bool (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2407 | `bool(getattr(...))` |
-| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2407 | `getattr(args, 'dry_run', False)` |
-| _sync_run_options_from_args | bool (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2408 | `bool(getattr(...))` |
-| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2408 | `getattr(args, 'no_plugins', False)` |
-| _sync_run_options_from_args | _cache_options_from_args | 2409 | `_cache_options_from_args(args)` |
-| _cache_options_from_args | cache_options_from_args | 301 | `cache_options_from_args(args)` |
+| run | _sync_run_options_from_args | 5256 | `_sync_run_options_from_args(args)` |
+| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2416 | `getattr(args, 'src_dir', '.')` |
+| _sync_run_options_from_args | Path (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2417 | `Path(getattr(...))` |
+| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2417 | `getattr(args, 'wiki_dir', 'docs/llm_wiki')` |
+| _sync_run_options_from_args | bool (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2418 | `bool(getattr(...))` |
+| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2418 | `getattr(args, 'dry_run', False)` |
+| _sync_run_options_from_args | bool (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2419 | `bool(getattr(...))` |
+| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2419 | `getattr(args, 'no_plugins', False)` |
+| _sync_run_options_from_args | _cache_options_from_args | 2420 | `_cache_options_from_args(args)` |
+| _cache_options_from_args | cache_options_from_args | 304 | `cache_options_from_args(args)` |
 | cache_options_from_args | bool (src/llm_wiki_cli/services…y:cache_options_from_args) | 311 | `bool(getattr(...))` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 5102 |
-| output | `print` | `_sync_run_options_from_args` | 2427 |
-| output | `print` | `_sync_run_options_from_args` | 2433 |
-| output | `print` | `_sync_run_options_from_args` | 2439 |
+| output | `print` | `run` | 5263 |
+| output | `print` | `_sync_run_options_from_args` | 2438 |
+| output | `print` | `_sync_run_options_from_args` | 2444 |
+| output | `print` | `_sync_run_options_from_args` | 2450 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_sync_run_options_from_args` | `getattr` | 2405 |
-| external_call | `_sync_run_options_from_args` | `getattr` | 2406 |
-| external_call | `_sync_run_options_from_args` | `getattr` | 2407 |
-| external_call | `_sync_run_options_from_args` | `getattr` | 2408 |
+| external_call | `_sync_run_options_from_args` | `getattr` | 2416 |
+| external_call | `_sync_run_options_from_args` | `getattr` | 2417 |
+| external_call | `_sync_run_options_from_args` | `getattr` | 2418 |
+| external_call | `_sync_run_options_from_args` | `getattr` | 2419 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 
@@ -271,7 +271,7 @@ flowchart LR
 Classifies the wiki lifecycle, validates the persisted source-selection and
 generation policy, captures one live source snapshot, and computes source,
 infrastructure, and optional-surface changes. Dry-run prints the complete plan;
-broad unforced updates stop before writes. An applied run preserves supported
+broad unforced updates stop before page application. An applied run preserves supported
 semantic prose, rebuilds navigation, appends the log, and commits mutually
 consistent generated state so repeating the same command converges to no work.
 
@@ -287,3 +287,9 @@ mandatory ownership checks active. Explicit `maintenance recover-new-pages`
 previews and removes only unchanged new pages before retry; readers and sync
 never perform that recovery implicitly. Adopted full-preimage recovery remains
 available independently.
+
+Broad-update errors distinguish source changes from additional generator
+refresh inputs and expose bounded path samples with omitted counts. A copied,
+platform-quoted preview preserves the caller's roots and planning bindings;
+dry-run reveals every affected input path and its source-change reason. Source
+inputs are not rewritten, and a preview never grants broad-write approval.
