@@ -151,9 +151,9 @@ sequenceDiagram
     p5-->>p30: prepare
 ```
 
-> Call sequence diagram shows 30 of 4357 interactions; 4327 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4424 interactions; 4394 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1302 (1301 omitted); unresolved 1 of 1038 (1037 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1338 (1337 omitted); unresolved 1 of 1050 (1049 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -167,7 +167,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/commands/knowledge_cmd.py:_wiki_root` | 3 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/knowledge_storage_lifecycle.py:migrate_knowledge_storage` | 36 | - | external | 3 |
 | `src/llm_wiki_cli/services/knowledge_storage_lifecycle.py:migrate_knowledge_storage` | 36 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 2 |
-> Omission summary shows 8 of 1055 groups; 1047 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1065 groups; 1057 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -253,8 +253,8 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 56 |
-| output | `print` | `run` | 58 |
+| output | `print` | `run` | 57 |
+| output | `print` | `run` | 59 |
 | mutation | `pending_parts.pop` | `first_unsafe_path_component` | 71 |
 
 ### Static analysis gaps
@@ -271,3 +271,5 @@ flowchart LR
 ## Behavior
 
 This flow starts at `run` and is classified as `api`. The generated call and data-flow sections are bounded static projections; runtime conditions and side effects require source-level confirmation.
+
+Logical storage inspection/comparison delegates to the read-only review owner. A continuation or exact-record request retains its snapshot binding and full versus selected validation scope. Enumeration completion and omitted-value recovery do not acknowledge prose or authorize storage mutation; migration, recovery and cleanup keep their separate explicit operations.

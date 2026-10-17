@@ -26,10 +26,10 @@
       "load-order": 1,
       "log": 1,
       "modules": 246,
-      "workflows": 223
+      "workflows": 224
     },
     "dependency_architecture": 2,
-    "total": 1617
+    "total": 1618
   },
   "dependency_pages": {
     "count": 2,
@@ -24823,7 +24823,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 56,
+              "line": 57,
               "step": "run",
               "step_index": 2,
               "target": "print"
@@ -24831,7 +24831,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 58,
+              "line": 59,
               "step": "run",
               "step_index": 2,
               "target": "print"
@@ -24965,7 +24965,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4358,
+          "step_count": 4425,
           "truncated": true
         }
       },
@@ -33307,7 +33307,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 56,
+              "line": 57,
               "step": "run",
               "step_index": 2,
               "target": "print"
@@ -33315,7 +33315,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 58,
+              "line": 59,
               "step": "run",
               "step_index": 2,
               "target": "print"
@@ -33449,7 +33449,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4358,
+          "step_count": 4425,
           "truncated": true
         }
       },
@@ -38053,7 +38053,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2645,
+              "line": 2649,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -38061,7 +38061,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2648,
+              "line": 2652,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -38069,7 +38069,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2651,
+              "line": 2655,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -38077,7 +38077,7 @@
             {
               "confidence": "unknown",
               "kind": "environment_read",
-              "line": 2654,
+              "line": 2658,
               "step": "main",
               "step_index": 1,
               "target": "os.environ.get"
@@ -38085,7 +38085,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2656,
+              "line": 2660,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -38093,7 +38093,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2659,
+              "line": 2663,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -38167,7 +38167,7 @@
             "src/llm_wiki_cli/services/progress.py",
             "src/llm_wiki_cli/services/resource_diagnostics.py"
           ],
-          "step_count": 717,
+          "step_count": 721,
           "truncated": false
         }
       },
@@ -40052,6 +40052,7 @@
         "workflows/retained_page_repairs.md",
         "workflows/review_cmd_flow.md",
         "workflows/review_records.md",
+        "workflows/review_storage.md",
         "workflows/run_check.md",
         "workflows/run_packet_output.md",
         "workflows/run_protocol.md",
@@ -56150,11 +56151,27 @@
         "modules/knowledge_index.md",
         "modules/knowledge_loader.md",
         "modules/knowledge_storage.md",
-        "modules/knowledge_storage_diagnostics.md"
+        "modules/knowledge_storage_diagnostics.md",
+        "modules/knowledge_storage_io.md"
       ],
       "role": "mixed",
       "source_path": "src/llm_wiki_cli/services/knowledge_storage_diagnostics.py",
       "title": "review_records"
+    },
+    {
+      "canonical_path": "workflows/review_storage.md",
+      "id": "review_storage",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/review_storage",
+      "outgoing_internal_links": [
+        "modules/knowledge_storage.md",
+        "modules/knowledge_storage_access.md",
+        "modules/knowledge_storage_diagnostics.md",
+        "modules/knowledge_storage_io.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/knowledge_storage_diagnostics.py",
+      "title": "review_storage"
     },
     {
       "canonical_path": "workflows/run_check.md",
@@ -67270,5 +67287,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:4d8bd2fea320423e8958afa9e70b9476d017be360ed96a094578fd7d3c5409a9"
+  "source_hash": "sha256:9cd47dc1627fe27d5d486f237a58f63d3a8c0df55e4e2aa9c88810d3fd53f794"
 }

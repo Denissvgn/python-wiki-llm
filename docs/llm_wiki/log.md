@@ -2702,3 +2702,30 @@ Rejected owning syncs retain operation-bound new-page bytes and identities.
 Explicit hash-bound recovery removes only unchanged new pages, preserving
 existing prose and committed authority before an ordinary sync retry. Adopted
 complete-snapshot recovery remains separate.
+
+## 2026-10-17
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.0.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:f65e49fe54283637f820aeebffc2a8979fd17125151ef56c89b9a157f533cf0e`
+- Pages created: 1
+- Pages updated: 7
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1595
+- Pages deprecated: 0
+- Semantic fields preserved: 3
+- Moved entities: none
+- Flow pages initialized: 0 (none)
+- Workflow pages created: 1
+- Dependency pages initialized: 0
+- Surface policy updated: no
+
+### Logical storage review continuation
+
+Logical inspection and comparison retain snapshot-bound continuation and exact
+record chunks under the existing output limits. Enumeration and value-review
+completion remain distinct; every read preserves its original validation scope
+and cannot approve or mutate the snapshot.

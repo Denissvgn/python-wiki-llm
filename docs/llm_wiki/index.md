@@ -8,7 +8,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 |---|---:|---|
 | Entities | 666 | [Open section](#entities) |
 | Modules | 246 | [Open section](#modules) |
-| Workflows | 223 | [Open section](#workflows) |
+| Workflows | 224 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 465 | [Open section](#entry-point-flows) |
 | Infrastructure | 2 | [Open section](#infrastructure) |
@@ -1117,6 +1117,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [retained_page_repairs](workflows/retained_page_repairs.md) - entry: `sync_transitions._retained_page_repairs`
 - [review_cmd_flow](workflows/review_cmd_flow.md) - entry: `review_cmd.run`
 - [review_records](workflows/review_records.md) - entry: `knowledge_storage_diagnostics._review_records`
+- [review_storage](workflows/review_storage.md) - entry: `knowledge_storage_diagnostics.review_storage`
 - [run_check](workflows/run_check.md) - entry: `team_cmd._run_check`
 - [run_packet_output](workflows/run_packet_output.md) - entry: `context_service._run_packet_output`
 - [run_protocol](workflows/run_protocol.md) - entry: `context_service._run_protocol`
