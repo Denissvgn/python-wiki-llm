@@ -2675,3 +2675,30 @@ Preserve explicit JavaScript import gaps as structural observations, label unkno
 ### Logical storage value identity
 
 Compare canonical JSON records so Boolean false/true remain distinct from numeric zero/one, including nested extension values, while preserving layout-independent equality and bounded review disclosures.
+
+## 2026-10-17
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.0.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:4992084fd2ea081279b8816edccf9c8aa01e99dc55a4e2ff1113aced12aae5ec`
+- Pages created: 9
+- Pages updated: 50
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1544
+- Pages deprecated: 0
+- Semantic fields preserved: 3
+- Moved entities: none
+- Flow pages initialized: 0 (none)
+- Workflow pages created: 5
+- Dependency pages initialized: 0
+- Surface policy updated: no
+
+### Rejected sync recovery
+
+Rejected owning syncs retain operation-bound new-page bytes and identities.
+Explicit hash-bound recovery removes only unchanged new pages, preserving
+existing prose and committed authority before an ordinary sync retry. Adopted
+complete-snapshot recovery remains separate.

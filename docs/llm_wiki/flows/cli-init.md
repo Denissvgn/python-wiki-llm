@@ -143,9 +143,9 @@ sequenceDiagram
     p0-->>p30: stored.get('pending_cleanup_agent')
 ```
 
-> Call sequence diagram shows 30 of 3950 interactions; 3920 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3956 interactions; 3926 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1350 (1349 omitted); unresolved 1 of 916 (915 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1352 (1351 omitted); unresolved 1 of 920 (919 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

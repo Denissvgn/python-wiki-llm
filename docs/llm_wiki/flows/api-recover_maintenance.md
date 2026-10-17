@@ -111,9 +111,9 @@ sequenceDiagram
     p2-->>p30: intent.get('adoption_id')
 ```
 
-> Call sequence diagram shows 30 of 1806 interactions; 1776 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1812 interactions; 1782 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 609 (608 omitted); unresolved 1 of 395 (394 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 611 (610 omitted); unresolved 1 of 399 (398 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

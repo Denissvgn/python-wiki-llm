@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [sync_cmd](../modules/sync_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api_contracts](../modules/api_contracts.md), and 64 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api_contracts](../modules/api_contracts.md), and 65 more
 
 **Complete modules touched:**
 
@@ -62,6 +62,7 @@
 - [sync_cmd](../modules/sync_cmd.md)
 - [sync_generated_sections](../modules/sync_generated_sections.md)
 - [sync_manifest](../modules/sync_manifest.md)
+- [sync_recovery](../modules/sync_recovery.md)
 - [sync_retained_links](../modules/sync_retained_links.md)
 - [sync_transition_execution](../modules/sync_transition_execution.md)
 - [sync_transitions](../modules/sync_transitions.md)
@@ -107,9 +108,9 @@ sequenceDiagram
     participant p23 as _load_or_seed_manifest
     participant p24 as _enforce_sync_write_safety
     participant p25 as load_adoption_marker
-    participant p26 as SyncManifest.load
-    participant p27 as _validate_persisted_source_selection
-    participant p28 as prepare_cache_options
+    participant p26 as capture_new_sync_pages
+    participant p27 as SyncManifest.load
+    participant p28 as _validate_persisted_source_selection
     participant p29 as print (src/llm_wiki_cli/commands/sync_cmd.py:run)
     participant p30 as write_basis.assert_current
     p0->>p1: _sync_run_options_from_args
@@ -137,16 +138,16 @@ sequenceDiagram
     p5->>p23: _load_or_seed_manifest
     p13->>p24: _enforce_sync_write_safety
     p6->>p25: load_adoption_marker
-    p6->>p26: SyncManifest.load
-    p5->>p27: _validate_persisted_source_selection
-    p5->>p28: prepare_cache_options
+    p13->>p26: capture_new_sync_pages
+    p6->>p27: SyncManifest.load
+    p5->>p28: _validate_persisted_source_selection
     p0-->>p29: print (src/llm_wiki_cli/commands/sync_cmd.py:run)(..., file=sys.stderr)
     p3-->>p30: write_basis.assert_current
 ```
 
-> Call sequence diagram shows 30 of 5750 interactions; 5720 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 5773 interactions; 5743 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1985 (1984 omitted); unresolved 1 of 1797 (1796 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1994 (1993 omitted); unresolved 1 of 1806 (1805 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -160,7 +161,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/commands/sync_cmd.py:_sync_run_options_from_args` | 2 | [src/llm_wiki_cli/services/inventory_cache.py](../modules/inventory_cache.md) | internal | 1 |
 | `src/llm_wiki_cli/services/extraction_jobs.py:extraction_job_request_from_args` | 28 | - | external | 5 |
 | `src/llm_wiki_cli/services/extraction_jobs.py:extraction_job_request_from_args` | 28 | [src/llm_wiki_cli/services/extraction_jobs.py](../modules/extraction_jobs.md) | internal | 1 |
-> Omission summary shows 8 of 1276 groups; 1268 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1282 groups; 1274 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -233,7 +234,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | _sync_run_options_from_args | 5092 | `_sync_run_options_from_args(args)` |
+| run | _sync_run_options_from_args | 5095 | `_sync_run_options_from_args(args)` |
 | _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2405 | `getattr(args, 'src_dir', '.')` |
 | _sync_run_options_from_args | Path (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2406 | `Path(getattr(...))` |
 | _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2406 | `getattr(args, 'wiki_dir', 'docs/llm_wiki')` |
@@ -249,7 +250,7 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 5099 |
+| output | `print` | `run` | 5102 |
 | output | `print` | `_sync_run_options_from_args` | 2427 |
 | output | `print` | `_sync_run_options_from_args` | 2433 |
 | output | `print` | `_sync_run_options_from_args` | 2439 |
@@ -279,3 +280,10 @@ source history. Exact recorded owner revival can restore live generation without
 inventing lifecycle or approval. Previously owned empty modules receive scoped parser qualification; their
 module page remains current while removed declarations become retained history.
 Parser/coverage gaps and ambiguous duplicate custody still stop before writes.
+
+An applied operation retains exact bytes and identities for newly created
+Markdown pages. Rejected publication emits the recovery journal hash and leaves
+mandatory ownership checks active. Explicit `maintenance recover-new-pages`
+previews and removes only unchanged new pages before retry; readers and sync
+never perform that recovery implicitly. Adopted full-preimage recovery remains
+available independently.

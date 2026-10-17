@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [maintenance_cmd](../modules/maintenance_cmd.md)
-**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [config](../modules/config.md), and 54 more
+**Modules touched:** [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), [config](../modules/config.md), and 55 more
 
 **Complete modules touched:**
 
@@ -59,6 +59,7 @@
 - [source_snapshot](../modules/source_snapshot.md)
 - [storage_spool](../modules/storage_spool.md)
 - [sync_manifest](../modules/sync_manifest.md)
+- [sync_recovery](../modules/sync_recovery.md)
 - [validation](../modules/validation.md)
 - [wiki_media](../modules/wiki_media.md)
 - [wiki_surface](../modules/wiki_surface.md)
@@ -77,67 +78,67 @@ sequenceDiagram
     participant p2 as get_maintenance_status
     participant p3 as acknowledge_maintenance
     participant p4 as load_request
-    participant p5 as recover_maintenance
-    participant p6 as _capture_options
-    participant p7 as _render_status
-    participant p8 as adopt_maintenance_authority
-    participant p9 as _validate_wiki_dir
-    participant p10 as get_maintenance_status_authority
-    participant p11 as recover_maintenance_authority
-    participant p12 as acknowledge_maintenance_authority
-    participant p13 as _absolute_path
-    participant p14 as _validate_status_request
-    participant p15 as _outside_recovery
-    participant p16 as load_recovery_snapshot
-    participant p17 as governance_writer_lock
-    participant p18 as storage_writer_lock
-    participant p19 as load_adoption_marker
-    participant p20 as guard_maintenance_owner
-    participant p21 as capture_committed_knowledge
-    participant p22 as build_maintenance_status
-    participant p23 as snapshot_wiki
-    participant p24 as _capture_basis
-    participant p25 as _capture
-    participant p26 as _native_prose_coherent
-    participant p27 as maintenance_write_operation
-    participant p28 as capture_maintenance_observations
+    participant p5 as recover_new_sync_pages
+    participant p6 as recover_maintenance
+    participant p7 as _capture_options
+    participant p8 as validate_path
+    participant p9 as _render_status
+    participant p10 as adopt_maintenance_authority
+    participant p11 as _validate_wiki_dir
+    participant p12 as get_maintenance_status_authority
+    participant p13 as recover_maintenance_authority
+    participant p14 as acknowledge_maintenance_authority
+    participant p15 as _root_identity
+    participant p16 as _authority
+    participant p17 as _page
+    participant p18 as unlink_guarded_bytes
+    participant p19 as _anchors
+    participant p20 as _absolute_path
+    participant p21 as _validate_status_request
+    participant p22 as _safe
+    participant p23 as _unlink_guarded_bytes
+    participant p24 as _outside_recovery
+    participant p25 as load_recovery_snapshot
+    participant p26 as governance_writer_lock
+    participant p27 as storage_writer_lock
+    participant p28 as load_adoption_marker
     participant p29 as print
     participant p30 as result.get
     p0->>p1: adopt_maintenance
     p0->>p2: get_maintenance_status
     p0->>p3: acknowledge_maintenance
     p0->>p4: load_request
-    p0->>p5: recover_maintenance
-    p0->>p6: _capture_options
-    p0->>p7: _render_status
-    p1->>p8: adopt_maintenance_authority
-    p1->>p9: _validate_wiki_dir
-    p2->>p10: get_maintenance_status_authority
-    p5->>p11: recover_maintenance_authority
-    p3->>p12: acknowledge_maintenance_authority
-    p8->>p13: _absolute_path
-    p10->>p14: _validate_status_request
-    p8->>p15: _outside_recovery
-    p11->>p16: load_recovery_snapshot
-    p8->>p17: governance_writer_lock
-    p8->>p18: storage_writer_lock
-    p8->>p19: load_adoption_marker
-    p8->>p20: guard_maintenance_owner
-    p10->>p21: capture_committed_knowledge
-    p10->>p22: build_maintenance_status
-    p8->>p23: snapshot_wiki
-    p8->>p24: _capture_basis
-    p8->>p25: _capture
-    p10->>p26: _native_prose_coherent
-    p12->>p27: maintenance_write_operation
-    p8->>p28: capture_maintenance_observations
+    p0->>p5: recover_new_sync_pages
+    p0->>p6: recover_maintenance
+    p0->>p7: _capture_options
+    p0->>p8: validate_path
+    p0->>p9: _render_status
+    p1->>p10: adopt_maintenance_authority
+    p1->>p11: _validate_wiki_dir
+    p2->>p12: get_maintenance_status_authority
+    p6->>p13: recover_maintenance_authority
+    p3->>p14: acknowledge_maintenance_authority
+    p5->>p15: _root_identity
+    p5->>p16: _authority
+    p5->>p17: _page
+    p5->>p18: unlink_guarded_bytes
+    p5->>p19: _anchors
+    p10->>p20: _absolute_path
+    p12->>p21: _validate_status_request
+    p15->>p22: _safe
+    p18->>p23: _unlink_guarded_bytes
+    p10->>p24: _outside_recovery
+    p13->>p25: load_recovery_snapshot
+    p10->>p26: governance_writer_lock
+    p10->>p27: storage_writer_lock
+    p10->>p28: load_adoption_marker
     p0-->>p29: print(json.dumps(...))
-    p7-->>p30: result.get('requires_sync')
+    p9-->>p30: result.get('requires_sync')
 ```
 
-> Call sequence diagram shows 30 of 2364 interactions; 2334 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2516 interactions; 2486 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 778 (777 omitted); unresolved 1 of 515 (514 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 832 (831 omitted); unresolved 1 of 544 (543 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -151,7 +152,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 7 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 7 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/maintenance_service.py:adopt_maintenance_authority` | 6 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 1 |
-> Omission summary shows 8 of 568 groups; 560 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 590 groups; 582 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -250,10 +251,10 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 96 |
-| output | `print` | `run` | 112 |
-| output | `print` | `run` | 124 |
-| output | `print` | `run` | 126 |
+| output | `print` | `run` | 106 |
+| output | `print` | `run` | 122 |
+| output | `print` | `run` | 134 |
+| output | `print` | `run` | 136 |
 | mutation | `generation_inputs.pop` | `adopt_maintenance_authority` | 113 |
 | mutation | `extensions.pop` | `adopt_maintenance_authority` | 116 |
 | mutation | `pending_parts.pop` | `first_unsafe_path_component` | 71 |
@@ -272,4 +273,10 @@ flowchart LR
 
 ## Behavior
 
-This flow starts at `run` and is classified as `cli`. The generated call and data-flow sections are bounded static projections; runtime conditions and side effects require source-level confirmation.
+Routes ordinary review actions through the maintenance API. The separate
+`recover-new-pages` action validates the current-project wiki boundary and uses
+the rejected sync's exact journal hash for a preview or guarded removal of
+unchanged new pages. It retains byte copies and requires a later owning sync;
+it never restores missing authority or acknowledges review. Full adopted
+snapshot recovery remains a distinct operation. The generated static projection
+is bounded and does not establish that every action follows its listed branch.

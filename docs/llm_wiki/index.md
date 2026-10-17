@@ -6,9 +6,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 663 | [Open section](#entities) |
-| Modules | 245 | [Open section](#modules) |
-| Workflows | 218 | [Open section](#workflows) |
+| Entities | 666 | [Open section](#entities) |
+| Modules | 246 | [Open section](#modules) |
+| Workflows | 223 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 465 | [Open section](#entry-point-flows) |
 | Infrastructure | 2 | [Open section](#infrastructure) |
@@ -411,6 +411,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [NativeEvidenceTransaction](entities/NativeEvidenceTransaction.md)
 - [NativeInspectionMaintenance](entities/NativeInspectionMaintenance.md)
 - [NativeInspectionResult](entities/NativeInspectionResult.md)
+- [NewPageJournal](entities/NewPageJournal.md)
 - [ObservationScope](entities/ObservationScope.md)
 - [ObsidianError](entities/ObsidianError.md)
 - [ObsidianOperation](entities/ObsidianOperation.md)
@@ -457,6 +458,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [PageTransitionError](entities/PageTransitionError.md)
 - [PageTransitionExecution](entities/PageTransitionExecution.md)
 - [PageTransitionPlan](entities/PageTransitionPlan.md)
+- [PageWriteObserver](entities/PageWriteObserver.md)
 - [PagesForSymbolResult](entities/PagesForSymbolResult.md)
 - [PathValidationError](entities/PathValidationError.md)
 - [Phase](entities/Phase.md)
@@ -599,6 +601,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [SyncManifestError](entities/SyncManifestError.md)
 - [SyncOwnershipError](entities/SyncOwnershipError.md)
 - [SyncPageMaps](entities/SyncPageMaps.md)
+- [SyncRecoveryError](entities/SyncRecoveryError.md)
 - [SyncResult](entities/SyncResult.md)
 - [SyncRunOptions](entities/SyncRunOptions.md)
 - [SyncRuntimeRefreshError](entities/SyncRuntimeRefreshError.md)
@@ -895,6 +898,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [sync_cmd](modules/sync_cmd.md) - Incremental wiki sync — update only pages whose source has changed.
 - [sync_generated_sections](modules/sync_generated_sections.md) - Source-grounded repairs of retained entity/module generated sections.
 - [sync_manifest](modules/sync_manifest.md) - Persistent sync state with explicit versioned maintenance adoption.
+- [sync_recovery](modules/sync_recovery.md) - Explicit recovery of unchanged new Markdown pages from a rejected sync.
 - [sync_retained_links](modules/sync_retained_links.md) - Pure, ownership-scoped link repairs for retained source pages.
 - [sync_transition_execution](modules/sync_transition_execution.md) - Guarded execution of source-page moves, with retained failure recovery data.
 - [sync_transitions](modules/sync_transitions.md) - Read-only ownership and filesystem preflight for entity/module page writes.
@@ -938,6 +942,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [McpWikiService_build_budgeted_context](workflows/McpWikiService_build_budgeted_context.md) - entry: `mcp_server.McpWikiService.build_budgeted_context`
 - [McpWikiService_build_task_context](workflows/McpWikiService_build_task_context.md) - entry: `mcp_server.McpWikiService.build_task_context`
 - [McpWikiService_get_status](workflows/McpWikiService_get_status.md) - entry: `mcp_server.McpWikiService.get_status`
+- [NewPageJournal__persist](workflows/NewPageJournal__persist.md) - entry: `sync_recovery.NewPageJournal._persist`
+- [NewPageJournal_before_write](workflows/NewPageJournal_before_write.md) - entry: `sync_recovery.NewPageJournal.before_write`
+- [NewPageJournal_discard_committed](workflows/NewPageJournal_discard_committed.md) - entry: `sync_recovery.NewPageJournal.discard_committed`
 - [PageTransitionExecution_apply](workflows/PageTransitionExecution_apply.md) - entry: `sync_transition_execution.PageTransitionExecution.apply`
 - [PageTransitionExecution_write](workflows/PageTransitionExecution_write.md) - entry: `sync_transition_execution.PageTransitionExecution.write`
 - [ScopedTaskState_revalidate](workflows/ScopedTaskState_revalidate.md) - entry: `task_context_v2.ScopedTaskState.revalidate`
@@ -1051,6 +1058,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [load_or_seed_manifest](workflows/load_or_seed_manifest.md) - entry: `sync_cmd._load_or_seed_manifest`
 - [load_recovery_snapshot](workflows/load_recovery_snapshot.md) - entry: `maintenance_service._load_recovery_snapshot`
 - [load_snapshot_knowledge_observability](workflows/load_snapshot_knowledge_observability.md) - entry: `knowledge_observability.load_snapshot_knowledge_observability`
+- [maintenance_cmd_flow](workflows/maintenance_cmd_flow.md) - entry: `maintenance_cmd.run`
 - [maintenance_report_from_captured](workflows/maintenance_report_from_captured.md) - entry: `maintenance_service.maintenance_report_from_captured`
 - [manifest_content](workflows/manifest_content.md) - entry: `team._manifest_content`
 - [merge_explicit_consumed_input](workflows/merge_explicit_consumed_input.md) - entry: `knowledge_orchestration._merge_explicit_consumed_input`
@@ -1096,6 +1104,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [record_source_file](workflows/record_source_file.md) - entry: `source_snapshot._record_source_file`
 - [recover_knowledge_storage](workflows/recover_knowledge_storage.md) - entry: `knowledge_storage_lifecycle._recover_knowledge_storage`
 - [recover_maintenance_authority](workflows/recover_maintenance_authority.md) - entry: `maintenance_service.recover_maintenance_authority`
+- [recover_new_sync_pages](workflows/recover_new_sync_pages.md) - entry: `sync_recovery.recover_new_sync_pages`
 - [refresh_documentation_native_projection](workflows/refresh_documentation_native_projection.md) - entry: `documentation_native._refresh_documentation_native_projection`
 - [regenerate_dependency_pages](workflows/regenerate_dependency_pages.md) - entry: `sync_cmd._regenerate_dependency_pages`
 - [regenerate_flow_pages](workflows/regenerate_flow_pages.md) - entry: `sync_cmd._regenerate_flow_pages`

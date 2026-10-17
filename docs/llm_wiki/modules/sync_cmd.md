@@ -51,6 +51,12 @@ receives a narrow parser qualification. Valid emptiness retains the actual
 module record and source commitment; failed or unavailable classification stops
 before writes. Inventory absence alone never establishes a missing file.
 
+Applied syncs retain a bounded operation journal for newly created Markdown
+pages. Publication rejection leaves the old authority intact and emits an exact
+recovery hash; it does not silently roll back pages or let later ownership checks
+accept an unowned target. Explicit new-page recovery must precede an otherwise
+blocked retry. Dry-run does not create a recovery journal.
+
 ## Imports
 
 | Source | Symbols |
@@ -90,6 +96,7 @@ before writes. Inventory absence alone never establishes a missing file.
 | `..services.sync_analysis` | `SyncDiff`, `SyncOwnershipError`, `compute_sync_diff` |
 | `..services.sync_generated_sections` | `plan_generated_source_repairs` |
 | `..services.sync_manifest` | `EVIDENCE_NOT_RECORDED`, `LEGACY_EVIDENCE_UNAVAILABLE`, `MANIFEST_FILENAME`, `MANIFEST_REPAIR_UNAVAILABLE`, `MANIFEST_STATE_UNAVAILABLE`, `MANIFEST_VERSION`, `SourceSelectionPruneResult`, `SyncManifest`, `prune_manifest_for_source_selection`, `retained_concept_page_paths` |
+| `..services.sync_recovery` | `capture_new_sync_pages`, `SyncRecoveryError` |
 | `..services.sync_transition_execution` | `PageTransitionExecution`, `assert_no_pending_page_moves` |
 | `..services.sync_transitions` | `PageTransitionPlan`, `find_missing_source_pages`, `plan_page_transitions`, `RetainedPageRepair` |
 | `..services.validation` | `portable_path_key`, `resolve_portable_workspace_path` |
@@ -130,9 +137,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (3) |
-| Outbound | `src` (42) |
+| Outbound | `src` (43) |
 
-> All 45 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 46 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
