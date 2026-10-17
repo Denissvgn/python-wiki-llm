@@ -222,10 +222,15 @@ def _add_queue_command(subparsers):
 def _add_maintenance_command(subparsers):
     parser = subparsers.add_parser("maintenance", help="Adopt, inspect, acknowledge or recover ordinary prose review")
     actions = parser.add_subparsers(dest="maintenance_action", required=True)
-    for name in ("adopt", "status", "acknowledge", "recover"):
+    for name in ("adopt", "status", "acknowledge", "recover", "recover-new-pages"):
         action = actions.add_parser(name)
         action.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR)
         action.add_argument("--format", choices=("text", "json"), default="text" if name == "status" else "json")
+        if name == "recover-new-pages":
+            action.add_argument("--recovery-dir", required=True)
+            action.add_argument("--expected-journal-hash", required=True)
+            action.add_argument("--dry-run", action="store_true")
+            continue
         if name != "recover":
             action.add_argument("--src-dir", default=".")
             action.add_argument("--allow-external-src", action="store_true")

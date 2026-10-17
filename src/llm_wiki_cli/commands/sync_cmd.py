@@ -5077,13 +5077,16 @@ def _execute_prepared_sync(options, prepared, *, target_wiki_dir=None, dry_run=F
 
 
 def _run_prepared_sync(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> None:
+    from ..services.sync_recovery import capture_new_sync_pages, SyncRecoveryError
+
     try:
         if options.dry_run:
             _run_sync_dry_run(options, prepared)
             return
         _enforce_sync_write_safety(options, prepared)
-        _execute_prepared_sync(options, prepared)
-    except (SyncOwnershipError, SourceRetirementError, sync_analysis_cache.SyncAnalysisMutationError) as exc:
+        with capture_new_sync_pages(options.wiki_dir, prepared.source_snapshot, prepared.manifest):
+            _execute_prepared_sync(options, prepared)
+    except (SyncOwnershipError, SourceRetirementError, sync_analysis_cache.SyncAnalysisMutationError, SyncRecoveryError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(2)
 

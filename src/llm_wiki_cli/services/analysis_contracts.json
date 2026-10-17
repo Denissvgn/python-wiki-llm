@@ -242,6 +242,7 @@
     "services/sync_analysis_cache.py",
     "services/sync_generated_sections.py",
     "services/sync_manifest.py",
+    "services/sync_recovery.py",
     "services/sync_retained_links.py",
     "services/sync_transition_execution.py",
     "services/sync_transitions.py",

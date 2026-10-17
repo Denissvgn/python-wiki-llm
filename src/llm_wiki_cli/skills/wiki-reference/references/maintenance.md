@@ -279,6 +279,23 @@ and ordinary sync never implicitly adopt, downgrade or remove the marker.
 - Page writes and generated commitments are owned as one workflow. When an
   interrupted write leaves the old manifest authoritative, repeat the same
   owning command after capacity is safe rather than patching machine files.
+  If sync emits `new_page_recovery` and new unowned pages block that retry,
+  retain its exact journal hash and directory. Preview the explicit recovery:
+
+  ```bash
+  llm-wiki maintenance recover-new-pages --wiki-dir docs/llm_wiki --recovery-dir RECOVERY_DIR --expected-journal-hash JOURNAL_SHA256 --dry-run
+  ```
+
+  Review the returned page list before an authorized call without `--dry-run`.
+  Only unchanged pages created by that rejected operation are removed; their
+  postimages remain outside the wiki. Existing pages, source and committed
+  authority stay untouched. Changed selection/authority, edited or replaced
+  pages, unsafe links, wrong roots and altered journals refuse recovery.
+  Rerun owning sync afterward; recovery alone establishes no currentness.
+  Multi-page recovery is not atomic: on I/O failure preserve its partial result
+  and retained postimages for explicit restoration, rather than forcing another
+  retry. Readers never repair this state. Adopted authority recovery above
+  retains its separate complete-snapshot contract.
 - On disk-space, watcher, file-descriptor, swapping, or editor-responsiveness
   pressure, stop launching heavy work. Follow
   [Resource-aware execution](resources-context.md); a later single retry uses

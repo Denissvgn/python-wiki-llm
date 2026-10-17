@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Rejected syncs retain a hash-bound recovery journal for newly created pages.
+  Explicit recovery preserves their bytes and refuses edited pages or changed
+  authority, allowing a later sync to proceed without replacing existing prose.
+
 ## [3.0.0] - 2026-10-15
 
 Installation and upgrade now select current knowledge storage and workflow

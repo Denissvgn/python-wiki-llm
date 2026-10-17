@@ -2134,6 +2134,32 @@ prepared-adoption and captured-preimage retries need their explicit options.
 See [ordinary review and recovery](maintenance.md) for exact eligibility and
 Python/MCP interfaces.
 
+### Recover new pages from a rejected sync
+
+If sync emits `new_page_recovery`, retain its recovery directory and exact
+`expected_journal_hash`. Preview the pages before applying recovery:
+
+```bash
+llm-wiki maintenance recover-new-pages --wiki-dir wiki --recovery-dir RECOVERY_DIR --expected-journal-hash JOURNAL_SHA256 --dry-run
+```
+
+After reviewing the list, repeat without `--dry-run` to remove only unchanged
+Markdown pages created by that rejected operation. Their exact postimages remain
+in the recovery directory. Existing prose, source files and committed authority
+are not restored or overwritten. Edited/replaced pages, changed selection or
+authority, unsafe links, another wiki and altered journals are refused.
+
+Run the original sync again after recovery. This command does not make an
+interrupted generation current, repair missing maintenance authority, or replace
+the complete adopted recovery route above. Recovery is not atomic across pages:
+an I/O failure can leave a partially removed set, with all original postimages
+retained for explicit inspection and restoration. A missing or changed candidate
+is refused; do not blindly replay or manufacture another journal hash.
+Capture is bounded to 10,000 baseline/created-page entries, an 8 MiB journal
+and individual postimages, and 64 MiB of postimages per operation. Limits stop
+the new write rather than authorize unrecorded pages. Without an original
+rejection journal, this command cannot authorize removal of older stranded pages.
+
 ## `upgrade`
 
 Refresh framework-managed artifacts in place.
