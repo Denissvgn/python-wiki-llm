@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Broad sync refusals explain source-change and generator-refresh reasons, show
+  bounded affected-path samples, and preserve the caller's options in preview
+  guidance.
+
 - Explicit committed maintenance recovery restores absent validated projection
   roots and referenced native objects under the retained ownership anchor,
   preserving refusals for authored changes, unknown files and newer authority.

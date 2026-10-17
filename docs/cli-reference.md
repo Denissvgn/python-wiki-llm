@@ -260,6 +260,23 @@ or controlled CI runner with known capacity.
 Sync repairs
 manifests with invalid source hashes without touching pages, and stops unusually
 broad diffs unless `--force` is used.
+
+The affected-source count names inputs whose wiki projections may change;
+sync does not rewrite those source files. A generator-version transition can
+refresh every managed source even when source bytes are unchanged. A storage
+repack alone is separate from that generator refresh.
+When a broad update is refused, the message separates source-change reasons
+from additional generator-refresh inputs, identifies captured/current generator
+versions when available, and shows a bounded path sample with omitted counts.
+Reason counts can overlap; the total source-input count is deduplicated.
+Use the supplied `--dry-run` command with the same source/wiki roots, source
+selection and cache bindings to inspect the full page and artifact plan before
+authorizing a broad write. The preview lists complete affected input paths and
+their reasons, including paths omitted from the refusal sample.
+An oversized or control-containing command is not
+printed; repeat the original invocation with `--dry-run` and omit `--force`.
+The path sample bounds the diagnostic output, not extraction or preview work.
+
 `--initialize-surfaces` enters a surface-only backfill mode for `flows`,
 `dependencies`, and/or `api-contracts`: ordinary entity/module source changes
 are reported but deferred. `--flow-category` is repeatable, `--exclude-tests`

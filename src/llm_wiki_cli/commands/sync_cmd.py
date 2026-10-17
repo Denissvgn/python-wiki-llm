@@ -85,6 +85,7 @@ from ..services.infrastructure_sync import (
     with_infrastructure_generation_input,
 )
 from ..services.io import read_md, write_md
+from ..services.paths import render_shell_command
 from ..services.validation import portable_path_key
 from ..services.source_retirement import (
     SOURCE_MEMBER_REMOVED_HEADER,
@@ -262,6 +263,8 @@ _SURFACE_POLICY_KEYS = {
 MAX_SURFACE_CREATED_PAGES = MAX_SYNC_AFFECTED_FILES
 MAX_SURFACE_CREATED_RATIO = MAX_SYNC_AFFECTED_RATIO
 MIN_PAGES_FOR_SURFACE_RATIO_GUARD = MIN_SOURCES_FOR_RATIO_GUARD
+_GUARD_PATH_SAMPLE_LIMIT = 8
+_GUARD_PREVIEW_COMMAND_LIMIT = 3072
 _FLOW_CATEGORY_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]*$")
 _DEPRECATION_HEADER = (
     "> ⚠️ **Stale:** Source no longer found in codebase. "
@@ -1829,6 +1832,7 @@ class _PreparedSyncRun:
     generator_refresh_required: bool
     runtime_basis_refresh: bool
     log_missing: bool
+    prior_generator_version: str | None = None
     committed_state: CommittedKnowledgeState | None = None
     reuse_observations_hash: str | None = None
     entrypoint_analysis: _SyncEntryPointAnalysis | None = None
@@ -2170,11 +2174,7 @@ def _exit_if_large_unforced_surface_plan(
     if not message or options.force or options.dry_run:
         return
     print(f"Error: {message}", file=sys.stderr)
-    print(
-        "Preview with `llm-wiki sync --dry-run`, then re-run with --force "
-        "if the surface update is intentional.",
-        file=sys.stderr,
-    )
+    print(_sync_preview_hint(options), file=sys.stderr)
     sys.exit(1)
 
 
@@ -2190,6 +2190,8 @@ def _print_dry_run_plan(
     seed_manifest: bool,
     repair_only: bool,
     runtime_provenance_changed: bool,
+    generator_refresh_required: bool = False,
+    prior_generator_version: str | None = None,
 ) -> None:
     print("\nSync dry-run plan:")
     source_label = (
@@ -2277,6 +2279,15 @@ def _print_dry_run_plan(
         _affected_source_files(application_diff) - _affected_source_files(diff)
     )
     print(f"  generator refresh sources: {generator_refresh_count}")
+    for line in _sync_guard_detail_lines(
+        diff, application_diff, infrastructure_plan,
+        generator_refresh_required=generator_refresh_required,
+        prior_generator_version=prior_generator_version,
+        source_selection_prune=source_selection_prune,
+        infrastructure_deferred=bool(options.initialize_surfaces),
+        complete_paths=True,
+    ):
+        print(line)
     print(f"  missing source pages: {len(application_diff.missing_pages)} repair")
     for path in sorted(application_diff.missing_pages):
         print(f"    REPAIR {path}")
@@ -2711,6 +2722,138 @@ def _mark_pending_repair_sources_changed(
     diff.removed_files.extend(sorted(pending_removed - existing_removed))
 
 
+def _guard_display_value(value: str) -> str:
+    """Keep untrusted paths/producer labels bounded and escape terminal controls."""
+    rendered = json.dumps(value, ensure_ascii=True)
+    return rendered if len(rendered) <= 256 else json.dumps(value[:20], ensure_ascii=True) + " [truncated]"
+
+
+def _sync_guard_detail_lines(
+    diff: SyncDiff,
+    application_diff: SyncDiff,
+    infrastructure_plan: InfrastructureSyncPlan,
+    *,
+    generator_refresh_required: bool,
+    prior_generator_version: str | None,
+    source_selection_prune: SourceSelectionPruneResult | None = None,
+    infrastructure_deferred: bool = False,
+    complete_paths: bool = False,
+) -> list[str]:
+    """Explain the already computed plan; this does not reclassify or approve it."""
+    affected = _affected_source_files(application_diff)
+    additional = affected - _affected_source_files(diff)
+    groups = [
+        ("new", set(diff.new_files)),
+        ("changed", set(diff.changed_files)),
+        ("metadata-only", set(diff.metadata_only_files)),
+        ("removed", set(diff.removed_files)),
+        ("moved", {path for pair in diff.moved_entities.values() for path in pair}),
+        ("page-renamed", {path for _, path, _ in diff.entity_page_renames} | set(diff.renamed_module_pages)),
+        ("generator-refresh-additional", additional),
+    ]
+    lines = [
+        f"  Affected source inputs: {len(affected)} (deduplicated; source files are not rewritten).",
+        "  Source reasons (may overlap): " + ", ".join(f"{label}={len(paths)}" for label, paths in groups) + ".",
+    ]
+    if generator_refresh_required:
+        captured = _guard_display_value(prior_generator_version) if prior_generator_version is not None else "unavailable"
+        lines.append(
+            f"  Generator refresh: captured version={captured}, current version={_guard_display_value(__version__)}; "
+            f"{len(additional)} additional source input(s)."
+        )
+    lines.extend(_guard_path_sample_lines("source", {
+        path: ", ".join(label for label, paths in groups if path in paths)
+        for path in sorted(affected)
+    }, limit=None if complete_paths else _GUARD_PATH_SAMPLE_LIMIT))
+    lines.append(
+        f"  Infrastructure actions{' (deferred)' if infrastructure_deferred else ''}: "
+        f"{len(infrastructure_plan.new_sources)} new, {len(infrastructure_plan.changed_sources)} changed, "
+        f"{len(infrastructure_plan.removed_sources)} removed, {len(infrastructure_plan.moved_sources)} moved, "
+        f"{len(infrastructure_plan.repair_tombstones)} retirement repair, "
+        f"{len(infrastructure_plan.cleanup_moved_pages)} moved-page cleanup, "
+        f"{len(infrastructure_plan.deselected_records)} deselected "
+        f"({infrastructure_plan.affected_count} guard actions)."
+    )
+    infrastructure_paths = {
+        *infrastructure_plan.new_sources, *infrastructure_plan.changed_sources,
+        *infrastructure_plan.removed_sources, *infrastructure_plan.moved_sources,
+        *infrastructure_plan.repair_tombstones, *infrastructure_plan.cleanup_moved_pages,
+        *infrastructure_plan.deselected_records,
+    }
+    remaining = max(0, _GUARD_PATH_SAMPLE_LIMIT - len(affected))
+    lines.extend(_guard_path_sample_lines("infrastructure action", {path: "" for path in sorted(infrastructure_paths)}, limit=None if complete_paths else remaining))
+    if source_selection_prune is not None:
+        lines.append(
+            f"  Source-selection pruning: {len(source_selection_prune.deselected_source_paths)} source(s), "
+            f"{len(source_selection_prune.deselected_page_paths)} concept page(s), "
+            f"{len(source_selection_prune.deselected_surface_page_paths)} surface page(s)."
+        )
+        if complete_paths:
+            lines.extend(_guard_path_sample_lines("deselected source", {
+                path: "source-selection" for path in source_selection_prune.deselected_source_paths
+            }, limit=None))
+    lines.append(
+        f"  Projection repairs: {len(application_diff.missing_pages)} missing page(s), "
+        f"{len(application_diff.generated_page_repairs)} generated-section repair(s) (separate from source-input count)."
+    )
+    lines.append("  Planned writes target wiki pages/projections and state; preview lists page and artifact actions.")
+    return lines
+
+
+def _guard_path_sample_lines(
+    kind: str, reasons: Mapping[str, str], *, limit: int | None = _GUARD_PATH_SAMPLE_LIMIT,
+) -> list[str]:
+    paths = sorted(reasons)
+    sample = paths[:limit]
+    label = f"complete {kind} paths" if limit is None else f"{kind} path sample"
+    lines = [f"  {label}: {len(sample)} shown, {len(paths) - len(sample)} omitted."]
+    for path in sample:
+        reason = f" [{reasons[path]}]" if reasons[path] else ""
+        display = json.dumps(path, ensure_ascii=True) if limit is None else _guard_display_value(path)
+        lines.append(f"    {display}{reason}")
+    return lines
+
+
+def _sync_preview_argv(options: _SyncRunOptions) -> list[str]:
+    """Retain the caller's planning bindings without granting write approval."""
+    cache = options.capture_cache_options or options.cache_options
+    argv = ["llm-wiki", "sync", "--dry-run", "--src-dir", options.src_dir,
+            "--wiki-dir", str(options.wiki_dir), "--jobs", str(options.job_request.requested_jobs)]
+    values = (
+        ("--source-selection", options.source_selection), ("--helper-cache-dir", options.helper_cache_dir),
+        ("--cache-dir", cache.cache_dir), ("--openapi-file", options.openapi_file),
+        ("--knowledge-format", options.knowledge_format),
+    )
+    for flag, value in values:
+        if value is not None:
+            argv.extend((flag, str(value)))
+    switches = (
+        ("--allow-external-src", options.allow_external_src), ("--no-plugins", not options.include_plugins),
+        ("--no-preserve-semantic", not options.preserve_semantic), ("--exclude-tests", options.exclude_tests),
+        ("--clear-openapi-file", options.clear_openapi_file), ("--rebuild-knowledge", options.rebuild_knowledge),
+        ("--no-cache", not cache.enabled), ("--rebuild-cache", cache.rebuild),
+        ("--cache-stats", options.cache_stats_enabled),
+    )
+    argv.extend(flag for flag, enabled in switches if enabled)
+    if options.initialize_surfaces:
+        argv.extend(("--initialize-surfaces", ",".join(sorted(options.initialize_surfaces))))
+    for category in sorted(options.flow_categories or ()):
+        argv.extend(("--flow-category", category))
+    for language in sorted(options.include_tests or ()):
+        argv.extend(("--include-tests", language))
+    return argv
+
+
+def _sync_preview_hint(options: _SyncRunOptions) -> str:
+    argv = _sync_preview_argv(options)
+    command = render_shell_command(argv, windows=os.name == "nt")
+    if len(command.encode("utf-8")) > _GUARD_PREVIEW_COMMAND_LIMIT or any(ord(c) < 32 or ord(c) == 127 for c in command):
+        preview = "Repeat the same sync invocation with --dry-run, preserving all roots/options and omitting --force (command display bounded)."
+    else:
+        preview = f"Preview the complete plan ({'PowerShell' if os.name == 'nt' else 'POSIX shell'}): {command}"
+    return preview + "\nReview the preview before explicitly authorizing any broad write; --force is never applied automatically."
+
+
 def _exit_if_large_unforced_diff(
     options: _SyncRunOptions,
     diff: "SyncDiff",
@@ -2719,6 +2862,10 @@ def _exit_if_large_unforced_diff(
     infrastructure_plan: InfrastructureSyncPlan,
     *,
     include_infrastructure: bool = True,
+    source_diff: SyncDiff | None = None,
+    generator_refresh_required: bool = False,
+    prior_generator_version: str | None = None,
+    source_selection_prune: SourceSelectionPruneResult | None = None,
 ) -> None:
     large_diff_message = _large_diff_message(diff, manifest) or (
         _large_infrastructure_message(infrastructure_plan)
@@ -2729,11 +2876,15 @@ def _exit_if_large_unforced_diff(
         return
 
     print(f"Error: {large_diff_message}", file=sys.stderr)
-    print(
-        "This sync is broad enough to risk unintended wiki churn. "
-        "Re-run with `llm-wiki sync --force` if this update is intentional.",
-        file=sys.stderr,
-    )
+    for line in _sync_guard_detail_lines(
+        source_diff if source_diff is not None else diff, diff, infrastructure_plan,
+        generator_refresh_required=generator_refresh_required,
+        prior_generator_version=prior_generator_version,
+        source_selection_prune=source_selection_prune,
+        infrastructure_deferred=not include_infrastructure,
+    ):
+        print(line, file=sys.stderr)
+    print(_sync_preview_hint(options), file=sys.stderr)
     _print_cache_stats(
         inventory_result.cache_stats, enabled=options.cache_stats_enabled
     )
@@ -4227,6 +4378,9 @@ def _prepare_sync_run(
         generator_refresh_required=generator_refresh_required,
         runtime_basis_refresh=runtime_basis_refresh,
         log_missing=not (options.wiki_dir / canonical_path(PageKind.LOG)).is_file(),
+        prior_generator_version=(
+            prior_runtime_provenance.generator_version if prior_runtime_provenance is not None else None
+        ),
         committed_state=committed_state,
         reuse_observations_hash=reuse_observations_hash,
         entrypoint_analysis=entrypoint_analysis,
@@ -4971,6 +5125,8 @@ def _run_sync_dry_run(
         seed_manifest=prepared.seed_manifest,
         repair_only=prepared.repair_only,
         runtime_provenance_changed=prepared.runtime_provenance_changed,
+        generator_refresh_required=prepared.generator_refresh_required,
+        prior_generator_version=prepared.prior_generator_version,
     )
     with tempfile.TemporaryDirectory(prefix="llm-wiki-sync-preview-") as temp_dir:
         staged_wiki = Path(temp_dir) / "wiki"
@@ -5052,6 +5208,10 @@ def _enforce_sync_write_safety(
             prepared.inventory_result,
             prepared.infrastructure_plan,
             include_infrastructure=not bool(options.initialize_surfaces),
+            source_diff=prepared.diff,
+            generator_refresh_required=prepared.generator_refresh_required,
+            prior_generator_version=prepared.prior_generator_version,
+            source_selection_prune=prepared.source_selection_prune,
         )
     if not prepared.seed_manifest:
         _exit_if_large_unforced_surface_plan(
