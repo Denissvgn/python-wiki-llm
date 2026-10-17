@@ -21,6 +21,12 @@ projection so refusal and preview can explain a generator transition without
 reloading authority. Missing provenance stays explicit. A version label is not
 an artifact identity and does not refresh captured evidence.
 
+`evidence_refresh_sources` records unchanged sources whose captured invalid
+module/entity basis now normalizes successfully. It prevents the unchanged
+knowledge shortcut, drives an apply-only refresh and preserves the distinction
+between evidence repair and real source edits. Those inputs still count toward
+ordinary broad-update review; the flag grants no force or recovery authority.
+
 ## Attributes
 
 | Name | Type | Default | Description |
@@ -44,6 +50,7 @@ an artifact identity and does not refresh captured evidence.
 | `runtime_basis_refresh` | `bool` | *required* | — |
 | `log_missing` | `bool` | *required* | — |
 | `prior_generator_version` | `str \| None` | `None` | — |
+| `evidence_refresh_sources` | `tuple[str, ...]` | `()` | — |
 | `committed_state` | `CommittedKnowledgeState \| None` | `None` | — |
 | `reuse_observations_hash` | `str \| None` | `None` | — |
 | `entrypoint_analysis` | `_SyncEntryPointAnalysis \| None` | `None` | — |
@@ -97,7 +104,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [sync_cmd](../modules/sync_cmd.md) | 0 | `analysis_input_key`, `analysis_reused`, `application_diff`, `committed_state`, `contracts`, `diff`, `entrypoint_analysis`, `generator_refresh_required`, `graph_observations`, `infrastructure_plan`, `inventory`, `inventory_result` |
+| [sync_cmd](../modules/sync_cmd.md) | 0 | `analysis_input_key`, `analysis_reused`, `application_diff`, `committed_state`, `contracts`, `diff`, `entrypoint_analysis`, `evidence_refresh_sources`, `generator_refresh_required`, `graph_observations`, `infrastructure_plan`, `inventory` |
 
 ### References
 

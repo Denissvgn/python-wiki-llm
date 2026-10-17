@@ -7,7 +7,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 | Surface | Count | Start here |
 |---|---:|---|
 | Entities | 667 | [Open section](#entities) |
-| Modules | 246 | [Open section](#modules) |
+| Modules | 247 | [Open section](#modules) |
 | Workflows | 224 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 465 | [Open section](#entry-point-flows) |
@@ -744,6 +744,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [entrypoints](modules/entrypoints.md) - Entry-point detection and user-flow assembly.
 - [esbuild.config](modules/esbuild.config.md) - `integrations/obsidian/llm-wiki/esbuild.config.mjs`
 - [eval_lite___init__](modules/eval_lite___init__.md) - Provider-free inspection planning for paired qualified-context arms.
+- [evidence_diagnostics](modules/evidence_diagnostics.md) - Explain captured versus fresh evidence without repairing or accepting it.
 - [export](modules/export.md) - Documentation-run export services.
 - [extraction_jobs](modules/extraction_jobs.md) - `src/llm_wiki_cli/services/extraction_jobs.py`
 - [extraction_service](modules/extraction_service.md) - `src/llm_wiki_cli/services/extraction_service.py`

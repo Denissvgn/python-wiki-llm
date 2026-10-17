@@ -145,9 +145,9 @@ sequenceDiagram
     p3-->>p30: write_basis.assert_current
 ```
 
-> Call sequence diagram shows 30 of 5832 interactions; 5802 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 5847 interactions; 5817 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 2028 (2027 omitted); unresolved 1 of 1818 (1817 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 2034 (2033 omitted); unresolved 1 of 1824 (1823 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -161,7 +161,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/commands/sync_cmd.py:_sync_run_options_from_args` | 2 | [src/llm_wiki_cli/services/inventory_cache.py](../modules/inventory_cache.md) | internal | 1 |
 | `src/llm_wiki_cli/services/extraction_jobs.py:extraction_job_request_from_args` | 28 | - | external | 5 |
 | `src/llm_wiki_cli/services/extraction_jobs.py:extraction_job_request_from_args` | 28 | [src/llm_wiki_cli/services/extraction_jobs.py](../modules/extraction_jobs.md) | internal | 1 |
-> Omission summary shows 8 of 1289 groups; 1281 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1292 groups; 1284 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -234,15 +234,15 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | _sync_run_options_from_args | 5268 | `_sync_run_options_from_args(args)` |
-| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2417 | `getattr(args, 'src_dir', '.')` |
-| _sync_run_options_from_args | Path (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2418 | `Path(getattr(...))` |
-| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2418 | `getattr(args, 'wiki_dir', 'docs/llm_wiki')` |
-| _sync_run_options_from_args | bool (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2419 | `bool(getattr(...))` |
-| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2419 | `getattr(args, 'dry_run', False)` |
-| _sync_run_options_from_args | bool (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2420 | `bool(getattr(...))` |
-| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2420 | `getattr(args, 'no_plugins', False)` |
-| _sync_run_options_from_args | _cache_options_from_args | 2421 | `_cache_options_from_args(args)` |
+| run | _sync_run_options_from_args | 5326 | `_sync_run_options_from_args(args)` |
+| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2421 | `getattr(args, 'src_dir', '.')` |
+| _sync_run_options_from_args | Path (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2422 | `Path(getattr(...))` |
+| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2422 | `getattr(args, 'wiki_dir', 'docs/llm_wiki')` |
+| _sync_run_options_from_args | bool (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2423 | `bool(getattr(...))` |
+| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2423 | `getattr(args, 'dry_run', False)` |
+| _sync_run_options_from_args | bool (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2424 | `bool(getattr(...))` |
+| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2424 | `getattr(args, 'no_plugins', False)` |
+| _sync_run_options_from_args | _cache_options_from_args | 2425 | `_cache_options_from_args(args)` |
 | _cache_options_from_args | cache_options_from_args | 304 | `cache_options_from_args(args)` |
 | cache_options_from_args | bool (src/llm_wiki_cli/services…y:cache_options_from_args) | 311 | `bool(getattr(...))` |
 
@@ -250,19 +250,19 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 5275 |
-| output | `print` | `_sync_run_options_from_args` | 2439 |
-| output | `print` | `_sync_run_options_from_args` | 2445 |
-| output | `print` | `_sync_run_options_from_args` | 2451 |
+| output | `print` | `run` | 5333 |
+| output | `print` | `_sync_run_options_from_args` | 2443 |
+| output | `print` | `_sync_run_options_from_args` | 2449 |
+| output | `print` | `_sync_run_options_from_args` | 2455 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_sync_run_options_from_args` | `getattr` | 2417 |
-| external_call | `_sync_run_options_from_args` | `getattr` | 2418 |
-| external_call | `_sync_run_options_from_args` | `getattr` | 2419 |
-| external_call | `_sync_run_options_from_args` | `getattr` | 2420 |
+| external_call | `_sync_run_options_from_args` | `getattr` | 2421 |
+| external_call | `_sync_run_options_from_args` | `getattr` | 2422 |
+| external_call | `_sync_run_options_from_args` | `getattr` | 2423 |
+| external_call | `_sync_run_options_from_args` | `getattr` | 2424 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 
@@ -302,3 +302,9 @@ content and current evidence are committed through the existing owning path.
 The normal repeat run leaves active wiki state unchanged; adopted maintenance
 may separately capture a recovery preimage outside the wiki. Ownership,
 integrity and explicit recovery requirements remain active throughout.
+
+Current deep normalization can also schedule an unchanged source with captured
+invalid evidence for an owning refresh. The preview distinguishes this from
+source edits and generator transitions, and broad guards remain active. Full
+reconciliation replaces only evidence supported by fresh observations, including
+same-version repairs, without a fabricated source edit or a scoped-write promise.

@@ -38,16 +38,16 @@ flowchart TD
 | [sync_manifest](modules/sync_manifest.md) | 40 | 8 |
 | [wiki_surface](modules/wiki_surface.md) | 39 | 1 |
 | [knowledge_storage](modules/knowledge_storage.md) | 37 | 8 |
+| [knowledge_model](modules/knowledge_model.md) | 33 | 13 |
 | [source_selection](modules/source_selection.md) | 33 | 2 |
-| [knowledge_model](modules/knowledge_model.md) | 32 | 13 |
 | [knowledge_evidence](modules/knowledge_evidence.md) | 31 | 1 |
 | [filesystem_guard](modules/filesystem_guard.md) | 28 | 1 |
 | [knowledge_artifacts](modules/knowledge_artifacts.md) | 28 | 28 |
 | [knowledge_storage_io](modules/knowledge_storage_io.md) | 26 | 4 |
 | [knowledge_envelope](modules/knowledge_envelope.md) | 25 | 5 |
 | [wiki_surface_index](modules/wiki_surface_index.md) | 25 | 5 |
+| [knowledge_consumption](modules/knowledge_consumption.md) | 24 | 8 |
 | [extraction_service](modules/extraction_service.md) | 23 | 30 |
-| [knowledge_consumption](modules/knowledge_consumption.md) | 23 | 8 |
 | [knowledge_governance](modules/knowledge_governance.md) | 22 | 10 |
 | [common](modules/common.md) | 20 | 1 |
 | [analysis_compatibility](modules/analysis_compatibility.md) | 18 | 0 |
@@ -94,7 +94,7 @@ flowchart TD
 | [imports](modules/imports.md) | 8 | 5 |
 | [infrastructure_inventory](modules/infrastructure_inventory.md) | 8 | 3 |
 | [knowledge_reuse](modules/knowledge_reuse.md) | 8 | 13 |
-| [lint_service](modules/lint_service.md) | 8 | 38 |
+| [lint_service](modules/lint_service.md) | 8 | 39 |
 | [maintenance_status](modules/maintenance_status.md) | 8 | 9 |
 | [wiki_lifecycle](modules/wiki_lifecycle.md) | 8 | 9 |
 | [wiki_write_basis](modules/wiki_write_basis.md) | 8 | 1 |
@@ -240,6 +240,7 @@ flowchart TD
 | [documentation_review](modules/documentation_review.md) | 1 | 1 |
 | [export](modules/export.md) | 1 | 9 |
 | [prepare](modules/prepare.md) | 1 | 8 |
+| [evidence_diagnostics](modules/evidence_diagnostics.md) | 1 | 2 |
 | [flow_overview](modules/flow_overview.md) | 1 | 1 |
 | [impact](modules/impact.md) | 1 | 5 |
 | [knowledge_audit](modules/knowledge_audit.md) | 1 | 4 |
@@ -289,6 +290,10 @@ flowchart TD
 - **Used:** `builtin-modules`, `esbuild`, `obsidian`
 
 ## Notes
+
+Per-concept evidence diagnosis consumes the shared read view and model without
+extracting source or writing state. Lint and detailed query explanations use it
+separately from aggregate observability, preserving that module's privacy boundary.
 
 The command-line dispatcher is the composition root: it imports command and
 service modules so one parser can route the complete product surface. The high

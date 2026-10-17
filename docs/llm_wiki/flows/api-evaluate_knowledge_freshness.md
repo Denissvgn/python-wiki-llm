@@ -98,9 +98,9 @@ sequenceDiagram
     p3-->>p30: counts.get(state, 0)
 ```
 
-> Call sequence diagram shows 30 of 1931 interactions; 1901 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1933 interactions; 1903 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 514 (513 omitted); unresolved 1 of 332 (331 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 514 (513 omitted); unresolved 1 of 333 (332 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -206,4 +206,8 @@ flowchart LR
 
 ## Behavior
 
-This flow starts at `evaluate_knowledge_freshness` and is classified as `api`. The generated call and data-flow sections are bounded static projections; runtime conditions and side effects require source-level confirmation.
+Compares recorded concept evidence with already evaluated live inputs without
+extracting source or persisting freshness. If the recorded basis is unreliable,
+the result remains unknown and reports no structural comparison. An independently
+computed live basis is retained for explanation, including its normalization
+failure when applicable; it cannot establish current committed evidence.

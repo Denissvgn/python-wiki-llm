@@ -11,6 +11,13 @@ basis.  This module compares those records with already evaluated live inputs;
 it never reads source files, invokes extraction, writes artifacts, or persists
 the resulting freshness state.
 
+An unreliable recorded basis cannot establish structural currentness. Its
+result remains unknown with no live comparison, even if this operation already
+computed a valid live basis. Retaining that independently computed basis lets
+consumers distinguish a captured failure from fresh normalization without
+accepting or repairing the captured evidence. Snapshot-only evaluation supplies
+no live observation; unavailable and malformed live bases retain their causes.
+
 ## Imports
 
 | Source | Symbols |

@@ -25,11 +25,11 @@
       "infrastructure": 2,
       "load-order": 1,
       "log": 1,
-      "modules": 246,
+      "modules": 247,
       "workflows": 224
     },
     "dependency_architecture": 2,
-    "total": 1619
+    "total": 1620
   },
   "dependency_pages": {
     "count": 2,
@@ -2884,6 +2884,7 @@
             "src/llm_wiki_cli/services/knowledge_model.py",
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/verification_contracts.py",
+            "src/llm_wiki_cli/services/evidence_diagnostics.py",
             "src/llm_wiki_cli/services/knowledge_observability.py",
             "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_cli/services/wiki_lifecycle.py",
@@ -2892,7 +2893,7 @@
             "src/llm_wiki_cli/services/canonical_pages.py",
             "src/llm_wiki_cli/services/health_policy.py"
           ],
-          "step_count": 3165,
+          "step_count": 3177,
           "truncated": true
         }
       },
@@ -4161,7 +4162,7 @@
             "src/llm_wiki_cli/services/analysis_compatibility.py",
             "src/llm_wiki_cli/services/maintenance_status.py"
           ],
-          "step_count": 1118,
+          "step_count": 1120,
           "truncated": true
         }
       },
@@ -9053,13 +9054,14 @@
             "src/llm_wiki_cli/services/python_implementation.py",
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/verification_contracts.py",
+            "src/llm_wiki_cli/services/evidence_diagnostics.py",
             "src/llm_wiki_cli/services/knowledge_observability.py",
             "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_cli/services/wiki_lifecycle.py",
             "src/llm_wiki_cli/services/sync_analysis.py",
             "src/llm_wiki_cli/services/health_policy.py"
           ],
-          "step_count": 1671,
+          "step_count": 1674,
           "truncated": true
         }
       },
@@ -9455,7 +9457,7 @@
             "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_cli/services/concept_identity.py"
           ],
-          "step_count": 3470,
+          "step_count": 3472,
           "truncated": true
         }
       },
@@ -9552,7 +9554,7 @@
             "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_cli/services/concept_identity.py"
           ],
-          "step_count": 1932,
+          "step_count": 1934,
           "truncated": true
         }
       },
@@ -15087,7 +15089,7 @@
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 1809,
+          "step_count": 1811,
           "truncated": true
         }
       },
@@ -32004,6 +32006,7 @@
             "src/llm_wiki_cli/services/knowledge_model.py",
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/verification_contracts.py",
+            "src/llm_wiki_cli/services/evidence_diagnostics.py",
             "src/llm_wiki_cli/services/knowledge_observability.py",
             "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_cli/services/wiki_lifecycle.py",
@@ -32020,7 +32023,7 @@
             "src/llm_wiki_cli/services/health_policy.py",
             "src/llm_wiki_cli/services/metrics.py"
           ],
-          "step_count": 4206,
+          "step_count": 4218,
           "truncated": true
         }
       },
@@ -33475,7 +33478,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3344,
+              "line": 3354,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -33483,7 +33486,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3347,
+              "line": 3357,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -33491,7 +33494,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3355,
+              "line": 3365,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -33500,31 +33503,31 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 3307,
+              "line": 3317,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 3308,
+              "line": 3318,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 3309,
+              "line": 3319,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 3310,
+              "line": 3320,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 3311,
+              "line": 3321,
               "step": "run",
               "target": "getattr"
             },
@@ -33607,6 +33610,7 @@
             "src/llm_wiki_cli/services/knowledge_model.py",
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/verification_contracts.py",
+            "src/llm_wiki_cli/services/evidence_diagnostics.py",
             "src/llm_wiki_cli/services/knowledge_observability.py",
             "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_cli/services/wiki_lifecycle.py",
@@ -33615,7 +33619,7 @@
             "src/llm_wiki_cli/services/canonical_pages.py",
             "src/llm_wiki_cli/services/metrics.py"
           ],
-          "step_count": 3273,
+          "step_count": 3285,
           "truncated": true
         }
       },
@@ -34960,6 +34964,7 @@
             "src/llm_wiki_cli/services/runtime_output.py",
             "src/llm_wiki_cli/services/progress.py",
             "src/llm_wiki_cli/services/bootstrap_runtime.py",
+            "src/llm_wiki_cli/services/evidence_diagnostics.py",
             "src/llm_wiki_cli/services/knowledge_observability.py",
             "src/llm_wiki_cli/services/wiki_lifecycle.py",
             "src/llm_wiki_cli/services/sync_analysis.py",
@@ -34967,7 +34972,7 @@
             "src/llm_wiki_cli/services/markdown_sections.py",
             "src/llm_wiki_cli/services/change_selection.py"
           ],
-          "step_count": 4197,
+          "step_count": 4200,
           "truncated": true
         }
       },
@@ -35901,7 +35906,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 5275,
+              "line": 5333,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -35909,7 +35914,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2439,
+              "line": 2443,
               "step": "_sync_run_options_from_args",
               "step_index": 2,
               "target": "print"
@@ -35917,7 +35922,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2445,
+              "line": 2449,
               "step": "_sync_run_options_from_args",
               "step_index": 2,
               "target": "print"
@@ -35925,7 +35930,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2451,
+              "line": 2455,
               "step": "_sync_run_options_from_args",
               "step_index": 2,
               "target": "print"
@@ -35934,25 +35939,25 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 2417,
+              "line": 2421,
               "step": "_sync_run_options_from_args",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 2418,
+              "line": 2422,
               "step": "_sync_run_options_from_args",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 2419,
+              "line": 2423,
               "step": "_sync_run_options_from_args",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 2420,
+              "line": 2424,
               "step": "_sync_run_options_from_args",
               "target": "getattr"
             },
@@ -36045,7 +36050,7 @@
             "src/llm_wiki_cli/services/wiki_surface_index.py",
             "src/llm_wiki_cli/services/sync_recovery.py"
           ],
-          "step_count": 5833,
+          "step_count": 5848,
           "truncated": true
         }
       },
@@ -39693,6 +39698,7 @@
         "modules/entrypoints.md",
         "modules/esbuild.config.md",
         "modules/eval_lite___init__.md",
+        "modules/evidence_diagnostics.md",
         "modules/export.md",
         "modules/extraction_jobs.md",
         "modules/extraction_service.md",
@@ -40934,14 +40940,14 @@
         "modules/doctor_service.md",
         "modules/documentation_native.md",
         "modules/documentation_wiki_input.md",
+        "modules/evidence_diagnostics.md",
         "modules/health_contract.md",
         "modules/knowledge_consumption.md",
         "modules/knowledge_coverage.md",
         "modules/knowledge_freshness.md",
         "modules/knowledge_model.md",
         "modules/knowledge_observability.md",
-        "modules/knowledge_projection.md",
-        "modules/lint_service.md"
+        "modules/knowledge_projection.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/knowledge_model.py",
@@ -41074,6 +41080,7 @@
       "kind": "entities",
       "mcp_uri": "llm-wiki://entities/ConceptRecord",
       "outgoing_internal_links": [
+        "modules/evidence_diagnostics.md",
         "modules/knowledge_freshness.md",
         "modules/knowledge_governance.md",
         "modules/knowledge_index.md",
@@ -42368,6 +42375,7 @@
       "outgoing_internal_links": [
         "modules/context_packet.md",
         "modules/context_service.md",
+        "modules/evidence_diagnostics.md",
         "modules/knowledge_artifacts.md",
         "modules/knowledge_consumption.md",
         "modules/knowledge_freshness.md",
@@ -49981,6 +49989,21 @@
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/eval_lite/__init__.py",
       "title": "__init__ Module"
+    },
+    {
+      "canonical_path": "modules/evidence_diagnostics.md",
+      "id": "evidence_diagnostics",
+      "kind": "modules",
+      "mcp_uri": "llm-wiki://modules/evidence_diagnostics",
+      "outgoing_internal_links": [
+        "modules/evidence_diagnostics.md",
+        "modules/knowledge_consumption.md",
+        "modules/knowledge_model.md",
+        "modules/lint_service.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/evidence_diagnostics.py",
+      "title": "evidence_diagnostics Module"
     },
     {
       "canonical_path": "modules/export.md",
@@ -57925,6 +57948,7 @@
         "modules/dependency_versions.md",
         "modules/doctor_service.md",
         "modules/entrypoints.md",
+        "modules/evidence_diagnostics.md",
         "modules/extraction_jobs.md",
         "modules/extraction_service.md",
         "modules/filesystem_guard.md",
@@ -59548,6 +59572,7 @@
         "modules/data_flow.md",
         "modules/doctor_service.md",
         "modules/entrypoints.md",
+        "modules/evidence_diagnostics.md",
         "modules/extraction_service.md",
         "modules/filesystem_guard.md",
         "modules/health_contract.md",
@@ -64890,6 +64915,7 @@
         "modules/dependency_versions.md",
         "modules/doctor_service.md",
         "modules/entrypoints.md",
+        "modules/evidence_diagnostics.md",
         "modules/extraction_jobs.md",
         "modules/extraction_service.md",
         "modules/filesystem_guard.md",
@@ -65379,6 +65405,7 @@
         "modules/data_flow.md",
         "modules/dependency_versions.md",
         "modules/entrypoints.md",
+        "modules/evidence_diagnostics.md",
         "modules/extraction_jobs.md",
         "modules/extraction_service.md",
         "modules/filesystem_guard.md",
@@ -65792,6 +65819,7 @@
         "modules/documentation_query_builder.md",
         "modules/documentation_worklist.md",
         "modules/entrypoints.md",
+        "modules/evidence_diagnostics.md",
         "modules/extraction_service.md",
         "modules/filesystem_guard.md",
         "modules/go_calls.md",
@@ -66865,6 +66893,7 @@
         "modules/entrypoints.md",
         "modules/esbuild.config.md",
         "modules/eval_lite___init__.md",
+        "modules/evidence_diagnostics.md",
         "modules/export.md",
         "modules/extraction_jobs.md",
         "modules/extraction_service.md",
@@ -67123,6 +67152,7 @@
         "modules/entrypoints.md",
         "modules/esbuild.config.md",
         "modules/eval_lite___init__.md",
+        "modules/evidence_diagnostics.md",
         "modules/export.md",
         "modules/extraction_jobs.md",
         "modules/extraction_service.md",
@@ -67320,5 +67350,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:b59a3a9926c71b0ba894bff5260e949e03d5a918bd0c2e6359bfeb03fdcb620c"
+  "source_hash": "sha256:c002ce9e6eee8f9f0c3c738a4bf815caf94521ad0624b0f7d7f72ac4a31a16c3"
 }

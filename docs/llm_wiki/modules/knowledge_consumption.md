@@ -12,6 +12,11 @@ It never extracts source, walks a repository, repairs artifacts, or writes
 state.  Callers should create one view per native operation and pass that view
 to every downstream consumer participating in the operation.
 
+A freshness result can retain a live observation while its recorded basis is
+unreliable. That detail supports explanation and does not change the unknown
+state or establish a comparison. Consumers must preserve those qualifications
+rather than treating a fresh basis as an owning commit or review.
+
 ## Imports
 
 | Source | Symbols |
@@ -52,10 +57,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (23) |
+| Inbound | `src` (24) |
 | Outbound | `src` (8) |
 
-> All 30 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 31 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

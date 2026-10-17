@@ -37,13 +37,13 @@ flowchart LR
     n5["src/llm_wiki_cli/services/doctor_service.py"]
     n6["src/llm_wiki_cli/services/documentation_native.py"]
     n7["src/llm_wiki_cli/services/documentation_wiki_input.py"]
-    n8["src/llm_wiki_cli/services/health_contract.py"]
-    n9["src/llm_wiki_cli/services/knowledge_consumption.py"]
-    n10["src/llm_wiki_cli/services/knowledge_coverage.py"]
-    n11["_result (src/llm_wiki_cli/services/knowledge_freshness.py)"]
-    n12["knowledge_freshness_hint (src/llm_wiki_cli/services/knowledge_observability.py)"]
-    n13["src/llm_wiki_cli/services/knowledge_projection.py"]
-    n14["src/llm_wiki_cli/services/lint_service.py"]
+    n8["src/llm_wiki_cli/services/evidence_diagnostics.py"]
+    n9["src/llm_wiki_cli/services/health_contract.py"]
+    n10["src/llm_wiki_cli/services/knowledge_consumption.py"]
+    n11["src/llm_wiki_cli/services/knowledge_coverage.py"]
+    n12["_result (src/llm_wiki_cli/services/knowledge_freshness.py)"]
+    n13["knowledge_freshness_hint (src/llm_wiki_cli/services/knowledge_observability.py)"]
+    n14["src/llm_wiki_cli/services/knowledge_projection.py"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
@@ -64,13 +64,13 @@ flowchart LR
     click n5 "../modules/doctor_service.md"
     click n6 "../modules/documentation_native.md"
     click n7 "../modules/documentation_wiki_input.md"
-    click n8 "../modules/health_contract.md"
-    click n9 "../modules/knowledge_consumption.md"
-    click n10 "../modules/knowledge_coverage.md"
-    click n11 "../modules/knowledge_freshness.md"
-    click n12 "../modules/knowledge_observability.md"
-    click n13 "../modules/knowledge_projection.md"
-    click n14 "../modules/lint_service.md"
+    click n8 "../modules/evidence_diagnostics.md"
+    click n9 "../modules/health_contract.md"
+    click n10 "../modules/knowledge_consumption.md"
+    click n11 "../modules/knowledge_coverage.md"
+    click n12 "../modules/knowledge_freshness.md"
+    click n13 "../modules/knowledge_observability.md"
+    click n14 "../modules/knowledge_projection.md"
 ```
 
 ### Summary
@@ -95,10 +95,12 @@ flowchart LR
 | `doctor_service` | import | [doctor_service](../modules/doctor_service.md) | — |
 | `documentation_native` | import | [documentation_native](../modules/documentation_native.md) | — |
 | `documentation_wiki_input` | import | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
+| `evidence_diagnostics` | import | [evidence_diagnostics](../modules/evidence_diagnostics.md) | — |
 | `health_contract` | import | [health_contract](../modules/health_contract.md) | — |
 | `knowledge_consumption` | import | [knowledge_consumption](../modules/knowledge_consumption.md) | — |
 | `knowledge_coverage` | import | [knowledge_coverage](../modules/knowledge_coverage.md) | — |
 | `_result` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
 | `knowledge_freshness_hint` | type_reference | [knowledge_observability](../modules/knowledge_observability.md) | — |
 | `knowledge_projection` | import | [knowledge_projection](../modules/knowledge_projection.md) | — |
-| `lint_service` | import | [lint_service](../modules/lint_service.md) | — |
+
+> References: showing 12 of 13 logical references; 1 omitted by the 12-row generated summary limit.

@@ -2849,3 +2849,25 @@ caller bindings and reveals complete input paths without approving writes.
 Successful broad previews explain the explicit owning refresh route. Agent
 maintenance guidance preserves caller bindings and requires renewed review when
 inputs change, while broad guards and existing recovery remain active.
+
+## 2026-10-17
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.0.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:6ec9e75b3b765ff182a45768b00570b00a707d16c9958a04e58277cdc51d1753`
+- Pages created: 1
+- Pages updated: 27
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1578
+- Pages deprecated: 0
+- Semantic fields preserved: 3
+- Moved entities: none
+
+### Captured and fresh evidence
+
+Evidence explanations distinguish captured failures from current normalization
+and preserve read-only limits. Owning sync can refresh captured invalid bases
+without a source or version edit, retaining broad review and recovery checks.
