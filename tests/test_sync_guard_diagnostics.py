@@ -318,6 +318,7 @@ def test_failed_preview_does_not_offer_completed_review_route(tmp_path, monkeypa
         'diff', 'application_diff', 'surface_plan', 'infrastructure_plan',
         'source_selection_prune', 'manifest', 'seed_manifest', 'repair_only',
         'runtime_provenance_changed', 'generator_refresh_required', 'prior_generator_version',
+        'evidence_refresh_sources',
     ]))
     monkeypatch.chdir(tmp_path)
     with pytest.raises(ValueError, match='staged failure'):

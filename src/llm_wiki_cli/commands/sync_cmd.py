@@ -1833,6 +1833,7 @@ class _PreparedSyncRun:
     runtime_basis_refresh: bool
     log_missing: bool
     prior_generator_version: str | None = None
+    evidence_refresh_sources: tuple[str, ...] = ()
     committed_state: CommittedKnowledgeState | None = None
     reuse_observations_hash: str | None = None
     entrypoint_analysis: _SyncEntryPointAnalysis | None = None
@@ -1892,6 +1893,7 @@ def _applied_sync_has_changes(
         )
     return bool(
         prepared.diff.has_changes
+        or bool(prepared.evidence_refresh_sources)
         or prepared.surface_plan.has_work
         or prepared.infrastructure_plan.has_changes
         or _selection_pruning_has_changes(prepared)
@@ -2192,6 +2194,7 @@ def _print_dry_run_plan(
     runtime_provenance_changed: bool,
     generator_refresh_required: bool = False,
     prior_generator_version: str | None = None,
+    evidence_refresh_sources: tuple[str, ...] = (),
 ) -> bool:
     print("\nSync dry-run plan:")
     source_label = (
@@ -2276,13 +2279,14 @@ def _print_dry_run_plan(
         f"{'update' if runtime_provenance_changed else 'unchanged'}"
     )
     generator_refresh_count = len(
-        _affected_source_files(application_diff) - _affected_source_files(diff)
+        _affected_source_files(application_diff) - _affected_source_files(diff) - set(evidence_refresh_sources)
     )
     print(f"  generator refresh sources: {generator_refresh_count}")
     for line in _sync_guard_detail_lines(
         diff, application_diff, infrastructure_plan,
         generator_refresh_required=generator_refresh_required,
         prior_generator_version=prior_generator_version,
+        evidence_refresh_sources=evidence_refresh_sources,
         source_selection_prune=source_selection_prune,
         infrastructure_deferred=bool(options.initialize_surfaces),
         complete_paths=True,
@@ -2723,6 +2727,39 @@ def _mark_pending_repair_sources_changed(
     diff.removed_files.extend(sorted(pending_removed - existing_removed))
 
 
+def _recoverable_evidence_refresh_sources(
+    manifest: SyncManifest, inventory: Mapping[str, Mapping], diff: SyncDiff,
+) -> tuple[str, ...]:
+    """Select unchanged sources whose captured invalid basis now normalizes."""
+    from ..services.knowledge_evidence import (
+        UNKNOWN_INVALID_INVENTORY, entity_observation_hash, module_observation_hash,
+    )
+
+    sources = set()
+    for path, baseline in manifest.evidence_baselines.items():
+        mapping = manifest.page_source_mappings.get(path)
+        if (
+            baseline.unknown_reason != UNKNOWN_INVALID_INVENTORY
+            or mapping is None or mapping.source_path not in diff.unchanged_files
+            or (data := inventory.get(mapping.source_path)) is None
+        ):
+            continue
+        # Owning sync collected a deep inventory. Normalization must actually
+        # succeed; age, version labels and a persisted reason are insufficient.
+        if mapping.scope == "module":
+            observation = module_observation_hash(data, inventory_complete=True)
+        elif mapping.scope == "entity":
+            assert mapping.entity_name is not None and mapping.occurrence is not None
+            observation = entity_observation_hash(
+                data, mapping.entity_name, mapping.occurrence, inventory_complete=True,
+            )
+        else:
+            continue
+        if observation is not None:
+            sources.add(mapping.source_path)
+    return tuple(sorted(sources))
+
+
 def _guard_display_value(value: str) -> str:
     """Keep untrusted paths/producer labels bounded and escape terminal controls."""
     rendered = json.dumps(value, ensure_ascii=True)
@@ -2736,6 +2773,7 @@ def _sync_guard_detail_lines(
     *,
     generator_refresh_required: bool,
     prior_generator_version: str | None,
+    evidence_refresh_sources: tuple[str, ...] = (),
     source_selection_prune: SourceSelectionPruneResult | None = None,
     infrastructure_deferred: bool = False,
     complete_paths: bool = False,
@@ -2743,6 +2781,7 @@ def _sync_guard_detail_lines(
     """Explain the already computed plan; this does not reclassify or approve it."""
     affected = _affected_source_files(application_diff)
     additional = affected - _affected_source_files(diff)
+    evidence_refresh = additional & set(evidence_refresh_sources)
     groups = [
         ("new", set(diff.new_files)),
         ("changed", set(diff.changed_files)),
@@ -2750,8 +2789,10 @@ def _sync_guard_detail_lines(
         ("removed", set(diff.removed_files)),
         ("moved", {path for pair in diff.moved_entities.values() for path in pair}),
         ("page-renamed", {path for _, path, _ in diff.entity_page_renames} | set(diff.renamed_module_pages)),
-        ("generator-refresh-additional", additional),
+        ("generator-refresh-additional", additional - evidence_refresh),
     ]
+    if evidence_refresh:
+        groups.append(("evidence-refresh-additional", evidence_refresh))
     lines = [
         f"  Affected source inputs: {len(affected)} (deduplicated; source files are not rewritten).",
         "  Source reasons (may overlap): " + ", ".join(f"{label}={len(paths)}" for label, paths in groups) + ".",
@@ -2867,6 +2908,7 @@ def _exit_if_large_unforced_diff(
     source_diff: SyncDiff | None = None,
     generator_refresh_required: bool = False,
     prior_generator_version: str | None = None,
+    evidence_refresh_sources: tuple[str, ...] = (),
     source_selection_prune: SourceSelectionPruneResult | None = None,
 ) -> None:
     large_diff_message = _large_diff_message(diff, manifest) or (
@@ -2882,6 +2924,7 @@ def _exit_if_large_unforced_diff(
         source_diff if source_diff is not None else diff, diff, infrastructure_plan,
         generator_refresh_required=generator_refresh_required,
         prior_generator_version=prior_generator_version,
+        evidence_refresh_sources=evidence_refresh_sources,
         source_selection_prune=source_selection_prune,
         infrastructure_deferred=not include_infrastructure,
     ):
@@ -4168,6 +4211,11 @@ def _prepare_sync_run(
             or generator_refresh_required
         )
     )
+    evidence_refresh_sources = (
+        _recoverable_evidence_refresh_sources(manifest, inventory, diff)
+        if not generator_refresh_required and not options.initialize_surfaces
+        and not seed_manifest and not repair_only else ()
+    )
     runtime_basis_refresh = bool(
         options.initialize_surfaces
         and runtime_provenance_changed
@@ -4205,6 +4253,7 @@ def _prepare_sync_run(
         and not seed_manifest
         and not repair_only
         and not runtime_provenance_changed
+        and not evidence_refresh_sources
         and not diff.has_changes
         and not surface_plan.has_work
         and not missing_pages
@@ -4337,6 +4386,12 @@ def _prepare_sync_run(
         and (not options.initialize_surfaces or runtime_basis_refresh)
         else diff
     )
+    if evidence_refresh_sources:
+        application_diff = deepcopy(application_diff)
+        application_diff.changed_files.extend(evidence_refresh_sources)
+        application_diff.unchanged_files = [
+            path for path in application_diff.unchanged_files if path not in evidence_refresh_sources
+        ]
     if missing_pages:
         application_diff = deepcopy(application_diff)
         application_diff.missing_pages = missing_pages
@@ -4378,6 +4433,7 @@ def _prepare_sync_run(
         source_selection_prune=source_selection_prune,
         runtime_provenance_changed=runtime_provenance_changed,
         generator_refresh_required=generator_refresh_required,
+        evidence_refresh_sources=evidence_refresh_sources,
         runtime_basis_refresh=runtime_basis_refresh,
         log_missing=not (options.wiki_dir / canonical_path(PageKind.LOG)).is_file(),
         prior_generator_version=(
@@ -5129,6 +5185,7 @@ def _run_sync_dry_run(
         runtime_provenance_changed=prepared.runtime_provenance_changed,
         generator_refresh_required=prepared.generator_refresh_required,
         prior_generator_version=prepared.prior_generator_version,
+        evidence_refresh_sources=prepared.evidence_refresh_sources,
     )
     with tempfile.TemporaryDirectory(prefix="llm-wiki-sync-preview-") as temp_dir:
         staged_wiki = Path(temp_dir) / "wiki"
@@ -5224,6 +5281,7 @@ def _enforce_sync_write_safety(
             source_diff=prepared.diff,
             generator_refresh_required=prepared.generator_refresh_required,
             prior_generator_version=prepared.prior_generator_version,
+            evidence_refresh_sources=prepared.evidence_refresh_sources,
             source_selection_prune=prepared.source_selection_prune,
         )
     if not prepared.seed_manifest:

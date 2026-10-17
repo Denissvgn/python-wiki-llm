@@ -2535,6 +2535,14 @@ class DocumentationGraphQueryService:
         )
         if hint is not None:
             result["hint"] = hint
+        if view.knowledge is not None:
+            from .evidence_diagnostics import captured_evidence_diagnostic
+
+            concept = next((c for c in view.knowledge.concepts if c.locator == locator), None)
+            diagnosis = None if concept is None else captured_evidence_diagnostic(view, concept)
+            if diagnosis is not None:
+                result["description"] = freshness.description + " " + diagnosis[0]
+                result["hint"] = " ".join(part for part in (hint, diagnosis[1]) if part)
         return result
 
     def _knowledge_direction(self, value: object) -> str:

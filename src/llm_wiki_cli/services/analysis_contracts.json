@@ -134,6 +134,7 @@
     "services/documentation_wiki_input.py",
     "services/documentation_worklist.py",
     "services/entrypoints.py",
+    "services/evidence_diagnostics.py",
     "services/extraction_jobs.py",
     "services/extraction_service.py",
     "services/extractor_helpers.py",

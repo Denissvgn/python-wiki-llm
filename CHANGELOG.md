@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Evidence diagnostics distinguish captured failures from fresh normalization
+  results. Owning sync refreshes a captured invalid basis when current deep
+  normalization succeeds, including without a generator-version change.
+
 - Broad sync refusals explain source-change and generator-refresh reasons, show
   bounded affected-path samples, and preserve the caller's options in preview
   guidance. Successful broad previews explain the explicitly reviewed refresh

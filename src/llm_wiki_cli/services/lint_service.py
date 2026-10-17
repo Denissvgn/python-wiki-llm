@@ -2051,6 +2051,8 @@ def _check_knowledge_concepts(
     report: LintReport,
     view: KnowledgeReadView,
 ) -> None:
+    from .evidence_diagnostics import captured_evidence_diagnostic
+
     knowledge = view.knowledge
     manifest = view.manifest_basis
     if knowledge is None or manifest is None:
@@ -2118,6 +2120,7 @@ def _check_knowledge_concepts(
             continue
         evidence_reason = _promised_evidence_reason(concept, expected_scope)
         if evidence_reason is not None:
+            diagnosis = captured_evidence_diagnostic(view, concept)
             baseline = manifest.evidence_baselines.get(page_path)
             mapping = manifest.page_source_mappings.get(page_path)
             basis = baseline.basis if baseline is not None else None
@@ -2135,6 +2138,8 @@ def _check_knowledge_concepts(
                 detail += f" Cause: {cause}."
             if basis is not None:
                 detail += f" Extractor: {basis.extractor_ref!r}."
+            if diagnosis is not None:
+                detail += " " + diagnosis[0]
             _add(
                 report,
                 "knowledge_evidence",
@@ -2146,6 +2151,7 @@ def _check_knowledge_concepts(
                 target=concept.locator,
                 reason_code=evidence_reason,
                 hint=(
+                    diagnosis[1] if diagnosis is not None else
                     "Inspect the source using llm-wiki extract --deep --read-only "
                     "--paths <source-path>, retaining the same --src-dir, "
                     "source selection and prepared helper cache. Repair the cause "
@@ -2178,6 +2184,10 @@ def _check_knowledge_concepts(
             f"{freshness.state.value} [reason={freshness.reason_code}]: "
             f"{freshness.description.rstrip('.')}."
         )
+        diagnosis = captured_evidence_diagnostic(view, concept)
+        if diagnosis is not None:
+            message += " " + diagnosis[0]
+            hint = " ".join(part for part in (hint, diagnosis[1]) if part)
         if freshness.state is ComputedFreshness.NONSEMANTIC_SOURCE_CHANGE:
             _record_knowledge_drift(
                 report,

@@ -496,7 +496,13 @@ def _evaluate_concept(
             ComputedFreshness.UNKNOWN,
             reason,
             recorded_details,
-            None,
+            # A fresh observation can be explained without establishing a
+            # comparison against an unreliable historical basis.
+            (
+                _live_basis_details(live, current)
+                if (current := live.concept_bases.get(concept.locator)) is not None
+                else None
+            ),
             compared=False,
         )
 

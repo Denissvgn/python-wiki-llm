@@ -613,6 +613,21 @@ Inspect the named source with the read-only
 single-file extraction command above, repair the underlying producer or source
 problem, then run owning sync before repeating strict validation. Editing a
 generated wiki table does not repair invalid extractor evidence.
+Diagnostics distinguish a captured failure with no fresh result, a captured
+failure whose fresh normalization succeeds, and a fresh observation that still
+fails normalization. Where captured source hashes exist, they distinguish
+unchanged bytes from changed or incomparable inputs. Producer metadata and
+version labels do not identify historical package bytes; unavailable provenance
+and rejected-record details remain explicit.
+Fresh extraction and evidence explanation are reads: a valid fresh observation
+does not make an unknown committed baseline current. Ordinary owning sync can
+refresh a captured invalid module/entity basis after current deep normalization
+succeeds, including when the generator version label is unchanged. Its preview
+labels this as `evidence-refresh-additional`, separately from source edits and
+generator transitions. Broad refreshes retain the normal review guards. If fresh
+normalization is still invalid, repair that cause; `--force` does not waive
+evidence validity. If fresh normalization succeeds but owning sync is refused by
+the broad-update guard, follow its complete preview and reviewed apply route.
 `lint --profile` and `ci-check --format json` additionally include this shape:
 
 ```json
