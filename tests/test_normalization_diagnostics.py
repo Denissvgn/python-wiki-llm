@@ -305,3 +305,30 @@ def test_redacted_mapping_keys_keep_a_resolvable_ancestor_through_nested_arrays(
     assert result['pointer'] == '/classes/0/attributes/0/constraints'
     assert not result['pointer_exact']
     assert 'SECRET_KEY' not in json.dumps(result)
+
+
+def test_missing_value_sentinel_is_bound_to_shared_producer_identity(tmp_path, monkeypatch):
+    from llm_wiki_cli.services import analysis_capture as capture, knowledge_evidence as ke
+
+    data = {'classes': [], 'functions': []}
+    assert not _module_basis(data).is_known
+    # A future changed sentinel can alter acceptance; it is not presentation-only.
+    monkeypatch.setattr(ke, 'MISSING_VALUE', 'python')
+    assert _module_basis(data).is_known
+    rules = capture.registry()
+    name = 'services/normalization_diagnostics.py'
+    assert name in rules['shared']
+    package = Path(ke.__file__).parents[1]
+    copied = tmp_path / 'package'
+    for relative in rules['shared']:
+        target = copied / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes((package / relative).read_bytes())
+    before = capture.implementation_hash(copied, rules['shared'])
+    old_inputs = [p for p in rules['shared'] if p != name]
+    unbound_before = capture.implementation_hash(copied, old_inputs)
+    target = copied / name
+    target.write_bytes(target.read_bytes().replace(b'MISSING_VALUE = object()', b'MISSING_VALUE = "python"'))
+    after = capture.implementation_hash(copied, rules['shared'])
+    assert before != after
+    assert capture.implementation_hash(copied, old_inputs) == unbound_before

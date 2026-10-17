@@ -394,6 +394,7 @@
     "services/maintenance_shapes.py",
     "services/maintenance_state.py",
     "services/maintenance_status.py",
+    "services/normalization_diagnostics.py",
     "services/python_observations.py",
     "services/source_selection.py",
     "services/source_snapshot.py",
