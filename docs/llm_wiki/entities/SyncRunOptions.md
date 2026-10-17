@@ -1,6 +1,6 @@
 # _SyncRunOptions
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1711`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1712`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)
@@ -9,7 +9,11 @@
 
 ## Description
 
-_Auto-generated from `_SyncRunOptions` in `src/llm_wiki_cli/commands/sync_cmd.py`._
+Binds source/wiki roots, source-selection and generation policy, helper/cache
+locations and write-review options for one sync invocation. Optional repair paths
+are canonical POSIX keys relative to the original source root; they constrain
+application without replacing the complete selection or inventory. Scoped repair
+requires built-in producers and cannot request storage or surface-policy changes.
 
 ## Attributes
 
@@ -38,6 +42,7 @@ _Auto-generated from `_SyncRunOptions` in `src/llm_wiki_cli/commands/sync_cmd.py
 | `rebuild_knowledge` | `bool` | `False` | — |
 | `knowledge_format` | `str \| None` | `None` | — |
 | `capture_cache_options` | `InventoryCacheOptions \| None` | `None` | — |
+| `repair_paths` | `tuple[str, ...]` | `()` | — |
 
 ## Methods
 

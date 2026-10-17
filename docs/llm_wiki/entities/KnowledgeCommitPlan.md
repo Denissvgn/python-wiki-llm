@@ -46,6 +46,7 @@ flowchart LR
     n8["_stabilize_revision_only_noop (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
     n9["build_runtime_knowledge_plan (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
     n10["_recover_knowledge_storage (src/llm_wiki_cli/services/knowledge_storage_lifecycle.py)"]
+    n11["ScopedRepairBoundary.validate_plan (src/llm_wiki_cli/services/scoped_sync_repair.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -56,6 +57,7 @@ flowchart LR
     n8 --> n0
     n9 --> n0
     n10 --> n0
+    n11 --> n0
     click n0 "../modules/knowledge_artifacts.md"
     click n1 "../modules/knowledge_cmd.md"
     click n2 "../modules/knowledge_artifacts.md"
@@ -67,6 +69,7 @@ flowchart LR
     click n8 "../modules/knowledge_orchestration.md"
     click n9 "../modules/knowledge_orchestration.md"
     click n10 "../modules/knowledge_storage_lifecycle.md"
+    click n11 "../modules/scoped_sync_repair.md"
 ```
 
 ### Summary
@@ -90,3 +93,4 @@ flowchart LR
 | `_stabilize_revision_only_noop` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `build_runtime_knowledge_plan` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `_recover_knowledge_storage` | call | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | 1 |
+| `ScopedRepairBoundary.validate_plan` | type_reference | [scoped_sync_repair](../modules/scoped_sync_repair.md) | — |

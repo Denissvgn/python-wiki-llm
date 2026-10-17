@@ -6,9 +6,9 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 667 | [Open section](#entities) |
-| Modules | 247 | [Open section](#modules) |
-| Workflows | 224 | [Open section](#workflows) |
+| Entities | 669 | [Open section](#entities) |
+| Modules | 248 | [Open section](#modules) |
+| Workflows | 225 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 465 | [Open section](#entry-point-flows) |
 | Infrastructure | 2 | [Open section](#infrastructure) |
@@ -545,6 +545,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [SchemaRenderProfile](entities/SchemaRenderProfile.md)
 - [ScopeNames](entities/ScopeNames.md)
 - [ScopedKnowledgeRead](entities/ScopedKnowledgeRead.md)
+- [ScopedRepairBoundary](entities/ScopedRepairBoundary.md)
+- [ScopedRepairError](entities/ScopedRepairError.md)
 - [ScopedTaskState](entities/ScopedTaskState.md)
 - [SearchMatch](entities/SearchMatch.md)
 - [SearchMatchRanking](entities/SearchMatchRanking.md)
@@ -868,6 +870,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [review_service](modules/review_service.md) - Reusable source-to-wiki review analysis over one captured source basis.
 - [runtime_output](modules/runtime_output.md) - Best-effort implicit output and preflighted operator-selected destinations.
 - [rust_extractor](modules/rust_extractor.md) - Rust AST extractor for agent-wiki-cli.
+- [scoped_sync_repair](modules/scoped_sync_repair.md) - Fail-closed boundaries for scoped evidence application after full analysis.
 - [search_cmd](modules/search_cmd.md) - CLI access to the same read-only search service used by MCP.
 - [search_discovery](modules/search_discovery.md) - Pure bounded discovery presentation over captured exact page observations.
 - [search_discovery_capture](modules/search_discovery_capture.md) - Guarded snapshot inputs for opt-in discovery; no extraction or writes.
@@ -1087,6 +1090,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [preflight_team_source_selection](workflows/preflight_team_source_selection.md) - entry: `team_cmd._preflight_team_source_selection`
 - [preflight_trigger_source_selection](workflows/preflight_trigger_source_selection.md) - entry: `trigger_cmd._preflight_trigger_source_selection`
 - [preflight_wiki_removal](workflows/preflight_wiki_removal.md) - entry: `uninstall_cmd._preflight_wiki_removal`
+- [prepare_boundary](workflows/prepare_boundary.md) - entry: `scoped_sync_repair.prepare_boundary`
 - [prepare_extractors_cmd_flow](workflows/prepare_extractors_cmd_flow.md) - entry: `prepare_extractors_cmd.run`
 - [prepare_inventory_build_context](workflows/prepare_inventory_build_context.md) - entry: `extraction_service._prepare_inventory_build_context`
 - [prepare_migration_governance_plan](workflows/prepare_migration_governance_plan.md) - entry: `migrate_cmd._prepare_migration_governance_plan`

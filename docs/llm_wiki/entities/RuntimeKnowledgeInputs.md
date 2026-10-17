@@ -11,6 +11,12 @@
 
 Evaluated command state needed to plan one three-artifact commit.
 
+Private optional plan/publication callbacks let an owning command assert a
+stricter application boundary. Scoped sync uses the plan check before commit and
+rechecks analysis inputs at artifact checkpoints. Source freshness, exact prior
+commitments and the adopted writer's wiki-byte guards remain independently active;
+callbacks cannot acknowledge review or replace recovery authority.
+
 ## Attributes
 
 | Name | Type | Default | Description |
@@ -56,6 +62,8 @@ Evaluated command state needed to plan one three-artifact commit.
 | `committed_state` | `CommittedKnowledgeState \| None` | `field(default=None, repr=False, compare=False)` | — |
 | `reuse_input_basis` | `Mapping[str, object] \| None` | `None` | — |
 | `sync_analysis_commitment` | `Mapping[str, object] \| None` | `None` | — |
+| `_plan_check` | `Callable[[KnowledgeCommitPlan], None] \| None` | `field(default=None, repr=False, compare=False)` | — |
+| `_publication_check` | `Callable[[], None] \| None` | `field(default=None, repr=False, compare=False)` | — |
 | `reuse_typed_graph` | `bool` | `False` | — |
 | `knowledge_format` | `str \| None` | `None` | — |
 
@@ -106,7 +114,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [knowledge_orchestration](../modules/knowledge_orchestration.md) | 0 | `analysis_components`, `call_edges`, `committed_state`, `data_flows`, `dependency_observations`, `entity_occurrence_page_map`, `entrypoint_observations`, `external_dependencies`, `extractor_registry`, `flows`, `force_unknown_evidence`, `generation_option_allowlist` |
+| [knowledge_orchestration](../modules/knowledge_orchestration.md) | 0 | `_plan_check`, `_publication_check`, `analysis_components`, `call_edges`, `committed_state`, `data_flows`, `dependency_observations`, `entity_occurrence_page_map`, `entrypoint_observations`, `external_dependencies`, `extractor_registry`, `flows` |
 
 ### References
 

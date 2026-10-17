@@ -1,6 +1,6 @@
 # _PreparedSyncRun
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1816`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1818`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)
@@ -26,6 +26,12 @@ module/entity basis now normalizes successfully. It prevents the unchanged
 knowledge shortcut, drives an apply-only refresh and preserves the distinction
 between evidence repair and real source edits. Those inputs still count toward
 ordinary broad-update review; the flag grants no force or recovery authority.
+
+Carries a coherent full source/inventory plan and its page transitions through
+application and publication. A scoped repair retains the original global inputs
+inside its repair boundary while filtering only the evidence-refresh application
+and recreating transitions for that subset. Global reconciliation is still
+validated against the complete prior snapshot before publication.
 
 ## Attributes
 
@@ -59,6 +65,7 @@ ordinary broad-update review; the flag grants no force or recovery authority.
 | `analysis_input_key` | `dict \| None` | `None` | — |
 | `page_transitions` | `PageTransitionPlan \| None` | `None` | — |
 | `transition_execution` | `PageTransitionExecution \| None` | `None` | — |
+| `repair_boundary` | `ScopedRepairBoundary \| None` | `None` | — |
 
 ## Methods
 

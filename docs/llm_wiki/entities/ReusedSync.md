@@ -1,6 +1,6 @@
 # _ReusedSync
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1848`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1851`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)

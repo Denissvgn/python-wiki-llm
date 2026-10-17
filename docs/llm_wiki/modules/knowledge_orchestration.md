@@ -20,6 +20,12 @@ optimization of evaluated inputs; it does not adopt storage or maintenance,
 prepare helpers, alter read scope or waive the live source and prior-artifact
 checks around publication.
 
+Owning commands may supply private candidate-plan and publication checks. Scoped
+sync uses them to compare the complete logical candidate and recheck source and
+producer inputs. They supplement the existing committed-state, adopted wiki-byte
+and atomic-artifact guards; they cannot waive custody or invent maintenance
+ownership. Ordinary callers retain the same publication protocol.
+
 ## Imports
 
 | Source | Symbols |
@@ -51,7 +57,7 @@ checks around publication.
 | `.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION`, `SurfaceIndexEvaluation` |
 | `.wiki_write_basis` | `ACTIVE_WRITE_BASIS` |
 | `__future__` | `annotations` |
-| `collections.abc` | `Iterable`, `Mapping`, `Sequence`, `Set` |
+| `collections.abc` | `Callable`, `Iterable`, `Mapping`, `Sequence`, `Set` |
 | `dataclasses` | `dataclass`, `field`, `replace` |
 | `json` | `json` |
 | `pathlib` | `Path` |
@@ -76,20 +82,20 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (9) |
+| Inbound | `src` (10) |
 | Outbound | `src` (26) |
 
-> All 35 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 36 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
 | [RuntimeKnowledgeInputs](../entities/RuntimeKnowledgeInputs.md) | 136 | — | Evaluated command state needed to plan one three-artifact commit. |
-| [CommittedKnowledgeState](../entities/CommittedKnowledgeState.md) | 189 | — | One command's captured prior commit, including explicit absent/invalid state. |
-| [CommittedRuntimeProvenance](../entities/CommittedRuntimeProvenance.md) | 294 | — | Exact runtime provenance recovered from an intact committed projection. |
-| [RuntimeLiveEvaluationInputs](../entities/RuntimeLiveEvaluationInputs.md) | 303 | — | Already evaluated runtime values for one live freshness comparison. |
-| [PreparedRuntimeGenerationOptions](../entities/PreparedRuntimeGenerationOptions.md) | 326 | — | Canonical writer/reader inputs for the generation-options commitment. |
+| [CommittedKnowledgeState](../entities/CommittedKnowledgeState.md) | 191 | — | One command's captured prior commit, including explicit absent/invalid state. |
+| [CommittedRuntimeProvenance](../entities/CommittedRuntimeProvenance.md) | 296 | — | Exact runtime provenance recovered from an intact committed projection. |
+| [RuntimeLiveEvaluationInputs](../entities/RuntimeLiveEvaluationInputs.md) | 305 | — | Already evaluated runtime values for one live freshness comparison. |
+| [PreparedRuntimeGenerationOptions](../entities/PreparedRuntimeGenerationOptions.md) | 328 | — | Canonical writer/reader inputs for the generation-options commitment. |
 
 ## Functions
 

@@ -10,6 +10,13 @@ and routes the parsed namespace to focused command or service modules. Optional
 features such as MCP remain behind their command boundary so ordinary parser
 startup does not require their runtime packages.
 
+Sync accepts `--repair-evidence` as an explicitly scoped owning operation with
+`--no-plugins`. Its values are canonical POSIX source keys relative to the supplied
+source root, independent of native filesystem spelling. Copied preview arguments
+preserve selection/helper/cache bindings and safely represent spaces and leading
+dashes. The option limits application after full analysis, without granting force
+or recovery authorization.
+
 ## Imports
 
 | Source | Symbols |

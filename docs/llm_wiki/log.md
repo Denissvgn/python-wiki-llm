@@ -2871,3 +2871,30 @@ inputs change, while broad guards and existing recovery remain active.
 Evidence explanations distinguish captured failures from current normalization
 and preserve read-only limits. Owning sync can refresh captured invalid bases
 without a source or version edit, retaining broad review and recovery checks.
+
+## 2026-10-18
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.0.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:c56db6472883db2e1a5e943e871b501db8e1ff7aa52ce42ac1a33388d0db09ee`
+- Pages created: 4
+- Pages updated: 55
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1551
+- Pages deprecated: 0
+- Semantic fields preserved: 4
+- Moved entities: none
+- Flow pages initialized: 0 (none)
+- Workflow pages created: 1
+- Dependency pages initialized: 0
+- Surface policy updated: no
+
+### Scoped evidence repair
+
+Unchanged-source evidence can be repaired under matching producer commitments
+without refreshing unselected failures. Full analysis and global reconciliation
+remain active, with isolated preflight, broad review, exact adopted custody and
+recoverable publication. Producer transitions still require a full owning update.

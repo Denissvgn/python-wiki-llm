@@ -1,6 +1,6 @@
 # _SyncEntryPointAnalysis
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1751`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1753`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)

@@ -85,6 +85,13 @@ knowledge reuse, retains normal broad-change guards and global reconciliation,
 and commits fresh baselines even when the generator version label is unchanged.
 Malformed or unsupported observations are not promoted as repaired.
 
+With `--no-plugins --repair-evidence`, the command can limit an unchanged-source
+evidence repair to canonical POSIX source keys while retaining full analysis and
+reconciliation. It requires adopted valid authority and matching producer inputs,
+preflights an isolated candidate, preserves unselected failures and rejects wider
+logical or graph changes. Ordinary full sync remains required for producer
+transitions and mixed edits; force cannot override that boundary.
+
 ## Imports
 
 | Source | Symbols |
@@ -103,7 +110,7 @@ Malformed or unsupported observations are not promoted as repaired.
 | `..services.infrastructure_sync` | `InfrastructureSyncError`, `InfrastructureSyncPlan`, `build_infrastructure_sync_plan`, `with_infrastructure_deselection_generation_input`, `with_infrastructure_generation_input` |
 | `..services.inventory_cache` | `InventoryCacheOptions`, `cache_options_from_args`, `prepare_cache_options`, `InventoryCacheStats`, `format_cache_stats` |
 | `..services.io` | `read_md`, `write_md` |
-| `..services.knowledge_artifacts` | `ArtifactWriteState`, `KnowledgeCommitResult` |
+| `..services.knowledge_artifacts` | `ArtifactWriteState`, `KnowledgeCommitResult`, `KnowledgeArtifactError` |
 | `..services.knowledge_envelope` | `RepositoryEvidence`, `build_repository_record` |
 | `..services.knowledge_evidence` | `hash_file`, `is_valid_sha256`, `semantic_hash_for_file`, `module_observation_hash`, `UNKNOWN_INVALID_INVENTORY`, `entity_observation_hash`, `module_observation_hash` |
 | `..services.knowledge_governance` | `GOVERNANCE_FILENAME`, `GovernanceError`, `load_governance`, `ConceptGovernanceReference`, `natural_key_for`, `reconcile_concepts` |
@@ -117,6 +124,7 @@ Malformed or unsupported observations are not promoted as repaired.
 | `..services.paths` | `render_shell_command`, `is_test_source_path`, `portable_source_root_label` |
 | `..services.plugins` | `runtime_plugin_fallback_root`, `runtime_project_plugins_enabled` |
 | `..services.progress` | `observed_phase`, `record_counts` |
+| `..services.scoped_sync_repair` | `ScopedRepairBoundary`, `ScopedRepairError`, `prepare_boundary`, `repair_paths` |
 | `..services.section_ownership` | `SemanticMergeResult`, `merge_entity_semantics`, `merge_module_semantics`, `merge_semantic_markdown`, `replace_generated_section` |
 | `..services.source_retirement` | `SOURCE_MEMBER_REMOVED_HEADER`, `SourceRetirementError`, `discover_retired_entities`, `read_entity_retirement_state`, `historical_entity_semantics`, `with_entity_retirement_state` |
 | `..services.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `path_is_selected`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
@@ -133,7 +141,7 @@ Malformed or unsupported observations are not promoted as repaired.
 | `..services.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION`, `evaluate_surface_index` |
 | `__future__` | `annotations` |
 | `collections` | `Counter` |
-| `contextlib` | `nullcontext` |
+| `contextlib` | `nullcontext`, `redirect_stdout` |
 | `copy` | `deepcopy` |
 | `dataclasses` | `dataclass`, `field`, `replace`, `asdict` |
 | `datetime` | `date` |
@@ -165,28 +173,28 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (3) |
-| Outbound | `src` (43) |
+| Outbound | `src` (44) |
 
-> All 46 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 47 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [GeneratedSurfacePruneError](../entities/GeneratedSurfacePruneError.md) | 295 | `ValueError` | A stale generated page cannot be removed without explicit authority. |
-| [SyncRuntimeRefreshError](../entities/SyncRuntimeRefreshError.md) | 299 | `ValueError` | A runtime-basis transition cannot be applied in the requested mode. |
-| [SyncResult](../entities/SyncResult.md) | 631 | — | — |
-| [_ApplyDiffContext](../entities/ApplyDiffContext.md) | 670 | — | — |
-| [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 692 | — | — |
-| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1711 | — | — |
-| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1738 | — | — |
-| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1745 | — | — |
-| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1751 | — | — |
-| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1757 | — | — |
-| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1773 | — | — |
-| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1816 | — | — |
-| [_ReusedSync](../entities/ReusedSync.md) | 1848 | — | — |
-| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1854 | — | Prior ownership proof and generated pages that cross the live boundary. |
+| [GeneratedSurfacePruneError](../entities/GeneratedSurfacePruneError.md) | 296 | `ValueError` | A stale generated page cannot be removed without explicit authority. |
+| [SyncRuntimeRefreshError](../entities/SyncRuntimeRefreshError.md) | 300 | `ValueError` | A runtime-basis transition cannot be applied in the requested mode. |
+| [SyncResult](../entities/SyncResult.md) | 632 | — | — |
+| [_ApplyDiffContext](../entities/ApplyDiffContext.md) | 671 | — | — |
+| [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 693 | — | — |
+| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1712 | — | — |
+| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1740 | — | — |
+| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1747 | — | — |
+| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1753 | — | — |
+| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1759 | — | — |
+| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1775 | — | — |
+| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1818 | — | — |
+| [_ReusedSync](../entities/ReusedSync.md) | 1851 | — | — |
+| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1857 | — | Prior ownership proof and generated pages that cross the live boundary. |
 
 ## Functions
 
