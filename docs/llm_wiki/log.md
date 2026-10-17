@@ -2729,3 +2729,25 @@ Logical inspection and comparison retain snapshot-bound continuation and exact
 record chunks under the existing output limits. Enumeration and value-review
 completion remain distinct; every read preserves its original validation scope
 and cannot approve or mutate the snapshot.
+
+## 2026-10-17
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.0.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:311665011937f101bf3f7011b3254af6722cc4bbac8dfb4499eccac2ea341b8d`
+- Pages created: 1
+- Pages updated: 48
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1555
+- Pages deprecated: 0
+- Semantic fields preserved: 3
+- Moved entities: none
+
+### Owned-authority packet refusal
+
+Packet readers retain a shared bounded ordinary-authority cause and explicit
+matching-recovery requirements. Lost custody remains a refusal; readers never
+select backups, allocate identities, restore history or relax recovery guards.

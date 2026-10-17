@@ -72,9 +72,9 @@ sequenceDiagram
     p1-->>p28: _HOST_BROKER_AUTHENTICATOR.reset(token)
 ```
 
-> Call sequence diagram shows 30 of 139 interactions; 109 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 142 interactions; 112 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 5 of 82 (77 omitted); unresolved 5 of 19 (14 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 5 of 85 (80 omitted); unresolved 5 of 19 (14 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

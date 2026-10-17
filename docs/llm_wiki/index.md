@@ -6,7 +6,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 666 | [Open section](#entities) |
+| Entities | 667 | [Open section](#entities) |
 | Modules | 246 | [Open section](#modules) |
 | Workflows | 224 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
@@ -99,6 +99,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [ContextKnowledgeRequired](entities/ContextKnowledgeRequired.md)
 - [ContextKnowledgeResult](entities/ContextKnowledgeResult.md)
 - [ContextKnowledgeSelection](entities/ContextKnowledgeSelection.md)
+- [ContextPacketAuthorityError](entities/ContextPacketAuthorityError.md)
 - [ContextPacketError](entities/ContextPacketError.md)
 - [ContextPacketMalformedError](entities/ContextPacketMalformedError.md)
 - [ContextPacketPathPolicyError](entities/ContextPacketPathPolicyError.md)

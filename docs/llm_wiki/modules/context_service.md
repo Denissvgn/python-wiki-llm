@@ -29,6 +29,8 @@ source paths into the parser request. This preserves current module observations
 without discovering every unowned empty file. Parsing failures and unavailable
 coverage retain their explicit states rather than being presented as emptiness.
 
+Loader-selected ordinary-authority failures become typed packet refusals before the native read-view invariant is evaluated. A surviving immutable marker remains a declaration even without other roots. The shared packet diagnostic preserves unavailable native evidence, matching committed-recovery requirements and the existing Python catch point; ordinary legacy absence and source-only routes keep their own contracts.
+
 ## Imports
 
 | Source | Symbols |
@@ -38,7 +40,7 @@ coverage retain their explicit states rather than being presented as emptiness.
 | `.change_selection` | `changes_from_args`, `changes_from_args` |
 | `.context_budget` | `validate_request`, `run`, `run` |
 | `.context_knowledge_contract` | `KNOWLEDGE_MODE_VALUES` |
-| `.context_packet` | `_normalized_request`, `describe_context_packet_error`, `ContextPacketError`, `build_qualified_context` |
+| `.context_packet` | `_normalized_request`, `ContextPacketAuthorityError`, `describe_context_packet_error`, `ContextPacketError`, `build_qualified_context` |
 | `.contracts` | `CONTEXT_KNOWLEDGE_PROTOCOL_VERSION`, `CONTEXT_PROTOCOL_VERSION` |
 | `.dependencies` | `analyze_dependencies` |
 | `.documentation_queries` | `DocumentationGraphQueryService`, `DocumentationQueryError`, `knowledge_view_selection_eligible` |
@@ -56,6 +58,7 @@ coverage retain their explicit states rather than being presented as emptiness.
 | `.knowledge_observability` | `knowledge_freshness_hint` |
 | `.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeLiveEvaluationInputs`, `build_runtime_live_evaluation`, `runtime_generation_options` |
 | `.knowledge_verification` | `attach_machine_verification_read_view`, `verification_summaries_for_concepts` |
+| `.maintenance_protocol` | `ADOPTION_FILENAME` |
 | `.maintenance_status` | `compact_maintenance_summary` |
 | `.plugins` | `runtime_project_plugins_enabled` |
 | `.source_retirement` | `retained_empty_module_paths_from_wiki` |
@@ -94,9 +97,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (9) |
-| Outbound | `src` (31) |
+| Outbound | `src` (32) |
 
-> All 37 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 38 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

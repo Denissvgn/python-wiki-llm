@@ -30,14 +30,14 @@ One stable, path-safe artifact load diagnostic.
 ```mermaid
 flowchart LR
     n0["KnowledgeLoadIssue (src/llm_wiki_cli/services/knowledge_loader.py)"]
-    n1["_unsupported_reason (src/llm_wiki_cli/services/knowledge_consumption.py)"]
-    n2["KnowledgeReadView.findings (src/llm_wiki_cli/services/knowledge_consumption.py)"]
-    n3["_issue_from_artifact_error (src/llm_wiki_cli/services/knowledge_loader.py)"]
-    n4["_live_governance_issues (src/llm_wiki_cli/services/knowledge_loader.py)"]
-    n5["_load_manifest (src/llm_wiki_cli/services/knowledge_loader.py)"]
-    n6["_load_once (src/llm_wiki_cli/services/knowledge_loader.py)"]
-    n7["_marker_issues (src/llm_wiki_cli/services/knowledge_loader.py)"]
-    n8["_read_artifact (src/llm_wiki_cli/services/knowledge_loader.py)"]
+    n1["capture_context_read (src/llm_wiki_cli/services/context_packet.py)"]
+    n2["_unsupported_reason (src/llm_wiki_cli/services/knowledge_consumption.py)"]
+    n3["KnowledgeReadView.findings (src/llm_wiki_cli/services/knowledge_consumption.py)"]
+    n4["_issue_from_artifact_error (src/llm_wiki_cli/services/knowledge_loader.py)"]
+    n5["_live_governance_issues (src/llm_wiki_cli/services/knowledge_loader.py)"]
+    n6["_load_manifest (src/llm_wiki_cli/services/knowledge_loader.py)"]
+    n7["_load_once (src/llm_wiki_cli/services/knowledge_loader.py)"]
+    n8["_marker_issues (src/llm_wiki_cli/services/knowledge_loader.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -47,9 +47,9 @@ flowchart LR
     n7 --> n0
     n8 --> n0
     click n0 "../modules/knowledge_loader.md"
-    click n1 "../modules/knowledge_consumption.md"
+    click n1 "../modules/context_packet.md"
     click n2 "../modules/knowledge_consumption.md"
-    click n3 "../modules/knowledge_loader.md"
+    click n3 "../modules/knowledge_consumption.md"
     click n4 "../modules/knowledge_loader.md"
     click n5 "../modules/knowledge_loader.md"
     click n6 "../modules/knowledge_loader.md"
@@ -67,6 +67,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `capture_context_read` | call | [context_packet](../modules/context_packet.md) | 1 |
 | `_unsupported_reason` | type_reference | [knowledge_consumption](../modules/knowledge_consumption.md) | — |
 | `KnowledgeReadView.findings` | type_reference | [knowledge_consumption](../modules/knowledge_consumption.md) | — |
 | `_issue_from_artifact_error` | call | [knowledge_loader](../modules/knowledge_loader.md) | 1 |
@@ -78,6 +79,5 @@ flowchart LR
 | `_load_once` | call | [knowledge_loader](../modules/knowledge_loader.md) | 7 |
 | `_marker_issues` | call | [knowledge_loader](../modules/knowledge_loader.md) | 1 |
 | `_marker_issues` | type_reference | [knowledge_loader](../modules/knowledge_loader.md) | — |
-| `_read_artifact` | call | [knowledge_loader](../modules/knowledge_loader.md) | 4 |
 
-> References: showing 12 of 19 logical references; 7 omitted by the 12-row generated summary limit.
+> References: showing 12 of 20 logical references; 8 omitted by the 12-row generated summary limit.

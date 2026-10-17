@@ -95,17 +95,17 @@ sequenceDiagram
     participant p15 as source_relative_paths
     participant p16 as build_entity_page_map
     participant p17 as validate_source_root
-    participant p18 as resolve_source_selection
-    participant p19 as _validate_protocol_request
-    participant p20 as capture_source_selection_inputs
-    participant p21 as validate_live_query_source_selection
-    participant p22 as build_source_snapshot
-    participant p23 as validate_changes
-    participant p24 as _guard_windows_inputs
-    participant p25 as _assert_source_unchanged
-    participant p26 as retained_empty_module_paths_from_wiki
-    participant p27 as validate_context_packet
-    participant p28 as _assert_source_inputs_unchanged
+    participant p18 as _validate_protocol_request
+    participant p19 as guard_maintenance_owner
+    participant p20 as resolve_source_selection
+    participant p21 as capture_source_selection_inputs
+    participant p22 as validate_changes
+    participant p23 as validate_live_query_source_selection
+    participant p24 as build_source_snapshot
+    participant p25 as validate_context_packet
+    participant p26 as _guard_windows_inputs
+    participant p27 as _assert_source_unchanged
+    participant p28 as retained_empty_module_paths_from_wiki
     participant p29 as ValueError (src/llm_wiki_cli/services…py:build_budgeted_context)
     participant p30 as request.get (src/llm_wiki_cli/services…py:build_budgeted_context)
     p0->>p1: build_budgeted_context (src/llm_wiki_cli/services/context_budget.py)
@@ -125,24 +125,24 @@ sequenceDiagram
     p4->>p15: source_relative_paths
     p5->>p16: build_entity_page_map
     p3->>p17: validate_source_root
-    p3->>p18: resolve_source_selection
-    p2->>p19: _validate_protocol_request
-    p3->>p20: capture_source_selection_inputs
-    p3->>p21: validate_live_query_source_selection
-    p3->>p22: build_source_snapshot
-    p2->>p23: validate_changes
-    p3->>p24: _guard_windows_inputs
-    p3->>p25: _assert_source_unchanged
-    p3->>p26: retained_empty_module_paths_from_wiki
-    p8->>p27: validate_context_packet
-    p3->>p28: _assert_source_inputs_unchanged
+    p2->>p18: _validate_protocol_request
+    p3->>p19: guard_maintenance_owner
+    p3->>p20: resolve_source_selection
+    p3->>p21: capture_source_selection_inputs
+    p2->>p22: validate_changes
+    p3->>p23: validate_live_query_source_selection
+    p3->>p24: build_source_snapshot
+    p8->>p25: validate_context_packet
+    p3->>p26: _guard_windows_inputs
+    p3->>p27: _assert_source_unchanged
+    p3->>p28: retained_empty_module_paths_from_wiki
     p1-->>p29: ValueError (src/llm_wiki_cli/services…py:build_budgeted_context)('Exact mode requires an explicit trusted counter or --tokenizer FILE')
     p1-->>p30: request.get (src/llm_wiki_cli/services…py:build_budgeted_context)('counter_id')
 ```
 
-> Call sequence diagram shows 30 of 3666 interactions; 3636 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3580 interactions; 3550 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1278 (1277 omitted); unresolved 1 of 1162 (1161 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1225 (1224 omitted); unresolved 1 of 1162 (1161 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -156,7 +156,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 21 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 1 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 24 | - | external | 11 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 24 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 12 |
-> Omission summary shows 8 of 869 groups; 861 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 863 groups; 855 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -266,3 +266,5 @@ flowchart LR
 ## Behavior
 
 This flow starts at `build_budgeted_context` and is classified as `api`. The generated call and data-flow sections are bounded static projections; runtime conditions and side effects require source-level confirmation.
+
+Declared ordinary maintenance authority is required to remain coherent. A damaged owner or immutable marker produces a bounded `maintenance-authority-unavailable` refusal, with a safe original cause and an explicit matching committed-recovery template. No native packet or promoted fallback is returned, and no backup, identity, setup or repair is chosen by the read. The caller must preserve recovery preconditions and the original source/wiki boundaries.

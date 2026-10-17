@@ -165,7 +165,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet.py) | confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | 5006 | `confirm_missing(snapshot, requested_paths)` |
+| confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet.py) | confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | 5058 | `confirm_missing(snapshot, requested_paths)` |
 | confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | isinstance (src/llm_wiki_cli/services…rmed_missing_source_paths) | 1916 | `isinstance(snapshot, SourceSnapshot)` |
 | confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | TypeError | 1917 | `TypeError('missing-source confirmation requires a SourceSnapshot')` |
 | confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py) | isinstance (src/llm_wiki_cli/services…rmed_missing_source_paths) | 1918 | `isinstance(requested_paths, (...))` |

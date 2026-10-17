@@ -97,19 +97,19 @@ sequenceDiagram
     participant p13 as _validate_protocol_request
     participant p14 as validate_context_packet
     participant p15 as validate_source_root
-    participant p16 as resolve_source_selection
-    participant p17 as capture_source_selection_inputs
-    participant p18 as validate_live_query_source_selection
-    participant p19 as build_source_snapshot
-    participant p20 as _guard_windows_inputs
-    participant p21 as _assert_source_unchanged
-    participant p22 as retained_empty_module_paths_from_wiki
-    participant p23 as _assert_source_inputs_unchanged
-    participant p24 as _wiki_anchor
-    participant p25 as get_entry_points
-    participant p26 as read_console_scripts
-    participant p27 as resolve_call_edges
-    participant p28 as build_flow
+    participant p16 as guard_maintenance_owner
+    participant p17 as resolve_source_selection
+    participant p18 as capture_source_selection_inputs
+    participant p19 as validate_live_query_source_selection
+    participant p20 as build_source_snapshot
+    participant p21 as _guard_windows_inputs
+    participant p22 as _assert_source_unchanged
+    participant p23 as retained_empty_module_paths_from_wiki
+    participant p24 as _assert_source_inputs_unchanged
+    participant p25 as _wiki_anchor
+    participant p26 as get_entry_points
+    participant p27 as read_console_scripts
+    participant p28 as resolve_call_edges
     participant p29 as bool (src/llm_wiki_cli/services…y:build_qualified_context)
     participant p30 as normalized.get (src/llm_wiki_cli/services…y:build_qualified_context)
     p0->>p1: _normalized_request
@@ -127,26 +127,26 @@ sequenceDiagram
     p1->>p13: _validate_protocol_request
     p7->>p14: validate_context_packet
     p3->>p15: validate_source_root
-    p3->>p16: resolve_source_selection
-    p3->>p17: capture_source_selection_inputs
-    p3->>p18: validate_live_query_source_selection
-    p3->>p19: build_source_snapshot
-    p3->>p20: _guard_windows_inputs
-    p3->>p21: _assert_source_unchanged
-    p3->>p22: retained_empty_module_paths_from_wiki
-    p3->>p23: _assert_source_inputs_unchanged
-    p3->>p24: _wiki_anchor
-    p3->>p25: get_entry_points
-    p3->>p26: read_console_scripts
-    p3->>p27: resolve_call_edges
-    p3->>p28: build_flow
+    p3->>p16: guard_maintenance_owner
+    p3->>p17: resolve_source_selection
+    p3->>p18: capture_source_selection_inputs
+    p3->>p19: validate_live_query_source_selection
+    p3->>p20: build_source_snapshot
+    p3->>p21: _guard_windows_inputs
+    p3->>p22: _assert_source_unchanged
+    p3->>p23: retained_empty_module_paths_from_wiki
+    p3->>p24: _assert_source_inputs_unchanged
+    p3->>p25: _wiki_anchor
+    p3->>p26: get_entry_points
+    p3->>p27: read_console_scripts
+    p3->>p28: resolve_call_edges
     p0-->>p29: bool (src/llm_wiki_cli/services…y:build_qualified_context)(...)
     p0-->>p30: normalized.get (src/llm_wiki_cli/services…y:build_qualified_context)('knowledge_mode')
 ```
 
-> Call sequence diagram shows 30 of 5498 interactions; 5468 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 5444 interactions; 5414 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1726 (1725 omitted); unresolved 1 of 1882 (1881 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1675 (1674 omitted); unresolved 1 of 1878 (1877 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -160,7 +160,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 9 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 1 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 12 | - | external | 11 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 12 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 12 |
-> Omission summary shows 8 of 1298 groups; 1290 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1303 groups; 1295 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -221,14 +221,14 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_qualified_context | _normalized_request | 1435 | `_normalized_request(...)` |
-| _normalized_request | isinstance (src/llm_wiki_cli/services…et.py:_normalized_request) | 1965 | `isinstance(request, Mapping)` |
-| _normalized_request | ProtocolRequestError | 1966 | `context_service.ProtocolRequestError('Request must be a JSON object.', 'request')` |
-| _normalized_request | deepcopy (src/llm_wiki_cli/services…et.py:_normalized_request) | 1970 | `deepcopy(dict(...))` |
-| _normalized_request | dict (src/llm_wiki_cli/services…et.py:_normalized_request) | 1970 | `dict(request)` |
-| _normalized_request | candidate.setdefault | 1973 | `candidate.setdefault('knowledge_mode', 'auto')` |
-| _normalized_request | candidate.setdefault | 1974 | `candidate.setdefault('filters', {...})` |
-| _normalized_request | _validate_protocol_request | 1975 | `context_service._validate_protocol_request(candidate)` |
+| build_qualified_context | _normalized_request | 1487 | `_normalized_request(...)` |
+| _normalized_request | isinstance (src/llm_wiki_cli/services…et.py:_normalized_request) | 2017 | `isinstance(request, Mapping)` |
+| _normalized_request | ProtocolRequestError | 2018 | `context_service.ProtocolRequestError('Request must be a JSON object.', 'request')` |
+| _normalized_request | deepcopy (src/llm_wiki_cli/services…et.py:_normalized_request) | 2022 | `deepcopy(dict(...))` |
+| _normalized_request | dict (src/llm_wiki_cli/services…et.py:_normalized_request) | 2022 | `dict(request)` |
+| _normalized_request | candidate.setdefault | 2025 | `candidate.setdefault('knowledge_mode', 'auto')` |
+| _normalized_request | candidate.setdefault | 2026 | `candidate.setdefault('filters', {...})` |
+| _normalized_request | _validate_protocol_request | 2027 | `context_service._validate_protocol_request(candidate)` |
 | _validate_protocol_request | isinstance (src/llm_wiki_cli/services…validate_protocol_request) | 1114 | `isinstance(data, dict)` |
 | _validate_protocol_request | data.get (src/llm_wiki_cli/services…validate_protocol_request) | 1114 | `data.get('protocol')` |
 | _validate_protocol_request | _validate_protocol_request_impl | 1116 | `_validate_protocol_request_impl(data)` |
@@ -241,10 +241,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_normalized_request` | `isinstance` | 1965 |
-| external_call | `_normalized_request` | `deepcopy` | 1970 |
-| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1973 |
-| unresolved_call | `_normalized_request` | `candidate.setdefault` | 1974 |
+| external_call | `_normalized_request` | `isinstance` | 2017 |
+| external_call | `_normalized_request` | `deepcopy` | 2022 |
+| unresolved_call | `_normalized_request` | `candidate.setdefault` | 2025 |
+| unresolved_call | `_normalized_request` | `candidate.setdefault` | 2026 |
 | external_call | `_validate_protocol_request` | `isinstance` | 1114 |
 | unresolved_call | `_validate_protocol_request` | `data.get` | 1114 |
 | step_limit | `build_qualified_context` | `first 12 steps` | 0 |
@@ -253,3 +253,5 @@ flowchart LR
 ## Behavior
 
 This flow starts at `build_qualified_context` and is classified as `api`. The generated call and data-flow sections are bounded static projections; runtime conditions and side effects require source-level confirmation.
+
+Declared ordinary maintenance authority is required to remain coherent. A damaged owner or immutable marker produces a bounded `maintenance-authority-unavailable` refusal, with a safe original cause and an explicit matching committed-recovery template. No native packet or promoted fallback is returned, and no backup, identity, setup or repair is chosen by the read. The caller must preserve recovery preconditions and the original source/wiki boundaries.

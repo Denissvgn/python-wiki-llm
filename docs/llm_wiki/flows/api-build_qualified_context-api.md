@@ -96,14 +96,14 @@ sequenceDiagram
     participant p18 as _validate_protocol_request
     participant p19 as validate_context_packet
     participant p20 as validate_source_root
-    participant p21 as resolve_source_selection
-    participant p22 as capture_source_selection_inputs
-    participant p23 as validate_live_query_source_selection
-    participant p24 as build_source_snapshot
-    participant p25 as _guard_windows_inputs
-    participant p26 as _assert_source_unchanged
-    participant p27 as retained_empty_module_paths_from_wiki
-    participant p28 as _assert_source_inputs_unchanged
+    participant p21 as guard_maintenance_owner
+    participant p22 as resolve_source_selection
+    participant p23 as capture_source_selection_inputs
+    participant p24 as validate_live_query_source_selection
+    participant p25 as build_source_snapshot
+    participant p26 as _guard_windows_inputs
+    participant p27 as _assert_source_unchanged
+    participant p28 as retained_empty_module_paths_from_wiki
     participant p29 as isinstance (src/llm_wiki_cli/api.py:build_qualified_context)
     participant p30 as request.get (src/llm_wiki_cli/api.py:build_qualified_context)
     p0->>p1: _normalize_optional_knowledge_mode
@@ -126,21 +126,21 @@ sequenceDiagram
     p5->>p18: _validate_protocol_request
     p12->>p19: validate_context_packet
     p8->>p20: validate_source_root
-    p8->>p21: resolve_source_selection
-    p8->>p22: capture_source_selection_inputs
-    p8->>p23: validate_live_query_source_selection
-    p8->>p24: build_source_snapshot
-    p8->>p25: _guard_windows_inputs
-    p8->>p26: _assert_source_unchanged
-    p8->>p27: retained_empty_module_paths_from_wiki
-    p8->>p28: _assert_source_inputs_unchanged
+    p8->>p21: guard_maintenance_owner
+    p8->>p22: resolve_source_selection
+    p8->>p23: capture_source_selection_inputs
+    p8->>p24: validate_live_query_source_selection
+    p8->>p25: build_source_snapshot
+    p8->>p26: _guard_windows_inputs
+    p8->>p27: _assert_source_unchanged
+    p8->>p28: retained_empty_module_paths_from_wiki
     p0-->>p29: isinstance (src/llm_wiki_cli/api.py:build_qualified_context)(supplied_protocol, str)
     p0-->>p30: request.get (src/llm_wiki_cli/api.py:build_qualified_context)('protocol')
 ```
 
-> Call sequence diagram shows 30 of 3847 interactions; 3817 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3764 interactions; 3734 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1275 (1274 omitted); unresolved 1 of 1340 (1339 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1225 (1224 omitted); unresolved 1 of 1340 (1339 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -154,7 +154,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/context_packet.py:_normalized_request` | 13 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 1 |
 | `src/llm_wiki_cli/services/context_packet.py:_normalized_request` | 13 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 20 | - | external | 2 |
-> Omission summary shows 8 of 865 groups; 857 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 859 groups; 851 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -247,3 +247,5 @@ flowchart LR
 ## Behavior
 
 This flow starts at `build_qualified_context` and is classified as `api`. The generated call and data-flow sections are bounded static projections; runtime conditions and side effects require source-level confirmation.
+
+Declared ordinary maintenance authority is required to remain coherent. A damaged owner or immutable marker produces a bounded `maintenance-authority-unavailable` refusal, with a safe original cause and an explicit matching committed-recovery template. No native packet or promoted fallback is returned, and no backup, identity, setup or repair is chosen by the read. The caller must preserve recovery preconditions and the original source/wiki boundaries.

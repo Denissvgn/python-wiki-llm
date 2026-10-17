@@ -18,7 +18,7 @@
     "by_kind": {
       "api-contracts": 0,
       "dependencies": 1,
-      "entities": 666,
+      "entities": 667,
       "flows": 465,
       "guides": 11,
       "index": 1,
@@ -29,7 +29,7 @@
       "workflows": 224
     },
     "dependency_architecture": 2,
-    "total": 1618
+    "total": 1619
   },
   "dependency_pages": {
     "count": 2,
@@ -115,6 +115,7 @@
             "src/llm_wiki_cli/services/wiki_write_basis.py",
             "src/llm_wiki_cli/services/context_packet.py",
             "src/llm_wiki_cli/config.py",
+            "src/llm_wiki_cli/services/knowledge_loader.py",
             "src/llm_wiki_cli/services/source_selection.py",
             "src/llm_wiki_cli/services/validation.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
@@ -134,7 +135,6 @@
             "src/llm_wiki_cli/services/wiki_surface.py",
             "src/llm_wiki_cli/services/wiki_media.py",
             "src/llm_wiki_cli/services/knowledge_consumption.py",
-            "src/llm_wiki_cli/services/knowledge_loader.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/yaml_formats.py",
@@ -163,7 +163,7 @@
             "src/llm_wiki_cli/services/knowledge_reuse.py",
             "src/llm_wiki_cli/services/canonical_json.py"
           ],
-          "step_count": 2841,
+          "step_count": 2851,
           "truncated": true
         }
       },
@@ -603,6 +603,7 @@
             "src/llm_wiki_cli/services/manifest_storage.py",
             "src/llm_wiki_cli/services/context_packet.py",
             "src/llm_wiki_cli/config.py",
+            "src/llm_wiki_cli/services/knowledge_loader.py",
             "src/llm_wiki_cli/services/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/extractors/common.py",
@@ -621,7 +622,6 @@
             "src/llm_wiki_cli/services/wiki_surface.py",
             "src/llm_wiki_cli/services/wiki_media.py",
             "src/llm_wiki_cli/services/knowledge_consumption.py",
-            "src/llm_wiki_cli/services/knowledge_loader.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/yaml_formats.py",
@@ -652,7 +652,7 @@
             "src/llm_wiki_cli/services/canonical_json.py",
             "src/llm_wiki_cli/services/wiki_write_basis.py"
           ],
-          "step_count": 3102,
+          "step_count": 3112,
           "truncated": true
         }
       },
@@ -2186,16 +2186,18 @@
             "src/llm_wiki_cli/config.py",
             "src/llm_wiki_cli/services/filesystem_guard.py",
             "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_cli/services/maintenance_protocol.py",
+            "src/llm_wiki_cli/services/knowledge_storage_io.py",
+            "src/llm_wiki_cli/services/knowledge_storage.py",
+            "src/llm_wiki_cli/services/maintenance_state.py",
+            "src/llm_wiki_cli/services/sync_manifest.py",
+            "src/llm_wiki_cli/services/manifest_storage.py",
+            "src/llm_wiki_cli/services/knowledge_loader.py",
             "src/llm_wiki_cli/services/source_selection.py",
             "src/llm_wiki_cli/services/validation.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/extractors/common.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
-            "src/llm_wiki_cli/services/sync_manifest.py",
-            "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/knowledge_storage.py",
-            "src/llm_wiki_cli/services/manifest_storage.py",
-            "src/llm_wiki_cli/services/maintenance_state.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py",
             "src/llm_wiki_cli/services/source_retirement.py",
@@ -2218,8 +2220,6 @@
             "src/llm_wiki_cli/services/knowledge_freshness.py",
             "src/llm_wiki_cli/services/maintenance_status.py",
             "src/llm_wiki_cli/services/implementation_evidence.py",
-            "src/llm_wiki_cli/services/knowledge_loader.py",
-            "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_envelope.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
@@ -2241,7 +2241,7 @@
             "src/llm_wiki_cli/services/bootstrap_runtime.py",
             "src/llm_wiki_cli/services/packet_field_policy.py"
           ],
-          "step_count": 3667,
+          "step_count": 3581,
           "truncated": true
         }
       },
@@ -2497,6 +2497,7 @@
             "src/llm_wiki_cli/services/knowledge_consumption.py",
             "src/llm_wiki_cli/services/knowledge_loader.py",
             "src/llm_wiki_cli/services/maintenance_protocol.py",
+            "src/llm_wiki_cli/services/context_packet.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/yaml_formats.py",
@@ -2513,7 +2514,7 @@
             "src/llm_wiki_cli/services/implementation_evidence.py",
             "src/llm_wiki_cli/services/maintenance_status.py"
           ],
-          "step_count": 2183,
+          "step_count": 2187,
           "truncated": true
         }
       },
@@ -2534,37 +2535,37 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 1052,
+              "line": 1104,
               "step": "build_context_from_captured_read",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1053,
+              "line": 1105,
               "step": "build_context_from_captured_read",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 1965,
+              "line": 2017,
               "step": "_normalized_request",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1970,
+              "line": 2022,
               "step": "_normalized_request",
               "target": "deepcopy"
             },
             {
               "kind": "unresolved_call",
-              "line": 1973,
+              "line": 2025,
               "step": "_normalized_request",
               "target": "candidate.setdefault"
             },
             {
               "kind": "unresolved_call",
-              "line": 1974,
+              "line": 2026,
               "step": "_normalized_request",
               "target": "candidate.setdefault"
             },
@@ -4575,16 +4576,18 @@
             "src/llm_wiki_cli/config.py",
             "src/llm_wiki_cli/services/filesystem_guard.py",
             "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_cli/services/maintenance_protocol.py",
+            "src/llm_wiki_cli/services/knowledge_storage_io.py",
+            "src/llm_wiki_cli/services/knowledge_storage.py",
+            "src/llm_wiki_cli/services/maintenance_state.py",
+            "src/llm_wiki_cli/services/sync_manifest.py",
+            "src/llm_wiki_cli/services/manifest_storage.py",
+            "src/llm_wiki_cli/services/knowledge_loader.py",
             "src/llm_wiki_cli/services/source_selection.py",
             "src/llm_wiki_cli/services/validation.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/extractors/common.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
-            "src/llm_wiki_cli/services/sync_manifest.py",
-            "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/knowledge_storage.py",
-            "src/llm_wiki_cli/services/manifest_storage.py",
-            "src/llm_wiki_cli/services/maintenance_state.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py",
             "src/llm_wiki_cli/services/source_retirement.py",
@@ -4607,8 +4610,6 @@
             "src/llm_wiki_cli/services/knowledge_freshness.py",
             "src/llm_wiki_cli/services/maintenance_status.py",
             "src/llm_wiki_cli/services/implementation_evidence.py",
-            "src/llm_wiki_cli/services/knowledge_loader.py",
-            "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_envelope.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
@@ -4629,7 +4630,7 @@
             "src/llm_wiki_cli/services/maintenance_evidence.py",
             "src/llm_wiki_cli/services/packet_field_policy.py"
           ],
-          "step_count": 3848,
+          "step_count": 3765,
           "truncated": true
         }
       },
@@ -4650,25 +4651,25 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 1965,
+              "line": 2017,
               "step": "_normalized_request",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1970,
+              "line": 2022,
               "step": "_normalized_request",
               "target": "deepcopy"
             },
             {
               "kind": "unresolved_call",
-              "line": 1973,
+              "line": 2025,
               "step": "_normalized_request",
               "target": "candidate.setdefault"
             },
             {
               "kind": "unresolved_call",
-              "line": 1974,
+              "line": 2026,
               "step": "_normalized_request",
               "target": "candidate.setdefault"
             },
@@ -4712,16 +4713,19 @@
             "src/llm_wiki_cli/config.py",
             "src/llm_wiki_cli/services/filesystem_guard.py",
             "src/llm_wiki_cli/services/io.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_cli/services/maintenance_protocol.py",
+            "src/llm_wiki_cli/services/knowledge_storage_io.py",
+            "src/llm_wiki_cli/services/knowledge_storage.py",
+            "src/llm_wiki_cli/services/maintenance_state.py",
+            "src/llm_wiki_cli/services/maintenance_shapes.py",
+            "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/validation.py",
+            "src/llm_wiki_cli/services/manifest_storage.py",
+            "src/llm_wiki_cli/services/knowledge_loader.py",
+            "src/llm_wiki_cli/services/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/extractors/common.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
-            "src/llm_wiki_cli/services/sync_manifest.py",
-            "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/knowledge_storage.py",
-            "src/llm_wiki_cli/services/manifest_storage.py",
-            "src/llm_wiki_cli/services/maintenance_state.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py",
             "src/llm_wiki_cli/services/source_retirement.py",
@@ -4745,8 +4749,6 @@
             "src/llm_wiki_cli/services/maintenance_status.py",
             "src/llm_wiki_cli/services/maintenance_evidence.py",
             "src/llm_wiki_cli/services/implementation_evidence.py",
-            "src/llm_wiki_cli/services/knowledge_loader.py",
-            "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_envelope.py",
             "src/llm_wiki_cli/services/knowledge_index.py",
             "src/llm_wiki_cli/services/immutable.py",
@@ -4768,11 +4770,10 @@
             "src/llm_wiki_cli/services/dependencies.py",
             "src/llm_wiki_cli/services/dependency_versions.py",
             "src/llm_wiki_cli/services/maintenance_service.py",
-            "src/llm_wiki_cli/services/maintenance_shapes.py",
             "src/llm_wiki_cli/services/knowledge_observability.py",
             "src/llm_wiki_cli/services/packet_field_policy.py"
           ],
-          "step_count": 5499,
+          "step_count": 5445,
           "truncated": true
         }
       },
@@ -5101,13 +5102,13 @@
             },
             {
               "kind": "unresolved_call",
-              "line": 5065,
+              "line": 5117,
               "step": "_wiki_anchor",
               "target": "current.exists"
             },
             {
               "kind": "unresolved_call",
-              "line": 5068,
+              "line": 5120,
               "step": "_wiki_anchor",
               "target": "root.exists"
             },
@@ -5730,67 +5731,67 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 762,
+              "line": 800,
               "step": "capture_context_read",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 763,
+              "line": 801,
               "step": "capture_context_read",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 764,
+              "line": 802,
               "step": "capture_context_read",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 765,
+              "line": 803,
               "step": "capture_context_read",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 766,
+              "line": 804,
               "step": "capture_context_read",
               "target": "callable"
             },
             {
               "kind": "external_call",
-              "line": 767,
+              "line": 805,
               "step": "capture_context_read",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 768,
+              "line": 806,
               "step": "capture_context_read",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 769,
+              "line": 807,
               "step": "capture_context_read",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 770,
+              "line": 808,
               "step": "capture_context_read",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 771,
+              "line": 809,
               "step": "capture_context_read",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 772,
+              "line": 810,
               "step": "capture_context_read",
               "target": "isinstance"
             },
@@ -5812,17 +5813,20 @@
             "src/llm_wiki_cli/config.py",
             "src/llm_wiki_cli/services/filesystem_guard.py",
             "src/llm_wiki_cli/services/io.py",
-            "src/llm_wiki_cli/services/source_selection.py",
-            "src/llm_wiki_cli/services/validation.py",
-            "src/llm_wiki_cli/services/source_snapshot.py",
-            "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/documentation_query_builder.py",
-            "src/llm_wiki_cli/services/sync_manifest.py",
+            "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/knowledge_storage.py",
-            "src/llm_wiki_cli/services/manifest_storage.py",
             "src/llm_wiki_cli/services/maintenance_state.py",
+            "src/llm_wiki_cli/services/maintenance_shapes.py",
+            "src/llm_wiki_cli/services/sync_manifest.py",
+            "src/llm_wiki_cli/services/validation.py",
+            "src/llm_wiki_cli/services/manifest_storage.py",
+            "src/llm_wiki_cli/extractors/common.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py",
+            "src/llm_wiki_cli/services/knowledge_loader.py",
+            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_cli/services/source_snapshot.py",
+            "src/llm_wiki_cli/services/documentation_query_builder.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_cli/services/context_service.py",
             "src/llm_wiki_cli/services/source_retirement.py",
@@ -5849,8 +5853,6 @@
             "src/llm_wiki_cli/services/analysis_compatibility.py",
             "src/llm_wiki_cli/services/maintenance_status.py",
             "src/llm_wiki_cli/services/maintenance_evidence.py",
-            "src/llm_wiki_cli/services/knowledge_loader.py",
-            "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_envelope.py",
             "src/llm_wiki_cli/services/knowledge_index.py",
             "src/llm_wiki_cli/services/immutable.py",
@@ -5871,10 +5873,9 @@
             "src/llm_wiki_cli/services/dependencies.py",
             "src/llm_wiki_cli/services/dependency_versions.py",
             "src/llm_wiki_cli/services/maintenance_service.py",
-            "src/llm_wiki_cli/services/maintenance_shapes.py",
             "src/llm_wiki_cli/services/markdown_sections.py"
           ],
-          "step_count": 5309,
+          "step_count": 5264,
           "truncated": true
         }
       },
@@ -6910,31 +6911,31 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 2495,
+              "line": 2547,
               "step": "_coerce_packet_bytes",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 2497,
+              "line": 2549,
               "step": "_coerce_packet_bytes",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 2498,
+              "line": 2550,
               "step": "_coerce_packet_bytes",
               "target": "bytes"
             },
             {
               "kind": "external_call",
-              "line": 2500,
+              "line": 2552,
               "step": "_coerce_packet_bytes",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 2508,
+              "line": 2560,
               "step": "_coerce_packet_bytes",
               "target": "raw.startswith"
             },
@@ -6965,7 +6966,7 @@
             "src/llm_wiki_cli/services/maintenance_status.py",
             "src/llm_wiki_cli/services/packet_field_policy.py"
           ],
-          "step_count": 468,
+          "step_count": 471,
           "truncated": true
         }
       },
@@ -6986,31 +6987,31 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 2495,
+              "line": 2547,
               "step": "_coerce_packet_bytes",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 2497,
+              "line": 2549,
               "step": "_coerce_packet_bytes",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 2498,
+              "line": 2550,
               "step": "_coerce_packet_bytes",
               "target": "bytes"
             },
             {
               "kind": "external_call",
-              "line": 2500,
+              "line": 2552,
               "step": "_coerce_packet_bytes",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 2508,
+              "line": 2560,
               "step": "_coerce_packet_bytes",
               "target": "raw.startswith"
             },
@@ -11662,16 +11663,19 @@
             "src/llm_wiki_cli/config.py",
             "src/llm_wiki_cli/services/filesystem_guard.py",
             "src/llm_wiki_cli/services/io.py",
-            "src/llm_wiki_cli/services/source_selection.py",
+            "src/llm_wiki_cli/services/maintenance_protocol.py",
+            "src/llm_wiki_cli/services/knowledge_storage_io.py",
+            "src/llm_wiki_cli/services/knowledge_storage.py",
+            "src/llm_wiki_cli/services/maintenance_state.py",
+            "src/llm_wiki_cli/services/maintenance_shapes.py",
+            "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/validation.py",
+            "src/llm_wiki_cli/services/manifest_storage.py",
+            "src/llm_wiki_cli/services/knowledge_loader.py",
+            "src/llm_wiki_cli/services/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/extractors/common.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
-            "src/llm_wiki_cli/services/sync_manifest.py",
-            "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/knowledge_storage.py",
-            "src/llm_wiki_cli/services/manifest_storage.py",
-            "src/llm_wiki_cli/services/maintenance_state.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_cli/services/context_service.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py",
@@ -11696,8 +11700,6 @@
             "src/llm_wiki_cli/services/maintenance_status.py",
             "src/llm_wiki_cli/services/maintenance_evidence.py",
             "src/llm_wiki_cli/services/implementation_evidence.py",
-            "src/llm_wiki_cli/services/knowledge_loader.py",
-            "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_envelope.py",
             "src/llm_wiki_cli/services/knowledge_index.py",
             "src/llm_wiki_cli/services/immutable.py",
@@ -11718,10 +11720,9 @@
             "src/llm_wiki_cli/services/verification_contracts.py",
             "src/llm_wiki_cli/services/dependencies.py",
             "src/llm_wiki_cli/services/dependency_versions.py",
-            "src/llm_wiki_cli/services/maintenance_service.py",
-            "src/llm_wiki_cli/services/maintenance_shapes.py"
+            "src/llm_wiki_cli/services/maintenance_service.py"
           ],
-          "step_count": 4180,
+          "step_count": 4126,
           "truncated": true
         }
       },
@@ -11837,6 +11838,7 @@
             "src/llm_wiki_cli/services/maintenance_evidence.py",
             "src/llm_wiki_cli/services/context_packet.py",
             "src/llm_wiki_cli/config.py",
+            "src/llm_wiki_cli/services/knowledge_loader.py",
             "src/llm_wiki_cli/services/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/extractors/common.py",
@@ -11853,7 +11855,6 @@
             "src/llm_wiki_cli/services/wiki_surface_index.py",
             "src/llm_wiki_cli/services/wiki_media.py",
             "src/llm_wiki_cli/services/knowledge_consumption.py",
-            "src/llm_wiki_cli/services/knowledge_loader.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/yaml_formats.py",
@@ -11864,7 +11865,7 @@
             "src/llm_wiki_cli/services/dependencies.py",
             "src/llm_wiki_cli/services/dependency_versions.py"
           ],
-          "step_count": 2407,
+          "step_count": 2417,
           "truncated": true
         }
       },
@@ -13362,14 +13363,16 @@
             "src/llm_wiki_cli/config.py",
             "src/llm_wiki_cli/services/filesystem_guard.py",
             "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_cli/services/maintenance_protocol.py",
+            "src/llm_wiki_cli/services/knowledge_storage_io.py",
+            "src/llm_wiki_cli/services/knowledge_storage.py",
+            "src/llm_wiki_cli/services/maintenance_state.py",
+            "src/llm_wiki_cli/services/sync_manifest.py",
+            "src/llm_wiki_cli/services/manifest_storage.py",
+            "src/llm_wiki_cli/services/knowledge_loader.py",
             "src/llm_wiki_cli/services/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/extractors/common.py",
-            "src/llm_wiki_cli/services/sync_manifest.py",
-            "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/knowledge_storage.py",
-            "src/llm_wiki_cli/services/manifest_storage.py",
-            "src/llm_wiki_cli/services/maintenance_state.py",
             "src/llm_wiki_cli/services/context_service.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py",
             "src/llm_wiki_cli/services/source_retirement.py",
@@ -13391,8 +13394,6 @@
             "src/llm_wiki_cli/services/knowledge_freshness.py",
             "src/llm_wiki_cli/services/maintenance_status.py",
             "src/llm_wiki_cli/services/implementation_evidence.py",
-            "src/llm_wiki_cli/services/knowledge_loader.py",
-            "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_envelope.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
@@ -13413,7 +13414,7 @@
             "src/llm_wiki_cli/services/maintenance_evidence.py",
             "src/llm_wiki_cli/services/knowledge_coverage.py"
           ],
-          "step_count": 2827,
+          "step_count": 2741,
           "truncated": true
         }
       },
@@ -20384,31 +20385,31 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 2495,
+              "line": 2547,
               "step": "_coerce_packet_bytes",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 2497,
+              "line": 2549,
               "step": "_coerce_packet_bytes",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 2498,
+              "line": 2550,
               "step": "_coerce_packet_bytes",
               "target": "bytes"
             },
             {
               "kind": "external_call",
-              "line": 2500,
+              "line": 2552,
               "step": "_coerce_packet_bytes",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 2508,
+              "line": 2560,
               "step": "_coerce_packet_bytes",
               "target": "raw.startswith"
             },
@@ -20441,14 +20442,17 @@
             "src/llm_wiki_cli/config.py",
             "src/llm_wiki_cli/services/filesystem_guard.py",
             "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_cli/services/maintenance_protocol.py",
+            "src/llm_wiki_cli/services/knowledge_storage_io.py",
+            "src/llm_wiki_cli/services/knowledge_storage.py",
+            "src/llm_wiki_cli/services/maintenance_state.py",
+            "src/llm_wiki_cli/services/sync_manifest.py",
+            "src/llm_wiki_cli/services/knowledge_loader.py",
             "src/llm_wiki_cli/services/source_selection.py",
             "src/llm_wiki_cli/services/validation.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/extractors/common.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
-            "src/llm_wiki_cli/services/sync_manifest.py",
-            "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_cli/services/source_retirement.py",
             "src/llm_wiki_cli/services/knowledge_governance.py",
@@ -20463,8 +20467,6 @@
             "src/llm_wiki_cli/services/wiki_surface.py",
             "src/llm_wiki_cli/services/wiki_media.py",
             "src/llm_wiki_cli/services/knowledge_consumption.py",
-            "src/llm_wiki_cli/services/knowledge_loader.py",
-            "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/yaml_formats.py",
@@ -20480,7 +20482,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/change_selection.py"
           ],
-          "step_count": 2414,
+          "step_count": 2366,
           "truncated": true
         }
       },
@@ -20501,31 +20503,31 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 2495,
+              "line": 2547,
               "step": "_coerce_packet_bytes",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 2497,
+              "line": 2549,
               "step": "_coerce_packet_bytes",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 2498,
+              "line": 2550,
               "step": "_coerce_packet_bytes",
               "target": "bytes"
             },
             {
               "kind": "external_call",
-              "line": 2500,
+              "line": 2552,
               "step": "_coerce_packet_bytes",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 2508,
+              "line": 2560,
               "step": "_coerce_packet_bytes",
               "target": "raw.startswith"
             },
@@ -20559,15 +20561,17 @@
             "src/llm_wiki_cli/config.py",
             "src/llm_wiki_cli/services/filesystem_guard.py",
             "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_cli/services/maintenance_protocol.py",
+            "src/llm_wiki_cli/services/knowledge_storage_io.py",
+            "src/llm_wiki_cli/services/knowledge_storage.py",
+            "src/llm_wiki_cli/services/maintenance_state.py",
+            "src/llm_wiki_cli/services/sync_manifest.py",
+            "src/llm_wiki_cli/services/manifest_storage.py",
+            "src/llm_wiki_cli/services/knowledge_loader.py",
             "src/llm_wiki_cli/services/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/extractors/common.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
-            "src/llm_wiki_cli/services/sync_manifest.py",
-            "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/knowledge_storage.py",
-            "src/llm_wiki_cli/services/manifest_storage.py",
-            "src/llm_wiki_cli/services/maintenance_state.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_cli/services/source_retirement.py",
             "src/llm_wiki_cli/services/knowledge_governance.py",
@@ -20588,8 +20592,6 @@
             "src/llm_wiki_cli/services/knowledge_artifacts.py",
             "src/llm_wiki_cli/services/knowledge_freshness.py",
             "src/llm_wiki_cli/services/implementation_evidence.py",
-            "src/llm_wiki_cli/services/knowledge_loader.py",
-            "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_envelope.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
@@ -20610,7 +20612,7 @@
             "src/llm_wiki_cli/services/maintenance_evidence.py",
             "src/llm_wiki_cli/services/change_selection.py"
           ],
-          "step_count": 4104,
+          "step_count": 4018,
           "truncated": true
         }
       },
@@ -21309,10 +21311,11 @@
             "src/llm_wiki_cli/services/maintenance_status.py",
             "src/llm_wiki_cli/services/maintenance_evidence.py",
             "src/llm_wiki_cli/services/knowledge_loader.py",
+            "src/llm_wiki_cli/services/context_packet.py",
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4614,
+          "step_count": 4618,
           "truncated": true
         }
       },
@@ -24965,7 +24968,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4425,
+          "step_count": 4435,
           "truncated": true
         }
       },
@@ -28189,7 +28192,7 @@
             "src/llm_wiki_cli/services/validation.py",
             "src/llm_wiki_cli/services/context_packet.py"
           ],
-          "step_count": 140,
+          "step_count": 143,
           "truncated": false
         }
       },
@@ -28800,31 +28803,31 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 2495,
+              "line": 2547,
               "step": "_coerce_packet_bytes",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 2497,
+              "line": 2549,
               "step": "_coerce_packet_bytes",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 2498,
+              "line": 2550,
               "step": "_coerce_packet_bytes",
               "target": "bytes"
             },
             {
               "kind": "external_call",
-              "line": 2500,
+              "line": 2552,
               "step": "_coerce_packet_bytes",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 2508,
+              "line": 2560,
               "step": "_coerce_packet_bytes",
               "target": "raw.startswith"
             },
@@ -28857,7 +28860,7 @@
             "src/llm_wiki_cli/services/validation.py",
             "src/llm_wiki_cli/services/packet_field_policy.py"
           ],
-          "step_count": 612,
+          "step_count": 615,
           "truncated": true
         }
       },
@@ -28878,37 +28881,37 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 2495,
+              "line": 2547,
               "step": "_coerce_packet_bytes",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 2497,
+              "line": 2549,
               "step": "_coerce_packet_bytes",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 2498,
+              "line": 2550,
               "step": "_coerce_packet_bytes",
               "target": "bytes"
             },
             {
               "kind": "external_call",
-              "line": 2500,
+              "line": 2552,
               "step": "_coerce_packet_bytes",
               "target": "TypeError"
             },
             {
               "kind": "unresolved_call",
-              "line": 2508,
+              "line": 2560,
               "step": "_coerce_packet_bytes",
               "target": "raw.startswith"
             },
             {
               "kind": "unresolved_call",
-              "line": 2513,
+              "line": 2565,
               "step": "_coerce_packet_bytes",
               "target": "raw.endswith"
             },
@@ -32038,7 +32041,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3608,
+              "line": 3615,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32046,7 +32049,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3611,
+              "line": 3618,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32054,15 +32057,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3655,
-              "step": "run",
-              "step_index": 1,
-              "target": "print"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "output",
-              "line": 3658,
+              "line": 3662,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32078,7 +32073,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3667,
+              "line": 3672,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32086,7 +32081,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3676,
+              "line": 3674,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32094,7 +32089,15 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3678,
+              "line": 3683,
+              "step": "run",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 3685,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32103,13 +32106,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 3591,
+              "line": 3598,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 3432,
+              "line": 3439,
               "step": "_run_protocol",
               "target": "getattr"
             },
@@ -32165,10 +32168,15 @@
             "src/llm_wiki_cli/config.py",
             "src/llm_wiki_cli/services/filesystem_guard.py",
             "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_cli/services/maintenance_protocol.py",
+            "src/llm_wiki_cli/services/knowledge_storage_io.py",
+            "src/llm_wiki_cli/services/sync_manifest.py",
+            "src/llm_wiki_cli/services/maintenance_state.py",
+            "src/llm_wiki_cli/services/knowledge_storage.py",
+            "src/llm_wiki_cli/services/knowledge_loader.py",
             "src/llm_wiki_cli/services/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
-            "src/llm_wiki_cli/services/sync_manifest.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_cli/extractors/common.py",
             "src/llm_wiki_cli/services/source_retirement.py",
@@ -32182,20 +32190,17 @@
             "src/llm_wiki_cli/services/wiki_surface.py",
             "src/llm_wiki_cli/services/wiki_media.py",
             "src/llm_wiki_cli/services/knowledge_consumption.py",
-            "src/llm_wiki_cli/services/knowledge_loader.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
             "src/llm_wiki_cli/services/knowledge_orchestration.py",
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/dependencies.py",
-            "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/knowledge_storage.py",
             "src/llm_wiki_cli/services/maintenance_status.py",
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/bootstrap_runtime.py",
             "src/llm_wiki_cli/services/wiki_write_basis.py",
             "src/llm_wiki_cli/services/extraction_jobs.py"
           ],
-          "step_count": 1388,
+          "step_count": 1422,
           "truncated": true
         }
       },
@@ -33015,7 +33020,7 @@
             "src/llm_wiki_cli/services/rendering_lifecycle.py",
             "src/llm_wiki_cli/services/paths.py"
           ],
-          "step_count": 3957,
+          "step_count": 3967,
           "truncated": true
         }
       },
@@ -33449,7 +33454,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4425,
+          "step_count": 4435,
           "truncated": true
         }
       },
@@ -33751,6 +33756,7 @@
             "src/llm_wiki_cli/services/manifest_storage.py",
             "src/llm_wiki_cli/services/context_packet.py",
             "src/llm_wiki_cli/config.py",
+            "src/llm_wiki_cli/services/knowledge_loader.py",
             "src/llm_wiki_cli/services/source_selection.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
@@ -33767,7 +33773,6 @@
             "src/llm_wiki_cli/services/wiki_surface.py",
             "src/llm_wiki_cli/services/wiki_media.py",
             "src/llm_wiki_cli/services/knowledge_consumption.py",
-            "src/llm_wiki_cli/services/knowledge_loader.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
             "src/llm_wiki_cli/services/knowledge_orchestration.py",
             "src/llm_wiki_cli/services/knowledge_verification.py",
@@ -33796,7 +33801,7 @@
             "src/llm_wiki_cli/services/request_json.py",
             "src/llm_wiki_cli/services/sync_recovery.py"
           ],
-          "step_count": 2517,
+          "step_count": 2527,
           "truncated": true
         }
       },
@@ -34840,31 +34845,31 @@
             },
             {
               "kind": "external_call",
-              "line": 762,
+              "line": 800,
               "step": "capture_context_read",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 763,
+              "line": 801,
               "step": "capture_context_read",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 764,
+              "line": 802,
               "step": "capture_context_read",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 765,
+              "line": 803,
               "step": "capture_context_read",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 766,
+              "line": 804,
               "step": "capture_context_read",
               "target": "callable"
             },
@@ -34894,16 +34899,18 @@
             "src/llm_wiki_cli/config.py",
             "src/llm_wiki_cli/services/filesystem_guard.py",
             "src/llm_wiki_cli/services/io.py",
+            "src/llm_wiki_cli/services/maintenance_protocol.py",
+            "src/llm_wiki_cli/services/knowledge_storage_io.py",
+            "src/llm_wiki_cli/services/knowledge_storage.py",
+            "src/llm_wiki_cli/services/maintenance_state.py",
+            "src/llm_wiki_cli/services/sync_manifest.py",
+            "src/llm_wiki_cli/services/manifest_storage.py",
+            "src/llm_wiki_cli/services/knowledge_loader.py",
             "src/llm_wiki_cli/services/source_selection.py",
             "src/llm_wiki_cli/services/validation.py",
             "src/llm_wiki_cli/services/source_snapshot.py",
             "src/llm_wiki_cli/extractors/common.py",
             "src/llm_wiki_cli/services/documentation_query_builder.py",
-            "src/llm_wiki_cli/services/sync_manifest.py",
-            "src/llm_wiki_cli/services/knowledge_storage_io.py",
-            "src/llm_wiki_cli/services/knowledge_storage.py",
-            "src/llm_wiki_cli/services/manifest_storage.py",
-            "src/llm_wiki_cli/services/maintenance_state.py",
             "src/llm_wiki_cli/services/documentation_queries.py",
             "src/llm_wiki_cli/services/context_service.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py",
@@ -34927,8 +34934,6 @@
             "src/llm_wiki_cli/services/knowledge_freshness.py",
             "src/llm_wiki_cli/services/maintenance_status.py",
             "src/llm_wiki_cli/services/implementation_evidence.py",
-            "src/llm_wiki_cli/services/knowledge_loader.py",
-            "src/llm_wiki_cli/services/maintenance_protocol.py",
             "src/llm_wiki_cli/services/knowledge_envelope.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
@@ -34962,7 +34967,7 @@
             "src/llm_wiki_cli/services/markdown_sections.py",
             "src/llm_wiki_cli/services/change_selection.py"
           ],
-          "step_count": 4283,
+          "step_count": 4197,
           "truncated": true
         }
       },
@@ -36216,18 +36221,19 @@
             "src/llm_wiki_cli/services/search_rank.py",
             "src/llm_wiki_cli/services/search_lexical.py",
             "src/llm_wiki_cli/services/wiki_surface.py",
+            "src/llm_wiki_cli/services/maintenance_protocol.py",
+            "src/llm_wiki_cli/services/knowledge_loader.py",
             "src/llm_wiki_cli/services/context_service.py",
             "src/llm_wiki_cli/services/source_retirement.py",
             "src/llm_wiki_cli/services/plugins.py",
             "src/llm_wiki_cli/services/data_flow.py",
             "src/llm_wiki_cli/services/wiki_surface_index.py",
             "src/llm_wiki_cli/services/knowledge_consumption.py",
-            "src/llm_wiki_cli/services/knowledge_loader.py",
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/task_implementation.py",
             "src/llm_wiki_cli/services/wiki_write_basis.py"
           ],
-          "step_count": 1440,
+          "step_count": 1446,
           "truncated": true
         }
       },
@@ -36878,7 +36884,7 @@
             "src/llm_wiki_cli/services/canonical_json.py",
             "src/llm_wiki_cli/services/rendering_lifecycle.py"
           ],
-          "step_count": 3907,
+          "step_count": 3917,
           "truncated": true
         }
       },
@@ -38568,6 +38574,7 @@
         "entities/ContextKnowledgeRequired.md",
         "entities/ContextKnowledgeResult.md",
         "entities/ContextKnowledgeSelection.md",
+        "entities/ContextPacketAuthorityError.md",
         "entities/ContextPacketError.md",
         "entities/ContextPacketMalformedError.md",
         "entities/ContextPacketPathPolicyError.md",
@@ -41216,6 +41223,19 @@
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/api_types.py",
       "title": "ContextKnowledgeSelection"
+    },
+    {
+      "canonical_path": "entities/ContextPacketAuthorityError.md",
+      "id": "ContextPacketAuthorityError",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/ContextPacketAuthorityError",
+      "outgoing_internal_links": [
+        "modules/context_packet.md",
+        "modules/context_service.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/context_packet.py",
+      "title": "ContextPacketAuthorityError"
     },
     {
       "canonical_path": "entities/ContextPacketError.md",
@@ -44051,6 +44071,7 @@
       "kind": "entities",
       "mcp_uri": "llm-wiki://entities/KnowledgeLoadIssue",
       "outgoing_internal_links": [
+        "modules/context_packet.md",
         "modules/knowledge_consumption.md",
         "modules/knowledge_loader.md"
       ],
@@ -44752,6 +44773,7 @@
       "kind": "entities",
       "mcp_uri": "llm-wiki://entities/MaintenanceProtocolError",
       "outgoing_internal_links": [
+        "modules/context_packet.md",
         "modules/knowledge_loader.md",
         "modules/knowledge_storage_lifecycle.md",
         "modules/maintenance_protocol.md",
@@ -49455,6 +49477,7 @@
       "outgoing_internal_links": [
         "entities/CapturedContextRead.md",
         "entities/ContextBasisComparison.md",
+        "entities/ContextPacketAuthorityError.md",
         "entities/ContextPacketError.md",
         "entities/ContextPacketMalformedError.md",
         "entities/ContextPacketPathPolicyError.md",
@@ -53556,6 +53579,7 @@
       "kind": "workflows",
       "mcp_uri": "llm-wiki://workflows/build_context_knowledge_view",
       "outgoing_internal_links": [
+        "modules/context_packet.md",
         "modules/context_service.md",
         "modules/extraction_service.md",
         "modules/infrastructure_inventory.md",
@@ -53993,7 +54017,9 @@
         "modules/documentation_query_builder.md",
         "modules/entrypoints.md",
         "modules/extraction_service.md",
+        "modules/knowledge_loader.md",
         "modules/knowledge_storage_io.md",
+        "modules/maintenance_protocol.md",
         "modules/maintenance_status.md",
         "modules/plugins.md",
         "modules/services_dependencies.md",
@@ -54354,6 +54380,7 @@
       "outgoing_internal_links": [
         "modules/change_selection.md",
         "modules/context_budget.md",
+        "modules/context_service.md",
         "modules/io.md",
         "modules/token_counting.md"
       ],
@@ -57800,6 +57827,7 @@
         "modules/common.md",
         "modules/config.md",
         "modules/context_budget.md",
+        "modules/context_packet.md",
         "modules/context_service.md",
         "modules/data_flow.md",
         "modules/dependency_versions.md",
@@ -62270,6 +62298,7 @@
         "modules/knowledge_verification.md",
         "modules/maintenance_protocol.md",
         "modules/maintenance_service.md",
+        "modules/maintenance_state.md",
         "modules/maintenance_status.md",
         "modules/packet_field_policy.md",
         "modules/plugins.md",
@@ -62489,6 +62518,7 @@
         "modules/common.md",
         "modules/concept_identity.md",
         "modules/config.md",
+        "modules/context_packet.md",
         "modules/context_service.md",
         "modules/data_flow.md",
         "modules/documentation_native.md",
@@ -64957,7 +64987,9 @@
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_io.md",
         "modules/knowledge_verification.md",
+        "modules/maintenance_protocol.md",
         "modules/maintenance_service.md",
+        "modules/maintenance_state.md",
         "modules/maintenance_status.md",
         "modules/plugins.md",
         "modules/services_dependencies.md",
@@ -66148,6 +66180,7 @@
         "modules/knowledge_storage_access.md",
         "modules/knowledge_storage_io.md",
         "modules/knowledge_verification.md",
+        "modules/maintenance_protocol.md",
         "modules/maintenance_status.md",
         "modules/markdown_sections.md",
         "modules/plugins.md",
@@ -67287,5 +67320,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:9cd47dc1627fe27d5d486f237a58f63d3a8c0df55e4e2aa9c88810d3fd53f794"
+  "source_hash": "sha256:fb66d01cfb863b8f560b215604d23bc5d4805ce2ffa2279aadff048e3e4b8dc2"
 }

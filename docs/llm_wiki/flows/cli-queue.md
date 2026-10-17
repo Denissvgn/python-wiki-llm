@@ -106,16 +106,16 @@ sequenceDiagram
     participant p16 as _run_report_checks
     participant p17 as _surface_page_map
     participant p18 as validate_source_root
-    participant p19 as resolve_source_selection
-    participant p20 as _source_path_from_page
-    participant p21 as capture_source_selection_inputs
-    participant p22 as _normalise_dependency_metrics
-    participant p23 as validate_live_query_source_selection
-    participant p24 as _normalise_entrypoints
-    participant p25 as build_source_snapshot
-    participant p26 as _guard_windows_inputs
-    participant p27 as _assert_source_unchanged
-    participant p28 as _centrality_score
+    participant p19 as _source_path_from_page
+    participant p20 as _normalise_dependency_metrics
+    participant p21 as guard_maintenance_owner
+    participant p22 as _normalise_entrypoints
+    participant p23 as resolve_source_selection
+    participant p24 as capture_source_selection_inputs
+    participant p25 as validate_live_query_source_selection
+    participant p26 as _centrality_score
+    participant p27 as _index_needs_context
+    participant p28 as _add_page_candidate
     participant p29 as print
     participant p30 as lines.append
     p0->>p1: build_maintenance_queue
@@ -136,23 +136,23 @@ sequenceDiagram
     p4->>p16: _run_report_checks
     p5->>p17: _surface_page_map
     p3->>p18: validate_source_root
-    p3->>p19: resolve_source_selection
-    p5->>p20: _source_path_from_page
-    p3->>p21: capture_source_selection_inputs
-    p5->>p22: _normalise_dependency_metrics
-    p3->>p23: validate_live_query_source_selection
-    p5->>p24: _normalise_entrypoints
-    p3->>p25: build_source_snapshot
-    p3->>p26: _guard_windows_inputs
-    p3->>p27: _assert_source_unchanged
-    p5->>p28: _centrality_score
+    p5->>p19: _source_path_from_page
+    p5->>p20: _normalise_dependency_metrics
+    p3->>p21: guard_maintenance_owner
+    p5->>p22: _normalise_entrypoints
+    p3->>p23: resolve_source_selection
+    p3->>p24: capture_source_selection_inputs
+    p3->>p25: validate_live_query_source_selection
+    p5->>p26: _centrality_score
+    p5->>p27: _index_needs_context
+    p5->>p28: _add_page_candidate
     p0-->>p29: print(..., end=...)
     p2-->>p30: lines.append(...)
 ```
 
-> Call sequence diagram shows 30 of 4282 interactions; 4252 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4196 interactions; 4166 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1366 (1365 omitted); unresolved 1 of 1462 (1461 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1313 (1312 omitted); unresolved 1 of 1462 (1461 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -160,13 +160,13 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/maintenance_queue.py:build_maintenance_queue` | 2 | [src/llm_wiki_cli/services/maintenance_queue.py](../modules/maintenance_queue.md) | internal | 1 |
 | `src/llm_wiki_cli/services/maintenance_queue.py:validate_queue_limit` | 3 | - | external | 3 |
-| `src/llm_wiki_cli/services/context_packet.py:capture_context_read` | 7 | - | external | 36 |
+| `src/llm_wiki_cli/services/context_packet.py:capture_context_read` | 7 | - | external | 37 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 20 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
 | `src/llm_wiki_cli/config.py:validate_path` | 21 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
 | `src/llm_wiki_cli/config.py:validate_path` | 21 | - | unresolved | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 21 | - | external | 2 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 20 | - | unresolved | 5 |
-> Omission summary shows 8 of 1085 groups; 1077 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1080 groups; 1072 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -239,11 +239,11 @@ flowchart LR
 | validate_queue_limit | isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 59 | `isinstance(limit, int)` |
 | validate_queue_limit | ValueError (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 62 | `ValueError(...)` |
 | build_maintenance_queue | capture_context_read | 479 | `capture_context_read(src_dir, wiki_dir, allow_external_src=allow_external_src, read_only=True, strict_wiki_symlinks=True, allow_selection_mismatch=True, source_selection=source_selection, helper_cache_dir=helper_cache_dir)` |
-| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 762 | `isinstance(read_only, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 763 | `TypeError('read_only must be a boolean')` |
-| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 764 | `isinstance(allow_external_src, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 765 | `TypeError('allow_external_src must be a boolean')` |
-| capture_context_read | callable (src/llm_wiki_cli/services…t.py:capture_context_read) | 766 | `callable(plan_reporter)` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 800 | `isinstance(read_only, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 801 | `TypeError('read_only must be a boolean')` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 802 | `isinstance(allow_external_src, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 803 | `TypeError('allow_external_src must be a boolean')` |
+| capture_context_read | callable (src/llm_wiki_cli/services…t.py:capture_context_read) | 804 | `callable(plan_reporter)` |
 
 ### Boundary effects
 
@@ -259,11 +259,11 @@ flowchart LR
 | external_call | `validate_queue_limit` | `isinstance` | 58 |
 | external_call | `validate_queue_limit` | `isinstance` | 59 |
 | external_call | `validate_queue_limit` | `ValueError` | 62 |
-| external_call | `capture_context_read` | `isinstance` | 762 |
-| external_call | `capture_context_read` | `TypeError` | 763 |
-| external_call | `capture_context_read` | `isinstance` | 764 |
-| external_call | `capture_context_read` | `TypeError` | 765 |
-| external_call | `capture_context_read` | `callable` | 766 |
+| external_call | `capture_context_read` | `isinstance` | 800 |
+| external_call | `capture_context_read` | `TypeError` | 801 |
+| external_call | `capture_context_read` | `isinstance` | 802 |
+| external_call | `capture_context_read` | `TypeError` | 803 |
+| external_call | `capture_context_read` | `callable` | 804 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 
