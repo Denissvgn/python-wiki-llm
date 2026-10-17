@@ -889,27 +889,6 @@ jobs:
         if: ${{ needs.freeze.outputs.core-layout == 'unsharded' }}
         run: python -m pip install --no-cache-dir "./candidate[dev,tokens]"
 
-      - name: Verify JavaScript evidence on native Windows
-        working-directory: candidate
-        env:
-          LLM_WIKI_CACHE_DIR: ${{ runner.temp }}/javascript-evidence-helpers
-          PYTHONUTF8: "1"
-          PYTHONIOENCODING: utf-8
-        run: |
-          set -euo pipefail
-          python -m llm_wiki_cli.cli prepare-extractors --src-dir . \
-            --language typescript --cache-dir "${LLM_WIKI_CACHE_DIR}"
-          python -m pytest -q \
-            tests/test_ts_extract.py::test_unresolved_import_producer_consumer_contract \
-            tests/test_ts_extract.py::test_dynamic_import_gap_survives_bootstrap_sync_and_strict_gates \
-            -p no:cacheprovider --strict-config --strict-markers -W error -o xfail_strict=true \
-            --junitxml=../evidence/javascript-evidence-windows.xml
-          python -I ../incoming/tools/release/qualification.py verify-junit \
-            --junit ../evidence/javascript-evidence-windows.xml \
-            --lane javascript-evidence-windows --allowlist release/skip-allowlist.json \
-            --minimum-collected 7 --minimum-passed 7 \
-            --output ../evidence/javascript-evidence-windows-result.json
-
       - name: Download every Windows shard separately
         if: ${{ needs.freeze.outputs.core-layout == 'windows-sharded' }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -942,6 +921,27 @@ jobs:
           -W error
           -o xfail_strict=true
           --junitxml="../evidence/core-windows-3.13.xml"
+
+      - name: Verify JavaScript evidence on native Windows
+        working-directory: candidate
+        env:
+          LLM_WIKI_CACHE_DIR: ${{ runner.temp }}/javascript-evidence-helpers
+          PYTHONUTF8: "1"
+          PYTHONIOENCODING: utf-8
+        run: |
+          set -euo pipefail
+          python -m llm_wiki_cli.cli prepare-extractors --src-dir . \
+            --language typescript --cache-dir "${LLM_WIKI_CACHE_DIR}"
+          python -m pytest -q \
+            tests/test_ts_extract.py::test_unresolved_import_producer_consumer_contract \
+            tests/test_ts_extract.py::test_dynamic_import_gap_survives_bootstrap_sync_and_strict_gates \
+            -p no:cacheprovider --strict-config --strict-markers -W error -o xfail_strict=true \
+            --junitxml=../evidence/javascript-evidence-windows.xml
+          python -I ../incoming/tools/release/qualification.py verify-junit \
+            --junit ../evidence/javascript-evidence-windows.xml \
+            --lane javascript-evidence-windows --allowlist release/skip-allowlist.json \
+            --minimum-collected 7 --minimum-passed 7 \
+            --output ../evidence/javascript-evidence-windows-result.json
 
       - name: Enforce exact skip tuples and minimum inventory
         env:
