@@ -63,23 +63,23 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| hash_file | sha256_bytes | 968 | `sha256_bytes(path.read_bytes(...))` |
-| sha256_bytes | hashlib.sha256(…).hexdigest | 199 | `hashlib.sha256(value).hexdigest(data not statically known)` |
-| sha256_bytes | hashlib.sha256 | 199 | `hashlib.sha256(value)` |
-| hash_file | path.read_bytes | 968 | `path.read_bytes(data not statically known)` |
+| hash_file | sha256_bytes | 903 | `sha256_bytes(path.read_bytes(...))` |
+| sha256_bytes | hashlib.sha256(…).hexdigest | 216 | `hashlib.sha256(value).hexdigest(data not statically known)` |
+| sha256_bytes | hashlib.sha256 | 216 | `hashlib.sha256(value)` |
+| hash_file | path.read_bytes | 903 | `path.read_bytes(data not statically known)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_read | `path.read_bytes` | `hash_file` | 968 |
+| filesystem_read | `path.read_bytes` | `hash_file` | 903 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 199 |
-| external_call | `sha256_bytes` | `hashlib.sha256` | 199 |
+| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 216 |
+| external_call | `sha256_bytes` | `hashlib.sha256` | 216 |
 
 ## Behavior
 

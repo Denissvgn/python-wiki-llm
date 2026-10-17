@@ -144,9 +144,9 @@ sequenceDiagram
     p0-->>p30: report.count (src/llm_wiki_cli/services/lint_service.py:run)('extractor_failure')
 ```
 
-> Call sequence diagram shows 30 of 3284 interactions; 3254 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3285 interactions; 3255 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 974 (973 omitted); unresolved 1 of 1125 (1124 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 974 (973 omitted); unresolved 1 of 1126 (1125 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -275,3 +275,11 @@ sync, while a refused broad update needs its separate preview and review.
 
 
 Text discloses data-flow and unfamiliar advisory categories with at most five escaped examples per category and explicit preview omissions. Full profile JSON and CI JSON/Markdown retain complete emitted records. Advisory gaps leave integrity exits unchanged and require source inspection when a task depends on missing observations; success reports no blocking issues rather than complete analysis.
+
+When fresh normalization rejects an observation, a structural evidence finding
+can retain bounded record/rule/shape detail in its existing message. The detail
+is explicitly fresh and versioned, with redacted values and qualified pointers;
+older snapshots never gain inferred rejection locations. Profile JSON retains
+the same report fields, strict structural failures remain blocking, and live
+freshness/drift retains its existing report-only policy. Reading diagnostics
+does not repair the committed basis or install an extractor.

@@ -1,6 +1,6 @@
 # KnowledgeFreshnessError
 
-**Location:** `src/llm_wiki_cli/services/knowledge_freshness.py:165`
+**Location:** `src/llm_wiki_cli/services/knowledge_freshness.py:166`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [knowledge_freshness](../modules/knowledge_freshness.md)

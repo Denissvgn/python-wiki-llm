@@ -1,6 +1,6 @@
 # KnowledgeFreshnessReport
 
-**Location:** `src/llm_wiki_cli/services/knowledge_freshness.py:223`
+**Location:** `src/llm_wiki_cli/services/knowledge_freshness.py:225`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_freshness](../modules/knowledge_freshness.md)

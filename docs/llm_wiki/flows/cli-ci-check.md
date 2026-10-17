@@ -153,9 +153,9 @@ sequenceDiagram
     p0-->>p30: storage.get('failures', [...])
 ```
 
-> Call sequence diagram shows 30 of 4217 interactions; 4187 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4218 interactions; 4188 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1269 (1268 omitted); unresolved 1 of 1330 (1329 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1269 (1268 omitted); unresolved 1 of 1331 (1330 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -294,3 +294,10 @@ supports flat and migrated native snapshots, retaining the chosen comparison
 policy and separate check/command exits. Automatic schema selection follows the
 comparison metadata; physical layout alone cannot qualify a legacy schema.
 Older envelopes do not provide a reason to replace the chosen native policy.
+
+Normalization diagnostics are carried in existing finding messages as bounded,
+versioned JSON text, preserving the outer CI contract and its strict check result.
+Current native comparison metadata continues to use the compatible current
+envelope; old decoder compatibility does not authorize a downgrade. Missing
+historical detail remains a gap. No diagnostic path changes report persistence
+authority, source selection, helper setup or committed wiki state.

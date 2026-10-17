@@ -92,3 +92,9 @@ flowchart LR
 ## Behavior
 
 This flow starts at `explain_evidence` and is classified as `mcp`. The generated call and data-flow sections are bounded static projections; runtime conditions and side effects require source-level confirmation.
+
+The MCP explanation preserves the same bounded diagnostic text as the Python
+service, including fresh-only scope, pointer qualifiers and redacted actual
+shape. It introduces no new wire field or full-inventory request and counts the
+record in the existing raw evidence byte budget. Missing or truncated detail
+does not establish validity, and a read does not repair persisted evidence.

@@ -23,6 +23,18 @@ discovery, extraction, setup, writes or evidence-state changes.
 This per-concept explanation is separate from aggregate knowledge observability,
 whose privacy contract excludes source coordinates and producer identities.
 
+Fresh failures can add a bounded `llm-wiki-normalization-diagnostic/v1` JSON
+record to the existing description text. It identifies source, occurrence,
+pointer, rule, expected shape and redacted actual facts without adding outer
+report/basis fields. Historical rejected-record details remain unavailable, and
+reason-only fresh failures retain that absence explicitly.
+
+The same description feeds lint/CI findings and API/MCP evidence explanations.
+Consumer byte accounting includes the record. Compatible legacy report decoders
+retain it as text; current native comparison metadata still requires its own
+compatible outer schema. This consumer performs no extra extraction, installation
+or store repair and does not change strict evidence or report-only drift policy.
+
 ## Imports
 
 | Source | Symbols |

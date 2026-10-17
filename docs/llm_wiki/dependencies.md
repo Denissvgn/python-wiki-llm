@@ -33,14 +33,14 @@ flowchart TD
 | [validation](modules/validation.md) | 68 | 0 |
 | [config](modules/config.md) | 60 | 3 |
 | [source_snapshot](modules/source_snapshot.md) | 50 | 7 |
+| [services_contracts](modules/services_contracts.md) | 45 | 0 |
 | [io](modules/io.md) | 45 | 2 |
-| [services_contracts](modules/services_contracts.md) | 44 | 0 |
 | [sync_manifest](modules/sync_manifest.md) | 40 | 8 |
 | [wiki_surface](modules/wiki_surface.md) | 40 | 1 |
 | [knowledge_storage](modules/knowledge_storage.md) | 38 | 8 |
 | [knowledge_model](modules/knowledge_model.md) | 34 | 13 |
 | [source_selection](modules/source_selection.md) | 33 | 2 |
-| [knowledge_evidence](modules/knowledge_evidence.md) | 31 | 1 |
+| [knowledge_evidence](modules/knowledge_evidence.md) | 31 | 2 |
 | [knowledge_artifacts](modules/knowledge_artifacts.md) | 29 | 28 |
 | [filesystem_guard](modules/filesystem_guard.md) | 28 | 1 |
 | [knowledge_storage_io](modules/knowledge_storage_io.md) | 27 | 4 |
@@ -84,7 +84,7 @@ flowchart TD
 | [context_service](modules/context_service.md) | 9 | 32 |
 | [documentation_queries](modules/documentation_queries.md) | 9 | 9 |
 | [inventory_cache](modules/inventory_cache.md) | 9 | 10 |
-| [knowledge_freshness](modules/knowledge_freshness.md) | 9 | 8 |
+| [knowledge_freshness](modules/knowledge_freshness.md) | 9 | 9 |
 | [knowledge_reuse](modules/knowledge_reuse.md) | 9 | 13 |
 | [skills](modules/skills.md) | 9 | 2 |
 | [source_retirement](modules/source_retirement.md) | 9 | 5 |
@@ -183,6 +183,7 @@ flowchart TD
 | [knowledge_links](modules/knowledge_links.md) | 2 | 4 |
 | [knowledge_storage_diagnostics](modules/knowledge_storage_diagnostics.md) | 2 | 13 |
 | [module_maps](modules/module_maps.md) | 2 | 1 |
+| [normalization_diagnostics](modules/normalization_diagnostics.md) | 2 | 1 |
 | [protected_artifacts](modules/protected_artifacts.md) | 2 | 2 |
 | [python_observations](modules/python_observations.md) | 2 | 2 |
 | [python_stdlib](modules/python_stdlib.md) | 2 | 0 |

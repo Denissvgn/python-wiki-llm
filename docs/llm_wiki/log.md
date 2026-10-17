@@ -2898,3 +2898,26 @@ Unchanged-source evidence can be repaired under matching producer commitments
 without refreshing unselected failures. Full analysis and global reconciliation
 remain active, with isolated preflight, broad review, exact adopted custody and
 recoverable publication. Producer transitions still require a full owning update.
+
+## 2026-10-18
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.0.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:92ed491b46fb3545ec0212809eae73965f1aeb17e2aae0756aceb0c12cefda18`
+- Pages created: 2
+- Pages updated: 53
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1556
+- Pages deprecated: 0
+- Semantic fields preserved: 3
+- Moved entities: none
+
+### Fresh normalization diagnostics
+
+Fresh normalization failures retain bounded record locations, validation rules
+and redacted shape facts across existing diagnostic surfaces. Structural hashes,
+persisted basis fields and strict evidence policy stay unchanged. Historical
+rejected-record details are not reconstructed from a current observation.

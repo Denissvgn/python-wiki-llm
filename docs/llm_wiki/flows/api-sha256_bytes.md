@@ -48,8 +48,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| sha256_bytes | hashlib.sha256(…).hexdigest | 199 | `hashlib.sha256(value).hexdigest(data not statically known)` |
-| sha256_bytes | hashlib.sha256 | 199 | `hashlib.sha256(value)` |
+| sha256_bytes | hashlib.sha256(…).hexdigest | 216 | `hashlib.sha256(value).hexdigest(data not statically known)` |
+| sha256_bytes | hashlib.sha256 | 216 | `hashlib.sha256(value)` |
 
 ### Boundary effects
 
@@ -59,8 +59,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 199 |
-| external_call | `sha256_bytes` | `hashlib.sha256` | 199 |
+| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 216 |
+| external_call | `sha256_bytes` | `hashlib.sha256` | 216 |
 
 ## Behavior
 

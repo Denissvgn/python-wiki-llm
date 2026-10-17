@@ -163,9 +163,9 @@ flowchart LR
 |---|---|---:|---|
 | write_verification_receipt | serialize_verification_receipt | 981 | `serialize_verification_receipt(receipt)` |
 | serialize_verification_receipt | formatted_json_bytes | 790 | `formatted_json_bytes(verification_receipt_to_payload(...))` |
-| formatted_json_bytes | formatted_json_text(…).encode | 193 | `formatted_json_text(value).encode('utf-8')` |
-| formatted_json_bytes | formatted_json_text | 193 | `formatted_json_text(value)` |
-| formatted_json_text | json.dumps | 179 | `json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)` |
+| formatted_json_bytes | formatted_json_text(…).encode | 210 | `formatted_json_text(value).encode('utf-8')` |
+| formatted_json_bytes | formatted_json_text | 210 | `formatted_json_text(value)` |
+| formatted_json_text | json.dumps | 196 | `json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)` |
 | serialize_verification_receipt | verification_receipt_to_payload | 790 | `verification_receipt_to_payload(value)` |
 | verification_receipt_to_payload | validate_verification_receipt | 781 | `validate_verification_receipt(value)` |
 | validate_verification_receipt | isinstance (src/llm_wiki_cli/services…date_verification_receipt) | 806 | `isinstance(value, VerificationReceipt)` |
@@ -181,8 +181,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `formatted_json_bytes` | `formatted_json_text(value).encode` | 193 |
-| external_call | `formatted_json_text` | `json.dumps` | 179 |
+| unresolved_call | `formatted_json_bytes` | `formatted_json_text(value).encode` | 210 |
+| external_call | `formatted_json_text` | `json.dumps` | 196 |
 | external_call | `validate_verification_receipt` | `isinstance` | 806 |
 | step_limit | `write_verification_receipt` | `first 12 steps` | 0 |
 | truncated_flow | `write_verification_receipt` | `depth limit` | 0 |

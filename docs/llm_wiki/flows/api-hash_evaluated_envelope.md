@@ -162,12 +162,12 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | hash_evaluated_envelope | sha256_bytes | 1180 | `sha256_bytes(...)` |
-| sha256_bytes | hashlib.sha256(…).hexdigest | 199 | `hashlib.sha256(value).hexdigest(data not statically known)` |
-| sha256_bytes | hashlib.sha256 | 199 | `hashlib.sha256(value)` |
+| sha256_bytes | hashlib.sha256(…).hexdigest | 216 | `hashlib.sha256(value).hexdigest(data not statically known)` |
+| sha256_bytes | hashlib.sha256 | 216 | `hashlib.sha256(value)` |
 | hash_evaluated_envelope | serialize_evaluated_envelope(…).encode | 1180 | `serialize_evaluated_envelope(envelope).encode('utf-8')` |
 | hash_evaluated_envelope | serialize_evaluated_envelope | 1180 | `serialize_evaluated_envelope(envelope)` |
 | serialize_evaluated_envelope | formatted_json_text | 1167 | `formatted_json_text(evaluated_envelope_to_payload(...))` |
-| formatted_json_text | json.dumps | 179 | `json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)` |
+| formatted_json_text | json.dumps | 196 | `json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)` |
 | serialize_evaluated_envelope | evaluated_envelope_to_payload | 1167 | `evaluated_envelope_to_payload(envelope)` |
 | evaluated_envelope_to_payload | isinstance (src/llm_wiki_cli/services…uated_envelope_to_payload) | 1141 | `isinstance(envelope, EvaluatedEnvelope)` |
 | evaluated_envelope_to_payload | TypeError (src/llm_wiki_cli/services…uated_envelope_to_payload) | 1142 | `TypeError('envelope must be an EvaluatedEnvelope')` |
@@ -181,10 +181,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 199 |
-| external_call | `sha256_bytes` | `hashlib.sha256` | 199 |
+| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 216 |
+| external_call | `sha256_bytes` | `hashlib.sha256` | 216 |
 | unresolved_call | `hash_evaluated_envelope` | `serialize_evaluated_envelope(envelope).encode` | 1180 |
-| external_call | `formatted_json_text` | `json.dumps` | 179 |
+| external_call | `formatted_json_text` | `json.dumps` | 196 |
 | external_call | `evaluated_envelope_to_payload` | `isinstance` | 1141 |
 | external_call | `evaluated_envelope_to_payload` | `TypeError` | 1142 |
 | step_limit | `hash_evaluated_envelope` | `first 12 steps` | 0 |

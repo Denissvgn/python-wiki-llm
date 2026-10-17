@@ -95,12 +95,12 @@ flowchart LR
 | relationship_edge_key | next | 304 | `next(..., None)` |
 | relationship_edge_key | KnowledgeGraphError | 306 | `KnowledgeGraphError(..., 'is required for edge identity')` |
 | relationship_edge_key | sha256_bytes | 311 | `sha256_bytes(...)` |
-| sha256_bytes | hashlib.sha256(…).hexdigest | 199 | `hashlib.sha256(value).hexdigest(data not statically known)` |
-| sha256_bytes | hashlib.sha256 | 199 | `hashlib.sha256(value)` |
+| sha256_bytes | hashlib.sha256(…).hexdigest | 216 | `hashlib.sha256(value).hexdigest(data not statically known)` |
+| sha256_bytes | hashlib.sha256 | 216 | `hashlib.sha256(value)` |
 | relationship_edge_key | _canonical_json(…).encode | 311 | `_canonical_json(preimage).encode('utf-8')` |
 | relationship_edge_key | _canonical_json | 311 | `_canonical_json(preimage)` |
 | _canonical_json | canonical_json_text | 2256 | `canonical_json_text(value)` |
-| canonical_json_text | json.dumps | 160 | `json.dumps(value, ensure_ascii=False, separators=(...), sort_keys=True, allow_nan=False)` |
+| canonical_json_text | json.dumps | 177 | `json.dumps(value, ensure_ascii=False, separators=(...), sort_keys=True, allow_nan=False)` |
 | _canonical_json | KnowledgeGraphError | 2258 | `KnowledgeGraphError('value', 'must be finite canonical JSON')` |
 
 ### Boundary effects
@@ -112,10 +112,10 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `relationship_edge_key` | `next` | 304 |
-| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 199 |
-| external_call | `sha256_bytes` | `hashlib.sha256` | 199 |
+| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 216 |
+| external_call | `sha256_bytes` | `hashlib.sha256` | 216 |
 | unresolved_call | `relationship_edge_key` | `_canonical_json(preimage).encode` | 311 |
-| external_call | `canonical_json_text` | `json.dumps` | 160 |
+| external_call | `canonical_json_text` | `json.dumps` | 177 |
 
 ## Behavior
 

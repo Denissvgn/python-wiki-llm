@@ -210,3 +210,10 @@ flowchart LR
 ## Behavior
 
 This flow starts at `explain_evidence` and is classified as `api`. The generated call and data-flow sections are bounded static projections; runtime conditions and side effects require source-level confirmation.
+
+A fresh rejected observation may add a separately versioned normalization record
+inside the existing freshness description. It supplies bounded source/occurrence,
+record pointer, rule and redacted shape facts without changing basis fields.
+Raw evidence byte bounds include the diagnostic, and a tighter surrounding bound
+can still truncate the response. The explanation never invents historical
+rejections or commits current evidence; it reuses its existing evaluated inputs.

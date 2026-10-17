@@ -18,6 +18,11 @@ consumers distinguish a captured failure from fresh normalization without
 accepting or repairing the captured evidence. Snapshot-only evaluation supplies
 no live observation; unavailable and malformed live bases retain their causes.
 
+Fresh rejection detail is transported with live concept bases as non-comparing
+service state, separately from source and producer comparison facts. Recorded
+bases never acquire reconstructed rejection coordinates. The diagnostic cannot
+turn unknown evidence into known evidence or alter freshness classification.
+
 ## Imports
 
 | Source | Symbols |
@@ -28,6 +33,7 @@ no live observation; unavailable and malformed live bases retain their causes.
 | `.knowledge_artifacts` | `ValidatedKnowledgeArtifacts`, `require_validated_artifacts`, `require_validated_artifacts` |
 | `.knowledge_evidence` | `UNKNOWN_ENTITY_NOT_FOUND`, `ConceptObservationBasis`, `hash_json`, `is_valid_sha256` |
 | `.knowledge_model` | `BundleRecord`, `ComputedFreshness`, `ConceptRecord`, `EvidenceBasis`, `EvidenceState`, `KnowledgeIndex`, `KnowledgeModelError`, `ObservationScope`, `ProducerComponent`, `ProducerRecord`, `SnapshotRecord`, `_knowledge_index_to_payload_unchecked`, `knowledge_index_to_payload`, `parse_knowledge_index` |
+| `.normalization_diagnostics` | `NormalizationDiagnostic` |
 | `.validation` | `require_repository_relative_path` |
 | `.wiki_surface` | `PageKind` |
 | `__future__` | `annotations` |
@@ -55,20 +61,20 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (9) |
-| Outbound | `src` (8) |
+| Outbound | `src` (9) |
 
-> All 17 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 18 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [KnowledgeFreshnessError](../entities/KnowledgeFreshnessError.md) | 165 | `ValueError` | Field-specific failure at the pure live-comparison boundary. |
-| [LiveKnowledgeEvaluation](../entities/LiveKnowledgeEvaluation.md) | 175 | — | Already evaluated live inputs required for freshness comparison. |
-| [ConceptFreshnessBasis](../entities/ConceptFreshnessBasis.md) | 197 | — | Normalized recorded or live concept basis returned to consumers. |
-| [ConceptFreshnessResult](../entities/ConceptFreshnessResult.md) | 210 | — | One consumer-computed freshness outcome. |
-| [KnowledgeFreshnessReport](../entities/KnowledgeFreshnessReport.md) | 223 | — | Freshness results for every recorded concept and aggregate counts. |
-| [_ValidatedLiveEvaluation](../entities/ValidatedLiveEvaluation.md) | 237 | — | — |
+| [KnowledgeFreshnessError](../entities/KnowledgeFreshnessError.md) | 166 | `ValueError` | Field-specific failure at the pure live-comparison boundary. |
+| [LiveKnowledgeEvaluation](../entities/LiveKnowledgeEvaluation.md) | 176 | — | Already evaluated live inputs required for freshness comparison. |
+| [ConceptFreshnessBasis](../entities/ConceptFreshnessBasis.md) | 198 | — | Normalized recorded or live concept basis returned to consumers. |
+| [ConceptFreshnessResult](../entities/ConceptFreshnessResult.md) | 212 | — | One consumer-computed freshness outcome. |
+| [KnowledgeFreshnessReport](../entities/KnowledgeFreshnessReport.md) | 225 | — | Freshness results for every recorded concept and aggregate counts. |
+| [_ValidatedLiveEvaluation](../entities/ValidatedLiveEvaluation.md) | 239 | — | — |
 
 ## Functions
 

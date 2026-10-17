@@ -199,8 +199,8 @@ flowchart LR
 | _wiki_anchor | root.exists | 5120 | `root.exists(data not statically known)` |
 | _wiki_anchor | _domain_hash | 5121 | `_domain_hash(_WIKI_ANCHOR_DOMAIN, {...})` |
 | _domain_hash | sha256_bytes | 5272 | `sha256_bytes(canonical_json_bytes(...))` |
-| sha256_bytes | hashlib.sha256(…).hexdigest (src/llm_wiki_cli/services…_evidence.py:sha256_bytes) | 199 | `hashlib.sha256(value).hexdigest(data not statically known)` |
-| sha256_bytes | hashlib.sha256 (src/llm_wiki_cli/services…_evidence.py:sha256_bytes) | 199 | `hashlib.sha256(value)` |
+| sha256_bytes | hashlib.sha256(…).hexdigest (src/llm_wiki_cli/services…_evidence.py:sha256_bytes) | 216 | `hashlib.sha256(value).hexdigest(data not statically known)` |
+| sha256_bytes | hashlib.sha256 (src/llm_wiki_cli/services…_evidence.py:sha256_bytes) | 216 | `hashlib.sha256(value)` |
 | _domain_hash | canonical_json_bytes | 5273 | `canonical_json_bytes({...})` |
 
 ### Boundary effects
@@ -214,8 +214,8 @@ flowchart LR
 | unresolved_call | `directory_identity` | `path.stat` | 699 |
 | unresolved_call | `_wiki_anchor` | `current.exists` | 5117 |
 | unresolved_call | `_wiki_anchor` | `root.exists` | 5120 |
-| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 199 |
-| external_call | `sha256_bytes` | `hashlib.sha256` | 199 |
+| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 216 |
+| external_call | `sha256_bytes` | `hashlib.sha256` | 216 |
 | step_limit | `build_snapshot_documentation_query_service` | `first 12 steps` | 0 |
 | truncated_flow | `build_snapshot_documentation_query_service` | `depth limit` | 0 |
 

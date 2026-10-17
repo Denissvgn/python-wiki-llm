@@ -6,8 +6,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 669 | [Open section](#entities) |
-| Modules | 248 | [Open section](#modules) |
+| Entities | 670 | [Open section](#entities) |
+| Modules | 249 | [Open section](#modules) |
 | Workflows | 225 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 465 | [Open section](#entry-point-flows) |
@@ -413,6 +413,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [NativeInspectionMaintenance](entities/NativeInspectionMaintenance.md)
 - [NativeInspectionResult](entities/NativeInspectionResult.md)
 - [NewPageJournal](entities/NewPageJournal.md)
+- [NormalizationDiagnostic](entities/NormalizationDiagnostic.md)
 - [ObservationScope](entities/ObservationScope.md)
 - [ObsidianError](entities/ObsidianError.md)
 - [ObsidianOperation](entities/ObsidianOperation.md)
@@ -833,6 +834,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [module_maps](modules/module_maps.md) - Pure per-module dependency mini-map summaries.
 - [native_diagnostics](modules/native_diagnostics.md) - Owned per-file diagnostics for the bundled Go, Rust and Haskell helpers.
 - [native_inspection](modules/native_inspection.md) - One bounded concept inspection over one captured native read view.
+- [normalization_diagnostics](modules/normalization_diagnostics.md) - Bounded fresh-normalization diagnostics, separate from evidence/hash contracts.
 - [obsidian](modules/obsidian.md) - Obsidian mirror export support for LLM Wiki.
 - [obsidian_cmd](modules/obsidian_cmd.md) - Commands for exporting LLM Wiki into an Obsidian-friendly mirror.
 - [packages](modules/packages.md) - Discover Python packages within a source tree.

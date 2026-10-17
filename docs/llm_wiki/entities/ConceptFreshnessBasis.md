@@ -1,6 +1,6 @@
 # ConceptFreshnessBasis
 
-**Location:** `src/llm_wiki_cli/services/knowledge_freshness.py:197`
+**Location:** `src/llm_wiki_cli/services/knowledge_freshness.py:198`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_freshness](../modules/knowledge_freshness.md)
@@ -10,6 +10,12 @@
 ## Description
 
 Normalized recorded or live concept basis returned to consumers.
+
+A live basis may carry fresh normalization detail through the in-memory
+comparison to evidence explanation. Recorded basis construction does not invent
+that detail. The established serialized basis fields stay unchanged; bounded
+versioned diagnostics travel in the existing explanation text. Diagnostic presence
+does not establish compatible evidence, freshness or a committed repair.
 
 ## Attributes
 
@@ -22,6 +28,7 @@ Normalized recorded or live concept basis returned to consumers.
 | `concept_observation_hash` | `str \| None` | *required* | — |
 | `analysis_basis_hash` | `str \| None` | *required* | — |
 | `unknown_reason` | `str \| None` | `None` | — |
+| `normalization_diagnostic` | `NormalizationDiagnostic \| None` | `field(default=None, repr=False, compare=False)` | — |
 
 ## Methods
 
@@ -49,7 +56,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [knowledge_freshness](../modules/knowledge_freshness.md) | 0 | `analysis_basis_hash`, `concept_observation_hash`, `extractor_ref`, `scope`, `source_content_hash`, `source_path`, `unknown_reason` |
+| [knowledge_freshness](../modules/knowledge_freshness.md) | 0 | `analysis_basis_hash`, `concept_observation_hash`, `extractor_ref`, `normalization_diagnostic`, `scope`, `source_content_hash`, `source_path`, `unknown_reason` |
 
 ### References
 
