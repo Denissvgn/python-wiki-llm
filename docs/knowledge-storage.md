@@ -171,6 +171,49 @@ logical record identities, hashes and available values. `--max-bytes` bounds the
 output; omitted records or values are counted explicitly. A storage-only
 migration produces no logical differences.
 
+Continue a bounded review with the returned `next_cursor`:
+
+```sh
+llm-wiki knowledge diff-storage --wiki-dir docs/llm_wiki \
+  --against-wiki ../before/docs/llm_wiki --limit 100 --cursor "$NEXT_CURSOR"
+```
+
+Keep both snapshots unchanged and use the same roots, operation and selectors.
+Changed snapshot commitments or scope reject continuation; restart the review.
+The cursor is a consistency check, not an authorization credential. The ordering
+uses canonical logical keys, including distinct occurrences of duplicate
+relationships. `record_index` is an ordinal within that exact review.
+
+Each page reports the global `total`, its starting `offset`, records not in that
+page as `omitted`, and records after it as `remaining`. `next_cursor: null` and
+`enumeration_complete: true` end enumeration. They do not establish complete
+value review. `values_omitted` counts returned rows lacking full values;
+`complete` retains its single-response meaning: all records and values are in
+that response. A later page therefore does not approve earlier pages or values.
+
+For any omitted value, read the exact canonical row using its `record_index` and
+the page's `review_id`, then continue at each returned `next_offset`:
+
+```sh
+llm-wiki knowledge diff-storage --wiki-dir docs/llm_wiki \
+  --against-wiki ../before/docs/llm_wiki --review-id "$REVIEW_ID" \
+  --record-index 0 --record-offset 0 --max-bytes 4096
+```
+
+Decode each `data_base64` chunk and concatenate the bytes in offset order. Check
+their total against `bytes` and their SHA-256 against `hash` before parsing the
+canonical JSON row. Byte boundaries can split UTF-8 characters. This route also
+recovers an identity too large for a page: its summary reports `key_omitted`
+and retains the ordinal and complete-row hash/size instead of truncating a key.
+Do not count such a summary as reviewed content.
+
+The item/byte bounds are unchanged; the byte bound includes compact UTF-8 JSON
+and its CLI newline. Chunk reads return one record's bytes per call and require
+the original snapshot binding. Every page and chunk repeats validation and
+logical materialization for its declared scope. Small output is not a streaming
+scan, a latency guarantee or live-source freshness. The commands are read-only;
+they do not repair, migrate or approve a snapshot.
+
 For a bounded selected read, supply a selector explicitly:
 
 ```sh
@@ -181,6 +224,9 @@ llm-wiki knowledge inspect-storage --wiki-dir docs/llm_wiki \
 This mode reports `selected-records-and-policy`; unread records and companion
 authority remain unverified. Without a selector, inspection validates the full
 snapshot even when `--limit` is small.
+Continuation and exact-record reads retain this same selected validation scope
+when the same selectors are supplied. Selected inspection does not enable scoped
+comparison or certify unread authority.
 
 ## Adopt sharded storage
 

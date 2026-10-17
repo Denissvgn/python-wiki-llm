@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import base64
+import binascii
 import heapq
 import os
 from pathlib import Path
@@ -317,7 +319,7 @@ def _storage_report(root: Path, report: dict[str, Any], *, full: bool,
     return report
 
 
-def _review_records(wiki_dir: str | Path) -> dict[str, Any]:
+def _review_records(wiki_dir: str | Path) -> tuple[dict[str, Any], dict[str, Any]]:
     """Logical review keys preserve duplicates and avoid physical pack identities."""
     state = load_knowledge_state(wiki_dir)
     if state.knowledge is None or state.validated_artifacts is None:
@@ -342,18 +344,89 @@ def _review_records(wiki_dir: str | Path) -> dict[str, Any]:
                 rows[f"{field}:{item[identity]}"] = item
         else:
             rows["extension:" + key] = value
-    return rows
+    artifacts = state.validated_artifacts
+    return rows, {"root": str(_absolute_path(Path(wiki_dir))),
+                  "knowledge": artifacts.knowledge_index_hash, "surface": artifacts.surface_index_hash,
+                  "envelope": artifacts.evaluated_envelope_hash, "governance": artifacts.governance_hash,
+                  "manifest": state.manifest_basis.to_payload() if state.manifest_basis is not None else None}
+
+
+def _review_cursor(review_id: str, offset: int) -> str:
+    return base64.urlsafe_b64encode(canonical_bytes({"v": 1, "id": review_id, "offset": offset})).decode("ascii")
+
+
+def _review_position(cursor: str, review_id: str, total: int) -> int:
+    try:
+        data = json.loads(base64.b64decode(cursor, altchars=b"-_", validate=True))
+        valid = (isinstance(data, dict) and set(data) == {"v", "id", "offset"}
+                 and type(data["v"]) is int and data["v"] == 1 and data["id"] == review_id
+                 and type(data["offset"]) is int and 0 < data["offset"] < total)
+    except (ValueError, UnicodeError, binascii.Error):
+        valid = False
+    if not valid:
+        raise KnowledgeStorageError("cursor", "invalid continuation or changed snapshot/scope; restart review")
+    return data["offset"]
+
+
+def _review_row(key: str, index: int, current: dict, previous: dict, diff: bool) -> dict[str, Any]:
+    from .knowledge_storage import digest
+    row: dict[str, Any] = {"key": key, "record_index": index,
+        "change": "present" if not diff else "added" if key not in previous else "removed" if key not in current else "modified"}
+    values = {}
+    for label, records in (("before", previous), ("after", current)):
+        if key in records:
+            raw = canonical_bytes(records[key])
+            row[label] = {"hash": digest(raw), "bytes": len(raw)}
+            values[label] = records[key]
+    return {**row, "values": values}
+
+
+def _review_record_chunk(row: dict, *, review_id: str, offset: int, max_bytes: int,
+                         validation_scope: str) -> dict[str, Any]:
+    """Deliver exact canonical row bytes, including identities too large for one page."""
+    from .knowledge_storage import digest
+    raw = canonical_bytes(row)
+    if offset >= len(raw):
+        raise KnowledgeStorageError("record_offset", "must be within the canonical record bytes")
+    result: dict[str, Any] = {"schema_version": "llm-wiki-storage-record/v1", "ok": True,
+        "review_id": review_id, "record_index": row["record_index"], "validation_scope": validation_scope,
+        "whole_snapshot_validated": validation_scope == "full-committed-snapshots",
+        "hash": digest(raw), "bytes": len(raw), "offset": offset, "data_base64": "",
+        "next_offset": None, "complete": False}
+    # Reserve the largest next-offset spelling and include the CLI newline.
+    result["next_offset"] = max(9999, len(raw))
+    capacity = (max_bytes - len(canonical_bytes(result))) // 4 * 3
+    if capacity <= 0:
+        raise KnowledgeStorageError("review", "record envelope cannot fit the output bound")
+    end = min(len(raw), offset + capacity)
+    result.update(data_base64=base64.b64encode(raw[offset:end]).decode("ascii"),
+                  next_offset=end if end < len(raw) else None, complete=offset == 0 and end == len(raw))
+    return result
 
 
 def review_storage(wiki_dir: str | Path, *, against: str | Path | None = None,
-                   limit: int = 100, max_bytes: int = 262_144, selectors=None) -> dict[str, Any]:
-    """Inspect or compare complete logical snapshots with explicitly bounded output."""
+                   limit: int = 100, max_bytes: int = 262_144, selectors=None,
+                   cursor: str | None = None, record_index: int | None = None,
+                   review_id: str | None = None, record_offset: int = 0) -> dict[str, Any]:
+    """Page logical snapshots or recover an exact row under the same output bounds.
+
+    Each call repeats its original validation/materialization scope. Continuations
+    bind snapshot commitments, native locations, operation and canonical ordering;
+    they are consistency checks, not authorization or live-source freshness proof.
+    """
     if type(limit) is not int or not 1 <= limit <= 10_000 or type(max_bytes) is not int or not 1024 <= max_bytes <= MAX_OBJECT_BYTES:
         raise KnowledgeStorageError("review", "limit must be 1..10000 and max_bytes 1024..8388608")
+    if (cursor is not None and (not isinstance(cursor, str) or not 1 <= len(cursor) <= 1024)
+            or type(record_offset) is not int or record_offset < 0
+            or record_index is None and (review_id is not None or record_offset != 0)
+            or record_index is not None and (type(record_index) is not int or record_index < 0
+                or not isinstance(review_id, str) or not re.fullmatch(r"sha256:[0-9a-f]{64}", review_id)
+                or cursor is not None)):
+        raise KnowledgeStorageError("review", "use a bounded cursor or a record_index/review_id with a nonnegative byte offset")
     from .knowledge_storage import digest
     capture = None
     if selectors is None:
-        current = _review_records(wiki_dir)
+        current, current_basis = _review_records(wiki_dir)
     else:
         if against is not None:
             raise KnowledgeStorageError("selectors", "scoped comparison is not supported")
@@ -361,44 +434,69 @@ def review_storage(wiki_dir: str | Path, *, against: str | Path | None = None,
         capture = capture_knowledge_slice(wiki_dir, selectors, max_records=10_000)
         current = {f"{kind}:{row['owner']}:{row['id']}": row["value"]
                    for kind, rows in capture.slice.to_payload()["records"].items() for row in rows}
-    previous = {} if against is None else _review_records(against)
+        current_basis = {"root": str(_absolute_path(Path(wiki_dir))), "selection": capture.slice.to_payload(),
+                         "commit": capture.manifest.artifact_hashes.to_payload() if capture.manifest.artifact_hashes else None,
+                         "generation_inputs": dict(capture.manifest.generation_inputs),
+                         "maintenance": capture.manifest.maintenance_state_hash, "adoption": capture.manifest.adoption_id}
+    previous, previous_basis = ({}, None) if against is None else _review_records(against)
     result: dict[str, Any] = {"schema_version": "llm-wiki-storage-review/v1", "ok": True,
         "operation": "inspect" if against is None else "diff", "validation_scope": "full-committed-snapshots",
         "records": [], "total": 0, "omitted": 0, "values_omitted": 0, "complete": True}
     if capture is not None:
         result.update(schema_version="llm-wiki-storage-review/v2", validation_scope="selected-records-and-policy",
                       whole_snapshot_validated=False)
-    used = len(canonical_bytes(result)) + 128
-    for key in sorted(current.keys() | previous.keys()):
-        if (against is not None and (key in current) == (key in previous)
-                and canonical_bytes(current.get(key)) == canonical_bytes(previous.get(key))):
-            continue
-        result["total"] += 1
-        if len(result["records"]) >= limit:
-            result["omitted"] += 1
-            continue
-        row: dict[str, Any] = {"key": key}
-        row["change"] = "present" if against is None else "added" if key not in previous else "removed" if key not in current else "modified"
-        values = {}
-        for label, records in (("before", previous), ("after", current)):
-            if key in records:
-                raw = canonical_bytes(records[key])
-                row[label] = {"hash": digest(raw), "bytes": len(raw)}
-                values[label] = records[key]
-        expanded = {**row, "values": values}
-        size = len(canonical_bytes(expanded)) + 1
-        if used + size <= max_bytes:
-            row = expanded
+    keys = [key for key in sorted(current.keys() | previous.keys())
+            if against is None or (key in current) != (key in previous)
+            or canonical_bytes(current.get(key)) != canonical_bytes(previous.get(key))]
+    binding = digest(canonical_bytes({"contract": "storage-review-order/v1", "operation": result["operation"],
+        "scope": result["validation_scope"], "after": current_basis, "before": previous_basis}))
+    if record_index is not None:
+        if review_id != binding:
+            raise KnowledgeStorageError("review_id", "changed snapshot/scope; restart review")
+        if record_index >= len(keys):
+            raise KnowledgeStorageError("record_index", "outside this review's ordered records")
+        chunk = _review_record_chunk(_review_row(keys[record_index], record_index, current, previous, against is not None),
+                                    review_id=binding, offset=record_offset, max_bytes=max_bytes,
+                                    validation_scope=result["validation_scope"])
+        if capture is not None:
+            capture.finish()
+        return chunk
+    start = 0 if cursor is None else _review_position(cursor, binding, len(keys))
+    result.update(review_id=binding, offset=start, total=len(keys), next_cursor=None, remaining=len(keys) - start,
+                  enumeration_complete=False)
+    records = result["records"]
+    used = 0
+
+    def envelope(count: int, omitted_values: int) -> dict[str, Any]:
+        end = start + count
+        return {**result, "records": [], "omitted": len(keys) - count, "remaining": len(keys) - end,
+                "values_omitted": omitted_values, "enumeration_complete": end == len(keys),
+                "complete": start == 0 and end == len(keys) and omitted_values == 0,
+                "next_cursor": _review_cursor(binding, end) if end < len(keys) else None}
+
+    omitted_values = 0
+    for index in range(start, min(len(keys), start + limit)):
+        expanded = _review_row(keys[index], index, current, previous, against is not None)
+        raw = canonical_bytes(expanded)
+        candidates = [expanded, {k: v for k, v in expanded.items() if k != "values"}]
+        candidates[1]["values_omitted"] = True
+        candidates.append({"record_index": index, "key_omitted": True, "values_omitted": True,
+                           "record_hash": digest(raw), "record_bytes": len(raw)})
+        for row in candidates:
+            count = len(records) + 1
+            omissions = omitted_values + bool(row.get("values_omitted"))
+            size = len(canonical_bytes(row)) - 1
+            # Empty-array envelope plus comma-separated rows, including CLI newline.
+            if len(canonical_bytes(envelope(count, omissions))) + used + size + count - 1 <= max_bytes:
+                records.append(row)
+                used += size
+                omitted_values = omissions
+                break
         else:
-            row["values_omitted"] = True
-            size = len(canonical_bytes(row)) + 1
-            if used + size > max_bytes:
-                result["omitted"] += 1
-                continue
-            result["values_omitted"] += 1
-        result["records"].append(row)
-        used += size
-    result["complete"] = not result["omitted"] and not result["values_omitted"]
+            if not records:
+                raise KnowledgeStorageError("review", "record envelope cannot fit the output bound")
+            break
+    result = {**envelope(len(records), omitted_values), "records": records}
     if capture is not None:
         capture.finish()
     return result

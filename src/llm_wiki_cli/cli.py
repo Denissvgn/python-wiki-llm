@@ -852,6 +852,10 @@ def _add_knowledge_command(subparsers):
         _add_knowledge_wiki_argument(review)
         review.add_argument("--limit", type=int, default=100, help="Maximum returned records (default: 100)")
         review.add_argument("--max-bytes", type=int, default=262_144, help="Maximum JSON output bytes (default: 262144)")
+        review.add_argument("--cursor", default=None, help="Continue the same snapshot review using next_cursor")
+        review.add_argument("--record-index", type=int, default=None, help="Read exact canonical record bytes at this review ordinal")
+        review.add_argument("--review-id", default=None, help="Required snapshot/scope binding for --record-index")
+        review.add_argument("--record-offset", type=int, default=0, help="Byte offset for a bounded record chunk (default: 0)")
         if action == "diff-storage":
             review.add_argument("--against-wiki", required=True, help="Other complete wiki snapshot to compare")
         else:

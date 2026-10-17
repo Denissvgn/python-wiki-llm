@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Logical storage inspection and comparison support snapshot-bound continuation
+  and bounded exact-record reads, so omitted changes and oversized values can be
+  reviewed without increasing output limits.
+
 ### Fixed
 
 - Rejected syncs retain a hash-bound recovery journal for newly created pages.

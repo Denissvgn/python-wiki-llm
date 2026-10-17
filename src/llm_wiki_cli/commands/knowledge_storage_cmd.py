@@ -40,7 +40,8 @@ def run(args) -> None:
         elif args.knowledge_action in {"inspect-storage", "diff-storage"}:
             result = review_storage(root, against=getattr(args, "against_wiki", None),
                                     limit=args.limit, max_bytes=args.max_bytes,
-                                    selectors=getattr(args, "selector", None))
+                                    selectors=getattr(args, "selector", None), cursor=args.cursor,
+                                    record_index=args.record_index, review_id=args.review_id, record_offset=args.record_offset)
         else:
             if args.stream:
                 if args.full or args.git_base is not None or args.git_head is not None:
