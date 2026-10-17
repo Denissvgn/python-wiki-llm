@@ -2827,3 +2827,25 @@ caller bindings and reveals complete input paths without approving writes.
 - Pages deprecated: 0
 - Semantic fields preserved: 2
 - Moved entities: none
+
+## 2026-10-17
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.0.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:d3554d36474c5dcffa5a334a8e33c48517d7b052de9414aaf8b19ebb145fb8af`
+- Pages created: 0
+- Pages updated: 4
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1601
+- Pages deprecated: 0
+- Semantic fields preserved: 3
+- Moved entities: none
+
+### Reviewed generator refresh
+
+Successful broad previews explain the explicit owning refresh route. Agent
+maintenance guidance preserves caller bindings and requires renewed review when
+inputs change, while broad guards and existing recovery remain active.

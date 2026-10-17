@@ -35901,7 +35901,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 5263,
+              "line": 5275,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -35909,7 +35909,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2438,
+              "line": 2439,
               "step": "_sync_run_options_from_args",
               "step_index": 2,
               "target": "print"
@@ -35917,7 +35917,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2444,
+              "line": 2445,
               "step": "_sync_run_options_from_args",
               "step_index": 2,
               "target": "print"
@@ -35925,19 +35925,13 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2450,
+              "line": 2451,
               "step": "_sync_run_options_from_args",
               "step_index": 2,
               "target": "print"
             }
           ],
           "gaps": [
-            {
-              "kind": "external_call",
-              "line": 2416,
-              "step": "_sync_run_options_from_args",
-              "target": "getattr"
-            },
             {
               "kind": "external_call",
               "line": 2417,
@@ -35953,6 +35947,12 @@
             {
               "kind": "external_call",
               "line": 2419,
+              "step": "_sync_run_options_from_args",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 2420,
               "step": "_sync_run_options_from_args",
               "target": "getattr"
             },
@@ -36045,7 +36045,7 @@
             "src/llm_wiki_cli/services/wiki_surface_index.py",
             "src/llm_wiki_cli/services/sync_recovery.py"
           ],
-          "step_count": 5831,
+          "step_count": 5833,
           "truncated": true
         }
       },
@@ -67320,5 +67320,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:291b5c491725247a4a03bb593ff2e63336c708b889c59504c1eb489859abaa7b"
+  "source_hash": "sha256:b59a3a9926c71b0ba894bff5260e949e03d5a918bd0c2e6359bfeb03fdcb620c"
 }

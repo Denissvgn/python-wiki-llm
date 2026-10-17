@@ -145,9 +145,9 @@ sequenceDiagram
     p3-->>p30: write_basis.assert_current
 ```
 
-> Call sequence diagram shows 30 of 5830 interactions; 5800 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 5832 interactions; 5802 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 2026 (2025 omitted); unresolved 1 of 1818 (1817 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 2028 (2027 omitted); unresolved 1 of 1818 (1817 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -234,15 +234,15 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | _sync_run_options_from_args | 5256 | `_sync_run_options_from_args(args)` |
-| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2416 | `getattr(args, 'src_dir', '.')` |
-| _sync_run_options_from_args | Path (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2417 | `Path(getattr(...))` |
-| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2417 | `getattr(args, 'wiki_dir', 'docs/llm_wiki')` |
-| _sync_run_options_from_args | bool (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2418 | `bool(getattr(...))` |
-| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2418 | `getattr(args, 'dry_run', False)` |
+| run | _sync_run_options_from_args | 5268 | `_sync_run_options_from_args(args)` |
+| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2417 | `getattr(args, 'src_dir', '.')` |
+| _sync_run_options_from_args | Path (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2418 | `Path(getattr(...))` |
+| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2418 | `getattr(args, 'wiki_dir', 'docs/llm_wiki')` |
 | _sync_run_options_from_args | bool (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2419 | `bool(getattr(...))` |
-| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2419 | `getattr(args, 'no_plugins', False)` |
-| _sync_run_options_from_args | _cache_options_from_args | 2420 | `_cache_options_from_args(args)` |
+| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2419 | `getattr(args, 'dry_run', False)` |
+| _sync_run_options_from_args | bool (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2420 | `bool(getattr(...))` |
+| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2420 | `getattr(args, 'no_plugins', False)` |
+| _sync_run_options_from_args | _cache_options_from_args | 2421 | `_cache_options_from_args(args)` |
 | _cache_options_from_args | cache_options_from_args | 304 | `cache_options_from_args(args)` |
 | cache_options_from_args | bool (src/llm_wiki_cli/services…y:cache_options_from_args) | 311 | `bool(getattr(...))` |
 
@@ -250,19 +250,19 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 5263 |
-| output | `print` | `_sync_run_options_from_args` | 2438 |
-| output | `print` | `_sync_run_options_from_args` | 2444 |
-| output | `print` | `_sync_run_options_from_args` | 2450 |
+| output | `print` | `run` | 5275 |
+| output | `print` | `_sync_run_options_from_args` | 2439 |
+| output | `print` | `_sync_run_options_from_args` | 2445 |
+| output | `print` | `_sync_run_options_from_args` | 2451 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_sync_run_options_from_args` | `getattr` | 2416 |
 | external_call | `_sync_run_options_from_args` | `getattr` | 2417 |
 | external_call | `_sync_run_options_from_args` | `getattr` | 2418 |
 | external_call | `_sync_run_options_from_args` | `getattr` | 2419 |
+| external_call | `_sync_run_options_from_args` | `getattr` | 2420 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 
@@ -293,3 +293,12 @@ refresh inputs and expose bounded path samples with omitted counts. A copied,
 platform-quoted preview preserves the caller's roots and planning bindings;
 dry-run reveals every affected input path and its source-change reason. Source
 inputs are not rewritten, and a preview never grants broad-write approval.
+
+After successful staging, a broad preview explains how to explicitly authorize
+the reviewed update by replacing dry-run with force. Force computes a fresh plan;
+source, helper, selection, provider or wiki changes require renewed preview and
+review. Matching generated page writes are skipped, while changed generated
+content and current evidence are committed through the existing owning path.
+The normal repeat run leaves active wiki state unchanged; adopted maintenance
+may separately capture a recovery preimage outside the wiki. Ownership,
+integrity and explicit recovery requirements remain active throughout.

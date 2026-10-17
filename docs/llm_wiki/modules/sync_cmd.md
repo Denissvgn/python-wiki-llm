@@ -67,6 +67,16 @@ command text uses repeat-original guidance instead. Dry-run uses that same
 prepared plan and lists complete affected input paths, selection pruning,
 page repairs and artifact actions. The sample bounds output, not analysis work.
 
+Only a completed staged broad preview offers the reviewed apply route. The
+caller can explicitly repeat the same invocation with force in place of dry-run;
+the preview neither stores an approval nor applies force. Changed source,
+helper, selection, provider or wiki inputs need another preview and review.
+Owning sync replans current inputs, retains broad-change and ownership checks,
+and refreshes evidence and provenance together. Guarded page writes compare
+merged output with current text and skip matching results. Actual generated
+changes remain visible even when source bytes match. Explicit recovery remains
+separate from retrying a refused publication.
+
 ## Imports
 
 | Source | Symbols |
@@ -248,7 +258,7 @@ flowchart LR
 | `_build_surface_initialization_plan` | `(options: _SyncRunOptions, manifest: 'SyncManifest', inventory: dict, entry_points: list[dict], *, source_changed: bool, api_contracts: dict \| None, generation_inputs: Mapping[str, object], source_snapshot: SourceSnapshot \| None = None, cached_dependency_analysis: dict \| None = None) -> _SurfaceInitializationPlan` | — | — |
 | `_large_surface_message` | `(plan: _SurfaceInitializationPlan, wiki_dir: Path, *, removed_pages: int = 0) -> str \| None` | — | — |
 | `_exit_if_large_unforced_surface_plan` | `(options: _SyncRunOptions, plan: _SurfaceInitializationPlan, *, removed_pages: int = 0) -> None` | — | — |
-| `_print_dry_run_plan` | `(options: _SyncRunOptions, diff: 'SyncDiff', application_diff: 'SyncDiff', plan: _SurfaceInitializationPlan, infrastructure_plan: InfrastructureSyncPlan, source_selection_prune: SourceSelectionPruneResult, manifest: SyncManifest, *, seed_manifest: bool, repair_only: bool, runtime_provenance_changed: bool, generator_refresh_required: bool = False, prior_generator_version: str \| None = None) -> None` | — | — |
+| `_print_dry_run_plan` | `(options: _SyncRunOptions, diff: 'SyncDiff', application_diff: 'SyncDiff', plan: _SurfaceInitializationPlan, infrastructure_plan: InfrastructureSyncPlan, source_selection_prune: SourceSelectionPruneResult, manifest: SyncManifest, *, seed_manifest: bool, repair_only: bool, runtime_provenance_changed: bool, generator_refresh_required: bool = False, prior_generator_version: str \| None = None) -> bool` | — | — |
 | `_surface_args` | `(value: object) -> frozenset[str]` | — | — |
 | `_flow_category_args` | `(value: object) -> frozenset[str] \| None` | — | — |
 | `_manifest_openapi_path` | `(manifest: 'SyncManifest') -> str \| None` | — | Return the persisted OpenAPI path, rejecting malformed v4 state. |

@@ -21,6 +21,15 @@ Explicit-language helper recovery omits incompatible selection flags while the
 original read retains its selection. Optional profiles, storage adoption, and
 delivery actions remain separate choices under project policy.
 
+Both the managed maintenance reference and expanded inline fallback explain the
+reviewed generator-refresh route. A complete dry-run precedes an explicitly
+authorized force invocation with the same bindings; force always replans current
+inputs. Changed source, helper, selection, provider or wiki inputs require a new
+preview and review. Force is never an automatic upgrade action and does not
+waive ownership, integrity or recovery. Its existing authority for stale
+generated surface retirement is disclosed so authored Behavior is reviewed
+before removal.
+
 The compact profile preserves the explicit correctness clauses recognized by
 instruction ownership, alongside packaged routes to further detail. Continuation
 whitespace within list items can be condensed without changing those clauses or
