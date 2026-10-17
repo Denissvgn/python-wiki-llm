@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Fresh normalization diagnostics identify bounded record locations, rules and
+  expected shapes without exposing rejected source values or changing evidence hashes.
+
 - Scoped evidence repair for unchanged owned sources with matching producer
   commitments, preserving unselected evidence and normal review/recovery guards
   while disclosing full analysis and global reconciliation.

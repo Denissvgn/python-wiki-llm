@@ -653,6 +653,42 @@ fails normalization. Where captured source hashes exist, they distinguish
 unchanged bytes from changed or incomparable inputs. Producer metadata and
 version labels do not identify historical package bytes; unavailable provenance
 and rejected-record details remain explicit.
+
+Fresh normalization rejections can include `Fresh normalization diagnostic: `
+followed by a JSON object in the existing finding `message` or evidence freshness
+`description`. The object has its own
+[`llm-wiki-normalization-diagnostic/v1` schema](../src/llm_wiki_cli/schemas/llm-wiki-normalization-diagnostic-v1.schema.json).
+It identifies the source, scope and extractor, the entity's named occurrence
+when applicable, a record `pointer`, the failed `rule`, the `expected` shape,
+and redacted `actual` type/summary. For example, an import can identify
+`/imports/0/module` with rule `import-module`; a near-miss explicit dynamic
+import can instead identify its missing `/imports/0/reason`.
+
+Exact pointers use JSON Pointer with zero-based array indexes. Entity occurrence
+coordinates remain one-based among declarations with the same name. A missing
+occurrence points to the declaration collection, without inventing an index.
+An unknown recursion/encoding location uses a null pointer. When an arbitrary
+mapping key is redacted, the pointer identifies an ancestor and `pointer_exact`
+is false. Bounded coordinate prefixes are listed in `truncated_fields` and must
+not be treated as exact identities.
+
+The rendered diagnostic is limited to 4,096 UTF-8 bytes, including its prefix.
+Rejected string values, container contents and arbitrary mapping keys are redacted;
+actual summaries retain safe shape facts such as type, length, emptiness or
+non-finiteness. No arbitrary object representation is rendered. A surrounding
+query may impose a tighter response bound and disclose truncation separately.
+Missing detail does not establish valid evidence.
+
+This versioned object is carried as diagnostic text; existing outer report and
+evidence-basis fields are unchanged. Older decoders can retain that text without
+parsing it. A consumer interpreting the object must recognize its schema version;
+unknown versions are not an inferred current contract. Native comparison data
+still requires its compatible outer report schema. Raw `extract` output remains
+inventory, not an annotated normalization report. Historical reason-only snapshots
+do not acquire reconstructed record pointers: details describe only a rejection
+observed by the current normalization run. Valid observation hashes, reason codes
+and strict failure policy remain unchanged.
+
 Fresh extraction and evidence explanation are reads: a valid fresh observation
 does not make an unknown committed baseline current. Ordinary owning sync can
 refresh a captured invalid module/entity basis after current deep normalization

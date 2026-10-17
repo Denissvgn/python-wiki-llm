@@ -200,6 +200,7 @@
     "services/metrics.py",
     "services/module_maps.py",
     "services/native_inspection.py",
+    "services/normalization_diagnostics.py",
     "services/obsidian.py",
     "services/packages.py",
     "services/packet_field_policy.py",

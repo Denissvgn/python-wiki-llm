@@ -67,6 +67,7 @@ where = ["src"]
 "llm_wiki_cli" = [
     "py.typed",
     "services/analysis_contracts.json",
+    "schemas/llm-wiki-normalization-diagnostic-v1.schema.json",
     "schemas/llm-wiki-knowledge-v1.schema.json",
     "schemas/llm-wiki-implementation-evidence-v1.schema.json",
     "schemas/llm-wiki-maintenance-adoption-v1.schema.json",

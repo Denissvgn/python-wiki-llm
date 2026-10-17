@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "llm-wiki-normalization-diagnostic/v1",
+  "title": "Fresh inventory normalization diagnostic",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "basis", "reason", "source_path", "scope", "extractor_ref", "entity_name", "occurrence", "pointer", "pointer_exact", "rule", "expected", "actual", "truncated_fields"],
+  "properties": {
+    "schema_version": {"const": "llm-wiki-normalization-diagnostic/v1"},
+    "basis": {"const": "fresh-normalization"},
+    "reason": {"type": "string", "maxLength": 64},
+    "source_path": {"type": ["string", "null"], "maxLength": 64},
+    "scope": {"type": ["string", "null"], "maxLength": 64},
+    "extractor_ref": {"type": ["string", "null"], "maxLength": 64},
+    "entity_name": {"type": ["string", "null"], "maxLength": 64},
+    "occurrence": {"type": ["integer", "null"], "minimum": 1, "maximum": 2147483647},
+    "pointer": {"type": ["string", "null"], "maxLength": 256},
+    "pointer_exact": {"type": "boolean"},
+    "rule": {"type": "string", "maxLength": 64},
+    "expected": {"type": "string", "maxLength": 64},
+    "actual": {
+      "type": "object", "additionalProperties": false,
+      "required": ["type", "summary"],
+      "properties": {
+        "type": {"enum": ["missing", "null", "boolean", "string", "object", "array", "integer", "number", "unsupported", "unavailable"]},
+        "summary": {"type": "string", "maxLength": 128}
+      }
+    },
+    "truncated_fields": {
+      "type": "array", "uniqueItems": true,
+      "items": {"enum": ["reason", "source_path", "scope", "extractor_ref", "entity_name", "occurrence", "pointer", "rule", "expected"]}
+    }
+  }
+}

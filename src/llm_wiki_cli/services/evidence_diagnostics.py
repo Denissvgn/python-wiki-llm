@@ -76,6 +76,11 @@ def captured_evidence_diagnostic(
         f"{_label(prior.tool.version)}/{_label(None if current is None else current.tool.version)}. "
         "Version labels and metadata do not establish historical artifact identity."
     )
+    if live.normalization_diagnostic is not None:
+        description += " " + live.normalization_diagnostic.render()
+    elif live.unknown_reason is not None:
+        description += " Fresh rejected-record details were not captured."
+    description += " Historical rejected-record details were not captured."
     if live.unknown_reason == "invalid-inventory-shape":
         return (
             description + " Fresh normalization still rejects the current observation "
