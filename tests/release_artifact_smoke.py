@@ -316,98 +316,171 @@ def _require_lifecycle_status(
         )
 
 
-def _uninstall_lifecycle(cli: Sequence[str], project: Path) -> None:
-    _run(
-        [*cli, "uninstall", "--wiki-dir", "docs/llm_wiki"],
-        cwd=project,
-        input_text="y\n",
-    )
-    if (project / "AGENTS.md").exists() or (project / "CLAUDE.md").exists():
-        raise SmokeError("installed CLI did not remove its managed schema")
-    if (project / ".git" / ".llm-wiki-agent").exists():
-        raise SmokeError("installed CLI did not remove its managed agent config")
-
-
 def _validate_profile_lifecycle(
     cli: Sequence[str],
     work: Path,
 ) -> Mapping[str, Sequence[str]]:
-    """Exercise installed compact and expanded lifecycles at both locations."""
+    """Exercise every installed agent's default and inline upgrade lifecycle.
 
-    generic = _project_for_lifecycle(work, "lifecycle-generic")
-    _run(
-        [*cli, "init", "--agent", "generic", "--wiki-dir", "docs/llm_wiki"],
-        cwd=generic,
+    Discover membership from the installed provider, not this source checkout.
+    Both initial modes preserve authored schema text through upgrade/uninstall.
+    """
+    descriptor = _json_output(
+        _run(
+            _isolated_utf8_python_command(
+                cli[0],
+                "-c",
+                (
+                    "import json; from llm_wiki_cli.config import AGENT_CHOICES; "
+                    "from llm_wiki_cli.services.schema import SCHEMA_FILENAMES; "
+                    "from llm_wiki_cli.services.skills import skills_install_dir; "
+                    "print(json.dumps({'agents':AGENT_CHOICES,'schemas':SCHEMA_FILENAMES,"
+                    "'references':{name:(skills_install_dir(name)/'wiki-reference').as_posix() "
+                    "for name in AGENT_CHOICES}}))"
+                ),
+            ),
+            cwd=work,
+        ),
+        "installed agent membership",
     )
-    generic_reference = generic / ".llm-wiki" / "skills" / "wiki-reference"
-    if not generic_reference.is_dir():
-        raise SmokeError("generic init did not install the managed reference")
-    _require_lifecycle_status(
-        cli,
-        generic,
-        lifecycle="compact/current",
-        profile="compact",
-        reference_state="current",
+    agents, schemas, references = (
+        descriptor.get(name) for name in ("agents", "schemas", "references")
     )
-    _run(
-        [*cli, "upgrade", "--wiki-dir", "docs/llm_wiki", "--no-skills"],
-        cwd=generic,
-    )
-    _require_lifecycle_status(
-        cli,
-        generic,
-        lifecycle="expanded/skills-disabled",
-        profile="expanded_inline",
-        reference_state="current",
-    )
-    _uninstall_lifecycle(cli, generic)
-    if generic_reference.exists():
-        raise SmokeError("generic uninstall retained an exact managed reference")
-
-    claude = _project_for_lifecycle(work, "lifecycle-claude")
-    _run(
-        [
-            *cli,
-            "init",
-            "--agent",
-            "claude",
-            "--wiki-dir",
-            "docs/llm_wiki",
-            "--no-skills",
-        ],
-        cwd=claude,
-    )
-    claude_reference = claude / ".claude" / "skills" / "wiki-reference"
-    if claude_reference.exists():
-        raise SmokeError("Claude opt-out init unexpectedly installed a reference")
-    _require_lifecycle_status(
-        cli,
-        claude,
-        lifecycle="expanded/skills-disabled",
-        profile="expanded_inline",
-        reference_state="absent",
-    )
-    _run(
-        [*cli, "upgrade", "--wiki-dir", "docs/llm_wiki", "--skills"],
-        cwd=claude,
-    )
-    if not claude_reference.is_dir():
-        raise SmokeError("Claude upgrade did not install its managed reference")
-    _require_lifecycle_status(
-        cli,
-        claude,
-        lifecycle="compact/current",
-        profile="compact",
-        reference_state="current",
-    )
-    _uninstall_lifecycle(cli, claude)
-    if claude_reference.exists():
-        raise SmokeError("Claude uninstall retained an exact managed reference")
-
-    return {
-        "generic": ("compact/current", "expanded/skills-disabled", "uninstalled"),
-        "claude": ("expanded/skills-disabled", "compact/current", "uninstalled"),
+    if (
+        not isinstance(agents, list)
+        or not agents
+        or len(set(agents)) != len(agents)
+        or not all(
+            isinstance(agent, str) and re.fullmatch(r"[a-z][a-z0-9-]*", agent)
+            for agent in agents
+        )
+        or not isinstance(schemas, Mapping)
+        or set(schemas) != set(agents)
+        or not isinstance(references, Mapping)
+        or set(references) != set(agents)
+    ):
+        raise SmokeError("installed agent/schema/reference membership differs")
+    results = {}
+    prefix = b"# Preserve this project convention.\r\n\r\n"
+    for agent in sorted(agents):
+        for no_skills in (False, True):
+            mode = "no-skills" if no_skills else "skills"
+            key = agent + "/" + mode
+            project = _project_for_lifecycle(work, "lifecycle-" + agent + "-" + mode)
+            schema_name, reference_name = schemas[agent], references[agent]
+            if (
+                not isinstance(schema_name, str)
+                or not isinstance(reference_name, str)
+                or any(
+                    not name
+                    or ":" in name
+                    or PurePosixPath(name).is_absolute()
+                    or ".." in PurePosixPath(name).parts
+                    or "\\" in name
+                    for name in (schema_name, reference_name)
+                )
+            ):
+                raise SmokeError("installed lifecycle contains unsafe relative paths")
+            schema = project / schema_name
+            schema.parent.mkdir(parents=True, exist_ok=True)
+            schema.write_bytes(prefix)
+            reference = project / reference_name
+            init = [*cli, "init", "--agent", agent, "--wiki-dir", "docs/llm_wiki"]
+            if no_skills:
+                init.append("--no-skills")
+            _run(init, cwd=project)
+            lifecycle = "expanded/skills-disabled" if no_skills else "compact/current"
+            profile = "expanded_inline" if no_skills else "compact"
+            reference_state = "absent" if no_skills else "current"
+            _require_lifecycle_status(
+                cli,
+                project,
+                lifecycle=lifecycle,
+                profile=profile,
+                reference_state=reference_state,
+            )
+            initial = schema.read_bytes()
+            if not initial.startswith(prefix):
+                raise SmokeError("init replaced authored schema bytes: " + key)
+            if no_skills:
+                if reference.exists():
+                    raise SmokeError("opt-out init installed a reference: " + key)
+                for obligation in (
+                    b"independent acceptance criteria",
+                    b"every required",
+                    b"environment failure",
+                ):
+                    if obligation not in initial:
+                        raise SmokeError(
+                            "inline workflow omitted an obligation: " + key
+                        )
+            else:
+                _validate_wiki_reference_tree(reference)
+            _run([*cli, "upgrade", "--wiki-dir", "docs/llm_wiki"], cwd=project)
+            _require_lifecycle_status(
+                cli,
+                project,
+                lifecycle=lifecycle,
+                profile=profile,
+                reference_state=reference_state,
+            )
+            if schema.read_bytes() != initial:
+                raise SmokeError(
+                    "upgrade did not preserve exact current schema: " + key
+                )
+            if no_skills:
+                if reference.exists():
+                    raise SmokeError("upgrade ignored reference opt-out: " + key)
+            else:
+                _validate_wiki_reference_tree(reference)
+            # Execute a real emitted workflow capability command from each
+            # independent installed project, including skills-disabled callers.
+            report = _json_output(
+                _run(
+                    [*cli, "doctor", "--analysis-inputs", "--format", "json"],
+                    cwd=project,
+                ),
+                "installed workflow input census",
+            )
+            if report.get("status") != "ready":
+                raise SmokeError(
+                    "installed workflow input census was not ready: " + key
+                )
+            # Retain the previous harness's explicit mode-transition checks in
+            # addition to every initial agent/fallback upgrade-preservation case.
+            toggle = "--skills" if no_skills else "--no-skills"
+            _run([*cli, "upgrade", "--wiki-dir", "docs/llm_wiki", toggle], cwd=project)
+            opposite = "compact/current" if no_skills else "expanded/skills-disabled"
+            _require_lifecycle_status(
+                cli,
+                project,
+                lifecycle=opposite,
+                profile="compact" if no_skills else "expanded_inline",
+                reference_state="current",
+            )
+            if not schema.read_bytes().startswith(prefix):
+                raise SmokeError(
+                    "mode transition replaced authored schema bytes: " + key
+                )
+            _validate_wiki_reference_tree(reference)
+            _run(
+                [*cli, "uninstall", "--wiki-dir", "docs/llm_wiki"],
+                cwd=project,
+                input_text="y\n",
+            )
+            if schema.read_bytes() != prefix:
+                raise SmokeError(
+                    "uninstall did not preserve authored schema bytes: " + key
+                )
+            if (project / ".git/.llm-wiki-agent").exists() or reference.exists():
+                raise SmokeError("uninstall retained managed lifecycle bytes: " + key)
+            results[key] = (lifecycle, "upgrade-preserved", opposite, "uninstalled")
+    expected = {
+        agent + "/" + mode for agent in agents for mode in ("skills", "no-skills")
     }
+    if set(results) != expected:
+        raise SmokeError("installed lifecycle omitted an agent/fallback variant")
+    return results
 
 
 def _validate_selected_skill_dependencies(

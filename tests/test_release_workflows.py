@@ -157,6 +157,12 @@ def test_routine_ci_checks_the_full_release_typing_surface() -> None:
         '|', 'tee', 'pyright.log',
     ]
     assert not check.get("continue-on-error")
+    lint = next(step for step in job["steps"] if step.get("name") == "Check the release lint scope")
+    assert lint["shell"] == "bash" and not lint.get("continue-on-error")
+    assert lint["run"].split("-m ruff check", 1)[1].split("|", 1)[0].split() == [
+        "src", "tests", "examples", "integrations/github-action/render_summary.py",
+        "release/preflight.py", "release/preflight_contracts.py", "release/preflight_runner.py",
+    ]
 
 
 def test_selected_sources_and_committed_wiki_use_lf_checkout_semantics() -> None:

@@ -154,6 +154,9 @@ jobs:
           esac
           git check-ref-format "${WORKFLOW_REF#"${WORKFLOW_PREFIX}"}"
 
+      - name: Check shared local and hosted producer contracts
+        run: python -I release/preflight_contracts.py check --repo .
+
       - name: Check recorded producer before qualification
         id: knowledge-policy
         shell: bash
@@ -227,6 +230,8 @@ jobs:
             --output="${RUNNER_TEMP}/frozen/qualification-harnesses.tar" \
             "${CANDIDATE_SHA}" -- \
             release/qualification.py \
+            release/preflight_contracts.py \
+            release/preflight-contracts.json \
             release/knowledge_maintenance.py \
             release/analysis_pairs.py \
             release/analysis_conformance.py \
@@ -536,6 +541,14 @@ jobs:
 
       - name: Install the frozen source non-editably
         run: python -m pip install --no-cache-dir "./candidate[dev,tokens]"
+
+      - name: Run shared early preparation contracts
+        if: ${{ !inputs.discovery-mode }}
+        working-directory: candidate
+        run: >-
+          python -I ../incoming/tools/release/preflight_contracts.py groups
+          --repo . --group inventory --group defaults
+          --output "${RUNNER_TEMP}/preflight-contracts-${{ matrix.lane }}"
 
       - name: Run strict core suite with canonical coverage
         if: ${{ matrix.coverage && !inputs.discovery-mode }}

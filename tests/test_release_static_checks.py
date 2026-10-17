@@ -105,7 +105,11 @@ def test_default_checks_use_current_interpreter_and_preserve_blocking_scanners(
         "actionlint",
     }
     assert by_name["pyright"].command[-2:] == ("--pythonpath", sys.executable)
-    assert "examples" in by_name["ruff"].command
+    assert by_name["ruff"].command == (
+        sys.executable, "-m", "ruff", "check", "src", "tests", "examples",
+        "integrations/github-action/render_summary.py", "release/preflight.py",
+        "release/preflight_contracts.py", "release/preflight_runner.py",
+    )
     assert all(
         check.command[0] == sys.executable
         for check in checks

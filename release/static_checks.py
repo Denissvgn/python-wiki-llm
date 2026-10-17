@@ -253,6 +253,9 @@ def default_checks(root: Path, evidence: Path) -> list[Check]:
                 "tests",
                 "examples",
                 "integrations/github-action/render_summary.py",
+                "release/preflight.py",
+                "release/preflight_contracts.py",
+                "release/preflight_runner.py",
             ),
         ),
         Check(

@@ -138,6 +138,108 @@ source .git/llm-wiki-ci-toolchains.env
   --src-dir . --wiki-dir docs/llm_wiki
 ```
 
+### Local release preparation
+
+This repository provides `release/preflight.py` for explicit local preparation
+and release rehearsal. Run it from the source checkout with the project virtual
+environment. It keeps source, runtime, dependency and evidence identities bound
+to the selected commit, and reports native or hosted requirements that remain
+outstanding. It has no publication or promotion authority.
+
+Choose new output paths already covered by the project's ignore rules. The
+controller refuses unignored output and occupied, unowned work directories;
+existing owned work retains separate attempts. For example:
+
+```bash
+PREFLIGHT_DIR=reports/local-preflight
+RELEASE_CANDIDATE_SHA="$(git rev-parse HEAD)"
+git check-ignore -q -- "$PREFLIGHT_DIR/before-prepare.json"
+git check-ignore -q -- "$PREFLIGHT_DIR/work"
+.venv/bin/python -I release/preflight.py plan \
+  --candidate-sha "$RELEASE_CANDIDATE_SHA" --check-registry \
+  --output "$PREFLIGHT_DIR/before-prepare.json"
+.venv/bin/python -I release/preflight.py prepare \
+  --plan "$PREFLIGHT_DIR/before-prepare.json" --work "$PREFLIGHT_DIR/work"
+```
+
+`plan` inspects the checkout and available capabilities without installing
+anything. `--check-registry` additionally requests read-only remote tag and
+package-registry inspection. An unavailable service stays unavailable; it does
+not establish that a version is free. Already published versions, including
+3.0.0, and unfinished version or changelog preparation prevent complete release
+rehearsal. Version selection, migration review and issue disposition remain
+explicit maintainer decisions.
+
+`prepare` explicitly invokes the maintained locked toolchain and helper setup
+routes on supported hosts. Review its result, activate the prepared Node/npm
+environment as described above, finish authorized source and wiki maintenance,
+and commit the coherent result. Preparation may change the captured environment;
+a fresh plan is required after those changes. The controller refuses stale
+plans instead of silently selecting a different commit or environment.
+
+Preparation also screens an archive of the exact committed HEAD against the
+existing hosted source-archive limits before requesting repository health. Its
+`archive-budget/report.json` records compressed and expanded bytes, member count
+and the archive digest when an archive is created. This measures committed
+source scope. An archive above the 64 MiB compressed limit, or another existing
+archive bound, stays blocked for reviewed correction. Preparation never prunes
+storage automatically, and this local screen cannot authenticate the eventual
+hosted archive.
+
+For complete rehearsal, first save the actual issue snapshot, dispositions and
+version rationale in an ignored `$PREFLIGHT_DIR/release-review.json`. Its JSON
+object has exactly these fields:
+
+- `schema_version`: `agent-wiki-local-release-review/v1`.
+- `candidate_sha` and `version`: the final full commit SHA and its package version.
+- `observed_at`: a timezone-aware ISO 8601 observation time, no more than 24 hours old.
+- `issues`: the observed issue rows, each containing integer `number` and string `title`.
+- `dispositions`: one row for every observed issue, each containing its `number`,
+  a `decision` of `blocker`, `resolved`, `deferred`, or `not-a-bug`, and a specific
+  nonempty `reason`.
+- `semver`: `baseline` as the previous three-part release version, `target` matching
+  the candidate version, and a nonempty `reason` for the version choice.
+
+Record the review that was actually performed. This local record does not prove
+independent approval or a complete authenticated GitHub issue inventory. A
+recorded blocker prevents full rehearsal. Omitting `--review-file` leaves review
+pending and still permits the early diagnostic invocation described below.
+
+```bash
+RELEASE_CANDIDATE_SHA="$(git rev-parse HEAD)"
+git check-ignore -q -- "$PREFLIGHT_DIR/release-review.json"
+git check-ignore -q -- "$PREFLIGHT_DIR/final-plan.json"
+.venv/bin/python -I release/preflight.py plan \
+  --candidate-sha "$RELEASE_CANDIDATE_SHA" --check-registry \
+  --review-file "$PREFLIGHT_DIR/release-review.json" \
+  --output "$PREFLIGHT_DIR/final-plan.json"
+.venv/bin/python -I release/preflight.py run \
+  --plan "$PREFLIGHT_DIR/final-plan.json" --work "$PREFLIGHT_DIR/work"
+.venv/bin/python -I release/preflight.py status --work "$PREFLIGHT_DIR/work"
+```
+
+Use the returned `receipt_path` with
+`.venv/bin/python -I release/preflight.py verify --receipt RECEIPT_PATH`.
+Verification checks retained evidence and its current applicability without
+executing recorded commands or repairing anything. `status` shows recorded
+attempts; it does not establish their current applicability. Plans expire after
+24 hours and require a new inspection.
+
+For an early diagnostic check before version preparation is complete, append
+`--stage contracts` to `run`. A partial invocation remains `blocked` for release
+readiness even when its checks succeed. Full execution runs the maintained
+host-applicable checks, independent builds and installed-artifact verification
+serially. It reports `failed`, `blocked`, or
+`local-ready-hosted-required`; the last result still requires normal hosted
+qualification and all required target environments.
+
+Local macOS success cannot establish Windows or Linux semantics, an unsupported
+helper or OCI architecture, an authenticated policy proof, or publication
+attestations. A missing capability remains pending. Continue through reviewed
+main changes, current native CI and the existing qualification and publication
+procedure using its verified artifacts. Local rehearsal distributions and
+receipts cannot replace that evidence.
+
 ### Qualification after merging
 
 Repository release automation is disabled by default in
