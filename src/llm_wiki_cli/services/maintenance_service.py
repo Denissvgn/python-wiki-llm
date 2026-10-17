@@ -149,6 +149,13 @@ def adopt_maintenance_authority(src_dir, wiki_dir, *, recovery_dir, manifest_for
 
 
 def load_recovery_snapshot(directory, *, allow_captured_preimage=False):
+    metadata, files, manifest, _generated = _validated_recovery_snapshot(
+        directory, allow_captured_preimage=allow_captured_preimage)
+    return metadata, files, manifest
+
+
+def _validated_recovery_snapshot(directory, *, allow_captured_preimage=False):
+    """Retain validator-proven storage ownership without changing the public tuple."""
     try:
         return _load_recovery_snapshot(directory, allow_captured_preimage=allow_captured_preimage)
     except MaintenanceProtocolError:
@@ -214,7 +221,10 @@ def _load_recovery_snapshot(directory, *, allow_captured_preimage=False):
     for concept in validated.knowledge.concepts:
         if metadata["kind"] != "captured-preimage" and digest(decode_markdown_bytes(files[concept.document.canonical_path]).encode("utf-8")) != concept.facets.semantics.page_hash:
             raise MaintenanceProtocolError("recovery-invalid", "Recovery authored page differs from committed snapshot")
-    return metadata, files, manifest
+    # Inventory membership or a generated-looking prefix is insufficient. Only
+    # validated roots and the exact referenced physical closure gain ownership.
+    generated = frozenset(validated.storage_objects) | {".llm-wiki-knowledge.json", ".llm-wiki-surface.json"}
+    return metadata, files, manifest, generated
 
 
 def recover_maintenance_authority(wiki_dir, *, recovery_dir, expected_adoption_id,
@@ -227,7 +237,7 @@ def recover_maintenance_authority(wiki_dir, *, recovery_dir, expected_adoption_i
 
     root = _absolute_path(wiki_dir)
     directory = _absolute_path(recovery_dir)
-    metadata, files, manifest = load_recovery_snapshot(directory, allow_captured_preimage=allow_captured_preimage)
+    metadata, files, manifest, generated = _validated_recovery_snapshot(directory, allow_captured_preimage=allow_captured_preimage)
     if metadata["kind"] == "prepared-adoption" and not allow_prepared_adoption:
         raise MaintenanceProtocolError("recovery-intent", "Prepared adoption requires explicit retry and source-basis verification")
     marker = metadata["marker"]
@@ -261,6 +271,10 @@ def recover_maintenance_authority(wiki_dir, *, recovery_dir, expected_adoption_i
                 raise MaintenanceProtocolError("source-changed", "Prepared adoption cannot replace a changed source basis")
         current_files = snapshot_wiki(root)
         eligible: dict[str, list[str | None]] = {name: [digest(raw)] for name, raw in files.items()}
+        anchored = present is not None or (current_manifest is not None and current_manifest.maintenance_state is not None)
+        if metadata["kind"] == "committed" and anchored:
+            for name in generated:
+                eligible[name].append(None)
         if metadata["kind"] == "prepared-adoption":
             before = json.loads(read_guarded(directory.parent / "before" / "maintenance-recovery.json", 8_388_608).content,
                                 object_pairs_hook=_pairs, parse_constant=_constant)

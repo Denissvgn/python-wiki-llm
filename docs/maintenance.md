@@ -126,12 +126,16 @@ llm-wiki maintenance recover --wiki-dir docs/llm_wiki \
 
 Use the actual directory containing a retained complete recovery snapshot.
 Recovery refuses newer committed work and edits outside its eligible preimage.
-The normal committed route also refuses absent non-owner files, including
-missing generated projections; a complete backup alone does not guarantee the
-current tree is eligible. Preserve the refusal and exact recovery bytes for
-authorized complete restoration. Do not recreate history or relax guards to make
-a damaged tree fit. Packet-read diagnostics retain these preconditions and never
-apply recovery themselves.
+With a surviving matching immutable marker or committed owner, the normal
+committed route can restore absent knowledge/surface roots and their exact
+validator-referenced native objects, including indexed owner catalogs. It restores
+the retained bytes and identity; it does not regenerate projections or history.
+An entry in the backup inventory or a generated-looking filename grants no such
+ownership. Missing authored pages/assets, absent unreferenced files, changed
+existing bytes, unknown files and newer authority still refuse. A complete backup
+alone does not make a tree eligible. Packet reads retain these preconditions and
+never apply recovery themselves; successful restoration does not prove live
+source freshness or approve prose.
 `--allow-prepared-adoption` is an explicit retry of an interrupted prepared
 adoption and requires its original source basis via `--src-dir`.
 `--allow-captured-preimage` restores an explicitly selected captured preimage

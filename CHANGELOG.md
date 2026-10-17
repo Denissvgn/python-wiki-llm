@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Explicit committed maintenance recovery restores absent validated projection
+  roots and referenced native objects under the retained ownership anchor,
+  preserving refusals for authored changes, unknown files and newer authority.
+
 - Packet refusals identify damaged ordinary maintenance authority with a shared
   domain cause and explicit matching-recovery requirements across Python, CLI
   and MCP, preserving strict refusal and read-only behavior.

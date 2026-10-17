@@ -200,9 +200,11 @@ Keep the original source root and selection for subsequent owning sync and
 validation, and keep recovery bytes outside the wiki and source inputs.
 
 A complete backup is necessary but does not guarantee that the current recovery
-operation accepts the damaged tree. Missing projection files, conflicting
-authored edits or newer authority can cause refusal; preserve that refusal and
-the exact bytes for authorized complete restoration. Do not initialize another
+operation accepts the damaged tree. With a matching surviving marker or owner,
+committed recovery can restore missing validator-owned projection roots and
+referenced native objects. Missing authored or unreferenced files, conflicting
+bytes or newer authority still refuse; preserve that refusal and the exact bytes.
+Do not initialize another
 marker, mix backups, or enable interrupted-recovery modes to bypass a guard.
 The diagnostic grants no write permission and a read never repairs authority.
 Required native evidence remains unsatisfied. Packet `off` retains its packet

@@ -112,14 +112,8 @@ def test_all_stored_layouts_share_readonly_recovery_diagnostic(tmp_path, monkeyp
                      "{expected_adoption_id}": adopted["adoption_id"]}
     parsed = cli._build_parser().parse_args([substitutions.get(arg, arg) for arg in argv[1:]])
     from llm_wiki_cli.commands import maintenance_cmd
-    # Existing recovery rejects absence of non-owner files, even with a complete
-    # matching backup. Keep that guard and its limitation visible; restore only
-    # the exact retained projection preimage before exercising owner recovery.
-    with redirect_stdout(io.StringIO()), pytest.raises(SystemExit):
-        maintenance_cmd.run(parsed)
-    assert snapshot_wiki("wiki") == damaged
-    assert any("Missing projections" in text for text in error.details["recovery"]["preconditions"])
-    (tmp_path / "wiki/.llm-wiki-knowledge.json").write_bytes(full[".llm-wiki-knowledge.json"])
+    # Only this explicit caller-authorized operation restores validator-owned
+    # missing projections; packet reads above left all damaged bytes untouched.
     with redirect_stdout(io.StringIO()):
         maintenance_cmd.run(parsed)
     assert snapshot_wiki("wiki") == full

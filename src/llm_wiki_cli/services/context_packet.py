@@ -292,7 +292,7 @@ class ContextPacketAuthorityError(ContextPacketError):
                 "preconditions": [
                     "Preserve current bytes and custody. Restore one complete matching committed snapshot, including marker, owner, projections, pages and history; do not combine backups.",
                     "Recovery refuses another identity, newer committed authority or conflicting authored edits. Do not reinitialize, delete the marker or enable prepared/captured-preimage modes to bypass refusal.",
-                    "Missing projections or other files can also make recovery refuse. The complete backup alone does not guarantee this command can restore the current damaged tree; preserve the refusal for authorized exact complete restoration.",
+                    "Absent validated generated roots and referenced objects can be restored from a committed snapshot only with a matching surviving marker or owner. Missing authored or unreferenced files and changed existing bytes still refuse; preserve that refusal.",
                     "Recovery is a separate authorized write. Then run owning sync and validation with the original source/wiki roots and selection before relying on native evidence.",
                 ],
             },
