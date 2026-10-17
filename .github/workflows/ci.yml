@@ -401,7 +401,8 @@ jobs:
           tests/test_default_development_workflow.py
           tests/test_current_install_defaults.py
           tests/test_storage_lock_diagnostics.py
-          tests/test_real_caller_action_fixture.py -q
+          tests/test_real_caller_action_fixture.py
+          tests/test_sync_runtime_regressions.py::test_wiki_only_commits_do_not_rewrite_repository_revision -q
           -p no:cacheprovider --strict-config --strict-markers -W error
           -o xfail_strict=true
 

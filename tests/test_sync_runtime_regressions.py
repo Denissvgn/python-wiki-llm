@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import textwrap
 import types
@@ -50,10 +51,13 @@ def _git(project: Path, *args: str) -> str:
     result = subprocess.run(
         ["git", *args],
         cwd=project,
-        check=True,
+        check=False,
         capture_output=True,
         text=True,
         encoding="utf-8",
+    )
+    assert result.returncode == 0, (
+        f"git {args!r} failed ({result.returncode}): {result.stderr}"
     )
     return result.stdout.strip()
 
@@ -66,6 +70,9 @@ def _new_project(tmp_path: Path, *, name: str = "project") -> tuple[Path, Path]:
         check=True,
         capture_output=True,
     )
+    # Generated pack names can cross Git for Windows' legacy MAX_PATH limit
+    # under isolated qualification temporary roots. Configure this fixture only.
+    _git(project, "config", "--local", "core.longpaths", "true")
     return project, project / "docs" / "llm_wiki"
 
 
@@ -135,7 +142,9 @@ def test_wiki_only_commits_do_not_rewrite_repository_revision(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    project, wiki_dir = _new_project(tmp_path)
+    project_root = tmp_path / ("nested-git-path-" + "x" * 60)
+    project_root.mkdir()
+    project, wiki_dir = _new_project(project_root)
     _git(project, "config", "--local", "user.name", "Sync Fixture")
     _git(
         project,
@@ -184,6 +193,18 @@ def test_wiki_only_commits_do_not_rewrite_repository_revision(
         f"git:{first_source_revision}"
     )
 
+    if os.name == "nt":
+        assert any(len(str(path)) >= 260 for path in wiki_dir.rglob("*"))
+        legacy_add = subprocess.run(
+            ["git", "-c", "core.longpaths=false", "add", "docs/llm_wiki"],
+            cwd=project,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            check=False,
+        )
+        assert legacy_add.returncode != 0, legacy_add.stdout
+        assert "filename too long" in legacy_add.stderr.lower(), legacy_add.stderr
     _git(project, "add", "docs/llm_wiki")
     _git(project, "commit", "--quiet", "-m", "add generated wiki")
     assert _git(project, "rev-parse", "HEAD") != first_source_revision
