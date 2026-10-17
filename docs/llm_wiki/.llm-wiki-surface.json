@@ -11779,7 +11779,7 @@
             },
             {
               "kind": "external_call",
-              "line": 317,
+              "line": 331,
               "step": "_validate_status_request",
               "target": "type"
             },
@@ -21071,7 +21071,7 @@
             "src/llm_wiki_cli/extractors/common.py",
             "src/llm_wiki_cli/services/wiki_write_basis.py"
           ],
-          "step_count": 1813,
+          "step_count": 1815,
           "truncated": true
         }
       },
@@ -33801,7 +33801,7 @@
             "src/llm_wiki_cli/services/request_json.py",
             "src/llm_wiki_cli/services/sync_recovery.py"
           ],
-          "step_count": 2527,
+          "step_count": 2529,
           "truncated": true
         }
       },
@@ -67320,5 +67320,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:fb66d01cfb863b8f560b215604d23bc5d4805ce2ffa2279aadff048e3e4b8dc2"
+  "source_hash": "sha256:813521a32ae243637930791e370bbe4961220b9ae658f574b66fa66534054274"
 }

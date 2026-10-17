@@ -98,7 +98,7 @@ sequenceDiagram
     participant p22 as _safe
     participant p23 as _unlink_guarded_bytes
     participant p24 as _outside_recovery
-    participant p25 as load_recovery_snapshot
+    participant p25 as _validated_recovery_snapshot
     participant p26 as governance_writer_lock
     participant p27 as storage_writer_lock
     participant p28 as load_adoption_marker
@@ -128,7 +128,7 @@ sequenceDiagram
     p15->>p22: _safe
     p18->>p23: _unlink_guarded_bytes
     p10->>p24: _outside_recovery
-    p13->>p25: load_recovery_snapshot
+    p13->>p25: _validated_recovery_snapshot
     p10->>p26: governance_writer_lock
     p10->>p27: storage_writer_lock
     p10->>p28: load_adoption_marker
@@ -136,9 +136,9 @@ sequenceDiagram
     p9-->>p30: result.get('requires_sync')
 ```
 
-> Call sequence diagram shows 30 of 2526 interactions; 2496 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2528 interactions; 2498 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 834 (833 omitted); unresolved 1 of 547 (546 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 835 (834 omitted); unresolved 1 of 548 (547 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -280,3 +280,5 @@ unchanged new pages. It retains byte copies and requires a later owning sync;
 it never restores missing authority or acknowledges review. Full adopted
 snapshot recovery remains a distinct operation. The generated static projection
 is bounded and does not establish that every action follows its listed branch.
+
+Explicit committed recovery restores absent validator-owned projection roots and referenced native objects only under a surviving matching marker or owner. It keeps authored/unreferenced-file conflicts, identity checks and newer-state refusal, performs guarded exact-byte writes and publishes the manifest last. Packet reads never invoke this recovery automatically; restored snapshot validity is separate from current source or human review.

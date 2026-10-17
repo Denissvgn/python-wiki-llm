@@ -6,6 +6,10 @@
 
 Local maintenance adoption and captured authority operations.
 
+Explicit committed recovery validates the complete retained snapshot and derives generated ownership from the knowledge/surface roots and their exact referenced native storage objects, including indexed owner catalogs. With a surviving matching marker or current owner, absent files in that closure can be restored byte-for-byte without reconstructing identity or history. Backup inventory membership or a native-looking path alone grants no missing-file allowance.
+
+Authored pages/assets, unreferenced files, changed existing bytes, another identity and known newer authority retain their refusal rules. Prepared and captured preimages keep their separate explicit modes. All eligibility checks precede guarded writes, and the manifest is published last. Recovery preserves source bytes and restores a snapshot rather than proving live currentness or approving prose. The public recovery-snapshot loader still returns metadata, files and owner; generated ownership stays private.
+
 ## Imports
 
 | Source | Symbols |
@@ -72,6 +76,7 @@ flowchart LR
 | `_outside_recovery` | `(directory, root, source)` | — | — |
 | `adopt_maintenance_authority` | `(src_dir, wiki_dir, *, recovery_dir, manifest_format = None, fault_injector = None, _captured = None, **capture_options)` | — | Explicitly adopt durable unreviewed authority without editing Markdown. |
 | `load_recovery_snapshot` | `(directory, *, allow_captured_preimage = False)` | — | — |
+| `_validated_recovery_snapshot` | `(directory, *, allow_captured_preimage = False)` | — | Retain validator-proven storage ownership without changing the public tuple. |
 | `_load_recovery_snapshot` | `(directory, *, allow_captured_preimage = False)` | — | — |
 | `recover_maintenance_authority` | `(wiki_dir, *, recovery_dir, expected_adoption_id, allow_prepared_adoption = False, allow_captured_preimage = False, src_dir = None)` | — | Restore one validated complete snapshot; never reconstruct review history. |
 | `_validate_status_request` | `(live, record_id, limit)` | — | — |

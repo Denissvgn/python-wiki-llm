@@ -9,7 +9,7 @@
 
 Ordinary authority refused a read; only explicit complete recovery can restore it.
 
-Carries the bounded `maintenance-authority-unavailable` diagnostic shared by packet API, CLI and MCP. It retains original loader issues locally while rendering only allowlisted maintenance causes, unavailable native evidence and exact recovery requirements. Recovery uses the original wiki/source boundaries, one matching complete committed snapshot and the existing adoption identity. The command template neither finds a backup nor guarantees that a damaged tree satisfies the recovery owner's preconditions; missing projections and conflicting authority can still refuse. The exception performs no writes or fallback promotion.
+Carries the bounded `maintenance-authority-unavailable` diagnostic shared by packet API, CLI and MCP. It retains original loader issues locally while rendering only allowlisted maintenance causes, unavailable native evidence and exact recovery requirements. Recovery uses the original wiki/source boundaries, one matching complete committed snapshot and the existing adoption identity. Absent validated projection roots and referenced objects can be restored only with a matching surviving marker or owner; missing authored/unreferenced files or conflicting bytes still refuse. The template neither finds a backup nor guarantees eligibility. The exception performs no writes or fallback promotion.
 
 ## Attributes
 

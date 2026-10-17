@@ -223,8 +223,8 @@ flowchart LR
 | validate_queue_limit | ValueError (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 62 | `ValueError(...)` |
 | get_maintenance_status | cast (src/llm_wiki_cli/api.py:get_maintenance_status) | 1612 | `cast(MaintenanceStatusResult, get_maintenance_status_authority(...))` |
 | get_maintenance_status | get_maintenance_status_authority | 1612 | `get_maintenance_status_authority(src_dir, _validate_wiki_dir(...), live=live, record_id=record_id, limit=limit, source_selection=source_selection, helper_cache_dir=helper_cache_dir, allow_external_src=allow_external_src)` |
-| get_maintenance_status_authority | _validate_status_request | 390 | `_validate_status_request(live, record_id, limit)` |
-| _validate_status_request | type (src/llm_wiki_cli/services…:_validate_status_request) | 317 | `type(live)` |
+| get_maintenance_status_authority | _validate_status_request | 404 | `_validate_status_request(live, record_id, limit)` |
+| _validate_status_request | type (src/llm_wiki_cli/services…:_validate_status_request) | 331 | `type(live)` |
 
 ### Boundary effects
 
@@ -240,7 +240,7 @@ flowchart LR
 | external_call | `validate_queue_limit` | `isinstance` | 59 |
 | external_call | `validate_queue_limit` | `ValueError` | 62 |
 | external_call | `get_maintenance_status` | `cast` | 1612 |
-| external_call | `_validate_status_request` | `type` | 317 |
+| external_call | `_validate_status_request` | `type` | 331 |
 | step_limit | `get_maintenance_status` | `first 12 steps` | 0 |
 | truncated_flow | `get_maintenance_status` | `depth limit` | 0 |
 

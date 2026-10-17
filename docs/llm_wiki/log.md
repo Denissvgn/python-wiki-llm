@@ -2751,3 +2751,25 @@ and cannot approve or mutate the snapshot.
 Packet readers retain a shared bounded ordinary-authority cause and explicit
 matching-recovery requirements. Lost custody remains a refusal; readers never
 select backups, allocate identities, restore history or relax recovery guards.
+
+## 2026-10-17
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.0.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:3fd39761991e1c6ceb3d9073290ff0eaa5da480d0b7d678ff43ebf40aa3526c3`
+- Pages created: 0
+- Pages updated: 5
+- Pages metadata-only: 1
+- Pages skipped (unchanged): 1599
+- Pages deprecated: 0
+- Semantic fields preserved: 2
+- Moved entities: none
+
+### Committed generated-projection restoration
+
+Explicit recovery can restore absent validated roots and referenced storage
+objects under the retained ownership anchor. Authored changes, unknown files
+and newer authority remain protected; history is restored rather than rebuilt.

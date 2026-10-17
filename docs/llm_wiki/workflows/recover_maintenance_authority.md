@@ -69,4 +69,6 @@
 
 ## Behavior
 
-This workflow starts at `maintenance_service.recover_maintenance_authority`. The generated sequence is a bounded static projection; runtime ordering, branching, and side effects require source-level confirmation.
+Loads and validates one complete retained snapshot before writing. It verifies the requested existing adoption identity, any surviving marker and current owner, and refuses a known newer committed state. For committed snapshots only, a surviving matching marker or owner permits absence of validated knowledge/surface roots and their exact referenced native objects. Filename prefixes and backup inventory entries do not establish ownership; missing authored or unreferenced files and changed current bytes retain their conflict checks.
+
+After every input passes, existing guarded writes restore exact retained bytes and publish the manifest last. Concurrent appearance or substitution cannot authorize an overwrite. Prepared adoption and captured preimages retain their separate explicit modes and source/prose obligations. The operation never fabricates a new identity or history and does not establish backup recency beyond surviving evidence, live source freshness or prose approval.
