@@ -344,7 +344,13 @@ def test_javascript_evidence_has_exact_conditional_owners_and_native_zero_skip_g
         else:
             assert probe["working-directory"] == "candidate"
             assert "if" not in probe
-            assert steps.index(probe) < next(i for i, s in enumerate(steps) if s.get("name") == "Verify and aggregate the complete Windows core lane")
+            # Aggregation refuses an occupied output directory. The supplemental
+            # JUnit writer must run after either core producer creates evidence.
+            aggregate = _named_step(job, "Verify and aggregate the complete Windows core lane")
+            assert "--output evidence" in aggregate["run"]
+            assert steps.index(aggregate) < steps.index(probe)
+            assert steps.index(_named_step(job, "Run strict core suite without coverage instrumentation")) < steps.index(probe)
+            assert steps.index(probe) < steps.index(_named_step(job, "Enforce exact skip tuples and minimum inventory"))
 
 
 def test_foreign_action_matrix_keeps_provider_separate_and_checks_negative_evidence():
