@@ -1,6 +1,6 @@
 # NativeInspectionResult
 
-**Location:** `src/llm_wiki_cli/api_types.py:710`
+**Location:** `src/llm_wiki_cli/api_types.py:712`
 **Kind:** Class
 **Bases:** `_NativeInspectionMaintenance`
 **Module:** [api_types](../modules/api_types.md)

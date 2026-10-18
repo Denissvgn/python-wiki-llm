@@ -2921,3 +2921,47 @@ Fresh normalization failures retain bounded record locations, validation rules
 and redacted shape facts across existing diagnostic surfaces. Structural hashes,
 persisted basis fields and strict evidence policy stay unchanged. Historical
 rejected-record details are not reconstructed from a current observation.
+
+## 2026-10-18
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.0.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:4c7c087c1654e51bc2233099b977156632be9f272de4577afd8685b7fdb5f462`
+- Pages created: 3
+- Pages updated: 76
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1546
+- Pages deprecated: 0
+- Semantic fields preserved: 15
+- Moved entities: none
+- Flow pages initialized: 0 (none)
+- Workflow pages created: 2
+- Dependency pages initialized: 0
+- Surface policy updated: no
+
+### Evidence explanation and helper execution identity
+
+Exact CLI explanations reuse the evidence service with explicit snapshot/live
+scope and bounded ambiguous-source choices. Recorded and current source/producer
+facts remain distinct from observed installed package and helper identities.
+Prepared TypeScript execution copies are validated against bundled source, and
+runtime mismatch guidance preserves the difference between preparation and PATH.
+
+## 2026-10-18
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.0.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:e67d27cf881a48c6334473d404f6c9ded4f7507fdc7f8576918391adb01cffed`
+- Pages created: 0
+- Pages updated: 6
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1608
+- Pages deprecated: 0
+- Semantic fields preserved: 1
+- Moved entities: none

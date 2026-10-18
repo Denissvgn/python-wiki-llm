@@ -92,3 +92,9 @@ flowchart LR
 ## Behavior
 
 This flow starts at `query_documentation` and is classified as `mcp`. The generated call and data-flow sections are bounded static projections; runtime conditions and side effects require source-level confirmation.
+
+The shared dispatcher also supports bounded evidence explanation. Snapshot
+requests do not extract source; live requests explicitly authorize the full
+inventory cost. Existing dedicated explain_evidence behavior stays compatible.
+Receipt inspection reads existing helper state and runtime versions without setup;
+missing, mismatched and truncated data remain limitations, not passing evidence.

@@ -17,6 +17,17 @@ an explicit cache base and explains how subsequent reads should select it.
 Preparation remains a separate authorized operation; diagnostics do not invoke
 toolchains or change the source and wiki.
 
+The read-only identity inspection reuses prepared receipts and validates source,
+platform and dependency/executable fingerprints. TypeScript execution copies are
+also compared with the bundled source identity; changed or missing copies refuse
+reuse and authorized preparation restores them in the same cache. Native helper
+inspection does not require an active compiler.
+
+Prepared toolchain metadata is distinct from the active Node runtime. Missing or
+invalid receipts retain the exact cache-only preparation route; a current receipt
+with a runtime mismatch directs the caller to select the recorded runtime rather
+than suggesting that preparation changes PATH. Inspection writes no cache state.
+
 ## Imports
 
 | Source | Symbols |
@@ -54,10 +65,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (10) |
+| Inbound | `src` (11) |
 | Outbound | `src` (2) |
 
-> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -97,6 +108,7 @@ flowchart LR
 | `get_prepared_binary` | `(language: str, src_dir: str \| Path = '.', cache_dir: str \| None = None) -> Path \| None` | — | — |
 | `get_prepared_typescript_root` | `(src_dir: str \| Path = '.', cache_dir: str \| None = None) -> Path \| None` | — | — |
 | `missing_helper_message` | `(language: str, src_dir: str \| Path = '.', cache_dir: str \| None = None) -> str` | — | — |
+| `helper_identity` | `(language: str, src_dir: str \| Path = '.', cache_dir: str \| None = None) -> dict[str, Any]` | — | Inspect existing preparation receipts and execution runtime without setup. |
 | `typescript_dependencies_ready` | `(src_dir: str \| Path = '.', cache_dir: str \| None = None) -> bool` | — | — |
 | `prepare_typescript` | `(cache_root: Path) -> HelperPrepareResult` | — | — |
 | `prepare_go` | `(cache_root: Path) -> HelperPrepareResult` | — | — |

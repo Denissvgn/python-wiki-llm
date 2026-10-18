@@ -103,30 +103,30 @@ flowchart LR
 | [QueryCostDisclosure](../entities/QueryCostDisclosure.md) | Class | 431 | `TypedDict` | Deterministic disclosure of work selected for a query. |
 | [_DocumentationQueryRequired](../entities/DocumentationQueryRequired.md) | Class | 443 | `TypedDict` | — |
 | [DocumentationQueryResult](../entities/DocumentationQueryResult.md) | Class | 455 | `_DocumentationQueryRequired` | Common envelope returned by the shared bounded query dispatcher. |
-| [DocumentationExportResult](../entities/DocumentationExportResult.md) | Class | 492 | `TypedDict` | Top-level documentation export and verification report. |
-| [DoctorAvailability](../entities/DoctorAvailability.md) | Class | 516 | `TypedDict` | — |
-| [DoctorFreshness](../entities/DoctorFreshness.md) | Class | 522 | `TypedDict` | — |
-| [DoctorSnapshotParity](../entities/DoctorSnapshotParity.md) | Class | 529 | `TypedDict` | — |
-| [DoctorGovernance](../entities/DoctorGovernance.md) | Class | 535 | `TypedDict` | — |
-| [DoctorDrift](../entities/DoctorDrift.md) | Class | 544 | `TypedDict` | — |
-| [DoctorVerificationReceipt](../entities/DoctorVerificationReceipt.md) | Class | 554 | `TypedDict` | — |
-| [DoctorResult](../entities/DoctorResult.md) | Class | 561 | `TypedDict` | Stable ``llm-wiki-doctor/v1`` Python API payload. |
-| [HealthSelection](../entities/HealthSelection.md) | Class | 580 | `TypedDict` | — |
-| [HealthScope](../entities/HealthScope.md) | Class | 586 | `TypedDict` | — |
-| [HealthEvaluation](../entities/HealthEvaluation.md) | Class | 592 | `TypedDict` | — |
-| [HealthSnapshot](../entities/HealthSnapshot.md) | Class | 597 | `TypedDict` | — |
-| [HealthComponent](../entities/HealthComponent.md) | Class | 607 | `TypedDict` | — |
-| [HealthProducer](../entities/HealthProducer.md) | Class | 614 | `TypedDict` | — |
-| [HealthComparisonBasis](../entities/HealthComparisonBasis.md) | Class | 622 | `TypedDict` | — |
-| [HealthCoverage](../entities/HealthCoverage.md) | Class | 629 | `TypedDict` | — |
-| [HealthReason](../entities/HealthReason.md) | Class | 639 | `TypedDict` | — |
-| [HealthDetails](../entities/HealthDetails.md) | Class | 646 | `TypedDict` | — |
-| [DoctorV3Result](../entities/DoctorV3Result.md) | Class | 656 | `DoctorResult` | Opt-in health report with captured coverage and comparison evidence. |
-| [ComparisonPolicy](../entities/ComparisonPolicy.md) | Type alias | 661 | `Literal['auto', 'exact-v1', 'analysis-v1']` | — |
-| [AnalysisCompatibilityRecord](../entities/AnalysisCompatibilityRecord.md) | Class | 664 | `TypedDict` | — |
-| [AnalysisComparisonContract](../entities/AnalysisComparisonContract.md) | Class | 675 | `TypedDict` | — |
-| [AnalysisComparisonDecision](../entities/AnalysisComparisonDecision.md) | Class | 681 | `TypedDict` | — |
-| [HealthComparisonBasisV2](../entities/HealthComparisonBasisV2.md) | Class | 687 | `TypedDict` | — |
-| [HealthDetailsV2](../entities/HealthDetailsV2.md) | Class | 695 | `TypedDict` | — |
-| [DoctorV4Result](../entities/DoctorV4Result.md) | Class | 705 | `DoctorResult` | Compatibility-aware health with versioned captured comparison evidence. |
-| [NativeInspectionResult](../entities/NativeInspectionResult.md) | Class | 710 | `_NativeInspectionMaintenance` | Bounded component results sharing one source/wiki read scope. |
+| [DocumentationExportResult](../entities/DocumentationExportResult.md) | Class | 494 | `TypedDict` | Top-level documentation export and verification report. |
+| [DoctorAvailability](../entities/DoctorAvailability.md) | Class | 518 | `TypedDict` | — |
+| [DoctorFreshness](../entities/DoctorFreshness.md) | Class | 524 | `TypedDict` | — |
+| [DoctorSnapshotParity](../entities/DoctorSnapshotParity.md) | Class | 531 | `TypedDict` | — |
+| [DoctorGovernance](../entities/DoctorGovernance.md) | Class | 537 | `TypedDict` | — |
+| [DoctorDrift](../entities/DoctorDrift.md) | Class | 546 | `TypedDict` | — |
+| [DoctorVerificationReceipt](../entities/DoctorVerificationReceipt.md) | Class | 556 | `TypedDict` | — |
+| [DoctorResult](../entities/DoctorResult.md) | Class | 563 | `TypedDict` | Stable ``llm-wiki-doctor/v1`` Python API payload. |
+| [HealthSelection](../entities/HealthSelection.md) | Class | 582 | `TypedDict` | — |
+| [HealthScope](../entities/HealthScope.md) | Class | 588 | `TypedDict` | — |
+| [HealthEvaluation](../entities/HealthEvaluation.md) | Class | 594 | `TypedDict` | — |
+| [HealthSnapshot](../entities/HealthSnapshot.md) | Class | 599 | `TypedDict` | — |
+| [HealthComponent](../entities/HealthComponent.md) | Class | 609 | `TypedDict` | — |
+| [HealthProducer](../entities/HealthProducer.md) | Class | 616 | `TypedDict` | — |
+| [HealthComparisonBasis](../entities/HealthComparisonBasis.md) | Class | 624 | `TypedDict` | — |
+| [HealthCoverage](../entities/HealthCoverage.md) | Class | 631 | `TypedDict` | — |
+| [HealthReason](../entities/HealthReason.md) | Class | 641 | `TypedDict` | — |
+| [HealthDetails](../entities/HealthDetails.md) | Class | 648 | `TypedDict` | — |
+| [DoctorV3Result](../entities/DoctorV3Result.md) | Class | 658 | `DoctorResult` | Opt-in health report with captured coverage and comparison evidence. |
+| [ComparisonPolicy](../entities/ComparisonPolicy.md) | Type alias | 663 | `Literal['auto', 'exact-v1', 'analysis-v1']` | — |
+| [AnalysisCompatibilityRecord](../entities/AnalysisCompatibilityRecord.md) | Class | 666 | `TypedDict` | — |
+| [AnalysisComparisonContract](../entities/AnalysisComparisonContract.md) | Class | 677 | `TypedDict` | — |
+| [AnalysisComparisonDecision](../entities/AnalysisComparisonDecision.md) | Class | 683 | `TypedDict` | — |
+| [HealthComparisonBasisV2](../entities/HealthComparisonBasisV2.md) | Class | 689 | `TypedDict` | — |
+| [HealthDetailsV2](../entities/HealthDetailsV2.md) | Class | 697 | `TypedDict` | — |
+| [DoctorV4Result](../entities/DoctorV4Result.md) | Class | 707 | `DoctorResult` | Compatibility-aware health with versioned captured comparison evidence. |
+| [NativeInspectionResult](../entities/NativeInspectionResult.md) | Class | 712 | `_NativeInspectionMaintenance` | Bounded component results sharing one source/wiki read scope. |

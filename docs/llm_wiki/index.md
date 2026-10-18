@@ -7,8 +7,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 | Surface | Count | Start here |
 |---|---:|---|
 | Entities | 670 | [Open section](#entities) |
-| Modules | 249 | [Open section](#modules) |
-| Workflows | 225 | [Open section](#workflows) |
+| Modules | 250 | [Open section](#modules) |
+| Workflows | 227 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 465 | [Open section](#entry-point-flows) |
 | Infrastructure | 2 | [Open section](#infrastructure) |
@@ -748,6 +748,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [esbuild.config](modules/esbuild.config.md) - `integrations/obsidian/llm-wiki/esbuild.config.mjs`
 - [eval_lite___init__](modules/eval_lite___init__.md) - Provider-free inspection planning for paired qualified-context arms.
 - [evidence_diagnostics](modules/evidence_diagnostics.md) - Explain captured versus fresh evidence without repairing or accepting it.
+- [evidence_explanation](modules/evidence_explanation.md) - Read-only CLI explanation adapters over the existing knowledge service.
 - [export](modules/export.md) - Documentation-run export services.
 - [extraction_jobs](modules/extraction_jobs.md) - `src/llm_wiki_cli/services/extraction_jobs.py`
 - [extraction_service](modules/extraction_service.md) - `src/llm_wiki_cli/services/extraction_service.py`
@@ -1034,6 +1035,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [doctor_cmd_flow](workflows/doctor_cmd_flow.md) - entry: `doctor_cmd.run`
 - [ensure_legacy_gitignore](workflows/ensure_legacy_gitignore.md) - entry: `migrate_cmd._ensure_legacy_gitignore`
 - [expand_storage_receipt](workflows/expand_storage_receipt.md) - entry: `storage_receipts.expand_storage_receipt`
+- [explanation_provenance](workflows/explanation_provenance.md) - entry: `evidence_explanation.explanation_provenance`
 - [export_knowledge_v1](workflows/export_knowledge_v1.md) - entry: `knowledge_storage_lifecycle.export_knowledge_v1`
 - [extract_bootstrap_inventory](workflows/extract_bootstrap_inventory.md) - entry: `bootstrap_runtime._extract_bootstrap_inventory`
 - [finalize_bootstrap_artifacts](workflows/finalize_bootstrap_artifacts.md) - entry: `bootstrap_runtime._finalize_bootstrap_artifacts`
@@ -1105,6 +1107,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [qualify_infrastructure_page_drift](workflows/qualify_infrastructure_page_drift.md) - entry: `sync_cmd._qualify_infrastructure_page_drift`
 - [qualify_surviving_module_inventory](workflows/qualify_surviving_module_inventory.md) - entry: `sync_cmd._qualify_surviving_module_inventory`
 - [query_cmd_flow](workflows/query_cmd_flow.md) - entry: `query_cmd.run`
+- [query_documentation](workflows/query_documentation.md) - entry: `api.query_documentation`
 - [read_entity_retirement_state](workflows/read_entity_retirement_state.md) - entry: `source_retirement.read_entity_retirement_state`
 - [read_manifest_header](workflows/read_manifest_header.md) - entry: `manifest_storage.read_manifest_header`
 - [read_once](workflows/read_once.md) - entry: `task_context._read_once`

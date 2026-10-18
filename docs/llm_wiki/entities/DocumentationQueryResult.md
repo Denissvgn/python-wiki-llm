@@ -14,6 +14,8 @@ Common envelope returned by the shared bounded query dispatcher.
 | Name | Type | Presence | Description |
 |------|------|----------|-------------|
 | `knowledge` | `KnowledgeStatus \| dict[str, Any]` | *optional* | — |
+| `evidence` | `dict[str, Any] \| None` | *optional* | — |
+| `provenance` | `dict[str, Any]` | *optional* | — |
 | `concept` | `dict[str, Any] \| None` | *optional* | — |
 | `total` | `int` | *optional* | — |
 | `returned` | `int` | *optional* | — |
@@ -75,7 +77,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [api_types](../modules/api_types.md) | 0 | `callees`, `callers`, `concept`, `concepts`, `coverage`, `cycle_groups`, `data_flow`, `direction`, `edges`, `external_targets`, `flow`, `impacted_paths` |
+| [api_types](../modules/api_types.md) | 0 | `callees`, `callers`, `concept`, `concepts`, `coverage`, `cycle_groups`, `data_flow`, `direction`, `edges`, `evidence`, `external_targets`, `flow` |
 
 ### Structure
 

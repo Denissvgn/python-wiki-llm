@@ -134,9 +134,9 @@ sequenceDiagram
     p0-->>p30: parser.add_subparsers(dest='command', required=True)
 ```
 
-> Call sequence diagram shows 30 of 3291 interactions; 3261 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3296 interactions; 3266 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1046 (1045 omitted); unresolved 1 of 794 (793 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1049 (1048 omitted); unresolved 1 of 795 (794 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

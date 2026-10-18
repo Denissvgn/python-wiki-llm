@@ -2,16 +2,19 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [query_cmd](../modules/query_cmd.md)
-**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), [context_packet](../modules/context_packet.md), and 27 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), and 32 more
 
 **Complete modules touched:**
 
+- [analysis_capture](../modules/analysis_capture.md)
 - [api](../modules/api.md)
 - [common](../modules/common.md)
 - [config](../modules/config.md)
 - [context_packet](../modules/context_packet.md)
 - [documentation_queries](../modules/documentation_queries.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
+- [evidence_explanation](../modules/evidence_explanation.md)
+- [extractor_helpers](../modules/extractor_helpers.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
 - [io](../modules/io.md)
@@ -19,6 +22,7 @@
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
+- [knowledge_reuse](../modules/knowledge_reuse.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
@@ -27,6 +31,7 @@
 - [maintenance_shapes](../modules/maintenance_shapes.md)
 - [maintenance_state](../modules/maintenance_state.md)
 - [maintenance_status](../modules/maintenance_status.md)
+- [paths](../modules/paths.md)
 - [python_implementation](../modules/python_implementation.md)
 - [query_cmd](../modules/query_cmd.md)
 - [request_json](../modules/request_json.md)
@@ -51,29 +56,29 @@ sequenceDiagram
     participant p3 as write_text_output
     participant p4 as write_utf8_stdout
     participant p5 as _validate_documentation_query_request
-    participant p6 as _impact_query
-    participant p7 as _write_utf8_text
+    participant p6 as _write_utf8_text
+    participant p7 as normalize_supplied_paths
     participant p8 as normalize_concept_coordinate
-    participant p9 as _require_full_inventory_opt_in
+    participant p9 as validate_source_root
     participant p10 as build_documentation_query_service
     participant p11 as _snapshot_query_service
-    participant p12 as _combined_query_payload
-    participant p13 as normalize_documentation_query_text
-    participant p14 as normalize_supplied_paths
-    participant p15 as validate_exact_page_coordinate
-    participant p16 as write_bytes_atomic
-    participant p17 as supplied_paths_from_unified_diff
-    participant p18 as validate_source_root
-    participant p19 as _validate_wiki_dir
-    participant p20 as _normalize_query_limit
-    participant p21 as resolve_source_selection
-    participant p22 as _normalize_query_choice
-    participant p23 as _existing_supplied_source_paths
-    participant p24 as build_live_documentation_query_service
-    participant p25 as _normalize_query_values
-    participant p26 as build_snapshot_documentation_query_service
-    participant p27 as _with_query_envelope
-    participant p28 as _normalize_query_input
+    participant p12 as explanation_provenance
+    participant p13 as _with_query_envelope
+    participant p14 as _impact_query
+    participant p15 as _combined_query_payload
+    participant p16 as _portable_supplied_path
+    participant p17 as normalize_documentation_query_text
+    participant p18 as validate_path
+    participant p19 as _supplied_path_values
+    participant p20 as validate_exact_page_coordinate
+    participant p21 as build_snapshot_documentation_query_service
+    participant p22 as fit_documentation_query_result
+    participant p23 as write_bytes_atomic
+    participant p24 as supplied_paths_from_unified_diff
+    participant p25 as _validate_wiki_dir
+    participant p26 as build_live_documentation_query_service
+    participant p27 as windows_current_user_sid
+    participant p28 as _normalize_query_limit
     participant p29 as json.dumps (src/llm_wiki_cli/commands/query_cmd.py:run)
     participant p30 as Path(…).expanduser (src/llm_wiki_cli/services/io.py:write_text_output)
     p0->>p1: load_request
@@ -81,36 +86,36 @@ sequenceDiagram
     p0->>p3: write_text_output
     p0->>p4: write_utf8_stdout
     p2->>p5: _validate_documentation_query_request
-    p2->>p6: _impact_query
-    p3->>p7: _write_utf8_text
+    p3->>p6: _write_utf8_text
+    p2->>p7: normalize_supplied_paths
     p2->>p8: normalize_concept_coordinate
-    p2->>p9: _require_full_inventory_opt_in
+    p2->>p9: validate_source_root
     p2->>p10: build_documentation_query_service
     p2->>p11: _snapshot_query_service
-    p2->>p12: _combined_query_payload
-    p8->>p13: normalize_documentation_query_text
-    p6->>p14: normalize_supplied_paths
-    p8->>p15: validate_exact_page_coordinate
-    p7->>p16: write_bytes_atomic
-    p6->>p17: supplied_paths_from_unified_diff
-    p6->>p18: validate_source_root
-    p6->>p19: _validate_wiki_dir
-    p5->>p20: _normalize_query_limit
-    p6->>p21: resolve_source_selection
-    p5->>p22: _normalize_query_choice
-    p6->>p23: _existing_supplied_source_paths
-    p6->>p24: build_live_documentation_query_service
-    p5->>p25: _normalize_query_values
-    p6->>p26: build_snapshot_documentation_query_service
-    p6->>p27: _with_query_envelope
-    p20->>p28: _normalize_query_input
+    p2->>p12: explanation_provenance
+    p2->>p13: _with_query_envelope
+    p2->>p14: _impact_query
+    p2->>p15: _combined_query_payload
+    p7->>p16: _portable_supplied_path
+    p8->>p17: normalize_documentation_query_text
+    p9->>p18: validate_path
+    p7->>p19: _supplied_path_values
+    p8->>p20: validate_exact_page_coordinate
+    p11->>p21: build_snapshot_documentation_query_service
+    p13->>p22: fit_documentation_query_result
+    p6->>p23: write_bytes_atomic
+    p14->>p24: supplied_paths_from_unified_diff
+    p10->>p25: _validate_wiki_dir
+    p10->>p26: build_live_documentation_query_service
+    p9->>p27: windows_current_user_sid
+    p5->>p28: _normalize_query_limit
     p0-->>p29: json.dumps (src/llm_wiki_cli/commands/query_cmd.py:run)(result, ensure_ascii=False, sort_keys=True, separators=(...), allow_nan=False)
     p3-->>p30: Path(…).expanduser (src/llm_wiki_cli/services/io.py:write_text_output)
 ```
 
-> Call sequence diagram shows 30 of 1460 interactions; 1430 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1739 interactions; 1709 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 581 (580 omitted); unresolved 1 of 359 (358 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 684 (683 omitted); unresolved 1 of 481 (480 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -121,10 +126,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/request_json.py:parse_request` | 4 | - | external | 8 |
 | `src/llm_wiki_cli/services/request_json.py:parse_request` | 4 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/request_json.py:load_request` | 2 | - | unresolved | 3 |
-| `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 21 | - | external | 11 |
-| `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 21 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 10 |
-| `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 21 | - | unresolved | 11 |
-> Omission summary shows 8 of 334 groups; 326 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 21 | - | external | 13 |
+| `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 21 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 17 |
+| `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 21 | - | unresolved | 15 |
+> Omission summary shows 8 of 389 groups; 381 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -203,7 +208,7 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 28 |
+| output | `print` | `run` | 29 |
 
 ### Static analysis gaps
 
@@ -223,3 +228,10 @@ flowchart LR
 ## Behavior
 
 Loads a bounded explicit JSON query from a file or stdin, delegates to the public exact-query API, and writes its canonical response to stdout or an explicitly chosen output file. Invalid request data is rejected before query state is loaded.
+
+Evidence explanation defaults to a snapshot-only read. A live request requires
+both live=true and allow_full_inventory=true, and discloses the full source scan.
+Ambiguous source selectors return choices for an exact follow-up instead of a
+fabricated single answer. Existing explanation details and separate producer,
+package, helper and runtime identities share the bounded query envelope. Diagnostic
+availability never repairs unknown evidence or relaxes strict validation.

@@ -92,6 +92,6 @@ flowchart LR
 | `_raise_maintenance_api_error` | call | [api](../modules/api.md) | 1 |
 | `_require_full_inventory_opt_in` | call | [api](../modules/api.md) | 2 |
 | `_run_query` | call | [api](../modules/api.md) | 1 |
-| `_validate_documentation_query_request` | call | [api](../modules/api.md) | 5 |
+| `_validate_documentation_query_request` | call | [api](../modules/api.md) | 9 |
 
 > References: showing 12 of 23 logical references; 11 omitted by the 12-row generated summary limit.

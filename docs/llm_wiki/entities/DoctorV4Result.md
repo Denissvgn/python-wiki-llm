@@ -1,6 +1,6 @@
 # DoctorV4Result
 
-**Location:** `src/llm_wiki_cli/api_types.py:705`
+**Location:** `src/llm_wiki_cli/api_types.py:707`
 **Kind:** Class
 **Bases:** `DoctorResult`
 **Module:** [api_types](../modules/api_types.md)
