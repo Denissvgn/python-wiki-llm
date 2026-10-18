@@ -33020,7 +33020,7 @@
             "src/llm_wiki_cli/services/rendering_lifecycle.py",
             "src/llm_wiki_cli/services/paths.py"
           ],
-          "step_count": 3972,
+          "step_count": 3975,
           "truncated": true
         }
       },
@@ -36903,7 +36903,7 @@
             "src/llm_wiki_cli/services/canonical_json.py",
             "src/llm_wiki_cli/services/rendering_lifecycle.py"
           ],
-          "step_count": 3917,
+          "step_count": 3920,
           "truncated": true
         }
       },
@@ -38078,7 +38078,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2654,
+              "line": 2663,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -38086,7 +38086,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2657,
+              "line": 2666,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -38094,7 +38094,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2660,
+              "line": 2669,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -38102,7 +38102,7 @@
             {
               "confidence": "unknown",
               "kind": "environment_read",
-              "line": 2663,
+              "line": 2672,
               "step": "main",
               "step_index": 1,
               "target": "os.environ.get"
@@ -38110,7 +38110,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2665,
+              "line": 2674,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -38118,7 +38118,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2668,
+              "line": 2677,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -38145,31 +38145,31 @@
             },
             {
               "kind": "unresolved_call",
-              "line": 387,
+              "line": 390,
               "step": "_add_init_command",
               "target": "subparsers.add_parser"
             },
             {
               "kind": "unresolved_call",
-              "line": 390,
+              "line": 393,
               "step": "_add_init_command",
               "target": "init_parser.add_argument"
             },
             {
               "kind": "unresolved_call",
-              "line": 396,
+              "line": 399,
               "step": "_add_init_command",
               "target": "init_parser.add_argument"
             },
             {
               "kind": "unresolved_call",
-              "line": 401,
+              "line": 404,
               "step": "_add_init_command",
               "target": "init_parser.add_argument"
             },
             {
               "kind": "unresolved_call",
-              "line": 407,
+              "line": 410,
               "step": "_add_init_command",
               "target": "init_parser.add_argument"
             },
@@ -67542,5 +67542,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:ab6baf316759f7d1c36a29bead718d9f419998f38ac2b5fee494999fa73c27f4"
+  "source_hash": "sha256:6463d167e32eb073b3c86311af21fbb3f7ce0e9ca1d295c8dfdf5246989d1a2e"
 }

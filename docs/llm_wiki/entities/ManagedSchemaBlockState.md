@@ -1,6 +1,6 @@
 # ManagedSchemaBlockState
 
-**Location:** `src/llm_wiki_cli/services/schema.py:34`
+**Location:** `src/llm_wiki_cli/services/schema.py:35`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [services_schema](../modules/services_schema.md)

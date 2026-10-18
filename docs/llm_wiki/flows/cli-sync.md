@@ -325,3 +325,9 @@ preflight copy and recovery preimages still require global work. Wider logical o
 typed-graph changes refuse; broad review remains active. A matching known selected
 basis causes no scoped publication, and success does not certify unselected
 source evidence. Repeat strict validation after the repair.
+
+Help connects captured evidence diagnosis and raw inspection to previewing the
+ordinary owning update. Broad changes still require review and explicit authority;
+force is never implied by a failure or an upgrade. Fresh malformed evidence stays
+blocking. After repair, supported prose review, re-anchor and strict validation
+retain their established ownership and integrity checks.

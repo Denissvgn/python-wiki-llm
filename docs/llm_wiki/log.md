@@ -2965,3 +2965,27 @@ runtime mismatch guidance preserves the difference between preparation and PATH.
 - Pages deprecated: 0
 - Semantic fields preserved: 1
 - Moved entities: none
+
+## 2026-10-18
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.0.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:59a54973d75eb81d2600738c6bc274cb2c841a083b9ef239fc5a1339bc68ad5f`
+- Pages created: 0
+- Pages updated: 9
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1605
+- Pages deprecated: 0
+- Semantic fields preserved: 2
+- Moved entities: none
+
+### Discoverable evidence recovery
+
+Installed reference and inline instructions connect captured qualification,
+fresh raw inspection and authorized owning repair. Same-scope recipes retain
+source selection and helper/runtime boundaries. Recovery remains distinct from
+diagnosis, setup and storage upgrade, with semantic re-anchor and strict
+validation after repair. Command help makes the existing route discoverable.

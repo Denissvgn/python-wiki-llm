@@ -1,6 +1,6 @@
 # ManagedSchemaPathError
 
-**Location:** `src/llm_wiki_cli/services/schema.py:45`
+**Location:** `src/llm_wiki_cli/services/schema.py:46`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [services_schema](../modules/services_schema.md)

@@ -17,6 +17,12 @@ preserve selection/helper/cache bindings and safely represent spaces and leading
 dashes. The option limits application after full analysis, without granting force
 or recovery authorization.
 
+Query, extraction and sync help expose the existing captured-evidence recovery
+route. Snapshot explanation remains separate from explicitly authorized full live
+analysis. One-file extraction prints raw JSON without a wiki argument, setup or
+stored repair. The sync hint preserves preview/review/authority, final re-anchor
+and strict validation; help text grants no extra write or setup authority.
+
 ## Imports
 
 | Source | Symbols |

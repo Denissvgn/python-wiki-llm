@@ -1,6 +1,6 @@
 # ManagedSchemaBlockError
 
-**Location:** `src/llm_wiki_cli/services/schema.py:49`
+**Location:** `src/llm_wiki_cli/services/schema.py:50`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [services_schema](../modules/services_schema.md)

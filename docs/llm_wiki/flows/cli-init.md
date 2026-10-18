@@ -143,7 +143,7 @@ sequenceDiagram
     p0-->>p30: stored.get('pending_cleanup_agent')
 ```
 
-> Call sequence diagram shows 30 of 3971 interactions; 3941 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3974 interactions; 3944 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 1 of 1357 (1356 omitted); unresolved 1 of 924 (923 omitted). These counts cover the captured static trace.
 
@@ -159,7 +159,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 16 | [src/llm_wiki_cli/services/wiki_surface.py](../modules/wiki_surface.md) | internal | 1 |
 | `src/llm_wiki_cli/services/wiki_surface.py:iter_directory_kinds` | 19 | - | external | 1 |
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 16 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
-> Omission summary shows 8 of 958 groups; 950 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 960 groups; 952 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -292,3 +292,10 @@ missing or stale artifacts in the helper cache. A preparation failure reports
 the prerequisite and stops before scaffold or configuration changes. A retry
 reuses helpers already prepared successfully. Preparation is opt-in for each
 invocation and may download dependencies or compile bundled helpers.
+
+The installed defaults provide the same recovery route through a focused managed
+reference or the complete inline fallback when skills are disabled. Command
+examples retain configured wiki/selection bindings and require the original
+helper cache and source scope. Initialization alone is a scaffold, not captured
+native evidence; reads never bootstrap a missing evidence store. User-authored
+instructions outside the managed block remain intact.

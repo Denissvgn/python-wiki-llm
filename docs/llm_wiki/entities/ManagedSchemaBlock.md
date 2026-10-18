@@ -1,6 +1,6 @@
 # ManagedSchemaBlock
 
-**Location:** `src/llm_wiki_cli/services/schema.py:54`
+**Location:** `src/llm_wiki_cli/services/schema.py:55`
 **Kind:** Class
 **Bases:** —
 **Module:** [services_schema](../modules/services_schema.md)

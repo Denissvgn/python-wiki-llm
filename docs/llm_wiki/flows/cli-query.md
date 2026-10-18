@@ -235,3 +235,9 @@ Ambiguous source selectors return choices for an exact follow-up instead of a
 fabricated single answer. Existing explanation details and separate producer,
 package, helper and runtime identities share the bounded query envelope. Diagnostic
 availability never repairs unknown evidence or relaxes strict validation.
+
+Help names the bounded explain request for a canonical source selector and the
+exact-coordinate follow-up for ambiguous choices. Snapshot is default; fresh
+comparison requires explicit full-inventory authorization. Stored qualification,
+current observations and helper/runtime provenance remain separate. Discovery of
+this route does not expand its existing request, output or mutation contract.
