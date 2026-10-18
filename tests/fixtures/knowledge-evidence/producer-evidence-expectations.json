@@ -1,0 +1,37 @@
+{
+  "cases": {
+    "go": {
+      "entity": "Account",
+      "entity_hash": "sha256:4fd376bcf2cb4b790806fa696e0770df2c6077d19040874523ecdc703e37ce1b",
+      "module_hash": "sha256:3de91ff330a845158496fcc34bd9c577b1bc255d4b85dbe8d3293ff57a94979e"
+    },
+    "haskell": {
+      "entity": "User",
+      "entity_hash": "sha256:dc4f0e63a96c5a694ac08ceb72c27025996fcf1f5985b7e3856e6cc56a748697",
+      "module_hash": "sha256:f88b3ebd9947924d4b4e4f4b2cc7e388eb8e3873edc9f78dd28b72c7dde11e9b"
+    },
+    "javascript": {
+      "entity": "Client",
+      "entity_hash": "sha256:83ef35fcc92fd960b97a2cbccb00122220f82131e8d6f72d008856ad36b37abf",
+      "module_hash": "sha256:5f7a034b115e61495de32afc3e3da606922cd2b2fe3c1589864a7f9eb10e9e96"
+    },
+    "python": {
+      "entity": "User",
+      "entity_hash": "sha256:f42114f1508857eadf7f466a21fc228428fc00a044d0f45ef66e0ceb9e57cdd8",
+      "module_hash": "sha256:0fbfe1939afda472642ff45619cb913a54c82d5a483a230507620cc3a6dee686"
+    },
+    "rust": {
+      "entity": "Account",
+      "entity_hash": "sha256:88b9bb6d9b19457ec2a14009ee11e06961268f12509c7a3a0130cbab4a028f2c",
+      "module_hash": "sha256:730d398f88676b1b584f21bae03f90e547b77525dfe639d07f92990d939a5e32"
+    },
+    "typescript": {
+      "entity": "Client",
+      "entity_hash": "sha256:d2e7a4ada63566334ac188642321de620cc543bd154ac0c047f90ba1b138f135",
+      "module_hash": "sha256:a7228ee8342fc73099d863319e43298c6519b99925e7fbe0dd9e1f2413704ed9"
+    }
+  },
+  "contract": "structural-observations/v1",
+  "reference_provider_source_commit": "ff5ecbb3",
+  "reference_provider_wheel_sha256": "1b64cbf49620fede1e2d3799acb1728b438e5e5fcbd06b806b59f29c4e88c92e"
+}

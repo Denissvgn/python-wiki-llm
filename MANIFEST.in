@@ -19,5 +19,6 @@ include docs/security-model.md
 include docs/native-knowledge-provider.md
 include docs/native-agent-workflow.md
 prune reports
+recursive-include tests/fixtures/knowledge-evidence *.json
 include src/llm_wiki_cli/schemas/llm-wiki-manifest-v6.schema.json
 include src/llm_wiki_cli/schemas/llm-wiki-manifest-catalog-v1.schema.json

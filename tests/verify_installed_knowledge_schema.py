@@ -165,6 +165,11 @@ def _verify_contents(wheel: Path, sdist: Path) -> None:
         *(f"src/{name}" for name in _REQUIRED_HELPERS),
         "docs/standalone-documentation.md",
         "release_build_backend.py",
+        *("tests/fixtures/knowledge-evidence/" + name for name in (
+            "concept-observation-inventories.json", "producer-evidence-inventories.json",
+            "producer-evidence-expectations.json", "released-2.5.0-large.json",
+            "released-2.5.0-large-files.json",
+        )),
     }
     missing_sdist = required_sdist - sdist_names
     if missing_sdist:

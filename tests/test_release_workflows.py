@@ -314,12 +314,13 @@ def test_native_origin_contract_runs_before_the_full_windows_suite():
 def test_javascript_evidence_has_exact_conditional_owners_and_native_zero_skip_gate():
     cases = {
         "tests/test_ts_extract.py::test_dynamic_import_gap_survives_bootstrap_sync_and_strict_gates",
+        "tests/test_ts_extract.py::test_released_unknown_evidence_guarded_upgrade_and_refresh",
         *(f"tests/test_ts_extract.py::test_unresolved_import_producer_consumer_contract[{ext}]"
           for ext in ("js", "jsx", "mjs", "cjs", "ts", "tsx")),
     }
     entries = json.loads((ROOT / "release/skip-allowlist.json").read_text())["entries"]
     owned = [item for item in entries if item["node_id"] in cases]
-    assert len(owned) == 21
+    assert len(owned) == 24
     assert {(item["lane"], item["node_id"], item["owner_lane"], item["reason"])
             for item in owned} == {
         (lane, case, "toolchains", "Node.js/ts-morph dependencies not installed — TypeScript extractor tests skipped")
@@ -339,8 +340,9 @@ def test_javascript_evidence_has_exact_conditional_owners_and_native_zero_skip_g
         assert '--language typescript --cache-dir "${LLM_WIKI_CACHE_DIR}"' in script
         assert 'test_unresolved_import_producer_consumer_contract' in script
         assert 'test_dynamic_import_gap_survives_bootstrap_sync_and_strict_gates' in script
+        assert 'test_released_unknown_evidence_guarded_upgrade_and_refresh' in script
         assert '--lane javascript-evidence-windows' in script
-        assert '--minimum-collected 7 --minimum-passed 7' in script
+        assert '--minimum-collected 8 --minimum-passed 8' in script
         assert '--discovery' not in script
         assert not any(item["lane"] == "javascript-evidence-windows" for item in entries)
         assert 'GITHUB_ENV' not in script
@@ -1901,7 +1903,7 @@ def test_committed_skip_contract_covers_platform_and_optional_owners_exactly() -
         for entry in entries
         if entry["node_id"].startswith("tests/test_haskell_extract.py::")
     ]
-    assert len(haskell) == 18
+    assert len(haskell) == 21
     assert {entry["lane"] for entry in haskell} == {
         "core-macos-3.14",
         "core-ubuntu-3.10",

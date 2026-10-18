@@ -331,12 +331,13 @@ jobs:
           python -m pytest -q \
             tests/test_ts_extract.py::test_unresolved_import_producer_consumer_contract \
             tests/test_ts_extract.py::test_dynamic_import_gap_survives_bootstrap_sync_and_strict_gates \
+            tests/test_ts_extract.py::test_released_unknown_evidence_guarded_upgrade_and_refresh \
             -p no:cacheprovider --strict-config --strict-markers -W error -o xfail_strict=true \
             --junitxml="${RUNNER_TEMP}/javascript-evidence-windows.xml"
           python -I release/qualification.py verify-junit \
             --junit "${RUNNER_TEMP}/javascript-evidence-windows.xml" \
             --lane javascript-evidence-windows --allowlist release/skip-allowlist.json \
-            --minimum-collected 7 --minimum-passed 7 \
+            --minimum-collected 8 --minimum-passed 8 \
             --output "${RUNNER_TEMP}/javascript-evidence-windows-result.json"
 
       - name: Upload native JavaScript evidence

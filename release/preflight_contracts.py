@@ -74,6 +74,9 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "tests/test_real_caller_action_fixture.py",
         "tests/test_ts_extract.py::test_unresolved_import_producer_consumer_contract",
         "tests/test_ts_extract.py::test_dynamic_import_gap_survives_bootstrap_sync_and_strict_gates",
+        "tests/test_ts_extract.py::test_released_unknown_evidence_guarded_upgrade_and_refresh",
+        "tests/test_knowledge_evidence.py",
+        "tests/test_extractor_inventory_contracts.py",
     ),
 }
 

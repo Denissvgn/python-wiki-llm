@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import ast
+from copy import deepcopy
+import hashlib
 import inspect
 import json
 import shutil
@@ -77,7 +79,10 @@ def test_unresolved_import_producer_consumer_contract(tmp_path, extension):
         const eager = import(process.env.NAME);
         const literal = import('./known.js');
         const required = require('known-package');
+        import { known } from './known.js';
     """)
+    _make_ts(tmp_path, "known.js", "export function known() { return 1; }\n")
+    before = {p.relative_to(tmp_path).as_posix(): p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
     inventory = TypeScriptExtractor().extract(str(tmp_path), deep=True)
     data = inventory[filename]
     normalized = normalize_module_observation(data)
@@ -88,14 +93,148 @@ def test_unresolved_import_producer_consumer_contract(tmp_path, extension):
     assert sum(gap.get("scope") == "deferred" for gap in gaps) == 2
     assert sum(record.get("resolution") == "unresolved" for record in normalized["imports"]) == 4
     graph = build_dependency_graph(inventory)
-    assert not graph["edges"]
+    assert graph["edges"] == [(filename, "known.js")]
     assert sum(item.get("reason") in {"dynamic-import", "dynamic-require"} for item in graph["unresolved"]) == 4
+    gap_only = deepcopy(inventory)
+    gap_only[filename]['imports'] = deepcopy(gaps)
+    assert build_dependency_graph(gap_only)['edges'] == []
     page = _generate_module_md(filename, data)
     assert "| `` |" not in page
     assert "Unresolved `dynamic-import`" in page
     assert "Unresolved `dynamic-require`" in page
     assert "(line 1; deferred)" in page
     assert "| `known-package` | — |" in page
+    for field, wrong in (("reason", "not-a-gap"), ("resolution", "resolved"),
+                         ("line", False), ("scope", "eager")):
+        malformed = deepcopy(data)
+        index = next(i for i, row in enumerate(malformed["imports"]) if row.get("resolution") == "unresolved")
+        malformed["imports"][index][field] = wrong
+        from llm_wiki_cli.services.knowledge_evidence import build_module_observation_basis, sha256_bytes
+        rejected = build_module_observation_basis(source_path=filename, file_data=malformed,
+            source_content_hash=sha256_bytes(b"source"), extractor_ref="llm-wiki/extractor/typescript", inventory_complete=True)
+        assert rejected.unknown_reason == "invalid-inventory-shape"
+        assert rejected.normalization_diagnostic is not None
+        assert rejected.normalization_diagnostic.pointer == f"/imports/{index}/{field}"
+        assert "concept_observation_hash" not in rejected.to_evidence_payload()
+    assert {p.relative_to(tmp_path).as_posix(): p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()} == before
+
+
+@skip_no_node
+def test_released_unknown_evidence_guarded_upgrade_and_refresh(tmp_path, monkeypatch, capsys, request):
+    """Released unknown evidence remains qualified until reviewed owning work."""
+    from llm_wiki_cli.commands import sync_cmd, upgrade_cmd, extract_cmd, lint_cmd, ci_check_cmd
+    from llm_wiki_cli.services.knowledge_evidence import normalize_module_observation
+    from llm_wiki_cli.services.knowledge_loader import load_knowledge_state
+    from llm_wiki_cli.services.knowledge_artifacts import current_knowledge_format
+    from llm_wiki_cli.services.manifest_storage import current_manifest_format
+
+    fixture = PROJECT_ROOT / "tests/fixtures/knowledge-evidence/released-2.5.0-large-files.json"
+    provenance = json.loads((fixture.parent / 'released-2.5.0-large.json').read_text(encoding='utf-8'))
+    assert hashlib.sha256(fixture.read_bytes()).hexdigest() == provenance['bundle_sha256']
+    assert provenance['producer_version'] == '2.5.0' and provenance['source_count'] == 261
+    bundle = json.loads(fixture.read_text(encoding='utf-8'))
+    assert set(bundle) == set(provenance['files'])
+    for name, text in bundle.items():
+        assert not name.startswith('/') and '..' not in name.split('/') and '\\' not in name
+        data = text.encode('utf-8')
+        assert hashlib.sha256(data).hexdigest() == provenance['files'][name]
+        path = tmp_path / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+    monkeypatch.chdir(tmp_path)
+    helper = resolve_helper_cache_root(PROJECT_ROOT)
+    assert helper is not None
+    common = ['--src-dir', '.', '--wiki-dir', 'wiki', '--source-selection', '.llm-wiki/source-selection.json',
+              '--helper-cache-dir', str(helper.parent), '--jobs', '1', '--no-cache']
+    sync = ['sync', *common, '--no-plugins']
+    parser = cli._build_parser()
+
+    def files(root):
+        return {p.relative_to(root).as_posix(): (hashlib.sha256(p.read_bytes()).hexdigest(), p.stat().st_mtime_ns, p.stat().st_size)
+                for p in root.rglob('*') if p.is_file()}
+
+    def state():
+        result = load_knowledge_state(tmp_path / 'wiki')
+        assert result.knowledge is not None and result.manifest_basis is not None
+        return result
+
+    source_before = files(tmp_path / 'src')
+    old = state()
+    assert old.knowledge is not None and old.manifest_basis is not None
+    assert old.knowledge.bundle.producer.tool.version == '2.5.0'
+    assert len(old.manifest_basis.sources) == 261
+    assert old.manifest_basis.evidence_baselines['modules/dyn.md'].unknown_reason == 'invalid-inventory-shape'
+    before_read = files(tmp_path)
+    raw = extract_cmd.build_extract_payload('.', paths=['src/dyn.mjs'], deep=True, read_only=True,
+        helper_cache_dir=str(helper.parent), source_selection='.llm-wiki/source-selection.json').payload
+    assert set(raw['inventory']) == {'src/dyn.mjs'}
+    assert normalize_module_observation(raw['inventory']['src/dyn.mjs']) is not None
+    assert files(tmp_path) == before_read
+
+    def only_recovery_created(before, after):
+        assert not set(before) - set(after)
+        assert not [p for p in set(before) & set(after) if before[p] != after[p]]
+        created = sorted(set(after) - set(before))
+        assert all(p.startswith('.llm-wiki-maintenance-recovery/maintenance-preimages/') for p in created)
+        return len(created), sum(after[p][2] for p in created)
+
+    refusal_recovery = []
+    def guarded():
+        before = files(tmp_path)
+        with pytest.raises(SystemExit) as stopped:
+            sync_cmd.run(parser.parse_args(sync))
+        assert stopped.value.code == 1
+        error = capsys.readouterr().err
+        assert 'new=0, changed=0, metadata-only=0, removed=0' in error
+        assert 'generator-refresh-additional=261' in error
+        assert '8 shown, 253 omitted' in error and '--dry-run' in error
+        refusal_recovery.append(only_recovery_created(before, files(tmp_path)))
+
+    guarded()
+    upgrade_cmd.run(parser.parse_args(['upgrade', '--wiki-dir', 'wiki', '--src-dir', '.',
+        '--source-selection', '.llm-wiki/source-selection.json', '--helper-cache-dir', str(helper.parent)]))
+    capsys.readouterr()
+    upgraded = state()
+    assert current_knowledge_format('wiki') == 'packed-v4-deflate'
+    assert current_manifest_format('wiki') == 'indexed-v8'
+    assert upgraded.manifest_basis is not None
+    assert upgraded.manifest_basis.evidence_baselines['modules/dyn.md'].unknown_reason == 'invalid-inventory-shape'
+    assert files(tmp_path / 'src') == source_before
+    guarded()  # Adoption/storage upgrade does not approve a generator refresh.
+    before = files(tmp_path)
+    sync_cmd.run(parser.parse_args([*sync, '--dry-run']))
+    preview = capsys.readouterr().out
+    assert 'generator refresh sources: 261' in preview
+    assert 'complete source paths: 261 shown, 0 omitted' in preview
+    assert 'requires --force: yes' in preview and 'this preview is not an approval token' in preview
+    assert files(tmp_path) == before
+    # Explicit authority is confined to this synthetic caller's reviewed plan.
+    sync_cmd.run(parser.parse_args([*sync, '--force']))
+    capsys.readouterr()
+    refreshed = state()
+    assert refreshed.manifest_basis is not None
+    assert refreshed.manifest_basis.evidence_baselines['modules/dyn.md'].is_known
+    assert files(tmp_path / 'src') == source_before
+    assert 'Historical authored explanation' in (tmp_path / 'wiki/modules/dyn.md').read_text(encoding='utf-8')
+    strict_results = []
+    for command, options in ((lint_cmd, ['lint', '--strict', '--profile']),
+                             (ci_check_cmd, ['ci-check', '--no-plugins', '--format', 'json', '--no-report'])):
+        command.run(parser.parse_args([*options, *common]))
+        report = json.loads(capsys.readouterr().out)
+        assert report['ok'] and not [i for i in report['issues'] if i['category'] == 'knowledge_evidence']
+        strict_results.append(report['ok'])
+    before_noop = files(tmp_path)
+    sync_cmd.run(parser.parse_args(sync))
+    capsys.readouterr()
+    noop_recovery = only_recovery_created(before_noop, files(tmp_path))
+    measurement = {'sources': 261, 'raw_source_changes': 0, 'generator_inputs': 261,
+                   'read_changed_files': 0, 'refusals_preserved_state': 2,
+                   'preview_changed_files': 0, 'repaired_modules': 1,
+                   'strict_passes': sum(strict_results), 'noop_active_byte_or_mtime_changes': 0,
+                   'refusal_recovery_created_files_bytes': refusal_recovery,
+                   'noop_recovery_created_files_bytes': noop_recovery,
+                   'fixture_sha256': provenance['bundle_sha256']}
+    request.node.user_properties.append(('transition_measurement', json.dumps(measurement, sort_keys=True)))
 
 
 @skip_no_node
