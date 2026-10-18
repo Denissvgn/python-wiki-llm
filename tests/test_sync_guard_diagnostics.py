@@ -326,6 +326,60 @@ def test_failed_preview_does_not_offer_completed_review_route(tmp_path, monkeypa
     assert 'Preview completed.' not in capsys.readouterr().out
 
 
+@pytest.mark.parametrize('deny_authored', [False, True])
+def test_preview_omits_only_root_runtime_locks(tmp_path, monkeypatch, deny_authored):
+    import shutil
+    from types import SimpleNamespace
+
+    monkeypatch.chdir(tmp_path)
+    wiki = tmp_path / 'wiki'
+    (wiki / 'authored').mkdir(parents=True)
+    locks = {'llm-wiki-governance.lock', 'llm-wiki-storage.lock'}
+    for name in locks:
+        (wiki / name).write_bytes(b'live runtime lock')
+        (wiki / 'authored' / name).write_bytes(b'authored nested lock name')
+    (wiki / 'custom.lock').write_bytes(b'authored root data')
+    before = _files(wiki)
+    copytree, copy2 = shutil.copytree, shutil.copy2
+
+    def guarded_copy(source, destination):
+        path = Path(source).resolve()
+        if path.parent == wiki.resolve() and path.name in locks:
+            raise PermissionError('simulated Windows held runtime lock')
+        if deny_authored and path.name == 'custom.lock':
+            raise PermissionError('authored read denied')
+        return copy2(source, destination)
+
+    def copy_with_locked_reads(source, destination, symlinks=False, ignore=None,
+                               copy_function=None, ignore_dangling_symlinks=False,
+                               dirs_exist_ok=False):
+        return copytree(source, destination, symlinks=symlinks, ignore=ignore,
+                        copy_function=guarded_copy,
+                        ignore_dangling_symlinks=ignore_dangling_symlinks,
+                        dirs_exist_ok=dirs_exist_ok)
+
+    def inspect_stage(options, prepared, **kwargs):
+        staged = _files(options.wiki_dir)
+        assert set(staged) == set(before) - locks
+        assert all(staged[name] == before[name] for name in staged)
+
+    monkeypatch.setattr(shutil, 'copytree', copy_with_locked_reads)
+    monkeypatch.setattr(sync_cmd, '_print_dry_run_plan', lambda *a, **kw: False)
+    monkeypatch.setattr(sync_cmd, '_execute_prepared_sync', inspect_stage)
+    prepared = SimpleNamespace(**dict.fromkeys([
+        'diff', 'application_diff', 'surface_plan', 'infrastructure_plan',
+        'source_selection_prune', 'manifest', 'seed_manifest', 'repair_only',
+        'runtime_provenance_changed', 'generator_refresh_required', 'prior_generator_version',
+        'evidence_refresh_sources', 'repair_boundary',
+    ]), inventory_result=SimpleNamespace(cache_stats=None))
+    if deny_authored:
+        with pytest.raises(shutil.Error, match='authored read denied'):
+            sync_cmd._run_sync_dry_run(_options('--dry-run'), cast(sync_cmd._PreparedSyncRun, prepared))
+    else:
+        sync_cmd._run_sync_dry_run(_options('--dry-run'), cast(sync_cmd._PreparedSyncRun, prepared))
+    assert _files(wiki) == before
+
+
 def test_complete_preview_reveals_omitted_paths_and_selection_pruning():
     path = 'src/' + 'long/' * 100 + 'file.py'
     diff = SyncDiff(changed_files=[path])

@@ -14,7 +14,7 @@ Workflow:
 
 from __future__ import annotations
 
-from ..services.maintenance_protocol import unlink_maintenance_page
+from ..services.maintenance_protocol import STORAGE_LOCK_FILENAME, unlink_maintenance_page
 
 from contextlib import nullcontext
 
@@ -110,6 +110,7 @@ from ..services.knowledge_evidence import (
 from ..services.knowledge_evidence import semantic_hash_for_file
 from ..services.knowledge_governance import (
     GOVERNANCE_FILENAME,
+    GOVERNANCE_LOCK_FILENAME,
     GovernanceError,
     load_governance,
 )
@@ -5206,6 +5207,15 @@ def _run_sync_dry_run(
         prior_generator_version=prepared.prior_generator_version,
         evidence_refresh_sources=prepared.evidence_refresh_sources,
     )
+    live_root = options.wiki_dir.absolute()
+
+    def ignore_runtime_locks(directory, names):
+        # Process coordination stays with the live owner; staged writes use
+        # their own locks. Same-name authored files below the root stay data.
+        if Path(directory).absolute() != live_root:
+            return ()
+        return {GOVERNANCE_LOCK_FILENAME, STORAGE_LOCK_FILENAME}.intersection(names)
+
     with tempfile.TemporaryDirectory(prefix="llm-wiki-sync-preview-") as temp_dir:
         staged_wiki = Path(temp_dir) / "wiki"
         if options.wiki_dir.exists():
@@ -5213,6 +5223,7 @@ def _run_sync_dry_run(
                 options.wiki_dir,
                 staged_wiki,
                 symlinks=True,
+                ignore=ignore_runtime_locks,
             )
         else:
             staged_wiki.mkdir(parents=True)
