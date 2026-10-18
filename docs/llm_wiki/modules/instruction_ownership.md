@@ -10,6 +10,14 @@ This inventory is a fail-closed removal gate.  Detailed generated prose may be
 moved only after its canonical destination is both present in the distribution
 payload and explicitly reachable in the rendered target/profile being changed.
 
+Expanded evidence-recovery guidance remains retained kernel content. Compact
+correctness checks cover the complete sync, semantic review, re-anchor and strict
+validation sequence; required inline safeguards remain present when details move.
+
+Installed reference paths retain their actual heading fragments. The inventory
+records topic-root and diagnosis-subsection routes separately, and an anchored
+route requires its matching existing heading rather than an inferred file root.
+
 ## Imports
 
 | Source | Symbols |
@@ -86,7 +94,7 @@ flowchart LR
 | `_profiled_topic_routes` | `(expanded_heading: str, compact_heading: str, topic: str) -> tuple[InstructionRoute, ...]` | — | — |
 | `_profiled_workflow_routes` | `(expanded_heading: str, compact_heading: str, skill_id: str) -> tuple[InstructionRoute, ...]` | — | — |
 | `_correctness_route` | `(_source_heading: str, destination: InstructionDestination) -> InstructionRoute` | — | — |
-| `_managed_topic_route` | `(source_path: str, source_text: str, topic: str, *, kind: InboundRouteKind = InboundRouteKind.INSTALLED_FILE_ROUTE, markdown_target: str \| None = None) -> ManagedReferenceInboundRoute` | — | — |
+| `_managed_topic_route` | `(source_path: str, source_text: str, topic: str, *, kind: InboundRouteKind = InboundRouteKind.INSTALLED_FILE_ROUTE, markdown_target: str \| None = None, heading: str \| None = None, anchor: str \| None = None) -> ManagedReferenceInboundRoute` | — | — |
 | `_installed_topic_span` | `(topic: str) -> str` | — | — |
 | `normalize_instruction_text` | `(value: str) -> str` | — | Collapse formatting whitespace for stable sentence-level checks. |
 | `markdown_anchor` | `(heading: str) -> str` | — | Return the GitHub-style base anchor for a Markdown heading. |
@@ -94,6 +102,7 @@ flowchart LR
 | `markdown_links` | `(content: str) -> tuple[MarkdownLink, ...]` | — | Parse ordinary local Markdown links without treating images as routes. |
 | `_destination_heading_lookup` | `(package_root: Path, destination_path: str) -> tuple[MarkdownHeading \| None, dict[str, str]]` | — | — |
 | `_resolved_package_link` | `(source_path: str, target_path: str) -> str` | — | — |
+| `_installed_heading` | `(package_root: Path, destination_path: str, anchor: str \| None) -> tuple[str, str]` | — | — |
 | `_active_reference_sources` | `(package_root: Path) -> tuple[Path, ...]` | — | — |
 | `discover_managed_reference_inbound_routes` | `(package_root: Path) -> tuple[DiscoveredInboundRoute, ...]` | — | Discover direct topic and forbidden compatibility routes from syntax. |
 | `_package_data_patterns` | `(project_root: Path) -> tuple[str, ...]` | — | — |

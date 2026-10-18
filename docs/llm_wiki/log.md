@@ -3074,3 +3074,28 @@ unselected facts, and repair preserves source, authority and review safeguards.
 Evidence record arrays preserve required-field and exact nested-item diagnostics
 through shared scalar/container validation. Scoped repair validates canonical
 source coordinates separately from sorting and deduplicating the selector list.
+
+## 2026-10-18
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.1.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:4aef37cf4ae8c278867a8e985ae2638ce6e8ba26d347257fc0c9acccc7302dce`
+- Pages created: 0
+- Pages updated: 1
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1614
+- Pages deprecated: 0
+- Semantic fields preserved: 0
+- Moved entities: none
+
+## 2026-10-18
+
+### Instruction ownership and anchored references
+
+The ownership inventory reserves expanded evidence-recovery guidance and the
+complete compact owning sequence. Installed reference discovery and validation
+preserve real heading fragments, including the captured-evidence diagnosis
+section, while retaining the distinct maintenance topic-root route.
