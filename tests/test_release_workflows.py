@@ -320,6 +320,8 @@ def test_native_origin_contract_runs_before_the_full_windows_suite():
     steps = _yaml("ci.yml")["jobs"]["test"]["steps"]
     early = _named_step({"steps": steps}, "Check release corrections on native Windows")
     assert "tests/test_real_caller_action_fixture.py" in early["run"]
+    assert early["id"] == "native-corrections"
+    assert '--junitxml="${{ runner.temp }}/native-corrections.xml"' in early["run"]
     assert {
         "tests/test_scoped_sync_repair.py",
         "tests/test_sync_guard_diagnostics.py",
@@ -330,6 +332,10 @@ def test_native_origin_contract_runs_before_the_full_windows_suite():
     assert steps.index(early) < next(
         index for index, step in enumerate(steps) if step.get("name") == "Run strict suite"
     )
+    evidence = _named_step({"steps": steps}, "Retain native Windows correction evidence")
+    assert "always()" in evidence["if"]
+    assert "steps.native-corrections.outcome" in evidence["if"]
+    assert evidence["with"]["path"] == "${{ runner.temp }}/native-corrections.xml"
 
 
 def test_recursion_coverage_probe_preserves_the_full_linux_gate():

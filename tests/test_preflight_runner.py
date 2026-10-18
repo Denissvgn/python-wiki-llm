@@ -398,8 +398,9 @@ def _archive_fixture(tmp_path):
     subprocess.run(
         ["git", "init", "--quiet"], cwd=repo, check=True, capture_output=True
     )
+    (repo / ".gitattributes").write_bytes(b"* text=auto eol=lf\n")
     (repo / "app.py").write_bytes(b"VALUE = 1\n")
-    subprocess.run(["git", "add", "app.py"], cwd=repo, check=True, capture_output=True)
+    subprocess.run(["git", "add", ".gitattributes", "app.py"], cwd=repo, check=True, capture_output=True)
     subprocess.run(
         [
             "git",
@@ -430,8 +431,13 @@ def _archive_fixture(tmp_path):
     return repo, sha, scratch / "archive-budget"
 
 
-def test_exact_head_archive_screen_retains_bytes_and_refuses_occupied_output(tmp_path):
+@pytest.mark.parametrize("autocrlf", [False, True])
+def test_exact_head_archive_screen_retains_bytes_and_refuses_occupied_output(tmp_path, autocrlf):
     repo, sha, output = _archive_fixture(tmp_path)
+    subprocess.run(
+        ["git", "config", "core.autocrlf", str(autocrlf).lower()],
+        cwd=repo, check=True, capture_output=True,
+    )
     result = runner.archive_budget(repo, output, sha)
     assert result["state"] == "passed" and result["candidate_sha"] == sha
     archive = output / "candidate-source.zip"

@@ -440,6 +440,7 @@ jobs:
           --cov-fail-under=87
 
       - name: Check release corrections on native Windows
+        id: native-corrections
         if: ${{ matrix.lane == 'core-windows-3.13' }}
         env:
           PYTHONUTF8: "1"
@@ -457,6 +458,17 @@ jobs:
           tests/test_sync_runtime_regressions.py::test_wiki_only_commits_do_not_rewrite_repository_revision -q
           -p no:cacheprovider --strict-config --strict-markers -W error
           -o xfail_strict=true
+          --junitxml="${{ runner.temp }}/native-corrections.xml"
+
+      - name: Retain native Windows correction evidence
+        if: ${{ always() && (steps.native-corrections.outcome == 'success' || steps.native-corrections.outcome == 'failure') }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          archive: true
+          name: native-windows-corrections-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/native-corrections.xml
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Run strict suite
         if: ${{ !matrix.coverage }}
