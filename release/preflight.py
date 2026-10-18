@@ -27,8 +27,8 @@ PLAN_SCHEMA = "agent-wiki-local-preflight-plan/v1"
 RECEIPT_SCHEMA = "agent-wiki-local-preflight-receipt/v1"
 MAX_DOCUMENT = 16 * 1024 * 1024
 MAX_INPUT = 64 * 1024 * 1024
-# Retain an over-budget local source diagnostic. This never changes the hosted
-# 64 MiB admission limit; only this known operation-owned evidence path may use it.
+# Retain an uncompressed frozen tar or an over-budget local ZIP diagnostic.
+# Only their exact allocated evidence paths use this cap; hosted admission is unchanged.
 LOCAL_ARCHIVE_EVIDENCE_LIMIT = 320 * 1024 * 1024
 MAX_TOTAL = 2 * 1024 * 1024 * 1024
 STAGES = ("contracts", "static", "freeze", "host-core", "builds", "artifacts")
@@ -614,6 +614,19 @@ def _owner(root: Path) -> dict:
     return {"repository_root": str(root), "kind": "local-pre-release-work/v1"}
 
 
+def _evidence_read_limit(name: str) -> int:
+    parts = name.split("/")
+    if len(parts) != 3 or tuple(parts[1:]) not in {
+        ("archive-budget", "candidate-source.zip"), ("frozen", "candidate-source.tar"),
+    }:
+        return MAX_INPUT
+    try:
+        allocated = parts[0] == "attempt-" + str(uuid.UUID(parts[0].removeprefix("attempt-")))
+    except ValueError:
+        allocated = False
+    return LOCAL_ARCHIVE_EVIDENCE_LIMIT if allocated else MAX_INPUT
+
+
 def _manifest(work: Path, attempts: list[dict]) -> dict:
     from release import preflight_runner as runner
 
@@ -631,9 +644,7 @@ def _manifest(work: Path, attempts: list[dict]) -> dict:
             continue
         raw = _read(
             path,
-            LOCAL_ARCHIVE_EVIDENCE_LIMIT
-            if name.endswith("/archive-budget/candidate-source.zip")
-            else MAX_INPUT,
+            _evidence_read_limit(name),
         )
         total += len(raw)
         if len(result) >= 50000 or total > MAX_TOTAL:
@@ -841,9 +852,7 @@ def verify_receipt(path: Path) -> dict:
             raise PreflightError("Evidence requires canonical relative paths")
         raw = _read(
             work / name,
-            LOCAL_ARCHIVE_EVIDENCE_LIMIT
-            if name.endswith("/archive-budget/candidate-source.zip")
-            else MAX_INPUT,
+            _evidence_read_limit(name),
         )
         if commitment != {"sha256": _hash(raw), "bytes": len(raw)}:
             raise PreflightError(f"Changed evidence: {name}")

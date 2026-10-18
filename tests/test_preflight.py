@@ -11,6 +11,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import uuid
 
 import pytest
 
@@ -703,3 +704,45 @@ def test_missing_or_blocking_review_prevents_full_driver_execution(planned_proje
     assert calls == []
     assert result["attempts"][0]["stage"] == "readiness"
     assert all(row["release_pending"] for row in result["plan"]["gates"])
+
+
+@pytest.mark.parametrize("relative", ["frozen/candidate-source.tar", "archive-budget/candidate-source.zip"])
+def test_owned_source_archive_evidence_retains_and_replays_above_generic_bound(local_receipt, monkeypatch, relative):
+    _root, work, path, value = local_receipt
+    monkeypatch.setattr(preflight, "MAX_INPUT", 8192)
+    scratch = Path(value["attempts"][0]["scratch"])
+    archive = scratch / relative
+    archive.parent.mkdir()
+    archive.write_bytes(b"bounded archive fixture" * 400)
+    assert 8192 < archive.stat().st_size < preflight.LOCAL_ARCHIVE_EVIDENCE_LIMIT
+    value["evidence"] = preflight._manifest(work, value["attempts"])
+    _write_resealed_receipt(path, value)
+    assert preflight.verify_receipt(path)["ok"] is True
+    archive.write_bytes(b"changed archive fixture" * 400)
+    with pytest.raises(preflight.PreflightError, match="Changed evidence"):
+        preflight.verify_receipt(path)
+
+
+@pytest.mark.parametrize("relative", ["host-result.json", "frozen/unrelated.tar"])
+def test_unrelated_evidence_keeps_its_generic_bound(local_receipt, monkeypatch, relative):
+    _root, work, _path, value = local_receipt
+    monkeypatch.setattr(preflight, "MAX_INPUT", 8192)
+    target = Path(value["attempts"][0]["scratch"]) / relative
+    target.parent.mkdir(exist_ok=True)
+    target.write_bytes(b"x" * 8193)
+    with pytest.raises(preflight.PreflightError, match="bounded"):
+        preflight._manifest(work, value["attempts"])
+
+
+def test_source_evidence_exception_requires_exact_allocated_namespace(local_receipt, monkeypatch):
+    _root, work, _path, value = local_receipt
+    monkeypatch.setattr(preflight, "MAX_INPUT", 8192)
+    monkeypatch.setattr(preflight, "LOCAL_ARCHIVE_EVIDENCE_LIMIT", 8192)
+    target = Path(value["attempts"][0]["scratch"]) / "frozen/candidate-source.tar"
+    target.parent.mkdir()
+    target.write_bytes(b"x" * 8193)
+    with pytest.raises(preflight.PreflightError, match="bounded"):
+        preflight._manifest(work, value["attempts"])
+    monkeypatch.setattr(preflight, "LOCAL_ARCHIVE_EVIDENCE_LIMIT", 16384)
+    for name in ("unknown/frozen/candidate-source.tar", f"attempt-{uuid.uuid4()}/nested/frozen/candidate-source.tar"):
+        assert preflight._evidence_read_limit(name) == preflight.MAX_INPUT
