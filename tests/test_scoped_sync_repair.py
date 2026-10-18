@@ -1,6 +1,7 @@
 """Scoped repair limits application, while retaining a complete global basis."""
 
 import subprocess
+from copy import deepcopy
 
 import pytest
 
@@ -12,6 +13,53 @@ from llm_wiki_cli.services.knowledge_model import knowledge_index_to_payload
 from llm_wiki_cli.services.maintenance_protocol import snapshot_wiki
 from llm_wiki_cli.services.maintenance_service import load_recovery_snapshot
 from tests.test_sync_guard_diagnostics import _decode_command, _preview_command
+
+
+_ABSENT_EXTENSION = object()
+
+
+@pytest.mark.parametrize(('before', 'after', 'refused'), [
+    pytest.param({'nested': [False]}, {'nested': [0]}, True, id='false-zero'),
+    pytest.param({'nested': [True]}, {'nested': [1]}, True, id='true-one'),
+    pytest.param({'nested': [0]}, {'nested': [False]}, True, id='zero-false'),
+    pytest.param({'nested': [1]}, {'nested': [True]}, True, id='one-true'),
+    pytest.param(_ABSENT_EXTENSION, None, True, id='missing-null'),
+    pytest.param(None, _ABSENT_EXTENSION, True, id='null-missing'),
+    pytest.param({'nested': [False]}, {'nested': [False]}, False, id='same-boolean'),
+    pytest.param({'nested': [0]}, {'nested': [0]}, False, id='same-number'),
+    pytest.param(None, None, False, id='same-null'),
+    pytest.param(_ABSENT_EXTENSION, _ABSENT_EXTENSION, False, id='same-missing'),
+])
+def test_unselected_json_literals_and_presence_are_preserved(
+    tmp_path, monkeypatch, capsys, before, after, refused
+):
+    wiki = _project(tmp_path, monkeypatch)
+    original = snapshot_wiki(wiki)
+    serialize = scoped.knowledge_index_to_payload
+    calls = []
+
+    def inject(value):
+        # Inject only the compared JSON views; native validation, source checks
+        # and publication remain real. Opaque JSON must preserve literal types.
+        payload = deepcopy(serialize(value))
+        candidate = before if len(calls) % 2 == 0 else after
+        if candidate is _ABSENT_EXTENSION:
+            payload['extensions'].pop('consumer/scoped-json', None)
+        else:
+            payload['extensions']['consumer/scoped-json'] = candidate
+        calls.append(True)
+        return payload
+
+    monkeypatch.setattr(scoped, 'knowledge_index_to_payload', inject)
+    if refused:
+        with pytest.raises(SystemExit) as stopped:
+            sync_cmd.run(_args('--repair-evidence', 'f000.py'))
+        assert stopped.value.code == 2
+        assert snapshot_wiki(wiki) == original
+        assert 'global graph, custody or unselected sections changed' in capsys.readouterr().err
+    else:
+        sync_cmd.run(_args('--repair-evidence', 'f000.py'))
+    assert len(calls) >= 2
 
 
 def _args(*extra):

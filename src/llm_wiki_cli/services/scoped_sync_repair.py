@@ -12,6 +12,7 @@ from . import analysis_capture, analysis_compatibility as ac
 from .contracts import SECTION_OWNERSHIP_EXTENSION_KEY
 from .knowledge_artifacts import KnowledgeCommitPlan, validate_knowledge_artifacts
 from .knowledge_model import knowledge_index_to_payload
+from .knowledge_storage import canonical_bytes
 from .knowledge_reuse import implementation_hash, wiki_input_hashes
 from .source_snapshot import SourceSnapshotError, source_snapshot_matches_current_files
 from .validation import require_repository_relative_path
@@ -137,12 +138,14 @@ class ScopedRepairBoundary:
             payload["bundle"]["repository"].pop("evaluated_revision", None)
             payload["bundle"]["snapshot"].pop("markdown_snapshot_hash", None)
             payload["bundle"]["snapshot"].pop("surface_index_hash", None)
-        _require(before["bundle"] == after["bundle"], "global source, options or repository basis changed")
+        _require(canonical_bytes(before["bundle"]) == canonical_bytes(after["bundle"]),
+                 "global source, options or repository basis changed")
         allowed = {c["locator"] for c in before["concepts"] if c["document"]["canonical_path"] in self.pages | {"log.md"}}
         left = {c["locator"]: c for c in before["concepts"]}
         right = {c["locator"]: c for c in after["concepts"]}
         _require(left.keys() == right.keys(), "concept creation or retirement needs full review")
-        _require(all(left[k] == right[k] for k in left.keys() - allowed), "unselected concept facts changed")
+        _require(all(canonical_bytes(left[k]) == canonical_bytes(right[k]) for k in left.keys() - allowed),
+                 "unselected concept facts changed")
         _require(
             _multiset(r for r in before["relationships"] if r["from"] not in allowed)
             == _multiset(r for r in after["relationships"] if r["from"] not in allowed),
@@ -160,7 +163,8 @@ class ScopedRepairBoundary:
             if sections is not None:
                 sections["pages"] = [row for row in sections["pages"] if row["page_locator"] not in allowed]
         changed = [key for key in before["extensions"].keys() | after["extensions"].keys()
-                   if before["extensions"].get(key) != after["extensions"].get(key)]
+                   if key not in before["extensions"] or key not in after["extensions"]
+                   or canonical_bytes(before["extensions"][key]) != canonical_bytes(after["extensions"][key])]
         _require(not changed, "global graph, custody or unselected sections changed: "
                  + ", ".join(json.dumps(key[:128]) for key in sorted(changed)[:3]))
         left_manifest, right_manifest = (json.loads(json.dumps(m.to_payload()))
@@ -175,7 +179,7 @@ class ScopedRepairBoundary:
             _require(record_id in right_state["observations"] and record_id in right_state["records"],
                      "selected maintenance identity disappeared")
             prior_record, current_record = left_state["records"][record_id], right_state["records"][record_id]
-            _require(all(prior_record[k] == current_record[k] for k in
+            _require(all(canonical_bytes(prior_record[k]) == canonical_bytes(current_record[k]) for k in
                          ("acknowledgment_history", "coordinate_history", "target_history")),
                      "repair changed review history or semantic identity")
             _require(current_record["current_acknowledgment_id"] in (None, prior_record["current_acknowledgment_id"])
@@ -193,7 +197,8 @@ class ScopedRepairBoundary:
             assert isinstance(evidence, dict)
             for page in self.pages:
                 evidence.pop(page, None)
-        _require(left_manifest == right_manifest, "unselected manifest facts or maintenance history changed")
+        _require(canonical_bytes(left_manifest) == canonical_bytes(right_manifest),
+                 "unselected manifest facts or maintenance history changed")
 
 
 def prepare_boundary(options, prepared) -> ScopedRepairBoundary:
