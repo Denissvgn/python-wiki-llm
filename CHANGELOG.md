@@ -7,7 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-10-18
+
 ### Added
+
+- Bounded evidence explanation queries expose captured and live producer,
+  package, helper and execution-runtime provenance for exact concepts or sources.
 
 - Installed recovery guidance connects captured-evidence explanation, one-file
   raw inspection and authorized owning repair, including the inline fallback.
@@ -1506,7 +1511,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.0.0...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.1.0...HEAD
+[3.1.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.5.0...v3.0.0
 [2.5.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.3.2...v2.4.0
