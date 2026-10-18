@@ -12,7 +12,15 @@ import pytest
 from tests import verify_installed_knowledge_schema as package_check
 
 
+_EVIDENCE_INPUTS = tuple("tests/fixtures/knowledge-evidence/" + name for name in (
+    "concept-observation-inventories.json", "producer-evidence-inventories.json",
+    "producer-evidence-expectations.json", "released-2.5.0-large.json",
+    "released-2.5.0-large-files.json",
+))
+
+
 def _artifacts(tmp_path: Path, version: str, sdist_root: str) -> tuple[Path, Path]:
+    """Fabricate the current required payload under variable identity labels."""
     wheel = tmp_path / f"agent_wiki_cli-{version}-py3-none-any.whl"
     with zipfile.ZipFile(wheel, "w") as archive:
         archive.writestr(
@@ -34,6 +42,7 @@ def _artifacts(tmp_path: Path, version: str, sdist_root: str) -> tuple[Path, Pat
             *(f"src/{name}" for name in package_check._REQUIRED_HELPERS),
             "docs/standalone-documentation.md",
             "release_build_backend.py",
+            *_EVIDENCE_INPUTS,
             *(
                 f"{package_check._SAMPLE_ROOT}/{name}"
                 for name in package_check._SAMPLE_FILES
@@ -43,7 +52,10 @@ def _artifacts(tmp_path: Path, version: str, sdist_root: str) -> tuple[Path, Pat
                 for name in package_check._SAMPLE_FILES
             ),
         ):
-            archive.addfile(tarfile.TarInfo(f"{sdist_root}/{name}"), io.BytesIO())
+            raw = (Path(__file__).parents[1] / name).read_bytes() if name in _EVIDENCE_INPUTS else b""
+            member = tarfile.TarInfo(f"{sdist_root}/{name}")
+            member.size = len(raw)
+            archive.addfile(member, io.BytesIO(raw))
     return wheel, sdist
 
 
@@ -62,6 +74,23 @@ def test_release_artifacts_reject_mismatched_sdist_identity(tmp_path, sdist_root
 
     with pytest.raises(RuntimeError, match="sdist has an unexpected root"):
         package_check._verify_contents(*artifacts)
+
+
+@pytest.mark.parametrize("missing", _EVIDENCE_INPUTS)
+def test_current_release_inputs_cannot_be_omitted(tmp_path, missing):
+    wheel, sdist = _artifacts(tmp_path, "9.0.0", "agent_wiki_cli-9.0.0")
+    with tarfile.open(sdist, "r:gz") as archive:
+        records = []
+        for member in archive.getmembers():
+            if member.name != "agent_wiki_cli-9.0.0/" + missing:
+                stream = archive.extractfile(member)
+                assert stream is not None
+                records.append((member, stream.read()))
+    with tarfile.open(sdist, "w:gz") as archive:
+        for member, raw in records:
+            archive.addfile(member, io.BytesIO(raw))
+    with pytest.raises(RuntimeError, match="sdist is missing release inputs"):
+        package_check._verify_contents(wheel, sdist)
 
 
 @pytest.mark.parametrize(

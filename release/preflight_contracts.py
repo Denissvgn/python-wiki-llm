@@ -63,6 +63,8 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "tests/test_sync_recovery.py",
     ),
     "release": (
+        "tests/test_package_validation.py",
+        "tests/test_package_metadata.py",
         "tests/test_preflight.py",
         "tests/test_preflight_contracts.py",
         "tests/test_preflight_runner.py",

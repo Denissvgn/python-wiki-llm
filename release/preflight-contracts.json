@@ -60,6 +60,8 @@
       "tests/test_python_go_path_diagnostics.py"
     ],
     "release": [
+      "tests/test_package_validation.py",
+      "tests/test_package_metadata.py",
       "tests/test_preflight.py",
       "tests/test_preflight_contracts.py",
       "tests/test_preflight_runner.py",
