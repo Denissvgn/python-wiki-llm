@@ -69,6 +69,13 @@ prerequisite is an environment failure, not a product defect or passing coverage
 Use [Extractors and dependencies](extractors-dependencies.md) for helper recovery.
 Retain the original failure and successful corrective reruns separately.
 
+For captured evidence failures, follow
+[the diagnosis and repair route](maintenance.md#diagnose-captured-evidence):
+inspect stored qualification, read one fresh raw file, resolve helper/runtime
+prerequisites, preview authorized owning work, then repair/re-anchor/validate.
+Raw extraction cannot repair a stored manifest, and invalid evidence stays
+blocking. Do not turn a diagnostic read into setup or an automatic force update.
+
 ## Select checks from contracts and environments
 
 Discover supported environments and existing verification commands from the

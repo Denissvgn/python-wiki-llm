@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Installed recovery guidance connects captured-evidence explanation, one-file
+  raw inspection and authorized owning repair, including the inline fallback.
+
 - Fresh normalization diagnostics identify bounded record locations, rules and
   expected shapes without exposing rejected source values or changing evidence hashes.
 
@@ -21,6 +24,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   reviewed without increasing output limits.
 
 ### Fixed
+
+- Bootstrap recipe refresh preserves explicit-language helper preparation and
+  recognizes source-selection flags separately from option-looking path values.
 
 - Evidence diagnostics distinguish captured failures from fresh normalization
   results. Owning sync refreshes a captured invalid basis when current deep

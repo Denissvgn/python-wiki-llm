@@ -19,6 +19,53 @@ task detector with Mermaid styling.
 | Extend and collaborate | [install / plugins](#install-and-plugins), [team](#team), [knowledge](#knowledge) |
 | Manage an installation | [upgrade](#upgrade), [migrate](#migrate), [metrics](#metrics), [status / release / bump / uninstall](#status-release-bump-and-uninstall) |
 
+## Recover captured evidence
+
+Keep the failure's source, cause and qualifications. Use the same source/wiki
+roots, selection, helper cache and generation options through diagnosis and
+repair. For example, with source `src`, wiki `wiki`, selection
+`config/sources.json` and an existing helper cache `.cache/helpers`, save a
+permitted request file `evidence.json` containing:
+
+```json
+{"operation":"explain","source":"orders.py","limit":5}
+```
+
+```bash
+llm-wiki query --request evidence.json --src-dir src --wiki-dir wiki --source-selection config/sources.json --helper-cache-dir .cache/helpers
+llm-wiki extract --src-dir src --paths orders.py --deep --read-only --source-selection config/sources.json --helper-cache-dir .cache/helpers
+llm-wiki sync --dry-run --jobs 1 --src-dir src --wiki-dir wiki --source-selection config/sources.json --helper-cache-dir .cache/helpers
+```
+
+Replace these example bindings with the original command's actual values.
+Request `source` and extract `--paths` are canonical POSIX paths relative to
+`--src-dir`; filesystem and cache arguments use native paths. Explanation is
+snapshot-only by default; choose an exact locator from ambiguous results.
+`live:true` plus `allow_full_inventory:true` authorizes full current analysis.
+The [explanation route](#context) separates captured/current source and producer
+bases, helper identity and active runtime. Raw extraction prints JSON, installs
+no dependencies and cannot repair a stored manifest.
+
+For a missing/stale helper, use its exact [preparation remedy](#prepare-extractors)
+with setup authority, then retry the original read once with the same selection
+and cache. Preparation takes `--cache-dir`, reads take `--helper-cache-dir`.
+Do not combine explicit `--language` preparation with `--source-selection`.
+A current helper with a runtime mismatch needs the reported runtime selected on
+PATH; preparation does not change PATH. No hand-linked dependencies or internal
+helper-script invocation is required.
+
+Fix fresh normalization rejection before repair; invalid evidence stays blocking.
+If raw output is valid but captured evidence is unavailable, the authorized
+[owning sync](#sync) must commit the repair. Review the complete preview, including
+removals. Broad changes require explicit authority for the same invocation with
+`--force` replacing `--dry-run`; never force automatically. Review again after
+any input change. The bounded `--repair-evidence` writer retains its own adoption,
+stable-producer and scope conditions and still performs full analysis.
+Missing/corrupt authority needs its recovery route, not generated JSON edits or
+reinitialization. Review semantic prose, re-anchor edits through owning sync,
+then run strict lint and CI with the same bindings. Keep current defaults and
+strict gates. Storage upgrade and diagnostic reads alone do not establish repair.
+
 ## Resource-aware execution
 
 In an interactive IDE or whenever host capacity is unknown, run one heavy gate

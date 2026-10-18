@@ -273,7 +273,10 @@ def _build_parser():
 
 
 def _add_query_command(subparsers):
-    parser = subparsers.add_parser("query", help="Run an exact documentation query")
+    parser = subparsers.add_parser("query", help="Run an exact documentation query",
+        epilog='Evidence diagnosis: --request FILE accepts {"operation":"explain","source":"SOURCE","limit":5}. '
+        'Snapshot is default; ambiguous sources return choices. Live comparison needs live=true and allow_full_inventory=true (full inventory). '
+        'Keep source/wiki roots, selection and helper cache. Raw one-file JSON: extract --deep --read-only --paths SOURCE. Reads do not repair stored evidence.')
     parser.add_argument("--request", required=True, help="JSON request file, or - for stdin (1 MiB maximum)")
     parser.add_argument("--src-dir", default=".")
     parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR)
@@ -438,7 +441,10 @@ def _add_init_command(subparsers):
 
 def _add_extract_command(subparsers):
     extract_parser = subparsers.add_parser(
-        "extract", help="Extract project AST and structure into wiki"
+        "extract", help="Extract project AST and structure into wiki",
+        epilog='One-file JSON inspection: llm-wiki extract --deep --read-only --paths SOURCE --src-dir . '
+        'Preserve the original source selection and helper cache. This read does not install helpers or repair a stored manifest. '
+        'Inspect captured qualification with query --request FILE (operation: explain); use the exact authorized helper remedy, then preview owning sync before repair.'
     )
     extract_parser.add_argument(
         "--src-dir", default=".", help="Source directory to scan"
@@ -1994,6 +2000,9 @@ def _add_sync_command(subparsers):
     sync_parser = subparsers.add_parser(
         "sync",
         help="Incrementally update wiki pages for files that changed since last bootstrap/sync",
+        epilog='Captured evidence failure: inspect query --request FILE (operation: explain), then extract --deep --read-only --paths SOURCE with the same bindings. '
+        'Raw output does not repair a stored manifest. Preview with the same sync invocation plus --dry-run; review all actions and require explicit authority for broad --force. '
+        'Never force automatically. Re-anchor semantic changes, then run strict lint and ci-check.',
     )
     _add_progress_arguments(sync_parser)
     sync_parser.add_argument(
