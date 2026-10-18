@@ -81,6 +81,7 @@ def test_real_declarations_map_all_jobs_and_maintenance_without_writes(repositor
         "tests/test_schema_context_baselines.py",
         "tests/test_skill_ownership_boundaries.py",
     } <= set(value["groups"]["defaults"])
+    assert "tests/test_native_knowledge_semantics_docs.py" in value["groups"]["packet"]
     assert {
         x.relative_to(repository): x.read_bytes()
         for x in repository.rglob("*")

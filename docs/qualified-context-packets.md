@@ -191,13 +191,20 @@ bounded `recovery` object. The Python packet API retains its
 causes remain chained locally; structured results omit raw metadata and machine
 roots. Raw and budgeted packet failures carry the same recovery requirements.
 
-The recovery object supplies an `argv_template` for `llm-wiki maintenance recover`.
+The recovery object supplies an `argv_template` for the `maintenance recover` operation.
 Bind `wiki_dir` to the original request's wiki root, `recovery_dir` to a complete
 matching committed backup, and `expected_adoption_id` to the same existing
 identity from a validated immutable marker or that matching backup. These are
 caller-supplied facts; the reader does not discover a backup or allocate an ID.
 Keep the original source root and selection for subsequent owning sync and
 validation, and keep recovery bytes outside the wiki and source inputs.
+
+After separate recovery authorization, substitute those bound values in the
+complete command template:
+
+```bash
+llm-wiki maintenance recover --wiki-dir WIKI --recovery-dir RECOVERY_DIR --expected-adoption-id ADOPTION_ID
+```
 
 A complete backup is necessary but does not guarantee that the current recovery
 operation accepts the damaged tree. With a matching surviving marker or owner,

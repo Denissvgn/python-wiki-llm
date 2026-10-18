@@ -55,6 +55,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "tests/test_context_packet.py",
         "tests/test_context_packet_knowledge.py",
         "tests/test_packet_field_policy.py",
+        "tests/test_native_knowledge_semantics_docs.py",
     ),
     "storage": (
         "tests/test_knowledge_storage.py",
