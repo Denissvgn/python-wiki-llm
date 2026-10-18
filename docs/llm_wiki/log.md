@@ -2989,3 +2989,19 @@ fresh raw inspection and authorized owning repair. Same-scope recipes retain
 source selection and helper/runtime boundaries. Recovery remains distinct from
 diagnosis, setup and storage upgrade, with semantic re-anchor and strict
 validation after repair. Command help makes the existing route discoverable.
+
+## 2026-10-18
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.1.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:493a37fe9f1983e4dec197b1bba9b69556a9e51e015477468d3145cdfe7b4226`
+- Pages created: 0
+- Pages updated: 134
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1541
+- Pages deprecated: 0
+- Semantic fields preserved: 171
+- Moved entities: none
