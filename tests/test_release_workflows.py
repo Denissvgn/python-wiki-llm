@@ -320,10 +320,34 @@ def test_native_origin_contract_runs_before_the_full_windows_suite():
     steps = _yaml("ci.yml")["jobs"]["test"]["steps"]
     early = _named_step({"steps": steps}, "Check release corrections on native Windows")
     assert "tests/test_real_caller_action_fixture.py" in early["run"]
+    assert {
+        "tests/test_scoped_sync_repair.py",
+        "tests/test_sync_guard_diagnostics.py",
+        "tests/test_preflight_contracts.py",
+        "tests/test_preflight_runner.py",
+    } <= set(early["run"].split())
     assert early["if"] == "${{ matrix.lane == 'core-windows-3.13' }}"
     assert steps.index(early) < next(
         index for index, step in enumerate(steps) if step.get("name") == "Run strict suite"
     )
+
+
+def test_recursion_coverage_probe_preserves_the_full_linux_gate():
+    steps = _yaml("ci.yml")["jobs"]["test"]["steps"]
+    early = _named_step({"steps": steps}, "Check recursion coverage boundaries before the full Linux suite")
+    full = _named_step({"steps": steps}, "Run strict suite with coverage")
+    assert early["if"] == "${{ matrix.coverage }}"
+    assert "tests/test_python_implementation.py::test_deep_owned_ast_has_iterative_declaration_walk_and_explicit_digest_gap" in early["run"]
+    assert "runner.coverage_rows" in early["run"]
+    assert "runner.source_manifest(package)" in early["run"]
+    assert early["env"]["COVERAGE_FILE"] == "${{ runner.temp }}/coverage-recursion/coverage.data"
+    assert "--cov-fail-under=0" in early["run"]
+    assert "--cov-fail-under=87" in full["run"]
+    assert "COVERAGE_FILE" not in full.get("env", {})
+    assert steps.index(early) < steps.index(full)
+    evidence = _named_step({"steps": steps}, "Retain native Linux coverage boundary evidence")
+    assert "always()" in evidence["if"]
+    assert "steps.coverage-boundary.outcome" in evidence["if"]
 
 
 def test_javascript_evidence_has_exact_conditional_owners_and_native_zero_skip_gate():

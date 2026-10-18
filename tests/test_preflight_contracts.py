@@ -124,7 +124,7 @@ def test_new_producer_condition_command_or_global_mode_refuses(
     repository, mutation, expected
 ):
     path = repository / p.WORKFLOW
-    path.write_text(mutation(path.read_text()))
+    path.write_bytes(mutation(path.read_text(encoding="utf-8")).encode("utf-8"))
     assert any(expected in error for error in p.validate_workflow_contracts(repository))
 
 

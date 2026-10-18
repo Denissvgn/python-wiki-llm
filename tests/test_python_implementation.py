@@ -7,6 +7,8 @@ from copy import deepcopy
 import hashlib
 import json
 from pathlib import Path
+import subprocess
+import sys
 from typing import Any
 
 import pytest
@@ -607,6 +609,25 @@ def test_final_partial_or_unavailable_metadata_is_recounted_at_byte_boundary(
 
 
 def test_deep_owned_ast_has_iterative_declaration_walk_and_explicit_digest_gap():
+    # Keep intentional recursion failure out of the native parent tracer.
+    # Bind the probe to the exact provider under test, including source runs.
+    command = (
+        "import sys; from pathlib import Path; "
+        "sys.path[:0] = sys.argv[1:3]; "
+        "from tests.test_python_implementation import _deep_owned_ast_probe, impl; "
+        "assert Path(impl.__file__).resolve() == Path(sys.argv[3]).resolve(); "
+        "_deep_owned_ast_probe()"
+    )
+    result = subprocess.run(
+        [sys.executable, "-I", "-c", command,
+         str(Path(impl.__file__).resolve().parents[2]),
+         str(Path(__file__).resolve().parents[1]), str(impl.__file__)],
+        stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=30,
+    )
+    assert result.returncode == 0, result.stderr
+
+
+def _deep_owned_ast_probe():
     # This is an owned AST stress control, not independent source/AST verification.
     expression = ast.Constant(value=1)
     for _ in range(1500):

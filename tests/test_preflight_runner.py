@@ -7,6 +7,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+from types import SimpleNamespace
 import subprocess
 import venv
 import uuid
@@ -109,9 +110,9 @@ def test_owner_binding_refuses_replacement_and_malformed_metadata(tmp_path):
 def test_full_driver_keeps_maintained_owners_and_strict_full_suite(
     tmp_path, monkeypatch
 ):
-    monkeypatch.setattr(runner.platform, "system", lambda: "Darwin")
+    monkeypatch.setattr(runner, "platform", SimpleNamespace(system=lambda: "Darwin"))
     monkeypatch.setattr(
-        runner.sys, "version_info", type("Version", (), {"major": 3, "minor": 14})()
+        runner, "sys", SimpleNamespace(version_info=SimpleNamespace(major=3, minor=14))
     )
     commands = runner.stage_commands(
         "rehearsal", ROOT, tmp_path, candidate_sha=SHA, version="3.0.0"
@@ -135,7 +136,7 @@ def test_full_driver_keeps_maintained_owners_and_strict_full_suite(
         ).argv
     )
     admission = next(command for command in commands if command.name == "verify-host-junit")
-    assert any(arg.endswith("release/preflight_runner.py") for arg in admission.argv)
+    assert str(ROOT / "release/preflight_runner.py") in admission.argv
     assert "--inventory" in admission.argv and "--started" in admission.argv
     assert admission.argv[admission.argv.index("--minimum-collected") + 1] == "5322"
     assert admission.argv[admission.argv.index("--minimum-passed") + 1] == "5070"
@@ -162,9 +163,8 @@ def test_full_driver_keeps_maintained_owners_and_strict_full_suite(
             for command in commands
             if command.name == "install-build-lock-" + build_copy
         )
-        assert "setup" in owner.argv and any(
-            value.endswith("release/dependency_downloads.py") for value in owner.argv
-        )
+        assert "setup" in owner.argv
+        assert str(ROOT / "release/dependency_downloads.py") in owner.argv
     assert not any(
         "push" in command.argv or "workflow" in command.argv or "upload" in command.argv
         for command in commands
@@ -174,9 +174,9 @@ def test_full_driver_keeps_maintained_owners_and_strict_full_suite(
 def test_unsupported_native_python_refuses_instead_of_renaming_lane(
     tmp_path, monkeypatch
 ):
-    monkeypatch.setattr(runner.platform, "system", lambda: "Windows")
+    monkeypatch.setattr(runner, "platform", SimpleNamespace(system=lambda: "Windows"))
     monkeypatch.setattr(
-        runner.sys, "version_info", type("Version", (), {"major": 3, "minor": 14})()
+        runner, "sys", SimpleNamespace(version_info=SimpleNamespace(major=3, minor=14))
     )
     with pytest.raises(runner.RunnerError, match="no matching maintained"):
         runner.stage_commands(
@@ -184,7 +184,8 @@ def test_unsupported_native_python_refuses_instead_of_renaming_lane(
         )
 
 
-def test_prepare_only_has_locked_setup_and_readiness_without_wiki_write(tmp_path):
+def test_prepare_only_has_locked_setup_and_readiness_without_wiki_write(tmp_path, monkeypatch):
+    monkeypatch.setattr(runner, "platform", SimpleNamespace(system=lambda: "Darwin"))
     commands = runner.stage_commands(
         "prepare", ROOT, tmp_path, candidate_sha=SHA, version="3.0.0"
     )
@@ -202,6 +203,15 @@ def test_prepare_only_has_locked_setup_and_readiness_without_wiki_write(tmp_path
         not ({"sync", "prune", "adopt", "commit"} & set(command.argv))
         for command in commands
     )
+
+
+@pytest.mark.parametrize("system", ["Windows", "Unknown"])
+def test_prepare_refuses_unsupported_setup_hosts(tmp_path, monkeypatch, system):
+    monkeypatch.setattr(runner, "platform", SimpleNamespace(system=lambda: system))
+    with pytest.raises(runner.RunnerError, match="supported native setup host"):
+        runner.stage_commands(
+            "prepare", ROOT, tmp_path, candidate_sha=SHA, version="3.0.0"
+        )
 
 
 def _execute_fake(tmp_path, monkeypatch, returncodes):
@@ -388,7 +398,7 @@ def _archive_fixture(tmp_path):
     subprocess.run(
         ["git", "init", "--quiet"], cwd=repo, check=True, capture_output=True
     )
-    (repo / "app.py").write_text("VALUE = 1\n")
+    (repo / "app.py").write_bytes(b"VALUE = 1\n")
     subprocess.run(["git", "add", "app.py"], cwd=repo, check=True, capture_output=True)
     subprocess.run(
         [
@@ -496,6 +506,7 @@ def test_archive_block_does_not_hide_independent_wiki_health_checks(
     tmp_path, monkeypatch
 ):
     work = runner.claim_work(tmp_path / "work", BINDING)
+    monkeypatch.setattr(runner, "platform", SimpleNamespace(system=lambda: "Darwin"))
     monkeypatch.setattr(runner, "launcher_probe", lambda *a, **k: {})
     calls = []
 

@@ -384,6 +384,44 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+      - name: Check recursion coverage boundaries before the full Linux suite
+        id: coverage-boundary
+        if: ${{ matrix.coverage }}
+        env:
+          COVERAGE_FILE: ${{ runner.temp }}/coverage-recursion/coverage.data
+          COVERAGE_BOUNDARY_OUTPUT: ${{ runner.temp }}/coverage-recursion
+        run: |
+          mkdir -p "${COVERAGE_BOUNDARY_OUTPUT}"
+          python -m pytest \
+            tests/test_python_implementation.py::test_deep_owned_ast_has_iterative_declaration_walk_and_explicit_digest_gap \
+            -q -p no:cacheprovider --strict-config --strict-markers \
+            -W error -o xfail_strict=true --cov=llm_wiki_cli \
+            --cov-report= --cov-fail-under=0 \
+            --junitxml="${COVERAGE_BOUNDARY_OUTPUT}/junit.xml"
+          python -I - <<'PY'
+          import os, sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path.cwd()))
+          from release import core_shard_runner as runner
+          package = (Path.cwd() / "src/llm_wiki_cli").resolve()
+          output = Path(os.environ["COVERAGE_BOUNDARY_OUTPUT"])
+          rows = runner.coverage_rows(output / "coverage.data", [package.as_posix()], runner.source_manifest(package))
+          runner.q.write_json(output / "source-boundary.json", {
+              "scope": "focused source probe; full native and hosted gates remain required",
+              "measured_files": len(rows), "source_root": package.as_posix(),
+          })
+          PY
+
+      - name: Retain native Linux coverage boundary evidence
+        if: ${{ always() && matrix.coverage && (steps.coverage-boundary.outcome == 'success' || steps.coverage-boundary.outcome == 'failure') }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          archive: true
+          name: native-linux-coverage-boundary-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/coverage-recursion/
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Run strict suite with coverage
         if: ${{ matrix.coverage }}
         env:
@@ -412,6 +450,10 @@ jobs:
           tests/test_current_install_defaults.py
           tests/test_storage_lock_diagnostics.py
           tests/test_real_caller_action_fixture.py
+          tests/test_scoped_sync_repair.py
+          tests/test_sync_guard_diagnostics.py
+          tests/test_preflight_contracts.py
+          tests/test_preflight_runner.py
           tests/test_sync_runtime_regressions.py::test_wiki_only_commits_do_not_rewrite_repository_revision -q
           -p no:cacheprovider --strict-config --strict-markers -W error
           -o xfail_strict=true
