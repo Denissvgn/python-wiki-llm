@@ -277,6 +277,7 @@ jobs:
           path: |
             pyright.log
             ruff.log
+            ${{ runner.temp }}/preflight-contracts/
           if-no-files-found: warn
           retention-days: 14
 

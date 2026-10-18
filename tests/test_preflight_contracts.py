@@ -318,6 +318,9 @@ def test_shared_driver_runs_only_named_commands_serially_and_retains_all_failure
     )
     assert result["state"] == "failed"
     assert [row["state"] for row in result["groups"]] == ["failed", "blocked"]
+    assert result["groups"][1]["skips"] == [{
+        "class_name": "", "name": "independent-case", "reason": "requires native owner",
+    }]
     assert all(command[0] == str(launcher) for command in calls)
     assert (output / "results.json").is_file() and len(calls) == 2
     before = launcher.read_bytes()
@@ -333,9 +336,22 @@ def test_shared_driver_runs_only_named_commands_serially_and_retains_all_failure
     assert launcher.read_bytes() == before
 
 
+@pytest.mark.parametrize("host_platform", ["linux", "win32"])
+def test_early_selection_excludes_only_the_intrinsically_macos_case(host_platform):
+    rows = p.inapplicable_cases("defaults", host_platform)
+    assert rows == [{
+        "node_id": "tests/test_wiki_reference_skill.py::TestReferenceSkillProvisioning::test_root_owned_platform_alias_preserves_install_and_export",
+        "reason": "root-owned /var alias contract is macOS-only",
+        "owner_lane": "core-macos-3.14",
+    }]
+    assert p.inapplicable_cases("defaults", "darwin") == []
+    assert all(p.inapplicable_cases(group, host_platform) == [] for group in p.GROUPS if group != "defaults")
+
+
 def test_ci_uses_shared_driver_without_replacing_full_producers():
     workflow = (ROOT / p.WORKFLOW).read_text()
     ci = (ROOT / ".github/workflows/ci.yml").read_text()
+    assert "${{ runner.temp }}/preflight-contracts/" in ci
     assert (
         "release/preflight_contracts.py check --repo ." in workflow
         and "release/preflight_contracts.py check --repo ." in ci

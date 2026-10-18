@@ -132,6 +132,17 @@ CAPABILITIES = frozenset(
     }
 )
 
+
+def inapplicable_cases(group: str, host_platform: str) -> list[dict[str, str]]:
+    """Exclude only declared native-only cases, never an unavailable capability."""
+    if group == "defaults" and host_platform != "darwin":
+        return [{
+            "node_id": "tests/test_wiki_reference_skill.py::TestReferenceSkillProvisioning::test_root_owned_platform_alias_preserves_install_and_export",
+            "reason": "root-owned /var alias contract is macOS-only",
+            "owner_lane": "core-macos-3.14",
+        }]
+    return []
+
 INCIDENT_IDS = frozenset(
     {
         "default-maintenance-static-cache",
@@ -648,6 +659,7 @@ def run_contract_groups(
     }
     rows: list[dict[str, Any]] = []
     for group in groups:
+        inapplicable = inapplicable_cases(group, sys.platform)
         junit = output_dir / f"{group}.xml"
         command = [
             str(interpreter),
@@ -665,6 +677,7 @@ def run_contract_groups(
             "-o",
             "xfail_strict=true",
             *GROUPS[group],
+            *("--deselect=" + row["node_id"] for row in inapplicable),
             f"--junitxml={junit}",
         ]
         start = time.monotonic()
@@ -685,6 +698,7 @@ def run_contract_groups(
                 log.write(b"\nContract group exceeded its 1800-second timeout.\n")
         errors = []
         counts = {"passed": 0, "skipped": 0, "failed": 0}
+        skips = []
         if junit.is_file():
             try:
                 for node in ET.fromstring(_read(junit)).iter("testcase"):
@@ -697,6 +711,14 @@ def run_contract_groups(
                         else "passed"
                     )
                     counts[key] += 1
+                    if key == "skipped":
+                        skipped = node.find("skipped")
+                        assert skipped is not None
+                        skips.append({
+                            "class_name": node.attrib.get("classname", ""),
+                            "name": node.attrib.get("name", ""),
+                            "reason": skipped.attrib.get("message") or (skipped.text or "").strip(),
+                        })
                 if group == "defaults":
                     errors.extend(audit_agent_variants(repository_root, junit))
             except (ET.ParseError, ContractError) as exc:
@@ -715,6 +737,8 @@ def run_contract_groups(
         rows.append(
             {
                 "group": group,
+                "inapplicable": inapplicable,
+                "skips": skips,
                 "state": state,
                 "returncode": returncode,
                 "elapsed_seconds": round(time.monotonic() - start, 6),
