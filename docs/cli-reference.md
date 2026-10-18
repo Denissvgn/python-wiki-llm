@@ -1031,6 +1031,40 @@ perform a full inventory only when `allow_full_inventory=true` is supplied.
 The context budget and focus bound emitted output after a full deep inventory;
 they do not make that scan computationally cheap.
 
+Explain one exact concept using the existing evidence service:
+
+```bash
+printf '%s\n' '{"operation":"explain","value":"llm-wiki://modules/orders"}' | llm-wiki query --request - --src-dir . --wiki-dir docs/llm_wiki
+printf '%s\n' '{"operation":"explain","source":"src/orders.py","limit":10}' | llm-wiki query --request - --src-dir . --wiki-dir docs/llm_wiki
+printf '%s\n' '{"operation":"explain","value":"llm-wiki://modules/orders","live":true,"allow_full_inventory":true}' | llm-wiki query --request - --src-dir . --wiki-dir docs/llm_wiki --helper-cache-dir .git
+```
+
+Supply exactly one `value` (exact concept locator, UID or canonical route) or
+canonical POSIX `source` path relative to `--src-dir`. A source with multiple
+concepts returns bounded choices; repeat with one exact locator to see evidence.
+The default reads the committed snapshot without extraction. Set `live:true`
+and explicitly authorize `allow_full_inventory:true` to compare against a full
+current source inventory. Existing evidence freshness includes recorded/live
+source bases, cause and bounded fresh normalization detail when available;
+snapshot reads never reconstruct historical rejected-record details.
+
+`provenance` separates stored/live producer records, the installed package
+fingerprint and version, the structural inventory contract, and active Python
+runtime. The fingerprint covers installed files and runtime/version inputs; it
+does not identify the original distribution archive or prove release authenticity.
+For a selected external extractor, existing preparation receipt source/artifact
+identities and preparation toolchain are reported separately from active runtime.
+TypeScript also checks the source copy in the prepared execution directory against
+the bundled source fingerprint; missing or changed copies require preparation again.
+Artifact fingerprints cover the receipt's recorded path. For TypeScript this is
+the `ts-morph` subtree, which does not identify sibling transitive dependencies.
+Missing or mismatched data stays explicit. Reads do not install dependencies or
+update source, wiki or helper state. Missing helpers include the existing exact
+preparation command for the selected cache; setup requires authorization, then
+retry with the same roots, source selection and cache. A runtime mismatch also
+requires selecting the matching runtime on PATH. Output limits and truncation
+disclosures apply to explanation and provenance together.
+
 External tools can use the `llm-wiki-context/v1` JSON request protocol:
 
 ```bash

@@ -2540,6 +2540,7 @@ def explain_evidence(
 DOCUMENTATION_QUERY_SCHEMA_VERSION = "llm-wiki-documentation-query/v1"
 MAX_RAW_QUERY_EVIDENCE_BYTES = 64 * 1024
 _DOCUMENTATION_QUERY_FIELDS = {
+    "explain": frozenset({"operation", "value", "source", "limit", "live", "allow_full_inventory"}),
     "concept": frozenset({"operation", "value", "limit"}),
     "related": frozenset({"operation", "value", "limit", "direction", "kinds"}),
     "surface": frozenset({"operation", "value", "limit"}),
@@ -2706,7 +2707,18 @@ def _validate_documentation_query_request(
     limit = _normalize_query_limit(request.get("limit", 20))
     # Operation-specific transport fields are input validation, not part of
     # loading the query service. Reject them before any workspace access.
-    if operation == "impact":
+    if operation == "explain":
+        if type(request.get("live", False)) is not bool:
+            raise InvalidRequestError("live must be a boolean.", code="invalid-request", details={"field": "live"})
+        if type(request.get("allow_full_inventory", False)) is not bool:
+            raise InvalidRequestError("allow_full_inventory must be a boolean.", code="invalid-request", details={"field": "allow_full_inventory"})
+        if ("value" in request) == ("source" in request):
+            raise InvalidRequestError("Supply exactly one of value or source.", code="invalid-request", details={"field": "value"})
+        if request.get("live", False):
+            _require_full_inventory_opt_in(request)
+        elif request.get("allow_full_inventory", False):
+            raise InvalidRequestError("allow_full_inventory requires live=true.", code="invalid-request", details={"field": "allow_full_inventory"})
+    elif operation == "impact":
         _normalize_query_choice(request.get("source_policy", "explicit"), field="source_policy", allowed=("explicit", "discovery"))
     elif operation == "related":
         _normalize_query_choice(request.get("direction", "both"), field="direction", allowed=_KNOWLEDGE_QUERY_DIRECTIONS)
@@ -3050,11 +3062,43 @@ def query_documentation(
     wiki_dir: str = DEFAULT_WIKI_DIR,
     allow_external_src: bool = False,
     source_selection: str | Path | None = None,
+    helper_cache_dir: str | Path | None = None,
     comparison_policy: str | None = None,
 ) -> DocumentationQueryResult:
     """Dispatch one exact bounded read-only documentation query."""
 
     operation, limit = _validate_documentation_query_request(request)
+    if operation == "explain":
+        from .services.evidence_explanation import explain_source, explanation_provenance
+
+        if helper_cache_dir is not None and not isinstance(helper_cache_dir, (str, Path)):
+            raise InvalidRequestError("must be a path", code="invalid-request", details={"field": "helper_cache_dir"})
+        source = "source" in request
+        value = _normalize_query_input(
+            lambda: normalize_supplied_paths((request.get("source"),))[0]
+            if source else normalize_concept_coordinate(request.get("value")),
+            field="source" if source else "value",
+        )
+        source_root = validate_source_root(src_dir, "--src-dir", allow_external=allow_external_src)
+        if request.get("live", False):
+            service = build_documentation_query_service(
+                src_dir, wiki_dir=wiki_dir, limit=limit,
+                allow_external_src=allow_external_src, read_only=True,
+                source_selection=source_selection, helper_cache_dir=helper_cache_dir,
+            )
+            scope = "full-inventory"
+        else:
+            service = _snapshot_query_service(wiki_dir, limit=limit)
+            scope = "snapshot-index-only"
+        payload = explain_source(service, value) if source else service.explain_evidence(value)
+        payload["provenance"] = explanation_provenance(
+            service, payload, source_root=source_root, helper_cache_dir=helper_cache_dir,
+        )
+        payload["limitations"] = [
+            "Live explanation performs a full source inventory; snapshot explanation does not extract source or establish fresh normalization.",
+            "Helper inspection reads existing receipts/bytes and probes runtime versions; it never prepares dependencies.",
+        ]
+        return _with_query_envelope(operation, payload, scope=scope)
     if operation == "impact":
         return _impact_query(
             request,

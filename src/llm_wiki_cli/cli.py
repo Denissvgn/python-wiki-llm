@@ -279,6 +279,7 @@ def _add_query_command(subparsers):
     parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR)
     parser.add_argument("--allow-external-src", action="store_true")
     parser.add_argument("--output", help="Write the JSON response to this file")
+    parser.add_argument("--helper-cache-dir", help="Helper cache base for evidence explanation")
     _add_source_selection_argument(parser)
 
 

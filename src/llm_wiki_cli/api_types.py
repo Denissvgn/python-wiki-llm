@@ -456,6 +456,8 @@ class DocumentationQueryResult(_DocumentationQueryRequired, total=False):
     """Common envelope returned by the shared bounded query dispatcher."""
 
     knowledge: KnowledgeStatus | dict[str, Any]
+    evidence: dict[str, Any] | None
+    provenance: dict[str, Any]
     concept: dict[str, Any] | None
     total: int
     returned: int
