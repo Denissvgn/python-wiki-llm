@@ -30,12 +30,16 @@ GROUPS: dict[str, tuple[str, ...]] = {
     "inventory": (
         "tests/test_source_selection.py",
         "tests/test_analysis_input_preflight.py",
+        "tests/test_architecture_layers.py",
+        "tests/test_api_exception_taxonomy.py",
     ),
     "defaults": (
         "tests/test_current_install_defaults.py",
         "tests/test_default_development_workflow.py",
         "tests/test_skills.py",
         "tests/test_evidence_recovery_guidance.py",
+        "tests/test_agent_instruction_decisions.py",
+        "tests/test_skill_policy_routes.py",
     ),
     "packet": (
         "tests/test_context_packet.py",

@@ -67,6 +67,15 @@ def test_real_declarations_map_all_jobs_and_maintenance_without_writes(repositor
     )
     assert all(x["owner"] and x["expected_evidence"] for x in value["jobs"])
     assert value["authority"] == "local-nonpromoting"
+    # Independent guards that exposed failures outside the original early set.
+    assert {
+        "tests/test_architecture_layers.py",
+        "tests/test_api_exception_taxonomy.py",
+    } <= set(value["groups"]["inventory"])
+    assert {
+        "tests/test_agent_instruction_decisions.py",
+        "tests/test_skill_policy_routes.py",
+    } <= set(value["groups"]["defaults"])
     assert {
         x.relative_to(repository): x.read_bytes()
         for x in repository.rglob("*")

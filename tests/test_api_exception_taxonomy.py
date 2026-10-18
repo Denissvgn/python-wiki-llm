@@ -742,6 +742,8 @@ def test_public_dict_return_annotations_import_and_resolve():
             },
             {
                 "knowledge",
+                "evidence",
+                "provenance",
                 "concept",
                 "total",
                 "returned",
