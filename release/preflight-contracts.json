@@ -7,7 +7,8 @@
     "defaults": [
       "tests/test_current_install_defaults.py",
       "tests/test_default_development_workflow.py",
-      "tests/test_skills.py"
+      "tests/test_skills.py",
+      "tests/test_evidence_recovery_guidance.py"
     ],
     "incidents": [
       "tests/test_context_budget.py",
@@ -22,7 +23,12 @@
       "tests/test_ts_extract.py::test_dynamic_import_gap_survives_bootstrap_sync_and_strict_gates",
       "tests/test_ts_extract.py::test_released_unknown_evidence_guarded_upgrade_and_refresh",
       "tests/test_knowledge_evidence.py",
-      "tests/test_extractor_inventory_contracts.py"
+      "tests/test_extractor_inventory_contracts.py",
+      "tests/test_sync_guard_diagnostics.py",
+      "tests/test_captured_evidence_diagnostics.py",
+      "tests/test_scoped_sync_repair.py",
+      "tests/test_normalization_diagnostics.py",
+      "tests/test_evidence_explanation_query.py"
     ],
     "inventory": [
       "tests/test_source_selection.py",
@@ -253,6 +259,30 @@
       "remaining_boundary": "Full shard -> aggregate -> supplemental native Windows sequence remains required.",
       "selectors": [
         "tests/test_release_qualification.py::test_qualifying_aggregation_command_rebuilds_the_complete_lane"
+      ]
+    },
+    {
+      "id": "generator-refresh-review-convergence",
+      "remaining_boundary": "Stable-repack equality, strict count/ratio boundaries and reviewed generator convergence; native core receipts remain required.",
+      "selectors": [
+        "tests/test_sync_guard_diagnostics.py"
+      ]
+    },
+    {
+      "id": "scoped-evidence-repair-atomicity",
+      "remaining_boundary": "Full analysis remains disclosed; bounded publication and race refusals need native core evidence. External recovery preimages are not active wiki writes.",
+      "selectors": [
+        "tests/test_scoped_sync_repair.py"
+      ]
+    },
+    {
+      "id": "captured-evidence-diagnosis-recovery",
+      "remaining_boundary": "Snapshot/raw reads do not repair stored evidence; malformed evidence stays blocking. All supported agents and inline fallback must pass after install and upgrade.",
+      "selectors": [
+        "tests/test_captured_evidence_diagnostics.py",
+        "tests/test_normalization_diagnostics.py",
+        "tests/test_evidence_explanation_query.py",
+        "tests/test_evidence_recovery_guidance.py"
       ]
     }
   ],

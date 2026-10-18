@@ -35,6 +35,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "tests/test_current_install_defaults.py",
         "tests/test_default_development_workflow.py",
         "tests/test_skills.py",
+        "tests/test_evidence_recovery_guidance.py",
     ),
     "packet": (
         "tests/test_context_packet.py",
@@ -77,6 +78,11 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "tests/test_ts_extract.py::test_released_unknown_evidence_guarded_upgrade_and_refresh",
         "tests/test_knowledge_evidence.py",
         "tests/test_extractor_inventory_contracts.py",
+        "tests/test_sync_guard_diagnostics.py",
+        "tests/test_captured_evidence_diagnostics.py",
+        "tests/test_scoped_sync_repair.py",
+        "tests/test_normalization_diagnostics.py",
+        "tests/test_evidence_explanation_query.py",
     ),
 }
 
@@ -139,6 +145,9 @@ INCIDENT_IDS = frozenset(
         "logical-review-json-types",
         "native-shard-deep-git",
         "aggregation-output-order",
+        "generator-refresh-review-convergence",
+        "scoped-evidence-repair-atomicity",
+        "captured-evidence-diagnosis-recovery",
     }
 )
 
@@ -577,6 +586,11 @@ def audit_agent_variants(repository_root: Path, junit: Path) -> list[str]:
         for agent in supported_agents(repository_root)
         for fallback in ("False", "True")
         for flavor in ("posix-input", "windows-input")
+    }
+    required |= {
+        f"test_installed_recovery_recipes_work_after_init_and_upgrade[{mode}-{agent}]"
+        for agent in supported_agents(repository_root)
+        for mode in ("skills", "inline")
     }
     return [
         f"agent/fallback variant must pass exactly once: {name}"

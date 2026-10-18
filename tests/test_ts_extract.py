@@ -83,7 +83,13 @@ def test_unresolved_import_producer_consumer_contract(tmp_path, extension):
     """)
     _make_ts(tmp_path, "known.js", "export function known() { return 1; }\n")
     before = {p.relative_to(tmp_path).as_posix(): p.read_bytes() for p in tmp_path.rglob('*') if p.is_file()}
-    inventory = TypeScriptExtractor().extract(str(tmp_path), deep=True)
+    # Readiness is checked against PROJECT_ROOT, not the temporary caller or
+    # pytest's working directory. Use that same native cache base for execution.
+    helper_root = resolve_helper_cache_root(PROJECT_ROOT)
+    assert helper_root is not None
+    inventory = TypeScriptExtractor().extract(
+        str(tmp_path), deep=True, helper_cache_dir=str(helper_root.parent)
+    )
     data = inventory[filename]
     normalized = normalize_module_observation(data)
     assert normalized is not None

@@ -48,11 +48,12 @@ def _command_available(*cmd: str) -> bool:
 
 
 def _repo_helper_cache_dir() -> str | None:
-    cache_root = resolve_helper_cache_root(".")
+    source_root = Path(__file__).resolve().parents[1]
+    cache_root = resolve_helper_cache_root(source_root)
     if cache_root is None:
         return None
     cache_dir = str(cache_root.parent)
-    if get_prepared_binary("rust", ".", cache_dir) is None:
+    if get_prepared_binary("rust", source_root, cache_dir) is None:
         return None
     return cache_dir
 

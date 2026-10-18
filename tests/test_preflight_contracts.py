@@ -61,7 +61,7 @@ def test_real_declarations_map_all_jobs_and_maintenance_without_writes(repositor
     assert p.validate_workflow_contracts(repository) == []
     value = p.qualification_contract(repository)
     assert len(value["jobs"]) == 25
-    assert len(value["incident_cases"]) == 28
+    assert len(value["incident_cases"]) == 31
     assert {x["id"] for x in value["jobs"]} == set(
         p.workflow_declarations(repository)[1]
     )
@@ -182,6 +182,10 @@ def junit_agents(repository, path, *, omit=None, skipped=None, duplicate=None):
                 f"test_default_workflow_installation_and_upgrade_preserve_project_policy[{flavor}-{fallback}-{agent}]"
                 for flavor in ("posix-input", "windows-input")
             ]
+            names.append(
+                "test_installed_recovery_recipes_work_after_init_and_upgrade"
+                f"[{'inline' if fallback == 'True' else 'skills'}-{agent}]"
+            )
             for name in names:
                 if name == omit:
                     continue
@@ -213,6 +217,53 @@ def test_agent_matrix_independently_requires_every_member_and_fallback(
         )
     errors = p.audit_agent_variants(repository, path)
     assert bool(errors) is (fault is not None)
+
+
+@pytest.mark.parametrize(
+    "agent", ["claude", "cursor", "copilot", "aider", "opencode", "generic"]
+)
+@pytest.mark.parametrize("mode", ["skills", "inline"])
+@pytest.mark.parametrize("fault", ["omit", "skipped", "failure", "duplicate"])
+def test_recovery_matrix_requires_every_successful_recipe_variant(
+    repository, tmp_path, agent, mode, fault
+):
+    path = tmp_path / "matrix.xml"
+    name = f"test_installed_recovery_recipes_work_after_init_and_upgrade[{mode}-{agent}]"
+    junit_agents(repository, path)
+    assert p.audit_agent_variants(repository, path) == []
+    tree = ET.parse(path)
+    suite = tree.getroot()
+    case = next(case for case in suite if case.get("name") == name)
+    if fault == "omit":
+        suite.remove(case)
+    elif fault == "duplicate":
+        ET.SubElement(suite, "testcase", name=name)
+    else:
+        ET.SubElement(case, fault, message="must not qualify")
+    tree.write(path)
+    assert p.audit_agent_variants(repository, path) == [
+        f"agent/fallback variant must pass exactly once: {name}"
+    ]
+
+
+def test_recovery_incidents_retain_their_discriminating_owners(repository):
+    value = p.qualification_contract(repository)
+    incidents = {row["id"]: row["selectors"] for row in value["incident_cases"]}
+    expected = {
+        "generator-refresh-review-convergence": ["tests/test_sync_guard_diagnostics.py"],
+        "scoped-evidence-repair-atomicity": ["tests/test_scoped_sync_repair.py"],
+        "captured-evidence-diagnosis-recovery": [
+            "tests/test_captured_evidence_diagnostics.py",
+            "tests/test_normalization_diagnostics.py",
+            "tests/test_evidence_explanation_query.py",
+            "tests/test_evidence_recovery_guidance.py",
+        ],
+    }
+    for incident, selectors in expected.items():
+        assert incidents[incident] == selectors
+        for selector in selectors:
+            group = "defaults" if "recovery_guidance" in selector else "incidents"
+            assert selector in value["groups"][group]
 
 
 def test_shared_driver_runs_only_named_commands_serially_and_retains_all_failures(
