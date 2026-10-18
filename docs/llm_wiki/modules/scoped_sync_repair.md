@@ -10,6 +10,10 @@ source and generation policy, and complete matching built-in producer commitment
 A selected source's existing module and entity bases are repaired together;
 unselected failures, logical facts, authored bytes and review histories survive.
 
+Protected JSON facts are compared canonically: nested booleans and numbers,
+and missing extension keys and explicit null values, remain distinct. Only the
+declared transaction metadata is excluded from the scope comparison.
+
 The full typed graph and other global concepts must remain identical. Producer
 transitions, new or retired identities, mixed edits and wider reconciliation
 refuse partial application. An isolated preflight verifies the complete candidate,
@@ -31,7 +35,7 @@ unselected unknown evidence stays unknown.
 | `.knowledge_model` | `knowledge_index_to_payload` |
 | `.knowledge_orchestration` | `RuntimeLiveEvaluationInputs`, `build_runtime_live_evaluation`, `runtime_generation_options`, `RUNTIME_GENERATION_OPTION_DEFAULTS` |
 | `.knowledge_reuse` | `implementation_hash`, `wiki_input_hashes` |
-| `.knowledge_storage` | `MAX_EXPANDED_BYTES` |
+| `.knowledge_storage` | `canonical_bytes`, `MAX_EXPANDED_BYTES` |
 | `.knowledge_storage_io` | `read_guarded` |
 | `.source_snapshot` | `SourceSnapshotError`, `source_snapshot_matches_current_files` |
 | `.validation` | `require_repository_relative_path` |
@@ -70,8 +74,8 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ScopedRepairError](../entities/ScopedRepairError.md) | 20 | `ValueError` | The requested repair cannot preserve its declared scope. |
-| [ScopedRepairBoundary](../entities/ScopedRepairBoundary.md) | 74 | — | Original global inputs and the only concept pages allowed to change. |
+| [ScopedRepairError](../entities/ScopedRepairError.md) | 21 | `ValueError` | The requested repair cannot preserve its declared scope. |
+| [ScopedRepairBoundary](../entities/ScopedRepairBoundary.md) | 75 | — | Original global inputs and the only concept pages allowed to change. |
 
 ## Functions
 

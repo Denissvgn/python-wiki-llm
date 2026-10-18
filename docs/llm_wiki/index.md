@@ -8,7 +8,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 |---|---:|---|
 | Entities | 670 | [Open section](#entities) |
 | Modules | 250 | [Open section](#modules) |
-| Workflows | 227 | [Open section](#workflows) |
+| Workflows | 228 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 465 | [Open section](#entry-point-flows) |
 | Infrastructure | 2 | [Open section](#infrastructure) |
@@ -955,6 +955,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [NewPageJournal_discard_committed](workflows/NewPageJournal_discard_committed.md) - entry: `sync_recovery.NewPageJournal.discard_committed`
 - [PageTransitionExecution_apply](workflows/PageTransitionExecution_apply.md) - entry: `sync_transition_execution.PageTransitionExecution.apply`
 - [PageTransitionExecution_write](workflows/PageTransitionExecution_write.md) - entry: `sync_transition_execution.PageTransitionExecution.write`
+- [ScopedRepairBoundary_validate_plan](workflows/ScopedRepairBoundary_validate_plan.md) - entry: `scoped_sync_repair.ScopedRepairBoundary.validate_plan`
 - [ScopedTaskState_revalidate](workflows/ScopedTaskState_revalidate.md) - entry: `task_context_v2.ScopedTaskState.revalidate`
 - [SourceSnapshot_path_is_effectively_selected](workflows/SourceSnapshot_path_is_effectively_selected.md) - entry: `source_snapshot.SourceSnapshot.path_is_effectively_selected`
 - [SourceSnapshot_with_captured_inventory_paths](workflows/SourceSnapshot_with_captured_inventory_paths.md) - entry: `source_snapshot.SourceSnapshot.with_captured_inventory_paths`

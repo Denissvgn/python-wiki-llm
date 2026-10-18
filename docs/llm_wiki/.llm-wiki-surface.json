@@ -26,10 +26,10 @@
       "load-order": 1,
       "log": 1,
       "modules": 250,
-      "workflows": 227
+      "workflows": 228
     },
     "dependency_architecture": 2,
-    "total": 1629
+    "total": 1630
   },
   "dependency_pages": {
     "count": 2,
@@ -40099,6 +40099,7 @@
         "workflows/save.md",
         "workflows/save_recovery_snapshot.md",
         "workflows/scan_python_files.md",
+        "workflows/ScopedRepairBoundary_validate_plan.md",
         "workflows/ScopedTaskState_revalidate.md",
         "workflows/search_prevalidated_roots.md",
         "workflows/section_locator.md",
@@ -56545,6 +56546,21 @@
       "title": "scan_python_files"
     },
     {
+      "canonical_path": "workflows/ScopedRepairBoundary_validate_plan.md",
+      "id": "ScopedRepairBoundary_validate_plan",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/ScopedRepairBoundary_validate_plan",
+      "outgoing_internal_links": [
+        "modules/knowledge_artifacts.md",
+        "modules/knowledge_model.md",
+        "modules/knowledge_storage.md",
+        "modules/scoped_sync_repair.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/scoped_sync_repair.py",
+      "title": "ScopedRepairBoundary_validate_plan"
+    },
+    {
       "canonical_path": "workflows/ScopedTaskState_revalidate.md",
       "id": "ScopedTaskState_revalidate",
       "kind": "workflows",
@@ -67542,5 +67558,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:6463d167e32eb073b3c86311af21fbb3f7ce0e9ca1d295c8dfdf5246989d1a2e"
+  "source_hash": "sha256:cf9dbc09ad9b759bbb038b00375e2fc29b553942e4801941a8cd78714f4d7ef5"
 }

@@ -3005,3 +3005,32 @@ validation after repair. Command help makes the existing route discoverable.
 - Pages deprecated: 0
 - Semantic fields preserved: 171
 - Moved entities: none
+
+## 2026-10-18
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.1.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:d68a8dbebb3b67842a4f7405ced7888a3bcff0276527566cd9b20387e9a8d61c`
+- Pages created: 1
+- Pages updated: 5
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1610
+- Pages deprecated: 0
+- Semantic fields preserved: 2
+- Moved entities: none
+- Flow pages initialized: 0 (none)
+- Workflow pages created: 1
+- Dependency pages initialized: 0
+- Surface policy updated: no
+
+## 2026-10-18
+
+### Literal JSON scope preservation
+
+Scoped evidence repair compares protected logical facts through canonical JSON.
+Nested boolean/number substitutions and missing-versus-null extension keys cannot
+be treated as unchanged. Declared transaction metadata remains separate from
+unselected facts, and repair preserves source, authority and review safeguards.
