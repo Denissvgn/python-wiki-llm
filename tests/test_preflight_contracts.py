@@ -76,6 +76,10 @@ def test_real_declarations_map_all_jobs_and_maintenance_without_writes(repositor
         "tests/test_agent_instruction_decisions.py",
         "tests/test_skill_policy_routes.py",
         "tests/test_helper_preparation.py",
+        "tests/test_instruction_ownership.py",
+        "tests/test_schema.py",
+        "tests/test_schema_context_baselines.py",
+        "tests/test_skill_ownership_boundaries.py",
     } <= set(value["groups"]["defaults"])
     assert {
         x.relative_to(repository): x.read_bytes()

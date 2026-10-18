@@ -411,6 +411,13 @@ GENERATED_SECTION_COVERAGE: tuple[GeneratedSectionCoverage, ...] = (
         profiles=_EXPANDED_ONLY,
     ),
     GeneratedSectionCoverage(
+        "Evidence diagnosis and repair",
+        "## Evidence diagnosis and repair",
+        InstructionOwner.KERNEL,
+        retained_kernel=True,
+        profiles=_EXPANDED_ONLY,
+    ),
+    GeneratedSectionCoverage(
         "Repository delivery preflight",
         _HANDOFF,
         InstructionOwner.KERNEL,
@@ -673,7 +680,7 @@ CORRECTNESS_CLAUSE_COVERAGE: tuple[CorrectnessClauseCoverage, ...] = (
         _correctness_route(_SYNC, _MAINTENANCE),
         InstructionOrigin.SYNC_INSTRUCTIONS,
         always_inline=True,
-        compact_text="After every class/function/module/cross-module-flow change in this session, run full sync-then-lint",
+        compact_text="After every class/function/module/cross-module-flow change: sync, semantic pass, re-anchor, strict lint/CI",
     ),
     CorrectnessClauseCoverage(
         "stale_update_guard",
@@ -929,6 +936,8 @@ def _managed_topic_route(
     *,
     kind: InboundRouteKind = InboundRouteKind.INSTALLED_FILE_ROUTE,
     markdown_target: str | None = None,
+    heading: str | None = None,
+    anchor: str | None = None,
 ) -> ManagedReferenceInboundRoute:
     destination = _topic(topic)
     assert destination.heading is not None
@@ -938,8 +947,8 @@ def _managed_topic_route(
         source_text,
         kind,
         destination.path,
-        destination.heading,
-        destination.anchor,
+        heading if heading is not None else destination.heading,
+        anchor if anchor is not None else destination.anchor,
         markdown_target,
     )
 
@@ -1029,7 +1038,14 @@ MANAGED_REFERENCE_INBOUND_ROUTES: tuple[ManagedReferenceInboundRoute, ...] = (
     ),
     _managed_topic_route(
         _SCHEMA_SOURCE,
-        "`{reference_root}/maintenance.md`",
+        "`{reference_root}/maintenance.md#diagnose-captured-evidence`",
+        "maintenance",
+        heading="Diagnose captured evidence",
+        anchor="diagnose-captured-evidence",
+    ),
+    _managed_topic_route(
+        _SCHEMA_SOURCE,
+        "`{skills_dir}/wiki-reference/references/maintenance.md`; the inline sequence",
         "maintenance",
     ),
     _managed_topic_route(
@@ -1143,10 +1159,18 @@ def _resolved_package_link(source_path: str, target_path: str) -> str:
 _INSTALLED_REFERENCE_PATH = re.compile(
     r"(?:\{skills_dir\}|\.claude/skills|\.llm-wiki/skills)/"
     r"(?P<relative>wiki-reference/(?:reference\.md|references/[a-z0-9-]+\.md))"
+    r"(?:#(?P<anchor>[^\s`\"'<>)\]]*))?"
 )
 _REFERENCE_ROOT_TOPIC_PATH = re.compile(
-    r"\{reference_root\}/(?P<topic>[a-z0-9-]+\.md)"
+    r"\{reference_root\}/(?P<topic>[a-z0-9-]+\.md)(?:#(?P<anchor>[^\s`\"'<>)\]]*))?"
 )
+
+
+def _installed_heading(package_root: Path, destination_path: str, anchor: str | None) -> tuple[str, str]:
+    root, titles = _destination_heading_lookup(package_root, destination_path)
+    if anchor is not None:
+        return titles.get(anchor, ""), anchor
+    return (root.title, root.anchor) if root is not None else ("", "")
 
 
 def _active_reference_sources(package_root: Path) -> tuple[Path, ...]:
@@ -1211,17 +1235,14 @@ def discover_managed_reference_inbound_routes(
 
         for match in _INSTALLED_REFERENCE_PATH.finditer(content):
             destination_path = f"skills/{match.group('relative')}"
-            root_heading, _ = _destination_heading_lookup(
-                package_root,
-                destination_path,
-            )
+            heading, anchor = _installed_heading(package_root, destination_path, match.group("anchor"))
             discovered.add(
                 DiscoveredInboundRoute(
                     relative,
                     InboundRouteKind.INSTALLED_FILE_ROUTE,
                     destination_path,
-                    root_heading.title if root_heading is not None else "",
-                    root_heading.anchor if root_heading is not None else "",
+                    heading,
+                    anchor,
                 )
             )
 
@@ -1229,17 +1250,14 @@ def discover_managed_reference_inbound_routes(
             destination_path = (
                 f"{_REFERENCE_TOPICS}/{match.group('topic')}"
             )
-            root_heading, _ = _destination_heading_lookup(
-                package_root,
-                destination_path,
-            )
+            heading, anchor = _installed_heading(package_root, destination_path, match.group("anchor"))
             discovered.add(
                 DiscoveredInboundRoute(
                     relative,
                     InboundRouteKind.INSTALLED_FILE_ROUTE,
                     destination_path,
-                    root_heading.title if root_heading is not None else "",
-                    root_heading.anchor if root_heading is not None else "",
+                    heading,
+                    anchor,
                 )
             )
 
@@ -1478,9 +1496,16 @@ def inbound_route_resolves(
     if route.kind is InboundRouteKind.HEADING_REFERENCE:
         return f'"{route.destination_heading}"' in normalized_span
     if route.kind is InboundRouteKind.INSTALLED_FILE_ROUTE:
-        relative = route.destination_path.removeprefix("skills/")
-        topic_name = PurePosixPath(route.destination_path).name
-        return relative in normalized_span or (
-            "{reference_root}" in normalized_span and topic_name in normalized_span
+        matches = [
+            (f"skills/{match.group('relative')}", match.group("anchor"))
+            for match in _INSTALLED_REFERENCE_PATH.finditer(normalized_span)
+        ] + [
+            (f"{_REFERENCE_TOPICS}/{match.group('topic')}", match.group("anchor"))
+            for match in _REFERENCE_ROOT_TOPIC_PATH.finditer(normalized_span)
+        ]
+        if len(matches) != 1 or matches[0][0] != route.destination_path:
+            return False
+        return _installed_heading(package_root, *matches[0]) == (
+            route.destination_heading, route.destination_anchor,
         )
     return "wiki-reference" in normalized_span

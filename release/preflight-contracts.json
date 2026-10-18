@@ -11,7 +11,16 @@
       "tests/test_evidence_recovery_guidance.py",
       "tests/test_agent_instruction_decisions.py",
       "tests/test_skill_policy_routes.py",
-      "tests/test_helper_preparation.py"
+      "tests/test_helper_preparation.py",
+      "tests/test_instruction_ownership.py",
+      "tests/test_schema.py",
+      "tests/test_schema_context_baselines.py",
+      "tests/test_reference_skill_verifier.py",
+      "tests/test_native_skill_preflight_and_reanchor.py",
+      "tests/test_skill_contracts.py",
+      "tests/test_wiki_reference_skill.py",
+      "tests/test_skill_ownership_boundaries.py",
+      "tests/test_skill_contracts_all.py"
     ],
     "incidents": [
       "tests/test_context_budget.py",
