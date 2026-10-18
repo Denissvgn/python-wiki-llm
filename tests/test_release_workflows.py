@@ -40,6 +40,21 @@ def test_combined_optional_sdk_skips_require_each_exact_sdk_owner_case():
     }
 
 
+def test_owned_packet_optional_sdk_skip_has_exact_capable_owner():
+    node = (
+        "tests/test_owned_packet_recovery.py::"
+        "test_registered_sdk_keeps_structured_authority_failure"
+    )
+    entries = json.loads((ROOT / "release/skip-allowlist.json").read_text())["entries"]
+    owned = [entry for entry in entries if entry["node_id"] == node]
+    assert len(owned) == 3
+    assert {(entry["lane"], entry["node_id"], entry["owner_lane"], entry["reason"])
+            for entry in owned} == {
+        (lane, node, "mcp-3.13", "Optional MCP SDK is not installed")
+        for lane in ("core-macos-3.14", "core-ubuntu-3.10", "core-windows-3.13")
+    }
+
+
 def test_newer_parser_control_skips_require_supported_parser_owner_cases():
     families = (
         "tests/test_constructor_call_interfaces.py::"
@@ -1539,6 +1554,10 @@ def test_routine_ci_reuses_only_instrumentation_and_expensive_packaging() -> Non
     )["run"]
     assert _named_step(mcp, "Run MCP SDK registration contract")["env"]["LLM_WIKI_REQUIRE_MCP_SDK"] == "1"
     assert "tests/test_mcp_sdk.py" in mcp_command
+    assert (
+        "tests/test_owned_packet_recovery.py::"
+        "test_registered_sdk_keeps_structured_authority_failure"
+    ) in mcp_command
     assert "tests/test_mcp.py" not in mcp_command
     assert (
         "tests/test_task_compact_readable.py::"
@@ -1547,8 +1566,8 @@ def test_routine_ci_reuses_only_instrumentation_and_expensive_packaging() -> Non
     mcp_verifier = _named_step(
         mcp, "Enforce MCP SDK registration and canonical delivery"
     )["run"]
-    assert "--minimum-collected 7" in mcp_verifier
-    assert "--minimum-passed 7" in mcp_verifier
+    assert "--minimum-collected 8" in mcp_verifier
+    assert "--minimum-passed 8" in mcp_verifier
     assert (
         "tests/test_task_compact_readable.py::"
         "test_actual_mcp_v2_metadata_toggle_keeps_qualifications_and_receipts"
@@ -1753,12 +1772,16 @@ def test_release_mcp_and_build_jobs_avoid_identical_revalidation() -> None:
     mcp_command = _named_step(mcp, "Run MCP contract")["run"]
     assert _named_step(mcp, "Run MCP contract")["env"]["LLM_WIKI_REQUIRE_MCP_SDK"] == "1"
     assert "tests/test_mcp_sdk.py" in mcp_command
+    assert (
+        "tests/test_owned_packet_recovery.py::"
+        "test_registered_sdk_keeps_structured_authority_failure"
+    ) in mcp_command
     assert "tests/test_mcp.py" not in mcp_command
     mcp_verifier = _named_step(
         mcp, "Enforce the dedicated MCP SDK contract"
     )["run"]
-    assert "--minimum-collected 7" in mcp_verifier
-    assert "--minimum-passed 7" in mcp_verifier
+    assert "--minimum-collected 8" in mcp_verifier
+    assert "--minimum-passed 8" in mcp_verifier
     assert (
         "tests/test_compact_delivery_interfaces.py::"
         "test_actual_mcp_sdk_content_carries_view_then_receipt_as_separate_transport"

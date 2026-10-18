@@ -79,7 +79,10 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "tests/test_native_helper_path_diagnostics.py",
         "tests/test_python_go_path_diagnostics.py",
     ),
-    "sdk": ("tests/test_mcp_sdk.py",),
+    "sdk": (
+        "tests/test_mcp_sdk.py",
+        "tests/test_owned_packet_recovery.py::test_registered_sdk_keeps_structured_authority_failure",
+    ),
     "action": ("tests/test_github_action.py", "tests/test_github_action_shell.py"),
     "incidents": (
         "tests/test_context_budget.py",

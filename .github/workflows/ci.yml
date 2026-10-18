@@ -523,6 +523,7 @@ jobs:
           tests/test_compact_delivery_interfaces.py::test_actual_mcp_sdk_content_carries_view_then_receipt_as_separate_transport
           tests/test_developer_value_combined_interfaces.py::test_actual_sdk_combined_callers_compact_and_stale_custody
           tests/test_task_compact_readable.py::test_actual_mcp_v2_metadata_toggle_keeps_qualifications_and_receipts
+          tests/test_owned_packet_recovery.py::test_registered_sdk_keeps_structured_authority_failure
           -p no:cacheprovider
           --strict-config
           --strict-markers
@@ -536,8 +537,8 @@ jobs:
           --junit "junit-${{ matrix.lane }}.xml"
           --lane "${{ matrix.lane }}"
           --allowlist release/skip-allowlist.json
-          --minimum-collected 7
-          --minimum-passed 7
+          --minimum-collected 8
+          --minimum-passed 8
           --output "result-${{ matrix.lane }}.json"
 
       - name: Upload failed MCP diagnostics

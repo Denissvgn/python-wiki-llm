@@ -72,7 +72,8 @@
       "tests/test_core_shard_runner.py"
     ],
     "sdk": [
-      "tests/test_mcp_sdk.py"
+      "tests/test_mcp_sdk.py",
+      "tests/test_owned_packet_recovery.py::test_registered_sdk_keeps_structured_authority_failure"
     ],
     "storage": [
       "tests/test_knowledge_storage.py",
@@ -662,7 +663,7 @@
       ],
       "condition": "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}",
       "cost": "moderate",
-      "declaration_sha256": "9c1a15e48423f01b3cd7db75a4215259af1e11fc5c863b894353731f4d54d61c",
+      "declaration_sha256": "bc0781107a6d9a8710246c95ebe12344804d94acacde0946e4456b3897d35010",
       "environments": [
         "ubuntu-24.04"
       ],

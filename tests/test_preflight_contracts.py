@@ -83,6 +83,10 @@ def test_real_declarations_map_all_jobs_and_maintenance_without_writes(repositor
     } <= set(value["groups"]["defaults"])
     assert "tests/test_native_knowledge_semantics_docs.py" in value["groups"]["packet"]
     assert {"tests/test_package_validation.py", "tests/test_package_metadata.py"} <= set(value["groups"]["release"])
+    assert (
+        "tests/test_owned_packet_recovery.py::"
+        "test_registered_sdk_keeps_structured_authority_failure"
+    ) in value["groups"]["sdk"]
     assert {
         x.relative_to(repository): x.read_bytes()
         for x in repository.rglob("*")

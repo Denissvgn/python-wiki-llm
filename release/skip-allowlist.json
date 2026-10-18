@@ -788,6 +788,12 @@
     },
     {
       "lane": "core-macos-3.14",
+      "node_id": "tests/test_owned_packet_recovery.py::test_registered_sdk_keeps_structured_authority_failure",
+      "owner_lane": "mcp-3.13",
+      "reason": "Optional MCP SDK is not installed"
+    },
+    {
+      "lane": "core-macos-3.14",
       "node_id": "tests/test_protected_artifacts.py::test_native_windows_reopen_rejects_hard_linked_artifact",
       "owner_lane": "security-windows-2025",
       "reason": "native Windows protected-tree checks"
@@ -2183,6 +2189,12 @@
       "node_id": "tests/test_native_helper_path_diagnostics.py::test_real_selected_success_empty_and_syntax_are_distinct[rust]",
       "owner_lane": "toolchains",
       "reason": "Prepared rust helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_owned_packet_recovery.py::test_registered_sdk_keeps_structured_authority_failure",
+      "owner_lane": "mcp-3.13",
+      "reason": "Optional MCP SDK is not installed"
     },
     {
       "lane": "core-ubuntu-3.10",
@@ -3995,6 +4007,12 @@
       "node_id": "tests/test_native_helper_path_diagnostics.py::test_real_selected_success_empty_and_syntax_are_distinct[rust]",
       "owner_lane": "toolchains",
       "reason": "Prepared rust helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_owned_packet_recovery.py::test_registered_sdk_keeps_structured_authority_failure",
+      "owner_lane": "mcp-3.13",
+      "reason": "Optional MCP SDK is not installed"
     },
     {
       "lane": "core-windows-3.13",
