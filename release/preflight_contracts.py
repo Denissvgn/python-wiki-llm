@@ -40,6 +40,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "tests/test_evidence_recovery_guidance.py",
         "tests/test_agent_instruction_decisions.py",
         "tests/test_skill_policy_routes.py",
+        "tests/test_helper_preparation.py",
     ),
     "packet": (
         "tests/test_context_packet.py",

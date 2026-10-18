@@ -10,7 +10,8 @@
       "tests/test_skills.py",
       "tests/test_evidence_recovery_guidance.py",
       "tests/test_agent_instruction_decisions.py",
-      "tests/test_skill_policy_routes.py"
+      "tests/test_skill_policy_routes.py",
+      "tests/test_helper_preparation.py"
     ],
     "incidents": [
       "tests/test_context_budget.py",
