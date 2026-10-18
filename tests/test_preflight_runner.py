@@ -12,6 +12,7 @@ import venv
 import uuid
 import zipfile
 import stat
+import xml.etree.ElementTree as ET
 
 import pytest
 
@@ -122,6 +123,9 @@ def test_full_driver_keeps_maintained_owners_and_strict_full_suite(
         "freeze-source",
     ]
     full = next(command for command in commands if command.name == "strict-host-core")
+    collection = next(command for command in commands if command.name == "collect-host-core")
+    assert names.index("collect-host-core") < names.index("strict-host-core")
+    assert "--collect" in collection.argv and "shadow" in collection.argv
     assert full.argv[1:5] == ("-m", "pytest", "tests", "-q")
     assert "--strict-config" in full.argv and "xfail_strict=true" in full.argv
     assert (
@@ -130,6 +134,14 @@ def test_full_driver_keeps_maintained_owners_and_strict_full_suite(
             command for command in commands if command.name == "verify-host-junit"
         ).argv
     )
+    admission = next(command for command in commands if command.name == "verify-host-junit")
+    assert any(arg.endswith("release/preflight_runner.py") for arg in admission.argv)
+    assert "--inventory" in admission.argv and "--started" in admission.argv
+    assert admission.argv[admission.argv.index("--minimum-collected") + 1] == "5322"
+    assert admission.argv[admission.argv.index("--minimum-passed") + 1] == "5070"
+    assert "LLM_WIKI_CACHE_DIR" not in collection.environment
+    assert "LLM_WIKI_CACHE_DIR" not in full.environment
+    assert collection.environment == full.environment
     for name in [
         "compare-builds",
         "complete-artifact-smoke-wheel",
@@ -509,3 +521,160 @@ def test_archive_block_does_not_hide_independent_wiki_health_checks(
     assert result["status"] == "blocked"
     assert len(calls) == 8
     assert result["commands"][-1]["name"] == "storage-audit"
+
+
+def _local_core_inputs(tmp_path):
+    root = tmp_path / "source"
+    (root / "tests").mkdir(parents=True)
+    nodes = ["tests/test_always.py::test_present", "tests/test_go_extract.py::test_go_inventory_evidence_contract"]
+    for node in nodes:
+        (root / node.partition("::")[0]).write_text("# isolated verifier input\n")
+    collection = tmp_path / "collected.json"
+    collection.write_text(json.dumps(nodes))
+    started = tmp_path / "started.jsonl"
+    started.write_bytes(b"")
+    tree = ET.Element("testsuite")
+    for node in nodes:
+        filename, name = node.split("::")
+        ET.SubElement(tree, "testcase", classname=filename[:-3].replace("/", "."), name=name)
+    junit = tmp_path / "core.xml"
+    ET.ElementTree(tree).write(junit, encoding="utf-8")
+    allowlist = tmp_path / "allowlist.json"
+    entry = {"lane": "core-macos-3.14", "node_id": nodes[1],
+             "reason": "Prepared Go helper not available — Go extractor integration tests skipped",
+             "owner_lane": "toolchains"}
+    allowlist.write_text(json.dumps({"schema_version": "agent-wiki-release-skip-allowlist/v1", "entries": [entry]}))
+    return {"repo": root, "inventory_path": collection, "started_path": started,
+            "junit_path": junit, "allowlist_path": allowlist, "lane": entry["lane"],
+            "minimum_collected": 2, "minimum_passed": 1}
+
+
+def test_local_core_accepts_complete_prepared_helper_pass_without_claiming_hosted_owner(tmp_path):
+    from argparse import Namespace
+    from release import qualification
+
+    inputs = _local_core_inputs(tmp_path)
+    result = runner.verify_host_junit(**inputs)
+    assert result["state"] == "passed" and result["inventory_complete"]
+    assert result["counts"] == {"collected": 2, "passed": 2, "skipped": 0, "failed": 0, "errors": 0}
+    assert result["conditional_passes"] == ["tests/test_go_extract.py::test_go_inventory_evidence_contract"]
+    assert result["pending_hosted_owners"] == ["toolchains"]
+    assert result["publication_authority"] is False
+    # The bare hosted contract still requires its exact tuple; it is unchanged.
+    with pytest.raises(qualification.QualificationError, match="skip contract changed"):
+        qualification.verify_junit(Namespace(
+            junit=inputs["junit_path"], lane=inputs["lane"], allowlist=inputs["allowlist_path"],
+            minimum_collected=2, minimum_passed=1, discovery=False, output=tmp_path / "native.json",
+        ))
+
+
+def test_local_core_accepts_only_the_declared_owned_skip(tmp_path):
+    inputs = _local_core_inputs(tmp_path)
+    tree = ET.parse(inputs["junit_path"])
+    entry = json.loads(inputs["allowlist_path"].read_text())["entries"][0]
+    ET.SubElement(list(tree.getroot())[-1], "skipped", message=entry["reason"])
+    tree.write(inputs["junit_path"], encoding="utf-8")
+    result = runner.verify_host_junit(**inputs)
+    assert result["counts"]["skipped"] == 1 and result["counts"]["passed"] == 1
+    assert result["pending_hosted_owners"] == ["toolchains"]
+
+
+def test_local_core_empty_baseline_requires_no_skips(tmp_path):
+    inputs = _local_core_inputs(tmp_path)
+    value = json.loads(inputs["allowlist_path"].read_text())
+    value["entries"] = []
+    inputs["allowlist_path"].write_text(json.dumps(value))
+    assert runner.verify_host_junit(**inputs)["counts"]["passed"] == 2
+    tree = ET.parse(inputs["junit_path"])
+    ET.SubElement(list(tree.getroot())[0], "skipped", message="unexpected")
+    tree.write(inputs["junit_path"], encoding="utf-8")
+    with pytest.raises(runner.RunnerError, match="unowned skip"):
+        runner.verify_host_junit(**inputs)
+
+
+@pytest.mark.parametrize("minimum", [0, -1, True])
+def test_local_core_cannot_disable_maintained_minimums(tmp_path, minimum):
+    inputs = _local_core_inputs(tmp_path)
+    inputs["minimum_collected"] = minimum
+    with pytest.raises(runner.RunnerError, match="positive integers"):
+        runner.verify_host_junit(**inputs)
+
+
+def test_retained_local_core_report_replays_inputs_and_json_types(tmp_path, monkeypatch):
+    inputs = _local_core_inputs(tmp_path)
+    tree = ET.parse(inputs["junit_path"])
+    reason = json.loads(inputs["allowlist_path"].read_text())["entries"][0]["reason"]
+    ET.SubElement(list(tree.getroot())[-1], "skipped", message=reason)
+    tree.write(inputs["junit_path"], encoding="utf-8")
+    work = runner.claim_work(tmp_path / "work", BINDING)
+    monkeypatch.setattr(runner, "launcher_probe", lambda *a, **k: {"prefix": "isolated"})
+
+    def commands(stage, repo, scratch, **kwargs):
+        return [runner.Command("verify-host-junit", (
+            "trusted", "verify-host-junit", "--repo", str(inputs["repo"]),
+            "--inventory", str(scratch / "collected.json"), "--started", str(scratch / "started.jsonl"),
+            "--junit", str(scratch / "host-core.xml"), "--allowlist", str(inputs["allowlist_path"]),
+            "--lane", inputs["lane"], "--minimum-collected", "2", "--minimum-passed", "1",
+            "--output", str(scratch / "host-result.json"),
+        ), ROOT)]
+
+    def run(argv, **kwargs):
+        scratch = Path(argv[argv.index("--output") + 1]).parent
+        for name, key in (("collected.json", "inventory_path"), ("started.jsonl", "started_path"), ("host-core.xml", "junit_path")):
+            (scratch / name).write_bytes(inputs[key].read_bytes())
+        result = runner._host_report_for_command(commands("host-core", ROOT, scratch)[0])
+        (scratch / "host-result.json").write_bytes(runner._canonical(result))
+        kwargs["stdout"].write(b"verified local fixture\n")
+        return subprocess.CompletedProcess(argv, 0)
+
+    monkeypatch.setattr(runner, "stage_commands", commands)
+    monkeypatch.setattr(runner.subprocess, "run", run)
+    attempt = runner.execute_stage("host-core", repo=ROOT, work=work, binding=BINDING, candidate_sha=SHA, version="3.1.0")
+    assert runner.verify_attempt(attempt, repo=ROOT, work=work, binding=BINDING)["status"] == "verified"
+    assert {"collected.json", "started.jsonl", "host-core.xml", "host-result.json"} <= {
+        path.name for path in runner.evidence_paths(attempt)
+    }
+    report = Path(attempt["scratch"]) / "host-result.json"
+    forged = json.loads(report.read_bytes())
+    assert forged["counts"]["passed"] == 1
+    forged["counts"]["passed"] = True
+    report.write_bytes(runner._canonical(forged))
+    with pytest.raises(runner.RunnerError, match="collection/JUnit replay"):
+        runner.verify_attempt(attempt, repo=ROOT, work=work, binding=BINDING)
+
+
+@pytest.mark.parametrize("mutation", [
+    "missing", "extra", "duplicate", "failure", "unowned-skip", "changed-reason",
+    "dropped-owned-node", "collector-ran", "duplicate-inventory", "unreviewed-owner",
+])
+def test_local_core_rejects_incomplete_or_unowned_outcomes(tmp_path, mutation):
+    inputs = _local_core_inputs(tmp_path)
+    tree = ET.parse(inputs["junit_path"])
+    root = tree.getroot()
+    if mutation == "missing":
+        root.remove(list(root)[0])
+    elif mutation == "extra":
+        ET.SubElement(root, "testcase", classname="tests.test_extra", name="test_extra")
+    elif mutation == "duplicate":
+        root.append(copy.deepcopy(list(root)[0]))
+    elif mutation == "failure":
+        ET.SubElement(list(root)[0], "failure", message="defect")
+    elif mutation in {"unowned-skip", "changed-reason"}:
+        ET.SubElement(list(root)[0 if mutation == "unowned-skip" else -1], "skipped", message="unowned")
+    elif mutation == "dropped-owned-node":
+        root.remove(list(root)[-1])
+        nodes = json.loads(inputs["inventory_path"].read_text())[:1]
+        inputs["inventory_path"].write_text(json.dumps(nodes))
+        inputs["minimum_collected"] = 1
+    elif mutation == "collector-ran":
+        inputs["started_path"].write_text('"unexpected execution"\n')
+    elif mutation == "duplicate-inventory":
+        nodes = json.loads(inputs["inventory_path"].read_text())
+        inputs["inventory_path"].write_text(json.dumps(nodes + nodes[:1]))
+    else:
+        value = json.loads(inputs["allowlist_path"].read_text())
+        value["entries"][0]["owner_lane"] = "REVIEW-REQUIRED"
+        inputs["allowlist_path"].write_text(json.dumps(value))
+    tree.write(inputs["junit_path"], encoding="utf-8")
+    with pytest.raises(ValueError):
+        runner.verify_host_junit(**inputs)

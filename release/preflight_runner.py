@@ -224,6 +224,104 @@ def _strict_pytest(python: str, junit: Path, *selectors: str) -> tuple[str, ...]
     )
 
 
+def verify_host_junit(
+    *, repo: Path, inventory_path: Path, started_path: Path, junit_path: Path,
+    allowlist_path: Path, lane: str, minimum_collected: int = 5322,
+    minimum_passed: int = 5070,
+) -> dict:
+    """Verify a complete local collection without requiring helpers to be absent.
+
+    The hosted lane's exact owned reasons bound any local skips. Passing one of
+    those conditional cases locally never satisfies its required hosted owner.
+    """
+    from release import core_shards as shards, qualification as q
+
+    if any(type(value) is not int or value <= 0 for value in (minimum_collected, minimum_passed)):
+        raise RunnerError("host core minimums must be positive integers")
+    if lane not in {"core-macos-3.14", "core-windows-3.13", "core-ubuntu-3.10"}:
+        raise RunnerError("host core has no maintained baseline lane")
+    repo, inventory_path, started_path, junit_path, allowlist_path = (
+        Path(os.path.abspath(path)) for path in (repo, inventory_path, started_path, junit_path, allowlist_path)
+    )
+    try:
+        return _host_junit_report(
+            repo=repo, inventory_path=inventory_path, started_path=started_path,
+            junit_path=junit_path, allowlist_path=allowlist_path, lane=lane,
+            minimum_collected=minimum_collected, minimum_passed=minimum_passed,
+        )
+    except (q.QualificationError, shards.q.QualificationError) as exc:
+        raise RunnerError(str(exc)) from exc
+
+
+def _host_junit_report(
+    *, repo: Path, inventory_path: Path, started_path: Path, junit_path: Path,
+    allowlist_path: Path, lane: str, minimum_collected: int, minimum_passed: int,
+) -> dict:
+    from release import core_shards as shards, qualification as q
+
+    for path in (repo, inventory_path, started_path, junit_path, allowlist_path):
+        _safe(path)
+    nodes = shards.inventory(shards.read(inventory_path))
+    if not started_path.is_file() or started_path.stat().st_size:
+        raise RunnerError("host collection unexpectedly executed tests")
+    with started_path.open("rb") as stream:
+        if stream.read(1):
+            raise RunnerError("host collection unexpectedly executed tests")
+    for name in {shards.file_name(node) for node in nodes}:
+        _safe(repo / name)
+        if not (repo / name).is_file():
+            raise RunnerError("host collection refers to an absent source file")
+    entries = [row for row in q._load_skip_allowlist(allowlist_path) if row["lane"] == lane]
+    expected = {row["node_id"]: row for row in entries}
+    if len(expected) != len(entries) or not set(expected) <= set(nodes):
+        raise RunnerError("host collection omits or ambiguously owns baseline conditional cases")
+    cases = shards.junit(junit_path)
+    if set(cases) != set(nodes):
+        raise RunnerError("host JUnit differs from the complete collected inventory")
+    counts = {"collected": len(cases), "passed": 0, "skipped": 0, "failed": 0, "errors": 0}
+    skips = []
+    for node, case in cases.items():
+        if case.find("failure") is not None:
+            counts["failed"] += 1
+        elif case.find("error") is not None:
+            counts["errors"] += 1
+        elif (skipped := case.find("skipped")) is not None:
+            reason = skipped.attrib.get("message") or (skipped.text or "").strip()
+            if node not in expected or expected[node]["reason"] != reason:
+                raise RunnerError("host core has an unowned skip or changed reason: " + node)
+            counts["skipped"] += 1
+            skips.append({"node_id": node, "reason": reason, "owner_lane": expected[node]["owner_lane"]})
+        else:
+            counts["passed"] += 1
+    if counts["failed"] or counts["errors"]:
+        raise RunnerError("host core has failures/errors")
+    if counts["collected"] < minimum_collected or counts["passed"] < minimum_passed:
+        raise RunnerError("host core is below the maintained collection/pass minimum")
+    return {
+        "schema_version": "agent-wiki-local-core-result/v1", "state": "passed",
+        "root": str(repo), "baseline_lane": lane, "inventory_complete": True,
+        "inventory_sha256": q.sha256_file(inventory_path), "junit_sha256": q.sha256_file(junit_path),
+        "counts": counts, "skips": sorted(skips, key=lambda row: row["node_id"]),
+        "conditional_passes": sorted(node for node in expected if cases[node].find("skipped") is None),
+        "pending_hosted_owners": sorted({row["owner_lane"] for row in entries}),
+        "publication_authority": False,
+        "qualification": "Local complete-collection verification only; native/hosted owners and policy approval remain independently required",
+    }
+
+
+def _host_report_for_command(command: Command) -> dict:
+    # Read only the reconstructed source-owned argv, never receipt-supplied code.
+    def value(flag):
+        return command.argv[command.argv.index(flag) + 1]
+
+    return verify_host_junit(
+        repo=Path(value("--repo")), inventory_path=Path(value("--inventory")),
+        started_path=Path(value("--started")), junit_path=Path(value("--junit")),
+        allowlist_path=Path(value("--allowlist")), lane=value("--lane"),
+        minimum_collected=int(value("--minimum-collected")), minimum_passed=int(value("--minimum-passed")),
+    )
+
+
 def stage_commands(
     stage: str,
     repo: Path,
@@ -519,6 +617,14 @@ def stage_commands(
             raise RunnerError(
                 "host OS/Python has no matching maintained native core lane"
             )
+        host_environment = {"LLM_WIKI_QUALIFICATION_SOURCE_ARCHIVE": str(archive)}
+        command(
+            "collect-host-core",
+            (env_python, "-I", repo / "release/core_shard_runner.py", "worker",
+             "--collect", "--purpose", "shadow", "--output", scratch),
+            cwd=candidate, expected_prefix=environment, timeout=600,
+            environment=host_environment,
+        )
         core_command = _strict_pytest(env_python, scratch / "host-core.xml", "tests")
         if platform.system() == "Linux":
             core_command += (
@@ -531,15 +637,21 @@ def stage_commands(
             core_command,
             cwd=candidate,
             timeout=21600,
-            environment={"LLM_WIKI_QUALIFICATION_SOURCE_ARCHIVE": str(archive)},
+            environment=host_environment,
         )
         command(
             "verify-host-junit",
             (
                 py,
                 "-I",
-                qualification,
-                "verify-junit",
+                repo / "release/preflight_runner.py",
+                "verify-host-junit",
+                "--repo",
+                candidate,
+                "--inventory",
+                scratch / "collected.json",
+                "--started",
+                scratch / "started.jsonl",
                 "--junit",
                 scratch / "host-core.xml",
                 "--lane",
@@ -1033,6 +1145,11 @@ def verify_attempt(attempt: dict, *, repo: Path, work: Path, binding: dict) -> d
             type(row.get("returncode")) is not int or row["returncode"] != 0
         ):
             raise RunnerError("passing command has no successful exit")
+        if command.name == "verify-host-junit" and row.get("status") == "passed":
+            actual = _host_report_for_command(command)
+            report = Path(command.argv[command.argv.index("--output") + 1])
+            if _canonical(_read_json(report)) != _canonical(actual):
+                raise RunnerError("retained host report differs from collection/JUnit replay")
         if command.name == "source-archive-budget":
             report_path = scratch / "archive-budget/report.json"
             if not report_path.exists():
@@ -1087,6 +1204,8 @@ def evidence_paths(attempt: dict) -> list[Path]:
     for name in (
         "host-core.xml",
         "host-result.json",
+        "collected.json",
+        "started.jsonl",
         "wheel-smoke.json",
         "sdist-smoke.json",
         "smoke-comparison.json",
@@ -1361,10 +1480,17 @@ def archive_budget(repo: Path, output: Path, candidate_sha: str) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("prepare-runtime", "archive-budget"))
+    parser.add_argument("command", choices=("prepare-runtime", "archive-budget", "verify-host-junit"))
     parser.add_argument("--repo", type=Path, required=True)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--candidate-sha")
+    parser.add_argument("--inventory", type=Path)
+    parser.add_argument("--started", type=Path)
+    parser.add_argument("--junit", type=Path)
+    parser.add_argument("--allowlist", type=Path)
+    parser.add_argument("--lane")
+    parser.add_argument("--minimum-collected", type=int, default=5322)
+    parser.add_argument("--minimum-passed", type=int, default=5070)
     args = parser.parse_args()
     try:
         if args.command == "archive-budget":
@@ -1373,6 +1499,20 @@ def main() -> int:
                     "archive-budget requires --output and --candidate-sha"
                 )
             result = archive_budget(args.repo, args.output, args.candidate_sha)
+        elif args.command == "verify-host-junit":
+            if any(value is None for value in (
+                args.inventory, args.started, args.junit, args.allowlist, args.lane, args.output,
+            )):
+                raise RunnerError("host verification requires collection, JUnit, baseline and output")
+            result = verify_host_junit(
+                repo=args.repo, inventory_path=args.inventory, started_path=args.started,
+                junit_path=args.junit, allowlist_path=args.allowlist, lane=args.lane,
+                minimum_collected=args.minimum_collected, minimum_passed=args.minimum_passed,
+            )
+            output = Path(os.path.abspath(args.output))
+            _safe(output)
+            with output.open("xb") as stream:
+                stream.write(_canonical(result) + b"\n")
         else:
             result = prepare_runtime(args.repo)
     except (RunnerError, OSError, ValueError, subprocess.TimeoutExpired) as exc:
