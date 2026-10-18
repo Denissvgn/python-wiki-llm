@@ -33,13 +33,14 @@ def _require(condition: bool, reason: str) -> None:
 def repair_paths(value) -> tuple[str, ...]:
     if value is None:
         return ()
-    result = []
-    for path in value:
-        error = ScopedRepairError("--repair-evidence paths must be canonical POSIX paths relative to --src-dir")
-        result.append(require_repository_relative_path(
-            path, text_error=error, posix_error=error, normalized_error=error,
-        ))
-    return tuple(sorted(set(result)))
+    return tuple(sorted({_repair_path(path) for path in value}))
+
+
+def _repair_path(path) -> str:
+    error = ScopedRepairError("--repair-evidence paths must be canonical POSIX paths relative to --src-dir")
+    return require_repository_relative_path(
+        path, text_error=error, posix_error=error, normalized_error=error,
+    )
 
 
 @analysis_capture.capture_operation

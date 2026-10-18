@@ -544,18 +544,9 @@ def _inventory_language(file_data: Mapping[str, Any] | None) -> str:
 
 
 def _record_array(file_data: Mapping[str, Any], field: str, *, required: bool, pointer="") -> list[Mapping[str, Any]]:
-    position = _pointer(pointer, field)
-    if field not in file_data:
-        if required:
-            raise _failure(position, "required-field", "array of record objects", MISSING_VALUE)
-        return []
-    value = file_data[field]
-    if not isinstance(value, list):
-        raise _failure(position, "array-required", "array of record objects", value)
-    for index, item in enumerate(value):
-        if not isinstance(item, Mapping):
-            raise _failure(_pointer(position, index), "object-required", "record object", item)
-    return value
+    if required and field not in file_data:
+        raise _failure(_pointer(pointer, field), "required-field", "array of record objects", MISSING_VALUE)
+    return _optional_record_array(file_data, field, pointer)
 
 
 def _json_array(file_data: Mapping[str, Any], field: str) -> list[Any]:
@@ -682,11 +673,12 @@ def _validate_string_array(value: list[Any], pointer="") -> None:
 
 
 def _validate_optional_string_array(record: Mapping[str, Any], field: str, pointer="") -> None:
-    if field not in record:
-        return
-    position = _pointer(pointer, field)
-    values = require_list(record[field], error=_failure(position, "array-required", "string array", record[field]))
-    _validate_string_array(values, position)
+    if field in record:
+        position = _pointer(pointer, field)
+        _validate_string_array(
+            require_list(record[field], error=_failure(position, "array-required", "string array", record[field])),
+            position,
+        )
 
 
 def _validate_optional_json_array(record: Mapping[str, Any], field: str, pointer="") -> None:
@@ -695,7 +687,13 @@ def _validate_optional_json_array(record: Mapping[str, Any], field: str, pointer
 
 
 def _optional_record_array(record: Mapping[str, Any], field: str, pointer="") -> list[Mapping[str, Any]]:
-    return _record_array(record, field, required=False, pointer=pointer)
+    position = _pointer(pointer, field)
+    value = require_list(record.get(field, []), error=_failure(position, "array-required", "array of record objects", record.get(field, [])))
+    return [_record_object(item, _pointer(position, index)) for index, item in enumerate(value)]
+
+
+def _record_object(value, pointer) -> Mapping[str, Any]:
+    return require_mapping(value, error=_failure(pointer, "object-required", "record object", value))
 
 
 def _validate_optional_record_array(record: Mapping[str, Any], field: str, pointer="") -> None:
