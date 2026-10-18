@@ -149,9 +149,9 @@ sequenceDiagram
     p3-->>p30: application.changed_files.extend(selected)
 ```
 
-> Call sequence diagram shows 30 of 6199 interactions; 6169 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 6200 interactions; 6170 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 2173 (2172 omitted); unresolved 1 of 1902 (1901 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 2173 (2172 omitted); unresolved 1 of 1903 (1902 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -241,36 +241,36 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | _sync_run_options_from_args | 5367 | `_sync_run_options_from_args(args)` |
-| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2424 | `getattr(args, 'src_dir', '.')` |
-| _sync_run_options_from_args | Path (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2425 | `Path(getattr(...))` |
-| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2425 | `getattr(args, 'wiki_dir', 'docs/llm_wiki')` |
-| _sync_run_options_from_args | bool (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2426 | `bool(getattr(...))` |
-| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2426 | `getattr(args, 'dry_run', False)` |
+| run | _sync_run_options_from_args | 5378 | `_sync_run_options_from_args(args)` |
+| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2425 | `getattr(args, 'src_dir', '.')` |
+| _sync_run_options_from_args | Path (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2426 | `Path(getattr(...))` |
+| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2426 | `getattr(args, 'wiki_dir', 'docs/llm_wiki')` |
 | _sync_run_options_from_args | bool (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2427 | `bool(getattr(...))` |
-| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2427 | `getattr(args, 'no_plugins', False)` |
-| _sync_run_options_from_args | _cache_options_from_args | 2428 | `_cache_options_from_args(args)` |
-| _cache_options_from_args | cache_options_from_args | 305 | `cache_options_from_args(args)` |
+| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2427 | `getattr(args, 'dry_run', False)` |
+| _sync_run_options_from_args | bool (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2428 | `bool(getattr(...))` |
+| _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2428 | `getattr(args, 'no_plugins', False)` |
+| _sync_run_options_from_args | _cache_options_from_args | 2429 | `_cache_options_from_args(args)` |
+| _cache_options_from_args | cache_options_from_args | 306 | `cache_options_from_args(args)` |
 | cache_options_from_args | bool (src/llm_wiki_cli/services…y:cache_options_from_args) | 311 | `bool(getattr(...))` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 5374 |
-| output | `print` | `_sync_run_options_from_args` | 2453 |
-| output | `print` | `_sync_run_options_from_args` | 2456 |
-| output | `print` | `_sync_run_options_from_args` | 2462 |
-| output | `print` | `_sync_run_options_from_args` | 2468 |
+| output | `print` | `run` | 5385 |
+| output | `print` | `_sync_run_options_from_args` | 2454 |
+| output | `print` | `_sync_run_options_from_args` | 2457 |
+| output | `print` | `_sync_run_options_from_args` | 2463 |
+| output | `print` | `_sync_run_options_from_args` | 2469 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_sync_run_options_from_args` | `getattr` | 2424 |
 | external_call | `_sync_run_options_from_args` | `getattr` | 2425 |
 | external_call | `_sync_run_options_from_args` | `getattr` | 2426 |
 | external_call | `_sync_run_options_from_args` | `getattr` | 2427 |
+| external_call | `_sync_run_options_from_args` | `getattr` | 2428 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

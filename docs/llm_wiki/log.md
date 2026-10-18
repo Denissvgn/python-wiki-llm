@@ -3099,3 +3099,27 @@ The ownership inventory reserves expanded evidence-recovery guidance and the
 complete compact owning sequence. Installed reference discovery and validation
 preserve real heading fragments, including the captured-evidence diagnosis
 section, while retaining the distinct maintenance topic-root route.
+
+## 2026-10-18
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.1.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:ed124bb8ecc3b16c222da537badcd0621ebf573a1c3202bfb91301cd1da3f757`
+- Pages created: 0
+- Pages updated: 18
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1599
+- Pages deprecated: 0
+- Semantic fields preserved: 3
+- Moved entities: none
+
+## 2026-10-18
+
+### Isolated preview coordination
+
+Sync previews preserve live owner coordination while omitting only the reserved
+root runtime lock files from the clone. Nested same-name and other authored
+files keep their bytes, and ordinary copy failures remain fatal.

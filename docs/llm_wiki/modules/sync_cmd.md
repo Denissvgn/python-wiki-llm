@@ -92,6 +92,12 @@ preflights an isolated candidate, preserves unselected failures and rejects wide
 logical or graph changes. Ordinary full sync remains required for producer
 transitions and mixed edits; force cannot override that boundary.
 
+Isolated sync previews omit the two reserved root governance/storage runtime
+lock files while keeping the live owner's coordination intact. Nested files
+with those names and other authored data remain in the clone. An apply
+preflight retains its owning locks; unsafe links and ordinary copy errors
+still stop the operation.
+
 ## Imports
 
 | Source | Symbols |
@@ -113,12 +119,12 @@ transitions and mixed edits; force cannot override that boundary.
 | `..services.knowledge_artifacts` | `ArtifactWriteState`, `KnowledgeCommitResult`, `KnowledgeArtifactError` |
 | `..services.knowledge_envelope` | `RepositoryEvidence`, `build_repository_record` |
 | `..services.knowledge_evidence` | `hash_file`, `is_valid_sha256`, `semantic_hash_for_file`, `module_observation_hash`, `UNKNOWN_INVALID_INVENTORY`, `entity_observation_hash`, `module_observation_hash` |
-| `..services.knowledge_governance` | `GOVERNANCE_FILENAME`, `GovernanceError`, `load_governance`, `ConceptGovernanceReference`, `natural_key_for`, `reconcile_concepts` |
+| `..services.knowledge_governance` | `GOVERNANCE_FILENAME`, `GOVERNANCE_LOCK_FILENAME`, `GovernanceError`, `load_governance`, `ConceptGovernanceReference`, `natural_key_for`, `reconcile_concepts` |
 | `..services.knowledge_model` | `PAGE_KIND_TO_CONCEPT_KIND` |
 | `..services.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeKnowledgeInputs`, `CommittedKnowledgeState`, `capture_committed_knowledge`, `collect_runtime_repository_evidence`, `committed_governance_bundle_id`, `committed_runtime_provenance`, `finalize_runtime_knowledge`, `runtime_generation_options`, `runtime_graph_analyzer_limitations`, `runtime_generation_options_hash`, `runtime_source_snapshot_hash` |
 | `..services.knowledge_storage` | `MAX_EXPANDED_BYTES` |
 | `..services.knowledge_storage_io` | `StorageReadSession` |
-| `..services.maintenance_protocol` | `unlink_maintenance_page`, `guard_maintenance_owner`, `maintenance_write_operation`, `MaintenanceProtocolError` |
+| `..services.maintenance_protocol` | `STORAGE_LOCK_FILENAME`, `unlink_maintenance_page`, `guard_maintenance_owner`, `maintenance_write_operation`, `MaintenanceProtocolError` |
 | `..services.markdown_sections` | `format_table_row`, `is_placeholder_description`, `is_table_separator`, `normalize_markdown`, `preserve_index_custom_sections`, `preserve_level_two_section_exact`, `preserve_table_description_cells`, `replace_section_body`, `section_body`, `section_bounds`, `semantic_table_key`, `should_preserve_semantic_value`, `split_table_row`, `table_description_cells`, `trim_blank_lines`, `parse_markdown_document` |
 | `..services.module_maps` | `build_module_dependency_maps` |
 | `..services.paths` | `render_shell_command`, `is_test_source_path`, `portable_source_root_label` |
@@ -181,20 +187,20 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [GeneratedSurfacePruneError](../entities/GeneratedSurfacePruneError.md) | 296 | `ValueError` | A stale generated page cannot be removed without explicit authority. |
-| [SyncRuntimeRefreshError](../entities/SyncRuntimeRefreshError.md) | 300 | `ValueError` | A runtime-basis transition cannot be applied in the requested mode. |
-| [SyncResult](../entities/SyncResult.md) | 632 | — | — |
-| [_ApplyDiffContext](../entities/ApplyDiffContext.md) | 671 | — | — |
-| [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 693 | — | — |
-| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1712 | — | — |
-| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1740 | — | — |
-| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1747 | — | — |
-| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1753 | — | — |
-| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1759 | — | — |
-| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1775 | — | — |
-| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1818 | — | — |
-| [_ReusedSync](../entities/ReusedSync.md) | 1851 | — | — |
-| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1857 | — | Prior ownership proof and generated pages that cross the live boundary. |
+| [GeneratedSurfacePruneError](../entities/GeneratedSurfacePruneError.md) | 297 | `ValueError` | A stale generated page cannot be removed without explicit authority. |
+| [SyncRuntimeRefreshError](../entities/SyncRuntimeRefreshError.md) | 301 | `ValueError` | A runtime-basis transition cannot be applied in the requested mode. |
+| [SyncResult](../entities/SyncResult.md) | 633 | — | — |
+| [_ApplyDiffContext](../entities/ApplyDiffContext.md) | 672 | — | — |
+| [_GeneratedSectionContext](../entities/GeneratedSectionContext.md) | 694 | — | — |
+| [_SyncRunOptions](../entities/SyncRunOptions.md) | 1713 | — | — |
+| [_SyncPageMaps](../entities/SyncPageMaps.md) | 1741 | — | — |
+| [_ExtractedSyncInventory](../entities/ExtractedSyncInventory.md) | 1748 | — | — |
+| [_SyncEntryPointAnalysis](../entities/SyncEntryPointAnalysis.md) | 1754 | — | — |
+| [_RuntimeGraphObservations](../entities/RuntimeGraphObservations.md) | 1760 | — | — |
+| [_SurfaceInitializationPlan](../entities/SurfaceInitializationPlan.md) | 1776 | — | — |
+| [_PreparedSyncRun](../entities/PreparedSyncRun.md) | 1819 | — | — |
+| [_ReusedSync](../entities/ReusedSync.md) | 1852 | — | — |
+| [_GeneratedSurfaceTransition](../entities/GeneratedSurfaceTransition.md) | 1858 | — | Prior ownership proof and generated pages that cross the live boundary. |
 
 ## Functions
 

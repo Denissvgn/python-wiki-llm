@@ -35914,7 +35914,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 5374,
+              "line": 5385,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -35922,7 +35922,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2453,
+              "line": 2454,
               "step": "_sync_run_options_from_args",
               "step_index": 2,
               "target": "print"
@@ -35930,7 +35930,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2456,
+              "line": 2457,
               "step": "_sync_run_options_from_args",
               "step_index": 2,
               "target": "print"
@@ -35938,7 +35938,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2462,
+              "line": 2463,
               "step": "_sync_run_options_from_args",
               "step_index": 2,
               "target": "print"
@@ -35946,19 +35946,13 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2468,
+              "line": 2469,
               "step": "_sync_run_options_from_args",
               "step_index": 2,
               "target": "print"
             }
           ],
           "gaps": [
-            {
-              "kind": "external_call",
-              "line": 2424,
-              "step": "_sync_run_options_from_args",
-              "target": "getattr"
-            },
             {
               "kind": "external_call",
               "line": 2425,
@@ -35974,6 +35968,12 @@
             {
               "kind": "external_call",
               "line": 2427,
+              "step": "_sync_run_options_from_args",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 2428,
               "step": "_sync_run_options_from_args",
               "target": "getattr"
             },
@@ -36070,7 +36070,7 @@
             "src/llm_wiki_cli/services/wiki_surface_index.py",
             "src/llm_wiki_cli/services/sync_recovery.py"
           ],
-          "step_count": 6200,
+          "step_count": 6201,
           "truncated": true
         }
       },
@@ -67564,5 +67564,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:dc06f7940835856d1a69beef7c099c063d1a51cd23b94b28a141989200d0bb24"
+  "source_hash": "sha256:8a2cdeaeddd3755bedc4abb023774e82d9275eaefe96ba467aa7d7b8d678152c"
 }
