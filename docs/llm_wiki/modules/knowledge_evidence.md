@@ -24,6 +24,11 @@ persisted reason/basis fields. Recursion or encoding failures with no exact know
 location use a null pointer, not an inferred record. Existing completeness and
 language qualification remain mandatory.
 
+Record arrays use shared list and mapping validation while retaining the first
+invalid item's exact diagnostic coordinate. Missing required arrays are rejected;
+missing optional arrays are empty. These checks do not change accepted structural
+facts or grant authority to unavailable evidence.
+
 ## Imports
 
 | Source | Symbols |
@@ -108,6 +113,7 @@ flowchart LR
 | `_validate_optional_string_array` | `(record: Mapping[str, Any], field: str, pointer = '') -> None` | — | — |
 | `_validate_optional_json_array` | `(record: Mapping[str, Any], field: str, pointer = '') -> None` | — | — |
 | `_optional_record_array` | `(record: Mapping[str, Any], field: str, pointer = '') -> list[Mapping[str, Any]]` | — | — |
+| `_record_object` | `(value, pointer) -> Mapping[str, Any]` | — | — |
 | `_validate_optional_record_array` | `(record: Mapping[str, Any], field: str, pointer = '') -> None` | — | — |
 | `_validate_optional_mapping` | `(record: Mapping[str, Any], field: str, pointer = '') -> Mapping[str, Any] \| None` | — | — |
 | `_copy_selected_fields` | `(record: Mapping[str, Any], fields: tuple[str, ...], excluded_keys: frozenset[str], pointer = '') -> dict[str, Any]` | — | — |

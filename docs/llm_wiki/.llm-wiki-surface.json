@@ -3244,7 +3244,7 @@
             "src/llm_wiki_cli/services/validation.py",
             "src/llm_wiki_cli/services/normalization_diagnostics.py"
           ],
-          "step_count": 250,
+          "step_count": 254,
           "truncated": true
         }
       },
@@ -3943,7 +3943,7 @@
             "src/llm_wiki_cli/services/knowledge_packs.py",
             "src/llm_wiki_cli/services/canonical_json.py"
           ],
-          "step_count": 4720,
+          "step_count": 4715,
           "truncated": true
         }
       },
@@ -4317,7 +4317,7 @@
             "src/llm_wiki_cli/services/validation.py",
             "src/llm_wiki_cli/services/normalization_diagnostics.py"
           ],
-          "step_count": 272,
+          "step_count": 279,
           "truncated": true
         }
       },
@@ -5082,7 +5082,7 @@
             "src/llm_wiki_cli/services/infrastructure_sync.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py"
           ],
-          "step_count": 638,
+          "step_count": 640,
           "truncated": true
         }
       },
@@ -9256,7 +9256,7 @@
             },
             {
               "kind": "external_call",
-              "line": 806,
+              "line": 804,
               "step": "_validate_inventory_complete",
               "target": "TypeError"
             },
@@ -9301,7 +9301,7 @@
             "src/llm_wiki_cli/services/knowledge_evidence.py",
             "src/llm_wiki_cli/services/validation.py"
           ],
-          "step_count": 149,
+          "step_count": 151,
           "truncated": true
         }
       },
@@ -9465,7 +9465,7 @@
             "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_cli/services/concept_identity.py"
           ],
-          "step_count": 3521,
+          "step_count": 3516,
           "truncated": true
         }
       },
@@ -12706,7 +12706,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_read",
-              "line": 903,
+              "line": 901,
               "step": "hash_file",
               "step_index": 1,
               "target": "path.read_bytes"
@@ -16316,7 +16316,7 @@
             },
             {
               "kind": "external_call",
-              "line": 806,
+              "line": 804,
               "step": "_validate_inventory_complete",
               "target": "TypeError"
             },
@@ -16337,20 +16337,26 @@
               "line": 0,
               "step": "module_observation_hash",
               "target": "first 12 steps"
+            },
+            {
+              "kind": "truncated_flow",
+              "line": 0,
+              "step": "module_observation_hash",
+              "target": "depth limit"
             }
           ],
           "generated": true,
           "step_count": 12,
           "transfer_count": 11,
-          "truncated": false
+          "truncated": true
         },
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/services/knowledge_evidence.py",
             "src/llm_wiki_cli/services/validation.py"
           ],
-          "step_count": 178,
-          "truncated": false
+          "step_count": 182,
+          "truncated": true
         }
       },
       "id": "api-module_observation_hash",
@@ -17008,7 +17014,7 @@
             },
             {
               "kind": "external_call",
-              "line": 862,
+              "line": 860,
               "step": "_validate_entity_coordinate",
               "target": "ValueError"
             },
@@ -17035,7 +17041,7 @@
             "src/llm_wiki_cli/services/knowledge_evidence.py",
             "src/llm_wiki_cli/services/validation.py"
           ],
-          "step_count": 143,
+          "step_count": 147,
           "truncated": false
         }
       },
@@ -17264,7 +17270,7 @@
             "src/llm_wiki_cli/services/knowledge_evidence.py",
             "src/llm_wiki_cli/services/validation.py"
           ],
-          "step_count": 165,
+          "step_count": 172,
           "truncated": false
         }
       },
@@ -25881,37 +25887,37 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 874,
+              "line": 872,
               "step": "without_line_metadata",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 877,
+              "line": 875,
               "step": "without_line_metadata",
               "target": "sorted"
             },
             {
               "kind": "unresolved_call",
-              "line": 877,
+              "line": 875,
               "step": "without_line_metadata",
               "target": "value.items"
             },
             {
               "kind": "external_call",
-              "line": 880,
+              "line": 878,
               "step": "without_line_metadata",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 891,
+              "line": 889,
               "step": "semantic_hash_for_file",
               "target": "json.dumps(normalized, separators=(',', ':'), sort_keys=True).encode"
             },
             {
               "kind": "external_call",
-              "line": 891,
+              "line": 889,
               "step": "semantic_hash_for_file",
               "target": "json.dumps"
             },
@@ -31322,25 +31328,25 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 874,
+              "line": 872,
               "step": "without_line_metadata",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 877,
+              "line": 875,
               "step": "without_line_metadata",
               "target": "sorted"
             },
             {
               "kind": "unresolved_call",
-              "line": 877,
+              "line": 875,
               "step": "without_line_metadata",
               "target": "value.items"
             },
             {
               "kind": "external_call",
-              "line": 880,
+              "line": 878,
               "step": "without_line_metadata",
               "target": "isinstance"
             }
@@ -36064,7 +36070,7 @@
             "src/llm_wiki_cli/services/wiki_surface_index.py",
             "src/llm_wiki_cli/services/sync_recovery.py"
           ],
-          "step_count": 6223,
+          "step_count": 6200,
           "truncated": true
         }
       },
@@ -67558,5 +67564,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:cf9dbc09ad9b759bbb038b00375e2fc29b553942e4801941a8cd78714f4d7ef5"
+  "source_hash": "sha256:240209b47f94612aa50e711b1ec0c0a545ec6ab0f11083fdeab7c30c71ed582e"
 }

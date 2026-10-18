@@ -25,6 +25,10 @@ Scope never narrows source discovery or overrides the broad-update count/ratio
 review. Whole-wiki strict validation remains necessary afterward because retained
 unselected unknown evidence stays unknown.
 
+Repair selectors are canonical POSIX paths relative to the source root. Each
+path is validated before the list is deduplicated and sorted; native filesystem
+spelling is not accepted as a substitute for this protocol coordinate.
+
 ## Imports
 
 | Source | Symbols |
@@ -75,7 +79,7 @@ flowchart LR
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
 | [ScopedRepairError](../entities/ScopedRepairError.md) | 21 | `ValueError` | The requested repair cannot preserve its declared scope. |
-| [ScopedRepairBoundary](../entities/ScopedRepairBoundary.md) | 75 | — | Original global inputs and the only concept pages allowed to change. |
+| [ScopedRepairBoundary](../entities/ScopedRepairBoundary.md) | 76 | — | Original global inputs and the only concept pages allowed to change. |
 
 ## Functions
 
@@ -83,6 +87,7 @@ flowchart LR
 |----------|-----------|------------|-------------|
 | `_require` | `(condition: bool, reason: str) -> None` | — | — |
 | `repair_paths` | `(value) -> tuple[str, ...]` | — | — |
+| `_repair_path` | `(path) -> str` | — | — |
 | `_recapture` | `(registry, root, helper_cache, languages)` | `@analysis_capture.capture_operation` | — |
 | `_multiset` | `(values)` | — | — |
 | `_markdown_hashes` | `(root)` | — | — |

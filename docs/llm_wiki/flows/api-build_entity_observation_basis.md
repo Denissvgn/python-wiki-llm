@@ -65,7 +65,7 @@ sequenceDiagram
     p13->>p21: require_nonnegative_int
     p17->>p22: _validate_module_entity_record
     p9->>p23: _failure
-    p17->>p24: _optional_record_array
+    p14->>p24: _optional_record_array
     p17->>p25: _validate_optional_json_array
     p17->>p26: _validate_optional_mapping
     p17->>p27: _validate_optional_record_array
@@ -74,9 +74,9 @@ sequenceDiagram
     p3-->>p30: diagnostic.at_source(source_path, scope, extractor_ref, entity_name, occurrence)
 ```
 
-> Call sequence diagram shows 30 of 249 interactions; 219 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 253 interactions; 223 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 69 (68 omitted); unresolved 1 of 42 (41 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 67 (66 omitted); unresolved 1 of 44 (43 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -90,7 +90,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 27 | - | external | 4 |
 | `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 27 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 13 |
 | `src/llm_wiki_cli/services/validation.py:_default_path_error` | 29 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-> Omission summary shows 8 of 85 groups; 77 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 89 groups; 81 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -152,8 +152,8 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | build_entity_observation_basis | _validate_basis_inputs | 375 | `_validate_basis_inputs(source_path, source_content_hash, extractor_ref, inventory_complete)` |
-| _validate_basis_inputs | _validate_source_path | 797 | `_validate_source_path(source_path)` |
-| _validate_source_path | require_repository_relative_path | 825 | `require_repository_relative_path(source_path, text_error=ValueError(...), posix_error=ValueError(...), normalized_error=ValueError(...))` |
+| _validate_basis_inputs | _validate_source_path | 795 | `_validate_source_path(source_path)` |
+| _validate_source_path | require_repository_relative_path | 823 | `require_repository_relative_path(source_path, text_error=ValueError(...), posix_error=ValueError(...), normalized_error=ValueError(...))` |
 | require_repository_relative_path | isinstance (src/llm_wiki_cli/services…_repository_relative_path) | 299 | `isinstance(value, str)` |
 | require_repository_relative_path | _syntax_key | 301 | `_syntax_key('repository', value, reject_delete_character, control_after_normalization, leading_backslash_is_absolute, normalize_posix_spelling)` |
 | _syntax_key | type | 54 | `type(value)` |

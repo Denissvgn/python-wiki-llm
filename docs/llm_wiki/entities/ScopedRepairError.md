@@ -26,8 +26,8 @@ flowchart LR
     n1["ValueError"]
     n2["_run_sync_options (src/llm_wiki_cli/commands/sync_cmd.py)"]
     n3["_sync_run_options_from_args (src/llm_wiki_cli/commands/sync_cmd.py)"]
-    n4["_require (src/llm_wiki_cli/services/scoped_sync_repair.py)"]
-    n5["repair_paths (src/llm_wiki_cli/services/scoped_sync_repair.py)"]
+    n4["_repair_path (src/llm_wiki_cli/services/scoped_sync_repair.py)"]
+    n5["_require (src/llm_wiki_cli/services/scoped_sync_repair.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -58,5 +58,5 @@ flowchart LR
 |---|---|---|---:|
 | `_run_sync_options` | call | [sync_cmd](../modules/sync_cmd.md) | 3 |
 | `_sync_run_options_from_args` | call | [sync_cmd](../modules/sync_cmd.md) | 2 |
+| `_repair_path` | call | [scoped_sync_repair](../modules/scoped_sync_repair.md) | 1 |
 | `_require` | call | [scoped_sync_repair](../modules/scoped_sync_repair.md) | 1 |
-| `repair_paths` | call | [scoped_sync_repair](../modules/scoped_sync_repair.md) | 1 |

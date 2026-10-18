@@ -3034,3 +3034,43 @@ Scoped evidence repair compares protected logical facts through canonical JSON.
 Nested boolean/number substitutions and missing-versus-null extension keys cannot
 be treated as unchanged. Declared transaction metadata remains separate from
 unselected facts, and repair preserves source, authority and review safeguards.
+
+## 2026-10-18
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.1.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:3be3b835bdfef440bb297d8ce46f99e414ee75a1bde30601c55c6816c6818944`
+- Pages created: 0
+- Pages updated: 23
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1595
+- Pages deprecated: 0
+- Semantic fields preserved: 5
+- Moved entities: none
+
+## 2026-10-18
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.1.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:3be3b835bdfef440bb297d8ce46f99e414ee75a1bde30601c55c6816c6818944`
+- Pages created: 0
+- Pages updated: 6
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1612
+- Pages deprecated: 0
+- Semantic fields preserved: 5
+- Moved entities: none
+
+## 2026-10-18
+
+### Shared validation boundaries
+
+Evidence record arrays preserve required-field and exact nested-item diagnostics
+through shared scalar/container validation. Scoped repair validates canonical
+source coordinates separately from sorting and deduplicating the selector list.

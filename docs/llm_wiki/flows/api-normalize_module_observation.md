@@ -26,21 +26,22 @@ sequenceDiagram
     participant p12 as _structural_copy
     participant p13 as _failure
     participant p14 as require_nonempty_text
-    participant p15 as _validate_optional_string_array
-    participant p16 as _optional_record_array
+    participant p15 as _optional_record_array
+    participant p16 as _validate_optional_string_array
     participant p17 as _validate_optional_strings
     participant p18 as _validate_optional_booleans
     participant p19 as _validate_string_array
-    participant p20 as _pointer
-    participant p21 as require_list
-    participant p22 as _InventoryNormalizationError
-    participant p23 as require_string
-    participant p24 as require_bool
-    participant p25 as contains_control_character
-    participant p26 as isinstance (src/llm_wiki_cli/services…malize_module_observation)
-    participant p27 as seen_names.get
-    participant p28 as enumerate (src/llm_wiki_cli/services…malize_module_observation)
-    participant p29 as class_summaries.append
+    participant p20 as _record_object
+    participant p21 as _pointer
+    participant p22 as require_list
+    participant p23 as _InventoryNormalizationError
+    participant p24 as require_string
+    participant p25 as require_bool
+    participant p26 as contains_control_character
+    participant p27 as require_mapping
+    participant p28 as isinstance (src/llm_wiki_cli/services…malize_module_observation)
+    participant p29 as seen_names.get
+    participant p30 as enumerate (src/llm_wiki_cli/services…malize_module_observation)
     p0->>p1: _normalize_module_observation
     p1->>p2: _inventory_language
     p1->>p3: _record_array
@@ -55,27 +56,27 @@ sequenceDiagram
     p7->>p12: _structural_copy
     p2->>p13: _failure
     p5->>p14: require_nonempty_text
-    p6->>p15: _validate_optional_string_array
-    p8->>p16: _optional_record_array
+    p3->>p15: _optional_record_array
+    p6->>p16: _validate_optional_string_array
     p4->>p17: _validate_optional_strings
     p4->>p18: _validate_optional_booleans
-    p15->>p19: _validate_string_array
-    p3->>p20: _pointer
-    p9->>p21: require_list
-    p13->>p22: _InventoryNormalizationError
-    p17->>p23: require_string
-    p18->>p24: require_bool
-    p14->>p25: contains_control_character
-    p1-->>p26: isinstance (src/llm_wiki_cli/services…malize_module_observation)(file_data, Mapping)
-    p1-->>p27: seen_names.get(name, 0)
-    p1-->>p28: enumerate (src/llm_wiki_cli/services…malize_module_observation)(imports)
-    p1-->>p28: enumerate (src/llm_wiki_cli/services…malize_module_observation)(classes)
-    p1-->>p29: class_summaries.append(summary)
+    p16->>p19: _validate_string_array
+    p15->>p20: _record_object
+    p3->>p21: _pointer
+    p9->>p22: require_list
+    p13->>p23: _InventoryNormalizationError
+    p17->>p24: require_string
+    p18->>p25: require_bool
+    p14->>p26: contains_control_character
+    p20->>p27: require_mapping
+    p1-->>p28: isinstance (src/llm_wiki_cli/services…malize_module_observation)(file_data, Mapping)
+    p1-->>p29: seen_names.get(name, 0)
+    p1-->>p30: enumerate (src/llm_wiki_cli/services…malize_module_observation)(imports)
 ```
 
-> Call sequence diagram shows 30 of 164 interactions; 134 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 171 interactions; 141 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 3 of 38 (35 omitted); unresolved 2 of 35 (33 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 2 of 38 (36 omitted); unresolved 1 of 38 (37 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -84,12 +85,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_inventory_language` | 3 | - | external | 2 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_inventory_language` | 3 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_inventory_language` | 3 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 2 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:_pointer` | 13 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:_pointer` | 13 | - | external | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:_record_array` | 12 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 4 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:_record_array` | 12 | - | external | 3 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:_normalize_module_observation` | 2 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 11 |
-> Omission summary shows 8 of 44 groups; 36 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/knowledge_evidence.py:_record_array` | 12 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:_pointer` | 14 | - | unresolved | 2 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:_pointer` | 14 | - | external | 1 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:_optional_record_array` | 18 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 3 |
+| `src/llm_wiki_cli/services/knowledge_evidence.py:_optional_record_array` | 18 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+> Omission summary shows 8 of 49 groups; 41 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
@@ -158,7 +159,7 @@ flowchart LR
 | `_failure` | `pointer`, `rule`, `expected`, `value`, `reason`, `exact` | - | - | `_InventoryNormalizationError(...)` |
 | `_failure` | `pointer`, `rule`, `expected`, `value`, `reason`, `exact` | - | - | `_InventoryNormalizationError(...)` |
 | `isinstance (src/llm_wiki_cli/services…malize_module_observation)` | - | - | - | - |
-| `_record_array` | `file_data: Mapping[str, Any]`, `field: str`, `required: bool`, `pointer` | `MISSING_VALUE`, `Mapping` | - | `[...]`, `value` |
+| `_record_array` | `file_data: Mapping[str, Any]`, `field: str`, `required: bool`, `pointer` | `MISSING_VALUE` | - | `_optional_record_array(...)` |
 
 ### Call data
 

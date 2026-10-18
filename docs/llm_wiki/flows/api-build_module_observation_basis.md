@@ -37,8 +37,8 @@ sequenceDiagram
     participant p23 as require_sha256
     participant p24 as _structural_copy
     participant p25 as _failure
-    participant p26 as _validate_optional_string_array
-    participant p27 as _optional_record_array
+    participant p26 as _optional_record_array
+    participant p27 as _validate_optional_string_array
     participant p28 as _validate_optional_strings
     participant p29 as isinstance (src/llm_wiki_cli/services…malize_module_observation)
     participant p30 as diagnostic.at_source
@@ -67,16 +67,16 @@ sequenceDiagram
     p9->>p23: require_sha256
     p17->>p24: _structural_copy
     p8->>p25: _failure
-    p16->>p26: _validate_optional_string_array
-    p18->>p27: _optional_record_array
+    p12->>p26: _optional_record_array
+    p16->>p27: _validate_optional_string_array
     p14->>p28: _validate_optional_strings
     p3-->>p29: isinstance (src/llm_wiki_cli/services…malize_module_observation)(file_data, Mapping)
     p2-->>p30: diagnostic.at_source(source_path, scope, extractor_ref, entity_name, occurrence)
 ```
 
-> Call sequence diagram shows 30 of 271 interactions; 241 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 278 interactions; 248 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 71 (70 omitted); unresolved 1 of 63 (62 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 71 (70 omitted); unresolved 1 of 66 (65 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -90,7 +90,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 27 | - | external | 4 |
 | `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 27 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 13 |
 | `src/llm_wiki_cli/services/validation.py:_default_path_error` | 29 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-> Omission summary shows 8 of 84 groups; 76 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 90 groups; 82 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -152,8 +152,8 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | build_module_observation_basis | _validate_basis_inputs | 314 | `_validate_basis_inputs(source_path, source_content_hash, extractor_ref, inventory_complete)` |
-| _validate_basis_inputs | _validate_source_path | 797 | `_validate_source_path(source_path)` |
-| _validate_source_path | require_repository_relative_path | 825 | `require_repository_relative_path(source_path, text_error=ValueError(...), posix_error=ValueError(...), normalized_error=ValueError(...))` |
+| _validate_basis_inputs | _validate_source_path | 795 | `_validate_source_path(source_path)` |
+| _validate_source_path | require_repository_relative_path | 823 | `require_repository_relative_path(source_path, text_error=ValueError(...), posix_error=ValueError(...), normalized_error=ValueError(...))` |
 | require_repository_relative_path | isinstance (src/llm_wiki_cli/services…_repository_relative_path) | 299 | `isinstance(value, str)` |
 | require_repository_relative_path | _syntax_key | 301 | `_syntax_key('repository', value, reject_delete_character, control_after_normalization, leading_backslash_is_absolute, normalize_posix_spelling)` |
 | _syntax_key | type (src/llm_wiki_cli/services/validation.py:_syntax_key) | 54 | `type(value)` |
