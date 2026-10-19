@@ -883,6 +883,21 @@ def _materialize(value: str, scratch: Path) -> str:
     return str(files[0]) + ("[mcp]" if value.endswith("[mcp]") else "")
 
 
+def _retain_smoke_fixture(scratch: Path, name: str, target: Path) -> None:
+    """Free the common fixture path without deleting a successful producer's tree."""
+    kind = name.removeprefix("complete-artifact-smoke-")
+    if kind not in {"wheel", "sdist"} or target != scratch / "artifact-smoke-work":
+        raise RunnerError("smoke fixture is outside its maintained attempt path")
+    retained = scratch / (kind + "-smoke-work")
+    _safe(target)
+    _safe(retained)
+    if not target.is_dir():
+        raise RunnerError("successful smoke producer has no fixture directory")
+    if retained.exists():
+        raise RunnerError("retained smoke fixture destination is unexpectedly occupied")
+    target.rename(retained)
+
+
 def execute_stage(
     stage: str,
     *,
@@ -969,10 +984,11 @@ def execute_stage(
                 key: _materialize(value, scratch)
                 for key, value in command.environment.items()
             }
+            smoke_target = None
             if command.name.startswith("complete-artifact-smoke-"):
-                target = Path(argv[argv.index("--work") + 1])
-                _safe(target)
-                if target.exists():
+                smoke_target = Path(argv[argv.index("--work") + 1])
+                _safe(smoke_target)
+                if smoke_target.exists():
                     raise RunnerError(
                         "destructive smoke harness destination is unexpectedly occupied"
                     )
@@ -1014,6 +1030,12 @@ def execute_stage(
                     )
                 row["returncode"] = child.returncode
                 row["status"] = "passed" if child.returncode == 0 else "failed"
+                if child.returncode == 0 and smoke_target is not None:
+                    try:
+                        _retain_smoke_fixture(scratch, command.name, smoke_target)
+                    except (RunnerError, OSError) as exc:
+                        row["status"] = "blocked"
+                        row["error"] = str(exc)
                 status_report = (
                     scratch / "contracts/results.json"
                     if command.name == "contract-preflight"
