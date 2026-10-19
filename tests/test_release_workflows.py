@@ -932,6 +932,16 @@ def test_qualification_freezes_one_archive_and_smokes_without_checkout() -> None
         "${{ runner.temp }}/frozen/qualification-harnesses.tar"
     )
     assert harness_upload["with"]["compression-level"] == 0
+    source_upload = next(
+        step for step in jobs["freeze"]["steps"]
+        if step.get("with", {}).get("name") == "candidate-source"
+    )
+    assert source_upload["with"]["compression-level"] == 6
+    assert source_upload["with"]["path"].splitlines() == [
+        "${{ runner.temp }}/frozen/candidate-source.tar",
+        "${{ runner.temp }}/frozen/identity.json",
+        "${{ runner.temp }}/frozen/SHA256SUMS",
+    ]
 
     harness_consumers = 0
     for job_name, job in jobs.items():

@@ -314,7 +314,7 @@
       ],
       "condition": "",
       "cost": "moderate",
-      "declaration_sha256": "055c083540ea8dcbc9dc3acecc517fde6193fc4b311ae485b2f4142b24df7961",
+      "declaration_sha256": "cf2985ad07c7712d8be995f5e0cfb3f359a0f71e6cb1da5a3ee231d0b054d98e",
       "environments": [
         "ubuntu-24.04"
       ],

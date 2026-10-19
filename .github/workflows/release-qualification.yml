@@ -279,7 +279,7 @@ jobs:
             ${{ runner.temp }}/frozen/identity.json
             ${{ runner.temp }}/frozen/SHA256SUMS
           if-no-files-found: error
-          compression-level: 0
+          compression-level: 6
           retention-days: 14
 
       - name: Upload independently digested qualification harnesses
