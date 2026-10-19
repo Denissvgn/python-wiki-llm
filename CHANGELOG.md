@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Scoped evidence repair can refresh a captured invalid record after a producer
+  upgrade when complete analysis verifies unchanged retained observations and
+  preserves unselected evidence, pages, graph facts and review history.
+
 - Python dependency inventory includes imports inside class bodies, methods and
   nested scopes, preserving deferred and type-only execution classification.
 

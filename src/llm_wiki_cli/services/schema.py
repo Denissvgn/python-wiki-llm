@@ -395,9 +395,13 @@ quoting when using PowerShell.
    only within existing authority; broad refusal requires explicit authority
    for the reviewed same-binding `--force` invocation replacing `--dry-run`.
    Never force automatically. Changed inputs require another preview/review.
-   `--repair-evidence` is only a separately authorized stable-producer scoped
-   writer with full analysis and its own preconditions, not a read or shortcut
-   through a generator transition. Missing/corrupt authority needs its explicit
+   `--repair-evidence SOURCE` with `--no-plugins` is a separately authorized
+   scoped writer for adopted unchanged sources. Full analysis must reproduce all
+   retained known observations before a producer transition; unselected evidence,
+   graph facts, pages and review history remain protected. Identical executable
+   observations can re-anchor to the current issuer, reopening review without
+   acknowledging it. Unrelated captured
+   failures stay blocking. Missing/corrupt authority needs its explicit
    recovery route, never manual generated JSON edits, init or re-adoption.
 5. Review affected semantic prose; re-anchor changes through the same owning
    sync, then validate with `llm-wiki lint --strict --jobs 1 {binding}` and

@@ -77,6 +77,10 @@ def test_installed_recovery_recipes_work_after_init_and_upgrade(tmp_path, monkey
         if no_skills:
             assert not (skills_install_dir(agent) / 'wiki-reference').exists()
         text = _instructions(agent, no_skills)
+        normalized = ' '.join(text.split())
+        assert 'retained known observation' in normalized
+        assert '--repair-evidence' in text and '--no-plugins' in text
+        assert 'review history' in normalized
         query, raw, preview = _diagnostic_recipes(text)
         assert '"operation":"explain"' in text
         # Apply the documented original binding to generic reference examples;
