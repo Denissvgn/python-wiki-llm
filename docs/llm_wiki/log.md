@@ -3143,3 +3143,26 @@ files keep their bytes, and ordinary copy failures remain fatal.
 ## 2026-10-19 — Python import and binding boundaries
 
 Python import observations include class bodies, methods and nested scopes with load-phase classification. Dependency coupling remains separate from captured module namespace authority for model, inheritance, API and CLI aliases.
+
+## 2026-10-20
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.1.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:0bcb4923b26ab7eebeffa918f1f698ffd10a1e0b8ece8fe1d352481b967200b6`
+- Pages created: 0
+- Pages updated: 12
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1606
+- Pages deprecated: 0
+- Semantic fields preserved: 6
+- Moved entities: none
+
+
+## 2026-10-20
+
+### Scoped evidence recovery across producer upgrades
+
+Selected invalid structural evidence can be repaired after a producer upgrade when complete analysis reproduces retained observations. Unselected structural baselines, page bytes, graph facts and review histories remain protected. Identical executable observations may acquire the current issuer, with older issuer-bound acknowledgements returning to pending review. Full analysis, broad review and guarded recovery remain required.

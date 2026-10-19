@@ -1,6 +1,6 @@
 # ScopedRepairBoundary
 
-**Location:** `src/llm_wiki_cli/services/scoped_sync_repair.py:76`
+**Location:** `src/llm_wiki_cli/services/scoped_sync_repair.py:137`
 **Kind:** Class
 **Bases:** —
 **Module:** [scoped_sync_repair](../modules/scoped_sync_repair.md)
@@ -9,17 +9,11 @@
 
 ## Description
 
-Captures the original complete committed authority, source/selection and wiki
-inputs, exact Markdown hashes, producer commitments and installed-package identity.
-It compares the complete candidate against the original logical state, allowing
-only selected module/entity evidence, their derived references, the sync log and
-closed transaction/custody metadata to change. Global typed graph, unselected
-concepts/relationships and unselected maintenance history remain identical.
+Captures complete committed authority, source/selection and wiki inputs, exact Markdown hashes, the checked current producer and installed-package identity. The candidate may refresh selected module/entity evidence, derived references, the log and declared transaction metadata. Its producer must canonically match the actual current analysis, while opaque producer annotations stay protected.
 
-The boundary rechecks provider/helper/runtime and source inputs at publication
-checkpoints. The existing adopted writer owns exact wiki-byte custody and full
-recovery preimages; this boundary neither creates a replacement recovery protocol
-nor acknowledges review.
+Unselected structural baselines, pages, relationships and graph facts remain unchanged. Identical executable observations may rebind only to the current captured issuer; source, syntax, prose, coordinates and availability remain exact. Ordinary review can become pending on an issuer change, with acknowledgement, coordinate and target histories preserved. No review is acknowledged by repair.
+
+The boundary rechecks provider/helper/runtime and source inputs at publication checkpoints. The existing adopted writer supplies wiki-byte custody and full recovery preimages; the boundary does not replace recovery or invent ownership.
 
 ## Attributes
 

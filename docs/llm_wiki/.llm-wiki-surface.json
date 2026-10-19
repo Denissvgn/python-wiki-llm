@@ -35915,7 +35915,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 5385,
+              "line": 5387,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -36071,7 +36071,7 @@
             "src/llm_wiki_cli/services/wiki_surface_index.py",
             "src/llm_wiki_cli/services/sync_recovery.py"
           ],
-          "step_count": 6201,
+          "step_count": 6210,
           "truncated": true
         }
       },
@@ -55817,6 +55817,7 @@
         "modules/analysis_compatibility.md",
         "modules/knowledge_orchestration.md",
         "modules/knowledge_reuse.md",
+        "modules/knowledge_storage.md",
         "modules/scoped_sync_repair.md"
       ],
       "role": "mixed",
@@ -67569,5 +67570,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:08ae92b71c83ddb246223072b8aa0bc012e74d6795d65305eac8f2810f950ad1"
+  "source_hash": "sha256:dbcaee9929ed5046852aac36eef374b13108162593eab46d22055b40784cb0fe"
 }

@@ -53,9 +53,9 @@ flowchart TD
 | [analysis_compatibility](modules/analysis_compatibility.md) | 19 | 0 |
 | [bootstrap_runtime](modules/bootstrap_runtime.md) | 17 | 37 |
 | [plugins](modules/plugins.md) | 17 | 3 |
+| [implementation_evidence](modules/implementation_evidence.md) | 16 | 2 |
 | [maintenance_protocol](modules/maintenance_protocol.md) | 16 | 10 |
 | [wiki_media](modules/wiki_media.md) | 16 | 0 |
-| [implementation_evidence](modules/implementation_evidence.md) | 15 | 2 |
 | [markdown_sections](modules/markdown_sections.md) | 15 | 1 |
 | [progress](modules/progress.md) | 15 | 1 |
 | [documentation_query_builder](modules/documentation_query_builder.md) | 14 | 19 |
@@ -257,7 +257,7 @@ flowchart TD
 | [packet_field_policy](modules/packet_field_policy.md) | 1 | 0 |
 | [plugin_samples](modules/plugin_samples.md) | 1 | 1 |
 | [python_calls](modules/python_calls.md) | 1 | 3 |
-| [scoped_sync_repair](modules/scoped_sync_repair.md) | 1 | 12 |
+| [scoped_sync_repair](modules/scoped_sync_repair.md) | 1 | 13 |
 | [search_discovery_capture](modules/search_discovery_capture.md) | 1 | 9 |
 | [search_lexical](modules/search_lexical.md) | 1 | 3 |
 | [source_path_diagnostics](modules/source_path_diagnostics.md) | 1 | 4 |
