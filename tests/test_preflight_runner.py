@@ -267,6 +267,68 @@ def _execute_fake(tmp_path, monkeypatch, returncodes):
     return work, result, calls
 
 
+@pytest.mark.parametrize("fault", [None, "occupied-input", "occupied-retention", "producer-failed"])
+def test_serial_artifact_smokes_preserve_fixtures_and_refuse_unowned_data(
+    tmp_path, monkeypatch, fault
+):
+    work = runner.claim_work(tmp_path / "work", BINDING)
+    monkeypatch.setattr(runner, "launcher_probe", lambda *a, **k: {"prefix": "isolated"})
+    calls = []
+
+    def commands(stage, repo, scratch, **kwargs):
+        if fault == "occupied-input":
+            (scratch / "artifact-smoke-work").mkdir()
+            (scratch / "artifact-smoke-work/authored").write_bytes(b"preserve input")
+        return [
+            runner.Command("complete-artifact-smoke-" + kind,
+                           ("trusted", kind, "--work", str(scratch / "artifact-smoke-work")), repo)
+            for kind in ("wheel", "sdist")
+        ]
+
+    def run(argv, **kwargs):
+        kind = argv[1]
+        calls.append(kind)
+        target = Path(argv[argv.index("--work") + 1])
+        assert not target.exists()
+        target.mkdir()
+        (target / "fixture").write_bytes(kind.encode())
+        if kind == "sdist":
+            assert (target.parent / "wheel-smoke-work/fixture").read_bytes() == b"wheel"
+        if fault == "occupied-retention":
+            retained = target.parent / "wheel-smoke-work"
+            retained.mkdir()
+            (retained / "authored").write_bytes(b"preserve retention")
+        kwargs["stdout"].write(b"producer result\n")
+        return subprocess.CompletedProcess(argv, 1 if fault == "producer-failed" else 0)
+
+    monkeypatch.setattr(runner, "stage_commands", commands)
+    monkeypatch.setattr(runner.subprocess, "run", run)
+    result = runner.execute_stage("artifacts", repo=ROOT, work=work, binding=BINDING,
+                                  candidate_sha=SHA, version="3.1.0")
+    scratch = Path(result["scratch"])
+    if fault is None:
+        assert result["status"] == "passed"
+        assert calls == ["wheel", "sdist"]
+        assert not (scratch / "artifact-smoke-work").exists()
+        for kind in calls:
+            assert (scratch / (kind + "-smoke-work/fixture")).read_bytes() == kind.encode()
+        assert runner.verify_attempt(result, repo=ROOT, work=work, binding=BINDING)["status"] == "verified"
+    elif fault == "occupied-input":
+        assert result["status"] == "blocked" and calls == []
+        assert (scratch / "artifact-smoke-work/authored").read_bytes() == b"preserve input"
+    elif fault == "occupied-retention":
+        assert result["status"] == "blocked" and calls == ["wheel"]
+        assert result["commands"][0]["returncode"] == 0
+        assert result["commands"][0]["status"] == "blocked"
+        assert "retained smoke fixture destination is unexpectedly occupied" in result["commands"][0]["error"]
+        assert (scratch / "artifact-smoke-work/fixture").read_bytes() == b"wheel"
+        assert (scratch / "wheel-smoke-work/authored").read_bytes() == b"preserve retention"
+    else:
+        assert result["status"] == "failed" and calls == ["wheel"]
+        assert (scratch / "artifact-smoke-work/fixture").read_bytes() == b"wheel"
+        assert not (scratch / "wheel-smoke-work").exists()
+
+
 def test_independent_cheap_failures_retained_and_heavy_work_withheld(
     tmp_path, monkeypatch
 ):
