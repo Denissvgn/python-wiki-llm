@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [context_service](../modules/context_service.md)
-**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), [config](../modules/config.md), and 33 more
+**Modules touched:** [bootstrap_runtime](../modules/bootstrap_runtime.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), [config](../modules/config.md), and 35 more
 
 **Complete modules touched:**
 
@@ -30,7 +30,9 @@
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
+- [maintenance_protocol](../modules/maintenance_protocol.md)
 - [maintenance_service](../modules/maintenance_service.md)
+- [maintenance_state](../modules/maintenance_state.md)
 - [maintenance_status](../modules/maintenance_status.md)
 - [plugins](../modules/plugins.md)
 - [services_dependencies](../modules/services_dependencies.md)
@@ -65,9 +67,9 @@ sequenceDiagram
     participant p11 as _emit_protocol_error
     participant p12 as build_qualified_context
     participant p13 as _build_context_impl
-    participant p14 as _emit_packet_error
-    participant p15 as _normalized_request
-    participant p16 as build_budgeted_context
+    participant p14 as _normalized_request
+    participant p15 as build_budgeted_context
+    participant p16 as _emit_packet_error
     participant p17 as _packet_contract_for_request
     participant p18 as _write_utf8_text
     participant p19 as _validate_protocol_request
@@ -95,28 +97,28 @@ sequenceDiagram
     p1->>p11: _emit_protocol_error
     p4->>p12: build_qualified_context
     p5->>p13: _build_context_impl
-    p4->>p14: _emit_packet_error
-    p9->>p15: _normalized_request
-    p3->>p16: build_budgeted_context
+    p9->>p14: _normalized_request
+    p3->>p15: build_budgeted_context
+    p3->>p16: _emit_packet_error
     p12->>p17: _packet_contract_for_request
     p7->>p18: _write_utf8_text
-    p15->>p19: _validate_protocol_request
+    p14->>p19: _validate_protocol_request
     p2->>p20: validate_changes
-    p16->>p21: capture_context_read
+    p15->>p21: capture_context_read
     p12->>p22: _protocol_success_payload
-    p16->>p23: select_changes
-    p16->>p24: affected_page_map
+    p15->>p23: select_changes
+    p15->>p24: affected_page_map
     p12->>p25: _fit_knowledge_packet_response
     p12->>p26: packet_from_captured_response
-    p16->>p27: build_context_from_captured_read
-    p16->>p28: fit_payload
+    p15->>p27: build_context_from_captured_read
+    p15->>p28: fit_payload
     p0-->>p29: getattr (src/llm_wiki_cli/services/context_service.py:run)(args, 'request', None)
     p1-->>p30: request.get (src/llm_wiki_cli/services…_service.py:_run_protocol)('knowledge_mode')
 ```
 
-> Call sequence diagram shows 30 of 1387 interactions; 1357 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1421 interactions; 1391 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 486 (485 omitted); unresolved 1 of 434 (433 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 493 (492 omitted); unresolved 1 of 441 (440 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -130,7 +132,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/context_packet.py:_normalized_request` | 13 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 1 |
 | `src/llm_wiki_cli/services/context_packet.py:_normalized_request` | 13 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 20 | - | external | 2 |
-> Omission summary shows 8 of 264 groups; 256 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 275 groups; 267 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -216,10 +218,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run (src/llm_wiki_cli/services/context_service.py) | getattr (src/llm_wiki_cli/services/context_service.py:run) | 3591 | `getattr(args, 'request', None)` |
-| run (src/llm_wiki_cli/services/context_service.py) | _run_protocol | 3592 | `_run_protocol(args)` |
-| _run_protocol | getattr (src/llm_wiki_cli/services…_service.py:_run_protocol) | 3432 | `getattr(args, 'output', None)` |
-| _run_protocol | _read_protocol_request | 3435 | `_read_protocol_request(args.request, packet_defaults=...)` |
+| run (src/llm_wiki_cli/services/context_service.py) | getattr (src/llm_wiki_cli/services/context_service.py:run) | 3598 | `getattr(args, 'request', None)` |
+| run (src/llm_wiki_cli/services/context_service.py) | _run_protocol | 3599 | `_run_protocol(args)` |
+| _run_protocol | getattr (src/llm_wiki_cli/services…_service.py:_run_protocol) | 3439 | `getattr(args, 'output', None)` |
+| _run_protocol | _read_protocol_request | 3442 | `_read_protocol_request(args.request, packet_defaults=...)` |
 | _read_protocol_request | sys.stdin.read | 1092 | `sys.stdin.read(data not statically known)` |
 | _read_protocol_request | Path(…).read_text | 1094 | `Path(source).read_text(encoding='utf-8')` |
 | _read_protocol_request | Path (src/llm_wiki_cli/services…py:_read_protocol_request) | 1094 | `Path(source)` |
@@ -232,21 +234,21 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 3608 |
-| output | `print` | `run` | 3611 |
-| output | `print` | `run` | 3655 |
-| output | `print` | `run` | 3658 |
+| output | `print` | `run` | 3615 |
+| output | `print` | `run` | 3618 |
+| output | `print` | `run` | 3662 |
 | output | `print` | `run` | 3665 |
-| output | `print` | `run` | 3667 |
-| output | `print` | `run` | 3676 |
-| output | `print` | `run` | 3678 |
+| output | `print` | `run` | 3672 |
+| output | `print` | `run` | 3674 |
+| output | `print` | `run` | 3683 |
+| output | `print` | `run` | 3685 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `run` | `getattr` | 3591 |
-| external_call | `_run_protocol` | `getattr` | 3432 |
+| external_call | `run` | `getattr` | 3598 |
+| external_call | `_run_protocol` | `getattr` | 3439 |
 | external_call | `_read_protocol_request` | `sys.stdin.read` | 1092 |
 | unresolved_call | `_read_protocol_request` | `Path(source).read_text` | 1094 |
 | external_call | `_read_protocol_request` | `json.loads` | 1100 |
@@ -257,3 +259,5 @@ flowchart LR
 ## Behavior
 
 This flow starts at `run` and is classified as `cli`. The generated call and data-flow sections are bounded static projections; runtime conditions and side effects require source-level confirmation.
+
+Declared ordinary maintenance authority is required to remain coherent. A damaged owner or immutable marker produces a bounded `maintenance-authority-unavailable` refusal, with a safe original cause and an explicit matching committed-recovery template. No native packet or promoted fallback is returned, and no backup, identity, setup or repair is chosen by the read. The caller must preserve recovery preconditions and the original source/wiki boundaries.

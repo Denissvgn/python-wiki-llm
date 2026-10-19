@@ -264,6 +264,42 @@ class ContextPacketUnavailableError(ContextPacketError):
         super().__init__(message)
 
 
+class ContextPacketAuthorityError(ContextPacketError):
+    """Ordinary authority refused a read; only explicit complete recovery can restore it."""
+
+    code = "maintenance-authority-unavailable"
+    field = "wiki_dir"
+
+    def __init__(self, issues):
+        # Raw loader issues stay in the chained local cause. No raw message,
+        # host path, malformed marker or guessed recovery identity is rendered.
+        allowed = {
+            "maintenance-owner-missing", "maintenance-owner-invalid", "maintenance-owner-incompatible",
+            "maintenance-owner-mismatch", "maintenance-adoption-missing", "maintenance-adoption-invalid",
+            "maintenance-adoption-mismatch",
+        }
+        self.issues = issues
+        causes = list(dict.fromkeys(issue.code for issue in self.issues if issue.code in allowed))[:4]
+        self.details = {
+            "field": self.field, "reason": causes[0] if causes else "maintenance-authority-invalid",
+            "causes": causes, "native_evidence": "unavailable",
+            "recovery": {
+                "operation": "maintenance recover", "automatic": False, "snapshot_kind": "committed",
+                "argv_template": ["llm-wiki", "maintenance", "recover", "--wiki-dir", "{wiki_dir}",
+                                  "--recovery-dir", "{recovery_dir}", "--expected-adoption-id", "{expected_adoption_id}"],
+                "identity_requirement": "Use the same existing adoption_id from a validated immutable marker or matching complete committed recovery snapshot; never allocate a new identity.",
+                "boundary_requirement": "Keep the original request's wiki_dir and src_dir/source selection. Select a complete committed recovery directory outside the wiki and source inputs; no source or wiki is changed by this read.",
+                "preconditions": [
+                    "Preserve current bytes and custody. Restore one complete matching committed snapshot, including marker, owner, projections, pages and history; do not combine backups.",
+                    "Recovery refuses another identity, newer committed authority or conflicting authored edits. Do not reinitialize, delete the marker or enable prepared/captured-preimage modes to bypass refusal.",
+                    "Absent validated generated roots and referenced objects can be restored from a committed snapshot only with a matching surviving marker or owner. Missing authored or unreferenced files and changed existing bytes still refuse; preserve that refusal.",
+                    "Recovery is a separate authorized write. Then run owning sync and validation with the original source/wiki roots and selection before relying on native evidence.",
+                ],
+            },
+        }
+        super().__init__("wiki_dir: Ordinary maintenance authority is missing, invalid or inconsistent. Restore its complete matching committed recovery snapshot through maintenance recover.")
+
+
 class ContextPacketPathPolicyError(ContextPacketError):
     """A structural packet field violates its declared path policy."""
 
@@ -282,6 +318,8 @@ def describe_context_packet_error(error: BaseException) -> dict[str, Any]:
     Dynamic mapping keys and raw service messages belong to the chained local
     exception, not to the public diagnostic shared by API, CLI and MCP.
     """
+    if isinstance(error, ContextPacketAuthorityError):
+        return {"code": error.code, "message": str(error), "details": deepcopy(error.details)}
     field = getattr(error, "field", None)
     code = "invalid-request"
     message = "Context request is invalid. Check the indicated field."
@@ -788,6 +826,20 @@ def capture_context_read(
         raise ContextPacketUnavailableError(
             "Source directory must exist and be a directory.", field="src_dir"
         )
+
+    # Broken adopted authority must be diagnosed before source-retirement or
+    # selection helpers attempt to consume its owner as ordinary metadata.
+    from .maintenance_protocol import ADOPTION_FILENAME, guard_maintenance_owner, MaintenanceProtocolError
+
+    marker_path = wiki_root / ADOPTION_FILENAME
+    if marker_path.exists() or marker_path.is_symlink():
+        try:
+            guard_maintenance_owner(wiki_root)
+        except MaintenanceProtocolError as exc:
+            from .knowledge_loader import KnowledgeLoadIssue
+
+            raise ContextPacketAuthorityError((KnowledgeLoadIssue(
+                "maintenance-" + exc.reason, ADOPTION_FILENAME, str(exc)),)) from exc
 
     try:
         selection_policy = context_service.resolve_source_selection(

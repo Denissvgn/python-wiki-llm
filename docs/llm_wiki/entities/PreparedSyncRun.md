@@ -1,6 +1,6 @@
 # _PreparedSyncRun
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1813`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1819`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)
@@ -15,6 +15,23 @@ application diffs, canonical page maps, optional-surface and infrastructure
 plans, graph observations, and the flags that distinguish seeding, repair, or a
 runtime-basis refresh. Keeping this state together prevents later steps from
 recomputing against a different source tree.
+
+`prior_generator_version` retains the version from the validated prior
+projection so refusal and preview can explain a generator transition without
+reloading authority. Missing provenance stays explicit. A version label is not
+an artifact identity and does not refresh captured evidence.
+
+`evidence_refresh_sources` records unchanged sources whose captured invalid
+module/entity basis now normalizes successfully. It prevents the unchanged
+knowledge shortcut, drives an apply-only refresh and preserves the distinction
+between evidence repair and real source edits. Those inputs still count toward
+ordinary broad-update review; the flag grants no force or recovery authority.
+
+Carries a coherent full source/inventory plan and its page transitions through
+application and publication. A scoped repair retains the original global inputs
+inside its repair boundary while filtering only the evidence-refresh application
+and recreating transitions for that subset. Global reconciliation is still
+validated against the complete prior snapshot before publication.
 
 ## Attributes
 
@@ -38,6 +55,8 @@ recomputing against a different source tree.
 | `generator_refresh_required` | `bool` | *required* | — |
 | `runtime_basis_refresh` | `bool` | *required* | — |
 | `log_missing` | `bool` | *required* | — |
+| `prior_generator_version` | `str \| None` | `None` | — |
+| `evidence_refresh_sources` | `tuple[str, ...]` | `()` | — |
 | `committed_state` | `CommittedKnowledgeState \| None` | `None` | — |
 | `reuse_observations_hash` | `str \| None` | `None` | — |
 | `entrypoint_analysis` | `_SyncEntryPointAnalysis \| None` | `None` | — |
@@ -46,6 +65,7 @@ recomputing against a different source tree.
 | `analysis_input_key` | `dict \| None` | `None` | — |
 | `page_transitions` | `PageTransitionPlan \| None` | `None` | — |
 | `transition_execution` | `PageTransitionExecution \| None` | `None` | — |
+| `repair_boundary` | `ScopedRepairBoundary \| None` | `None` | — |
 
 ## Methods
 
@@ -91,7 +111,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [sync_cmd](../modules/sync_cmd.md) | 0 | `analysis_input_key`, `analysis_reused`, `application_diff`, `committed_state`, `contracts`, `diff`, `entrypoint_analysis`, `generator_refresh_required`, `graph_observations`, `infrastructure_plan`, `inventory`, `inventory_result` |
+| [sync_cmd](../modules/sync_cmd.md) | 0 | `analysis_input_key`, `analysis_reused`, `application_diff`, `committed_state`, `contracts`, `diff`, `entrypoint_analysis`, `evidence_refresh_sources`, `generator_refresh_required`, `graph_observations`, `infrastructure_plan`, `inventory` |
 
 ### References
 

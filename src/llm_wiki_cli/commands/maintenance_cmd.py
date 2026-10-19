@@ -83,6 +83,16 @@ def run(args) -> None:
                 recovery_dir=args.recovery_dir,
                 **_capture_options(args),
             )
+        elif args.maintenance_action == "recover-new-pages":
+            from ..config import validate_path
+            from ..services.sync_recovery import recover_new_sync_pages
+
+            result = recover_new_sync_pages(
+                validate_path(args.wiki_dir, "--wiki-dir"),
+                recovery_dir=args.recovery_dir,
+                expected_journal_hash=args.expected_journal_hash,
+                dry_run=args.dry_run,
+            )
         else:
             result = api.recover_maintenance(
                 args.wiki_dir,

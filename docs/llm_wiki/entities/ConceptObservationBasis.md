@@ -15,6 +15,12 @@ One source-backed concept observation basis or explicit unknown result.
 field. :meth:`to_evidence_payload` returns only fields accepted by the
 persisted :class:`knowledge_model.EvidenceBasis` contract.
 
+Optional normalization diagnostics describe only this fresh rejected observation.
+They are excluded from equality and from the persisted evidence payload. A known
+basis has no rejection detail; unknown evidence remains unknown regardless of how
+precise the diagnostic is. Source completeness, structural hashing and stable
+unknown reason codes retain their separate meanings.
+
 ## Attributes
 
 | Name | Type | Default | Description |
@@ -25,6 +31,7 @@ persisted :class:`knowledge_model.EvidenceBasis` contract.
 | `source_content_hash` | `str` | *required* | — |
 | `concept_observation_hash` | `str \| None` | *required* | — |
 | `unknown_reason` | `str \| None` | `None` | — |
+| `normalization_diagnostic` | `NormalizationDiagnostic \| None` | `dataclass_field(default=None, repr=False, compare=False)` | — |
 
 ## Methods
 
@@ -71,7 +78,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [knowledge_evidence](../modules/knowledge_evidence.md) | 3 | `concept_observation_hash`, `extractor_ref`, `scope`, `source_content_hash`, `source_path`, `unknown_reason` |
+| [knowledge_evidence](../modules/knowledge_evidence.md) | 3 | `concept_observation_hash`, `extractor_ref`, `normalization_diagnostic`, `scope`, `source_content_hash`, `source_path`, `unknown_reason` |
 
 ### References
 

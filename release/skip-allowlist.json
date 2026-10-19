@@ -452,6 +452,12 @@
     },
     {
       "lane": "core-macos-3.14",
+      "node_id": "tests/test_go_extract.py::test_go_inventory_evidence_contract",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
       "node_id": "tests/test_go_extract.py::test_go_library_main_and_receiver_main_are_not_process_entries",
       "owner_lane": "toolchains",
       "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
@@ -507,6 +513,12 @@
     {
       "lane": "core-macos-3.14",
       "node_id": "tests/test_haskell_extract.py::test_haskell_helper_requires_src_dir_argument",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Haskell helper not available \u2014 Haskell extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_haskell_extract.py::test_haskell_inventory_evidence_contract",
       "owner_lane": "toolchains",
       "reason": "Prepared Haskell helper not available \u2014 Haskell extractor integration tests skipped"
     },
@@ -776,6 +788,12 @@
     },
     {
       "lane": "core-macos-3.14",
+      "node_id": "tests/test_owned_packet_recovery.py::test_registered_sdk_keeps_structured_authority_failure",
+      "owner_lane": "mcp-3.13",
+      "reason": "Optional MCP SDK is not installed"
+    },
+    {
+      "lane": "core-macos-3.14",
       "node_id": "tests/test_protected_artifacts.py::test_native_windows_reopen_rejects_hard_linked_artifact",
       "owner_lane": "security-windows-2025",
       "reason": "native Windows protected-tree checks"
@@ -1011,6 +1029,12 @@
     {
       "lane": "core-macos-3.14",
       "node_id": "tests/test_rust_extract.py::TestRustExtractor::test_type_alias",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_rust_extract.py::test_rust_inventory_evidence_contract",
       "owner_lane": "toolchains",
       "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
     },
@@ -1275,6 +1299,12 @@
     {
       "lane": "core-macos-3.14",
       "node_id": "tests/test_ts_extract.py::test_dynamic_import_gap_survives_bootstrap_sync_and_strict_gates",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_ts_extract.py::test_released_unknown_evidence_guarded_upgrade_and_refresh",
       "owner_lane": "toolchains",
       "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
     },
@@ -1826,6 +1856,12 @@
     },
     {
       "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_go_extract.py::test_go_inventory_evidence_contract",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
       "node_id": "tests/test_go_extract.py::test_go_library_main_and_receiver_main_are_not_process_entries",
       "owner_lane": "toolchains",
       "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
@@ -1881,6 +1917,12 @@
     {
       "lane": "core-ubuntu-3.10",
       "node_id": "tests/test_haskell_extract.py::test_haskell_helper_requires_src_dir_argument",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Haskell helper not available \u2014 Haskell extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_haskell_extract.py::test_haskell_inventory_evidence_contract",
       "owner_lane": "toolchains",
       "reason": "Prepared Haskell helper not available \u2014 Haskell extractor integration tests skipped"
     },
@@ -2147,6 +2189,12 @@
       "node_id": "tests/test_native_helper_path_diagnostics.py::test_real_selected_success_empty_and_syntax_are_distinct[rust]",
       "owner_lane": "toolchains",
       "reason": "Prepared rust helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_owned_packet_recovery.py::test_registered_sdk_keeps_structured_authority_failure",
+      "owner_lane": "mcp-3.13",
+      "reason": "Optional MCP SDK is not installed"
     },
     {
       "lane": "core-ubuntu-3.10",
@@ -2444,6 +2492,12 @@
     },
     {
       "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_rust_extract.py::test_rust_inventory_evidence_contract",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
       "node_id": "tests/test_task_compact_readable.py::test_actual_mcp_v2_metadata_toggle_keeps_qualifications_and_receipts",
       "owner_lane": "mcp-3.10",
       "reason": "MCP SDK is not installed."
@@ -2703,6 +2757,12 @@
     {
       "lane": "core-ubuntu-3.10",
       "node_id": "tests/test_ts_extract.py::test_dynamic_import_gap_survives_bootstrap_sync_and_strict_gates",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_ts_extract.py::test_released_unknown_evidence_guarded_upgrade_and_refresh",
       "owner_lane": "toolchains",
       "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
     },
@@ -3596,6 +3656,12 @@
     },
     {
       "lane": "core-windows-3.13",
+      "node_id": "tests/test_go_extract.py::test_go_inventory_evidence_contract",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
       "node_id": "tests/test_go_extract.py::test_go_library_main_and_receiver_main_are_not_process_entries",
       "owner_lane": "toolchains",
       "reason": "Prepared Go helper not available \u2014 Go extractor integration tests skipped"
@@ -3651,6 +3717,12 @@
     {
       "lane": "core-windows-3.13",
       "node_id": "tests/test_haskell_extract.py::test_haskell_helper_requires_src_dir_argument",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Haskell helper not available \u2014 Haskell extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_haskell_extract.py::test_haskell_inventory_evidence_contract",
       "owner_lane": "toolchains",
       "reason": "Prepared Haskell helper not available \u2014 Haskell extractor integration tests skipped"
     },
@@ -3935,6 +4007,12 @@
       "node_id": "tests/test_native_helper_path_diagnostics.py::test_real_selected_success_empty_and_syntax_are_distinct[rust]",
       "owner_lane": "toolchains",
       "reason": "Prepared rust helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_owned_packet_recovery.py::test_registered_sdk_keeps_structured_authority_failure",
+      "owner_lane": "mcp-3.13",
+      "reason": "Optional MCP SDK is not installed"
     },
     {
       "lane": "core-windows-3.13",
@@ -4232,6 +4310,12 @@
     },
     {
       "lane": "core-windows-3.13",
+      "node_id": "tests/test_rust_extract.py::test_rust_inventory_evidence_contract",
+      "owner_lane": "toolchains",
+      "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
       "node_id": "tests/test_source_snapshot.py::test_posix_path_literal_backslashes_are_not_reinterpreted_as_separators",
       "owner_lane": "core-macos-3.14",
       "reason": "literal backslash filename is a POSIX-only contract"
@@ -4503,6 +4587,12 @@
     {
       "lane": "core-windows-3.13",
       "node_id": "tests/test_ts_extract.py::test_dynamic_import_gap_survives_bootstrap_sync_and_strict_gates",
+      "owner_lane": "toolchains",
+      "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_ts_extract.py::test_released_unknown_evidence_guarded_upgrade_and_refresh",
       "owner_lane": "toolchains",
       "reason": "Node.js/ts-morph dependencies not installed \u2014 TypeScript extractor tests skipped"
     },

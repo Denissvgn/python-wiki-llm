@@ -1,0 +1,1207 @@
+{
+  "groups": {
+    "action": [
+      "tests/test_github_action.py",
+      "tests/test_github_action_shell.py"
+    ],
+    "defaults": [
+      "tests/test_current_install_defaults.py",
+      "tests/test_default_development_workflow.py",
+      "tests/test_skills.py",
+      "tests/test_evidence_recovery_guidance.py",
+      "tests/test_agent_instruction_decisions.py",
+      "tests/test_skill_policy_routes.py",
+      "tests/test_helper_preparation.py",
+      "tests/test_instruction_ownership.py",
+      "tests/test_schema.py",
+      "tests/test_schema_context_baselines.py",
+      "tests/test_reference_skill_verifier.py",
+      "tests/test_native_skill_preflight_and_reanchor.py",
+      "tests/test_skill_contracts.py",
+      "tests/test_wiki_reference_skill.py",
+      "tests/test_skill_ownership_boundaries.py",
+      "tests/test_skill_contracts_all.py"
+    ],
+    "incidents": [
+      "tests/test_context_budget.py",
+      "tests/test_context_knowledge_contract.py",
+      "tests/test_developer_value_comparison.py::test_current_provider_adapter_exercises_frozen_cases",
+      "tests/test_enriched_projection_resilience.py",
+      "tests/test_sync_analysis_capture.py::test_unqualified_owner_skips_without_analysis_probe",
+      "tests/test_knowledge_packs.py::test_logical_review_distinguishes_json_boolean_and_number",
+      "tests/test_sync_runtime_regressions.py",
+      "tests/test_real_caller_action_fixture.py",
+      "tests/test_ts_extract.py::test_unresolved_import_producer_consumer_contract",
+      "tests/test_ts_extract.py::test_dynamic_import_gap_survives_bootstrap_sync_and_strict_gates",
+      "tests/test_ts_extract.py::test_released_unknown_evidence_guarded_upgrade_and_refresh",
+      "tests/test_knowledge_evidence.py",
+      "tests/test_extractor_inventory_contracts.py",
+      "tests/test_sync_guard_diagnostics.py",
+      "tests/test_captured_evidence_diagnostics.py",
+      "tests/test_scoped_sync_repair.py",
+      "tests/test_normalization_diagnostics.py",
+      "tests/test_evidence_explanation_query.py"
+    ],
+    "inventory": [
+      "tests/test_source_selection.py",
+      "tests/test_analysis_input_preflight.py",
+      "tests/test_architecture_layers.py",
+      "tests/test_api_exception_taxonomy.py"
+    ],
+    "packet": [
+      "tests/test_context_packet.py",
+      "tests/test_context_packet_knowledge.py",
+      "tests/test_packet_field_policy.py",
+      "tests/test_native_knowledge_semantics_docs.py"
+    ],
+    "portability": [
+      "tests/test_readonly_subprocess_stdin.py",
+      "tests/test_native_helper_path_diagnostics.py",
+      "tests/test_python_go_path_diagnostics.py"
+    ],
+    "release": [
+      "tests/test_package_validation.py",
+      "tests/test_package_metadata.py",
+      "tests/test_preflight.py",
+      "tests/test_preflight_contracts.py",
+      "tests/test_preflight_runner.py",
+      "tests/test_release_workflows.py",
+      "tests/test_release_qualification.py",
+      "tests/test_core_shards.py",
+      "tests/test_core_shard_workflow.py",
+      "tests/test_core_shard_runner.py"
+    ],
+    "sdk": [
+      "tests/test_mcp_sdk.py",
+      "tests/test_owned_packet_recovery.py::test_registered_sdk_keeps_structured_authority_failure"
+    ],
+    "storage": [
+      "tests/test_knowledge_storage.py",
+      "tests/test_wiki_review_snapshot.py",
+      "tests/test_sync_recovery.py"
+    ]
+  },
+  "incident_cases": [
+    {
+      "id": "default-maintenance-static-cache",
+      "remaining_boundary": "Local regression; native and hosted owners remain separate requirements.",
+      "selectors": [
+        "tests/test_current_install_defaults.py::test_current_static_cache_reuses_observations_but_reconciles_prose"
+      ]
+    },
+    {
+      "id": "missing-authority-not-empty",
+      "remaining_boundary": "Local regression; native and hosted owners remain separate requirements.",
+      "selectors": [
+        "tests/test_current_install_defaults.py::test_missing_authority_is_not_an_empty_install_target"
+      ]
+    },
+    {
+      "id": "legacy-selected-scaffold",
+      "remaining_boundary": "Local regression; native and hosted owners remain separate requirements.",
+      "selectors": [
+        "tests/test_current_install_defaults.py::test_selected_clean_install_remains_a_bootstrap_scaffold"
+      ]
+    },
+    {
+      "id": "team-native-packed-scan",
+      "remaining_boundary": "Local regression; native and hosted owners remain separate requirements.",
+      "selectors": [
+        "tests/test_current_install_defaults.py::test_current_team_resolution_never_decodes_native_packs"
+      ]
+    },
+    {
+      "id": "rejected-sync-new-pages",
+      "remaining_boundary": "Local regression; native and hosted owners remain separate requirements.",
+      "selectors": [
+        "tests/test_sync_recovery.py"
+      ]
+    },
+    {
+      "id": "mcp-defaults-hosted-fixtures",
+      "remaining_boundary": "Local regression; native and hosted owners remain separate requirements.",
+      "selectors": [
+        "tests/test_current_install_defaults.py::test_first_use_packet_defaults_match_cli_and_mcp"
+      ]
+    },
+    {
+      "id": "cli-default-packet",
+      "remaining_boundary": "Local regression; native and hosted owners remain separate requirements.",
+      "selectors": [
+        "tests/test_current_install_defaults.py::test_first_use_packet_defaults_match_cli_and_mcp"
+      ]
+    },
+    {
+      "id": "action-current-schema-default",
+      "remaining_boundary": "Local regression; native and hosted owners remain separate requirements.",
+      "selectors": [
+        "tests/test_github_action.py"
+      ]
+    },
+    {
+      "id": "packet-migration-contract",
+      "remaining_boundary": "Published omission contract and reviewed major-version decision are historical; automated tests cannot approve SemVer scope.",
+      "selectors": [
+        "tests/test_context_knowledge_contract.py"
+      ]
+    },
+    {
+      "id": "current-provider-L01-oracle",
+      "remaining_boundary": "Local regression; native and hosted owners remain separate requirements.",
+      "selectors": [
+        "tests/test_developer_value_comparison.py::test_current_provider_adapter_exercises_frozen_cases"
+      ]
+    },
+    {
+      "id": "ranked-current-negative",
+      "remaining_boundary": "Local regression; native and hosted owners remain separate requirements.",
+      "selectors": [
+        "tests/test_current_install_defaults.py::test_current_ranked_source_discovery_needs_no_version_choice"
+      ]
+    },
+    {
+      "id": "native-refresh-owned-default",
+      "remaining_boundary": "Local regression; native and hosted owners remain separate requirements.",
+      "selectors": [
+        "tests/test_current_install_defaults.py::test_upgrade_retains_complete_recovery_and_prose_and_is_idempotent"
+      ]
+    },
+    {
+      "id": "projection-bootstrap-isolation",
+      "remaining_boundary": "Local regression; native and hosted owners remain separate requirements.",
+      "selectors": [
+        "tests/test_enriched_projection_resilience.py"
+      ]
+    },
+    {
+      "id": "current-descriptor-omission",
+      "remaining_boundary": "Local regression; native and hosted owners remain separate requirements.",
+      "selectors": [
+        "tests/test_context_knowledge_contract.py"
+      ]
+    },
+    {
+      "id": "release-target-metadata",
+      "remaining_boundary": "Local regression; native and hosted owners remain separate requirements.",
+      "selectors": [
+        "tests/test_release_workflows.py"
+      ]
+    },
+    {
+      "id": "managed-packet-parity",
+      "remaining_boundary": "Local regression; native and hosted owners remain separate requirements.",
+      "selectors": [
+        "tests/test_context_packet.py"
+      ]
+    },
+    {
+      "id": "bundled-route-fallback",
+      "remaining_boundary": "Local regression; native and hosted owners remain separate requirements.",
+      "selectors": [
+        "tests/test_default_development_workflow.py"
+      ]
+    },
+    {
+      "id": "product-census-membership",
+      "remaining_boundary": "Local regression; native and hosted owners remain separate requirements.",
+      "selectors": [
+        "tests/test_source_selection.py"
+      ]
+    },
+    {
+      "id": "unqualified-advisory-owner-cache",
+      "remaining_boundary": "Local regression; native and hosted owners remain separate requirements.",
+      "selectors": [
+        "tests/test_sync_analysis_capture.py::test_unqualified_owner_skips_without_analysis_probe"
+      ]
+    },
+    {
+      "id": "installed-artifact-packet-parity",
+      "remaining_boundary": "Full installed wheel/sdist smoke and parity remain required; static family is only an early contract check.",
+      "selectors": [
+        "tests/test_release_workflows.py"
+      ]
+    },
+    {
+      "id": "budget-before-final-validation",
+      "remaining_boundary": "Local regression; native and hosted owners remain separate requirements.",
+      "selectors": [
+        "tests/test_context_budget.py::test_packet_budget_fits_before_applying_wire_item_limit"
+      ]
+    },
+    {
+      "id": "windows-action-file-uri",
+      "remaining_boundary": "Representation cases run locally; actual Windows file URI plus real hosted Action remains required.",
+      "selectors": [
+        "tests/test_real_caller_action_fixture.py::test_windows_file_uri_is_not_a_native_path"
+      ]
+    },
+    {
+      "id": "typescript-thin-manifest-root",
+      "remaining_boundary": "Local regression; native and hosted owners remain separate requirements.",
+      "selectors": [
+        "tests/test_sync_runtime_regressions.py"
+      ]
+    },
+    {
+      "id": "javascript-gap-wire-contract",
+      "remaining_boundary": "Prepared TypeScript positive owner required; absent helper is blocked, never passed.",
+      "selectors": [
+        "tests/test_ts_extract.py::test_unresolved_import_producer_consumer_contract",
+        "tests/test_ts_extract.py::test_released_unknown_evidence_guarded_upgrade_and_refresh"
+      ]
+    },
+    {
+      "id": "unowned-javascript-skips",
+      "remaining_boundary": "Actual collected JUnit plus prepared owner admission still required; workflow assertion alone is insufficient.",
+      "selectors": [
+        "tests/test_release_workflows.py"
+      ]
+    },
+    {
+      "id": "logical-review-json-types",
+      "remaining_boundary": "Local regression; native and hosted owners remain separate requirements.",
+      "selectors": [
+        "tests/test_knowledge_packs.py::test_logical_review_distinguishes_json_boolean_and_number"
+      ]
+    },
+    {
+      "id": "native-shard-deep-git",
+      "remaining_boundary": "Native Windows core.longpaths false/true counterfactual remains required; POSIX pass does not qualify it.",
+      "selectors": [
+        "tests/test_sync_runtime_regressions.py"
+      ]
+    },
+    {
+      "id": "aggregation-output-order",
+      "remaining_boundary": "Full shard -> aggregate -> supplemental native Windows sequence remains required.",
+      "selectors": [
+        "tests/test_release_qualification.py::test_qualifying_aggregation_command_rebuilds_the_complete_lane"
+      ]
+    },
+    {
+      "id": "generator-refresh-review-convergence",
+      "remaining_boundary": "Stable-repack equality, strict count/ratio boundaries and reviewed generator convergence; native core receipts remain required.",
+      "selectors": [
+        "tests/test_sync_guard_diagnostics.py"
+      ]
+    },
+    {
+      "id": "scoped-evidence-repair-atomicity",
+      "remaining_boundary": "Full analysis remains disclosed; bounded publication and race refusals need native core evidence. External recovery preimages are not active wiki writes.",
+      "selectors": [
+        "tests/test_scoped_sync_repair.py"
+      ]
+    },
+    {
+      "id": "captured-evidence-diagnosis-recovery",
+      "remaining_boundary": "Snapshot/raw reads do not repair stored evidence; malformed evidence stays blocking. All supported agents and inline fallback must pass after install and upgrade.",
+      "selectors": [
+        "tests/test_captured_evidence_diagnostics.py",
+        "tests/test_normalization_diagnostics.py",
+        "tests/test_evidence_explanation_query.py",
+        "tests/test_evidence_recovery_guidance.py"
+      ]
+    }
+  ],
+  "jobs": [
+    {
+      "applicability": "normal",
+      "capabilities": [
+        "python",
+        "git",
+        "hosted-actions"
+      ],
+      "condition": "",
+      "cost": "moderate",
+      "declaration_sha256": "055c083540ea8dcbc9dc3acecc517fde6193fc4b311ae485b2f4142b24df7961",
+      "environments": [
+        "ubuntu-24.04"
+      ],
+      "expected_evidence": [
+        "maintenance-policy-activation",
+        "candidate-source",
+        "qualification-harnesses",
+        "dependency-inputs-${{ github.run_attempt }}"
+      ],
+      "gates": [
+        "RD-00"
+      ],
+      "id": "freeze",
+      "matrix": {},
+      "needs": [],
+      "normal_required": true,
+      "owner": "release/qualification.py",
+      "timeout_minutes": 360
+    },
+    {
+      "applicability": "conditional-normal",
+      "capabilities": [
+        "python",
+        "git",
+        "hosted-actions"
+      ],
+      "condition": "${{ inputs.dependency-setup-verification && !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow }}",
+      "cost": "moderate",
+      "declaration_sha256": "253aa5e493274c2a7d1993b24bed5d14c0996ea337e28fb8359e102a926c574d",
+      "environments": [
+        "ubuntu-24.04"
+      ],
+      "expected_evidence": [
+        "dependency-controls-${{ github.run_attempt }}"
+      ],
+      "gates": [],
+      "id": "dependency-controls",
+      "matrix": {},
+      "needs": [
+        "freeze"
+      ],
+      "normal_required": false,
+      "owner": "release/dependency_setup_probe.py",
+      "timeout_minutes": 30
+    },
+    {
+      "applicability": "conditional-normal",
+      "capabilities": [
+        "python",
+        "git",
+        "hosted-actions"
+      ],
+      "condition": "${{ inputs.dependency-setup-verification && !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && github.event_name == 'workflow_dispatch' && github.ref_type == 'branch' && !github.event.repository.fork && !inputs.knowledge-policy-shadow }}",
+      "cost": "moderate",
+      "declaration_sha256": "e14dd5244770a0cc2236b8aecd9d86aca8d1495b56f6dbde8893a110d0b41911",
+      "environments": [
+        "ubuntu-24.04"
+      ],
+      "expected_evidence": [
+        "dependency-warm-${{ github.run_attempt }}"
+      ],
+      "gates": [],
+      "id": "dependency-warm",
+      "matrix": {},
+      "needs": [
+        "freeze",
+        "dependency-controls"
+      ],
+      "normal_required": false,
+      "owner": "release/dependency_downloads.py",
+      "timeout_minutes": 20
+    },
+    {
+      "applicability": "normal",
+      "capabilities": [
+        "python",
+        "git",
+        "native-linux",
+        "native-macos",
+        "node-typescript"
+      ],
+      "condition": "${{ !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}",
+      "cost": "heavy",
+      "declaration_sha256": "656786ad54627a7d3e93c6c003aa9c950f46628f8c725e30579505c4e0f90c79",
+      "environments": [
+        "ubuntu-24.04",
+        "macos-15"
+      ],
+      "expected_evidence": [
+        "evidence-${{ matrix.lane }}"
+      ],
+      "gates": [
+        "RD-01",
+        "RD-02"
+      ],
+      "id": "core",
+      "matrix": {
+        "include": [
+          {
+            "coverage": true,
+            "lane": "core-ubuntu-3.10",
+            "os": "ubuntu-24.04",
+            "python": "3.10"
+          },
+          {
+            "coverage": false,
+            "lane": "core-macos-3.14",
+            "os": "macos-15",
+            "python": "3.14"
+          }
+        ]
+      },
+      "needs": [
+        "freeze"
+      ],
+      "normal_required": true,
+      "owner": "release/qualification.py",
+      "timeout_minutes": 360
+    },
+    {
+      "applicability": "conditional-normal",
+      "capabilities": [
+        "python",
+        "git",
+        "native-windows"
+      ],
+      "condition": "${{ !inputs.bandit-parity-verification && needs.freeze.outputs.core-layout == 'windows-sharded' && !inputs.knowledge-policy-shadow }}",
+      "cost": "moderate",
+      "declaration_sha256": "65aec53387c5b9cafe906f57a73069e9c46730d1dab9f2ac4f1c9e1c22e4c359",
+      "environments": [
+        "windows-2025"
+      ],
+      "expected_evidence": [
+        "evidence-core-windows-plan"
+      ],
+      "gates": [
+        "RD-01"
+      ],
+      "id": "core-windows-plan",
+      "matrix": {},
+      "needs": [
+        "freeze"
+      ],
+      "normal_required": true,
+      "owner": "release/core_shard_runner.py",
+      "timeout_minutes": 360
+    },
+    {
+      "applicability": "conditional-normal",
+      "capabilities": [
+        "python",
+        "git",
+        "native-windows"
+      ],
+      "condition": "${{ !inputs.bandit-parity-verification && needs.freeze.outputs.core-layout == 'windows-sharded' && !inputs.knowledge-policy-shadow }}",
+      "cost": "heavy",
+      "declaration_sha256": "5c04a47d6e35ce999e6bf6f4e1361e9ac357fe15bc733d16713322d0a89b6b73",
+      "environments": [
+        "windows-2025"
+      ],
+      "expected_evidence": [
+        "evidence-core-windows-shard-${{ matrix.shard }}"
+      ],
+      "gates": [
+        "RD-01"
+      ],
+      "id": "core-windows-shards",
+      "matrix": {
+        "shard": [
+          0,
+          1
+        ]
+      },
+      "needs": [
+        "freeze",
+        "core-windows-plan"
+      ],
+      "normal_required": true,
+      "owner": "release/core_shard_runner.py",
+      "timeout_minutes": 360
+    },
+    {
+      "applicability": "conditional-normal",
+      "capabilities": [
+        "python",
+        "git",
+        "native-windows",
+        "node-typescript"
+      ],
+      "condition": "${{ !cancelled() && !inputs.bandit-parity-verification && needs.freeze.result == 'success'\n    && (needs.freeze.outputs.core-layout == 'unsharded'\n        || (needs.core-windows-plan.result == 'success' && needs.core-windows-shards.result == 'success')) && !inputs.knowledge-policy-shadow }}",
+      "cost": "heavy",
+      "declaration_sha256": "dfcbf71ba8e4e317a71417a2815faeb7fd232350be254cc54088ac5ba73452ef",
+      "environments": [
+        "windows-2025"
+      ],
+      "expected_evidence": [
+        "evidence-rd-04-windows-2025",
+        "evidence-rd-05-windows-2025",
+        "evidence-core-windows-3.13"
+      ],
+      "gates": [
+        "RD-01",
+        "RD-02",
+        "RD-04",
+        "RD-05"
+      ],
+      "id": "core-windows",
+      "matrix": {},
+      "needs": [
+        "freeze",
+        "core-windows-plan",
+        "core-windows-shards"
+      ],
+      "normal_required": true,
+      "owner": "release/qualification.py",
+      "timeout_minutes": 360
+    },
+    {
+      "applicability": "diagnostic-only",
+      "capabilities": [
+        "python",
+        "git",
+        "hosted-actions"
+      ],
+      "condition": "${{ always() && !inputs.bandit-parity-verification && needs.freeze.result == 'success' &&\n    (inputs.discovery-mode || needs.core.result == 'failure' || needs.core-windows.result == 'failure' || needs.core-windows.result == 'skipped') && !inputs.knowledge-policy-shadow }}",
+      "cost": "moderate",
+      "declaration_sha256": "0f5c014a330e4baa122dae3c9e975a4ad79b4169be92147e13ef49f5e904152d",
+      "environments": [
+        "ubuntu-24.04"
+      ],
+      "expected_evidence": [
+        "discovered-skip-allowlist"
+      ],
+      "gates": [],
+      "id": "discovery-allowlist",
+      "matrix": {},
+      "needs": [
+        "freeze",
+        "core",
+        "core-windows"
+      ],
+      "normal_required": false,
+      "owner": "release/qualification.py",
+      "timeout_minutes": 360
+    },
+    {
+      "applicability": "normal",
+      "capabilities": [
+        "python",
+        "git",
+        "hosted-actions"
+      ],
+      "condition": "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow }}",
+      "cost": "heavy",
+      "declaration_sha256": "cd9e04d37181351b945859c8efb2a9be78898757e7673e02c8234797e0e45507",
+      "environments": [
+        "ubuntu-24.04"
+      ],
+      "expected_evidence": [
+        "evidence-ubuntu-suites",
+        "evidence-rd-03",
+        "evidence-rd-04-ubuntu-24.04",
+        "evidence-rd-05-ubuntu-24.04"
+      ],
+      "gates": [
+        "RD-03",
+        "RD-04",
+        "RD-05"
+      ],
+      "id": "ubuntu-suites",
+      "matrix": {},
+      "needs": [
+        "freeze"
+      ],
+      "normal_required": true,
+      "owner": "release/ubuntu_suites.py",
+      "timeout_minutes": 45
+    },
+    {
+      "applicability": "diagnostic-only",
+      "capabilities": [
+        "python",
+        "git",
+        "hosted-actions"
+      ],
+      "condition": "${{ inputs.ubuntu-suite-shadow && !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}",
+      "cost": "moderate",
+      "declaration_sha256": "ca4b5320910296280c6e5cd6e9d105c5181cf327e347bb5169f9bdd1e6709cff",
+      "environments": [
+        "ubuntu-24.04"
+      ],
+      "expected_evidence": [
+        "evidence-rd-03",
+        "evidence-rd-04-ubuntu-24.04",
+        "evidence-rd-05-ubuntu-24.04",
+        "evidence-ubuntu-union",
+        "ubuntu-shadow-comparison"
+      ],
+      "gates": [],
+      "id": "ubuntu-shadow",
+      "matrix": {},
+      "needs": [
+        "freeze"
+      ],
+      "normal_required": false,
+      "owner": "release/ubuntu_shadow.py",
+      "timeout_minutes": 60
+    },
+    {
+      "applicability": "normal",
+      "capabilities": [
+        "python",
+        "native-macos"
+      ],
+      "condition": "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}",
+      "cost": "moderate",
+      "declaration_sha256": "48ff774447b917aa9a583a249add71fa8c0f587890933a1f2202fa3021bebd26",
+      "environments": [
+        "macos-15"
+      ],
+      "expected_evidence": [
+        "evidence-rd-04-${{ matrix.os }}"
+      ],
+      "gates": [
+        "RD-04"
+      ],
+      "id": "security-behavior",
+      "matrix": {
+        "os": [
+          "macos-15"
+        ]
+      },
+      "needs": [
+        "freeze"
+      ],
+      "normal_required": true,
+      "owner": "release/qualification.py",
+      "timeout_minutes": 45
+    },
+    {
+      "applicability": "normal",
+      "capabilities": [
+        "python",
+        "mcp-sdk",
+        "loopback-sockets"
+      ],
+      "condition": "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}",
+      "cost": "moderate",
+      "declaration_sha256": "bc0781107a6d9a8710246c95ebe12344804d94acacde0946e4456b3897d35010",
+      "environments": [
+        "ubuntu-24.04"
+      ],
+      "expected_evidence": [
+        "evidence-rd-06-${{ matrix.python }}"
+      ],
+      "gates": [
+        "RD-06"
+      ],
+      "id": "mcp",
+      "matrix": {
+        "python": [
+          "3.10",
+          "3.13"
+        ]
+      },
+      "needs": [
+        "freeze"
+      ],
+      "normal_required": true,
+      "owner": "release/qualification.py",
+      "timeout_minutes": 360
+    },
+    {
+      "applicability": "normal",
+      "capabilities": [
+        "python",
+        "node-typescript",
+        "go",
+        "rust",
+        "haskell",
+        "native-linux-x86_64"
+      ],
+      "condition": "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}",
+      "cost": "heavy",
+      "declaration_sha256": "e7361657976dd7be8523a599199165a255e8a6c63733ab2c88b00c8d7cbfa51f",
+      "environments": [
+        "ubuntu-24.04"
+      ],
+      "expected_evidence": [
+        "evidence-rd-07"
+      ],
+      "gates": [
+        "RD-07"
+      ],
+      "id": "toolchains",
+      "matrix": {},
+      "needs": [
+        "freeze"
+      ],
+      "normal_required": true,
+      "owner": "release/qualification.py",
+      "timeout_minutes": 45
+    },
+    {
+      "applicability": "normal",
+      "capabilities": [
+        "python",
+        "oci-linux-amd64",
+        "native-linux-x86_64"
+      ],
+      "condition": "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}",
+      "cost": "moderate",
+      "declaration_sha256": "cfd891d1cbd514c6e57c87b9d9701a20ea7ae24fab426cd61ba8ae179a4c4d63",
+      "environments": [
+        "ubuntu-24.04"
+      ],
+      "expected_evidence": [
+        "evidence-rd-08"
+      ],
+      "gates": [
+        "RD-08"
+      ],
+      "id": "oci",
+      "matrix": {},
+      "needs": [
+        "freeze"
+      ],
+      "normal_required": true,
+      "owner": "release/qualification.py",
+      "timeout_minutes": 25
+    },
+    {
+      "applicability": "normal",
+      "capabilities": [
+        "python",
+        "actionlint",
+        "dependency-registry"
+      ],
+      "condition": "${{ !inputs.discovery-mode && !inputs.knowledge-policy-shadow }}",
+      "cost": "moderate",
+      "declaration_sha256": "b3d6650462c3a8396c8fa19d4cd1a86545004ed9f9d229a15cf28e19c8ea37a3",
+      "environments": [
+        "ubuntu-24.04"
+      ],
+      "expected_evidence": [
+        "evidence-rd-09"
+      ],
+      "gates": [
+        "RD-09"
+      ],
+      "id": "static",
+      "matrix": {},
+      "needs": [
+        "freeze"
+      ],
+      "normal_required": true,
+      "owner": "release/static_checks.py",
+      "timeout_minutes": 360
+    },
+    {
+      "applicability": "normal",
+      "capabilities": [
+        "hosted-actions",
+        "python",
+        "node-typescript",
+        "go",
+        "rust",
+        "haskell",
+        "native-linux-x86_64"
+      ],
+      "condition": "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification }}",
+      "cost": "hosted",
+      "declaration_sha256": "25147336e9689b4143a501e18a4ba6b90983bb8599e91cfc4a34625c9a8016fb",
+      "environments": [
+        "ubuntu-24.04"
+      ],
+      "expected_evidence": [
+        "evidence-rd-10"
+      ],
+      "gates": [
+        "RD-10"
+      ],
+      "id": "action",
+      "matrix": {},
+      "needs": [
+        "freeze"
+      ],
+      "normal_required": true,
+      "owner": "integrations/github-action/action.yml",
+      "timeout_minutes": 60
+    },
+    {
+      "applicability": "conditional-normal",
+      "capabilities": [
+        "authenticated-hosted-policy",
+        "native-linux-runtime-basis"
+      ],
+      "condition": "${{ always() && !inputs.discovery-mode && !inputs.bandit-parity-verification && needs.freeze.result == 'success' }}",
+      "cost": "hosted",
+      "declaration_sha256": "7c932bd71f9453fdfb024dac993d28dc5a394afab64cbdb3b95651953a42358f",
+      "environments": [
+        "ubuntu-24.04"
+      ],
+      "expected_evidence": [
+        "knowledge-maintenance-verification"
+      ],
+      "gates": [],
+      "id": "knowledge-maintenance",
+      "matrix": {},
+      "needs": [
+        "freeze",
+        "action"
+      ],
+      "normal_required": true,
+      "owner": "release/knowledge_maintenance.py",
+      "timeout_minutes": 360
+    },
+    {
+      "applicability": "normal",
+      "capabilities": [
+        "python",
+        "package-registry"
+      ],
+      "condition": "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}",
+      "cost": "heavy",
+      "declaration_sha256": "a9a86e13352d8afda7c327b3477d06b287d4cf5f1668ef25b91bfb392f9f2860",
+      "environments": [
+        "ubuntu-24.04"
+      ],
+      "expected_evidence": [
+        "dependency-setup-${{ matrix.copy }}",
+        "build-${{ matrix.copy }}"
+      ],
+      "gates": [
+        "RD-11"
+      ],
+      "id": "build",
+      "matrix": {
+        "include": [
+          {
+            "copy": "a",
+            "validate": true
+          },
+          {
+            "copy": "b",
+            "validate": false
+          }
+        ]
+      },
+      "needs": [
+        "freeze"
+      ],
+      "normal_required": true,
+      "owner": "release/qualification.py",
+      "timeout_minutes": 360
+    },
+    {
+      "applicability": "normal",
+      "capabilities": [
+        "python",
+        "git",
+        "hosted-actions"
+      ],
+      "condition": "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}",
+      "cost": "moderate",
+      "declaration_sha256": "e152c79262adb7fd02976d1631ddf5b7daa5cb380a17008d0e39ba19b370da34",
+      "environments": [
+        "ubuntu-24.04"
+      ],
+      "expected_evidence": [
+        "reproducible-build"
+      ],
+      "gates": [
+        "RD-11"
+      ],
+      "id": "reproducible",
+      "matrix": {},
+      "needs": [
+        "freeze",
+        "build"
+      ],
+      "normal_required": true,
+      "owner": "release/qualification.py",
+      "timeout_minutes": 360
+    },
+    {
+      "applicability": "normal",
+      "capabilities": [
+        "python",
+        "mcp-sdk",
+        "loopback-sockets",
+        "node-typescript"
+      ],
+      "condition": "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}",
+      "cost": "heavy",
+      "declaration_sha256": "206a7816c47d9b81c8f8742c7b47c6a57327bb72f0c639f22b822eb4dc53766e",
+      "environments": [
+        "ubuntu-24.04"
+      ],
+      "expected_evidence": [
+        "smoke-${{ matrix.kind }}-mcp-diagnostics",
+        "smoke-${{ matrix.kind }}"
+      ],
+      "gates": [
+        "RD-12"
+      ],
+      "id": "artifact-smoke",
+      "matrix": {
+        "kind": [
+          "wheel",
+          "sdist"
+        ]
+      },
+      "needs": [
+        "freeze",
+        "reproducible"
+      ],
+      "normal_required": true,
+      "owner": "tests/release_artifact_smoke.py",
+      "timeout_minutes": 360
+    },
+    {
+      "applicability": "normal",
+      "capabilities": [
+        "python",
+        "git",
+        "hosted-actions"
+      ],
+      "condition": "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}",
+      "cost": "moderate",
+      "declaration_sha256": "236bd7dd5609b2033f69517aa451d6242fc3ea8817eafbad397405b093412192",
+      "environments": [
+        "ubuntu-24.04"
+      ],
+      "expected_evidence": [
+        "smoke-comparison"
+      ],
+      "gates": [
+        "RD-12"
+      ],
+      "id": "smoke-parity",
+      "matrix": {},
+      "needs": [
+        "freeze",
+        "artifact-smoke"
+      ],
+      "normal_required": true,
+      "owner": "release/qualification.py",
+      "timeout_minutes": 360
+    },
+    {
+      "applicability": "normal",
+      "capabilities": [
+        "python",
+        "git",
+        "hosted-actions"
+      ],
+      "condition": "${{ always() && !inputs.discovery-mode && !inputs.bandit-parity-verification && needs.freeze.result == 'success' && !inputs.knowledge-policy-shadow }}",
+      "cost": "moderate",
+      "declaration_sha256": "90c5151114817c224042376ffcf3dafe4b4dd0c7a7c0c0f7146f98dc51bc96f2",
+      "environments": [
+        "ubuntu-24.04"
+      ],
+      "expected_evidence": [
+        "evidence-owner-lanes"
+      ],
+      "gates": [
+        "RD-02"
+      ],
+      "id": "owner-lanes",
+      "matrix": {},
+      "needs": [
+        "freeze",
+        "ubuntu-shadow",
+        "core",
+        "core-windows",
+        "ubuntu-suites",
+        "security-behavior",
+        "mcp",
+        "toolchains",
+        "oci",
+        "static",
+        "action",
+        "reproducible",
+        "artifact-smoke",
+        "smoke-parity"
+      ],
+      "normal_required": true,
+      "owner": "release/qualification.py",
+      "timeout_minutes": 360
+    },
+    {
+      "applicability": "normal",
+      "capabilities": [
+        "python",
+        "git",
+        "hosted-actions"
+      ],
+      "condition": "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow }}",
+      "cost": "moderate",
+      "declaration_sha256": "fb6b468d71e4b54399f6213064d19bab592e1049a3597906a3144a60c739bddf",
+      "environments": [
+        "ubuntu-24.04"
+      ],
+      "expected_evidence": [
+        "analysis-compatibility-pairs"
+      ],
+      "gates": [
+        "RD-07"
+      ],
+      "id": "analysis-compatibility",
+      "matrix": {},
+      "needs": [
+        "freeze"
+      ],
+      "normal_required": true,
+      "owner": "release/analysis_pairs.py",
+      "timeout_minutes": 360
+    },
+    {
+      "applicability": "normal",
+      "capabilities": [
+        "hosted-actions",
+        "attestation-oidc"
+      ],
+      "condition": "${{ !cancelled() && !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.ubuntu-suite-shadow && !inputs.knowledge-policy-shadow\n    && needs.freeze.result == 'success' && needs.core.result == 'success' && needs.core-windows.result == 'success'\n    && needs.ubuntu-suites.result == 'success' && needs.security-behavior.result == 'success'\n    && needs.mcp.result == 'success' && needs.toolchains.result == 'success'\n    && needs.oci.result == 'success' && needs.static.result == 'success'\n    && needs.action.result == 'success' && needs.reproducible.result == 'success'\n    && needs.smoke-parity.result == 'success' && needs.owner-lanes.result == 'success'\n    && needs.analysis-compatibility.result == 'success'\n    && (!inputs.dependency-setup-verification || needs.dependency-warm.result == 'success')\n    && (needs.freeze.outputs.knowledge-mode != 'required' || needs.knowledge-maintenance.result == 'success') }}",
+      "cost": "hosted",
+      "declaration_sha256": "ee0383d389b144b65af5ab80e99b8580ae397a36d87f61d0ab3416950eb1afbf",
+      "environments": [
+        "ubuntu-24.04"
+      ],
+      "expected_evidence": [
+        "qualified-release"
+      ],
+      "gates": [
+        "RD-00",
+        "RD-01",
+        "RD-02",
+        "RD-03",
+        "RD-04",
+        "RD-05",
+        "RD-06",
+        "RD-07",
+        "RD-08",
+        "RD-09",
+        "RD-10",
+        "RD-11",
+        "RD-12"
+      ],
+      "id": "bundle",
+      "matrix": {},
+      "needs": [
+        "analysis-compatibility",
+        "freeze",
+        "knowledge-maintenance",
+        "dependency-warm",
+        "core",
+        "core-windows",
+        "ubuntu-suites",
+        "security-behavior",
+        "mcp",
+        "toolchains",
+        "oci",
+        "static",
+        "action",
+        "reproducible",
+        "smoke-parity",
+        "owner-lanes"
+      ],
+      "normal_required": true,
+      "owner": "release/qualification.py",
+      "timeout_minutes": 360
+    },
+    {
+      "applicability": "normal",
+      "capabilities": [
+        "python",
+        "git",
+        "hosted-actions"
+      ],
+      "condition": "${{ always() && !inputs.discovery-mode && !inputs.ubuntu-suite-shadow }}",
+      "cost": "hosted",
+      "declaration_sha256": "37fd3faae519a816b4cb0ff52456ee81513185014b47103842d73ef426f1d83b",
+      "environments": [
+        "ubuntu-24.04"
+      ],
+      "expected_evidence": [
+        "qualification-decision"
+      ],
+      "gates": [
+        "RD-00",
+        "RD-01",
+        "RD-02",
+        "RD-03",
+        "RD-04",
+        "RD-05",
+        "RD-06",
+        "RD-07",
+        "RD-08",
+        "RD-09",
+        "RD-10",
+        "RD-11",
+        "RD-12",
+        "RD-13"
+      ],
+      "id": "decision",
+      "matrix": {},
+      "needs": [
+        "freeze",
+        "knowledge-maintenance",
+        "core",
+        "core-windows",
+        "ubuntu-suites",
+        "security-behavior",
+        "mcp",
+        "toolchains",
+        "oci",
+        "static",
+        "action",
+        "reproducible",
+        "smoke-parity",
+        "owner-lanes",
+        "bundle"
+      ],
+      "normal_required": true,
+      "owner": "release/qualification.py",
+      "timeout_minutes": 360
+    }
+  ],
+  "maintenance_dependencies": [
+    {
+      "owner": "release/knowledge_maintenance.py",
+      "path": "release/knowledge-maintenance.json",
+      "purpose": "Reviewed required/shadow policy activation and selected source/wiki roots"
+    },
+    {
+      "owner": "release/knowledge_maintenance.py",
+      "path": "src/llm_wiki_cli/services/health_policy.py",
+      "purpose": "Strict repository health policy implementation"
+    },
+    {
+      "owner": "release/knowledge_maintenance.py",
+      "path": "src/llm_wiki_cli/services/analysis_compatibility.py",
+      "purpose": "Policy producer compatibility identity"
+    },
+    {
+      "owner": "release/knowledge_maintenance.py",
+      "path": "src/llm_wiki_cli/services/analysis_contracts.json",
+      "purpose": "Complete static observation producer census"
+    },
+    {
+      "owner": "release/knowledge_maintenance.py",
+      "path": "release/knowledge_maintenance.py",
+      "purpose": "Authenticated policy admission and maintenance dependency owner"
+    },
+    {
+      "owner": "release/knowledge_maintenance.py",
+      "path": ".llm-wiki/source-selection.json",
+      "purpose": "Persisted repository source selection; no scope broadening"
+    },
+    {
+      "owner": "release/knowledge_maintenance.py",
+      "path": "release/qualification.py",
+      "purpose": "Full RD graph, skip/owner, archive and bundle admission"
+    },
+    {
+      "owner": "release/knowledge_maintenance.py",
+      "path": "release/skip-allowlist.json",
+      "purpose": "Reviewed exact skip node/reason/owner obligations"
+    },
+    {
+      "owner": "release/knowledge_maintenance.py",
+      "path": "release/toolchain-lock.json",
+      "purpose": "Checksum-pinned host and helper capabilities"
+    },
+    {
+      "owner": "release/knowledge_maintenance.py",
+      "path": "release/ubuntu-suites.json",
+      "purpose": "Maintained complete Ubuntu slow/security/product suites"
+    },
+    {
+      "owner": "release/knowledge_maintenance.py",
+      "path": "release/core-shard-timings.json",
+      "purpose": "Reviewed collection and timing provenance for native sharding"
+    }
+  ],
+  "preamble_sha256": "a80d6f57237fb77cdf6c4ff73b184e7ba3f74dde2cedee4385c61fcef291e970",
+  "schema_version": "agent-wiki-preflight-contracts/v1",
+  "workflow": ".github/workflows/release-qualification.yml"
+}

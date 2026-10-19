@@ -84,9 +84,9 @@ sequenceDiagram
     p0-->>p30: config.get('agent', 'generic')
 ```
 
-> Call sequence diagram shows 30 of 385 interactions; 355 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 391 interactions; 361 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 125 (124 omitted); unresolved 1 of 151 (150 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 127 (126 omitted); unresolved 1 of 155 (154 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

@@ -105,6 +105,15 @@ use the same inputs.
    Do not claim context was produced, hide incomplete language coverage, or
    repeatedly retry unchanged failures.
 
+Prepared toolchain identity is distinct from the active execution runtime.
+For a current helper with a runtime mismatch, select the reported matching
+runtime on PATH; repeating preparation does not change PATH. For captured
+structural evidence failures, use the bounded snapshot explanation and
+[one-file raw inspection](maintenance.md#diagnose-captured-evidence) before
+choosing an authorized writer. Raw JSON is a fresh observation, not a repair
+of stored qualification. Do not hand-link `node_modules`, invoke internal
+helper scripts, edit generated evidence JSON or weaken strict gates.
+
 ## Haskell extraction contract
 
 Haskell `.hs` and `.lhs` files are built-in source files. Normal extraction

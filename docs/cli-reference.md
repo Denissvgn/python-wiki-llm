@@ -19,6 +19,53 @@ task detector with Mermaid styling.
 | Extend and collaborate | [install / plugins](#install-and-plugins), [team](#team), [knowledge](#knowledge) |
 | Manage an installation | [upgrade](#upgrade), [migrate](#migrate), [metrics](#metrics), [status / release / bump / uninstall](#status-release-bump-and-uninstall) |
 
+## Recover captured evidence
+
+Keep the failure's source, cause and qualifications. Use the same source/wiki
+roots, selection, helper cache and generation options through diagnosis and
+repair. For example, with source `src`, wiki `wiki`, selection
+`config/sources.json` and an existing helper cache `.cache/helpers`, save a
+permitted request file `evidence.json` containing:
+
+```json
+{"operation":"explain","source":"orders.py","limit":5}
+```
+
+```bash
+llm-wiki query --request evidence.json --src-dir src --wiki-dir wiki --source-selection config/sources.json --helper-cache-dir .cache/helpers
+llm-wiki extract --src-dir src --paths orders.py --deep --read-only --source-selection config/sources.json --helper-cache-dir .cache/helpers
+llm-wiki sync --dry-run --jobs 1 --src-dir src --wiki-dir wiki --source-selection config/sources.json --helper-cache-dir .cache/helpers
+```
+
+Replace these example bindings with the original command's actual values.
+Request `source` and extract `--paths` are canonical POSIX paths relative to
+`--src-dir`; filesystem and cache arguments use native paths. Explanation is
+snapshot-only by default; choose an exact locator from ambiguous results.
+`live:true` plus `allow_full_inventory:true` authorizes full current analysis.
+The [explanation route](#context) separates captured/current source and producer
+bases, helper identity and active runtime. Raw extraction prints JSON, installs
+no dependencies and cannot repair a stored manifest.
+
+For a missing/stale helper, use its exact [preparation remedy](#prepare-extractors)
+with setup authority, then retry the original read once with the same selection
+and cache. Preparation takes `--cache-dir`, reads take `--helper-cache-dir`.
+Do not combine explicit `--language` preparation with `--source-selection`.
+A current helper with a runtime mismatch needs the reported runtime selected on
+PATH; preparation does not change PATH. No hand-linked dependencies or internal
+helper-script invocation is required.
+
+Fix fresh normalization rejection before repair; invalid evidence stays blocking.
+If raw output is valid but captured evidence is unavailable, the authorized
+[owning sync](#sync) must commit the repair. Review the complete preview, including
+removals. Broad changes require explicit authority for the same invocation with
+`--force` replacing `--dry-run`; never force automatically. Review again after
+any input change. The bounded `--repair-evidence` writer retains its own adoption,
+stable-producer and scope conditions and still performs full analysis.
+Missing/corrupt authority needs its recovery route, not generated JSON edits or
+reinitialization. Review semantic prose, re-anchor edits through owning sync,
+then run strict lint and CI with the same bindings. Keep current defaults and
+strict gates. Storage upgrade and diagnostic reads alone do not establish repair.
+
 ## Resource-aware execution
 
 In an interactive IDE or whenever host capacity is unknown, run one heavy gate
@@ -260,6 +307,77 @@ or controlled CI runner with known capacity.
 Sync repairs
 manifests with invalid source hashes without touching pages, and stops unusually
 broad diffs unless `--force` is used.
+
+The affected-source count names inputs whose wiki projections may change;
+sync does not rewrite those source files. A generator-version transition can
+refresh every managed source even when source bytes are unchanged. A storage
+repack alone is separate from that generator refresh.
+When a broad update is refused, the message separates source-change reasons
+from additional generator-refresh inputs, identifies captured/current generator
+versions when available, and shows a bounded path sample with omitted counts.
+Reason counts can overlap; the total source-input count is deduplicated.
+Use the supplied `--dry-run` command with the same source/wiki roots, source
+selection and cache bindings to inspect the full page and artifact plan before
+authorizing a broad write. The preview lists complete affected input paths and
+their reasons, including paths omitted from the refusal sample.
+An oversized, control-containing or non-UTF-8 command is not
+printed; repeat the original invocation with `--dry-run` and omit `--force`.
+The path sample bounds the diagnostic output, not extraction or preview work.
+
+For a generator upgrade, review the complete dry-run page and artifact actions,
+including removals, before explicitly repeating the same invocation with
+`--force` in place of `--dry-run`. Keep the source/wiki roots, selection,
+helper/cache bindings and generation options unchanged. This is an owning
+refresh: it regenerates evidence with the current provider and commits matching
+projections and provenance. Already matching managed pages keep their bytes and
+are not rewritten. Changed generated content still appears as a page update;
+it is not classified as a source metadata edit merely because sources match.
+
+A preview is not a saved approval token. `--force` computes a new plan from
+current inputs; repeat preview and review if source, helper, selection, provider
+or wiki inputs change. It can authorize broad changes and stale generated
+surface removal, including authored Behavior on those retired surfaces. It does
+not waive ownership or integrity checks, adopt foreign state or recover missing
+authority. After the refresh and semantic review, re-anchor any prose edits with
+ordinary sync, then run strict lint and CI integrity validation using the same
+roots and selection. A subsequent sync with unchanged inputs should be a no-op.
+If publication is rejected, follow its explicit recovery diagnostic before
+retrying; do not delete authority files or reinitialize an established wiki.
+
+For a narrowly authorized repair of captured invalid evidence, use
+`--repair-evidence` with canonical POSIX source paths relative to `--src-dir`:
+
+```bash
+llm-wiki sync --src-dir src --wiki-dir wiki --no-plugins --repair-evidence package/module.py --dry-run
+llm-wiki sync --src-dir src --wiki-dir wiki --no-plugins --repair-evidence package/module.py
+```
+
+Keep the project's source selection, helper/cache bindings and other applicable
+options on both invocations. This mode requires an already adopted, coherent
+wiki, unchanged source and generation policy, and matching complete built-in
+producer/helper/runtime commitments. Run the authorized ordinary owning update
+first after a generator or producer transition. Missing or corrupt authority
+requires its explicit recovery route; scoped repair never adopts or migrates it.
+
+The writer repairs a selected source's existing module and entity evidence
+together, preserves unselected captured failures and review history, and does
+not acknowledge review. It refuses mixed source/prose edits, missing or renamed
+pages, new/retired identities, and any reconciliation that changes unselected
+facts or the global typed graph. `--force` can authorize a reviewed broad input
+count; it cannot override these scope conditions. A selected known basis must
+match the fresh observation; otherwise use ordinary owning sync for full review.
+
+This is scoped application after **full analysis**, not one-file extraction.
+Source verification, global graph/projection reconciliation, an isolated wiki
+copy, native objects, log/cache metadata and complete recovery preimages still
+require global work. The command checks its candidate before live application
+and again before publication. A changed source, helper, provider, selection or
+wiki invalidates the prepared operation. Existing publication recovery remains
+active; the isolated preflight does not replace a recoverable owning commit.
+Already matching selected evidence produces no scoped publication. Success
+does not certify the whole wiki: unselected unknown evidence remains unknown,
+so repeat strict lint and CI validation afterward.
+
 `--initialize-surfaces` enters a surface-only backfill mode for `flows`,
 `dependencies`, and/or `api-contracts`: ordinary entity/module source changes
 are reported but deferred. `--flow-category` is repeatable, `--exclude-tests`
@@ -576,6 +694,57 @@ Inspect the named source with the read-only
 single-file extraction command above, repair the underlying producer or source
 problem, then run owning sync before repeating strict validation. Editing a
 generated wiki table does not repair invalid extractor evidence.
+Diagnostics distinguish a captured failure with no fresh result, a captured
+failure whose fresh normalization succeeds, and a fresh observation that still
+fails normalization. Where captured source hashes exist, they distinguish
+unchanged bytes from changed or incomparable inputs. Producer metadata and
+version labels do not identify historical package bytes; unavailable provenance
+and rejected-record details remain explicit.
+
+Fresh normalization rejections can include `Fresh normalization diagnostic: `
+followed by a JSON object in the existing finding `message` or evidence freshness
+`description`. The object has its own
+[`llm-wiki-normalization-diagnostic/v1` schema](../src/llm_wiki_cli/schemas/llm-wiki-normalization-diagnostic-v1.schema.json).
+It identifies the source, scope and extractor, the entity's named occurrence
+when applicable, a record `pointer`, the failed `rule`, the `expected` shape,
+and redacted `actual` type/summary. For example, an import can identify
+`/imports/0/module` with rule `import-module`; a near-miss explicit dynamic
+import can instead identify its missing `/imports/0/reason`.
+
+Exact pointers use JSON Pointer with zero-based array indexes. Entity occurrence
+coordinates remain one-based among declarations with the same name. A missing
+occurrence points to the declaration collection, without inventing an index.
+An unknown recursion/encoding location uses a null pointer. When an arbitrary
+mapping key is redacted, the pointer identifies an ancestor and `pointer_exact`
+is false. Bounded coordinate prefixes are listed in `truncated_fields` and must
+not be treated as exact identities.
+
+The rendered diagnostic is limited to 4,096 UTF-8 bytes, including its prefix.
+Rejected string values, container contents and arbitrary mapping keys are redacted;
+actual summaries retain safe shape facts such as type, length, emptiness or
+non-finiteness. No arbitrary object representation is rendered. A surrounding
+query may impose a tighter response bound and disclose truncation separately.
+Missing detail does not establish valid evidence.
+
+This versioned object is carried as diagnostic text; existing outer report and
+evidence-basis fields are unchanged. Older decoders can retain that text without
+parsing it. A consumer interpreting the object must recognize its schema version;
+unknown versions are not an inferred current contract. Native comparison data
+still requires its compatible outer report schema. Raw `extract` output remains
+inventory, not an annotated normalization report. Historical reason-only snapshots
+do not acquire reconstructed record pointers: details describe only a rejection
+observed by the current normalization run. Valid observation hashes, reason codes
+and strict failure policy remain unchanged.
+
+Fresh extraction and evidence explanation are reads: a valid fresh observation
+does not make an unknown committed baseline current. Ordinary owning sync can
+refresh a captured invalid module/entity basis after current deep normalization
+succeeds, including when the generator version label is unchanged. Its preview
+labels this as `evidence-refresh-additional`, separately from source edits and
+generator transitions. Broad refreshes retain the normal review guards. If fresh
+normalization is still invalid, repair that cause; `--force` does not waive
+evidence validity. If fresh normalization succeeds but owning sync is refused by
+the broad-update guard, follow its complete preview and reviewed apply route.
 `lint --profile` and `ci-check --format json` additionally include this shape:
 
 ```json
@@ -908,6 +1077,40 @@ entrypoint, and dependency queries
 perform a full inventory only when `allow_full_inventory=true` is supplied.
 The context budget and focus bound emitted output after a full deep inventory;
 they do not make that scan computationally cheap.
+
+Explain one exact concept using the existing evidence service:
+
+```bash
+printf '%s\n' '{"operation":"explain","value":"llm-wiki://modules/orders"}' | llm-wiki query --request - --src-dir . --wiki-dir docs/llm_wiki
+printf '%s\n' '{"operation":"explain","source":"src/orders.py","limit":10}' | llm-wiki query --request - --src-dir . --wiki-dir docs/llm_wiki
+printf '%s\n' '{"operation":"explain","value":"llm-wiki://modules/orders","live":true,"allow_full_inventory":true}' | llm-wiki query --request - --src-dir . --wiki-dir docs/llm_wiki --helper-cache-dir .git
+```
+
+Supply exactly one `value` (exact concept locator, UID or canonical route) or
+canonical POSIX `source` path relative to `--src-dir`. A source with multiple
+concepts returns bounded choices; repeat with one exact locator to see evidence.
+The default reads the committed snapshot without extraction. Set `live:true`
+and explicitly authorize `allow_full_inventory:true` to compare against a full
+current source inventory. Existing evidence freshness includes recorded/live
+source bases, cause and bounded fresh normalization detail when available;
+snapshot reads never reconstruct historical rejected-record details.
+
+`provenance` separates stored/live producer records, the installed package
+fingerprint and version, the structural inventory contract, and active Python
+runtime. The fingerprint covers installed files and runtime/version inputs; it
+does not identify the original distribution archive or prove release authenticity.
+For a selected external extractor, existing preparation receipt source/artifact
+identities and preparation toolchain are reported separately from active runtime.
+TypeScript also checks the source copy in the prepared execution directory against
+the bundled source fingerprint; missing or changed copies require preparation again.
+Artifact fingerprints cover the receipt's recorded path. For TypeScript this is
+the `ts-morph` subtree, which does not identify sibling transitive dependencies.
+Missing or mismatched data stays explicit. Reads do not install dependencies or
+update source, wiki or helper state. Missing helpers include the existing exact
+preparation command for the selected cache; setup requires authorization, then
+retry with the same roots, source selection and cache. A runtime mismatch also
+requires selecting the matching runtime on PATH. Output limits and truncation
+disclosures apply to explanation and provenance together.
 
 External tools can use the `llm-wiki-context/v1` JSON request protocol:
 
@@ -2133,6 +2336,32 @@ Use the retained adoption ID. Recovery refuses unrelated edits or newer work;
 prepared-adoption and captured-preimage retries need their explicit options.
 See [ordinary review and recovery](maintenance.md) for exact eligibility and
 Python/MCP interfaces.
+
+### Recover new pages from a rejected sync
+
+If sync emits `new_page_recovery`, retain its recovery directory and exact
+`expected_journal_hash`. Preview the pages before applying recovery:
+
+```bash
+llm-wiki maintenance recover-new-pages --wiki-dir wiki --recovery-dir RECOVERY_DIR --expected-journal-hash JOURNAL_SHA256 --dry-run
+```
+
+After reviewing the list, repeat without `--dry-run` to remove only unchanged
+Markdown pages created by that rejected operation. Their exact postimages remain
+in the recovery directory. Existing prose, source files and committed authority
+are not restored or overwritten. Edited/replaced pages, changed selection or
+authority, unsafe links, another wiki and altered journals are refused.
+
+Run the original sync again after recovery. This command does not make an
+interrupted generation current, repair missing maintenance authority, or replace
+the complete adopted recovery route above. Recovery is not atomic across pages:
+an I/O failure can leave a partially removed set, with all original postimages
+retained for explicit inspection and restoration. A missing or changed candidate
+is refused; do not blindly replay or manufacture another journal hash.
+Capture is bounded to 10,000 baseline/created-page entries, an 8 MiB journal
+and individual postimages, and 64 MiB of postimages per operation. Limits stop
+the new write rather than authorize unrecorded pages. Without an original
+rejection journal, this command cannot authorize removal of older stranded pages.
 
 ## `upgrade`
 

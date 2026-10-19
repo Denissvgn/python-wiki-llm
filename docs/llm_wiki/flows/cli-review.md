@@ -115,9 +115,9 @@ sequenceDiagram
     p5-->>p30: Path(…).expanduser (src/llm_wiki_cli/services/io.py:write_text_output)
 ```
 
-> Call sequence diagram shows 30 of 2133 interactions; 2103 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2139 interactions; 2109 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 698 (697 omitted); unresolved 1 of 708 (707 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 700 (699 omitted); unresolved 1 of 712 (711 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

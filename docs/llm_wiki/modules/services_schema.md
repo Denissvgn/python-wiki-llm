@@ -21,6 +21,15 @@ Explicit-language helper recovery omits incompatible selection flags while the
 original read retains its selection. Optional profiles, storage adoption, and
 delivery actions remain separate choices under project policy.
 
+Both the managed maintenance reference and expanded inline fallback explain the
+reviewed generator-refresh route. A complete dry-run precedes an explicitly
+authorized force invocation with the same bindings; force always replans current
+inputs. Changed source, helper, selection, provider or wiki inputs require a new
+preview and review. Force is never an automatic upgrade action and does not
+waive ownership, integrity or recovery. Its existing authority for stale
+generated surface retirement is disclosed so authored Behavior is reviewed
+before removal.
+
 The compact profile preserves the explicit correctness clauses recognized by
 instruction ownership, alongside packaged routes to further detail. Continuation
 whitespace within list items can be condensed without changing those clauses or
@@ -32,6 +41,20 @@ Shared schema utilities for agent constraint blocks.
 
 Provides functions to build, strip, and replace the LLM Wiki constraint
 block that is injected into agent schema files (CLAUDE.md, .cursorrules, etc.).
+
+Default recovery instructions connect a bounded captured-evidence explanation
+to a fresh one-file raw read, prerequisite diagnosis and an authorized owning
+repair. Compact output routes to the focused maintenance section; the inline
+fallback supplies the operational sequence without requiring an installed skill.
+Reads do not repair stored qualification, prepare dependencies or waive strict
+evidence. Source/wiki roots, selection and helper/cache arguments retain their
+separate contracts.
+
+Bootstrap recipe adaptation inspects shell argument tokens, preserving explicit
+selection and literal option-looking path values. Explicit-language preparation
+does not receive a selection flag, while discovery preparation and source-reading
+query recipes retain the configured profile. The adapter preserves original
+argument spelling and does not execute the recipe.
 
 ## Imports
 
@@ -47,6 +70,7 @@ block that is injected into agent schema files (CLAUDE.md, .cursorrules, etc.).
 | `enum` | `Enum` |
 | `pathlib` | `Path` |
 | `re` | `re` |
+| `shlex` | `shlex` |
 
 ## Local dependency map
 
@@ -75,11 +99,11 @@ flowchart LR
 
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
-| [SchemaRenderProfile](../entities/SchemaRenderProfile.md) | Enum | 27 | `str`, `Enum` | Supported managed-schema rendering profiles. |
-| [ManagedSchemaBlockState](../entities/ManagedSchemaBlockState.md) | Enum | 34 | `str`, `Enum` | Machine-readable classification of one managed schema block. |
-| [ManagedSchemaPathError](../entities/ManagedSchemaPathError.md) | Class | 45 | `ValueError` | Raised when a managed schema path cannot be accessed safely. |
-| [ManagedSchemaBlockError](../entities/ManagedSchemaBlockError.md) | Class | 49 | `ValueError` | Raised when a malformed managed block cannot be replaced safely. |
-| [ManagedSchemaBlock](../entities/ManagedSchemaBlock.md) | Class | 54 | — | Parsed metadata for a managed schema block without health inference. |
+| [SchemaRenderProfile](../entities/SchemaRenderProfile.md) | Enum | 28 | `str`, `Enum` | Supported managed-schema rendering profiles. |
+| [ManagedSchemaBlockState](../entities/ManagedSchemaBlockState.md) | Enum | 35 | `str`, `Enum` | Machine-readable classification of one managed schema block. |
+| [ManagedSchemaPathError](../entities/ManagedSchemaPathError.md) | Class | 46 | `ValueError` | Raised when a managed schema path cannot be accessed safely. |
+| [ManagedSchemaBlockError](../entities/ManagedSchemaBlockError.md) | Class | 50 | `ValueError` | Raised when a malformed managed block cannot be replaced safely. |
+| [ManagedSchemaBlock](../entities/ManagedSchemaBlock.md) | Class | 55 | — | Parsed metadata for a managed schema block without health inference. |
 
 ## Functions
 
@@ -91,6 +115,7 @@ flowchart LR
 | `_issue_reporting_instructions` | `(wiki_dir: str) -> str` | — | — |
 | `_compact_issue_reporting_instructions` | `(wiki_dir: str) -> str` | — | — |
 | `_development_instructions` | `(skills_dir: str) -> str` | — | — |
+| `_evidence_recovery_instructions` | `(wiki_dir: str, source_selection: str \| Path \| None) -> str` | — | — |
 | `_wiki_instructions` | `(wiki_dir: str, skills_dir: str, *, issue_reporting: bool = False, source_selection: str \| Path \| None = None) -> str` | — | — |
 | `_compact_wiki_instructions` | `(wiki_dir: str, skills_dir: str, *, issue_reporting: bool = False, source_selection: str \| Path \| None = None) -> str` | — | Return the always-loaded knowledge-first safety and routing kernel. |
 | `_schema_profile_marker` | `(render_profile: SchemaRenderProfile) -> str` | — | — |

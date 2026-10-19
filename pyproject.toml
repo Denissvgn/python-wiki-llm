@@ -5,7 +5,7 @@ backend-path = ["."]
 
 [project]
 name = "agent-wiki-cli"
-version = "3.0.0"
+version = "3.1.0"
 description = "CLI tool to maintain hybrid LLM Wikis for multi-language projects."
 readme = "README.md"
 license = "MIT"
@@ -67,6 +67,7 @@ where = ["src"]
 "llm_wiki_cli" = [
     "py.typed",
     "services/analysis_contracts.json",
+    "schemas/llm-wiki-normalization-diagnostic-v1.schema.json",
     "schemas/llm-wiki-knowledge-v1.schema.json",
     "schemas/llm-wiki-implementation-evidence-v1.schema.json",
     "schemas/llm-wiki-maintenance-adoption-v1.schema.json",

@@ -12,22 +12,22 @@ import json
 import math
 import re
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field as dataclass_field
 from pathlib import Path
 from typing import Any
+
+from .normalization_diagnostics import MISSING_VALUE, NormalizationDiagnostic
 
 from .validation import (
     require_bool,
     require_list,
     require_mapping,
-    require_mapping_list,
     require_member,
     require_nonempty_text,
     require_positive_int,
     require_repository_relative_path,
     require_sha256,
     require_string,
-    require_string_list,
 )
 
 SHA256_PATTERN = r"^sha256:[0-9a-f]{64}$"
@@ -96,6 +96,7 @@ class ConceptObservationBasis:
     source_content_hash: str
     concept_observation_hash: str | None
     unknown_reason: str | None = None
+    normalization_diagnostic: NormalizationDiagnostic | None = dataclass_field(default=None, repr=False, compare=False)
 
     def __post_init__(self) -> None:
         _validate_scope(self.scope)
@@ -143,9 +144,25 @@ class ConceptObservationBasis:
 
 
 class _InventoryNormalizationError(Exception):
-    def __init__(self, reason: str):
+    def __init__(self, reason: str, *, pointer=None, rule=None, expected=None, value=None, exact=True):
         self.reason = reason
+        self._detail = (pointer, rule, expected, value, exact)
         super().__init__(reason)
+
+    @property
+    def diagnostic(self) -> NormalizationDiagnostic | None:
+        pointer, rule, expected, value, exact = self._detail
+        if rule is None:
+            return None
+        return NormalizationDiagnostic.rejection(self.reason, pointer, rule, expected, value, exact=exact)
+
+
+def _failure(pointer, rule, expected, value, *, reason=UNKNOWN_INVALID_INVENTORY, exact=True):
+    return _InventoryNormalizationError(reason, pointer=pointer, rule=rule, expected=expected, value=value, exact=exact)
+
+
+def _pointer(parent, field):
+    return parent + "/" + str(field).replace("~", "~0").replace("/", "~1")
 
 
 def is_valid_sha256(value: object) -> bool:
@@ -319,6 +336,7 @@ def build_module_observation_basis(
             source_content_hash,
             extractor_ref,
             exc.reason,
+            diagnostic=exc.diagnostic,
         )
     except (RecursionError, TypeError, UnicodeEncodeError, ValueError):
         return _unknown_basis(
@@ -327,6 +345,10 @@ def build_module_observation_basis(
             source_content_hash,
             extractor_ref,
             UNKNOWN_INVALID_INVENTORY,
+            diagnostic=NormalizationDiagnostic(
+                UNKNOWN_INVALID_INVENTORY, None, "structural-json-encoding",
+                "finite encodable acyclic JSON within recursion limits", "unavailable", "not captured", False,
+            ),
         )
 
     return ConceptObservationBasis(
@@ -380,6 +402,7 @@ def build_entity_observation_basis(
             source_content_hash,
             extractor_ref,
             exc.reason,
+            diagnostic=exc.diagnostic, entity_name=entity_name, occurrence=occurrence,
         )
     except (RecursionError, TypeError, UnicodeEncodeError, ValueError):
         return _unknown_basis(
@@ -388,6 +411,10 @@ def build_entity_observation_basis(
             source_content_hash,
             extractor_ref,
             UNKNOWN_INVALID_INVENTORY,
+            diagnostic=NormalizationDiagnostic(
+                UNKNOWN_INVALID_INVENTORY, None, "structural-json-encoding",
+                "finite encodable acyclic JSON within recursion limits", "unavailable", "not captured", False,
+            ), entity_name=entity_name, occurrence=occurrence,
         )
 
     return ConceptObservationBasis(
@@ -421,410 +448,313 @@ def build_infrastructure_observation_basis(
     )
 
 
-def _normalize_module_observation(
-    file_data: Mapping[str, Any] | None,
-) -> dict[str, Any]:
+def _normalize_module_observation(file_data: Mapping[str, Any] | None) -> dict[str, Any]:
     language = _inventory_language(file_data)
     assert isinstance(file_data, Mapping)
     classes = _record_array(file_data, "classes", required=True)
     functions = _record_array(file_data, "functions", required=True)
     imports = _record_array(file_data, "imports", required=False)
-    for record in imports:
-        _validate_import_record(record, language=language)
+    for index, record in enumerate(imports):
+        _validate_import_record(record, language=language, pointer=f"/imports/{index}")
 
     class_summaries: list[dict[str, Any]] = []
     seen_names: dict[str, int] = {}
-    for record in classes:
-        name = _record_name(record)
-        _validate_module_entity_record(record)
+    for index, record in enumerate(classes):
+        pointer = f"/classes/{index}"
+        name = _record_name(record, pointer)
+        _validate_module_entity_record(record, pointer)
         seen_names[name] = seen_names.get(name, 0) + 1
-        summary = _copy_selected_fields(
-            record,
-            _MODULE_ENTITY_FIELDS,
-            _MODULE_NONSTRUCTURAL_KEYS,
-        )
+        summary = _copy_selected_fields(record, _MODULE_ENTITY_FIELDS, _MODULE_NONSTRUCTURAL_KEYS, pointer)
         summary["occurrence"] = seen_names[name]
         class_summaries.append(summary)
 
     function_summaries: list[dict[str, Any]] = []
-    for record in functions:
-        _validate_callable_record(record)
-        function_summaries.append(
-            _copy_selected_fields(
-                record,
-                _MODULE_FUNCTION_FIELDS,
-                _MODULE_NONSTRUCTURAL_KEYS,
-            )
-        )
+    for index, record in enumerate(functions):
+        pointer = f"/functions/{index}"
+        _validate_callable_record(record, pointer)
+        function_summaries.append(_copy_selected_fields(record, _MODULE_FUNCTION_FIELDS, _MODULE_NONSTRUCTURAL_KEYS, pointer))
 
     payload: dict[str, Any] = {
-        "scope": MODULE_OBSERVATION_SCOPE,
-        "language": language,
-        "imports": _structural_copy(imports, _MODULE_NONSTRUCTURAL_KEYS),
-        "classes": class_summaries,
-        "functions": function_summaries,
+        "scope": MODULE_OBSERVATION_SCOPE, "language": language,
+        "imports": _structural_copy(imports, _MODULE_NONSTRUCTURAL_KEYS, pointer="/imports"),
+        "classes": class_summaries, "functions": function_summaries,
     }
     if "module" in file_data:
         module_name = file_data["module"]
         if not isinstance(module_name, str) or not module_name.strip():
-            raise _InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)
+            raise _failure("/module", "nonempty-text", "nonblank string", module_name)
         payload["module"] = module_name
 
     if language in {"javascript", "typescript"}:
         exports = _json_array(file_data, "exports")
-        _validate_string_array(exports)
+        _validate_string_array(exports, "/exports")
         constants = _record_array(file_data, "constants", required=False)
         module_calls = _record_array(file_data, "module_calls", required=False)
         constant_summaries = []
-        for record in constants:
-            _validate_constant_record(record)
-            constant_summaries.append(
-                _copy_selected_fields(
-                    record,
-                    _MODULE_CONSTANT_FIELDS,
-                    _MODULE_NONSTRUCTURAL_KEYS,
-                )
-            )
-        payload["exports"] = _structural_copy(
-            exports,
-            _MODULE_NONSTRUCTURAL_KEYS,
-        )
+        for index, record in enumerate(constants):
+            pointer = f"/constants/{index}"
+            _validate_constant_record(record, pointer)
+            constant_summaries.append(_copy_selected_fields(record, _MODULE_CONSTANT_FIELDS, _MODULE_NONSTRUCTURAL_KEYS, pointer))
+        payload["exports"] = _structural_copy(exports, _MODULE_NONSTRUCTURAL_KEYS, pointer="/exports")
         payload["constants"] = constant_summaries
         call_summaries = []
-        for record in module_calls:
-            _validate_module_call_record(record)
-            call_summaries.append(
-                _copy_selected_fields(
-                    record,
-                    _MODULE_CALL_FIELDS,
-                    _MODULE_NONSTRUCTURAL_KEYS,
-                )
-            )
+        for index, record in enumerate(module_calls):
+            pointer = f"/module_calls/{index}"
+            _validate_module_call_record(record, pointer)
+            call_summaries.append(_copy_selected_fields(record, _MODULE_CALL_FIELDS, _MODULE_NONSTRUCTURAL_KEYS, pointer))
         payload["module_calls"] = call_summaries
-
     return payload
 
 
-def _normalize_entity_observation(
-    file_data: Mapping[str, Any] | None,
-    entity_name: str,
-    occurrence: int,
-) -> dict[str, Any]:
+def _normalize_entity_observation(file_data: Mapping[str, Any] | None, entity_name: str, occurrence: int) -> dict[str, Any]:
     language = _inventory_language(file_data)
     assert isinstance(file_data, Mapping)
     classes = _record_array(file_data, "classes", required=True)
     selected: Mapping[str, Any] | None = None
     seen = 0
-    for record in classes:
-        name = _record_name(record)
+    selected_pointer = "/classes"
+    for index, record in enumerate(classes):
+        name = _record_name(record, f"/classes/{index}")
         if name != entity_name:
             continue
         seen += 1
         if seen == occurrence:
             selected = record
+            selected_pointer = f"/classes/{index}"
             break
     if selected is None:
-        raise _InventoryNormalizationError(UNKNOWN_ENTITY_NOT_FOUND)
-    _validate_entity_record(selected)
-
-    return {
-        "scope": ENTITY_OBSERVATION_SCOPE,
-        "language": language,
-        "name": entity_name,
-        "occurrence": occurrence,
-        "declaration": _structural_copy(
-            selected,
-            _ENTITY_NONSTRUCTURAL_KEYS,
-        ),
-    }
+        raise _failure("/classes", "entity-occurrence", "requested named one-based occurrence", classes,
+                       reason=UNKNOWN_ENTITY_NOT_FOUND)
+    _validate_entity_record(selected, selected_pointer)
+    return {"scope": ENTITY_OBSERVATION_SCOPE, "language": language, "name": entity_name,
+            "occurrence": occurrence,
+            "declaration": _structural_copy(selected, _ENTITY_NONSTRUCTURAL_KEYS, pointer=selected_pointer)}
 
 
 def _inventory_language(file_data: Mapping[str, Any] | None) -> str:
     if not isinstance(file_data, Mapping):
-        raise _InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)
-    language = file_data.get("language")
+        raise _failure("", "object-required", "inventory object", file_data)
+    language = file_data.get("language", MISSING_VALUE)
     if not isinstance(language, str) or not language:
-        raise _InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)
+        raise _failure("/language", "nonempty-text", "nonempty language string", language)
     if language not in _SUPPORTED_OBSERVATION_LANGUAGES:
-        raise _InventoryNormalizationError(UNKNOWN_UNSUPPORTED_LANGUAGE)
+        raise _failure("/language", "supported-language", "registered observation language", language,
+                       reason=UNKNOWN_UNSUPPORTED_LANGUAGE)
     return language
 
 
-def _record_array(
-    file_data: Mapping[str, Any],
-    field: str,
-    *,
-    required: bool,
-) -> list[Mapping[str, Any]]:
-    if field not in file_data:
-        if required:
-            raise _InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)
-        return []
-    value = file_data[field]
-    if not isinstance(value, list):
-        raise _InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)
-    if not all(isinstance(item, Mapping) for item in value):
-        raise _InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)
-    return value
+def _record_array(file_data: Mapping[str, Any], field: str, *, required: bool, pointer="") -> list[Mapping[str, Any]]:
+    if required and field not in file_data:
+        raise _failure(_pointer(pointer, field), "required-field", "array of record objects", MISSING_VALUE)
+    return _optional_record_array(file_data, field, pointer)
 
 
 def _json_array(file_data: Mapping[str, Any], field: str) -> list[Any]:
-    return require_list(
-        file_data.get(field, []),
-        error=_InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY),
-    )
+    value = file_data.get(field, [])
+    return require_list(value, error=_failure(_pointer("", field), "array-required", "array", value))
 
 
-def _record_name(record: Mapping[str, Any]) -> str:
-    return require_nonempty_text(
-        record.get("name"),
-        error=_InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY),
-        reject_control_characters=False,
-    )
+def _record_name(record: Mapping[str, Any], pointer="") -> str:
+    value = record.get("name", MISSING_VALUE)
+    return require_nonempty_text(value, error=_failure(_pointer(pointer, "name"), "nonempty-text", "nonblank string", value),
+                                 reject_control_characters=False)
 
 
-def _validate_module_entity_record(record: Mapping[str, Any]) -> None:
-    _record_name(record)
-    _validate_optional_strings(record, ("kind", "model_kind", "target"))
-    _validate_optional_string_array(record, "bases")
+def _validate_module_entity_record(record: Mapping[str, Any], pointer="") -> None:
+    _record_name(record, pointer)
+    _validate_optional_strings(record, ("kind", "model_kind", "target"), pointer)
+    _validate_optional_string_array(record, "bases", pointer)
 
 
-def _validate_entity_record(record: Mapping[str, Any]) -> None:
-    _validate_module_entity_record(record)
-    for field in (
-        "decorators",
-        "deriving",
-        "literal_values",
-        "type_params",
-    ):
-        _validate_optional_string_array(record, field)
-
-    attributes = _optional_record_array(record, "attributes")
-    for attribute in attributes:
-        _record_name(attribute)
-        _validate_optional_strings(
-            attribute,
-            (
-                "alias",
-                "default",
-                "default_factory",
-                "serialization_alias",
-                "tag",
-                "type",
-                "validation_alias",
-                "value",
-            ),
-        )
-        for field in (
-            "annotated_metadata",
-            "examples",
-            "literal_values",
-        ):
-            _validate_optional_json_array(attribute, field)
-        _validate_optional_mapping(attribute, "constraints")
-        _validate_optional_record_array(attribute, "unknowns")
-        _validate_optional_booleans(attribute, ("nullable", "optional", "required"))
-
-    methods = _optional_record_array(record, "methods")
-    for method in methods:
-        _validate_callable_record(method)
-        validator = _validate_optional_mapping(method, "validator")
+def _validate_entity_record(record: Mapping[str, Any], pointer="") -> None:
+    _validate_module_entity_record(record, pointer)
+    for field in ("decorators", "deriving", "literal_values", "type_params"):
+        _validate_optional_string_array(record, field, pointer)
+    attributes = _optional_record_array(record, "attributes", pointer)
+    for index, attribute in enumerate(attributes):
+        position = _pointer(_pointer(pointer, "attributes"), index)
+        _record_name(attribute, position)
+        _validate_optional_strings(attribute, (
+            "alias", "default", "default_factory", "serialization_alias", "tag", "type", "validation_alias", "value",
+        ), position)
+        for field in ("annotated_metadata", "examples", "literal_values"):
+            _validate_optional_json_array(attribute, field, position)
+        _validate_optional_mapping(attribute, "constraints", position)
+        _validate_optional_record_array(attribute, "unknowns", position)
+        _validate_optional_booleans(attribute, ("nullable", "optional", "required"), position)
+    methods = _optional_record_array(record, "methods", pointer)
+    for index, method in enumerate(methods):
+        position = _pointer(_pointer(pointer, "methods"), index)
+        _validate_callable_record(method, position)
+        validator = _validate_optional_mapping(method, "validator", position)
         if validator is not None:
-            _validate_optional_string_array(validator, "fields")
-            _validate_optional_mapping(validator, "options")
+            _validate_optional_string_array(validator, "fields", _pointer(position, "validator"))
+            _validate_optional_mapping(validator, "options", _pointer(position, "validator"))
+    model_config = _optional_record_array(record, "model_config", pointer)
+    for index, setting in enumerate(model_config):
+        position = _pointer(_pointer(pointer, "model_config"), index)
+        _record_name(setting, position)
+        _validate_optional_record_array(setting, "unknowns", position)
 
-    model_config = _optional_record_array(record, "model_config")
-    for setting in model_config:
-        _record_name(setting)
-        _validate_optional_record_array(setting, "unknowns")
 
-
-def _validate_callable_record(record: Mapping[str, Any]) -> None:
-    _record_name(record)
-    _validate_optional_strings(
-        record,
-        ("kind", "return_type", "signature"),
-    )
-    _validate_optional_booleans(record, ("async", "is_async"))
-    _validate_optional_string_array(record, "decorators")
-    params = _optional_record_array(record, "params")
-    for param in params:
+def _validate_callable_record(record: Mapping[str, Any], pointer="") -> None:
+    _record_name(record, pointer)
+    _validate_optional_strings(record, ("kind", "return_type", "signature"), pointer)
+    _validate_optional_booleans(record, ("async", "is_async"), pointer)
+    _validate_optional_string_array(record, "decorators", pointer)
+    params = _optional_record_array(record, "params", pointer)
+    for index, param in enumerate(params):
+        position = _pointer(_pointer(pointer, "params"), index)
         if not isinstance(param.get("name"), str):
-            raise _InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)
-        _validate_optional_strings(param, ("default", "kind", "type"))
+            raise _failure(_pointer(position, "name"), "string-required", "string", param.get("name", MISSING_VALUE))
+        _validate_optional_strings(param, ("default", "kind", "type"), position)
 
 
-def _validate_import_record(record: Mapping[str, Any], *, language: str) -> None:
-    module = record.get("module")
-    # JavaScript's deliberately unresolved calls are structural gap evidence.
-    # Admit only the producer's explicit shape, never an arbitrary empty import.
+def _validate_import_record(record: Mapping[str, Any], *, language: str, pointer="") -> None:
+    module = record.get("module", MISSING_VALUE)
     gap_type = record.get("type")
     gap_reasons = {"dynamic-import": "dynamic-import", "require": "dynamic-require"}
     unresolved_gap = (
-        language in {"javascript", "typescript"}
-        and module == ""
-        and isinstance(gap_type, str)
-        and gap_type in gap_reasons
-        and record.get("resolution") == "unresolved"
-        and record.get("reason") == gap_reasons[gap_type]
-        and record.get("name") == ""
-        and type(record.get("line")) is int
-        and record["line"] > 0
+        language in {"javascript", "typescript"} and module == ""
+        and isinstance(gap_type, str) and gap_type in gap_reasons
+        and record.get("resolution") == "unresolved" and record.get("reason") == gap_reasons[gap_type]
+        and record.get("name") == "" and type(record.get("line")) is int and record["line"] > 0
         and ("scope" not in record or record["scope"] == "deferred")
     )
     if not isinstance(module, str) or (not module and not unresolved_gap):
-        raise _InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)
-    _validate_optional_strings(record, ("name", "type"))
+        # Refine the location of a near-miss explicit gap without changing
+        # its strict acceptance predicate or interpreting it as a dependency.
+        if (language in {"javascript", "typescript"} and module == ""
+                and isinstance(gap_type, str) and gap_type in gap_reasons):
+            for field, expected in (("resolution", "unresolved"), ("reason", gap_reasons[gap_type]), ("name", "")):
+                if record.get(field) != expected:
+                    raise _failure(_pointer(pointer, field), "explicit-import-gap", f"literal {expected!r}", record.get(field, MISSING_VALUE))
+            if type(record.get("line")) is not int or record["line"] <= 0:
+                raise _failure(_pointer(pointer, "line"), "positive-integer", "positive integer (not boolean)", record.get("line", MISSING_VALUE))
+            if "scope" in record and record["scope"] != "deferred":
+                raise _failure(_pointer(pointer, "scope"), "explicit-import-gap", "deferred or omitted", record["scope"])
+        raise _failure(_pointer(pointer, "module"), "import-module", "nonempty string or valid explicit unresolved-call gap", module)
+    _validate_optional_strings(record, ("name", "type"), pointer)
     if "alias" in record and record["alias"] is not None:
-        _validate_optional_strings(record, ("alias",))
-    _validate_optional_booleans(record, ("qualified",))
+        _validate_optional_strings(record, ("alias",), pointer)
+    _validate_optional_booleans(record, ("qualified",), pointer)
 
 
-def _validate_constant_record(record: Mapping[str, Any]) -> None:
-    _record_name(record)
-    _validate_optional_booleans(record, ("exported",))
+def _validate_constant_record(record: Mapping[str, Any], pointer="") -> None:
+    _record_name(record, pointer)
+    _validate_optional_booleans(record, ("exported",), pointer)
 
 
-def _validate_module_call_record(record: Mapping[str, Any]) -> None:
+def _validate_module_call_record(record: Mapping[str, Any], pointer="") -> None:
     name = record.get("attr") or record.get("name")
     if not isinstance(name, str) or not name:
-        raise _InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)
-    _validate_optional_strings(record, ("attr", "name", "target"))
+        raise _failure(_pointer(pointer, "attr" if record.get("attr") else "name"),
+                       "module-call-name", "nonempty attr or name string",
+                       record.get("attr" if record.get("attr") else "name", MISSING_VALUE))
+    _validate_optional_strings(record, ("attr", "name", "target"), pointer)
 
 
-def _validate_optional_strings(
-    record: Mapping[str, Any],
-    fields: tuple[str, ...],
-) -> None:
+def _validate_optional_strings(record: Mapping[str, Any], fields: tuple[str, ...], pointer="") -> None:
     for field in fields:
         if field in record:
-            require_string(
-                record[field],
-                error=_InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY),
-            )
+            require_string(record[field], error=_failure(_pointer(pointer, field), "string-required", "string", record[field]))
 
 
-def _validate_optional_booleans(
-    record: Mapping[str, Any],
-    fields: tuple[str, ...],
-) -> None:
+def _validate_optional_booleans(record: Mapping[str, Any], fields: tuple[str, ...], pointer="") -> None:
     for field in fields:
         if field in record:
-            require_bool(
-                record[field],
-                error=_InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY),
-            )
+            require_bool(record[field], error=_failure(_pointer(pointer, field), "boolean-required", "boolean", record[field]))
 
 
-def _validate_string_array(value: list[Any]) -> None:
-    require_string_list(
-        value,
-        error=_InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY),
-    )
+def _validate_string_array(value: list[Any], pointer="") -> None:
+    # Shared scalar validation preserves acceptance, ordering and multiplicity.
+    for index, item in enumerate(value):
+        require_string(item, error=_failure(_pointer(pointer, index), "string-required", "string", item))
 
 
-def _validate_optional_string_array(
-    record: Mapping[str, Any],
-    field: str,
-) -> None:
-    if field not in record:
-        return
-    require_string_list(
-        record[field],
-        error=_InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY),
-    )
-
-
-def _validate_optional_json_array(
-    record: Mapping[str, Any],
-    field: str,
-) -> None:
+def _validate_optional_string_array(record: Mapping[str, Any], field: str, pointer="") -> None:
     if field in record:
-        require_list(
-            record[field],
-            error=_InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY),
+        position = _pointer(pointer, field)
+        _validate_string_array(
+            require_list(record[field], error=_failure(position, "array-required", "string array", record[field])),
+            position,
         )
 
 
-def _optional_record_array(
-    record: Mapping[str, Any],
-    field: str,
-) -> list[Mapping[str, Any]]:
-    if field not in record:
-        return []
-    return require_mapping_list(
-        record[field],
-        error=_InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY),
-    )
+def _validate_optional_json_array(record: Mapping[str, Any], field: str, pointer="") -> None:
+    if field in record:
+        require_list(record[field], error=_failure(_pointer(pointer, field), "array-required", "array", record[field]))
 
 
-def _validate_optional_record_array(
-    record: Mapping[str, Any],
-    field: str,
-) -> None:
-    _optional_record_array(record, field)
+def _optional_record_array(record: Mapping[str, Any], field: str, pointer="") -> list[Mapping[str, Any]]:
+    position = _pointer(pointer, field)
+    value = require_list(record.get(field, []), error=_failure(position, "array-required", "array of record objects", record.get(field, [])))
+    return [_record_object(item, _pointer(position, index)) for index, item in enumerate(value)]
 
 
-def _validate_optional_mapping(
-    record: Mapping[str, Any],
-    field: str,
-) -> Mapping[str, Any] | None:
+def _record_object(value, pointer) -> Mapping[str, Any]:
+    return require_mapping(value, error=_failure(pointer, "object-required", "record object", value))
+
+
+def _validate_optional_record_array(record: Mapping[str, Any], field: str, pointer="") -> None:
+    _optional_record_array(record, field, pointer)
+
+
+def _validate_optional_mapping(record: Mapping[str, Any], field: str, pointer="") -> Mapping[str, Any] | None:
     if field not in record:
         return None
-    return require_mapping(
-        record[field],
-        error=_InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY),
-    )
+    return require_mapping(record[field], error=_failure(_pointer(pointer, field), "object-required", "object", record[field]))
 
 
-def _copy_selected_fields(
-    record: Mapping[str, Any],
-    fields: tuple[str, ...],
-    excluded_keys: frozenset[str],
-) -> dict[str, Any]:
-    return {
-        field: _structural_copy(record[field], excluded_keys)
-        for field in fields
-        if field in record
-    }
+def _copy_selected_fields(record: Mapping[str, Any], fields: tuple[str, ...], excluded_keys: frozenset[str], pointer="") -> dict[str, Any]:
+    return {field: _structural_copy(record[field], excluded_keys, pointer=_pointer(pointer, field))
+            for field in fields if field in record}
 
 
-def _structural_copy(
-    value: Any,
-    excluded_keys: frozenset[str],
-    active: set[int] | None = None,
-) -> Any:
+# Only schema-owned keys are shown in diagnostics. Arbitrary keys may contain
+# secrets; their values still participate fully in the original structural hash.
+_POINTER_FIELDS = frozenset({
+    "name", "kind", "model_kind", "bases", "target", "signature", "params", "return_type", "is_async", "async",
+    "decorators", "module", "type", "alias", "qualified", "resolution", "reason", "scope", "attributes", "methods",
+    "default", "default_factory", "serialization_alias", "tag", "validation_alias", "value", "annotated_metadata",
+    "examples", "literal_values", "constraints", "unknowns", "nullable", "optional", "required", "validator", "fields",
+    "options", "model_config", "deriving", "type_params", "exported", "attr",
+})
+
+
+def _structural_copy(value: Any, excluded_keys: frozenset[str], active: set[int] | None = None,
+                     *, pointer="", exact=True) -> Any:
     if active is None:
         active = set()
     if isinstance(value, Mapping):
         identity = id(value)
         if identity in active:
-            raise _InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)
+            raise _failure(pointer, "acyclic-json", "acyclic JSON value", value, exact=exact)
         active.add(identity)
         try:
             if not all(isinstance(key, str) for key in value):
-                raise _InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)
-            return {
-                key: _structural_copy(value[key], excluded_keys, active)
-                for key in sorted(value)
-                if key not in excluded_keys
-            }
+                raise _failure(pointer, "string-object-keys", "JSON object with string keys", value, exact=exact)
+            return {key: _structural_copy(value[key], excluded_keys, active,
+                                         pointer=_pointer(pointer, key) if exact and key in _POINTER_FIELDS else pointer,
+                                         exact=exact and key in _POINTER_FIELDS)
+                    for key in sorted(value) if key not in excluded_keys}
         finally:
             active.remove(identity)
     if isinstance(value, list):
         identity = id(value)
         if identity in active:
-            raise _InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)
+            raise _failure(pointer, "acyclic-json", "acyclic JSON value", value, exact=exact)
         active.add(identity)
         try:
-            return [_structural_copy(item, excluded_keys, active) for item in value]
+            return [_structural_copy(item, excluded_keys, active, pointer=_pointer(pointer, index) if exact else pointer, exact=exact)
+                    for index, item in enumerate(value)]
         finally:
             active.remove(identity)
     if value is None or isinstance(value, (bool, int, str)):
         return value
     if isinstance(value, float) and math.isfinite(value):
         return value
-    raise _InventoryNormalizationError(UNKNOWN_INVALID_INVENTORY)
+    raise _failure(pointer, "finite-json-value", "finite JSON scalar, object or array", value, exact=exact)
 
 
 def _hash_normalized_observation(normalized: dict[str, Any] | None) -> str | None:
@@ -842,6 +772,7 @@ def _unknown_basis(
     source_content_hash: str,
     extractor_ref: str,
     reason: str,
+    *, diagnostic: NormalizationDiagnostic | None = None, entity_name=None, occurrence=None,
 ) -> ConceptObservationBasis:
     return ConceptObservationBasis(
         scope=scope,
@@ -850,6 +781,8 @@ def _unknown_basis(
         source_content_hash=source_content_hash,
         concept_observation_hash=None,
         unknown_reason=reason,
+        normalization_diagnostic=(diagnostic.at_source(source_path, scope, extractor_ref, entity_name, occurrence)
+                                  if diagnostic is not None else None),
     )
 
 

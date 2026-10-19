@@ -133,17 +133,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| runtime_consumed_inputs | isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs) | 1488 | `isinstance(source_snapshot, SourceSnapshot)` |
-| runtime_consumed_inputs | TypeError | 1489 | `TypeError('source_snapshot must be a SourceSnapshot')` |
-| runtime_consumed_inputs | isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs) | 1490 | `isinstance(generation_inputs, Mapping)` |
-| runtime_consumed_inputs | TypeError | 1491 | `TypeError('generation_inputs must be a mapping')` |
-| runtime_consumed_inputs | source_snapshot.to_consumed_inputs | 1493 | `source_snapshot.to_consumed_inputs(data not statically known)` |
-| runtime_consumed_inputs | _merge_explicit_consumed_input | 1495 | `_merge_explicit_consumed_input(consumed_by_path, path=plugin_lock_path, content_hash=plugin_lock_hash, kind=ConsumedInputKind.PLUGIN, field='plugin_lock')` |
-| _merge_explicit_consumed_input | KnowledgeGenerationError | 1561 | `KnowledgeGenerationError(field, 'path and content hash must be supplied together')` |
-| _merge_explicit_consumed_input | KnowledgeGenerationError | 1568 | `KnowledgeGenerationError(..., 'must be a non-empty repository-relative path')` |
-| _merge_explicit_consumed_input | is_valid_sha256 | 1572 | `is_valid_sha256(content_hash)` |
-| is_valid_sha256 | isinstance (src/llm_wiki_cli/services…vidence.py:is_valid_sha256) | 154 | `isinstance(value, str)` |
-| is_valid_sha256 | _SHA256_RE.fullmatch | 154 | `_SHA256_RE.fullmatch(value)` |
+| runtime_consumed_inputs | isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs) | 1494 | `isinstance(source_snapshot, SourceSnapshot)` |
+| runtime_consumed_inputs | TypeError | 1495 | `TypeError('source_snapshot must be a SourceSnapshot')` |
+| runtime_consumed_inputs | isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs) | 1496 | `isinstance(generation_inputs, Mapping)` |
+| runtime_consumed_inputs | TypeError | 1497 | `TypeError('generation_inputs must be a mapping')` |
+| runtime_consumed_inputs | source_snapshot.to_consumed_inputs | 1499 | `source_snapshot.to_consumed_inputs(data not statically known)` |
+| runtime_consumed_inputs | _merge_explicit_consumed_input | 1501 | `_merge_explicit_consumed_input(consumed_by_path, path=plugin_lock_path, content_hash=plugin_lock_hash, kind=ConsumedInputKind.PLUGIN, field='plugin_lock')` |
+| _merge_explicit_consumed_input | KnowledgeGenerationError | 1567 | `KnowledgeGenerationError(field, 'path and content hash must be supplied together')` |
+| _merge_explicit_consumed_input | KnowledgeGenerationError | 1574 | `KnowledgeGenerationError(..., 'must be a non-empty repository-relative path')` |
+| _merge_explicit_consumed_input | is_valid_sha256 | 1578 | `is_valid_sha256(content_hash)` |
+| is_valid_sha256 | isinstance (src/llm_wiki_cli/services…vidence.py:is_valid_sha256) | 171 | `isinstance(value, str)` |
+| is_valid_sha256 | _SHA256_RE.fullmatch | 171 | `_SHA256_RE.fullmatch(value)` |
 
 ### Boundary effects
 
@@ -153,13 +153,13 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `runtime_consumed_inputs` | `isinstance` | 1488 |
-| external_call | `runtime_consumed_inputs` | `TypeError` | 1489 |
-| external_call | `runtime_consumed_inputs` | `isinstance` | 1490 |
-| external_call | `runtime_consumed_inputs` | `TypeError` | 1491 |
-| unresolved_call | `runtime_consumed_inputs` | `source_snapshot.to_consumed_inputs` | 1493 |
-| external_call | `is_valid_sha256` | `isinstance` | 154 |
-| unresolved_call | `is_valid_sha256` | `_SHA256_RE.fullmatch` | 154 |
+| external_call | `runtime_consumed_inputs` | `isinstance` | 1494 |
+| external_call | `runtime_consumed_inputs` | `TypeError` | 1495 |
+| external_call | `runtime_consumed_inputs` | `isinstance` | 1496 |
+| external_call | `runtime_consumed_inputs` | `TypeError` | 1497 |
+| unresolved_call | `runtime_consumed_inputs` | `source_snapshot.to_consumed_inputs` | 1499 |
+| external_call | `is_valid_sha256` | `isinstance` | 171 |
+| unresolved_call | `is_valid_sha256` | `_SHA256_RE.fullmatch` | 171 |
 | step_limit | `runtime_consumed_inputs` | `first 12 steps` | 0 |
 
 ## Behavior

@@ -360,6 +360,14 @@ def _manifest_current(cache_root: Path, language: str) -> dict[str, Any] | None:
     elif language == "typescript":
         if not isinstance(path_value, str) or not Path(path_value).is_dir():
             return None
+        root_value = manifest.get("root")
+        if not isinstance(root_value, str) or "\0" in root_value:
+            return None
+        prepared_root = Path(root_value)
+        if Path(path_value) != prepared_root / "node_modules/ts-morph":
+            return None
+        if _hash_labeled_files([(name, prepared_root / name) for name in _TS_FILES]) != manifest["source_fingerprint"]:
+            return None
     else:
         return None
     if manifest.get("artifact_fingerprint") != helper_artifact_fingerprint(
@@ -472,6 +480,97 @@ def missing_helper_message(
         f"{retry} Read-only commands never prepare helpers. "
         "If setup is unavailable, report the limitation and use targeted source/wiki evidence."
     )
+
+
+def helper_identity(
+    language: str, src_dir: str | Path = ".", cache_dir: str | None = None
+) -> dict[str, Any]:
+    """Inspect existing preparation receipts and execution runtime without setup.
+
+    A receipt describes preparation, not the runtime currently selected by PATH.
+    Fingerprints are observed identities, not a claim of release authenticity.
+    """
+    if language not in SUPPORTED_HELPERS:
+        raise ValueError(f"Unsupported helper language: {language}")
+    root = resolve_helper_cache_root(src_dir, cache_dir)
+    receipt = None if root is None else _load_manifest(root, language)
+    source = helper_source_fingerprint(language)
+    issues: list[str] = []
+    current = None
+    artifact = None
+    execution_source = None
+    if receipt is None:
+        issues.append("receipt-unavailable")
+    else:
+        for key, expected in (("version", HELPER_MANIFEST_VERSION),
+                              ("language", language), ("platform", platform_id()),
+                              ("source_fingerprint", source)):
+            if receipt.get(key) != expected:
+                issues.append(key.replace("_", "-") + "-mismatch")
+        try:
+            current = None if root is None else _manifest_current(root, language)
+            path = receipt.get("path")
+            if current is not None:
+                artifact = current.get("artifact_fingerprint")
+            elif isinstance(path, str) and Path(path).exists():
+                artifact = helper_artifact_fingerprint(Path(path))
+            if artifact != receipt.get("artifact_fingerprint") or artifact is None:
+                issues.append("artifact-unavailable-or-mismatch")
+        except (OSError, ValueError):
+            issues.append("artifact-unavailable")
+        if current is None and not issues:
+            issues.append("invalid-receipt")
+        if language == "typescript":
+            try:
+                prepared_root = receipt.get("root")
+                if (not isinstance(prepared_root, str)
+                        or Path(str(receipt.get("path"))) != Path(prepared_root) / "node_modules/ts-morph"
+                        or not (Path(prepared_root) / "extract.js").is_file()):
+                    issues.append("typescript-root-unavailable")
+                if isinstance(prepared_root, str):
+                    execution_source = _hash_labeled_files([(name, Path(prepared_root) / name) for name in _TS_FILES])
+                    if execution_source != source:
+                        issues.append("execution-source-mismatch")
+            except (OSError, ValueError):
+                issues.append("typescript-root-unavailable")
+    runtime: dict[str, Any] = {"kind": "native-helper", "path": None if current is None else current.get("path")}
+    if language == "typescript":
+        node = shutil.which("node")
+        version = command_output([node, "--version"]) if node else None
+        runtime = {"kind": "node", "path": node, "version": version}
+        if not version:
+            issues.append("active-runtime-unavailable")
+        elif receipt is not None and not str(receipt.get("toolchain", "")).startswith("node " + version + ";"):
+            issues.append("active-runtime-mismatch")
+    runtime_only = bool(issues) and all(issue.startswith("active-runtime-") for issue in issues)
+    recovery = None
+    if runtime_only:
+        recovery = (
+            "The prepared helper is current. Select the Node runtime recorded in "
+            f"the preparation toolchain before retrying with the same source selection and helper cache {root}. "
+            "Preparing an already-current helper does not change active PATH."
+        )
+    elif issues:
+        recovery = missing_helper_message(language, src_dir, cache_dir)
+    return {
+        "language": language,
+        "status": "ready" if not issues else "unavailable-or-mismatched",
+        "issues": issues,
+        "cache_root": None if root is None else str(root),
+        "current_source_fingerprint": source,
+        "current_artifact_fingerprint": artifact,
+        "execution_source_fingerprint": execution_source,
+        "prepared": None if receipt is None else {
+            key: receipt.get(key) for key in (
+                "version", "language", "platform", "source_fingerprint",
+                "artifact_fingerprint", "path", "toolchain",
+            )
+        },
+        "active_runtime": runtime,
+        "recovery": recovery,
+        "preparation_argv": helper_preparation_argv(language, src_dir, cache_dir),
+        "qualification": "Observed receipt and local bytes; no dependencies installed, no release authenticity established.",
+    }
 
 
 def typescript_dependencies_ready(

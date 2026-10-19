@@ -4,8 +4,11 @@ from __future__ import annotations
 
 from collections import Counter
 from itertools import product
+from dataclasses import replace
 from pathlib import Path
 import re
+
+import pytest
 
 from llm_wiki_cli.services.instruction_ownership import (
     CORRECTNESS_CLAUSE_COVERAGE,
@@ -61,6 +64,7 @@ EXPECTED_CURRENT_SECTIONS = {
         ("Development workflow", "## Development workflow"),
         ("Explicit task routes", "## Explicit task routes"),
         ("Helper recovery", "## Helper recovery"),
+        ("Evidence diagnosis and repair", "## Evidence diagnosis and repair"),
         ("Repository delivery preflight", "## Repository delivery preflight"),
         ("Native knowledge preflight", "## Native knowledge preflight"),
         ("Expanded repository content hygiene", "## Repository content hygiene"),
@@ -344,7 +348,10 @@ def test_critical_inline_clauses_are_explicit_and_semantically_present():
         ),
     }
     compact_required = {
-        "relevant_code_change_activation": ("after every", "class/function/module/cross-module-flow change", "sync-then-lint"),
+        "relevant_code_change_activation": (
+            "after every", "class/function/module/cross-module-flow change",
+            "sync, semantic pass, re-anchor, strict lint/ci",
+        ),
         "generated_semantic_ownership": ("semantic prose only", "generated blocks are cli-owned"),
         "source_read_only": ("source edits need explicit authority",),
         "lint_clean_handoff": ("no lint errors",),
@@ -695,6 +702,7 @@ def test_managed_reference_inbound_inventory_is_explicit_and_exhaustive():
     expected_route_count = (
         2 * len(expected_topics)
         + sum(len(topics) for topics in WORKFLOW_MANAGED_REFERENCE_TOPICS.values())
+        + 1  # The schema carries both the maintenance root and diagnosis fragment.
     )
     assert len(MANAGED_REFERENCE_INBOUND_ROUTES) == expected_route_count
     assert {item.kind for item in MANAGED_REFERENCE_INBOUND_ROUTES} == {
@@ -757,6 +765,36 @@ def test_reference_router_markdown_link_and_real_heading_anchors_resolve():
         headings = markdown_headings(destination.read_text(encoding="utf-8"))
         assert headings[0].title == route.destination_heading
         assert headings[0].anchor == route.destination_anchor
+
+
+@pytest.mark.parametrize("prefix", ["{reference_root}", ".claude/skills/wiki-reference/references", ".llm-wiki/skills/wiki-reference/references"])
+@pytest.mark.parametrize("fragment, valid", [
+    ("diagnose-captured-evidence", True), ("missing", False), ("", False), (None, False),
+])
+def test_installed_diagnosis_route_validates_its_actual_fragment(tmp_path, prefix, fragment, valid):
+    package = tmp_path / "package"
+    (tmp_path / "pyproject.toml").write_text(
+        '[tool.setuptools.package-data]\nllm_wiki_cli = ["skills/**/*.md"]\n'
+    )
+    source = package / "services/schema.py"
+    source.parent.mkdir(parents=True)
+    topic = package / "skills/wiki-reference/references/maintenance.md"
+    topic.parent.mkdir(parents=True)
+    topic.write_text("# Maintenance and validation\n\n## Diagnose captured evidence\n")
+    suffix = "" if fragment is None else "#" + fragment
+    span = f"`{prefix}/maintenance.md{suffix}`"
+    source.write_text(span)
+    declared = next(row for row in MANAGED_REFERENCE_INBOUND_ROUTES
+                    if row.source_path == "services/schema.py" and row.destination_anchor == "diagnose-captured-evidence")
+    assert declared.destination_heading == "Diagnose captured evidence"
+    assert declared.destination_anchor == "diagnose-captured-evidence"
+    route = replace(declared, source_text=span)
+    assert inbound_route_resolves(tmp_path, package, route) is valid
+    discovered = discover_managed_reference_inbound_routes(package)
+    assert len(discovered) == 1
+    assert discovered[0].destination_anchor == ("maintenance-and-validation" if fragment is None else fragment)
+    if fragment == "missing":
+        assert discovered[0].destination_heading == ""
 
 
 def test_active_routes_never_require_the_compatibility_index():

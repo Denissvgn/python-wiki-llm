@@ -2,7 +2,7 @@
 
 **Entry point:** `build_runtime_knowledge_plan` (`api`)
 **Source:** [knowledge_orchestration](../modules/knowledge_orchestration.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 39 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 40 more
 
 **Complete modules touched:**
 
@@ -38,6 +38,7 @@
 - [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
+- [normalization_diagnostics](../modules/normalization_diagnostics.md)
 - [progress](../modules/progress.md)
 - [python_implementation](../modules/python_implementation.md)
 - [section_ownership](../modules/section_ownership.md)
@@ -120,7 +121,7 @@ sequenceDiagram
     p0-->>p30: committed_state.require_for(inputs.target_wiki_dir)
 ```
 
-> Call sequence diagram shows 30 of 3800 interactions; 3770 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3802 interactions; 3772 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 1 of 1214 (1213 omitted); unresolved 1 of 860 (859 omitted). These counts cover the captured static trace.
 
@@ -136,7 +137,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 8 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 11 | - | external | 20 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 11 | - | unresolved | 5 |
-> Omission summary shows 8 of 891 groups; 883 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 893 groups; 885 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -204,12 +205,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_runtime_knowledge_plan | isinstance (src/llm_wiki_cli/services…ld_runtime_knowledge_plan) | 393 | `isinstance(inputs, RuntimeKnowledgeInputs)` |
-| build_runtime_knowledge_plan | TypeError (src/llm_wiki_cli/services…ld_runtime_knowledge_plan) | 394 | `TypeError('inputs must be a RuntimeKnowledgeInputs')` |
-| build_runtime_knowledge_plan | capture_committed_knowledge | 397 | `capture_committed_knowledge(inputs.target_wiki_dir, inputs.previous_manifest)` |
-| capture_committed_knowledge | Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge) | 239 | `Path(wiki_dir).resolve(data not statically known)` |
-| capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 239 | `Path(wiki_dir)` |
-| capture_committed_knowledge | guard_maintenance_owner | 242 | `guard_maintenance_owner(root, manifest)` |
+| build_runtime_knowledge_plan | isinstance (src/llm_wiki_cli/services…ld_runtime_knowledge_plan) | 395 | `isinstance(inputs, RuntimeKnowledgeInputs)` |
+| build_runtime_knowledge_plan | TypeError (src/llm_wiki_cli/services…ld_runtime_knowledge_plan) | 396 | `TypeError('inputs must be a RuntimeKnowledgeInputs')` |
+| build_runtime_knowledge_plan | capture_committed_knowledge | 399 | `capture_committed_knowledge(inputs.target_wiki_dir, inputs.previous_manifest)` |
+| capture_committed_knowledge | Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge) | 241 | `Path(wiki_dir).resolve(data not statically known)` |
+| capture_committed_knowledge | Path (src/llm_wiki_cli/services…pture_committed_knowledge) | 241 | `Path(wiki_dir)` |
+| capture_committed_knowledge | guard_maintenance_owner | 244 | `guard_maintenance_owner(root, manifest)` |
 | guard_maintenance_owner | _absolute_path | 104 | `_absolute_path(Path(...))` |
 | _absolute_path | Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `Path(os.path.abspath(...))` |
 | _absolute_path | os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `os.path.abspath(path)` |
@@ -220,16 +221,16 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `captured.update` | `capture_committed_knowledge` | 268 |
+| mutation | `captured.update` | `capture_committed_knowledge` | 270 |
 | mutation | `pending_parts.pop` | `first_unsafe_path_component` | 71 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_runtime_knowledge_plan` | `isinstance` | 393 |
-| external_call | `build_runtime_knowledge_plan` | `TypeError` | 394 |
-| unresolved_call | `capture_committed_knowledge` | `Path(wiki_dir).resolve` | 239 |
+| external_call | `build_runtime_knowledge_plan` | `isinstance` | 395 |
+| external_call | `build_runtime_knowledge_plan` | `TypeError` | 396 |
+| unresolved_call | `capture_committed_knowledge` | `Path(wiki_dir).resolve` | 241 |
 | external_call | `_absolute_path` | `os.path.abspath` | 49 |
 | step_limit | `build_runtime_knowledge_plan` | `first 12 steps` | 0 |
 | truncated_flow | `build_runtime_knowledge_plan` | `depth limit` | 0 |

@@ -4,7 +4,7 @@
 
 ## Description
 
-Adapts explicit storage migration, recovery, export, cleanup, diagnostics and logical review operations to the CLI. It delegates validation and mutation to their owning services, emits structured output and preserves explicit adoption and failure reporting. Logical inspection and comparison use bounded compact JSON output.
+Adapts explicit storage migration, recovery, export, cleanup, diagnostics and logical review operations to the CLI. It delegates validation and mutation to their owning services, emits structured output and preserves explicit adoption and failure reporting. Logical inspection and comparison use bounded compact JSON output, accept snapshot-bound continuation, and expose exact-record byte chunks using the original review identity and ordinal. The adapter preserves full versus selected validation disclosures and does not acknowledge or repair reviewed snapshots.
 
 ## Imports
 

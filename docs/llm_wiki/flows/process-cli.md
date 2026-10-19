@@ -89,9 +89,9 @@ sequenceDiagram
     p0-->>p30: parser.parse_args
 ```
 
-> Call sequence diagram shows 30 of 713 interactions; 683 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 722 interactions; 692 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 24 (23 omitted); unresolved 1 of 554 (553 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 24 (23 omitted); unresolved 1 of 563 (562 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -182,43 +182,45 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| main | _build_parser | 2632 | `_build_parser(data not statically known)` |
-| _build_parser | argparse.ArgumentParser | 261 | `argparse.ArgumentParser(description='LLM Wiki CLI')` |
-| _build_parser | parser.add_argument (src/llm_wiki_cli/cli.py:_build_parser) | 262 | `parser.add_argument('--version', action='version', version=...)` |
-| _build_parser | parser.add_subparsers (src/llm_wiki_cli/cli.py:_build_parser) | 265 | `parser.add_subparsers(dest='command', required=True)` |
-| _build_parser | _register_commands | 266 | `_register_commands(subparsers)` |
-| _register_commands | _add_init_command | 301 | `_add_init_command(subparsers)` |
-| _add_init_command | subparsers.add_parser (src/llm_wiki_cli/cli.py:_add_init_command) | 381 | `subparsers.add_parser('init', help='Scaffold LLM Wiki structure and schema')` |
-| _add_init_command | init_parser.add_argument | 384 | `init_parser.add_argument('--agent', choices=AGENT_CHOICES, default=None, help='Target agent format (default: stored agent, or generic for a new project)')` |
-| _add_init_command | init_parser.add_argument | 390 | `init_parser.add_argument('--wiki-dir', default=DEFAULT_WIKI_DIR, help='Wiki directory to create (default: docs/llm_wiki)')` |
-| _add_init_command | init_parser.add_argument | 395 | `init_parser.add_argument('--no-quality-hints', action='store_true', default=None, help='Omit agent quality guidelines from the constraint block')` |
-| _add_init_command | init_parser.add_argument | 401 | `init_parser.add_argument('--no-skills', action='store_true', default=None, help="Skip installing the wiki-reference skill into the agent's skills directory (.claude/skills for claude, .llm-wiki/skills otherwise)")` |
+| main | _build_parser | 2655 | `_build_parser(data not statically known)` |
+| _build_parser | argparse.ArgumentParser | 266 | `argparse.ArgumentParser(description='LLM Wiki CLI')` |
+| _build_parser | parser.add_argument (src/llm_wiki_cli/cli.py:_build_parser) | 267 | `parser.add_argument('--version', action='version', version=...)` |
+| _build_parser | parser.add_subparsers (src/llm_wiki_cli/cli.py:_build_parser) | 270 | `parser.add_subparsers(dest='command', required=True)` |
+| _build_parser | _register_commands | 271 | `_register_commands(subparsers)` |
+| _register_commands | _add_init_command | 310 | `_add_init_command(subparsers)` |
+| _add_init_command | subparsers.add_parser (src/llm_wiki_cli/cli.py:_add_init_command) | 390 | `subparsers.add_parser('init', help='Scaffold LLM Wiki structure and schema')` |
+| _add_init_command | init_parser.add_argument | 393 | `init_parser.add_argument('--agent', choices=AGENT_CHOICES, default=None, help='Target agent format (default: stored agent, or generic for a new project)')` |
+| _add_init_command | init_parser.add_argument | 399 | `init_parser.add_argument('--wiki-dir', default=DEFAULT_WIKI_DIR, help='Wiki directory to create (default: docs/llm_wiki)')` |
+| _add_init_command | init_parser.add_argument | 404 | `init_parser.add_argument('--no-quality-hints', action='store_true', default=None, help='Omit agent quality guidelines from the constraint block')` |
+| _add_init_command | init_parser.add_argument | 410 | `init_parser.add_argument('--no-skills', action='store_true', default=None, help="Skip installing the wiki-reference skill into the agent's skills directory (.claude/skills for claude, .llm-wiki/skills otherwise)")` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `main` | 2640 |
-| output | `print` | `main` | 2643 |
-| output | `print` | `main` | 2646 |
-| environment_read | `os.environ.get` | `main` | 2649 |
-| output | `print` | `main` | 2651 |
-| output | `print` | `main` | 2654 |
+| output | `print` | `main` | 2663 |
+| output | `print` | `main` | 2666 |
+| output | `print` | `main` | 2669 |
+| environment_read | `os.environ.get` | `main` | 2672 |
+| output | `print` | `main` | 2674 |
+| output | `print` | `main` | 2677 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_build_parser` | `argparse.ArgumentParser` | 261 |
-| unresolved_call | `_build_parser` | `parser.add_argument` | 262 |
-| unresolved_call | `_build_parser` | `parser.add_subparsers` | 265 |
-| unresolved_call | `_add_init_command` | `subparsers.add_parser` | 381 |
-| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 384 |
-| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 390 |
-| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 395 |
-| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 401 |
+| external_call | `_build_parser` | `argparse.ArgumentParser` | 266 |
+| unresolved_call | `_build_parser` | `parser.add_argument` | 267 |
+| unresolved_call | `_build_parser` | `parser.add_subparsers` | 270 |
+| unresolved_call | `_add_init_command` | `subparsers.add_parser` | 390 |
+| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 393 |
+| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 399 |
+| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 404 |
+| unresolved_call | `_add_init_command` | `init_parser.add_argument` | 410 |
 | step_limit | `main` | `first 12 steps` | 0 |
 
 ## Behavior
 
 This flow starts at `main` and is classified as `process`. The generated call and data-flow sections are bounded static projections; runtime conditions and side effects require source-level confirmation.
+
+The knowledge inspection/comparison parsers accept continuation, exact review identity, record ordinal and byte offset. These arguments reach the same storage review owner; they do not enable setup, mutation or broader validation than the requested read scope. Compact JSON byte limits include the final CLI newline.

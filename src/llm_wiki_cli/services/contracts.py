@@ -38,6 +38,7 @@ records, their diagnostics, and entry-point ``routes`` remain optional under
 from __future__ import annotations
 
 EXTRACT_SCHEMA_VERSION = "llm-wiki-extract/v1"
+NORMALIZATION_DIAGNOSTIC_SCHEMA_VERSION = "llm-wiki-normalization-diagnostic/v1"
 CONTEXT_BUDGET_PROTOCOL_VERSION = "llm-wiki-context/v3"
 CONTEXT_PROTOCOL_VERSION = "llm-wiki-context/v1"
 CONTEXT_KNOWLEDGE_PROTOCOL_VERSION = "llm-wiki-context/v2"
@@ -153,6 +154,7 @@ P0_CALIBRATION_DECISION_SCOPE = "p0_policy_default"
 # so a version string cannot silently diverge from its registered value.
 PROTOCOL_VERSIONS = (
     EXTRACT_SCHEMA_VERSION,
+    NORMALIZATION_DIAGNOSTIC_SCHEMA_VERSION,
     CONTEXT_PROTOCOL_VERSION,
     CONTEXT_KNOWLEDGE_PROTOCOL_VERSION,
     CONTEXT_BUDGET_PROTOCOL_VERSION,

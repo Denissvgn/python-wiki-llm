@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [lint_service](../modules/lint_service.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 63 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 64 more
 
 **Complete modules touched:**
 
@@ -16,6 +16,7 @@
 - [data_flow](../modules/data_flow.md)
 - [dependency_versions](../modules/dependency_versions.md)
 - [entrypoints](../modules/entrypoints.md)
+- [evidence_diagnostics](../modules/evidence_diagnostics.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
@@ -143,9 +144,9 @@ sequenceDiagram
     p0-->>p30: report.count (src/llm_wiki_cli/services/lint_service.py:run)('extractor_failure')
 ```
 
-> Call sequence diagram shows 30 of 3272 interactions; 3242 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3285 interactions; 3255 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 973 (972 omitted); unresolved 1 of 1120 (1119 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 974 (973 omitted); unresolved 1 of 1126 (1125 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -159,7 +160,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_source_root` | 24 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 24 | - | external | 11 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 36 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
-> Omission summary shows 8 of 868 groups; 860 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 872 groups; 864 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -226,35 +227,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | Path (src/llm_wiki_cli/services/lint_service.py:run) | 3306 | `Path(args.wiki_dir)` |
-| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3307 | `getattr(args, 'src_dir', '.')` |
-| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3308 | `bool(getattr(...))` |
-| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3308 | `getattr(args, 'knowledge_drift_report', False)` |
-| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3309 | `bool(...)` |
-| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3309 | `getattr(args, 'strict', False)` |
-| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3310 | `bool(getattr(...))` |
-| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3310 | `getattr(args, 'profile', False)` |
-| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3311 | `bool(getattr(...))` |
-| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3311 | `getattr(args, 'cache_stats', False)` |
-| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3312 | `bool(getattr(...))` |
+| run | Path (src/llm_wiki_cli/services/lint_service.py:run) | 3316 | `Path(args.wiki_dir)` |
+| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3317 | `getattr(args, 'src_dir', '.')` |
+| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3318 | `bool(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3318 | `getattr(args, 'knowledge_drift_report', False)` |
+| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3319 | `bool(...)` |
+| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3319 | `getattr(args, 'strict', False)` |
+| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3320 | `bool(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3320 | `getattr(args, 'profile', False)` |
+| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3321 | `bool(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3321 | `getattr(args, 'cache_stats', False)` |
+| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3322 | `bool(getattr(...))` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 3344 |
-| output | `print` | `run` | 3347 |
-| output | `print` | `run` | 3355 |
+| output | `print` | `run` | 3354 |
+| output | `print` | `run` | 3357 |
+| output | `print` | `run` | 3365 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `run` | `getattr` | 3307 |
-| external_call | `run` | `getattr` | 3308 |
-| external_call | `run` | `getattr` | 3309 |
-| external_call | `run` | `getattr` | 3310 |
-| external_call | `run` | `getattr` | 3311 |
+| external_call | `run` | `getattr` | 3317 |
+| external_call | `run` | `getattr` | 3318 |
+| external_call | `run` | `getattr` | 3319 |
+| external_call | `run` | `getattr` | 3320 |
+| external_call | `run` | `getattr` | 3321 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 
@@ -266,5 +267,19 @@ consistent managed wiki in addition to link and surface checks. Local metrics
 are best effort and never replace the report outcome; blocking findings produce
 a nonzero exit status.
 
+Captured unknown evidence remains a strict error even when current normalization
+succeeds. Its existing message and hint distinguish a captured failure, an
+untested/unavailable fresh result, and fresh normalization that is valid or still
+malformed. Reading never commits a repair; valid fresh results lead to owning
+sync, while a refused broad update needs its separate preview and review.
+
 
 Text discloses data-flow and unfamiliar advisory categories with at most five escaped examples per category and explicit preview omissions. Full profile JSON and CI JSON/Markdown retain complete emitted records. Advisory gaps leave integrity exits unchanged and require source inspection when a task depends on missing observations; success reports no blocking issues rather than complete analysis.
+
+When fresh normalization rejects an observation, a structural evidence finding
+can retain bounded record/rule/shape detail in its existing message. The detail
+is explicitly fresh and versioned, with redacted values and qualified pointers;
+older snapshots never gain inferred rejection locations. Profile JSON retains
+the same report fields, strict structural failures remain blocking, and live
+freshness/drift retains its existing report-only policy. Reading diagnostics
+does not repair the committed basis or install an extractor.

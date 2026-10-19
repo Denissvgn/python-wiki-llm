@@ -243,11 +243,18 @@ jobs:
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: "3.13"
+      - name: Check shared local and hosted producer contracts
+        run: python -I release/preflight_contracts.py check --repo .
       - name: Install release typing dependencies
         run: |
           python -m pip install ".[dev,mcp,tokens]"
           python -m pip install --require-hashes --only-binary=:all: -r examples/fastapi-contracts/requirements-ci.txt
           python -m pip install --require-hashes -r release/requirements.txt
+      - name: Run shared early preparation contracts
+        run: >-
+          python -I release/preflight_contracts.py groups
+          --repo . --group inventory --group defaults
+          --output "${RUNNER_TEMP}/preflight-contracts"
       - name: Check the complete project type surface
         shell: bash
         run: >-
@@ -259,6 +266,7 @@ jobs:
         run: >-
           "${{ steps.python.outputs.python-path }}" -m ruff check
           src tests examples integrations/github-action/render_summary.py
+          release/preflight.py release/preflight_contracts.py release/preflight_runner.py
           | tee ruff.log
       - name: Upload typing diagnostics
         if: always()
@@ -269,6 +277,7 @@ jobs:
           path: |
             pyright.log
             ruff.log
+            ${{ runner.temp }}/preflight-contracts/
           if-no-files-found: warn
           retention-days: 14
 
@@ -323,12 +332,13 @@ jobs:
           python -m pytest -q \
             tests/test_ts_extract.py::test_unresolved_import_producer_consumer_contract \
             tests/test_ts_extract.py::test_dynamic_import_gap_survives_bootstrap_sync_and_strict_gates \
+            tests/test_ts_extract.py::test_released_unknown_evidence_guarded_upgrade_and_refresh \
             -p no:cacheprovider --strict-config --strict-markers -W error -o xfail_strict=true \
             --junitxml="${RUNNER_TEMP}/javascript-evidence-windows.xml"
           python -I release/qualification.py verify-junit \
             --junit "${RUNNER_TEMP}/javascript-evidence-windows.xml" \
             --lane javascript-evidence-windows --allowlist release/skip-allowlist.json \
-            --minimum-collected 7 --minimum-passed 7 \
+            --minimum-collected 8 --minimum-passed 8 \
             --output "${RUNNER_TEMP}/javascript-evidence-windows-result.json"
 
       - name: Upload native JavaScript evidence
@@ -374,6 +384,44 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+      - name: Check recursion coverage boundaries before the full Linux suite
+        id: coverage-boundary
+        if: ${{ matrix.coverage }}
+        env:
+          COVERAGE_FILE: ${{ runner.temp }}/coverage-recursion/coverage.data
+          COVERAGE_BOUNDARY_OUTPUT: ${{ runner.temp }}/coverage-recursion
+        run: |
+          mkdir -p "${COVERAGE_BOUNDARY_OUTPUT}"
+          python -m pytest \
+            tests/test_python_implementation.py::test_deep_owned_ast_has_iterative_declaration_walk_and_explicit_digest_gap \
+            -q -p no:cacheprovider --strict-config --strict-markers \
+            -W error -o xfail_strict=true --cov=llm_wiki_cli \
+            --cov-report= --cov-fail-under=0 \
+            --junitxml="${COVERAGE_BOUNDARY_OUTPUT}/junit.xml"
+          python -I - <<'PY'
+          import os, sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path.cwd()))
+          from release import core_shard_runner as runner
+          package = (Path.cwd() / "src/llm_wiki_cli").resolve()
+          output = Path(os.environ["COVERAGE_BOUNDARY_OUTPUT"])
+          rows = runner.coverage_rows(output / "coverage.data", [package.as_posix()], runner.source_manifest(package))
+          runner.q.write_json(output / "source-boundary.json", {
+              "scope": "focused source probe; full native and hosted gates remain required",
+              "measured_files": len(rows), "source_root": package.as_posix(),
+          })
+          PY
+
+      - name: Retain native Linux coverage boundary evidence
+        if: ${{ always() && matrix.coverage && (steps.coverage-boundary.outcome == 'success' || steps.coverage-boundary.outcome == 'failure') }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          archive: true
+          name: native-linux-coverage-boundary-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/coverage-recursion/
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Run strict suite with coverage
         if: ${{ matrix.coverage }}
         env:
@@ -392,6 +440,7 @@ jobs:
           --cov-fail-under=87
 
       - name: Check release corrections on native Windows
+        id: native-corrections
         if: ${{ matrix.lane == 'core-windows-3.13' }}
         env:
           PYTHONUTF8: "1"
@@ -402,9 +451,24 @@ jobs:
           tests/test_current_install_defaults.py
           tests/test_storage_lock_diagnostics.py
           tests/test_real_caller_action_fixture.py
+          tests/test_scoped_sync_repair.py
+          tests/test_sync_guard_diagnostics.py
+          tests/test_preflight_contracts.py
+          tests/test_preflight_runner.py
           tests/test_sync_runtime_regressions.py::test_wiki_only_commits_do_not_rewrite_repository_revision -q
           -p no:cacheprovider --strict-config --strict-markers -W error
           -o xfail_strict=true
+          --junitxml="${{ runner.temp }}/native-corrections.xml"
+
+      - name: Retain native Windows correction evidence
+        if: ${{ always() && (steps.native-corrections.outcome == 'success' || steps.native-corrections.outcome == 'failure') }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          archive: true
+          name: native-windows-corrections-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/native-corrections.xml
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Run strict suite
         if: ${{ !matrix.coverage }}
@@ -513,6 +577,7 @@ jobs:
           tests/test_compact_delivery_interfaces.py::test_actual_mcp_sdk_content_carries_view_then_receipt_as_separate_transport
           tests/test_developer_value_combined_interfaces.py::test_actual_sdk_combined_callers_compact_and_stale_custody
           tests/test_task_compact_readable.py::test_actual_mcp_v2_metadata_toggle_keeps_qualifications_and_receipts
+          tests/test_owned_packet_recovery.py::test_registered_sdk_keeps_structured_authority_failure
           -p no:cacheprovider
           --strict-config
           --strict-markers
@@ -526,8 +591,8 @@ jobs:
           --junit "junit-${{ matrix.lane }}.xml"
           --lane "${{ matrix.lane }}"
           --allowlist release/skip-allowlist.json
-          --minimum-collected 7
-          --minimum-passed 7
+          --minimum-collected 8
+          --minimum-passed 8
           --output "result-${{ matrix.lane }}.json"
 
       - name: Upload failed MCP diagnostics

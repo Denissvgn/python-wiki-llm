@@ -93,16 +93,16 @@ sequenceDiagram
     participant p16 as _matches_directory_path
     participant p17 as _matches_directory_uri
     participant p18 as validate_source_root
-    participant p19 as resolve_source_selection
-    participant p20 as capture_source_selection_inputs
-    participant p21 as validate_live_query_source_selection
-    participant p22 as build_source_snapshot
-    participant p23 as _guard_windows_inputs
-    participant p24 as _assert_source_unchanged
-    participant p25 as retained_empty_module_paths_from_wiki
-    participant p26 as _assert_source_inputs_unchanged
-    participant p27 as _wiki_anchor
-    participant p28 as get_entry_points
+    participant p19 as guard_maintenance_owner
+    participant p20 as resolve_source_selection
+    participant p21 as capture_source_selection_inputs
+    participant p22 as validate_live_query_source_selection
+    participant p23 as build_source_snapshot
+    participant p24 as _guard_windows_inputs
+    participant p25 as _assert_source_unchanged
+    participant p26 as retained_empty_module_paths_from_wiki
+    participant p27 as _assert_source_inputs_unchanged
+    participant p28 as _wiki_anchor
     participant p29 as isinstance (src/llm_wiki_cli/api.py:inspect_concept)
     participant p30 as callback
     p0->>p1: _normalize_query_input
@@ -123,23 +123,23 @@ sequenceDiagram
     p9->>p16: _matches_directory_path
     p9->>p17: _matches_directory_uri
     p8->>p18: validate_source_root
-    p8->>p19: resolve_source_selection
-    p8->>p20: capture_source_selection_inputs
-    p8->>p21: validate_live_query_source_selection
-    p8->>p22: build_source_snapshot
-    p8->>p23: _guard_windows_inputs
-    p8->>p24: _assert_source_unchanged
-    p8->>p25: retained_empty_module_paths_from_wiki
-    p8->>p26: _assert_source_inputs_unchanged
-    p8->>p27: _wiki_anchor
-    p8->>p28: get_entry_points
+    p8->>p19: guard_maintenance_owner
+    p8->>p20: resolve_source_selection
+    p8->>p21: capture_source_selection_inputs
+    p8->>p22: validate_live_query_source_selection
+    p8->>p23: build_source_snapshot
+    p8->>p24: _guard_windows_inputs
+    p8->>p25: _assert_source_unchanged
+    p8->>p26: retained_empty_module_paths_from_wiki
+    p8->>p27: _assert_source_inputs_unchanged
+    p8->>p28: _wiki_anchor
     p0-->>p29: isinstance (src/llm_wiki_cli/api.py:inspect_concept)(value, bool)
     p1-->>p30: callback
 ```
 
-> Call sequence diagram shows 30 of 2826 interactions; 2796 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2740 interactions; 2710 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 960 (959 omitted); unresolved 1 of 897 (896 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 907 (906 omitted); unresolved 1 of 897 (896 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -153,7 +153,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 15 | - | external | 4 |
 | `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 15 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 15 | [src/llm_wiki_cli/services/wiki_surface.py](../modules/wiki_surface.md) | internal | 5 |
-> Omission summary shows 8 of 693 groups; 685 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 687 groups; 679 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

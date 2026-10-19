@@ -2834,6 +2834,11 @@ def _build_context_knowledge_view(
     except KnowledgeStateLoadError as exc:
         return _knowledge_error_view(surface_evaluation.payload, exc)
 
+    if any(issue.code.startswith("maintenance-") for issue in load_result.issues):
+        from .context_packet import ContextPacketAuthorityError
+
+        raise ContextPacketAuthorityError(load_result.issues) from KnowledgeStateLoadError(load_result.status, load_result.issues)
+
     live_evaluation = None
     snapshot_only = False
     if load_result.status is KnowledgeLoadState.VALID:
@@ -2907,8 +2912,10 @@ def _context_knowledge_projection_declared(
     surface_path: Path,
     knowledge_path: Path,
 ) -> bool:
+    from .maintenance_protocol import ADOPTION_FILENAME
+
     if any(
-        path.exists() or path.is_symlink() for path in (surface_path, knowledge_path)
+        path.exists() or path.is_symlink() for path in (surface_path, knowledge_path, wiki_root / ADOPTION_FILENAME)
     ):
         return True
     try:

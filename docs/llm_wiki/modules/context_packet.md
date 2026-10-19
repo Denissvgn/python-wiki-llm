@@ -25,6 +25,8 @@ source paths into the parser request. This preserves current module observations
 without discovering every unowned empty file. Parsing failures and unavailable
 coverage retain their explicit states rather than being presented as emptiness.
 
+Declared ordinary authority is checked before metadata helpers use it. A typed authority refusal retains the original local cause and exposes a bounded domain/recovery diagnostic shared by API, CLI and MCP. It never turns lost ownership into legacy absence, selects a backup or adoption identity, or performs recovery. Original source/wiki boundaries and strict packet integrity remain authoritative.
+
 ## Imports
 
 | Source | Symbols |
@@ -48,10 +50,12 @@ coverage retain their explicit states rather than being presented as emptiness.
 | `.knowledge_freshness` | `KNOWN_FRESHNESS_REASON_CODES`, `REASON_RECORDED_BASIS_MATCHES_LIVE_EVALUATION` |
 | `.knowledge_governance` | `GOVERNANCE_LOCK_FILENAME`, `_governance_lock_root` |
 | `.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `ENDPOINT_KINDS`, `GRAPH_COVERAGE_ANALYZERS`, `GRAPH_EVIDENCE_STATES`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS`, `is_supported_relationship_kind` |
+| `.knowledge_loader` | `KnowledgeLoadIssue` |
 | `.knowledge_model` | `ComputedFreshness`, `ConceptKind`, `EvidenceState`, `Lifecycle`, `Origin`, `Resolution`, `TargetClass`, `Verification`, `concept_kind_for_page_kind` |
 | `.knowledge_observability` | `knowledge_freshness_disclosure` |
 | `.knowledge_storage_io` | `read_guarded` |
 | `.knowledge_verification` | `verification_summaries_for_concepts` |
+| `.maintenance_protocol` | `ADOPTION_FILENAME`, `guard_maintenance_owner`, `MaintenanceProtocolError` |
 | `.maintenance_status` | `attach_maintenance_status`, `compact_maintenance_summary`, `validate_maintenance_summary`, `validate_maintenance_summary` |
 | `.packet_field_policy` | `PUBLIC_URI_FIELDS`, `STRUCTURAL_PATH_FIELDS`, `STRING_CLASSES`, `UnclassifiedPacketField`, `classify_string`, `validate_field_coverage` |
 | `.plugins` | `runtime_plugin_fallback_root` |
@@ -97,9 +101,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (13) |
-| Outbound | `src` (32) |
+| Outbound | `src` (34) |
 
-> All 43 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 45 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -110,12 +114,13 @@ flowchart LR
 | [ContextPacketMalformedError](../entities/ContextPacketMalformedError.md) | 232 | `ContextPacketError` | The supplied bytes do not satisfy the canonical packet contract. |
 | [ContextPacketSourceMutationError](../entities/ContextPacketSourceMutationError.md) | 245 | `ContextPacketError` | A captured source or wiki anchor changed before packet return. |
 | [ContextPacketUnavailableError](../entities/ContextPacketUnavailableError.md) | 257 | `ContextPacketError` | A required read-only packet capability is unavailable. |
-| [ContextPacketPathPolicyError](../entities/ContextPacketPathPolicyError.md) | 267 | `ContextPacketError` | A structural packet field violates its declared path policy. |
-| [CapturedContextRead](../entities/CapturedContextRead.md) | 387 | — | One coordinated in-memory source/wiki read used by a packet response. |
-| [QualifiedContextPacket](../entities/QualifiedContextPacket.md) | 440 | — | Immutable canonical packet bytes plus safe value accessors. |
-| [ContextPacketValidation](../entities/ContextPacketValidation.md) | 477 | — | Successful structural validation with explicitly unevaluated freshness. |
-| [ContextBasisComparison](../entities/ContextBasisComparison.md) | 520 | — | Comparison with caller data, which can never assert currentness. |
-| [ContextPacketReconciliation](../entities/ContextPacketReconciliation.md) | 546 | — | Consumer-time comparison against one fresh official read. |
+| [ContextPacketAuthorityError](../entities/ContextPacketAuthorityError.md) | 267 | `ContextPacketError` | Ordinary authority refused a read; only explicit complete recovery can restore it. |
+| [ContextPacketPathPolicyError](../entities/ContextPacketPathPolicyError.md) | 303 | `ContextPacketError` | A structural packet field violates its declared path policy. |
+| [CapturedContextRead](../entities/CapturedContextRead.md) | 425 | — | One coordinated in-memory source/wiki read used by a packet response. |
+| [QualifiedContextPacket](../entities/QualifiedContextPacket.md) | 478 | — | Immutable canonical packet bytes plus safe value accessors. |
+| [ContextPacketValidation](../entities/ContextPacketValidation.md) | 515 | — | Successful structural validation with explicitly unevaluated freshness. |
+| [ContextBasisComparison](../entities/ContextBasisComparison.md) | 558 | — | Comparison with caller data, which can never assert currentness. |
+| [ContextPacketReconciliation](../entities/ContextPacketReconciliation.md) | 584 | — | Consumer-time comparison against one fresh official read. |
 
 ## Functions
 

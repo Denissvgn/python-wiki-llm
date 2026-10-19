@@ -43,7 +43,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| canonical_json_text | json.dumps | 160 | `json.dumps(value, ensure_ascii=False, separators=(...), sort_keys=True, allow_nan=False)` |
+| canonical_json_text | json.dumps | 177 | `json.dumps(value, ensure_ascii=False, separators=(...), sort_keys=True, allow_nan=False)` |
 
 ### Boundary effects
 
@@ -53,7 +53,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `canonical_json_text` | `json.dumps` | 160 |
+| external_call | `canonical_json_text` | `json.dumps` | 177 |
 
 ## Behavior
 

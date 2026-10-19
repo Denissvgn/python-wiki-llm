@@ -26,6 +26,13 @@ Default text keeps blocking issues separate from advisory records. It exposes bo
 
 Promised-evidence failures preserve the blocking result while exposing the manifest-captured source, underlying unknown reason and extractor in the existing message field. The existing reason_code and hint fields identify the category and the supported single-file read-only extraction route. Missing captured details are not invented, and diagnostic enrichment does not extend the serialized finding field set.
 
+Captured and fresh failures are diagnosed separately over the same read view.
+A valid current normalization explains how owning sync can replace captured
+unknown evidence; it does not clear that committed-evidence error during lint.
+Still-malformed or unavailable fresh results retain their causes, while version
+labels alone cannot establish historical artifact identity. Broad-sync review
+guidance is conditional on a valid fresh result and never weakens evidence gates.
+
 ## Imports
 
 | Source | Symbols |
@@ -39,6 +46,7 @@ Promised-evidence failures preserve the blocking result while exposing the manif
 | `.dependencies` | `analyze_dependencies` |
 | `.diagrams` | `GENERATED_DIAGRAM_CHAR_LIMIT`, `GENERATED_DIAGRAM_LINE_LIMIT`, `GENERATED_DIAGRAM_NODE_LIMIT` |
 | `.entrypoints` | `build_flow`, `get_entry_points`, `javascript_flow_limitations`, `read_console_scripts` |
+| `.evidence_diagnostics` | `captured_evidence_diagnostic` |
 | `.extraction_jobs` | `ExtractionJobPlan`, `ExtractionJobRequest`, `extraction_job_request_from_args`, `print_extraction_job_plan` |
 | `.extraction_service` | `ExtractorStatus`, `InventoryResult`, `get_call_graph`, `get_docker_inventory`, `get_inventory_result`, `resolve_call_edges` |
 | `.health_details` | `CapturedHealthDetails`, `capture_health_details` |
@@ -99,9 +107,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (8) |
-| Outbound | `src` (38) |
+| Outbound | `src` (39) |
 
-> All 45 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 46 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

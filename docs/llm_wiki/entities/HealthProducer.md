@@ -1,6 +1,6 @@
 # HealthProducer
 
-**Location:** `src/llm_wiki_cli/api_types.py:614`
+**Location:** `src/llm_wiki_cli/api_types.py:616`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

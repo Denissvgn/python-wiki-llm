@@ -2,7 +2,7 @@
 
 **Entry point:** `get_knowledge_coverage` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [common](../modules/common.md), and 61 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [common](../modules/common.md), and 62 more
 
 **Complete modules touched:**
 
@@ -52,6 +52,7 @@
 - [maintenance_state](../modules/maintenance_state.md)
 - [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
+- [normalization_diagnostics](../modules/normalization_diagnostics.md)
 - [paths](../modules/paths.md)
 - [plugins](../modules/plugins.md)
 - [python_bindings](../modules/python_bindings.md)
@@ -89,25 +90,25 @@ sequenceDiagram
     participant p7 as _assert_wiki_unchanged
     participant p8 as _wiki_anchor
     participant p9 as validate_source_root
-    participant p10 as resolve_source_selection
-    participant p11 as capture_source_selection_inputs
-    participant p12 as validate_live_query_source_selection
-    participant p13 as build_source_snapshot
-    participant p14 as _guard_windows_inputs
-    participant p15 as retained_empty_module_paths_from_wiki
-    participant p16 as _assert_source_inputs_unchanged
-    participant p17 as get_entry_points
-    participant p18 as read_console_scripts
-    participant p19 as resolve_call_edges
-    participant p20 as build_flow
-    participant p21 as build_data_flow_context
-    participant p22 as analyze_data_flow
-    participant p23 as evaluate_surface_index
-    participant p24 as _build_context_knowledge_view
-    participant p25 as analyze_dependencies
-    participant p26 as _selected_git_changed_files
-    participant p27 as _freeze_json
-    participant p28 as attach_maintenance_status
+    participant p10 as guard_maintenance_owner
+    participant p11 as resolve_source_selection
+    participant p12 as capture_source_selection_inputs
+    participant p13 as validate_live_query_source_selection
+    participant p14 as build_source_snapshot
+    participant p15 as _guard_windows_inputs
+    participant p16 as retained_empty_module_paths_from_wiki
+    participant p17 as _assert_source_inputs_unchanged
+    participant p18 as get_entry_points
+    participant p19 as read_console_scripts
+    participant p20 as resolve_call_edges
+    participant p21 as build_flow
+    participant p22 as build_data_flow_context
+    participant p23 as analyze_data_flow
+    participant p24 as evaluate_surface_index
+    participant p25 as _build_context_knowledge_view
+    participant p26 as analyze_dependencies
+    participant p27 as _selected_git_changed_files
+    participant p28 as _freeze_json
     participant p29 as isinstance (src/llm_wiki_cli/api.py:get_knowledge_coverage)
     participant p30 as counts
     p0->>p1: build_knowledge_coverage
@@ -119,32 +120,32 @@ sequenceDiagram
     p0->>p7: _assert_wiki_unchanged
     p0->>p8: _wiki_anchor
     p2->>p9: validate_source_root
-    p2->>p10: resolve_source_selection
-    p2->>p11: capture_source_selection_inputs
-    p2->>p12: validate_live_query_source_selection
-    p2->>p13: build_source_snapshot
-    p2->>p14: _guard_windows_inputs
-    p2->>p15: retained_empty_module_paths_from_wiki
-    p2->>p16: _assert_source_inputs_unchanged
-    p2->>p17: get_entry_points
-    p2->>p18: read_console_scripts
-    p2->>p19: resolve_call_edges
-    p2->>p20: build_flow
-    p2->>p21: build_data_flow_context
-    p2->>p22: analyze_data_flow
-    p2->>p23: evaluate_surface_index
-    p2->>p24: _build_context_knowledge_view
-    p2->>p25: analyze_dependencies
-    p2->>p26: _selected_git_changed_files
-    p2->>p27: _freeze_json
-    p2->>p28: attach_maintenance_status
+    p2->>p10: guard_maintenance_owner
+    p2->>p11: resolve_source_selection
+    p2->>p12: capture_source_selection_inputs
+    p2->>p13: validate_live_query_source_selection
+    p2->>p14: build_source_snapshot
+    p2->>p15: _guard_windows_inputs
+    p2->>p16: retained_empty_module_paths_from_wiki
+    p2->>p17: _assert_source_inputs_unchanged
+    p2->>p18: get_entry_points
+    p2->>p19: read_console_scripts
+    p2->>p20: resolve_call_edges
+    p2->>p21: build_flow
+    p2->>p22: build_data_flow_context
+    p2->>p23: analyze_data_flow
+    p2->>p24: evaluate_surface_index
+    p2->>p25: _build_context_knowledge_view
+    p2->>p26: analyze_dependencies
+    p2->>p27: _selected_git_changed_files
+    p2->>p28: _freeze_json
     p0-->>p29: isinstance (src/llm_wiki_cli/api.py:get_knowledge_coverage)(value, bool)
     p1-->>p30: counts
 ```
 
-> Call sequence diagram shows 30 of 4179 interactions; 4149 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4127 interactions; 4097 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1323 (1322 omitted); unresolved 1 of 1382 (1381 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1272 (1271 omitted); unresolved 1 of 1378 (1377 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -155,10 +156,10 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_coverage.py:build_knowledge_coverage` | 11 | - | external | 15 |
 | `src/llm_wiki_cli/services/knowledge_coverage.py:build_knowledge_coverage` | 11 | - | unresolved | 6 |
 | `src/llm_wiki_cli/services/knowledge_coverage.py:build_knowledge_coverage` | 11 | [src/llm_wiki_cli/services/knowledge_freshness.py](../modules/knowledge_freshness.md) | internal | 1 |
-| `src/llm_wiki_cli/services/context_packet.py:capture_context_read` | 35 | - | external | 36 |
+| `src/llm_wiki_cli/services/context_packet.py:capture_context_read` | 35 | - | external | 37 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 48 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
 | `src/llm_wiki_cli/config.py:validate_path` | 49 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
-> Omission summary shows 8 of 1022 groups; 1014 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1029 groups; 1021 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

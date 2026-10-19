@@ -358,6 +358,38 @@ def test_coverage_combines_verified_installed_and_checkout_aliases(tmp_path):
         r.coverage_rows(tmp_path / "coverage.data", roots[:1], sources)
 
 
+@pytest.mark.parametrize("distinct_alias", [False, True])
+def test_coverage_export_has_unique_verified_roots(tmp_path, monkeypatch, distinct_alias):
+    checkout = tmp_path / "candidate"
+    source = checkout / "src/llm_wiki_cli"
+    source.mkdir(parents=True)
+    (source / "owned.py").write_bytes(b"VALUE = 1\n")
+    package = source
+    if distinct_alias:
+        package = tmp_path / "site-packages/llm_wiki_cli"
+        package.mkdir(parents=True)
+        (package / "owned.py").write_bytes(b"VALUE = 1\n")
+    monkeypatch.setattr(r.importlib.metadata, "distribution", lambda name: SimpleNamespace(
+        locate_file=lambda name: package,
+    ))
+    expected = [package.as_posix()]
+    if distinct_alias:
+        expected.append(source.as_posix())
+
+    def verified_rows(data, roots, sources):
+        assert roots == expected
+        assert sources == r.source_manifest(source)
+        return {"owned.py": [1]}
+
+    monkeypatch.setattr(r, "coverage_rows", verified_rows)
+    r.export_coverage(checkout, tmp_path)
+    assert r.s.read(tmp_path / "coverage.json")["source_roots"] == expected
+    if distinct_alias:
+        (package / "owned.py").write_bytes(b"CHANGED = 2\n")
+        with pytest.raises(r.q.QualificationError, match="source bytes differ"):
+            r.export_coverage(checkout, tmp_path)
+
+
 @pytest.mark.parametrize(
     "mutation", [None, "attempt", "identity", "harness", "lane", "pin-option"]
 )

@@ -400,3 +400,47 @@ def test_haskell_declaration_kind_values_are_contract_fields():
 
     assert class_kinds == {"data", "newtype", "type", "class", "instance"}
     assert function_kinds == {"signature", "function", "value"}
+
+
+def test_infrastructure_evidence_uses_its_own_observation_contract(tmp_path):
+    from llm_wiki_cli.services.infrastructure_inventory import get_yaml_infrastructure_inventory, parse_github_actions_workflow
+    from llm_wiki_cli.services.infrastructure_sync import _observation_hash
+    from llm_wiki_cli.services.knowledge_evidence import build_infrastructure_observation_basis, sha256_bytes
+
+    source = tmp_path / '.github/workflows/build.yml'
+    source.parent.mkdir(parents=True)
+    source.write_text('name: Build\non: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo ready\n')
+    inventory = get_yaml_infrastructure_inventory(tmp_path)
+    info = inventory['.github/workflows/build.yml']
+    assert info['type'] == 'github_actions' and info['advisories'] == []
+    assert info['jobs'][0]['steps'][0]['run'] == 'echo ready'
+    observation = _observation_hash(info)
+    basis = build_infrastructure_observation_basis(source_path='.github/workflows/build.yml',
+        source_content_hash=sha256_bytes(source.read_bytes()), observation_hash=observation,
+        extractor_ref='llm-wiki/extractor/infrastructure')
+    assert basis.is_known and basis.scope == 'infrastructure'
+    assert basis.concept_observation_hash == observation
+    assert basis.normalization_diagnostic is None
+    malformed = parse_github_actions_workflow('jobs: [')
+    assert malformed['advisories'] and malformed['jobs'] == []
+    assert _observation_hash(malformed) != observation
+
+
+def test_python_producer_evidence_is_static_and_does_not_execute_target(tmp_path):
+    from llm_wiki_cli.services.dependencies import build_dependency_graph
+    from llm_wiki_cli.services.knowledge_evidence import normalize_module_observation, normalize_entity_observation
+
+    source = tmp_path / 'model.py'
+    source.write_text('raise RuntimeError("must not execute")\nfrom missing_backend import Service\n'
+                      'class Account:\n    id: int = 0\n'
+                      '    def render(self, /, *, enabled=False):\n        return enabled\n')
+    before = source.read_bytes()
+    inventory = extract_cmd.get_inventory(str(tmp_path), deep=True)
+    data = inventory['model.py']
+    module = normalize_module_observation(data)
+    entity = normalize_entity_observation(data, 'Account', 1)
+    assert module is not None and entity is not None
+    assert entity['declaration']['methods'][0]['params'][-1]['kind'] == 'keyword_only'
+    graph = build_dependency_graph(inventory)
+    assert graph['edges'] == [] and graph['unresolved'][0]['module'] == 'missing_backend'
+    assert source.read_bytes() == before

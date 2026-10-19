@@ -1,6 +1,6 @@
 # RuntimeLiveEvaluationInputs
 
-**Location:** `src/llm_wiki_cli/services/knowledge_orchestration.py:303`
+**Location:** `src/llm_wiki_cli/services/knowledge_orchestration.py:305`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_orchestration](../modules/knowledge_orchestration.md)
@@ -45,15 +45,18 @@ flowchart LR
     n2["evaluate_documentation_native_freshness (src/llm_wiki_cli/services/documentation_native.py)"]
     n3["build_runtime_live_evaluation (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
     n4["_evaluate_knowledge_lint_state (src/llm_wiki_cli/services/lint_service.py)"]
+    n5["prepare_boundary (src/llm_wiki_cli/services/scoped_sync_repair.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
+    n5 --> n0
     click n0 "../modules/knowledge_orchestration.md"
     click n1 "../modules/context_service.md"
     click n2 "../modules/documentation_native.md"
     click n3 "../modules/knowledge_orchestration.md"
     click n4 "../modules/lint_service.md"
+    click n5 "../modules/scoped_sync_repair.md"
 ```
 
 ### Summary
@@ -70,3 +73,4 @@ flowchart LR
 | `evaluate_documentation_native_freshness` | call | [documentation_native](../modules/documentation_native.md) | 1 |
 | `build_runtime_live_evaluation` | type_reference | [knowledge_orchestration](../modules/knowledge_orchestration.md) | — |
 | `_evaluate_knowledge_lint_state` | call | [lint_service](../modules/lint_service.md) | 1 |
+| `prepare_boundary` | call | [scoped_sync_repair](../modules/scoped_sync_repair.md) | 1 |

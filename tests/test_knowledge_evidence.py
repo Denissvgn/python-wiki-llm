@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from copy import deepcopy
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -660,3 +661,63 @@ def test_manifest_v4_line_filter_remains_unchanged_for_new_location_keys():
     assert semantic_hash_for_file({"decorator_line": 1}) != semantic_hash_for_file(
         {"decorator_line": 99}
     )
+
+
+_PRODUCER_CORPUS = FIXTURE_PATH.parent / 'producer-evidence-inventories.json'
+_PRODUCER_EXPECTATIONS = FIXTURE_PATH.parent / 'producer-evidence-expectations.json'
+
+
+def test_frozen_evidence_corpus_covers_exact_registered_language_families():
+    from llm_wiki_cli.config import EXTRACTOR_REGISTRY
+    rows = json.loads(_PRODUCER_CORPUS.read_text())
+    assert set(rows) == set(EXTRACTOR_REGISTRY) | {'javascript'}
+
+
+@pytest.mark.parametrize('language', ['python', 'javascript', 'typescript', 'go', 'rust', 'haskell'])
+def test_registered_family_hashes_locations_and_rejection_persistence(language):
+    from llm_wiki_cli.services.sync_manifest import ManifestEvidenceBaseline
+    data = json.loads(_PRODUCER_CORPUS.read_text())[language]
+    expected = json.loads(_PRODUCER_EXPECTATIONS.read_text())['cases'][language]
+    module = _module_basis(data)
+    entity = _entity_basis(data, expected['entity'])
+    assert module.is_known and entity.is_known
+    assert module.normalization_diagnostic is entity.normalization_diagnostic is None
+    assert module.concept_observation_hash == expected['module_hash']
+    assert entity.concept_observation_hash == expected['entity_hash']
+    shifted = deepcopy(data)
+    _shift_locations(shifted)
+    assert _module_hash(shifted) == expected['module_hash']
+    assert _entity_hash(shifted, expected['entity']) == expected['entity_hash']
+    # A malformed field is rejected without altering valid hash/persistence rules.
+    data['functions'][0]['is_async'] = 0
+    rejected = _module_basis(data)
+    assert rejected.unknown_reason == UNKNOWN_INVALID_INVENTORY
+    diagnostic = rejected.normalization_diagnostic
+    assert diagnostic is not None and diagnostic.pointer == '/functions/0/is_async'
+    without_detail = replace(rejected, normalization_diagnostic=None)
+    assert rejected == without_detail
+    assert rejected.to_evidence_payload() == without_detail.to_evidence_payload()
+    persisted = ManifestEvidenceBaseline.from_basis(rejected).to_payload()
+    assert persisted == ManifestEvidenceBaseline.from_basis(without_detail).to_payload()
+    restored = ManifestEvidenceBaseline.from_payload(persisted, 'baseline')
+    assert restored.basis is not None and restored.basis.normalization_diagnostic is None
+    assert restored.basis.unknown_reason == UNKNOWN_INVALID_INVENTORY
+
+
+@pytest.mark.parametrize('language', ['python', 'javascript', 'typescript', 'go', 'rust', 'haskell'])
+def test_registered_family_missing_null_boolean_and_zero_remain_distinct(language):
+    data = json.loads(_PRODUCER_CORPUS.read_text())[language]
+    name = data['classes'][0]['name']
+    data['classes'][0]['attributes'] = [{'name': 'limit', 'constraints': {'minimum': 0}, 'required': False}]
+    zero = _entity_basis(data, name)
+    data['classes'][0]['attributes'][0]['constraints']['minimum'] = False
+    false = _entity_basis(data, name)
+    assert zero.is_known and false.is_known
+    assert zero.concept_observation_hash != false.concept_observation_hash
+    data['classes'][0]['attributes'][0]['required'] = 0
+    assert _entity_basis(data, name).unknown_reason == UNKNOWN_INVALID_INVENTORY
+    missing = deepcopy(data)
+    missing['classes'][0]['attributes'][0].pop('required')
+    assert _entity_basis(missing, name).is_known
+    missing['classes'][0]['attributes'][0]['required'] = None
+    assert _entity_basis(missing, name).unknown_reason == UNKNOWN_INVALID_INVENTORY

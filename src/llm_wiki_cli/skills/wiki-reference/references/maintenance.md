@@ -3,6 +3,7 @@
 ## Contents
 
 - [Establish the starting state](#establish-the-starting-state)
+- [Diagnose captured evidence](#diagnose-captured-evidence)
 - [Optional ordinary review tracking](#optional-ordinary-review-tracking)
 - [Complete owning loop](#complete-owning-loop)
 - [Mutation and identity boundaries](#mutation-and-identity-boundaries)
@@ -49,10 +50,93 @@ and other options. Omit selection on source-reading commands only when the
 project has no configured profile. Never replace it with discovery or a
 broader scan during the same maintenance run.
 
+A generator upgrade can refresh many managed inputs even when source bytes
+match. This differs from a physical storage repack. If the broad-change guard
+refuses sync, run its exact dry-run route and review the complete page/artifact
+actions, including removals. With explicit authority for that reviewed broad
+write, repeat the same invocation with `--force` replacing `--dry-run`; never
+apply force automatically as an upgrade step. Matching managed pages are not
+rewritten, while current evidence and provenance are committed coherently.
+Force also authorizes stale generated surface retirement, including authored
+Behavior on those retired pages; ownership and integrity checks remain required.
+The preview is not a saved approval token: force replans current inputs. Changed
+source, helper, selection, provider or wiki inputs require another preview and
+review. Follow the owning loop below, then confirm an unchanged second sync is
+a no-op. A refused publication follows its explicit recovery route, including
+new-page recovery where reported; never reinitialize missing or corrupt authority.
+
 For a trusted source root outside the working directory, pass the same external
 `--src-dir` with `--allow-external-src` to `sync`, `lint`, and `ci-check`.
 Apply the same pair to `team check` when that policy is configured. The wiki
 directory remains inside the current project write boundary.
+
+## Diagnose captured evidence
+
+Read the original failure's source, cause, stored qualification and bounds
+before choosing a repair. Preserve its source/wiki roots, source-selection
+profile, helper/cache bindings and generation options. The examples below use
+source `.`, wiki `docs/llm_wiki` and canonical source `src/orders.py`; replace
+them with the actual bindings. Append the original selection and explicit
+`--helper-cache-dir` to every applicable command. Otherwise retain the same
+Git/environment cache lookup; do not substitute a new cache. Native filesystem
+and cache arguments retain native spelling; request `source` and extract
+`--paths` use canonical POSIX paths relative to the source root.
+Snippets use POSIX/Git Bash quoting; preserve the same argument values with
+native quoting in PowerShell.
+
+1. Use a permitted request file with this bounded snapshot request:
+
+   ```json
+   {"operation":"explain","source":"src/orders.py","limit":5}
+   ```
+
+   ```bash
+   llm-wiki query --request evidence.json --src-dir . --wiki-dir docs/llm_wiki
+   ```
+
+   Several concepts return choices rather than an arbitrary explanation.
+   Repeat with one exact locator in `value` instead of `source`. Snapshot
+   reads do not extract source or invent historical rejected-record details.
+   A fresh explanation needs `live:true` and `allow_full_inventory:true` and
+   performs full analysis. Stored/current source and producer bases, installed
+   package identity, prepared helper identity and active runtime are separate
+   facts. Unavailable or truncated detail remains a gap.
+2. Inspect one fresh raw file as JSON without rebuilding the wiki:
+
+   ```bash
+   llm-wiki extract --src-dir . --paths src/orders.py --deep --read-only
+   ```
+
+   This read does not install dependencies or repair a stored manifest.
+   Explicit unresolved imports/calls remain coverage gaps, not resolved targets.
+   For missing/stale helpers, follow the exact same-cache preparation/retry
+   route in [Extractors and dependencies](extractors-dependencies.md#recover-a-failed-context-or-extraction-command).
+   Setup needs its own authority. A current helper with a runtime mismatch
+   requires selecting the reported runtime on PATH; preparation does not change
+   PATH. Never hand-link dependencies or invoke internal helper scripts.
+3. If fresh normalization rejects the record, fix the producer/consumer cause
+   before owning repair; invalid structural evidence remains blocking. Valid
+   raw output does not clear a captured failure. Preview authorized owning work:
+
+   ```bash
+   llm-wiki sync --dry-run --jobs 1 --src-dir . --wiki-dir docs/llm_wiki
+   ```
+
+   Review the complete page/artifact actions, including removals. Apply only
+   within existing authority. Broad refusal requires explicit authority for
+   the reviewed same-binding invocation with `--force` replacing `--dry-run`;
+   never force automatically. Changed inputs require another preview/review.
+   A source count caused by generator refresh is not a source-file edit.
+4. Ordinary sync owns coherent evidence/projection updates. The separately
+   authorized `--repair-evidence` writer requires an adopted coherent wiki,
+   unchanged source, matching complete producer/helper/runtime commitments
+   and its other scope checks. It still performs full analysis and cannot
+   partially apply a generator transition. Missing/corrupt authority requires
+   its explicit recovery route, never init, re-adoption or generated JSON edits.
+5. Review supported semantic sections, re-anchor changed prose with the same
+   owning sync, then run strict validation through the complete loop below.
+   Keep source selection, caches, strict gates and current defaults unchanged.
+   A read or storage upgrade alone does not establish committed repair.
 
 ## Optional ordinary review tracking
 
@@ -279,6 +363,23 @@ and ordinary sync never implicitly adopt, downgrade or remove the marker.
 - Page writes and generated commitments are owned as one workflow. When an
   interrupted write leaves the old manifest authoritative, repeat the same
   owning command after capacity is safe rather than patching machine files.
+  If sync emits `new_page_recovery` and new unowned pages block that retry,
+  retain its exact journal hash and directory. Preview the explicit recovery:
+
+  ```bash
+  llm-wiki maintenance recover-new-pages --wiki-dir docs/llm_wiki --recovery-dir RECOVERY_DIR --expected-journal-hash JOURNAL_SHA256 --dry-run
+  ```
+
+  Review the returned page list before an authorized call without `--dry-run`.
+  Only unchanged pages created by that rejected operation are removed; their
+  postimages remain outside the wiki. Existing pages, source and committed
+  authority stay untouched. Changed selection/authority, edited or replaced
+  pages, unsafe links, wrong roots and altered journals refuse recovery.
+  Rerun owning sync afterward; recovery alone establishes no currentness.
+  Multi-page recovery is not atomic: on I/O failure preserve its partial result
+  and retained postimages for explicit restoration, rather than forcing another
+  retry. Readers never repair this state. Adopted authority recovery above
+  retains its separate complete-snapshot contract.
 - On disk-space, watcher, file-descriptor, swapping, or editor-responsiveness
   pressure, stop launching heavy work. Follow
   [Resource-aware execution](resources-context.md); a later single retry uses

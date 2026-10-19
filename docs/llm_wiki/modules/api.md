@@ -35,6 +35,7 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `.services.documentation_run` | `DocumentationAgentPacket`, `DocumentationAgentResult`, `DocumentationIntegrityError`, `DocumentationIntakeBrief`, `DocumentationRun`, `DocumentationRunError`, `DocumentationRunStatus`, `DocumentationSchemaError`, `DocumentationTransitionError`, `DocumentationVerificationReport`, `build_documentation_agent_packet`, `export_documentation_run`, `get_documentation_run_status`, `prepare_documentation_run`, `record_documentation_agent_result`, `verify_documentation_run` |
 | `.services.documentation_wiki_input` | `DocumentationWikiInputError`, `DocumentationWikiSnapshot`, `adopt_documentation_wiki_snapshot`, `fingerprint_documentation_wiki_input` |
 | `.services.entrypoints` | `build_flow` |
+| `.services.evidence_explanation` | `explain_source`, `explanation_provenance` |
 | `.services.knowledge_consumption` | `KnowledgeReadView`, `load_knowledge_read_view` |
 | `.services.knowledge_coverage` | `KNOWLEDGE_COVERAGE_SCHEMA_VERSION`, `build_knowledge_coverage` |
 | `.services.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS` |
@@ -89,9 +90,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (7) |
-| Outbound | `src` (48) |
+| Outbound | `src` (49) |
 
-> All 55 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 56 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -194,7 +195,7 @@ flowchart LR
 | `_source_inventory_summary` | `(path: str, record: Mapping[str, Any] \| None) -> dict[str, Any]` | — | — |
 | `_existing_supplied_source_paths` | `(source_root: Path, paths: Iterable[str]) -> tuple[str, ...]` | — | — |
 | `_impact_query` | `(request: Mapping[str, Any], *, src_dir: str, wiki_dir: str, limit: int, allow_external_src: bool, source_selection: str \| Path \| None) -> DocumentationQueryResult` | — | — |
-| `query_documentation` | `(request: Mapping[str, Any], *, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, allow_external_src: bool = False, source_selection: str \| Path \| None = None, comparison_policy: str \| None = None) -> DocumentationQueryResult` | `@_native_query_boundary`, `@ac.comparison_entrypoint` | Dispatch one exact bounded read-only documentation query. |
+| `query_documentation` | `(request: Mapping[str, Any], *, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, allow_external_src: bool = False, source_selection: str \| Path \| None = None, helper_cache_dir: str \| Path \| None = None, comparison_policy: str \| None = None) -> DocumentationQueryResult` | `@_native_query_boundary`, `@ac.comparison_entrypoint` | Dispatch one exact bounded read-only documentation query. |
 | `_normalise_focus` | `(focus: str \| list[str]) -> list[str]` | — | — |
 | `_validate_wiki_dir` | `(wiki_dir: str) -> Path` | — | — |
 | `_display_path` | `(path: Path) -> str` | — | — |

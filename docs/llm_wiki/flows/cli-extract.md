@@ -110,9 +110,9 @@ sequenceDiagram
     p0-->>p30: message.startswith('No files found for package')
 ```
 
-> Call sequence diagram shows 30 of 3122 interactions; 3092 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3128 interactions; 3098 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1053 (1052 omitted); unresolved 1 of 1294 (1293 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1055 (1054 omitted); unresolved 1 of 1298 (1297 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -258,3 +258,9 @@ summary, and deep modes narrow or enrich that payload without importing the
 target application. Extractor failures are reported on stderr and return a
 nonzero status; successful output retains the source-relative inventory
 contract.
+
+Help identifies the one-file raw JSON inspection route with deep read-only
+extraction. It retains source selection and prepared helper-cache bindings and
+does not take a wiki argument. Raw success is a fresh observation, not a repair
+of captured manifest evidence. Missing helper setup and runtime mismatch retain
+their explicit owner and authorization requirements.

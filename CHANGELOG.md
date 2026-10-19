@@ -7,6 +7,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-10-18
+
+### Added
+
+- Bounded evidence explanation queries expose captured and live producer,
+  package, helper and execution-runtime provenance for exact concepts or sources.
+
+- Installed recovery guidance connects captured-evidence explanation, one-file
+  raw inspection and authorized owning repair, including the inline fallback.
+
+- Fresh normalization diagnostics identify bounded record locations, rules and
+  expected shapes without exposing rejected source values or changing evidence hashes.
+
+- Scoped evidence repair for unchanged owned sources with matching producer
+  commitments, preserving unselected evidence and normal review/recovery guards
+  while disclosing full analysis and global reconciliation.
+
+- Logical storage inspection and comparison support snapshot-bound continuation
+  and bounded exact-record reads, so omitted changes and oversized values can be
+  reviewed without increasing output limits.
+
+### Fixed
+
+- Bootstrap recipe refresh preserves explicit-language helper preparation and
+  recognizes source-selection flags separately from option-looking path values.
+
+- Evidence diagnostics distinguish captured failures from fresh normalization
+  results. Owning sync refreshes a captured invalid basis when current deep
+  normalization succeeds, including without a generator-version change.
+
+- Broad sync refusals explain source-change and generator-refresh reasons, show
+  bounded affected-path samples, and preserve the caller's options in preview
+  guidance. Successful broad previews explain the explicitly reviewed refresh
+  route and the need to review again when inputs change.
+
+- Explicit committed maintenance recovery restores absent validated projection
+  roots and referenced native objects under the retained ownership anchor,
+  preserving refusals for authored changes, unknown files and newer authority.
+
+- Packet refusals identify damaged ordinary maintenance authority with a shared
+  domain cause and explicit matching-recovery requirements across Python, CLI
+  and MCP, preserving strict refusal and read-only behavior.
+
+- Rejected syncs retain a hash-bound recovery journal for newly created pages.
+  Explicit recovery preserves their bytes and refuses edited pages or changed
+  authority, allowing a later sync to proceed without replacing existing prose.
+
 ## [3.0.0] - 2026-10-15
 
 Installation and upgrade now select current knowledge storage and workflow
@@ -1464,7 +1511,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.0.0...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.1.0...HEAD
+[3.1.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.5.0...v3.0.0
 [2.5.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.3.2...v2.4.0

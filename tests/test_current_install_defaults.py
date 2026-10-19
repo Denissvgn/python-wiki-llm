@@ -124,6 +124,12 @@ def test_all_agents_init_and_upgrade_install_current_defaults(project, agent, no
     if no_skills:
         assert "--view compact --view-budget-tokens" in schema.read_text()
         assert '"schema_version":"llm-wiki-task-request' not in schema.read_text()
+        assert "Never force automatically on upgrade" in schema.read_text()
+        assert "Force replans" in schema.read_text()
+    else:
+        maintenance = list(project.glob('**/wiki-reference/references/maintenance.md'))
+        assert maintenance
+        assert all("preview is not a saved approval token" in path.read_text() for path in maintenance)
 
 
 @pytest.mark.parametrize("schema", [None, "future/v99"])

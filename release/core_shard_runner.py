@@ -406,7 +406,9 @@ def coverage_rows(data_path: Path, source_roots: list[str], sources: dict) -> di
 def export_coverage(root: Path, output: Path) -> None:
     package = package_root(root)
     sources = source_manifest(package)
-    roots = [package.as_posix(), (root / "src/llm_wiki_cli").resolve().as_posix()]
+    roots = list(dict.fromkeys([
+        package.as_posix(), (root / "src/llm_wiki_cli").resolve().as_posix(),
+    ]))
     rows = coverage_rows(output / "coverage.data", roots, sources)
     q.write_json(
         output / "coverage.json",

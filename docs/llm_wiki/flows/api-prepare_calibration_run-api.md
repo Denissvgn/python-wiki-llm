@@ -54,9 +54,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| prepare_calibration_run | _call_calibration_controller | 3374 | `_call_calibration_controller('prepare_calibration_run', root, control_workspaces=control_workspaces, execution_manifest=execution_manifest)` |
-| _call_calibration_controller | <dynamic> | 3362 | `<dynamic>(..., **=kwargs)` |
-| _call_calibration_controller | getattr | 3362 | `getattr(controller, name)` |
+| prepare_calibration_run | _call_calibration_controller | 3418 | `_call_calibration_controller('prepare_calibration_run', root, control_workspaces=control_workspaces, execution_manifest=execution_manifest)` |
+| _call_calibration_controller | <dynamic> | 3406 | `<dynamic>(..., **=kwargs)` |
+| _call_calibration_controller | getattr | 3406 | `getattr(controller, name)` |
 
 ### Boundary effects
 
@@ -66,8 +66,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_call_calibration_controller` | `<dynamic>` | 3362 |
-| external_call | `_call_calibration_controller` | `getattr` | 3362 |
+| unresolved_call | `_call_calibration_controller` | `<dynamic>` | 3406 |
+| external_call | `_call_calibration_controller` | `getattr` | 3406 |
 
 ## Behavior
 

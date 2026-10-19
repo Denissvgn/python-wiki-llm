@@ -8,6 +8,7 @@ import json
 import shutil
 import subprocess
 import textwrap
+from typing import Any
 from pathlib import Path
 from unittest.mock import patch
 
@@ -92,6 +93,34 @@ def _extract_go(
             helper_cache_dir=GO_HELPER_CACHE_DIR,
         )
     )
+
+
+@skip_no_go
+def test_go_inventory_evidence_contract(tmp_path):
+    from copy import deepcopy
+    from llm_wiki_cli.services.dependencies import build_dependency_graph
+    from llm_wiki_cli.services.knowledge_evidence import build_module_observation_basis, build_entity_observation_basis, sha256_bytes
+
+    source = _make_go(tmp_path, 'model.go', '''\
+        package model
+        import "fmt"
+        type Account struct { ID int }
+        func New() *Account { fmt.Println("ready"); return &Account{} }
+    ''')
+    inventory = _extract_go(tmp_path, deep=True)
+    data = inventory['model.go']
+    options: dict[str, Any] = dict(source_path='model.go', source_content_hash=sha256_bytes(source.read_bytes()),
+                   extractor_ref='llm-wiki/extractor/go', inventory_complete=True)
+    assert build_module_observation_basis(file_data=data, **options).is_known
+    assert build_entity_observation_basis(file_data=data, entity_name='Account', occurrence=1, **options).is_known
+    graph = build_dependency_graph(inventory)
+    assert graph['edges'] == [] and any(r['module'] == 'fmt' for r in graph['unresolved'])
+    malformed = deepcopy(data)
+    malformed['imports'][0]['module'] = ''
+    rejected = build_module_observation_basis(file_data=malformed, **options)
+    assert rejected.unknown_reason == 'invalid-inventory-shape'
+    assert rejected.normalization_diagnostic is not None
+    assert rejected.normalization_diagnostic.pointer == '/imports/0/module'
 
 
 def _write_owned_package_sentinels(root: Path) -> None:

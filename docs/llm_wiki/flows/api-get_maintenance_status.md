@@ -138,9 +138,9 @@ sequenceDiagram
     p1-->>p30: prior.assert_current
 ```
 
-> Call sequence diagram shows 30 of 2406 interactions; 2376 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2416 interactions; 2386 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 802 (801 omitted); unresolved 1 of 576 (575 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 804 (803 omitted); unresolved 1 of 579 (578 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -154,7 +154,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/maintenance_state.py:_identity` | 15 | [src/llm_wiki_cli/services/maintenance_shapes.py](../modules/maintenance_shapes.md) | internal | 1 |
 | `src/llm_wiki_cli/services/maintenance_shapes.py:require` | 18 | [src/llm_wiki_cli/services/maintenance_shapes.py](../modules/maintenance_shapes.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 21 | - | external | 4 |
-> Omission summary shows 8 of 577 groups; 569 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 580 groups; 572 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -223,8 +223,8 @@ flowchart LR
 | validate_queue_limit | ValueError (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 62 | `ValueError(...)` |
 | get_maintenance_status | cast (src/llm_wiki_cli/api.py:get_maintenance_status) | 1612 | `cast(MaintenanceStatusResult, get_maintenance_status_authority(...))` |
 | get_maintenance_status | get_maintenance_status_authority | 1612 | `get_maintenance_status_authority(src_dir, _validate_wiki_dir(...), live=live, record_id=record_id, limit=limit, source_selection=source_selection, helper_cache_dir=helper_cache_dir, allow_external_src=allow_external_src)` |
-| get_maintenance_status_authority | _validate_status_request | 390 | `_validate_status_request(live, record_id, limit)` |
-| _validate_status_request | type (src/llm_wiki_cli/services…:_validate_status_request) | 317 | `type(live)` |
+| get_maintenance_status_authority | _validate_status_request | 404 | `_validate_status_request(live, record_id, limit)` |
+| _validate_status_request | type (src/llm_wiki_cli/services…:_validate_status_request) | 331 | `type(live)` |
 
 ### Boundary effects
 
@@ -240,7 +240,7 @@ flowchart LR
 | external_call | `validate_queue_limit` | `isinstance` | 59 |
 | external_call | `validate_queue_limit` | `ValueError` | 62 |
 | external_call | `get_maintenance_status` | `cast` | 1612 |
-| external_call | `_validate_status_request` | `type` | 317 |
+| external_call | `_validate_status_request` | `type` | 331 |
 | step_limit | `get_maintenance_status` | `first 12 steps` | 0 |
 | truncated_flow | `get_maintenance_status` | `depth limit` | 0 |
 

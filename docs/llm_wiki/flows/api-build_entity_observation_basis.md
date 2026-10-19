@@ -2,7 +2,7 @@
 
 **Entry point:** `build_entity_observation_basis` (`api`)
 **Source:** [knowledge_evidence](../modules/knowledge_evidence.md)
-**Modules touched:** [knowledge_evidence](../modules/knowledge_evidence.md), [validation](../modules/validation.md)
+**Modules touched:** [knowledge_evidence](../modules/knowledge_evidence.md), [normalization_diagnostics](../modules/normalization_diagnostics.md), [validation](../modules/validation.md)
 
 ## Call sequence
 
@@ -17,67 +17,66 @@ sequenceDiagram
     participant p3 as _unknown_basis
     participant p4 as _normalize_entity_observation
     participant p5 as hash_json
-    participant p6 as ConceptObservationBasis
-    participant p7 as _validate_source_path
-    participant p8 as _inventory_language
-    participant p9 as _validate_hash
-    participant p10 as canonical_json_bytes
-    participant p11 as _validate_extractor_ref
-    participant p12 as require_positive_int
-    participant p13 as _record_array
-    participant p14 as _validate_inventory_complete
-    participant p15 as _record_name
-    participant p16 as _validate_entity_record
-    participant p17 as _structural_copy
-    participant p18 as require_repository_relative_path
-    participant p19 as require_sha256
-    participant p20 as require_nonnegative_int
-    participant p21 as _validate_module_entity_record
-    participant p22 as _optional_record_array
-    participant p23 as _validate_optional_json_array
-    participant p24 as _validate_optional_mapping
-    participant p25 as _validate_optional_record_array
-    participant p26 as _validate_optional_booleans
-    participant p27 as _validate_callable_record
-    participant p28 as require_mapping_list
+    participant p6 as NormalizationDiagnostic
+    participant p7 as ConceptObservationBasis
+    participant p8 as _validate_source_path
+    participant p9 as _inventory_language
+    participant p10 as _validate_hash
+    participant p11 as canonical_json_bytes
+    participant p12 as _validate_extractor_ref
+    participant p13 as require_positive_int
+    participant p14 as _record_array
+    participant p15 as _validate_inventory_complete
+    participant p16 as _record_name
+    participant p17 as _validate_entity_record
+    participant p18 as _structural_copy
+    participant p19 as require_repository_relative_path
+    participant p20 as require_sha256
+    participant p21 as require_nonnegative_int
+    participant p22 as _validate_module_entity_record
+    participant p23 as _failure
+    participant p24 as _optional_record_array
+    participant p25 as _validate_optional_json_array
+    participant p26 as _validate_optional_mapping
+    participant p27 as _validate_optional_record_array
+    participant p28 as _validate_optional_booleans
     participant p29 as ValueError (src/llm_wiki_cli/services…alidate_entity_coordinate)
-    participant p30 as sha256_bytes
-    participant p31 as hashlib.sha256(…).hexdigest
+    participant p30 as diagnostic.at_source
     p0->>p1: _validate_basis_inputs
     p0->>p2: _validate_entity_coordinate
     p0->>p3: _unknown_basis
     p0->>p4: _normalize_entity_observation
     p0->>p5: hash_json
-    p0->>p6: ConceptObservationBasis
-    p1->>p7: _validate_source_path
-    p4->>p8: _inventory_language
-    p1->>p9: _validate_hash
-    p5->>p10: canonical_json_bytes
-    p1->>p11: _validate_extractor_ref
-    p2->>p12: require_positive_int
-    p4->>p13: _record_array
-    p1->>p14: _validate_inventory_complete
-    p4->>p15: _record_name
-    p4->>p16: _validate_entity_record
-    p4->>p17: _structural_copy
-    p7->>p18: require_repository_relative_path
-    p9->>p19: require_sha256
-    p12->>p20: require_nonnegative_int
-    p16->>p21: _validate_module_entity_record
-    p16->>p22: _optional_record_array
-    p16->>p23: _validate_optional_json_array
-    p16->>p24: _validate_optional_mapping
-    p16->>p25: _validate_optional_record_array
-    p16->>p26: _validate_optional_booleans
-    p16->>p27: _validate_callable_record
-    p22->>p28: require_mapping_list
+    p0->>p6: NormalizationDiagnostic
+    p0->>p7: ConceptObservationBasis
+    p1->>p8: _validate_source_path
+    p4->>p9: _inventory_language
+    p1->>p10: _validate_hash
+    p5->>p11: canonical_json_bytes
+    p1->>p12: _validate_extractor_ref
+    p2->>p13: require_positive_int
+    p4->>p14: _record_array
+    p1->>p15: _validate_inventory_complete
+    p4->>p16: _record_name
+    p4->>p17: _validate_entity_record
+    p4->>p18: _structural_copy
+    p8->>p19: require_repository_relative_path
+    p10->>p20: require_sha256
+    p13->>p21: require_nonnegative_int
+    p17->>p22: _validate_module_entity_record
+    p9->>p23: _failure
+    p14->>p24: _optional_record_array
+    p17->>p25: _validate_optional_json_array
+    p17->>p26: _validate_optional_mapping
+    p17->>p27: _validate_optional_record_array
+    p17->>p28: _validate_optional_booleans
     p2-->>p29: ValueError (src/llm_wiki_cli/services…alidate_entity_coordinate)('entity_name must be a non-empty string')
-    p30-->>p31: hashlib.sha256(…).hexdigest
+    p3-->>p30: diagnostic.at_source(source_path, scope, extractor_ref, entity_name, occurrence)
 ```
 
-> Call sequence diagram shows 30 of 214 interactions; 184 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 253 interactions; 223 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 60 (59 omitted); unresolved 1 of 38 (37 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 67 (66 omitted); unresolved 1 of 44 (43 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -91,7 +90,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 27 | - | external | 4 |
 | `src/llm_wiki_cli/services/validation.py:require_portable_relative_path` | 27 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 13 |
 | `src/llm_wiki_cli/services/validation.py:_default_path_error` | 29 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-> Omission summary shows 8 of 78 groups; 70 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 89 groups; 81 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -135,7 +134,7 @@ flowchart LR
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `build_entity_observation_basis` | `source_path: str`, `file_data: Mapping[str, Any] \| None`, `entity_name: str`, `occurrence: int`, `source_content_hash: str`, `extractor_ref: str`, `inventory_complete: bool` | `ENTITY_OBSERVATION_SCOPE`, `UNKNOWN_INSUFFICIENT_INVENTORY`, `_InventoryNormalizationError`, `ENTITY_OBSERVATION_SCOPE`, `ENTITY_OBSERVATION_SCOPE`, `UNKNOWN_INVALID_INVENTORY`, `ENTITY_OBSERVATION_SCOPE` | - | `_unknown_basis(...)`, `_unknown_basis(...)`, `_unknown_basis(...)`, `ConceptObservationBasis(...)` |
+| `build_entity_observation_basis` | `source_path: str`, `file_data: Mapping[str, Any] \| None`, `entity_name: str`, `occurrence: int`, `source_content_hash: str`, `extractor_ref: str`, `inventory_complete: bool` | `ENTITY_OBSERVATION_SCOPE`, `UNKNOWN_INSUFFICIENT_INVENTORY`, `_InventoryNormalizationError`, `ENTITY_OBSERVATION_SCOPE`, `ENTITY_OBSERVATION_SCOPE`, `UNKNOWN_INVALID_INVENTORY`, `UNKNOWN_INVALID_INVENTORY`, `ENTITY_OBSERVATION_SCOPE` | - | `_unknown_basis(...)`, `_unknown_basis(...)`, `_unknown_basis(...)`, `ConceptObservationBasis(...)` |
 | `_validate_basis_inputs` | `source_path: object`, `source_content_hash: object`, `extractor_ref: object`, `inventory_complete: object` | - | - | - |
 | `_validate_source_path` | `source_path: object` | - | - | - |
 | `require_repository_relative_path` | `value: object`, `text_error: Exception`, `posix_error: Exception`, `normalized_error: Exception`, `absolute_error: Exception \| None`, `separator_error: Exception \| None`, `control_error: Exception \| None`, `reject_delete_character: bool` | - | - | `cached`, `_remember_syntax(...)` |
@@ -152,9 +151,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_entity_observation_basis | _validate_basis_inputs | 353 | `_validate_basis_inputs(source_path, source_content_hash, extractor_ref, inventory_complete)` |
-| _validate_basis_inputs | _validate_source_path | 862 | `_validate_source_path(source_path)` |
-| _validate_source_path | require_repository_relative_path | 890 | `require_repository_relative_path(source_path, text_error=ValueError(...), posix_error=ValueError(...), normalized_error=ValueError(...))` |
+| build_entity_observation_basis | _validate_basis_inputs | 375 | `_validate_basis_inputs(source_path, source_content_hash, extractor_ref, inventory_complete)` |
+| _validate_basis_inputs | _validate_source_path | 795 | `_validate_source_path(source_path)` |
+| _validate_source_path | require_repository_relative_path | 823 | `require_repository_relative_path(source_path, text_error=ValueError(...), posix_error=ValueError(...), normalized_error=ValueError(...))` |
 | require_repository_relative_path | isinstance (src/llm_wiki_cli/services…_repository_relative_path) | 299 | `isinstance(value, str)` |
 | require_repository_relative_path | _syntax_key | 301 | `_syntax_key('repository', value, reject_delete_character, control_after_normalization, leading_backslash_is_absolute, normalize_posix_spelling)` |
 | _syntax_key | type | 54 | `type(value)` |

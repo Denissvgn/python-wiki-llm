@@ -6,6 +6,12 @@
 
 Adapts bounded file/stdin JSON to the supported exact documentation query API. Scope, provenance and response bounds are preserved. Invalid input and workspace failures retain distinct exits, and an output file is written only when explicitly requested.
 
+The explain operation accepts one exact concept coordinate or one canonical
+source selector. Source ambiguity remains explicit and bounded. Helper cache
+selection is forwarded to live explanation and receipt inspection under the same
+binding. The transport preserves scope/cost and combined evidence/provenance
+limits; it never performs helper setup or changes the committed knowledge store.
+
 ## Imports
 
 | Source | Symbols |

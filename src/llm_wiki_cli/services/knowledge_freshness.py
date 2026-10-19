@@ -16,6 +16,7 @@ from types import MappingProxyType
 
 from . import analysis_compatibility as ac
 from .freshness_wording import SOURCE_CHANGED_STRUCTURE_UNCHANGED
+from .normalization_diagnostics import NormalizationDiagnostic
 
 from .contracts import (
     GOVERNANCE_HASH_EXTENSION_KEY,
@@ -204,6 +205,7 @@ class ConceptFreshnessBasis:
     concept_observation_hash: str | None
     analysis_basis_hash: str | None
     unknown_reason: str | None = None
+    normalization_diagnostic: NormalizationDiagnostic | None = field(default=None, repr=False, compare=False)
 
 
 @dataclass(frozen=True)
@@ -496,7 +498,13 @@ def _evaluate_concept(
             ComputedFreshness.UNKNOWN,
             reason,
             recorded_details,
-            None,
+            # A fresh observation can be explained without establishing a
+            # comparison against an unreliable historical basis.
+            (
+                _live_basis_details(live, current)
+                if (current := live.concept_bases.get(concept.locator)) is not None
+                else None
+            ),
             compared=False,
         )
 
@@ -789,6 +797,7 @@ def _live_basis_details(
             basis.extractor_ref,
         ),
         unknown_reason=basis.unknown_reason,
+        normalization_diagnostic=basis.normalization_diagnostic,
     )
 
 

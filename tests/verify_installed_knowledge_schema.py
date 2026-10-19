@@ -14,13 +14,15 @@ from pathlib import Path
 
 _PROBE = r"""
 from pathlib import Path
+from importlib.resources import files
+import json
 import re
 import shlex
 import subprocess
 import sys
 
 import llm_wiki_cli
-from llm_wiki_cli.services.contracts import KNOWLEDGE_SCHEMA_VERSION
+from llm_wiki_cli.services.contracts import KNOWLEDGE_SCHEMA_VERSION, NORMALIZATION_DIAGNOSTIC_SCHEMA_VERSION
 from llm_wiki_cli.services.knowledge_model import load_knowledge_schema
 
 target = Path(sys.argv[1]).resolve()
@@ -28,6 +30,8 @@ Path(llm_wiki_cli.__file__).resolve().relative_to(target)
 schema = load_knowledge_schema()
 assert KNOWLEDGE_SCHEMA_VERSION == "llm-wiki-knowledge/v1"
 assert schema["properties"]["schema_version"]["const"] == KNOWLEDGE_SCHEMA_VERSION
+diagnostic = json.loads(files("llm_wiki_cli").joinpath("schemas/llm-wiki-normalization-diagnostic-v1.schema.json").read_text(encoding="utf-8"))
+assert diagnostic["properties"]["schema_version"]["const"] == NORMALIZATION_DIAGNOSTIC_SCHEMA_VERSION
 
 # Exercise the installed sample using only its exported, self-contained README.
 from llm_wiki_cli.services.plugin_samples import export_sample
@@ -81,6 +85,7 @@ _FORBIDDEN_PARTS = {
 }
 _REQUIRED_HELPERS = {
     "llm_wiki_cli/py.typed",
+    "llm_wiki_cli/schemas/llm-wiki-normalization-diagnostic-v1.schema.json",
     "llm_wiki_cli/extractors/go_scripts/go.mod",
     "llm_wiki_cli/extractors/go_scripts/main.go",
     "llm_wiki_cli/extractors/haskell_scripts/Main.hs",
@@ -160,6 +165,11 @@ def _verify_contents(wheel: Path, sdist: Path) -> None:
         *(f"src/{name}" for name in _REQUIRED_HELPERS),
         "docs/standalone-documentation.md",
         "release_build_backend.py",
+        *("tests/fixtures/knowledge-evidence/" + name for name in (
+            "concept-observation-inventories.json", "producer-evidence-inventories.json",
+            "producer-evidence-expectations.json", "released-2.5.0-large.json",
+            "released-2.5.0-large-files.json",
+        )),
     }
     missing_sdist = required_sdist - sdist_names
     if missing_sdist:

@@ -7,6 +7,7 @@ import inspect
 import json
 import subprocess
 import textwrap
+from typing import Any
 from pathlib import Path
 
 import pytest
@@ -896,3 +897,34 @@ def test_haskell_helper_requires_src_dir_argument(haskell_helper: Path):
     assert result.returncode != 0
     assert result.stdout == ""
     assert "--src-dir" in result.stderr
+
+
+def test_haskell_inventory_evidence_contract(haskell_helper: Path, tmp_path):
+    from copy import deepcopy
+    from llm_wiki_cli.services.dependencies import build_dependency_graph
+    from llm_wiki_cli.services.knowledge_evidence import build_module_observation_basis, build_entity_observation_basis, sha256_bytes
+
+    source = _write_haskell(tmp_path, 'Model.hs', '''\
+        module Model where
+        import Data.Text (Text)
+        data Account = Account { accountName :: Text }
+        make :: Text -> Account
+        make name = Account name
+    ''')
+    result = _run_helper(haskell_helper, tmp_path, only_files=['Model.hs'], deep=True)
+    assert result.returncode == 0, result.stderr
+    inventory = json.loads(result.stdout)
+    data = inventory['Model.hs']
+    options: dict[str, Any] = dict(source_path='Model.hs', source_content_hash=sha256_bytes(source.read_bytes()),
+                   extractor_ref='llm-wiki/extractor/haskell', inventory_complete=True)
+    assert build_module_observation_basis(file_data=data, **options).is_known
+    assert build_entity_observation_basis(file_data=data, entity_name='Account', occurrence=1, **options).is_known
+    graph = build_dependency_graph(inventory)
+    assert graph['edges'] == [] and any(r['module'] == 'Data.Text' for r in graph['unresolved'])
+    assert extract_cmd.resolve_call_edges(inventory) == []  # Syntax-only, no invented body-call evidence.
+    malformed = deepcopy(data)
+    malformed['imports'][0]['module'] = ''
+    rejected = build_module_observation_basis(file_data=malformed, **options)
+    assert rejected.unknown_reason == 'invalid-inventory-shape'
+    assert rejected.normalization_diagnostic is not None
+    assert rejected.normalization_diagnostic.pointer == '/imports/0/module'

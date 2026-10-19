@@ -48,8 +48,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| is_valid_sha256 | isinstance | 154 | `isinstance(value, str)` |
-| is_valid_sha256 | _SHA256_RE.fullmatch | 154 | `_SHA256_RE.fullmatch(value)` |
+| is_valid_sha256 | isinstance | 171 | `isinstance(value, str)` |
+| is_valid_sha256 | _SHA256_RE.fullmatch | 171 | `_SHA256_RE.fullmatch(value)` |
 
 ### Boundary effects
 
@@ -59,8 +59,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `is_valid_sha256` | `isinstance` | 154 |
-| unresolved_call | `is_valid_sha256` | `_SHA256_RE.fullmatch` | 154 |
+| external_call | `is_valid_sha256` | `isinstance` | 171 |
+| unresolved_call | `is_valid_sha256` | `_SHA256_RE.fullmatch` | 171 |
 
 ## Behavior
 

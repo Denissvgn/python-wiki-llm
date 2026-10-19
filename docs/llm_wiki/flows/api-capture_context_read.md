@@ -2,7 +2,7 @@
 
 **Entry point:** `capture_context_read` (`api`)
 **Source:** [context_packet](../modules/context_packet.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [common](../modules/common.md), [config](../modules/config.md), and 61 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [common](../modules/common.md), [config](../modules/config.md), and 62 more
 
 **Complete modules touched:**
 
@@ -52,6 +52,7 @@
 - [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
+- [normalization_diagnostics](../modules/normalization_diagnostics.md)
 - [paths](../modules/paths.md)
 - [plugins](../modules/plugins.md)
 - [python_bindings](../modules/python_bindings.md)
@@ -81,76 +82,76 @@
 sequenceDiagram
     participant p0 as capture_context_read
     participant p1 as validate_source_root
-    participant p2 as resolve_source_selection
-    participant p3 as capture_source_selection_inputs
-    participant p4 as validate_live_query_source_selection
-    participant p5 as build_source_snapshot
-    participant p6 as _guard_windows_inputs
-    participant p7 as _assert_source_unchanged
-    participant p8 as retained_empty_module_paths_from_wiki
-    participant p9 as _assert_source_inputs_unchanged
-    participant p10 as _wiki_anchor
-    participant p11 as get_entry_points
-    participant p12 as read_console_scripts
-    participant p13 as resolve_call_edges
-    participant p14 as build_flow
-    participant p15 as build_data_flow_context
-    participant p16 as analyze_data_flow
-    participant p17 as evaluate_surface_index
-    participant p18 as _build_context_knowledge_view
-    participant p19 as analyze_dependencies
-    participant p20 as _assert_wiki_unchanged
-    participant p21 as _selected_git_changed_files
-    participant p22 as _freeze_json
-    participant p23 as attach_maintenance_status
-    participant p24 as validate_path
-    participant p25 as ContextPacketUnavailableError
-    participant p26 as ProtocolRequestError
-    participant p27 as _source_anchor
-    participant p28 as _extractor_failure_message
+    participant p2 as guard_maintenance_owner
+    participant p3 as resolve_source_selection
+    participant p4 as capture_source_selection_inputs
+    participant p5 as validate_live_query_source_selection
+    participant p6 as build_source_snapshot
+    participant p7 as _guard_windows_inputs
+    participant p8 as _assert_source_unchanged
+    participant p9 as retained_empty_module_paths_from_wiki
+    participant p10 as _assert_source_inputs_unchanged
+    participant p11 as _wiki_anchor
+    participant p12 as get_entry_points
+    participant p13 as read_console_scripts
+    participant p14 as resolve_call_edges
+    participant p15 as build_flow
+    participant p16 as build_data_flow_context
+    participant p17 as analyze_data_flow
+    participant p18 as evaluate_surface_index
+    participant p19 as _build_context_knowledge_view
+    participant p20 as analyze_dependencies
+    participant p21 as _assert_wiki_unchanged
+    participant p22 as _selected_git_changed_files
+    participant p23 as _freeze_json
+    participant p24 as attach_maintenance_status
+    participant p25 as validate_path
+    participant p26 as ContextPacketUnavailableError
+    participant p27 as ContextPacketAuthorityError
+    participant p28 as KnowledgeLoadIssue
     participant p29 as isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)
     participant p30 as source_root.is_dir (src/llm_wiki_cli/services…t.py:capture_context_read)
     p0->>p1: validate_source_root
-    p0->>p2: resolve_source_selection
-    p0->>p3: capture_source_selection_inputs
-    p0->>p4: validate_live_query_source_selection
-    p0->>p5: build_source_snapshot
-    p0->>p6: _guard_windows_inputs
-    p0->>p7: _assert_source_unchanged
-    p0->>p8: retained_empty_module_paths_from_wiki
-    p0->>p9: _assert_source_inputs_unchanged
-    p0->>p10: _wiki_anchor
-    p0->>p11: get_entry_points
-    p0->>p12: read_console_scripts
-    p0->>p13: resolve_call_edges
-    p0->>p14: build_flow
-    p0->>p15: build_data_flow_context
-    p0->>p16: analyze_data_flow
-    p0->>p17: evaluate_surface_index
-    p0->>p18: _build_context_knowledge_view
-    p0->>p19: analyze_dependencies
-    p0->>p20: _assert_wiki_unchanged
-    p0->>p21: _selected_git_changed_files
-    p0->>p22: _freeze_json
-    p0->>p23: attach_maintenance_status
-    p0->>p24: validate_path
-    p0->>p25: ContextPacketUnavailableError
-    p0->>p26: ProtocolRequestError
-    p0->>p27: _source_anchor
-    p0->>p28: _extractor_failure_message
+    p0->>p2: guard_maintenance_owner
+    p0->>p3: resolve_source_selection
+    p0->>p4: capture_source_selection_inputs
+    p0->>p5: validate_live_query_source_selection
+    p0->>p6: build_source_snapshot
+    p0->>p7: _guard_windows_inputs
+    p0->>p8: _assert_source_unchanged
+    p0->>p9: retained_empty_module_paths_from_wiki
+    p0->>p10: _assert_source_inputs_unchanged
+    p0->>p11: _wiki_anchor
+    p0->>p12: get_entry_points
+    p0->>p13: read_console_scripts
+    p0->>p14: resolve_call_edges
+    p0->>p15: build_flow
+    p0->>p16: build_data_flow_context
+    p0->>p17: analyze_data_flow
+    p0->>p18: evaluate_surface_index
+    p0->>p19: _build_context_knowledge_view
+    p0->>p20: analyze_dependencies
+    p0->>p21: _assert_wiki_unchanged
+    p0->>p22: _selected_git_changed_files
+    p0->>p23: _freeze_json
+    p0->>p24: attach_maintenance_status
+    p0->>p25: validate_path
+    p0->>p26: ContextPacketUnavailableError
+    p0->>p27: ContextPacketAuthorityError
+    p0->>p28: KnowledgeLoadIssue
     p0-->>p29: isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)(read_only, bool)
     p0-->>p30: source_root.is_dir (src/llm_wiki_cli/services…t.py:capture_context_read)
 ```
 
-> Call sequence diagram shows 30 of 5308 interactions; 5278 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 5272 interactions; 5242 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1703 (1702 omitted); unresolved 1 of 1722 (1721 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1672 (1671 omitted); unresolved 1 of 1712 (1711 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/context_packet.py:capture_context_read` | 1 | - | external | 35 |
+| `src/llm_wiki_cli/services/context_packet.py:capture_context_read` | 1 | - | external | 36 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 14 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 7 |
 | `src/llm_wiki_cli/config.py:validate_path` | 15 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
 | `src/llm_wiki_cli/config.py:validate_path` | 15 | - | unresolved | 3 |
@@ -158,7 +159,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_source_root` | 14 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 14 | - | external | 11 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 14 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
-> Omission summary shows 8 of 1324 groups; 1316 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1334 groups; 1326 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -215,17 +216,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 762 | `isinstance(read_only, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 763 | `TypeError('read_only must be a boolean')` |
-| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 764 | `isinstance(allow_external_src, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 765 | `TypeError('allow_external_src must be a boolean')` |
-| capture_context_read | callable (src/llm_wiki_cli/services…t.py:capture_context_read) | 766 | `callable(plan_reporter)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 767 | `TypeError('plan_reporter must be callable or None')` |
-| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 768 | `isinstance(allow_selection_mismatch, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 769 | `TypeError('allow_selection_mismatch must be a boolean')` |
-| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 770 | `isinstance(strict_wiki_symlinks, bool)` |
-| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 771 | `TypeError('strict_wiki_symlinks must be a boolean')` |
-| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 772 | `isinstance(capture_implementation_observations, bool)` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 800 | `isinstance(read_only, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 801 | `TypeError('read_only must be a boolean')` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 802 | `isinstance(allow_external_src, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 803 | `TypeError('allow_external_src must be a boolean')` |
+| capture_context_read | callable (src/llm_wiki_cli/services…t.py:capture_context_read) | 804 | `callable(plan_reporter)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 805 | `TypeError('plan_reporter must be callable or None')` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 806 | `isinstance(allow_selection_mismatch, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 807 | `TypeError('allow_selection_mismatch must be a boolean')` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 808 | `isinstance(strict_wiki_symlinks, bool)` |
+| capture_context_read | TypeError (src/llm_wiki_cli/services…t.py:capture_context_read) | 809 | `TypeError('strict_wiki_symlinks must be a boolean')` |
+| capture_context_read | isinstance (src/llm_wiki_cli/services…t.py:capture_context_read) | 810 | `isinstance(capture_implementation_observations, bool)` |
 
 ### Boundary effects
 
@@ -235,19 +236,21 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `capture_context_read` | `isinstance` | 762 |
-| external_call | `capture_context_read` | `TypeError` | 763 |
-| external_call | `capture_context_read` | `isinstance` | 764 |
-| external_call | `capture_context_read` | `TypeError` | 765 |
-| external_call | `capture_context_read` | `callable` | 766 |
-| external_call | `capture_context_read` | `TypeError` | 767 |
-| external_call | `capture_context_read` | `isinstance` | 768 |
-| external_call | `capture_context_read` | `TypeError` | 769 |
-| external_call | `capture_context_read` | `isinstance` | 770 |
-| external_call | `capture_context_read` | `TypeError` | 771 |
-| external_call | `capture_context_read` | `isinstance` | 772 |
+| external_call | `capture_context_read` | `isinstance` | 800 |
+| external_call | `capture_context_read` | `TypeError` | 801 |
+| external_call | `capture_context_read` | `isinstance` | 802 |
+| external_call | `capture_context_read` | `TypeError` | 803 |
+| external_call | `capture_context_read` | `callable` | 804 |
+| external_call | `capture_context_read` | `TypeError` | 805 |
+| external_call | `capture_context_read` | `isinstance` | 806 |
+| external_call | `capture_context_read` | `TypeError` | 807 |
+| external_call | `capture_context_read` | `isinstance` | 808 |
+| external_call | `capture_context_read` | `TypeError` | 809 |
+| external_call | `capture_context_read` | `isinstance` | 810 |
 | step_limit | `capture_context_read` | `first 12 steps` | 0 |
 
 ## Behavior
 
 This flow starts at `capture_context_read` and is classified as `api`. The generated call and data-flow sections are bounded static projections; runtime conditions and side effects require source-level confirmation.
+
+Declared ordinary maintenance authority is required to remain coherent. A damaged owner or immutable marker produces a bounded `maintenance-authority-unavailable` refusal, with a safe original cause and an explicit matching committed-recovery template. No native packet or promoted fallback is returned, and no backup, identity, setup or repair is chosen by the read. The caller must preserve recovery preconditions and the original source/wiki boundaries.

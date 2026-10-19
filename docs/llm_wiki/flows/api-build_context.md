@@ -2,7 +2,7 @@
 
 **Entry point:** `build_context` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), and 43 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [change_selection](../modules/change_selection.md), [common](../modules/common.md), and 44 more
 
 **Complete modules touched:**
 
@@ -12,6 +12,7 @@
 - [common](../modules/common.md)
 - [config](../modules/config.md)
 - [context_budget](../modules/context_budget.md)
+- [context_packet](../modules/context_packet.md)
 - [context_service](../modules/context_service.md)
 - [data_flow](../modules/data_flow.md)
 - [dependency_versions](../modules/dependency_versions.md)
@@ -124,9 +125,9 @@ sequenceDiagram
     p0-->>p30: validated.get(KNOWLEDGE_MODE_REQUEST_FIELD)
 ```
 
-> Call sequence diagram shows 30 of 2182 interactions; 2152 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2186 interactions; 2156 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 737 (736 omitted); unresolved 1 of 800 (799 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 738 (737 omitted); unresolved 1 of 801 (800 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -140,7 +141,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 11 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 14 | - | external | 11 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 14 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 10 |
-> Omission summary shows 8 of 485 groups; 477 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 486 groups; 478 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -202,8 +203,8 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | build_context | _normalise_focus | 1241 | `_normalise_focus(focus)` |
-| _normalise_focus | isinstance (src/llm_wiki_cli/api.py:_normalise_focus) | 3222 | `isinstance(focus, str)` |
-| _normalise_focus | list (src/llm_wiki_cli/api.py:_normalise_focus) | 3228 | `list(focus)` |
+| _normalise_focus | isinstance (src/llm_wiki_cli/api.py:_normalise_focus) | 3266 | `isinstance(focus, str)` |
+| _normalise_focus | list (src/llm_wiki_cli/api.py:_normalise_focus) | 3272 | `list(focus)` |
 | build_context | _normalize_optional_knowledge_mode | 1242 | `_normalize_optional_knowledge_mode(knowledge_mode)` |
 | _normalize_optional_knowledge_mode | isinstance (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 397 | `isinstance(value, str)` |
 | _normalize_optional_knowledge_mode | ', '.join (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode) | 398 | `', '.join(...)` |
@@ -221,7 +222,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_normalise_focus` | `isinstance` | 3222 |
+| external_call | `_normalise_focus` | `isinstance` | 3266 |
 | external_call | `_normalize_optional_knowledge_mode` | `isinstance` | 397 |
 | unresolved_call | `_normalize_optional_knowledge_mode` | `', '.join` | 398 |
 | external_call | `_normalize_optional_knowledge_mode` | `cast` | 404 |

@@ -70,6 +70,12 @@ def test_package_data_includes_knowledge_schema():
     assert "py.typed" in package_data
 
 
+def test_normalization_schema_is_declared_in_wheel_and_sdist():
+    resource = "schemas/llm-wiki-normalization-diagnostic-v1.schema.json"
+    assert resource in _pyproject()["tool"]["setuptools"]["package-data"]["llm_wiki_cli"]
+    assert "include src/llm_wiki_cli/" + resource in (PROJECT_ROOT / "MANIFEST.in").read_text().splitlines()
+
+
 def test_jsonschema_is_a_dev_only_dependency():
     data = _pyproject()
     assert "jsonschema>=4.18" in data["project"]["optional-dependencies"]["dev"]
@@ -221,7 +227,7 @@ def test_project_distribution_name_is_pypi_safe_name():
 
 def test_project_version_is_release_target():
     data = _pyproject()
-    assert data["project"]["version"] == "3.0.0"
+    assert data["project"]["version"] == "3.1.0"
 
 
 def test_standalone_guide_is_installed_as_canonical_shared_documentation():

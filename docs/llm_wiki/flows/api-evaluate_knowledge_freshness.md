@@ -98,9 +98,9 @@ sequenceDiagram
     p3-->>p30: counts.get(state, 0)
 ```
 
-> Call sequence diagram shows 30 of 1931 interactions; 1901 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1933 interactions; 1903 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 514 (513 omitted); unresolved 1 of 332 (331 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 514 (513 omitted); unresolved 1 of 333 (332 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -175,14 +175,14 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| evaluate_knowledge_freshness | isinstance (src/llm_wiki_cli/services…luate_knowledge_freshness) | 262 | `isinstance(knowledge, ValidatedKnowledgeArtifacts)` |
-| evaluate_knowledge_freshness | require_validated_artifacts | 261 | `require_validated_artifacts(knowledge)` |
+| evaluate_knowledge_freshness | isinstance (src/llm_wiki_cli/services…luate_knowledge_freshness) | 264 | `isinstance(knowledge, ValidatedKnowledgeArtifacts)` |
+| evaluate_knowledge_freshness | require_validated_artifacts | 263 | `require_validated_artifacts(knowledge)` |
 | require_validated_artifacts | isinstance (src/llm_wiki_cli/services…quire_validated_artifacts) | 170 | `isinstance(value, ValidatedKnowledgeArtifacts)` |
 | require_validated_artifacts | TypeError (src/llm_wiki_cli/services…quire_validated_artifacts) | 171 | `TypeError('expected validator-issued knowledge artifacts')` |
 | require_validated_artifacts | isinstance (src/llm_wiki_cli/services…quire_validated_artifacts) | 174 | `isinstance(validation, _ArtifactValidation)` |
 | require_validated_artifacts | TypeError (src/llm_wiki_cli/services…quire_validated_artifacts) | 187 | `TypeError('knowledge artifacts were not issued by the validator or were replaced')` |
-| evaluate_knowledge_freshness | isinstance (src/llm_wiki_cli/services…luate_knowledge_freshness) | 264 | `isinstance(knowledge, KnowledgeIndex)` |
-| evaluate_knowledge_freshness | parse_knowledge_index | 263 | `parse_knowledge_index(_knowledge_index_to_payload_unchecked(...))` |
+| evaluate_knowledge_freshness | isinstance (src/llm_wiki_cli/services…luate_knowledge_freshness) | 266 | `isinstance(knowledge, KnowledgeIndex)` |
+| evaluate_knowledge_freshness | parse_knowledge_index | 265 | `parse_knowledge_index(_knowledge_index_to_payload_unchecked(...))` |
 | parse_knowledge_index | _record | 526 | `_record(payload, '', {...}, required={...})` |
 | _record | _object (src/llm_wiki_cli/services/knowledge_model.py) | 1608 | `_object(value, ...)` |
 | _object (src/llm_wiki_cli/services/knowledge_model.py) | dict (src/llm_wiki_cli/services…nowledge_model.py:_object) | 1694 | `dict(require_mapping(...))` |
@@ -195,15 +195,19 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `evaluate_knowledge_freshness` | `isinstance` | 262 |
+| external_call | `evaluate_knowledge_freshness` | `isinstance` | 264 |
 | external_call | `require_validated_artifacts` | `isinstance` | 170 |
 | external_call | `require_validated_artifacts` | `TypeError` | 171 |
 | external_call | `require_validated_artifacts` | `isinstance` | 174 |
 | external_call | `require_validated_artifacts` | `TypeError` | 187 |
-| external_call | `evaluate_knowledge_freshness` | `isinstance` | 264 |
+| external_call | `evaluate_knowledge_freshness` | `isinstance` | 266 |
 | step_limit | `evaluate_knowledge_freshness` | `first 12 steps` | 0 |
 | truncated_flow | `evaluate_knowledge_freshness` | `depth limit` | 0 |
 
 ## Behavior
 
-This flow starts at `evaluate_knowledge_freshness` and is classified as `api`. The generated call and data-flow sections are bounded static projections; runtime conditions and side effects require source-level confirmation.
+Compares recorded concept evidence with already evaluated live inputs without
+extracting source or persisting freshness. If the recorded basis is unreliable,
+the result remains unknown and reports no structural comparison. An independently
+computed live basis is retained for explanation, including its normalization
+failure when applicable; it cannot establish current committed evidence.

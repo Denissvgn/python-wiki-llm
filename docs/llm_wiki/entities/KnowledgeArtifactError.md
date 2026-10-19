@@ -26,18 +26,18 @@ Field-specific failure while planning a generated artifact commit.
 flowchart LR
     n0["KnowledgeArtifactError (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
     n1["ValueError"]
-    n2["src/llm_wiki_cli/services/documentation_native.py"]
-    n3["src/llm_wiki_cli/services/documentation_wiki_input.py"]
-    n4["_decode_json_object (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n5["_nonnegative_integer (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n6["_planned_write (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n7["_reject_json_constant (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n8["_surface_page_index (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n9["_unique_json_object (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n10["_validate_asset_path_list (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n11["_validate_manifest_knowledge_parity (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n12["_validate_optional_surface_flow_fields (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
-    n13["_validate_surface_asset_counts (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n2["src/llm_wiki_cli/commands/sync_cmd.py"]
+    n3["src/llm_wiki_cli/services/documentation_native.py"]
+    n4["src/llm_wiki_cli/services/documentation_wiki_input.py"]
+    n5["_decode_json_object (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n6["_nonnegative_integer (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n7["_planned_write (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n8["_reject_json_constant (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n9["_surface_page_index (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n10["_unique_json_object (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n11["_validate_asset_path_list (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n12["_validate_manifest_knowledge_parity (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
+    n13["_validate_optional_surface_flow_fields (src/llm_wiki_cli/services/knowledge_artifacts.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -52,9 +52,9 @@ flowchart LR
     n12 --> n0
     n13 --> n0
     click n0 "../modules/knowledge_artifacts.md"
-    click n2 "../modules/documentation_native.md"
-    click n3 "../modules/documentation_wiki_input.md"
-    click n4 "../modules/knowledge_artifacts.md"
+    click n2 "../modules/sync_cmd.md"
+    click n3 "../modules/documentation_native.md"
+    click n4 "../modules/documentation_wiki_input.md"
     click n5 "../modules/knowledge_artifacts.md"
     click n6 "../modules/knowledge_artifacts.md"
     click n7 "../modules/knowledge_artifacts.md"
@@ -82,6 +82,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `sync_cmd` | import | [sync_cmd](../modules/sync_cmd.md) | — |
 | `documentation_native` | import | [documentation_native](../modules/documentation_native.md) | — |
 | `documentation_wiki_input` | import | [documentation_wiki_input](../modules/documentation_wiki_input.md) | — |
 | `_decode_json_object` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 4 |
@@ -93,6 +94,5 @@ flowchart LR
 | `_validate_asset_path_list` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 3 |
 | `_validate_manifest_knowledge_parity` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 22 |
 | `_validate_optional_surface_flow_fields` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 1 |
-| `_validate_surface_asset_counts` | call | [knowledge_artifacts](../modules/knowledge_artifacts.md) | 6 |
 
-> References: showing 12 of 34 logical references; 22 omitted by the 12-row generated summary limit.
+> References: showing 12 of 35 logical references; 23 omitted by the 12-row generated summary limit.

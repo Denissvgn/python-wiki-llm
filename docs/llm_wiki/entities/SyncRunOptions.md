@@ -1,6 +1,6 @@
 # _SyncRunOptions
 
-**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1708`
+**Location:** `src/llm_wiki_cli/commands/sync_cmd.py:1713`
 **Kind:** Class
 **Bases:** —
 **Module:** [sync_cmd](../modules/sync_cmd.md)
@@ -9,7 +9,11 @@
 
 ## Description
 
-_Auto-generated from `_SyncRunOptions` in `src/llm_wiki_cli/commands/sync_cmd.py`._
+Binds source/wiki roots, source-selection and generation policy, helper/cache
+locations and write-review options for one sync invocation. Optional repair paths
+are canonical POSIX keys relative to the original source root; they constrain
+application without replacing the complete selection or inventory. Scoped repair
+requires built-in producers and cannot request storage or surface-policy changes.
 
 ## Attributes
 
@@ -38,6 +42,7 @@ _Auto-generated from `_SyncRunOptions` in `src/llm_wiki_cli/commands/sync_cmd.py
 | `rebuild_knowledge` | `bool` | `False` | — |
 | `knowledge_format` | `str \| None` | `None` | — |
 | `capture_cache_options` | `InventoryCacheOptions \| None` | `None` | — |
+| `repair_paths` | `tuple[str, ...]` | `()` | — |
 
 ## Methods
 
@@ -111,4 +116,4 @@ flowchart LR
 | `_canonical_sync_surface_flow_targets` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 | `_compute_sync_diff` | type_reference | [sync_cmd](../modules/sync_cmd.md) | — |
 
-> References: showing 12 of 41 logical references; 29 omitted by the 12-row generated summary limit.
+> References: showing 12 of 43 logical references; 31 omitted by the 12-row generated summary limit.

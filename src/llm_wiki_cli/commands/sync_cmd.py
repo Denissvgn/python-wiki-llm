@@ -14,7 +14,7 @@ Workflow:
 
 from __future__ import annotations
 
-from ..services.maintenance_protocol import unlink_maintenance_page
+from ..services.maintenance_protocol import STORAGE_LOCK_FILENAME, unlink_maintenance_page
 
 from contextlib import nullcontext
 
@@ -85,6 +85,8 @@ from ..services.infrastructure_sync import (
     with_infrastructure_generation_input,
 )
 from ..services.io import read_md, write_md
+from ..services.paths import render_shell_command
+from ..services.scoped_sync_repair import ScopedRepairBoundary, ScopedRepairError, prepare_boundary, repair_paths
 from ..services.validation import portable_path_key
 from ..services.source_retirement import (
     SOURCE_MEMBER_REMOVED_HEADER,
@@ -108,6 +110,7 @@ from ..services.knowledge_evidence import (
 from ..services.knowledge_evidence import semantic_hash_for_file
 from ..services.knowledge_governance import (
     GOVERNANCE_FILENAME,
+    GOVERNANCE_LOCK_FILENAME,
     GovernanceError,
     load_governance,
 )
@@ -262,6 +265,8 @@ _SURFACE_POLICY_KEYS = {
 MAX_SURFACE_CREATED_PAGES = MAX_SYNC_AFFECTED_FILES
 MAX_SURFACE_CREATED_RATIO = MAX_SYNC_AFFECTED_RATIO
 MIN_PAGES_FOR_SURFACE_RATIO_GUARD = MIN_SOURCES_FOR_RATIO_GUARD
+_GUARD_PATH_SAMPLE_LIMIT = 8
+_GUARD_PREVIEW_COMMAND_LIMIT = 3072
 _FLOW_CATEGORY_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]*$")
 _DEPRECATION_HEADER = (
     "> ⚠️ **Stale:** Source no longer found in codebase. "
@@ -1729,6 +1734,7 @@ class _SyncRunOptions:
     rebuild_knowledge: bool = False
     knowledge_format: str | None = None
     capture_cache_options: InventoryCacheOptions | None = None
+    repair_paths: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -1829,6 +1835,8 @@ class _PreparedSyncRun:
     generator_refresh_required: bool
     runtime_basis_refresh: bool
     log_missing: bool
+    prior_generator_version: str | None = None
+    evidence_refresh_sources: tuple[str, ...] = ()
     committed_state: CommittedKnowledgeState | None = None
     reuse_observations_hash: str | None = None
     entrypoint_analysis: _SyncEntryPointAnalysis | None = None
@@ -1837,6 +1845,7 @@ class _PreparedSyncRun:
     analysis_input_key: dict | None = None
     page_transitions: PageTransitionPlan | None = None
     transition_execution: PageTransitionExecution | None = None
+    repair_boundary: ScopedRepairBoundary | None = None
 
 
 @dataclass(frozen=True)
@@ -1888,6 +1897,7 @@ def _applied_sync_has_changes(
         )
     return bool(
         prepared.diff.has_changes
+        or bool(prepared.evidence_refresh_sources)
         or prepared.surface_plan.has_work
         or prepared.infrastructure_plan.has_changes
         or _selection_pruning_has_changes(prepared)
@@ -2170,11 +2180,7 @@ def _exit_if_large_unforced_surface_plan(
     if not message or options.force or options.dry_run:
         return
     print(f"Error: {message}", file=sys.stderr)
-    print(
-        "Preview with `llm-wiki sync --dry-run`, then re-run with --force "
-        "if the surface update is intentional.",
-        file=sys.stderr,
-    )
+    print(_sync_preview_hint(options), file=sys.stderr)
     sys.exit(1)
 
 
@@ -2190,7 +2196,10 @@ def _print_dry_run_plan(
     seed_manifest: bool,
     repair_only: bool,
     runtime_provenance_changed: bool,
-) -> None:
+    generator_refresh_required: bool = False,
+    prior_generator_version: str | None = None,
+    evidence_refresh_sources: tuple[str, ...] = (),
+) -> bool:
     print("\nSync dry-run plan:")
     source_label = (
         "deferred source files" if options.initialize_surfaces else "source files"
@@ -2274,9 +2283,19 @@ def _print_dry_run_plan(
         f"{'update' if runtime_provenance_changed else 'unchanged'}"
     )
     generator_refresh_count = len(
-        _affected_source_files(application_diff) - _affected_source_files(diff)
+        _affected_source_files(application_diff) - _affected_source_files(diff) - set(evidence_refresh_sources)
     )
     print(f"  generator refresh sources: {generator_refresh_count}")
+    for line in _sync_guard_detail_lines(
+        diff, application_diff, infrastructure_plan,
+        generator_refresh_required=generator_refresh_required,
+        prior_generator_version=prior_generator_version,
+        evidence_refresh_sources=evidence_refresh_sources,
+        source_selection_prune=source_selection_prune,
+        infrastructure_deferred=bool(options.initialize_surfaces),
+        complete_paths=True,
+    ):
+        print(line)
     print(f"  missing source pages: {len(application_diff.missing_pages)} repair")
     for path in sorted(application_diff.missing_pages):
         print(f"    REPAIR {path}")
@@ -2315,6 +2334,7 @@ def _print_dry_run_plan(
     requires_force = source_requires_force or surface_requires_force
     print(f"  requires --force: {'yes' if requires_force else 'no'}")
     print("DRY-RUN: no files modified.")
+    return requires_force
 
 
 def _surface_args(value: object) -> frozenset[str]:
@@ -2423,6 +2443,16 @@ def _sync_run_options_from_args(args) -> _SyncRunOptions:
     openapi_file = getattr(args, "openapi_file", None)
     clear_openapi_file = bool(getattr(args, "clear_openapi_file", False))
     source_selection = getattr(args, "source_selection", None)
+    try:
+        scoped_paths = repair_paths(getattr(args, "repair_evidence", None))
+        if scoped_paths and include_plugins:
+            raise ScopedRepairError("--repair-evidence requires --no-plugins and an existing matching built-in producer")
+        if scoped_paths and (initialize_surfaces or not preserve_semantic or openapi_file or clear_openapi_file
+                             or getattr(args, "knowledge_format", None) or getattr(args, "rebuild_knowledge", False)):
+            raise ScopedRepairError("--repair-evidence cannot change generation/storage policy or initialize surfaces")
+    except ScopedRepairError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        sys.exit(2)
     if openapi_file and clear_openapi_file:
         print(
             "Error: --openapi-file and --clear-openapi-file are mutually exclusive.",
@@ -2473,6 +2503,7 @@ def _sync_run_options_from_args(args) -> _SyncRunOptions:
         openapi_file=str(openapi_file) if openapi_file else None,
         clear_openapi_file=clear_openapi_file,
         source_selection=source_selection,
+        repair_paths=scoped_paths,
     )
 
 
@@ -2711,6 +2742,178 @@ def _mark_pending_repair_sources_changed(
     diff.removed_files.extend(sorted(pending_removed - existing_removed))
 
 
+def _recoverable_evidence_refresh_sources(
+    manifest: SyncManifest, inventory: Mapping[str, Mapping], diff: SyncDiff,
+) -> tuple[str, ...]:
+    """Select unchanged sources whose captured invalid basis now normalizes."""
+    from ..services.knowledge_evidence import (
+        UNKNOWN_INVALID_INVENTORY, entity_observation_hash, module_observation_hash,
+    )
+
+    sources = set()
+    for path, baseline in manifest.evidence_baselines.items():
+        mapping = manifest.page_source_mappings.get(path)
+        if (
+            baseline.unknown_reason != UNKNOWN_INVALID_INVENTORY
+            or mapping is None or mapping.source_path not in diff.unchanged_files
+            or (data := inventory.get(mapping.source_path)) is None
+        ):
+            continue
+        # Owning sync collected a deep inventory. Normalization must actually
+        # succeed; age, version labels and a persisted reason are insufficient.
+        if mapping.scope == "module":
+            observation = module_observation_hash(data, inventory_complete=True)
+        elif mapping.scope == "entity":
+            assert mapping.entity_name is not None and mapping.occurrence is not None
+            observation = entity_observation_hash(
+                data, mapping.entity_name, mapping.occurrence, inventory_complete=True,
+            )
+        else:
+            continue
+        if observation is not None:
+            sources.add(mapping.source_path)
+    return tuple(sorted(sources))
+
+
+def _guard_display_value(value: str) -> str:
+    """Keep untrusted paths/producer labels bounded and escape terminal controls."""
+    rendered = json.dumps(value, ensure_ascii=True)
+    return rendered if len(rendered) <= 256 else json.dumps(value[:20], ensure_ascii=True) + " [truncated]"
+
+
+def _sync_guard_detail_lines(
+    diff: SyncDiff,
+    application_diff: SyncDiff,
+    infrastructure_plan: InfrastructureSyncPlan,
+    *,
+    generator_refresh_required: bool,
+    prior_generator_version: str | None,
+    evidence_refresh_sources: tuple[str, ...] = (),
+    source_selection_prune: SourceSelectionPruneResult | None = None,
+    infrastructure_deferred: bool = False,
+    complete_paths: bool = False,
+) -> list[str]:
+    """Explain the already computed plan; this does not reclassify or approve it."""
+    affected = _affected_source_files(application_diff)
+    additional = affected - _affected_source_files(diff)
+    evidence_refresh = additional & set(evidence_refresh_sources)
+    groups = [
+        ("new", set(diff.new_files)),
+        ("changed", set(diff.changed_files)),
+        ("metadata-only", set(diff.metadata_only_files)),
+        ("removed", set(diff.removed_files)),
+        ("moved", {path for pair in diff.moved_entities.values() for path in pair}),
+        ("page-renamed", {path for _, path, _ in diff.entity_page_renames} | set(diff.renamed_module_pages)),
+        ("generator-refresh-additional", additional - evidence_refresh),
+    ]
+    if evidence_refresh:
+        groups.append(("evidence-refresh-additional", evidence_refresh))
+    lines = [
+        f"  Affected source inputs: {len(affected)} (deduplicated; source files are not rewritten).",
+        "  Source reasons (may overlap): " + ", ".join(f"{label}={len(paths)}" for label, paths in groups) + ".",
+    ]
+    if generator_refresh_required:
+        captured = _guard_display_value(prior_generator_version) if prior_generator_version is not None else "unavailable"
+        lines.append(
+            f"  Generator refresh: captured version={captured}, current version={_guard_display_value(__version__)}; "
+            f"{len(additional)} additional source input(s)."
+        )
+    lines.extend(_guard_path_sample_lines("source", {
+        path: ", ".join(label for label, paths in groups if path in paths)
+        for path in sorted(affected)
+    }, limit=None if complete_paths else _GUARD_PATH_SAMPLE_LIMIT))
+    lines.append(
+        f"  Infrastructure actions{' (deferred)' if infrastructure_deferred else ''}: "
+        f"{len(infrastructure_plan.new_sources)} new, {len(infrastructure_plan.changed_sources)} changed, "
+        f"{len(infrastructure_plan.removed_sources)} removed, {len(infrastructure_plan.moved_sources)} moved, "
+        f"{len(infrastructure_plan.repair_tombstones)} retirement repair, "
+        f"{len(infrastructure_plan.cleanup_moved_pages)} moved-page cleanup, "
+        f"{len(infrastructure_plan.deselected_records)} deselected "
+        f"({infrastructure_plan.affected_count} guard actions)."
+    )
+    infrastructure_paths = {
+        *infrastructure_plan.new_sources, *infrastructure_plan.changed_sources,
+        *infrastructure_plan.removed_sources, *infrastructure_plan.moved_sources,
+        *infrastructure_plan.repair_tombstones, *infrastructure_plan.cleanup_moved_pages,
+        *infrastructure_plan.deselected_records,
+    }
+    remaining = max(0, _GUARD_PATH_SAMPLE_LIMIT - len(affected))
+    lines.extend(_guard_path_sample_lines("infrastructure action", {path: "" for path in sorted(infrastructure_paths)}, limit=None if complete_paths else remaining))
+    if source_selection_prune is not None:
+        lines.append(
+            f"  Source-selection pruning: {len(source_selection_prune.deselected_source_paths)} source(s), "
+            f"{len(source_selection_prune.deselected_page_paths)} concept page(s), "
+            f"{len(source_selection_prune.deselected_surface_page_paths)} surface page(s)."
+        )
+        if complete_paths:
+            lines.extend(_guard_path_sample_lines("deselected source", {
+                path: "source-selection" for path in source_selection_prune.deselected_source_paths
+            }, limit=None))
+    lines.append(
+        f"  Projection repairs: {len(application_diff.missing_pages)} missing page(s), "
+        f"{len(application_diff.generated_page_repairs)} generated-section repair(s) (separate from source-input count)."
+    )
+    lines.append("  Planned writes target wiki pages/projections and state; preview lists page and artifact actions.")
+    return lines
+
+
+def _guard_path_sample_lines(
+    kind: str, reasons: Mapping[str, str], *, limit: int | None = _GUARD_PATH_SAMPLE_LIMIT,
+) -> list[str]:
+    paths = sorted(reasons)
+    sample = paths[:limit]
+    label = f"complete {kind} paths" if limit is None else f"{kind} path sample"
+    lines = [f"  {label}: {len(sample)} shown, {len(paths) - len(sample)} omitted."]
+    for path in sample:
+        reason = f" [{reasons[path]}]" if reasons[path] else ""
+        display = json.dumps(path, ensure_ascii=True) if limit is None else _guard_display_value(path)
+        lines.append(f"    {display}{reason}")
+    return lines
+
+
+def _sync_preview_argv(options: _SyncRunOptions) -> list[str]:
+    """Retain the caller's planning bindings without granting write approval."""
+    cache = options.capture_cache_options or options.cache_options
+    argv = ["llm-wiki", "sync", "--dry-run", "--src-dir", options.src_dir,
+            "--wiki-dir", str(options.wiki_dir), "--jobs", str(options.job_request.requested_jobs)]
+    values = (
+        ("--source-selection", options.source_selection), ("--helper-cache-dir", options.helper_cache_dir),
+        ("--cache-dir", cache.cache_dir), ("--openapi-file", options.openapi_file),
+        ("--knowledge-format", options.knowledge_format),
+    )
+    for flag, value in values:
+        if value is not None:
+            argv.extend((flag, str(value)))
+    switches = (
+        ("--allow-external-src", options.allow_external_src), ("--no-plugins", not options.include_plugins),
+        ("--no-preserve-semantic", not options.preserve_semantic), ("--exclude-tests", options.exclude_tests),
+        ("--clear-openapi-file", options.clear_openapi_file), ("--rebuild-knowledge", options.rebuild_knowledge),
+        ("--no-cache", not cache.enabled), ("--rebuild-cache", cache.rebuild),
+        ("--cache-stats", options.cache_stats_enabled),
+    )
+    argv.extend(flag for flag, enabled in switches if enabled)
+    if options.initialize_surfaces:
+        argv.extend(("--initialize-surfaces", ",".join(sorted(options.initialize_surfaces))))
+    for category in sorted(options.flow_categories or ()):
+        argv.extend(("--flow-category", category))
+    for language in sorted(options.include_tests or ()):
+        argv.extend(("--include-tests", language))
+    if options.repair_paths:
+        argv.extend(f"--repair-evidence={path}" for path in options.repair_paths)
+    return argv
+
+
+def _sync_preview_hint(options: _SyncRunOptions) -> str:
+    argv = _sync_preview_argv(options)
+    command = render_shell_command(argv, windows=os.name == "nt")
+    unsafe_text = any(ord(c) < 32 or ord(c) == 127 or 0xD800 <= ord(c) <= 0xDFFF for c in command)
+    if unsafe_text or len(command.encode("utf-8")) > _GUARD_PREVIEW_COMMAND_LIMIT:
+        preview = "Repeat the same sync invocation with --dry-run, preserving all roots/options and omitting --force (command display bounded)."
+    else:
+        preview = f"Preview the complete plan ({'PowerShell' if os.name == 'nt' else 'POSIX shell'}): {command}"
+    return preview + "\nReview the preview before explicitly authorizing any broad write; --force is never applied automatically."
+
+
 def _exit_if_large_unforced_diff(
     options: _SyncRunOptions,
     diff: "SyncDiff",
@@ -2719,6 +2922,11 @@ def _exit_if_large_unforced_diff(
     infrastructure_plan: InfrastructureSyncPlan,
     *,
     include_infrastructure: bool = True,
+    source_diff: SyncDiff | None = None,
+    generator_refresh_required: bool = False,
+    prior_generator_version: str | None = None,
+    evidence_refresh_sources: tuple[str, ...] = (),
+    source_selection_prune: SourceSelectionPruneResult | None = None,
 ) -> None:
     large_diff_message = _large_diff_message(diff, manifest) or (
         _large_infrastructure_message(infrastructure_plan)
@@ -2729,11 +2937,16 @@ def _exit_if_large_unforced_diff(
         return
 
     print(f"Error: {large_diff_message}", file=sys.stderr)
-    print(
-        "This sync is broad enough to risk unintended wiki churn. "
-        "Re-run with `llm-wiki sync --force` if this update is intentional.",
-        file=sys.stderr,
-    )
+    for line in _sync_guard_detail_lines(
+        source_diff if source_diff is not None else diff, diff, infrastructure_plan,
+        generator_refresh_required=generator_refresh_required,
+        prior_generator_version=prior_generator_version,
+        evidence_refresh_sources=evidence_refresh_sources,
+        source_selection_prune=source_selection_prune,
+        infrastructure_deferred=not include_infrastructure,
+    ):
+        print(line, file=sys.stderr)
+    print(_sync_preview_hint(options), file=sys.stderr)
     _print_cache_stats(
         inventory_result.cache_stats, enabled=options.cache_stats_enabled
     )
@@ -4015,6 +4228,11 @@ def _prepare_sync_run(
             or generator_refresh_required
         )
     )
+    evidence_refresh_sources = (
+        _recoverable_evidence_refresh_sources(manifest, inventory, diff)
+        if not generator_refresh_required and not options.initialize_surfaces
+        and not seed_manifest and not repair_only else ()
+    )
     runtime_basis_refresh = bool(
         options.initialize_surfaces
         and runtime_provenance_changed
@@ -4047,11 +4265,13 @@ def _prepare_sync_run(
     )
     if (
         not options.rebuild_knowledge
+        and not options.repair_paths
         and options.knowledge_format is None
         and not options.initialize_surfaces
         and not seed_manifest
         and not repair_only
         and not runtime_provenance_changed
+        and not evidence_refresh_sources
         and not diff.has_changes
         and not surface_plan.has_work
         and not missing_pages
@@ -4184,6 +4404,12 @@ def _prepare_sync_run(
         and (not options.initialize_surfaces or runtime_basis_refresh)
         else diff
     )
+    if evidence_refresh_sources:
+        application_diff = deepcopy(application_diff)
+        application_diff.changed_files.extend(evidence_refresh_sources)
+        application_diff.unchanged_files = [
+            path for path in application_diff.unchanged_files if path not in evidence_refresh_sources
+        ]
     if missing_pages:
         application_diff = deepcopy(application_diff)
         application_diff.missing_pages = missing_pages
@@ -4225,8 +4451,12 @@ def _prepare_sync_run(
         source_selection_prune=source_selection_prune,
         runtime_provenance_changed=runtime_provenance_changed,
         generator_refresh_required=generator_refresh_required,
+        evidence_refresh_sources=evidence_refresh_sources,
         runtime_basis_refresh=runtime_basis_refresh,
         log_missing=not (options.wiki_dir / canonical_path(PageKind.LOG)).is_file(),
+        prior_generator_version=(
+            prior_runtime_provenance.generator_version if prior_runtime_provenance is not None else None
+        ),
         committed_state=committed_state,
         reuse_observations_hash=reuse_observations_hash,
         entrypoint_analysis=entrypoint_analysis,
@@ -4758,6 +4988,8 @@ def _finalize_prepared_sync(
         RuntimeKnowledgeInputs(
             target_wiki_dir=target,
             knowledge_format=options.knowledge_format,
+            _plan_check=prepared.repair_boundary.validate_plan if prepared.repair_boundary is not None else None,
+            _publication_check=prepared.repair_boundary.assert_analysis_current if prepared.repair_boundary is not None else None,
             maintenance_page_transitions=prepared.page_transitions,
             inventory=prepared.inventory,
             surface=surface,
@@ -4960,7 +5192,7 @@ def _run_sync_dry_run(
             file=sys.stderr,
         )
         sys.exit(2)
-    _print_dry_run_plan(
+    requires_force = _print_dry_run_plan(
         options,
         prepared.diff,
         prepared.application_diff,
@@ -4971,7 +5203,19 @@ def _run_sync_dry_run(
         seed_manifest=prepared.seed_manifest,
         repair_only=prepared.repair_only,
         runtime_provenance_changed=prepared.runtime_provenance_changed,
+        generator_refresh_required=prepared.generator_refresh_required,
+        prior_generator_version=prepared.prior_generator_version,
+        evidence_refresh_sources=prepared.evidence_refresh_sources,
     )
+    live_root = options.wiki_dir.absolute()
+
+    def ignore_runtime_locks(directory, names):
+        # Process coordination stays with the live owner; staged writes use
+        # their own locks. Same-name authored files below the root stay data.
+        if Path(directory).absolute() != live_root:
+            return ()
+        return {GOVERNANCE_LOCK_FILENAME, STORAGE_LOCK_FILENAME}.intersection(names)
+
     with tempfile.TemporaryDirectory(prefix="llm-wiki-sync-preview-") as temp_dir:
         staged_wiki = Path(temp_dir) / "wiki"
         if options.wiki_dir.exists():
@@ -4979,6 +5223,7 @@ def _run_sync_dry_run(
                 options.wiki_dir,
                 staged_wiki,
                 symlinks=True,
+                ignore=ignore_runtime_locks,
             )
         else:
             staged_wiki.mkdir(parents=True)
@@ -4991,6 +5236,19 @@ def _run_sync_dry_run(
             staged_options, prepared,
             target_wiki_dir=options.wiki_dir,
             dry_run=True,
+        )
+        if prepared.repair_boundary is not None:
+            prepared.repair_boundary.validate_markdown(staged_wiki)
+    if requires_force:
+        print(
+            "\nPreview completed. After reviewing the page and artifact actions, "
+            "explicitly authorize a broad update by repeating the same invocation "
+            "with --force instead of --dry-run."
+        )
+        print(
+            "--force replans current inputs; this preview is not an approval token. "
+            "If source, helper, selection, provider or wiki inputs change, preview "
+            "and review again. Ownership, validation and recovery checks still apply."
         )
     _print_cache_stats(
         prepared.inventory_result.cache_stats,
@@ -5052,6 +5310,11 @@ def _enforce_sync_write_safety(
             prepared.inventory_result,
             prepared.infrastructure_plan,
             include_infrastructure=not bool(options.initialize_surfaces),
+            source_diff=prepared.diff,
+            generator_refresh_required=prepared.generator_refresh_required,
+            prior_generator_version=prepared.prior_generator_version,
+            evidence_refresh_sources=prepared.evidence_refresh_sources,
+            source_selection_prune=prepared.source_selection_prune,
         )
     if not prepared.seed_manifest:
         _exit_if_large_unforced_surface_plan(
@@ -5077,13 +5340,36 @@ def _execute_prepared_sync(options, prepared, *, target_wiki_dir=None, dry_run=F
 
 
 def _run_prepared_sync(options: _SyncRunOptions, prepared: _PreparedSyncRun) -> None:
+    from ..services.sync_recovery import capture_new_sync_pages, SyncRecoveryError
+
     try:
+        if prepared.repair_boundary is not None:
+            print(f"Scoped evidence repair: {len(options.repair_paths)} selected source(s); "
+                  f"full analysis used {len(prepared.inventory)} inventory file(s). "
+                  "Global projections, cache metadata and recovery preimages remain in scope.")
+            outside = sum(not baseline.is_known for page, baseline in prepared.manifest.evidence_baselines.items()
+                          if page not in prepared.repair_boundary.pages)
+            print(f"Unselected unavailable source evidence: {outside} page(s) retained. "
+                  "Repeat strict validation afterward; scoped success does not certify the whole wiki.")
+            if not prepared.evidence_refresh_sources:
+                prepared.repair_boundary.assert_current()
+                print("Requested sources have no captured invalid evidence to refresh; no scoped publication performed.")
+                return
         if options.dry_run:
             _run_sync_dry_run(options, prepared)
             return
         _enforce_sync_write_safety(options, prepared)
-        _execute_prepared_sync(options, prepared)
-    except (SyncOwnershipError, SourceRetirementError, sync_analysis_cache.SyncAnalysisMutationError) as exc:
+        if prepared.repair_boundary is not None:
+            from contextlib import redirect_stdout
+
+            print("Preflighting global reconciliation on an isolated wiki copy.")
+            prepared.repair_boundary.assert_current()
+            with open(os.devnull, "w") as sink, redirect_stdout(sink):
+                _run_sync_dry_run(options, prepared)
+            prepared.repair_boundary.assert_current()
+        with capture_new_sync_pages(options.wiki_dir, prepared.source_snapshot, prepared.manifest):
+            _execute_prepared_sync(options, prepared)
+    except (SyncOwnershipError, SourceRetirementError, sync_analysis_cache.SyncAnalysisMutationError, SyncRecoveryError, ScopedRepairError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(2)
 
@@ -5101,8 +5387,38 @@ def run(args) -> None:
 
 
 def _run_sync_options(options, write_basis=None) -> None:
+    from ..services.knowledge_artifacts import KnowledgeArtifactError
+
     try:
-        prepared = _prepare_sync_run(options)
+        try:
+            prepared = _prepare_sync_run(options)
+        except KnowledgeArtifactError as exc:
+            if options.repair_paths:
+                raise ScopedRepairError(
+                    "Scoped evidence repair requires complete valid committed authority; "
+                    "use the existing explicit recovery route before retrying"
+                ) from exc
+            raise
+        if options.repair_paths:
+            if not isinstance(prepared, _PreparedSyncRun):
+                raise ScopedRepairError("Scoped evidence repair requires a complete owned committed snapshot")
+            boundary = prepare_boundary(options, prepared)
+            selected = tuple(path for path in prepared.evidence_refresh_sources if path in options.repair_paths)
+            application = deepcopy(prepared.diff)
+            application.changed_files.extend(selected)
+            application.unchanged_files = [p for p in application.unchanged_files if p not in selected]
+            maps = prepared.page_maps
+            transitions = _plan_source_page_transitions(
+                options.wiki_dir, prepared.manifest, prepared.inventory, application,
+                maps.module_page_map, maps.entity_occurrence_page_cache,
+                source_selection_policy=prepared.source_snapshot.source_selection_policy,
+            )
+            if transitions.staged_moves or transitions.retained_page_repairs or any(
+                p.action in {"create", "rename"} or p.owner != p.previous_owner for p in transitions.transitions
+            ):
+                raise ScopedRepairError("Scoped evidence repair cannot create, retire, rename or adopt pages; use ordinary sync --dry-run")
+            prepared = replace(prepared, application_diff=application, evidence_refresh_sources=selected,
+                               page_transitions=transitions, repair_boundary=boundary)
     except (
         ApiContractError,
         GeneratedSurfacePruneError,
@@ -5112,6 +5428,7 @@ def _run_sync_options(options, write_basis=None) -> None:
         SourceRetirementError,
         SyncRuntimeRefreshError,
         sync_analysis_cache.SyncAnalysisMutationError,
+        ScopedRepairError,
     ) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(2)

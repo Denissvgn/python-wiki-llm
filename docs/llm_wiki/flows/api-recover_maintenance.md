@@ -55,7 +55,7 @@ sequenceDiagram
     participant p4 as _absolute_path
     participant p5 as validate_path
     participant p6 as require
-    participant p7 as load_recovery_snapshot
+    participant p7 as _validated_recovery_snapshot
     participant p8 as governance_writer_lock
     participant p9 as storage_writer_lock
     participant p10 as load_adoption_marker
@@ -85,7 +85,7 @@ sequenceDiagram
     p2->>p4: _absolute_path
     p3->>p5: validate_path
     p1->>p6: require
-    p2->>p7: load_recovery_snapshot
+    p2->>p7: _validated_recovery_snapshot
     p2->>p8: governance_writer_lock
     p2->>p9: storage_writer_lock
     p2->>p10: load_adoption_marker
@@ -111,9 +111,9 @@ sequenceDiagram
     p2-->>p30: intent.get('adoption_id')
 ```
 
-> Call sequence diagram shows 30 of 1806 interactions; 1776 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1814 interactions; 1784 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 609 (608 omitted); unresolved 1 of 395 (394 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 612 (611 omitted); unresolved 1 of 400 (399 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -219,3 +219,5 @@ flowchart LR
 ## Behavior
 
 This flow starts at `recover_maintenance` and is classified as `api`. The generated call and data-flow sections are bounded static projections; runtime conditions and side effects require source-level confirmation.
+
+Explicit committed recovery restores absent validator-owned projection roots and referenced native objects only under a surviving matching marker or owner. It keeps authored/unreferenced-file conflicts, identity checks and newer-state refusal, performs guarded exact-byte writes and publishes the manifest last. Packet reads never invoke this recovery automatically; restored snapshot validity is separate from current source or human review.

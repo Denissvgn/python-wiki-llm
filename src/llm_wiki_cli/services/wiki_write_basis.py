@@ -19,16 +19,28 @@ class WriteBasis(Protocol):
     def before_write(self, path: Path, content: bytes | None) -> None: ...
     def after_write(self, path: Path, content: bytes | None) -> None: ...
 
+class PageWriteObserver(Protocol):
+    def before_write(self, path: Path, content: bytes | None) -> None: ...
+    def after_write(self, path: Path, content: bytes | None) -> None: ...
+
+
 ACTIVE_WRITE_BASIS: ContextVar[WriteBasis | None] = ContextVar("llm_wiki_write_basis", default=None)
+ACTIVE_SYNC_JOURNAL: ContextVar[PageWriteObserver | None] = ContextVar("llm_wiki_sync_journal", default=None)
 
 
 def before_wiki_write(path: str | Path, content: bytes | None) -> None:
     basis = ACTIVE_WRITE_BASIS.get()
     if basis is not None:
         basis.before_write(Path(path), content)
+    journal = ACTIVE_SYNC_JOURNAL.get()
+    if journal is not None:
+        journal.before_write(Path(path), content)
 
 
 def after_wiki_write(path: str | Path, content: bytes | None) -> None:
     basis = ACTIVE_WRITE_BASIS.get()
     if basis is not None:
         basis.after_write(Path(path), content)
+    journal = ACTIVE_SYNC_JOURNAL.get()
+    if journal is not None:
+        journal.after_write(Path(path), content)

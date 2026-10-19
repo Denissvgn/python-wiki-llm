@@ -14,9 +14,10 @@ def run(args):
 
     try:
         request = load_request(args.request)
+        options = {} if args.helper_cache_dir is None else {"helper_cache_dir": args.helper_cache_dir}
         result = api.query_documentation(request, src_dir=args.src_dir,
                     wiki_dir=args.wiki_dir, source_selection=args.source_selection,
-                    allow_external_src=args.allow_external_src)
+                    allow_external_src=args.allow_external_src, **options)
         rendered = json.dumps(result, ensure_ascii=False, sort_keys=True,
                               separators=(",", ":"), allow_nan=False) + "\n"
         if args.output:

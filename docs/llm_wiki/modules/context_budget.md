@@ -21,6 +21,8 @@ The built-in UTF-8 estimator can skip full rendering when the unchanged source
 JSON fragment alone already exceeds the entire delivery allowance. Custom and
 exact counters retain full-render fitting without assuming monotonic token cost.
 
+The CLI adapter handles typed ordinary-authority refusal through the shared packet error renderer. It emits the same bounded cause/recovery requirements on stderr, leaves stdout and existing output files untouched, and performs no repair or fallback promotion. This failure remains distinct from a valid result that cannot fit its budget.
+
 ## Imports
 
 | Source | Symbols |

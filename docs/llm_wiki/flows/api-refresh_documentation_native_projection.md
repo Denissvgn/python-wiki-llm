@@ -2,7 +2,7 @@
 
 **Entry point:** `refresh_documentation_native_projection` (`api`)
 **Source:** [documentation_native](../modules/documentation_native.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api_contracts](../modules/api_contracts.md), and 66 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api_contracts](../modules/api_contracts.md), and 68 more
 
 **Complete modules touched:**
 
@@ -13,6 +13,7 @@
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
 - [config](../modules/config.md)
+- [context_packet](../modules/context_packet.md)
 - [context_service](../modules/context_service.md)
 - [data_flow](../modules/data_flow.md)
 - [documentation_native](../modules/documentation_native.md)
@@ -53,6 +54,7 @@
 - [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
+- [normalization_diagnostics](../modules/normalization_diagnostics.md)
 - [packages](../modules/packages.md)
 - [paths](../modules/paths.md)
 - [plugins](../modules/plugins.md)
@@ -146,9 +148,9 @@ sequenceDiagram
     p1-->>p30: path.exists (src/llm_wiki_cli/services…l.py:load_adoption_marker)
 ```
 
-> Call sequence diagram shows 30 of 4607 interactions; 4577 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4620 interactions; 4590 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1563 (1562 omitted); unresolved 1 of 1235 (1234 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1566 (1565 omitted); unresolved 1 of 1241 (1240 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -162,7 +164,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 3 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/maintenance_protocol.py:load_adoption_marker` | 2 | - | external | 3 |
 | `src/llm_wiki_cli/services/maintenance_protocol.py:load_adoption_marker` | 2 | - | unresolved | 1 |
-> Omission summary shows 8 of 1106 groups; 1098 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1109 groups; 1101 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

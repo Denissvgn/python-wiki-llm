@@ -263,7 +263,7 @@ def _validate_release_changelog(root: Path, version: str, tag: str) -> None:
 
 
 def release_eligibility(
-    root: Path, *, check_registry: bool = True
+    root: Path, *, check_registry: bool = True, check_remote: bool = True
 ) -> dict[str, Any]:
     """Inspect release preparation without freezing source or changing the repository."""
     root = root.resolve()
@@ -317,14 +317,15 @@ def release_eligibility(
                 f"candidate tag lookup failed ({tag_result.returncode}): "
                 f"{tag_result.stderr.strip()}"
             )
-        remote_tag = _run(
-            ["git", "ls-remote", "--tags", "origin", f"refs/tags/{tag}", f"refs/tags/{tag}^{{}}"],
-            cwd=root,
-        ).stdout.strip()
-        if remote_tag:
-            return blocked(
-                "waiting_release_preparation", f"candidate tag {tag} already exists on origin"
-            )
+        if check_remote:
+            remote_tag = _run(
+                ["git", "ls-remote", "--tags", "origin", f"refs/tags/{tag}", f"refs/tags/{tag}^{{}}"],
+                cwd=root,
+            ).stdout.strip()
+            if remote_tag:
+                return blocked(
+                    "waiting_release_preparation", f"candidate tag {tag} already exists on origin"
+                )
         if check_registry:
             _check_registry_unused(version)
     except RegistryVersionExists as exc:

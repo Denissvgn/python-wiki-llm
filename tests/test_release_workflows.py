@@ -40,6 +40,21 @@ def test_combined_optional_sdk_skips_require_each_exact_sdk_owner_case():
     }
 
 
+def test_owned_packet_optional_sdk_skip_has_exact_capable_owner():
+    node = (
+        "tests/test_owned_packet_recovery.py::"
+        "test_registered_sdk_keeps_structured_authority_failure"
+    )
+    entries = json.loads((ROOT / "release/skip-allowlist.json").read_text())["entries"]
+    owned = [entry for entry in entries if entry["node_id"] == node]
+    assert len(owned) == 3
+    assert {(entry["lane"], entry["node_id"], entry["owner_lane"], entry["reason"])
+            for entry in owned} == {
+        (lane, node, "mcp-3.13", "Optional MCP SDK is not installed")
+        for lane in ("core-macos-3.14", "core-ubuntu-3.10", "core-windows-3.13")
+    }
+
+
 def test_newer_parser_control_skips_require_supported_parser_owner_cases():
     families = (
         "tests/test_constructor_call_interfaces.py::"
@@ -157,6 +172,12 @@ def test_routine_ci_checks_the_full_release_typing_surface() -> None:
         '|', 'tee', 'pyright.log',
     ]
     assert not check.get("continue-on-error")
+    lint = next(step for step in job["steps"] if step.get("name") == "Check the release lint scope")
+    assert lint["shell"] == "bash" and not lint.get("continue-on-error")
+    assert lint["run"].split("-m ruff check", 1)[1].split("|", 1)[0].split() == [
+        "src", "tests", "examples", "integrations/github-action/render_summary.py",
+        "release/preflight.py", "release/preflight_contracts.py", "release/preflight_runner.py",
+    ]
 
 
 def test_selected_sources_and_committed_wiki_use_lf_checkout_semantics() -> None:
@@ -299,21 +320,52 @@ def test_native_origin_contract_runs_before_the_full_windows_suite():
     steps = _yaml("ci.yml")["jobs"]["test"]["steps"]
     early = _named_step({"steps": steps}, "Check release corrections on native Windows")
     assert "tests/test_real_caller_action_fixture.py" in early["run"]
+    assert early["id"] == "native-corrections"
+    assert '--junitxml="${{ runner.temp }}/native-corrections.xml"' in early["run"]
+    assert {
+        "tests/test_scoped_sync_repair.py",
+        "tests/test_sync_guard_diagnostics.py",
+        "tests/test_preflight_contracts.py",
+        "tests/test_preflight_runner.py",
+    } <= set(early["run"].split())
     assert early["if"] == "${{ matrix.lane == 'core-windows-3.13' }}"
     assert steps.index(early) < next(
         index for index, step in enumerate(steps) if step.get("name") == "Run strict suite"
     )
+    evidence = _named_step({"steps": steps}, "Retain native Windows correction evidence")
+    assert "always()" in evidence["if"]
+    assert "steps.native-corrections.outcome" in evidence["if"]
+    assert evidence["with"]["path"] == "${{ runner.temp }}/native-corrections.xml"
+
+
+def test_recursion_coverage_probe_preserves_the_full_linux_gate():
+    steps = _yaml("ci.yml")["jobs"]["test"]["steps"]
+    early = _named_step({"steps": steps}, "Check recursion coverage boundaries before the full Linux suite")
+    full = _named_step({"steps": steps}, "Run strict suite with coverage")
+    assert early["if"] == "${{ matrix.coverage }}"
+    assert "tests/test_python_implementation.py::test_deep_owned_ast_has_iterative_declaration_walk_and_explicit_digest_gap" in early["run"]
+    assert "runner.coverage_rows" in early["run"]
+    assert "runner.source_manifest(package)" in early["run"]
+    assert early["env"]["COVERAGE_FILE"] == "${{ runner.temp }}/coverage-recursion/coverage.data"
+    assert "--cov-fail-under=0" in early["run"]
+    assert "--cov-fail-under=87" in full["run"]
+    assert "COVERAGE_FILE" not in full.get("env", {})
+    assert steps.index(early) < steps.index(full)
+    evidence = _named_step({"steps": steps}, "Retain native Linux coverage boundary evidence")
+    assert "always()" in evidence["if"]
+    assert "steps.coverage-boundary.outcome" in evidence["if"]
 
 
 def test_javascript_evidence_has_exact_conditional_owners_and_native_zero_skip_gate():
     cases = {
         "tests/test_ts_extract.py::test_dynamic_import_gap_survives_bootstrap_sync_and_strict_gates",
+        "tests/test_ts_extract.py::test_released_unknown_evidence_guarded_upgrade_and_refresh",
         *(f"tests/test_ts_extract.py::test_unresolved_import_producer_consumer_contract[{ext}]"
           for ext in ("js", "jsx", "mjs", "cjs", "ts", "tsx")),
     }
     entries = json.loads((ROOT / "release/skip-allowlist.json").read_text())["entries"]
     owned = [item for item in entries if item["node_id"] in cases]
-    assert len(owned) == 21
+    assert len(owned) == 24
     assert {(item["lane"], item["node_id"], item["owner_lane"], item["reason"])
             for item in owned} == {
         (lane, case, "toolchains", "Node.js/ts-morph dependencies not installed — TypeScript extractor tests skipped")
@@ -333,8 +385,9 @@ def test_javascript_evidence_has_exact_conditional_owners_and_native_zero_skip_g
         assert '--language typescript --cache-dir "${LLM_WIKI_CACHE_DIR}"' in script
         assert 'test_unresolved_import_producer_consumer_contract' in script
         assert 'test_dynamic_import_gap_survives_bootstrap_sync_and_strict_gates' in script
+        assert 'test_released_unknown_evidence_guarded_upgrade_and_refresh' in script
         assert '--lane javascript-evidence-windows' in script
-        assert '--minimum-collected 7 --minimum-passed 7' in script
+        assert '--minimum-collected 8 --minimum-passed 8' in script
         assert '--discovery' not in script
         assert not any(item["lane"] == "javascript-evidence-windows" for item in entries)
         assert 'GITHUB_ENV' not in script
@@ -1531,6 +1584,10 @@ def test_routine_ci_reuses_only_instrumentation_and_expensive_packaging() -> Non
     )["run"]
     assert _named_step(mcp, "Run MCP SDK registration contract")["env"]["LLM_WIKI_REQUIRE_MCP_SDK"] == "1"
     assert "tests/test_mcp_sdk.py" in mcp_command
+    assert (
+        "tests/test_owned_packet_recovery.py::"
+        "test_registered_sdk_keeps_structured_authority_failure"
+    ) in mcp_command
     assert "tests/test_mcp.py" not in mcp_command
     assert (
         "tests/test_task_compact_readable.py::"
@@ -1539,8 +1596,8 @@ def test_routine_ci_reuses_only_instrumentation_and_expensive_packaging() -> Non
     mcp_verifier = _named_step(
         mcp, "Enforce MCP SDK registration and canonical delivery"
     )["run"]
-    assert "--minimum-collected 7" in mcp_verifier
-    assert "--minimum-passed 7" in mcp_verifier
+    assert "--minimum-collected 8" in mcp_verifier
+    assert "--minimum-passed 8" in mcp_verifier
     assert (
         "tests/test_task_compact_readable.py::"
         "test_actual_mcp_v2_metadata_toggle_keeps_qualifications_and_receipts"
@@ -1745,12 +1802,16 @@ def test_release_mcp_and_build_jobs_avoid_identical_revalidation() -> None:
     mcp_command = _named_step(mcp, "Run MCP contract")["run"]
     assert _named_step(mcp, "Run MCP contract")["env"]["LLM_WIKI_REQUIRE_MCP_SDK"] == "1"
     assert "tests/test_mcp_sdk.py" in mcp_command
+    assert (
+        "tests/test_owned_packet_recovery.py::"
+        "test_registered_sdk_keeps_structured_authority_failure"
+    ) in mcp_command
     assert "tests/test_mcp.py" not in mcp_command
     mcp_verifier = _named_step(
         mcp, "Enforce the dedicated MCP SDK contract"
     )["run"]
-    assert "--minimum-collected 7" in mcp_verifier
-    assert "--minimum-passed 7" in mcp_verifier
+    assert "--minimum-collected 8" in mcp_verifier
+    assert "--minimum-passed 8" in mcp_verifier
     assert (
         "tests/test_compact_delivery_interfaces.py::"
         "test_actual_mcp_sdk_content_carries_view_then_receipt_as_separate_transport"
@@ -1895,7 +1956,7 @@ def test_committed_skip_contract_covers_platform_and_optional_owners_exactly() -
         for entry in entries
         if entry["node_id"].startswith("tests/test_haskell_extract.py::")
     ]
-    assert len(haskell) == 18
+    assert len(haskell) == 21
     assert {entry["lane"] for entry in haskell} == {
         "core-macos-3.14",
         "core-ubuntu-3.10",

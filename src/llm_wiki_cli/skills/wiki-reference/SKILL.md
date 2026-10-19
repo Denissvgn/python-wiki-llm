@@ -12,8 +12,8 @@ repository policy, or calling application did not provide.
 - [Development workflow](references/development-workflow.md) — use for substantive
   coding or investigations to connect criteria, evidence, independent checks,
   durable explanations, gap reporting, and resumable handoff.
-- [Maintenance and validation](references/maintenance.md) — use after relevant
-  code or source changes for owning sync, semantic pass, final re-anchor,
+- [Maintenance and validation](references/maintenance.md) — use for captured
+  evidence diagnosis/recovery and after code or source changes for owning sync, semantic pass, final re-anchor,
   strict validation, recovery, and handoff ordering.
 - [Canonical surfaces and naming](references/surfaces-naming.md) — use before
   editing, naming, linking, or recovering canonical wiki pages and generated

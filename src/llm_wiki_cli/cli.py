@@ -222,10 +222,15 @@ def _add_queue_command(subparsers):
 def _add_maintenance_command(subparsers):
     parser = subparsers.add_parser("maintenance", help="Adopt, inspect, acknowledge or recover ordinary prose review")
     actions = parser.add_subparsers(dest="maintenance_action", required=True)
-    for name in ("adopt", "status", "acknowledge", "recover"):
+    for name in ("adopt", "status", "acknowledge", "recover", "recover-new-pages"):
         action = actions.add_parser(name)
         action.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR)
         action.add_argument("--format", choices=("text", "json"), default="text" if name == "status" else "json")
+        if name == "recover-new-pages":
+            action.add_argument("--recovery-dir", required=True)
+            action.add_argument("--expected-journal-hash", required=True)
+            action.add_argument("--dry-run", action="store_true")
+            continue
         if name != "recover":
             action.add_argument("--src-dir", default=".")
             action.add_argument("--allow-external-src", action="store_true")
@@ -268,12 +273,16 @@ def _build_parser():
 
 
 def _add_query_command(subparsers):
-    parser = subparsers.add_parser("query", help="Run an exact documentation query")
+    parser = subparsers.add_parser("query", help="Run an exact documentation query",
+        epilog='Evidence diagnosis: --request FILE accepts {"operation":"explain","source":"SOURCE","limit":5}. '
+        'Snapshot is default; ambiguous sources return choices. Live comparison needs live=true and allow_full_inventory=true (full inventory). '
+        'Keep source/wiki roots, selection and helper cache. Raw one-file JSON: extract --deep --read-only --paths SOURCE. Reads do not repair stored evidence.')
     parser.add_argument("--request", required=True, help="JSON request file, or - for stdin (1 MiB maximum)")
     parser.add_argument("--src-dir", default=".")
     parser.add_argument("--wiki-dir", default=DEFAULT_WIKI_DIR)
     parser.add_argument("--allow-external-src", action="store_true")
     parser.add_argument("--output", help="Write the JSON response to this file")
+    parser.add_argument("--helper-cache-dir", help="Helper cache base for evidence explanation")
     _add_source_selection_argument(parser)
 
 
@@ -432,7 +441,10 @@ def _add_init_command(subparsers):
 
 def _add_extract_command(subparsers):
     extract_parser = subparsers.add_parser(
-        "extract", help="Extract project AST and structure into wiki"
+        "extract", help="Extract project AST and structure into wiki",
+        epilog='One-file JSON inspection: llm-wiki extract --deep --read-only --paths SOURCE --src-dir . '
+        'Preserve the original source selection and helper cache. This read does not install helpers or repair a stored manifest. '
+        'Inspect captured qualification with query --request FILE (operation: explain); use the exact authorized helper remedy, then preview owning sync before repair.'
     )
     extract_parser.add_argument(
         "--src-dir", default=".", help="Source directory to scan"
@@ -847,6 +859,10 @@ def _add_knowledge_command(subparsers):
         _add_knowledge_wiki_argument(review)
         review.add_argument("--limit", type=int, default=100, help="Maximum returned records (default: 100)")
         review.add_argument("--max-bytes", type=int, default=262_144, help="Maximum JSON output bytes (default: 262144)")
+        review.add_argument("--cursor", default=None, help="Continue the same snapshot review using next_cursor")
+        review.add_argument("--record-index", type=int, default=None, help="Read exact canonical record bytes at this review ordinal")
+        review.add_argument("--review-id", default=None, help="Required snapshot/scope binding for --record-index")
+        review.add_argument("--record-offset", type=int, default=0, help="Byte offset for a bounded record chunk (default: 0)")
         if action == "diff-storage":
             review.add_argument("--against-wiki", required=True, help="Other complete wiki snapshot to compare")
         else:
@@ -1984,8 +2000,15 @@ def _add_sync_command(subparsers):
     sync_parser = subparsers.add_parser(
         "sync",
         help="Incrementally update wiki pages for files that changed since last bootstrap/sync",
+        epilog='Captured evidence failure: inspect query --request FILE (operation: explain), then extract --deep --read-only --paths SOURCE with the same bindings. '
+        'Raw output does not repair a stored manifest. Preview with the same sync invocation plus --dry-run; review all actions and require explicit authority for broad --force. '
+        'Never force automatically. Re-anchor semantic changes, then run strict lint and ci-check.',
     )
     _add_progress_arguments(sync_parser)
+    sync_parser.add_argument(
+        "--repair-evidence", nargs="+", action="extend", default=None, metavar="SOURCE",
+        help="Repair owned unchanged evidence with --no-plugins (POSIX paths relative to --src-dir); full analysis still runs",
+    )
     sync_parser.add_argument("--knowledge-format", choices=["v1", "sharded-v2", "packed-v3", "packed-v3-deflate", "packed-v4", "packed-v4-deflate"], default=None,
                             help="Explicit native storage format; otherwise preserve the adopted format")
     sync_parser.add_argument(

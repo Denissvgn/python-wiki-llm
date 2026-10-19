@@ -40,6 +40,12 @@ from static syntax or an authoritative source-contained OpenAPI export. These
 records, their diagnostics, and entry-point ``routes`` remain optional under
 ``llm-wiki-extract/v1``.
 
+The registry names the standalone normalization-diagnostic contract independently
+of extraction, native evidence and CI/health envelopes. Versioned JSON diagnostic
+text does not add fields to those outer contracts or change evidence hashes.
+The diagnostic schema is packaged with the library, and consumers interpreting
+the record must recognize its own version.
+
 ## Imports
 
 | Source | Symbols |
@@ -66,6 +72,6 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `integrations` (1) |
-| Inbound | `src` (42) |
+| Inbound | `src` (44) |
 
-> All 43 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 45 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.

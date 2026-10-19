@@ -4,7 +4,10 @@
 
 ## Description
 
-Operation-local compare-and-swap hooks for adopted wiki writes.
+Operation-local write hooks dispatch adopted compare-and-swap guards first,
+then the active sync's new-page observer. The observer retains operation-bound
+recovery evidence without granting ownership or replacing adopted full-preimage
+protection. Context tokens isolate each operation and are reset on failure.
 
 ## Imports
 
@@ -29,33 +32,39 @@ flowchart LR
     n5["src/llm_wiki_cli/services/maintenance_protocol.py"]
     n6["src/llm_wiki_cli/services/maintenance_service.py"]
     n7["src/llm_wiki_cli/services/source_snapshot.py"]
-    n8["src/llm_wiki_cli/services/wiki_write_basis.py"]
+    n8["src/llm_wiki_cli/services/sync_recovery.py"]
+    n9["src/llm_wiki_cli/services/wiki_write_basis.py"]
     n0 --> n4
     n0 --> n5
     n0 --> n7
-    n0 --> n8
-    n1 --> n8
-    n2 --> n8
+    n0 --> n9
+    n1 --> n9
+    n2 --> n9
     n3 --> n2
-    n3 --> n8
+    n3 --> n9
     n4 --> n3
     n4 --> n5
     n4 --> n7
-    n4 --> n8
+    n4 --> n9
     n5 --> n1
     n5 --> n2
     n5 --> n3
     n5 --> n7
-    n5 --> n8
+    n5 --> n9
     n6 --> n1
     n6 --> n2
     n6 --> n3
     n6 --> n4
     n6 --> n5
     n6 --> n7
-    n6 --> n8
+    n6 --> n9
     n7 --> n1
+    n8 --> n1
+    n8 --> n2
+    n8 --> n5
     n8 --> n7
+    n8 --> n9
+    n9 --> n7
     click n0 "../modules/documentation_native.md"
     click n1 "../modules/filesystem_guard.md"
     click n2 "../modules/io.md"
@@ -64,7 +73,8 @@ flowchart LR
     click n5 "../modules/maintenance_protocol.md"
     click n6 "../modules/maintenance_service.md"
     click n7 "../modules/source_snapshot.md"
-    click n8 "../modules/wiki_write_basis.md"
+    click n8 "../modules/sync_recovery.md"
+    click n9 "../modules/wiki_write_basis.md"
 ```
 
 ### Internal neighbors
@@ -78,6 +88,7 @@ flowchart LR
 | Inbound | [knowledge_orchestration](../modules/knowledge_orchestration.md) |
 | Inbound | [maintenance_protocol](../modules/maintenance_protocol.md) |
 | Inbound | [maintenance_service](../modules/maintenance_service.md) |
+| Inbound | [sync_recovery](../modules/sync_recovery.md) |
 | Outbound | [source_snapshot](../modules/source_snapshot.md) |
 
 ## Classes
@@ -85,6 +96,7 @@ flowchart LR
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
 | [WriteBasis](../entities/WriteBasis.md) | 13 | `Protocol` | — |
+| [PageWriteObserver](../entities/PageWriteObserver.md) | 22 | `Protocol` | — |
 
 ## Functions
 

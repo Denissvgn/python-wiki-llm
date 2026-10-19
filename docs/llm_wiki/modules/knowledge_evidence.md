@@ -12,14 +12,32 @@ live freshness, or write artifacts.
 
 JavaScript and TypeScript module observations retain explicit unresolved import gaps as structural evidence. An empty module is accepted only for the bundled dynamic-import or computed-require shape, with a matching reason, positive source line and optional deferred scope. Gap reasons, multiplicity and execution scope remain hash inputs; source line numbers remain location metadata. Other malformed imports still produce unknown evidence.
 
+Normalization failures retain the failing record/field pointer, validation rule,
+expected shape and safe actual-type summary. Duplicate declarations are located
+by their real inventory index and selected named occurrence. Explicit unresolved
+JavaScript gaps remain accepted; malformed near-misses identify the failed gap
+field without creating a resolved dependency.
+
+The unknown basis carries fresh diagnostic detail only in memory. Its evidence
+payload and equality exclude that detail, preserving valid structural hashes and
+persisted reason/basis fields. Recursion or encoding failures with no exact known
+location use a null pointer, not an inferred record. Existing completeness and
+language qualification remain mandatory.
+
+Record arrays use shared list and mapping validation while retaining the first
+invalid item's exact diagnostic coordinate. Missing required arrays are rejected;
+missing optional arrays are empty. These checks do not change accepted structural
+facts or grant authority to unavailable evidence.
+
 ## Imports
 
 | Source | Symbols |
 |--------|---------|
-| `.validation` | `require_bool`, `require_list`, `require_mapping`, `require_mapping_list`, `require_member`, `require_nonempty_text`, `require_positive_int`, `require_repository_relative_path`, `require_sha256`, `require_string`, `require_string_list` |
+| `.normalization_diagnostics` | `MISSING_VALUE`, `NormalizationDiagnostic` |
+| `.validation` | `require_bool`, `require_list`, `require_mapping`, `require_member`, `require_nonempty_text`, `require_positive_int`, `require_repository_relative_path`, `require_sha256`, `require_string` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Mapping` |
-| `dataclasses` | `dataclass` |
+| `dataclasses` | `dataclass`, `field` |
 | `hashlib` | `hashlib` |
 | `json` | `json` |
 | `math` | `math` |
@@ -46,21 +64,23 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (31) |
-| Outbound | `src` (1) |
+| Outbound | `src` (2) |
 
-> All 32 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 33 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
 | [ConceptObservationBasis](../entities/ConceptObservationBasis.md) | 85 | — | One source-backed concept observation basis or explicit unknown result. |
-| [_InventoryNormalizationError](../entities/InventoryNormalizationError.md) | 145 | `Exception` | — |
+| [_InventoryNormalizationError](../entities/InventoryNormalizationError.md) | 146 | `Exception` | — |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
+| `_failure` | `(pointer, rule, expected, value, *, reason = UNKNOWN_INVALID_INVENTORY, exact = True)` | — | — |
+| `_pointer` | `(parent, field)` | — | — |
 | `is_valid_sha256` | `(value: object) -> bool` | — | Return whether *value* is a canonical ``sha256:<lowercase-hex>`` string. |
 | `canonical_json_text` | `(value: Any) -> str` | — | Encode *value* as compact canonical JSON for hashing and ordering. |
 | `canonical_json_bytes` | `(value: Any) -> bytes` | — | Return the UTF-8 bytes of :func:`canonical_json_text`. |
@@ -78,27 +98,28 @@ flowchart LR
 | `_normalize_module_observation` | `(file_data: Mapping[str, Any] \| None) -> dict[str, Any]` | — | — |
 | `_normalize_entity_observation` | `(file_data: Mapping[str, Any] \| None, entity_name: str, occurrence: int) -> dict[str, Any]` | — | — |
 | `_inventory_language` | `(file_data: Mapping[str, Any] \| None) -> str` | — | — |
-| `_record_array` | `(file_data: Mapping[str, Any], field: str, *, required: bool) -> list[Mapping[str, Any]]` | — | — |
+| `_record_array` | `(file_data: Mapping[str, Any], field: str, *, required: bool, pointer = '') -> list[Mapping[str, Any]]` | — | — |
 | `_json_array` | `(file_data: Mapping[str, Any], field: str) -> list[Any]` | — | — |
-| `_record_name` | `(record: Mapping[str, Any]) -> str` | — | — |
-| `_validate_module_entity_record` | `(record: Mapping[str, Any]) -> None` | — | — |
-| `_validate_entity_record` | `(record: Mapping[str, Any]) -> None` | — | — |
-| `_validate_callable_record` | `(record: Mapping[str, Any]) -> None` | — | — |
-| `_validate_import_record` | `(record: Mapping[str, Any], *, language: str) -> None` | — | — |
-| `_validate_constant_record` | `(record: Mapping[str, Any]) -> None` | — | — |
-| `_validate_module_call_record` | `(record: Mapping[str, Any]) -> None` | — | — |
-| `_validate_optional_strings` | `(record: Mapping[str, Any], fields: tuple[str, ...]) -> None` | — | — |
-| `_validate_optional_booleans` | `(record: Mapping[str, Any], fields: tuple[str, ...]) -> None` | — | — |
-| `_validate_string_array` | `(value: list[Any]) -> None` | — | — |
-| `_validate_optional_string_array` | `(record: Mapping[str, Any], field: str) -> None` | — | — |
-| `_validate_optional_json_array` | `(record: Mapping[str, Any], field: str) -> None` | — | — |
-| `_optional_record_array` | `(record: Mapping[str, Any], field: str) -> list[Mapping[str, Any]]` | — | — |
-| `_validate_optional_record_array` | `(record: Mapping[str, Any], field: str) -> None` | — | — |
-| `_validate_optional_mapping` | `(record: Mapping[str, Any], field: str) -> Mapping[str, Any] \| None` | — | — |
-| `_copy_selected_fields` | `(record: Mapping[str, Any], fields: tuple[str, ...], excluded_keys: frozenset[str]) -> dict[str, Any]` | — | — |
-| `_structural_copy` | `(value: Any, excluded_keys: frozenset[str], active: set[int] \| None = None) -> Any` | — | — |
+| `_record_name` | `(record: Mapping[str, Any], pointer = '') -> str` | — | — |
+| `_validate_module_entity_record` | `(record: Mapping[str, Any], pointer = '') -> None` | — | — |
+| `_validate_entity_record` | `(record: Mapping[str, Any], pointer = '') -> None` | — | — |
+| `_validate_callable_record` | `(record: Mapping[str, Any], pointer = '') -> None` | — | — |
+| `_validate_import_record` | `(record: Mapping[str, Any], *, language: str, pointer = '') -> None` | — | — |
+| `_validate_constant_record` | `(record: Mapping[str, Any], pointer = '') -> None` | — | — |
+| `_validate_module_call_record` | `(record: Mapping[str, Any], pointer = '') -> None` | — | — |
+| `_validate_optional_strings` | `(record: Mapping[str, Any], fields: tuple[str, ...], pointer = '') -> None` | — | — |
+| `_validate_optional_booleans` | `(record: Mapping[str, Any], fields: tuple[str, ...], pointer = '') -> None` | — | — |
+| `_validate_string_array` | `(value: list[Any], pointer = '') -> None` | — | — |
+| `_validate_optional_string_array` | `(record: Mapping[str, Any], field: str, pointer = '') -> None` | — | — |
+| `_validate_optional_json_array` | `(record: Mapping[str, Any], field: str, pointer = '') -> None` | — | — |
+| `_optional_record_array` | `(record: Mapping[str, Any], field: str, pointer = '') -> list[Mapping[str, Any]]` | — | — |
+| `_record_object` | `(value, pointer) -> Mapping[str, Any]` | — | — |
+| `_validate_optional_record_array` | `(record: Mapping[str, Any], field: str, pointer = '') -> None` | — | — |
+| `_validate_optional_mapping` | `(record: Mapping[str, Any], field: str, pointer = '') -> Mapping[str, Any] \| None` | — | — |
+| `_copy_selected_fields` | `(record: Mapping[str, Any], fields: tuple[str, ...], excluded_keys: frozenset[str], pointer = '') -> dict[str, Any]` | — | — |
+| `_structural_copy` | `(value: Any, excluded_keys: frozenset[str], active: set[int] \| None = None, *, pointer = '', exact = True) -> Any` | — | — |
 | `_hash_normalized_observation` | `(normalized: dict[str, Any] \| None) -> str \| None` | — | — |
-| `_unknown_basis` | `(scope: str, source_path: str, source_content_hash: str, extractor_ref: str, reason: str) -> ConceptObservationBasis` | — | — |
+| `_unknown_basis` | `(scope: str, source_path: str, source_content_hash: str, extractor_ref: str, reason: str, *, diagnostic: NormalizationDiagnostic \| None = None, entity_name = None, occurrence = None) -> ConceptObservationBasis` | — | — |
 | `_validate_basis_inputs` | `(source_path: object, source_content_hash: object, extractor_ref: object, inventory_complete: object) -> None` | — | — |
 | `_validate_inventory_complete` | `(inventory_complete: object) -> None` | — | — |
 | `_validate_scope` | `(scope: object) -> None` | — | — |

@@ -21,7 +21,8 @@ def _prepare_fixture(language, cache_root):
         artifact = root / "node_modules" / "ts-morph"
         artifact.mkdir(parents=True, exist_ok=True)
         (artifact / "index.js").write_text("fixture", encoding="utf-8")
-        (root / "extract.js").write_text("fixture", encoding="utf-8")
+        for name in ("extract.js", "package.json", "package-lock.json"):
+            (root / name).write_bytes((helpers.TS_SCRIPTS_DIR / name).read_bytes())
     else:
         artifact = root / "extractor"
         artifact.write_text("fixture", encoding="utf-8")

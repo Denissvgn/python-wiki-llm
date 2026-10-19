@@ -11,6 +11,13 @@ and wiki-surface payloads. It intentionally performs no file writes, file reads,
 network calls, or adapter registration so CLI, Python API, MCP, and context
 surfaces can consume the same deterministic query answers later.
 
+Detailed evidence explanation preserves captured structure and independently
+computed live bases. For unavailable captured evidence, the shared diagnosis
+distinguishes untested, fresh-valid and fresh-malformed results, compares
+captured source/producer metadata where available, and retains provenance gaps.
+Description and hint use the existing bounded evidence envelope; they never
+repair the snapshot or turn an unknown basis into current evidence.
+
 ## Imports
 
 | Source | Symbols |
@@ -54,10 +61,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (9) |
+| Inbound | `src` (10) |
 | Outbound | `src` (9) |
 
-> All 18 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 19 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

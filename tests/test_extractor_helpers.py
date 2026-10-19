@@ -882,6 +882,19 @@ def test_prepare_typescript_uses_locked_cache_and_detects_artifact_tampering(
     assert third.status == "prepared"
     assert len(commands) == 2
 
+    # The executed copy must agree with the receipt's bundled source identity.
+    script = helper_root / "extract.js"
+    script.write_text("// changed execution copy\n", encoding="utf-8")
+    assert get_prepared_typescript_root(tmp_path, str(configured_cache)) is None
+    fourth = prepare_typescript(cache_root)
+    assert fourth.status == "prepared" and len(commands) == 3
+    assert script.read_bytes() == (source_scripts / "extract.js").read_bytes()
+    script.unlink()
+    assert get_prepared_typescript_root(tmp_path, str(configured_cache)) is None
+    fifth = prepare_typescript(cache_root)
+    assert fifth.status == "prepared" and len(commands) == 4
+    assert get_prepared_typescript_root(tmp_path, str(configured_cache)) == helper_root
+
 
 def test_prepare_go_reports_missing_executable(tmp_path, monkeypatch):
     monkeypatch.setattr(extractor_helpers, "_resolve_go_executable", lambda: None)

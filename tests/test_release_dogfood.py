@@ -216,7 +216,7 @@ def test_build_metadata_includes_every_current_topic_and_prunes_reports() -> Non
     ).splitlines()
 
 
-def test_installed_lifecycle_harness_covers_both_profiles_and_locations(
+def test_installed_lifecycle_harness_covers_all_agents_and_both_profiles(
     tmp_path: Path,
 ) -> None:
     result = release_artifact_smoke._validate_profile_lifecycle(
@@ -228,18 +228,28 @@ def test_installed_lifecycle_harness_covers_both_profiles_and_locations(
         tmp_path,
     )
 
-    assert result == {
-        "generic": (
-            "compact/current",
-            "expanded/skills-disabled",
-            "uninstalled",
-        ),
-        "claude": (
-            "expanded/skills-disabled",
-            "compact/current",
-            "uninstalled",
-        ),
+    from llm_wiki_cli.config import AGENT_CHOICES
+    from llm_wiki_cli.services.schema import SCHEMA_FILENAMES
+
+    assert set(AGENT_CHOICES) == set(SCHEMA_FILENAMES)
+    assert set(result) == {
+        agent + "/" + mode
+        for agent in AGENT_CHOICES
+        for mode in ("skills", "no-skills")
     }
+    for agent in AGENT_CHOICES:
+        assert result[agent + "/skills"] == (
+            "compact/current",
+            "upgrade-preserved",
+            "expanded/skills-disabled",
+            "uninstalled",
+        )
+        assert result[agent + "/no-skills"] == (
+            "expanded/skills-disabled",
+            "upgrade-preserved",
+            "compact/current",
+            "uninstalled",
+        )
     assert not tuple(tmp_path.rglob(".gitignore"))
 
 
@@ -568,3 +578,15 @@ def test_release_dogfood_record_names_every_executable_case() -> None:
         "ignore_policy": "unchanged",
         "network": "not-used",
     }
+
+
+def test_installed_lifecycle_refuses_missing_agent_schema_before_mutation(tmp_path, monkeypatch):
+    import subprocess
+    from llm_wiki_cli.config import AGENT_CHOICES
+    from llm_wiki_cli.services.schema import SCHEMA_FILENAMES
+    descriptor = {"agents": AGENT_CHOICES, "schemas": {name: value for name, value in SCHEMA_FILENAMES.items() if name != "cursor"},
+                  "references": {name: ".llm-wiki/skills/wiki-reference" for name in AGENT_CHOICES}}
+    monkeypatch.setattr(release_artifact_smoke, "_run", lambda *a, **k: subprocess.CompletedProcess(a[0], 0, json.dumps(descriptor), ""))
+    with pytest.raises(release_artifact_smoke.SmokeError, match="membership differs"):
+        release_artifact_smoke._validate_profile_lifecycle([sys.executable, "-m", "llm_wiki_cli.cli"], tmp_path)
+    assert list(tmp_path.iterdir()) == []
