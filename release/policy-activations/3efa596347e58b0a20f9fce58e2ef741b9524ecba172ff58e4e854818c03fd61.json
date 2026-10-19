@@ -1,0 +1,95 @@
+{
+  "artifacts": {
+    "candidate-source": {
+      "artifact_digest": "sha256:acaebf879bab2939382c11e49866c2711de389b819bff17e2fb9395f96f1cecc",
+      "artifact_id": 12162722638,
+      "files": {
+        "SHA256SUMS": "767e14013b15bb85767191e221f7e0626bde9ccca8ed9330354d9ca021b235ba",
+        "candidate-source.tar": "ddc9faa499d87603a8342a7576512b920c0bc7f25a5935d7e0be24f090803901",
+        "identity.json": "abaf08480e72dd86cfa631c3e11e0b805477d2315c98e9a8aeb9c4177d060102"
+      },
+      "producer": "RD-00 freeze candidate source",
+      "producer_job_id": 117885597696
+    },
+    "evidence-rd-10": {
+      "artifact_digest": "sha256:c936d955a4bebcbae6241f188a9ec89fd831da481a926bf5e0a74a59ac535635",
+      "artifact_id": 12162373506,
+      "files": {
+        "action-result.json": "99c7930cad1282531e6c535e9467095e9d6c271b5226ab7d66c05d4edc4ad7c7",
+        "full-integrity-action-result.json": "9cc6806ce0f305ed1dba857da3f1bbea58ccf0a133538c47621ff4f8284d5b7e",
+        "maintenance/ci-report.json": "648669f4d6a2be3cd4e7726186fada4b6e416afde7bf2ed587d6df7c1f3764bc",
+        "maintenance/doctor.json": "723884bdf7b4b13f10fe41d2994fef034fb9583890f93f8780876b40d0c72920",
+        "maintenance/policy.json": "07868dd0d43b94882002e21eda181e8d9a9130668024d2fffd08e80d7fab172d",
+        "maintenance/preflight.json": "bc8d9e7eb1f3f5b66daa851918a5d14e964b2df8aee726b29caa811920420f1b"
+      },
+      "producer": "RD-10 hosted composite Action",
+      "producer_job_id": 117885814497
+    },
+    "knowledge-maintenance-verification": {
+      "artifact_digest": "sha256:d37b8fd517cfc799d4a3efcd1c347f725eae98af00dba044a3866900c8bd6ed6",
+      "artifact_id": 12162986610,
+      "files": {
+        "verification.json": "19369ef7145a5a5d15a5e0129293ba402d5fc9c818dd6c43d0298ddbcdfff3c7"
+      },
+      "producer": "Repository knowledge maintenance",
+      "producer_job_id": 117887504994
+    },
+    "qualification-decision": {
+      "artifact_digest": "sha256:b72e1150c5f127cbf2c87126c7727c6a7b9090c939de000ad2e1c4fb05b59c43",
+      "artifact_id": 12162479307,
+      "files": {
+        "decision.json": "4a279c4f5ea2970d7b5f894568f67ba941f1137e5c9069f1420c151b94dff867"
+      },
+      "producer": "Aggregate RD-00 through RD-13",
+      "producer_job_id": 117887554894
+    },
+    "qualification-harnesses": {
+      "artifact_digest": "sha256:ecf312c42910a9a27af83680d36cb9c0a39142722ab83c7048a8225419efc95f",
+      "artifact_id": 12163355190,
+      "files": {
+        "qualification-harnesses.tar": "24ca16ac72de0b89037cc57450f682b2d3de1cb587da3f34df53adbf4ab3e61b"
+      },
+      "producer": "RD-00 freeze candidate source",
+      "producer_job_id": 117885597696
+    }
+  },
+  "attempt": 1,
+  "candidate_sha": "9261f198a554368073414ca3d230afeb09d1ecb1",
+  "candidate_tree": "a97fb028355511332965b40cddf655c56429afcf",
+  "candidate_version": "3.1.0",
+  "configuration": {
+    "mode": "required",
+    "policy": "strict-repository-health/v2",
+    "schema_version": "agent-wiki-release-knowledge-maintenance/v2",
+    "selection": ".llm-wiki/source-selection.json",
+    "src_dir": ".",
+    "wiki_dir": "docs/llm_wiki"
+  },
+  "implementation_sha256": "3efa596347e58b0a20f9fce58e2ef741b9524ecba172ff58e4e854818c03fd61",
+  "receipt": {
+    "activation_proof": {
+      "implementation_sha256": "3efa596347e58b0a20f9fce58e2ef741b9524ecba172ff58e4e854818c03fd61",
+      "policy": "strict-repository-health/v2",
+      "qualification": "nonpromoting",
+      "schema_version": "agent-wiki-release-policy-shadow/v1"
+    },
+    "candidate_sha": "9261f198a554368073414ca3d230afeb09d1ecb1",
+    "candidate_tree": "a97fb028355511332965b40cddf655c56429afcf",
+    "candidate_version": "3.1.0",
+    "error": null,
+    "evidence_sha256": {
+      "ci-report.json": "sha256:648669f4d6a2be3cd4e7726186fada4b6e416afde7bf2ed587d6df7c1f3764bc",
+      "doctor.json": "sha256:723884bdf7b4b13f10fe41d2994fef034fb9583890f93f8780876b40d0c72920",
+      "policy.json": "sha256:07868dd0d43b94882002e21eda181e8d9a9130668024d2fffd08e80d7fab172d",
+      "preflight.json": "sha256:bc8d9e7eb1f3f5b66daa851918a5d14e964b2df8aee726b29caa811920420f1b"
+    },
+    "mode": "shadow",
+    "schema_version": "agent-wiki-release-knowledge-verification/v1",
+    "status": "pass"
+  },
+  "repository": "Denissvgn/python-wiki-llm",
+  "request_id": null,
+  "run_id": 39198250172,
+  "schema_version": "agent-wiki-policy-activation-audit/v1",
+  "verification_sha256": "19369ef7145a5a5d15a5e0129293ba402d5fc9c818dd6c43d0298ddbcdfff3c7"
+}
