@@ -171,6 +171,29 @@ def test_full_driver_keeps_maintained_owners_and_strict_full_suite(
     )
 
 
+def test_artifact_parity_uses_identical_fixture_inputs_with_isolated_installs(tmp_path):
+    commands = runner.stage_commands(
+        "artifacts", ROOT, tmp_path, candidate_sha=SHA, version="3.1.0"
+    )
+    smoke = {
+        kind: next(command for command in commands
+                   if command.name == "complete-artifact-smoke-" + kind)
+        for kind in ("wheel", "sdist")
+    }
+
+    def argument(kind, flag):
+        argv = smoke[kind].argv
+        return argv[argv.index(flag) + 1]
+
+    # Fixture adoption identities include CLI path arguments. The harness resets
+    # its work tree on each serial run; different inputs cannot prove parity.
+    assert argument("wheel", "--work") == argument("sdist", "--work")
+    assert argument("wheel", "--expected-version") == argument("sdist", "--expected-version")
+    assert argument("wheel", "--output") != argument("sdist", "--output")
+    for flag in ("--python", "--mcp-python"):
+        assert argument("wheel", flag) != argument("sdist", flag)
+
+
 def test_unsupported_native_python_refuses_instead_of_renaming_lane(
     tmp_path, monkeypatch
 ):

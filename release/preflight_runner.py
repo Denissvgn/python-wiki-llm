@@ -834,7 +834,9 @@ def stage_commands(
                 "--expected-version",
                 version,
                 "--work",
-                scratch / (kind + "-smoke-work"),
+                # The harness resets this tree between serial runs. Keep CLI
+                # path inputs identical: fixture adoption IDs include argv.
+                scratch / "artifact-smoke-work",
                 "--output",
                 scratch / (kind + "-smoke.json"),
             ),
