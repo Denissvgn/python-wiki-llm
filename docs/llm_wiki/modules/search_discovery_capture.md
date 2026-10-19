@@ -75,6 +75,8 @@ flowchart LR
     n9 --> n2
     n9 --> n4
     n9 --> n10
+    n10 --> n2
+    n10 --> n4
     click n0 "../modules/knowledge_artifacts.md"
     click n1 "../modules/knowledge_model.md"
     click n2 "../modules/knowledge_storage.md"

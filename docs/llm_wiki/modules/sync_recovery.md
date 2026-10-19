@@ -32,6 +32,7 @@ syncs discard only verified private scratch and retain unexpected contents.
 |--------|---------|
 | `.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory`, `fresh_no_follow_stat`, `unlink_guarded_bytes` |
 | `.io` | `first_unsafe_path_component` |
+| `.knowledge_governance` | `_governance_lock_root` |
 | `.knowledge_storage` | `canonical_bytes`, `digest` |
 | `.knowledge_storage_io` | `_absolute_path`, `_identity`, `read_guarded` |
 | `.maintenance_protocol` | `governance_writer_lock`, `storage_writer_lock` |
@@ -55,82 +56,23 @@ syncs discard only verified private scratch and retain unexpected contents.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/commands/maintenance_cmd.py"]
-    n1["src/llm_wiki_cli/commands/sync_cmd.py"]
-    n2["src/llm_wiki_cli/services/filesystem_guard.py"]
-    n3["src/llm_wiki_cli/services/io.py"]
-    n4["src/llm_wiki_cli/services/knowledge_storage.py"]
-    n5["src/llm_wiki_cli/services/knowledge_storage_io.py"]
-    n6["src/llm_wiki_cli/services/maintenance_protocol.py"]
-    n7["src/llm_wiki_cli/services/request_json.py"]
-    n8["src/llm_wiki_cli/services/source_snapshot.py"]
-    n9["src/llm_wiki_cli/services/sync_manifest.py"]
-    n10["src/llm_wiki_cli/services/sync_recovery.py"]
-    n11["src/llm_wiki_cli/services/wiki_write_basis.py"]
-    n0 --> n7
-    n0 --> n10
-    n1 --> n3
-    n1 --> n4
-    n1 --> n5
-    n1 --> n6
-    n1 --> n8
-    n1 --> n9
-    n1 --> n10
-    n2 --> n11
-    n3 --> n11
-    n5 --> n2
-    n5 --> n3
-    n5 --> n4
-    n6 --> n2
-    n6 --> n3
-    n6 --> n4
-    n6 --> n5
-    n6 --> n7
-    n6 --> n8
-    n6 --> n9
-    n6 --> n11
-    n8 --> n2
-    n9 --> n3
-    n9 --> n8
-    n10 --> n2
-    n10 --> n3
-    n10 --> n4
-    n10 --> n5
-    n10 --> n6
-    n10 --> n7
-    n10 --> n8
-    n10 --> n9
-    n10 --> n11
-    n11 --> n8
-    click n0 "../modules/maintenance_cmd.md"
-    click n1 "../modules/sync_cmd.md"
-    click n2 "../modules/filesystem_guard.md"
-    click n3 "../modules/io.md"
-    click n4 "../modules/knowledge_storage.md"
-    click n5 "../modules/knowledge_storage_io.md"
-    click n6 "../modules/maintenance_protocol.md"
-    click n7 "../modules/request_json.md"
-    click n8 "../modules/source_snapshot.md"
-    click n9 "../modules/sync_manifest.md"
-    click n10 "../modules/sync_recovery.md"
-    click n11 "../modules/wiki_write_basis.md"
+    n0["src"]
+    n1["src/llm_wiki_cli/services/sync_recovery.py"]
+    n0 --> n1
+    n1 --> n0
+    click n1 "../modules/sync_recovery.md"
 ```
+
+> Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [maintenance_cmd](../modules/maintenance_cmd.md) |
-| Inbound | [sync_cmd](../modules/sync_cmd.md) |
-| Outbound | [filesystem_guard](../modules/filesystem_guard.md) |
-| Outbound | [io](../modules/io.md) |
-| Outbound | [knowledge_storage](../modules/knowledge_storage.md) |
-| Outbound | [knowledge_storage_io](../modules/knowledge_storage_io.md) |
-| Outbound | [maintenance_protocol](../modules/maintenance_protocol.md) |
-| Outbound | [request_json](../modules/request_json.md) |
-| Outbound | [source_snapshot](../modules/source_snapshot.md) |
-| Outbound | [sync_manifest](../modules/sync_manifest.md) |
-| Outbound | [wiki_write_basis](../modules/wiki_write_basis.md) |
+| Inbound | `src` (2) |
+| Outbound | `src` (10) |
+
+> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

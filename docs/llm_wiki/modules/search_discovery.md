@@ -31,36 +31,44 @@ flowchart LR
     n0["src/llm_wiki_cli/api.py"]
     n1["src/llm_wiki_cli/services/concept_identity.py"]
     n2["src/llm_wiki_cli/services/markdown_sections.py"]
-    n3["src/llm_wiki_cli/services/search_discovery.py"]
-    n4["src/llm_wiki_cli/services/search_service.py"]
-    n5["src/llm_wiki_cli/services/section_ownership.py"]
-    n6["src/llm_wiki_cli/services/validation.py"]
-    n7["src/llm_wiki_cli/services/wiki_surface.py"]
-    n0 --> n3
+    n3["src/llm_wiki_cli/services/mcp_server.py"]
+    n4["src/llm_wiki_cli/services/search_discovery.py"]
+    n5["src/llm_wiki_cli/services/search_service.py"]
+    n6["src/llm_wiki_cli/services/section_ownership.py"]
+    n7["src/llm_wiki_cli/services/validation.py"]
+    n8["src/llm_wiki_cli/services/wiki_surface.py"]
     n0 --> n4
-    n0 --> n6
+    n0 --> n5
     n0 --> n7
-    n1 --> n6
+    n0 --> n8
     n1 --> n7
+    n1 --> n8
+    n3 --> n0
     n3 --> n1
-    n3 --> n2
+    n3 --> n4
     n3 --> n5
-    n3 --> n6
     n3 --> n7
-    n4 --> n3
+    n3 --> n8
+    n4 --> n1
+    n4 --> n2
+    n4 --> n6
     n4 --> n7
-    n5 --> n2
-    n5 --> n6
-    n5 --> n7
-    n7 --> n6
+    n4 --> n8
+    n5 --> n4
+    n5 --> n8
+    n6 --> n2
+    n6 --> n7
+    n6 --> n8
+    n8 --> n7
     click n0 "../modules/api.md"
     click n1 "../modules/concept_identity.md"
     click n2 "../modules/markdown_sections.md"
-    click n3 "../modules/search_discovery.md"
-    click n4 "../modules/search_service.md"
-    click n5 "../modules/section_ownership.md"
-    click n6 "../modules/validation.md"
-    click n7 "../modules/wiki_surface.md"
+    click n3 "../modules/mcp_server.md"
+    click n4 "../modules/search_discovery.md"
+    click n5 "../modules/search_service.md"
+    click n6 "../modules/section_ownership.md"
+    click n7 "../modules/validation.md"
+    click n8 "../modules/wiki_surface.md"
 ```
 
 ### Internal neighbors
@@ -68,6 +76,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [api](../modules/api.md) |
+| Inbound | [mcp_server](../modules/mcp_server.md) |
 | Inbound | [search_service](../modules/search_service.md) |
 | Outbound | [concept_identity](../modules/concept_identity.md) |
 | Outbound | [markdown_sections](../modules/markdown_sections.md) |

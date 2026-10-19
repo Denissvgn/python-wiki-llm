@@ -33,7 +33,7 @@ Strict result returned by an intake or verifier role.
 ```mermaid
 flowchart LR
     n0["P0CalibrationAgentResult (src/llm_wiki_cli/services/calibration/controller.py)"]
-    n1["record_calibration_agent_result (src/llm_wiki_cli/api.py)"]
+    n1["src/llm_wiki_cli/api.py"]
     n2["_record_p0_calibration_agent_result (src/llm_wiki_cli/services/calibration/controller.py)"]
     n3["_validate_result_import_bindings (src/llm_wiki_cli/services/calibration/controller.py)"]
     n4["P0CalibrationAgentResult.from_dict (src/llm_wiki_cli/services/calibration/controller.py)"]
@@ -61,7 +61,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `record_calibration_agent_result` | type_reference | [api](../modules/api.md) | — |
+| `api` | import | [api](../modules/api.md) | — |
 | `_record_p0_calibration_agent_result` | type_reference | [controller](../modules/controller.md) | — |
 | `_validate_result_import_bindings` | type_reference | [controller](../modules/controller.md) | — |
 | `P0CalibrationAgentResult.from_dict` | call | [controller](../modules/controller.md) | 1 |

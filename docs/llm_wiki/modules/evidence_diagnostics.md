@@ -49,26 +49,32 @@ or store repair and does not change strict evidence or report-only drift policy.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/services/evidence_diagnostics.py"]
-    n1["src/llm_wiki_cli/services/knowledge_consumption.py"]
-    n2["src/llm_wiki_cli/services/knowledge_model.py"]
-    n3["src/llm_wiki_cli/services/lint_service.py"]
+    n0["src/llm_wiki_cli/services/documentation_queries.py"]
+    n1["src/llm_wiki_cli/services/evidence_diagnostics.py"]
+    n2["src/llm_wiki_cli/services/knowledge_consumption.py"]
+    n3["src/llm_wiki_cli/services/knowledge_model.py"]
+    n4["src/llm_wiki_cli/services/lint_service.py"]
     n0 --> n1
     n0 --> n2
+    n0 --> n3
     n1 --> n2
-    n3 --> n0
-    n3 --> n1
-    n3 --> n2
-    click n0 "../modules/evidence_diagnostics.md"
-    click n1 "../modules/knowledge_consumption.md"
-    click n2 "../modules/knowledge_model.md"
-    click n3 "../modules/lint_service.md"
+    n1 --> n3
+    n2 --> n3
+    n4 --> n1
+    n4 --> n2
+    n4 --> n3
+    click n0 "../modules/documentation_queries.md"
+    click n1 "../modules/evidence_diagnostics.md"
+    click n2 "../modules/knowledge_consumption.md"
+    click n3 "../modules/knowledge_model.md"
+    click n4 "../modules/lint_service.md"
 ```
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
+| Inbound | [documentation_queries](../modules/documentation_queries.md) |
 | Inbound | [lint_service](../modules/lint_service.md) |
 | Outbound | [knowledge_consumption](../modules/knowledge_consumption.md) |
 | Outbound | [knowledge_model](../modules/knowledge_model.md) |

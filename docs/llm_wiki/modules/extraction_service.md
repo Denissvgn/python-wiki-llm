@@ -45,7 +45,7 @@ narrow qualification. Failed and unavailable paths remain qualified gaps.
 | `..extractors.python_contracts` | `finalize_inventory_model_kinds` |
 | `..extractors.python_extractor` | `ComponentVisitor` |
 | `..extractors.rust_extractor` | `RustExtractionRequest` |
-| `.analysis_capture` | `capture_operation`, `capture_analysis`, `capture_analysis` |
+| `.analysis_capture` | `capture_operation`, `analysis_diagnostics`, `capture_analysis`, `capture_analysis` |
 | `.api_contracts` | `attach_routes_to_entry_points`, `build_api_contracts` |
 | `.contracts` | `EXTRACT_DATA_FLOW_DETAILS_SCHEMA_VERSION`, `EXTRACT_SCHEMA_VERSION` |
 | `.data_flow` | `DEFAULT_DATA_FLOW_DETAILS_FLOW_LIMIT`, `analyze_data_flow`, `analyze_data_flow_detailed`, `build_data_flow_context`, `data_flow_effective_limits` |

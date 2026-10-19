@@ -16,12 +16,15 @@ This module is deterministic and consumes only the structural inventory and
 pre-computed call edges (see ``extract_cmd.resolve_call_edges``); it performs no
 LLM calls and tolerates inventories that omit optional fields.
 
+Static CLI dispatch alias expansion respects captured module bindings. Method-local imports cannot register module-level dispatch names, while related-module discovery retains scoped dependency imports.
+
 ## Imports
 
 | Source | Symbols |
 |--------|---------|
 | `.imports` | `build_module_path_resolver` |
 | `.plugins` | `PluginError`, `entrypoint_detector_components`, `load_entry_point` |
+| `.python_imports` | `module_binding_imports` |
 | `.source_snapshot` | `SourceSnapshot` |
 | `.validation` | `positive_int_or_none`, `resolved_paths_equal` |
 | `__future__` | `annotations` |
@@ -52,9 +55,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (8) |
-| Outbound | `src` (4) |
+| Outbound | `src` (5) |
 
-> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

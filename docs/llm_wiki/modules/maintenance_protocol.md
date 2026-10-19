@@ -17,7 +17,7 @@ Immutable adoption detection and guarded maintenance publication basis.
 | `.knowledge_storage_io` | `read_guarded`, `_absolute_path` |
 | `.maintenance_state` | `validate_maintenance_adoption`, `maintenance_state_hash`, `validate_maintenance_state` |
 | `.request_json` | `_pairs`, `_constant` |
-| `.source_snapshot` | `SourceSnapshot` |
+| `.source_snapshot` | `SourceSnapshot`, `source_snapshot_matches_current_files` |
 | `.sync_manifest` | `SyncManifest` |
 | `.wiki_write_basis` | `ACTIVE_WRITE_BASIS`, `ACTIVE_WRITE_BASIS` |
 | `__future__` | `annotations` |

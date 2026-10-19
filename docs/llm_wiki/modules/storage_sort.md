@@ -29,6 +29,7 @@ flowchart LR
     n3["src/llm_wiki_cli/services/storage_sort.py"]
     n0 --> n1
     n0 --> n3
+    n1 --> n0
     n2 --> n0
     n2 --> n1
     n2 --> n3

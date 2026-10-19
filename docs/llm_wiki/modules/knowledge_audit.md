@@ -36,6 +36,7 @@ flowchart LR
     n1 --> n4
     n1 --> n5
     n2 --> n0
+    n2 --> n1
     n3 --> n0
     n3 --> n1
     n3 --> n2
@@ -55,6 +56,7 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
+| Inbound | [knowledge_storage](../modules/knowledge_storage.md) |
 | Inbound | [knowledge_stream_audit](../modules/knowledge_stream_audit.md) |
 | Outbound | [services_contracts](../modules/services_contracts.md) |
 | Outbound | [knowledge_storage](../modules/knowledge_storage.md) |

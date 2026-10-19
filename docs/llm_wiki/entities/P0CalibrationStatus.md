@@ -40,7 +40,7 @@ Operator-facing status for one calibration cohort.
 ```mermaid
 flowchart LR
     n0["P0CalibrationStatus (src/llm_wiki_cli/services/calibration/controller.py)"]
-    n1["get_calibration_run_status (src/llm_wiki_cli/api.py)"]
+    n1["src/llm_wiki_cli/api.py"]
     n2["_status_from_run (src/llm_wiki_cli/services/calibration/controller.py)"]
     n3["get_calibration_run_status (src/llm_wiki_cli/services/calibration/controller.py)"]
     n4["P0CalibrationStatus.from_dict (src/llm_wiki_cli/services/calibration/controller.py)"]
@@ -65,7 +65,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `get_calibration_run_status` | type_reference | [api](../modules/api.md) | — |
+| `api` | import | [api](../modules/api.md) | — |
 | `_status_from_run` | call | [controller](../modules/controller.md) | 1 |
 | `_status_from_run` | type_reference | [controller](../modules/controller.md) | — |
 | `get_calibration_run_status` | type_reference | [controller](../modules/controller.md) | — |

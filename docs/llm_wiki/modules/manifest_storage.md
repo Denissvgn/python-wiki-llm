@@ -15,6 +15,7 @@ Stores indexed manifests as a bounded commit root plus immutable catalogs under 
 | `.knowledge_artifacts` | `_decode_json_object` |
 | `.knowledge_storage` | `MAX_EXPANDED_BYTES`, `KnowledgeStorageError`, `canonical_bytes`, `decode_bytes`, `digest`, `logical_digest`, `_hash` |
 | `.knowledge_storage_io` | `read_guarded` |
+| `.maintenance_state` | `validate_maintenance_adoption`, `LIMITS`, `maintenance_state_hash` |
 | `.sync_manifest` | `ManifestArtifactHashes`, `SyncManifest`, `SyncManifest`, `validate_manifest_policy`, `MANIFEST_FILENAME` |
 | `__future__` | `annotations` |
 | `base64` | `base64` |
@@ -43,10 +44,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (7) |
-| Outbound | `src` (6) |
+| Inbound | `src` (8) |
+| Outbound | `src` (7) |
 
-> All 12 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

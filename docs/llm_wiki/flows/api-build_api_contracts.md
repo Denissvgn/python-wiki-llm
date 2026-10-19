@@ -41,16 +41,16 @@ sequenceDiagram
     participant p16 as ModulePathResolver.build
     participant p17 as _kw_value
     participant p18 as _dereference
-    participant p19 as _display_call
-    participant p20 as _openapi_parameter
-    participant p21 as path_is_selected
-    participant p22 as _path_contains_link_or_reparse
-    participant p23 as _openapi_request_body
-    participant p24 as _openapi_responses
-    participant p25 as _selection_path
-    participant p26 as path_is_link_or_reparse
-    participant p27 as _record_value
-    participant p28 as stamp_inventory_packages
+    participant p19 as _import_bindings
+    participant p20 as _display_call
+    participant p21 as _openapi_parameter
+    participant p22 as path_is_selected
+    participant p23 as _path_contains_link_or_reparse
+    participant p24 as _openapi_request_body
+    participant p25 as _openapi_responses
+    participant p26 as _selection_path
+    participant p27 as path_is_link_or_reparse
+    participant p28 as _record_value
     participant p29 as list (src/llm_wiki_cli/services…cts.py:_reconcile_openapi)
     participant p30 as resolved.suffix.lower
     p0->>p1: load_openapi_document
@@ -71,23 +71,23 @@ sequenceDiagram
     p8->>p16: ModulePathResolver.build
     p6->>p17: _kw_value
     p5->>p18: _dereference
-    p13->>p19: _display_call
-    p5->>p20: _openapi_parameter
-    p4->>p21: path_is_selected
-    p4->>p22: _path_contains_link_or_reparse
-    p5->>p23: _openapi_request_body
-    p5->>p24: _openapi_responses
-    p21->>p25: _selection_path
-    p22->>p26: path_is_link_or_reparse
-    p17->>p27: _record_value
-    p16->>p28: stamp_inventory_packages
+    p9->>p19: _import_bindings
+    p13->>p20: _display_call
+    p5->>p21: _openapi_parameter
+    p4->>p22: path_is_selected
+    p4->>p23: _path_contains_link_or_reparse
+    p5->>p24: _openapi_request_body
+    p5->>p25: _openapi_responses
+    p22->>p26: _selection_path
+    p23->>p27: path_is_link_or_reparse
+    p17->>p28: _record_value
     p3-->>p29: list (src/llm_wiki_cli/services…cts.py:_reconcile_openapi)(static.get(...))
     p1-->>p30: resolved.suffix.lower
 ```
 
-> Call sequence diagram shows 30 of 943 interactions; 913 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 962 interactions; 932 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 350 (349 omitted); unresolved 1 of 406 (405 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 353 (352 omitted); unresolved 1 of 421 (420 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -101,7 +101,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/source_selection.py:_require_selection_path` | 22 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 7 |
 | `src/llm_wiki_cli/services/source_selection.py:_selection_path` | 21 | - | external | 2 |
 | `src/llm_wiki_cli/services/source_selection.py:_selection_path` | 21 | - | unresolved | 1 |
-> Omission summary shows 8 of 167 groups; 159 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 170 groups; 162 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -164,37 +164,39 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_api_contracts | load_openapi_document | 1853 | `load_openapi_document(openapi_file, source_root=source_root, source_snapshot=source_snapshot)` |
-| load_openapi_document | _resolve_openapi_path | 1285 | `_resolve_openapi_path(path, source_root, source_snapshot=source_snapshot)` |
-| _resolve_openapi_path | Path(…).resolve (src/llm_wiki_cli/services….py:_resolve_openapi_path) | 1213 | `Path(source_root).resolve(data not statically known)` |
-| _resolve_openapi_path | Path (src/llm_wiki_cli/services….py:_resolve_openapi_path) | 1213 | `Path(source_root)` |
-| _resolve_openapi_path | Path(…).expanduser | 1214 | `Path(path).expanduser(data not statically known)` |
-| _resolve_openapi_path | Path (src/llm_wiki_cli/services….py:_resolve_openapi_path) | 1214 | `Path(path)` |
-| _resolve_openapi_path | candidate.is_absolute | 1215 | `candidate.is_absolute(data not statically known)` |
-| _resolve_openapi_path | Path(…).relative_to(…).as_posix | 1218 | `Path(os.path.abspath(candidate)).relative_to(root).as_posix(data not statically known)` |
-| _resolve_openapi_path | Path(…).relative_to | 1218 | `Path(os.path.abspath(candidate)).relative_to(root)` |
-| _resolve_openapi_path | Path (src/llm_wiki_cli/services….py:_resolve_openapi_path) | 1218 | `Path(os.path.abspath(...))` |
-| _resolve_openapi_path | os.path.abspath | 1218 | `os.path.abspath(candidate)` |
+| build_api_contracts | load_openapi_document | 1854 | `load_openapi_document(openapi_file, source_root=source_root, source_snapshot=source_snapshot)` |
+| load_openapi_document | _resolve_openapi_path | 1286 | `_resolve_openapi_path(path, source_root, source_snapshot=source_snapshot)` |
+| _resolve_openapi_path | Path(…).resolve (src/llm_wiki_cli/services….py:_resolve_openapi_path) | 1214 | `Path(source_root).resolve(data not statically known)` |
+| _resolve_openapi_path | Path (src/llm_wiki_cli/services….py:_resolve_openapi_path) | 1214 | `Path(source_root)` |
+| _resolve_openapi_path | Path(…).expanduser | 1215 | `Path(path).expanduser(data not statically known)` |
+| _resolve_openapi_path | Path (src/llm_wiki_cli/services….py:_resolve_openapi_path) | 1215 | `Path(path)` |
+| _resolve_openapi_path | candidate.is_absolute | 1216 | `candidate.is_absolute(data not statically known)` |
+| _resolve_openapi_path | Path(…).relative_to(…).as_posix | 1219 | `Path(os.path.abspath(candidate)).relative_to(root).as_posix(data not statically known)` |
+| _resolve_openapi_path | Path(…).relative_to | 1219 | `Path(os.path.abspath(candidate)).relative_to(root)` |
+| _resolve_openapi_path | Path (src/llm_wiki_cli/services….py:_resolve_openapi_path) | 1219 | `Path(os.path.abspath(...))` |
+| _resolve_openapi_path | os.path.abspath | 1219 | `os.path.abspath(candidate)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_read | `resolved.read_bytes` | `load_openapi_document` | 1292 |
+| filesystem_read | `resolved.read_bytes` | `load_openapi_document` | 1293 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_resolve_openapi_path` | `Path(source_root).resolve` | 1213 |
-| unresolved_call | `_resolve_openapi_path` | `Path(path).expanduser` | 1214 |
-| unresolved_call | `_resolve_openapi_path` | `candidate.is_absolute` | 1215 |
-| unresolved_call | `_resolve_openapi_path` | `Path(os.path.abspath(candidate)).relative_to(root).as_posix` | 1218 |
-| unresolved_call | `_resolve_openapi_path` | `Path(os.path.abspath(candidate)).relative_to` | 1218 |
-| external_call | `_resolve_openapi_path` | `os.path.abspath` | 1218 |
+| unresolved_call | `_resolve_openapi_path` | `Path(source_root).resolve` | 1214 |
+| unresolved_call | `_resolve_openapi_path` | `Path(path).expanduser` | 1215 |
+| unresolved_call | `_resolve_openapi_path` | `candidate.is_absolute` | 1216 |
+| unresolved_call | `_resolve_openapi_path` | `Path(os.path.abspath(candidate)).relative_to(root).as_posix` | 1219 |
+| unresolved_call | `_resolve_openapi_path` | `Path(os.path.abspath(candidate)).relative_to` | 1219 |
+| external_call | `_resolve_openapi_path` | `os.path.abspath` | 1219 |
 | step_limit | `build_api_contracts` | `first 12 steps` | 0 |
 | truncated_flow | `build_api_contracts` | `depth limit` | 0 |
 
 ## Behavior
 
 This flow starts at `build_api_contracts` and is classified as `api`. The generated call and data-flow sections are bounded static projections; runtime conditions and side effects require source-level confirmation.
+
+Global Python response aliases are normalized through matching captured module bindings. Local dependency imports cannot supply unrelated global model aliases; static output is not runtime validation.

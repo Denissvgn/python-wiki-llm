@@ -40,10 +40,13 @@ Retains private workspace ownership, source captures, change selection and consu
 ```mermaid
 flowchart LR
     n0["ScopedTaskState (src/llm_wiki_cli/services/task_context_v2.py)"]
-    n1["build_scoped_task_read (src/llm_wiki_cli/services/task_context_v2.py)"]
+    n1["src/llm_wiki_cli/services/context_session.py"]
+    n2["build_scoped_task_read (src/llm_wiki_cli/services/task_context_v2.py)"]
     n1 --> n0
+    n2 --> n0
     click n0 "../modules/task_context_v2.md"
-    click n1 "../modules/task_context_v2.md"
+    click n1 "../modules/context_session.md"
+    click n2 "../modules/task_context_v2.md"
 ```
 
 ### Summary
@@ -56,4 +59,5 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `context_session` | import | [context_session](../modules/context_session.md) | — |
 | `build_scoped_task_read` | call | [task_context_v2](../modules/task_context_v2.md) | 1 |

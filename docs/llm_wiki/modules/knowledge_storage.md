@@ -19,8 +19,9 @@ from diagnostics.
 | `.concept_identity` | `ConceptIdentityError`, `natural_key_for`, `validate_locator` |
 | `.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY`, `GOVERNANCE_EXTENSION_KEY` |
 | `.implementation_evidence` | `validate_concept_implementation` |
+| `.knowledge_audit` | `audit_logical_records` |
 | `.knowledge_envelope` | `INVENTORY_HASH_EXTENSION` |
-| `.knowledge_graph` | `validate_typed_graph_slice`, `_normalise_edge` |
+| `.knowledge_graph` | `validate_typed_graph_slice`, `_normalise_edge`, `validate_typed_graph_slice` |
 | `.knowledge_model` | `_parse_bundle`, `_parse_concept`, `_parse_relationship`, `_parse_extensions` |
 | `.section_ownership` | `validate_section_ownership` |
 | `__future__` | `annotations` |
@@ -50,10 +51,10 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (38) |
-| Outbound | `src` (8) |
+| Inbound | `src` (39) |
+| Outbound | `src` (9) |
 
-> All 46 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 47 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

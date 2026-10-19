@@ -31,6 +31,7 @@ flowchart LR
     n6["ContextPacketUnavailableError (src/llm_wiki_cli/services/context_packet.py)"]
     n7["src/llm_wiki_cli/eval_lite/planner.py"]
     n8["src/llm_wiki_cli/services/context_service.py"]
+    n9["src/llm_wiki_cli/services/mcp_server.py"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -39,6 +40,7 @@ flowchart LR
     n6 --> n0
     n7 --> n0
     n8 --> n0
+    n9 --> n0
     click n0 "../modules/context_packet.md"
     click n2 "../modules/context_packet.md"
     click n3 "../modules/context_packet.md"
@@ -47,6 +49,7 @@ flowchart LR
     click n6 "../modules/context_packet.md"
     click n7 "../modules/planner.md"
     click n8 "../modules/context_service.md"
+    click n9 "../modules/mcp_server.md"
 ```
 
 ### Summary
@@ -72,3 +75,4 @@ flowchart LR
 |---|---|---|---:|
 | `planner` | import | [planner](../modules/planner.md) | — |
 | `context_service` | import | [context_service](../modules/context_service.md) | — |
+| `mcp_server` | import | [mcp_server](../modules/mcp_server.md) | — |

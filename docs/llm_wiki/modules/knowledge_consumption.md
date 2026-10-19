@@ -21,7 +21,7 @@ rather than treating a fresh basis as an owning commit or review.
 
 | Source | Symbols |
 |--------|---------|
-| `.implementation_evidence` | `ImplementationReport`, `DECLARATIONS_KEY`, `IMPLEMENTATION_KEY`, `compare_knowledge_implementation`, `compare_knowledge_implementation` |
+| `.implementation_evidence` | `ImplementationReport`, `ImplementationReport`, `DECLARATIONS_KEY`, `IMPLEMENTATION_KEY`, `compare_knowledge_implementation`, `compare_knowledge_implementation` |
 | `.knowledge_artifacts` | `require_validated_artifacts` |
 | `.knowledge_freshness` | `KnowledgeFreshnessReport`, `LiveKnowledgeEvaluation`, `evaluate_knowledge_freshness` |
 | `.knowledge_loader` | `KnowledgeLoadIssue`, `KnowledgeLoadResult`, `KnowledgeMismatchPolicy`, `KnowledgeStateLoadError`, `load_knowledge_state` |

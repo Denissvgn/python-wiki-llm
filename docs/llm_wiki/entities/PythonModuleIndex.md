@@ -1,6 +1,6 @@
 # PythonModuleIndex
 
-**Location:** `src/llm_wiki_cli/services/python_imports.py:44`
+**Location:** `src/llm_wiki_cli/services/python_imports.py:70`
 **Kind:** Class
 **Bases:** —
 **Module:** [python_imports](../modules/python_imports.md)

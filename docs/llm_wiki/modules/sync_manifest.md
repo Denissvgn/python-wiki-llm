@@ -22,9 +22,15 @@ also selects exact retention paths for future lint and live native reads.
 | Source | Symbols |
 |--------|---------|
 | `..extractors.common` | `LANGUAGE_EXTENSIONS`, `inventory_language_for_path` |
+| `.filesystem_guard` | `atomic_write_guarded_bytes`, `ensure_guarded_directory` |
 | `.io` | `write_json_atomic` |
 | `.knowledge_evidence` | `ENTITY_OBSERVATION_SCOPE`, `MODULE_OBSERVATION_SCOPE`, `ConceptObservationBasis`, `formatted_json_text`, `hash_file`, `is_valid_sha256`, `semantic_hash_for_file` |
+| `.knowledge_governance` | `governance_lock` |
 | `.knowledge_reuse` | `REUSE_INPUT_KEY`, `validate_reuse_commitment` |
+| `.knowledge_storage` | `decode_bytes`, `MAX_EXPANDED_BYTES`, `MAX_EXPANDED_BYTES`, `KnowledgeStorageError` |
+| `.knowledge_storage_io` | `StorageReadSession`, `read_guarded` |
+| `.maintenance_state` | `validate_maintenance_state`, `maintenance_state_hash`, `validate_maintenance_state`, `maintenance_state_hash`, `validate_maintenance_state` |
+| `.manifest_storage` | `ManifestStoreReader`, `build_manifest_store`, `current_manifest_format` |
 | `.source_retirement` | `read_entity_retirement_state`, `with_entity_retirement_state` |
 | `.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `path_is_selected`, `source_selection_identity_from_generation_inputs`, `source_selection_inputs_from_generation_inputs` |
 | `.source_snapshot` | `SourceSnapshot` |
@@ -58,9 +64,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (40) |
-| Outbound | `src` (8) |
+| Outbound | `src` (14) |
 
-> All 47 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 52 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

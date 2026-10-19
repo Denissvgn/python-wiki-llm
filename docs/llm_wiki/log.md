@@ -3123,3 +3123,23 @@ section, while retaining the distinct maintenance topic-root route.
 Sync previews preserve live owner coordination while omitting only the reserved
 root runtime lock files from the clone. Nested same-name and other authored
 files keep their bytes, and ordinary copy failures remain fatal.
+
+## 2026-10-19
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.1.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:113ce7cecd4d4215163d8b703871cd6fa75b35c717b00c827a597c2af0e20ea2`
+- Pages created: 0
+- Pages updated: 108
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1507
+- Pages deprecated: 0
+- Semantic fields preserved: 3
+- Moved entities: none
+
+## 2026-10-19 — Python import and binding boundaries
+
+Python import observations include class bodies, methods and nested scopes with load-phase classification. Dependency coupling remains separate from captured module namespace authority for model, inheritance, API and CLI aliases.

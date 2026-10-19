@@ -855,7 +855,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [python_contracts](modules/python_contracts.md) - Pure AST helpers for reconstructable Python declaration contracts.
 - [python_extractor](modules/python_extractor.md) - Python AST extractor for agent-wiki-cli.
 - [python_implementation](modules/python_implementation.md) - Bounded executable-syntax observations from an already captured Python AST.
-- [python_imports](modules/python_imports.md) - Pure Python import-root indexing over an already selected inventory.
+- [python_imports](modules/python_imports.md) - Python import roots and captured module bindings over selected inventory.
 - [python_observations](modules/python_observations.md) - Canonical Python observation envelopes and per-source cache validation.
 - [python_stdlib](modules/python_stdlib.md) - Shared, interpreter-compatible Python standard-library module names.
 - [query_cmd](modules/query_cmd.md) - Exact documentation queries from bounded, explicit JSON input.

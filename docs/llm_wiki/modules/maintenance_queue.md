@@ -52,6 +52,7 @@ flowchart LR
     n8["src/llm_wiki_cli/services/maintenance_queue.py"]
     n9["src/llm_wiki_cli/services/maintenance_service.py"]
     n10["src/llm_wiki_cli/services/maintenance_status.py"]
+    n11["src/llm_wiki_cli/services/mcp_server.py"]
     n0 --> n3
     n0 --> n6
     n0 --> n8
@@ -74,6 +75,10 @@ flowchart LR
     n9 --> n10
     n10 --> n6
     n10 --> n9
+    n11 --> n0
+    n11 --> n3
+    n11 --> n7
+    n11 --> n8
     click n0 "../modules/api.md"
     click n1 "../modules/cli.md"
     click n2 "../modules/queue_cmd.md"
@@ -85,6 +90,7 @@ flowchart LR
     click n8 "../modules/maintenance_queue.md"
     click n9 "../modules/maintenance_service.md"
     click n10 "../modules/maintenance_status.md"
+    click n11 "../modules/mcp_server.md"
 ```
 
 ### Internal neighbors
@@ -94,6 +100,7 @@ flowchart LR
 | Inbound | [api](../modules/api.md) |
 | Inbound | [cli](../modules/cli.md) |
 | Inbound | [queue_cmd](../modules/queue_cmd.md) |
+| Inbound | [mcp_server](../modules/mcp_server.md) |
 | Outbound | [context_packet](../modules/context_packet.md) |
 | Outbound | [documentation_worklist](../modules/documentation_worklist.md) |
 | Outbound | [inventory_cache](../modules/inventory_cache.md) |

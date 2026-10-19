@@ -17,6 +17,7 @@ repository-provided counter code.
 | `__future__` | `annotations` |
 | `hashlib` | `hashlib` |
 | `pathlib` | `Path` |
+| `tokenizers` | `tokenizers` |
 | `typing` | `Protocol` |
 
 ## Local dependency map
@@ -37,6 +38,8 @@ flowchart LR
     n1 --> n5
     n2 --> n5
     n3 --> n0
+    n3 --> n2
+    n3 --> n4
     n3 --> n5
     n4 --> n2
     n4 --> n5
@@ -57,6 +60,12 @@ flowchart LR
 | Inbound | [context_budget](../modules/context_budget.md) |
 | Inbound | [mcp_server](../modules/mcp_server.md) |
 | Inbound | [task_context](../modules/task_context.md) |
+
+### External packages
+
+| Language | Used packages | Undeclared packages |
+|---|---:|---:|
+| python | 1 | 0 |
 
 ## Classes
 

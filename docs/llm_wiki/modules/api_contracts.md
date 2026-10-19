@@ -11,12 +11,15 @@ application and never resolves remote OpenAPI references.
 The compatibility consumer can request operation origins on nested normalization
 diagnostics while other consumers retain the existing diagnostic shape.
 
+Python alias normalization and model lookup respect captured module bindings. A method-local dependency import cannot rewrite a global response-model alias; unresolved expressions retain their existing static qualifications.
+
 ## Imports
 
 | Source | Symbols |
 |--------|---------|
 | `.imports` | `build_module_path_resolver` |
 | `.paths` | `is_test_source_path` |
+| `.python_imports` | `module_binding_imports` |
 | `.source_selection` | `SourceSelectionError`, `path_is_link_or_reparse`, `path_is_selected` |
 | `.source_snapshot` | `SourceSnapshot` |
 | `__future__` | `annotations` |
@@ -45,18 +48,20 @@ flowchart LR
     n6["src/llm_wiki_cli/services/impact.py"]
     n7["src/llm_wiki_cli/services/imports.py"]
     n8["src/llm_wiki_cli/services/paths.py"]
-    n9["src/llm_wiki_cli/services/source_selection.py"]
-    n10["src/llm_wiki_cli/services/source_snapshot.py"]
+    n9["src/llm_wiki_cli/services/python_imports.py"]
+    n10["src/llm_wiki_cli/services/source_selection.py"]
+    n11["src/llm_wiki_cli/services/source_snapshot.py"]
     n0 --> n1
     n0 --> n3
     n0 --> n5
     n0 --> n8
-    n0 --> n9
     n0 --> n10
+    n0 --> n11
     n1 --> n7
     n1 --> n8
     n1 --> n9
     n1 --> n10
+    n1 --> n11
     n2 --> n1
     n3 --> n1
     n3 --> n5
@@ -64,20 +69,23 @@ flowchart LR
     n3 --> n8
     n3 --> n9
     n3 --> n10
+    n3 --> n11
     n4 --> n1
     n4 --> n3
     n4 --> n5
     n4 --> n8
-    n4 --> n9
     n4 --> n10
+    n4 --> n11
     n5 --> n1
     n5 --> n7
     n5 --> n9
     n5 --> n10
+    n5 --> n11
     n6 --> n1
-    n6 --> n10
-    n7 --> n10
-    n10 --> n9
+    n6 --> n11
+    n7 --> n9
+    n7 --> n11
+    n11 --> n10
     click n0 "../modules/sync_cmd.md"
     click n1 "../modules/api_contracts.md"
     click n2 "../modules/api_diff.md"
@@ -87,8 +95,9 @@ flowchart LR
     click n6 "../modules/impact.md"
     click n7 "../modules/imports.md"
     click n8 "../modules/paths.md"
-    click n9 "../modules/source_selection.md"
-    click n10 "../modules/source_snapshot.md"
+    click n9 "../modules/python_imports.md"
+    click n10 "../modules/source_selection.md"
+    click n11 "../modules/source_snapshot.md"
 ```
 
 ### Internal neighbors
@@ -103,6 +112,7 @@ flowchart LR
 | Inbound | [impact](../modules/impact.md) |
 | Outbound | [imports](../modules/imports.md) |
 | Outbound | [paths](../modules/paths.md) |
+| Outbound | [python_imports](../modules/python_imports.md) |
 | Outbound | [source_selection](../modules/source_selection.md) |
 | Outbound | [source_snapshot](../modules/source_snapshot.md) |
 
@@ -116,7 +126,7 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ApiContractError](../entities/ApiContractError.md) | 73 | `ValueError` | Raised when an API-contract input cannot be consumed safely. |
+| [ApiContractError](../entities/ApiContractError.md) | 74 | `ValueError` | Raised when an API-contract input cannot be consumed safely. |
 
 ## Functions
 

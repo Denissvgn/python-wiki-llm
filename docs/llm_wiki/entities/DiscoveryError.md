@@ -27,19 +27,22 @@ flowchart LR
     n0["DiscoveryError (src/llm_wiki_cli/services/search_discovery.py)"]
     n1["ValueError"]
     n2["src/llm_wiki_cli/api.py"]
-    n3["_invalid (src/llm_wiki_cli/services/search_discovery.py)"]
-    n4["enrich_search (src/llm_wiki_cli/services/search_discovery.py)"]
-    n5["search_prevalidated_roots (src/llm_wiki_cli/services/search_service.py)"]
+    n3["src/llm_wiki_cli/services/mcp_server.py"]
+    n4["_invalid (src/llm_wiki_cli/services/search_discovery.py)"]
+    n5["enrich_search (src/llm_wiki_cli/services/search_discovery.py)"]
+    n6["search_prevalidated_roots (src/llm_wiki_cli/services/search_service.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
+    n6 --> n0
     click n0 "../modules/search_discovery.md"
     click n2 "../modules/api.md"
-    click n3 "../modules/search_discovery.md"
+    click n3 "../modules/mcp_server.md"
     click n4 "../modules/search_discovery.md"
-    click n5 "../modules/search_service.md"
+    click n5 "../modules/search_discovery.md"
+    click n6 "../modules/search_service.md"
 ```
 
 ### Summary
@@ -59,6 +62,7 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `api` | import | [api](../modules/api.md) | — |
+| `mcp_server` | import | [mcp_server](../modules/mcp_server.md) | — |
 | `_invalid` | call | [search_discovery](../modules/search_discovery.md) | 1 |
 | `enrich_search` | call | [search_discovery](../modules/search_discovery.md) | 1 |
 | `search_prevalidated_roots` | call | [search_service](../modules/search_service.md) | 1 |
