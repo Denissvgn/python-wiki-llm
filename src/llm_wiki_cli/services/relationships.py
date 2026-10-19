@@ -12,7 +12,7 @@ from pathlib import PurePosixPath
 from typing import Iterable, Mapping, Optional
 
 from .imports import build_module_path_resolver
-from .python_imports import is_python_source
+from .python_imports import is_python_source, module_binding_imports
 from .validation import positive_int_or_none
 
 _RELATION_LIMIT = 12
@@ -105,11 +105,12 @@ def _build_class_index(inventory: Mapping) -> tuple[dict, dict]:
 
 
 def _imported_class_bindings(
-    inventory: Mapping, filepath: str, by_key: Mapping, resolver
+    inventory: Mapping, filepath: str, by_key: Mapping, resolver, *, module_scope=False
 ) -> dict[str, tuple[str, str]]:
     data = inventory.get(filepath) or {}
     bindings = {}
-    for imp in data.get("imports", []) or []:
+    imports = module_binding_imports(data) if module_scope else data.get("imports", []) or []
+    for imp in imports:
         source_name = imp.get("name")
         if not source_name:
             continue
@@ -178,7 +179,7 @@ def _resolve_base_key(
 def _python_imported_module(module: str, data: Mapping) -> str | None:
     root, separator, rest = module.partition(".")
     matches = set()
-    for record in data.get("imports", []):
+    for record in module_binding_imports(data):
         if record.get("scope") == "deferred":
             continue
         source = record.get("module", "")
@@ -206,7 +207,7 @@ def _resolved_bases(
     bases = {}
     for filepath, name, cls in _iter_class_records(inventory):
         imported_cache.setdefault(
-            filepath, _imported_class_bindings(inventory, filepath, by_key, resolver)
+            filepath, _imported_class_bindings(inventory, filepath, by_key, resolver, module_scope=True)
         )
         resolved = []
         for raw_base in cls.get("bases", []) or []:
@@ -322,7 +323,7 @@ def _visible_class_bindings(
     by_key: Mapping[tuple[str, str], Mapping],
     resolver,
 ) -> dict[str, tuple[str, str]]:
-    bindings = _imported_class_bindings(inventory, filepath, by_key, resolver)
+    bindings = _imported_class_bindings(inventory, filepath, by_key, resolver, module_scope=True)
     data = inventory.get(filepath) or {}
     for cls in data.get("classes", []) or []:
         name = cls.get("name")

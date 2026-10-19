@@ -1,4 +1,4 @@
-"""Pure Python import-root indexing over an already selected inventory."""
+"""Python import roots and captured module bindings over selected inventory."""
 
 from __future__ import annotations
 
@@ -10,6 +10,32 @@ from dataclasses import dataclass
 from pathlib import PurePosixPath
 
 from .python_stdlib import python_stdlib_module_names
+
+
+def module_binding_imports(file_data: Mapping) -> list[dict]:
+    """Dependency imports imply module aliases only with matching binding facts."""
+    imports = file_data.get("imports", [])
+    bindings = file_data.get("python_bindings")
+    if not isinstance(bindings, Mapping):
+        return imports  # Legacy inventories have no lexical binding capture.
+    selected = []
+    for record in imports:
+        if not isinstance(record, Mapping):
+            continue
+        name = record.get("name", "")
+        binding_name = record.get("alias") or name.split(".", 1)[0]
+        binding = bindings.get(binding_name)
+        if not isinstance(binding, Mapping) or binding.get("kind") != "import":
+            continue
+        if record.get("type") == "from":
+            matches = (binding.get("module"), binding.get("name")) == (record.get("module"), name)
+        else:
+            matches = not binding.get("name") and record.get("module") in binding.get(
+                "modules", [binding.get("module")]
+            )
+        if matches:
+            selected.append(record)
+    return selected
 
 
 def is_python_source(filepath: str, data: object = None) -> bool:

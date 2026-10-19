@@ -1154,6 +1154,10 @@ class ComponentVisitor(ast.NodeVisitor):
         self.generic_visit(node)
 
     def visit_ClassDef(self, node):
+        # Declaration extraction below intentionally does not descend into
+        # classes. Imports still need their own lexical walk, including local
+        # classes and nested methods, without promoting any declarations.
+        self._visit_class_imports(node)
         if self._class_depth > 0 or self._function_depth > 0:
             return
 
@@ -1217,6 +1221,35 @@ class ComponentVisitor(ast.NodeVisitor):
             class_info["model_config"] = model_config
         self.classes.append(class_info)
         # Don't generic_visit — we already walked class body for methods/attrs
+
+    def _visit_class_imports(self, node: ast.ClassDef) -> None:
+        """Collect only imports, retaining enclosing execution/type-only scopes."""
+        original = self._function_depth, self._type_checking_depth
+        pending: list[tuple[ast.AST, int, int]] = [(node, *original)]
+        try:
+            while pending:
+                current, function_depth, type_depth = pending.pop()
+                if isinstance(current, (ast.Import, ast.ImportFrom)):
+                    self._function_depth = function_depth
+                    self._type_checking_depth = type_depth
+                    self.visit(current)
+                    continue
+                children: list[tuple[ast.AST, int, int]]
+                if isinstance(current, ast.If) and _is_type_checking_test(
+                    current.test, self._type_checking_names
+                ):
+                    children = [(current.test, function_depth, type_depth)]
+                    children.extend((child, function_depth, type_depth + 1) for child in current.body)
+                    children.extend((child, function_depth, type_depth) for child in current.orelse)
+                else:
+                    function_depth += isinstance(current, (ast.FunctionDef, ast.AsyncFunctionDef))
+                    children = [
+                        (child, function_depth, type_depth)
+                        for child in ast.iter_child_nodes(current)
+                    ]
+                pending.extend(reversed(children))
+        finally:
+            self._function_depth, self._type_checking_depth = original
 
     def visit_FunctionDef(self, node):
         # Only capture top-level functions (not methods inside classes)

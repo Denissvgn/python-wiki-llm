@@ -130,8 +130,10 @@ def _constant_dict_items(data: Mapping[str, Any], name: str) -> list[Mapping[str
 
 
 def _import_targets(data: Mapping[str, Any]) -> dict[str, str]:
+    from .python_imports import module_binding_imports
+
     targets: dict[str, str] = {}
-    for record in data.get("imports", []):
+    for record in module_binding_imports(data):
         if record.get("type") == "from":
             module = str(record.get("module") or "")
             name = str(record.get("name") or "")

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Python dependency inventory includes imports inside class bodies, methods and
+  nested scopes, preserving deferred and type-only execution classification.
+
 ## [3.1.0] - 2026-10-18
 
 ### Added
