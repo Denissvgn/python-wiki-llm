@@ -3188,3 +3188,35 @@ Selected invalid structural evidence can be repaired after a producer upgrade wh
 - Surface policy updated: no
 
 - Added declared-target capture prerequisite diagnostics before hosted proof. Matching metadata, runtime identity, package compatibility and fresh native proof remain separate; readers preserve unknowns and do not perform setup or owning writes.
+
+## 2026-10-20
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.2.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:a11d4f090396dc81599f22a89ae00fc3b4b12c2d1c34eaad70f9ab4b8e9ec890`
+- Pages created: 0
+- Pages updated: 130
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1549
+- Pages deprecated: 0
+- Semantic fields preserved: 178
+- Moved entities: none
+
+## 2026-10-20
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.2.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:a11d4f090396dc81599f22a89ae00fc3b4b12c2d1c34eaad70f9ab4b8e9ec890`
+- Pages created: 0
+- Pages updated: 124
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1555
+- Pages deprecated: 0
+- Semantic fields preserved: 178
+- Moved entities: none
