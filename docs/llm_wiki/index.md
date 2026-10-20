@@ -7,8 +7,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 | Surface | Count | Start here |
 |---|---:|---|
 | Entities | 670 | [Open section](#entities) |
-| Modules | 250 | [Open section](#modules) |
-| Workflows | 228 | [Open section](#workflows) |
+| Modules | 251 | [Open section](#modules) |
+| Workflows | 229 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 465 | [Open section](#entry-point-flows) |
 | Infrastructure | 2 | [Open section](#infrastructure) |
@@ -693,6 +693,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 - [analysis_capture](modules/analysis_capture.md) - Operation-owned capture of installed analysis implementation and runtimes.
 - [analysis_compatibility](modules/analysis_compatibility.md) - Pure, versioned comparison of application-owned analysis commitments.
+- [analysis_targets](modules/analysis_targets.md) - Read-only declared-target prerequisites, separate from live analysis authority.
 - [api](modules/api.md) - Supported API for extraction, wiki, native knowledge, and documentation.
 - [api_contracts](modules/api_contracts.md) - Static FastAPI and exported OpenAPI contract assembly.
 - [api_diff](modules/api_diff.md) - Conservative compatibility checks over supplied OpenAPI exports only.
@@ -1054,6 +1055,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [init_cmd_flow](workflows/init_cmd_flow.md) - entry: `init_cmd.run`
 - [input_key](workflows/input_key.md) - entry: `sync_analysis_cache.input_key`
 - [inspect_native_concept](workflows/inspect_native_concept.md) - entry: `native_inspection.inspect_native_concept`
+- [inspect_targets](workflows/inspect_targets.md) - entry: `analysis_targets.inspect_targets`
 - [install_cmd_flow](workflows/install_cmd_flow.md) - entry: `install_cmd.run`
 - [inventory_result](workflows/inventory_result.md) - entry: `sync_analysis_cache.inventory_result`
 - [is_pristine_wiki_target](workflows/is_pristine_wiki_target.md) - entry: `wiki_lifecycle.is_pristine_wiki_target`

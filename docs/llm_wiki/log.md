@@ -3166,3 +3166,25 @@ Python import observations include class bodies, methods and nested scopes with 
 ### Scoped evidence recovery across producer upgrades
 
 Selected invalid structural evidence can be repaired after a producer upgrade when complete analysis reproduces retained observations. Unselected structural baselines, page bytes, graph facts and review histories remain protected. Identical executable observations may acquire the current issuer, with older issuer-bound acknowledgements returning to pending review. Full analysis, broad review and guarded recovery remain required.
+
+## 2026-10-20
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.1.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:976c2ce20f702f6b440dd223a20d288cca6a37c4ac8fdb73fc07c32926f3f9a9`
+- Pages created: 2
+- Pages updated: 17
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1598
+- Pages deprecated: 0
+- Semantic fields preserved: 3
+- Moved entities: none
+- Flow pages initialized: 0 (none)
+- Workflow pages created: 1
+- Dependency pages initialized: 0
+- Surface policy updated: no
+
+- Added declared-target capture prerequisite diagnostics before hosted proof. Matching metadata, runtime identity, package compatibility and fresh native proof remain separate; readers preserve unknowns and do not perform setup or owning writes.
