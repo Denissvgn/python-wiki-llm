@@ -79,6 +79,7 @@
     "services/__init__.py",
     "services/analysis_capture.py",
     "services/analysis_compatibility.py",
+    "services/analysis_targets.py",
     "services/api_contracts.py",
     "services/api_diff.py",
     "services/bootstrap_runtime.py",

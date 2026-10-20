@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Local release preparation identifies committed wiki captures that require a
+  different declared proof runtime before hosted verification. The read-only
+  `doctor --target-runtime` diagnostic preserves unknown prerequisites and keeps
+  target-native proof separate from local readiness.
+
 - Scoped evidence repair can refresh a captured invalid record after a producer
   upgrade when complete analysis verifies unchanged retained observations and
   preserves unselected evidence, pages, graph facts and review history.

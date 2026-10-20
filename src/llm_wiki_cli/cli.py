@@ -352,6 +352,7 @@ def _add_doctor_command(subparsers):
     doctor_contract = doctor_parser.add_mutually_exclusive_group()
     doctor_contract.add_argument("--capabilities", action="store_true", help="Opt into doctor v2 with provider prerequisites and corrective commands")
     doctor_contract.add_argument("--analysis-inputs", action="store_true", help="Check installed provider input classification without scanning project source")
+    doctor_contract.add_argument("--target-runtime", metavar="JSON", help="Compare committed wiki runtime prerequisites with project-owned target declarations, without scanning source or executing targets")
     doctor_parser.add_argument("--comparison-policy", choices=("auto", "exact-v1", "analysis-v1"), default="auto")
     doctor_contract.add_argument("--report-schema", choices=("auto", "v1", "v3", "v4"), default="auto", help="Health report schema; v3 includes captured coverage and producer details")
     doctor_parser.add_argument(

@@ -387,6 +387,7 @@ def _capture_binding(root: Path) -> dict:
 
 def _maintenance(root: Path) -> dict:
     from release import knowledge_maintenance as maintenance
+    from release import preflight_targets
 
     config = root / "release/knowledge-maintenance.json"
     if not config.exists():
@@ -395,18 +396,36 @@ def _maintenance(root: Path) -> dict:
         digest = maintenance.composite_policy_digest(
             lambda name: _read(root / name, MAX_INPUT)
         )
-        policy = maintenance.policy(_read(config), implementation_hash=digest)
+        raw_policy = _read(config)
+        policy = maintenance.policy(raw_policy, implementation_hash=digest)
+        targets = preflight_targets.inspect(
+            root, policy["wiki_dir"], lambda name: _read(root / name)
+        )
         return {
             "policy": policy["policy"],
             "mode": policy["mode"],
             "implementation": digest,
             "binding": "current",
             "version": maintenance.version_check(root, policy),
+            "target_runtime": targets,
             "status": "hosted-proof-required"
             if policy["mode"] == "required"
             else policy["mode"],
         }
     except (ValueError, KeyError, OSError) as exc:
+        if isinstance(exc, maintenance.ActivationMismatch):
+            # ActivationMismatch is raised only after complete configuration
+            # validation. Diagnose its independent runtime prerequisite while
+            # retaining the blocking approval result and original input bytes.
+            declared = json.loads(raw_policy)
+            return {
+                "status": "blocked",
+                "reason": str(exc)[:2000],
+                "mode": declared["mode"],
+                "target_runtime": preflight_targets.inspect(
+                    root, declared["wiki_dir"], lambda name: _read(root / name)
+                ),
+            }
         return {"status": "blocked", "reason": str(exc)[:2000]}
 
 
@@ -529,6 +548,7 @@ def create_plan(
     contract = binding["contract"]
     gates = _gates(contract)
     readiness = _eligibility(root, check_registry)
+    readiness["target_runtime"] = _target_readiness(binding)
     readiness["review"] = _review(
         root, review_file, candidate_sha.lower(), readiness["version"]
     )
@@ -544,6 +564,24 @@ def create_plan(
         },
         "plan_hash",
     )
+
+
+def _target_readiness(binding: dict) -> dict:
+    maintenance = binding.get("maintenance", {})
+    report = maintenance.get("target_runtime", {})
+    return {
+        "status": report.get(
+            "status",
+            "not-configured"
+            if maintenance.get("status") == "not-configured" or not maintenance
+            else "unknown",
+        ),
+        "required_for_hosted_proof": maintenance.get("mode") == "required"
+        or maintenance.get("status") == "hosted-proof-required",
+        "counts": report.get("counts", {}),
+        "next_action": report.get("next_action", report.get("reason")),
+        "target_execution_verified": False,
+    }
 
 
 def _gates(contract: dict) -> list[dict]:
@@ -580,6 +618,8 @@ def validate_plan(plan: dict, root: Path) -> None:
         raise PreflightError(
             "Stale plan: source, harness, contract, selection, wiki or environment changed; re-plan final committed candidate"
         )
+    if plan["readiness"].get("target_runtime") != _target_readiness(plan["binding"]):
+        raise PreflightError("Plan omitted or changed target-runtime prerequisites")
     if plan["gates"] != _gates(plan["binding"]["contract"]):
         raise PreflightError("Plan omitted or changed required native/hosted gates")
     local = _eligibility(root, False)
@@ -617,11 +657,14 @@ def _owner(root: Path) -> dict:
 def _evidence_read_limit(name: str) -> int:
     parts = name.split("/")
     if len(parts) != 3 or tuple(parts[1:]) not in {
-        ("archive-budget", "candidate-source.zip"), ("frozen", "candidate-source.tar"),
+        ("archive-budget", "candidate-source.zip"),
+        ("frozen", "candidate-source.tar"),
     }:
         return MAX_INPUT
     try:
-        allocated = parts[0] == "attempt-" + str(uuid.UUID(parts[0].removeprefix("attempt-")))
+        allocated = parts[0] == "attempt-" + str(
+            uuid.UUID(parts[0].removeprefix("attempt-"))
+        )
     except ValueError:
         allocated = False
     return LOCAL_ARCHIVE_EVIDENCE_LIMIT if allocated else MAX_INPUT
@@ -673,8 +716,19 @@ def _outcome(
         or any(x != "passed" for x in statuses)
         or plan["readiness"].get("review", {}).get("status") != "recorded"
         or plan["readiness"].get("build_residue", [])
+        or plan["binding"].get("maintenance", {}).get("status") == "blocked"
     ):
         return "blocked"
+    maintenance = plan["binding"].get("maintenance", {})
+    target = maintenance.get("target_runtime", {})
+    if (
+        maintenance.get("mode") == "required"
+        or maintenance.get("status") == "hosted-proof-required"
+    ):
+        if target.get("status") == "capture-required":
+            return "target-capture-required"
+        if target.get("status") != "requirements-match":
+            return "target-runtime-unknown"
     return "local-ready-hosted-required"
 
 
