@@ -191,8 +191,13 @@ def test_released_unknown_evidence_guarded_upgrade_and_refresh(tmp_path, monkeyp
             sync_cmd.run(parser.parse_args(sync))
         assert stopped.value.code == 1
         error = capsys.readouterr().err
+        assert 'Affected source inputs: 261 (deduplicated; source files are not rewritten)' in error
         assert 'new=0, changed=0, metadata-only=0, removed=0' in error
-        assert 'generator-refresh-additional=261' in error
+        # The recoverable JavaScript source has its own disjoint category even
+        # during a producer transition: 260 + 1 still requires full 261-source
+        # review. Storage upgrade does not approve either category.
+        assert 'generator-refresh-additional=260' in error
+        assert 'evidence-refresh-additional=1' in error
         assert '8 shown, 253 omitted' in error and '--dry-run' in error
         refusal_recovery.append(only_recovery_created(before, files(tmp_path)))
 
@@ -210,7 +215,9 @@ def test_released_unknown_evidence_guarded_upgrade_and_refresh(tmp_path, monkeyp
     before = files(tmp_path)
     sync_cmd.run(parser.parse_args([*sync, '--dry-run']))
     preview = capsys.readouterr().out
-    assert 'generator refresh sources: 261' in preview
+    assert 'generator refresh sources: 260' in preview
+    assert 'evidence-refresh-additional=1' in preview
+    assert 'Affected source inputs: 261 (deduplicated; source files are not rewritten)' in preview
     assert 'complete source paths: 261 shown, 0 omitted' in preview
     assert 'requires --force: yes' in preview and 'this preview is not an approval token' in preview
     assert files(tmp_path) == before

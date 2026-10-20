@@ -10,12 +10,14 @@ The summaries in this module are intentionally plain dictionaries derived from
 the source inventory, optional resolved call edges, and optional entry-point
 flows. They do not read or write files and do not render Markdown.
 
+Inheritance and module type references use matching captured Python module bindings. Lexical imports still produce import references even when the imported name is local to a class or method; those references alone do not establish a module-level base class.
+
 ## Imports
 
 | Source | Symbols |
 |--------|---------|
 | `.imports` | `build_module_path_resolver` |
-| `.python_imports` | `is_python_source` |
+| `.python_imports` | `is_python_source`, `module_binding_imports` |
 | `.validation` | `positive_int_or_none` |
 | `__future__` | `annotations` |
 | `collections` | `defaultdict` |
@@ -75,7 +77,7 @@ flowchart LR
 | `_dedupe_sorted` | `(records: Iterable[dict], limit: int \| None = _RELATION_LIMIT) -> list[dict]` | — | — |
 | `_iter_class_records` | `(inventory: Mapping) -> Iterable[tuple[str, str, Mapping]]` | — | — |
 | `_build_class_index` | `(inventory: Mapping) -> tuple[dict, dict]` | — | — |
-| `_imported_class_bindings` | `(inventory: Mapping, filepath: str, by_key: Mapping, resolver) -> dict[str, tuple[str, str]]` | — | — |
+| `_imported_class_bindings` | `(inventory: Mapping, filepath: str, by_key: Mapping, resolver, *, module_scope = False) -> dict[str, tuple[str, str]]` | — | — |
 | `_resolve_base_key` | `(raw_base: str, filepath: str, by_key: Mapping[tuple[str, str], Mapping], by_name: Mapping[str, list[tuple[str, str]]], imported: Mapping[str, tuple[str, str]], resolver) -> Optional[tuple[str, str]]` | — | — |
 | `_python_imported_module` | `(module: str, data: Mapping) -> str \| None` | — | — |
 | `_resolved_bases` | `(inventory: Mapping, by_key: Mapping[tuple[str, str], Mapping], by_name: Mapping[str, list[tuple[str, str]]], relation_limit: int \| None = _RELATION_LIMIT) -> dict[tuple[str, str], list[dict]]` | — | — |

@@ -75,7 +75,7 @@ from .entrypoints import (
 )
 from .flow_overview import FlowOverview, select_flow_overview, trim_flow_overview
 from .imports import ModulePathResolver, build_module_path_resolver
-from .python_imports import is_python_source
+from .python_imports import is_python_source, module_binding_imports
 from .infrastructure_inventory import (
     RUNTIME_CONFIG_TYPES,
     get_yaml_infrastructure_inventory,
@@ -542,6 +542,8 @@ def _build_relationships(
         mod_name = _module_name_from_path(filepath)
         mod_page = _mod_page_map.get(filepath, mod_name)
         imported_entities: dict[tuple[str, str], set[str]] = {}
+        bound_imports = module_binding_imports(data)
+        bound_visible: dict[tuple[str, str], set[str]] = {}
         for imp in data.get("imports", []):
             entity_name = imp.get("name")
             if not entity_name or entity_name not in entity_to_files:
@@ -565,17 +567,20 @@ def _build_relationships(
             if imp.get("alias"):
                 visible_names.add(imp["alias"])
             imported_entities[entity_key] = visible_names
+            if imp in bound_imports:
+                bound_visible.setdefault(entity_key, set()).update(visible_names)
 
         for entity_key, visible_names in imported_entities.items():
+            type_names = bound_visible.get(entity_key, set())
             for fn in data.get("functions", []):
                 mentions_entity = False
                 for p in fn.get("params", []):
-                    if any(name in p.get("type", "") for name in visible_names):
+                    if any(name in p.get("type", "") for name in type_names):
                         mentions_entity = True
-                if any(name in fn.get("return_type", "") for name in visible_names):
+                if any(name in fn.get("return_type", "") for name in type_names):
                     mentions_entity = True
                 for dec in fn.get("decorators", []):
-                    if any(name in dec for name in visible_names):
+                    if any(name in dec for name in type_names):
                         mentions_entity = True
 
                 if mentions_entity:

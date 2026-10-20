@@ -149,9 +149,9 @@ sequenceDiagram
     p3-->>p30: application.changed_files.extend(selected)
 ```
 
-> Call sequence diagram shows 30 of 6200 interactions; 6170 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 6209 interactions; 6179 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 2173 (2172 omitted); unresolved 1 of 1903 (1902 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 2175 (2174 omitted); unresolved 1 of 1907 (1906 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -165,7 +165,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/commands/sync_cmd.py:_sync_run_options_from_args` | 2 | [src/llm_wiki_cli/services/inventory_cache.py](../modules/inventory_cache.md) | internal | 1 |
 | `src/llm_wiki_cli/services/extraction_jobs.py:extraction_job_request_from_args` | 28 | - | external | 5 |
 | `src/llm_wiki_cli/services/extraction_jobs.py:extraction_job_request_from_args` | 28 | [src/llm_wiki_cli/services/extraction_jobs.py](../modules/extraction_jobs.md) | internal | 1 |
-> Omission summary shows 8 of 1373 groups; 1365 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1374 groups; 1366 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -241,7 +241,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | _sync_run_options_from_args | 5378 | `_sync_run_options_from_args(args)` |
+| run | _sync_run_options_from_args | 5380 | `_sync_run_options_from_args(args)` |
 | _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2425 | `getattr(args, 'src_dir', '.')` |
 | _sync_run_options_from_args | Path (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2426 | `Path(getattr(...))` |
 | _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2426 | `getattr(args, 'wiki_dir', 'docs/llm_wiki')` |
@@ -257,7 +257,7 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 5385 |
+| output | `print` | `run` | 5387 |
 | output | `print` | `_sync_run_options_from_args` | 2454 |
 | output | `print` | `_sync_run_options_from_args` | 2457 |
 | output | `print` | `_sync_run_options_from_args` | 2463 |
@@ -318,7 +318,10 @@ reconciliation replaces only evidence supported by fresh observations, including
 same-version repairs, without a fabricated source edit or a scoped-write promise.
 
 An explicit `--no-plugins --repair-evidence` request limits application to selected
-unchanged sources with complete matching producer commitments and adopted custody.
+unchanged sources with complete current producer commitments and adopted custody.
+A producer transition must reproduce retained known observations. Identical
+executable observations can re-anchor to their actual captured issuer, reopening
+review without losing history or acknowledging it.
 It repairs existing module/entity evidence together and preserves other unknowns.
 Full discovery, analysis, graph reconciliation, native artifacts, an isolated
 preflight copy and recovery preimages still require global work. Wider logical or

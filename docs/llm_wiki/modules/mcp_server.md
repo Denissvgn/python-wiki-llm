@@ -27,8 +27,9 @@ revalidation still rebuilds the current basis before reporting an unchanged ID.
 | `..config` | `IDE_AGENTS`, `PathValidationError`, `get_agent_config_path`, `read_config`, `validate_path`, `validate_source_root` |
 | `.bootstrap_runtime` | `build_module_page_map` |
 | `.concept_identity` | `ConceptIdentityError`, `validate_concept_uid`, `validate_natural_key` |
+| `.context_budget` | `validate_request` |
 | `.context_knowledge_contract` | `KNOWLEDGE_MODE_REQUEST_FIELD`, `KNOWLEDGE_MODE_VALUES`, `RESERVED_CONTEXT_KNOWLEDGE_PROTOCOL_VERSION` |
-| `.context_packet` | `describe_context_packet_error` |
+| `.context_packet` | `describe_context_packet_error`, `ContextPacketError`, `build_qualified_context`, `describe_context_packet_error` |
 | `.documentation_queries` | `DocumentationQueryError` |
 | `.documentation_query_builder` | `validate_live_query_source_selection` |
 | `.extraction_service` | `InventoryRequest`, `get_inventory_result` |
@@ -36,9 +37,15 @@ revalidation still rebuilds the current basis before reporting an unchanged ID.
 | `.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS` |
 | `.knowledge_observability` | `knowledge_status_payload`, `load_snapshot_knowledge_observability` |
 | `.legacy_hooks` | `LegacyHookError`, `inspect_legacy_hooks` |
+| `.maintenance_queue` | `validate_queue_limit` |
+| `.request_json` | `MAX_REQUEST_BYTES` |
+| `.search_discovery` | `DiscoveryError`, `MAX_DISCOVERY_BYTES` |
+| `.search_service` | `normalize_discovery`, `normalize_search`, `search_prevalidated_roots` |
 | `.source_selection` | `SourceSelectionError`, `SourceSelectionPolicy`, `resolve_source_selection` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
 | `.task_compact_readable` | `readable_session_metadata` |
+| `.task_context` | `_counter` |
+| `.task_contract` | `normalize_task_request` |
 | `.token_counting` | `TokenCounter`, `LocalTokenizerCounter` |
 | `.validation` | `posix_path_text`, `require_portable_relative_path` |
 | `.workflow_profile` | `WorkflowPolicy`, `WorkflowProfile`, `canonical_json`, `canonical_json` |
@@ -80,7 +87,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (1) |
-| Outbound | `src` (25) |
+| Outbound | `src` (32) |
 
 ### External packages
 
@@ -88,7 +95,7 @@ flowchart LR
 |---|---:|---:|
 | python | 3 | 2 |
 
-> All 26 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 33 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

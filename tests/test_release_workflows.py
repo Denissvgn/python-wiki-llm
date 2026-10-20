@@ -338,6 +338,37 @@ def test_native_origin_contract_runs_before_the_full_windows_suite():
     assert evidence["with"]["path"] == "${{ runner.temp }}/native-corrections.xml"
 
 
+def test_scoped_repair_has_prepared_zero_skip_owners_on_both_native_platforms():
+    job = _yaml("ci.yml")["jobs"]["test"]
+    probe = _named_step(job, "Verify scoped evidence repair on native Windows and Linux")
+    assert probe["if"] == "${{ matrix.lane == 'core-windows-3.13' || matrix.lane == 'core-ubuntu-3.10' }}"
+    assert probe["env"]["LLM_WIKI_REQUIRE_NATIVE_DIAGNOSTICS"] == "1"
+    assert "LLM_WIKI_CACHE_DIR" not in job.get("env", {})
+    script = probe["run"]
+    assert '--language typescript --cache-dir "${LLM_WIKI_CACHE_DIR}"' in script
+    assert {
+        "tests/test_scoped_sync_repair.py", "tests/test_sync_guard_diagnostics.py",
+        "tests/test_evidence_recovery_guidance.py", "tests/test_default_development_workflow.py",
+    } <= set(script.split())
+    assert '--minimum-collected 146 --minimum-passed 146' in script
+    assert '--discovery' not in script
+    entries = json.loads((ROOT / "release/skip-allowlist.json").read_text())["entries"]
+    assert not any(item["lane"].startswith("scoped-evidence-") for item in entries)
+    family = "tests/test_scoped_sync_repair.py::test_released_250_dynamic_import_repairs_after_explicit_upgrade"
+    owned = [item for item in entries if item["node_id"].startswith(family + "[")]
+    assert {(item["lane"], item["node_id"], item["owner_lane"], item["reason"]) for item in owned} == {
+        (lane, f"{family}[{fixture}]", "toolchains", "Prepared typescript helper required; owned by toolchains")
+        for lane in ("core-macos-3.14", "core-ubuntu-3.10", "core-windows-3.13")
+        for fixture in ("sync_guard_2_5_0.json", "scoped_repair_2_5_0_mixed.json")
+    }
+    owner = _named_step(_yaml("release-qualification.yml")["jobs"]["toolchains"], "Run toolchain owner suites")
+    assert family in owner["run"].split()
+    assert owner["env"]["LLM_WIKI_REQUIRE_NATIVE_DIAGNOSTICS"] == "1"
+    upload = _named_step(job, "Retain native scoped evidence repair results")
+    assert "always()" in upload["if"] and "steps.scoped-evidence.outcome" in upload["if"]
+    assert upload["with"]["if-no-files-found"] == "error"
+
+
 def test_recursion_coverage_probe_preserves_the_full_linux_gate():
     steps = _yaml("ci.yml")["jobs"]["test"]["steps"]
     early = _named_step({"steps": steps}, "Check recursion coverage boundaries before the full Linux suite")

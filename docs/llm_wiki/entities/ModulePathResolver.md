@@ -52,7 +52,7 @@ flowchart LR
     n1["_build_relationships (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n2["build_module_path_resolver (src/llm_wiki_cli/services/imports.py)"]
     n3["ModulePathResolver.build (src/llm_wiki_cli/services/imports.py)"]
-    n4["_PythonCallResolver.__init__ (src/llm_wiki_cli/services/python_calls.py)"]
+    n4["src/llm_wiki_cli/services/python_calls.py"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -78,4 +78,4 @@ flowchart LR
 | `build_module_path_resolver` | type_reference | [imports](../modules/imports.md) | — |
 | `ModulePathResolver.build` | call | [imports](../modules/imports.md) | 1 |
 | `ModulePathResolver.build` | type_reference | [imports](../modules/imports.md) | — |
-| `_PythonCallResolver.__init__` | type_reference | [python_calls](../modules/python_calls.md) | — |
+| `python_calls` | import | [python_calls](../modules/python_calls.md) | — |

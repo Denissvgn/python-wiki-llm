@@ -33,7 +33,7 @@ One bounded, provider-neutral role packet.
 ```mermaid
 flowchart LR
     n0["P0CalibrationAgentPacket (src/llm_wiki_cli/services/calibration/controller.py)"]
-    n1["build_calibration_agent_packet (src/llm_wiki_cli/api.py)"]
+    n1["src/llm_wiki_cli/api.py"]
     n2["build_calibration_agent_packet (src/llm_wiki_cli/services/calibration/controller.py)"]
     n3["P0CalibrationAgentPacket.from_dict (src/llm_wiki_cli/services/calibration/controller.py)"]
     n1 --> n0
@@ -55,7 +55,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `build_calibration_agent_packet` | type_reference | [api](../modules/api.md) | — |
+| `api` | import | [api](../modules/api.md) | — |
 | `build_calibration_agent_packet` | type_reference | [controller](../modules/controller.md) | — |
 | `P0CalibrationAgentPacket.from_dict` | call | [controller](../modules/controller.md) | 1 |
 | `P0CalibrationAgentPacket.from_dict` | type_reference | [controller](../modules/controller.md) | — |

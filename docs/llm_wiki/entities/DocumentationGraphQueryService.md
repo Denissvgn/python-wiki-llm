@@ -140,4 +140,4 @@ flowchart LR
 | `flow_for_entrypoint` | type_reference | [api](../modules/api.md) | — |
 | `get_concept` | type_reference | [api](../modules/api.md) | — |
 
-> References: showing 12 of 40 logical references; 28 omitted by the 12-row generated summary limit.
+> References: showing 12 of 36 logical references; 24 omitted by the 12-row generated summary limit.

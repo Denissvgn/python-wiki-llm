@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, replace
 import hashlib
 import json
 from typing import Any
@@ -72,6 +72,67 @@ def _source_current(snapshot):
         return False
 
 
+def _strip_implementation_issuer(evidence):
+    # These are closed, validated application fields. Semantic/source/syntax
+    # facts and opaque extensions are never excluded from comparison.
+    evidence.pop("comparison_id", None)
+    producer = evidence.get("producer")
+    if isinstance(producer, dict):
+        producer.pop("analysis_compatibility_hash", None)
+        producer.pop("parser_version", None)
+
+
+def _check_current_implementation_issuer(evidence, captures):
+    if evidence["status"] != "available":
+        return
+    capture = captures.get("files", {}).get(evidence["coordinate"]["source_path"], {})
+    _require(capture.get("status") == "available" and capture.get("source_hash") == evidence["source_hash"]
+             and canonical_bytes(capture.get("producer")) == canonical_bytes(evidence["producer"]),
+             "candidate executable issuer differs from the current captured analysis")
+
+
+def _strip_concept_issuers(concept, *, current_captures=None):
+    from .implementation_evidence import IMPLEMENTATION_KEY, DECLARATIONS_KEY
+
+    extensions = concept["extensions"]
+    rows = [extensions[IMPLEMENTATION_KEY]] if IMPLEMENTATION_KEY in extensions else []
+    if DECLARATIONS_KEY in extensions:
+        rows.extend(row["evidence"] for row in extensions[DECLARATIONS_KEY]["observations"])
+    for row in rows:
+        if current_captures is not None:
+            _check_current_implementation_issuer(row, current_captures)
+        _strip_implementation_issuer(row)
+
+
+def _strip_maintenance_issuer(basis):
+    if isinstance(basis, dict):
+        basis.pop("comparison_id", None)
+        basis.pop("producer_hash", None)
+
+
+def _check_maintenance_requalification(left, right, record_id, captures):
+    old, new = (state["observations"][record_id] for state in (left, right))
+    _check_current_implementation_issuer(new["implementation"], captures)
+    if canonical_bytes(old) == canonical_bytes(new):
+        return
+    _strip_implementation_issuer(old["implementation"])
+    _strip_implementation_issuer(new["implementation"])
+    _strip_maintenance_issuer(old["basis"])
+    _strip_maintenance_issuer(new["basis"])
+    _require(canonical_bytes(old) == canonical_bytes(new),
+             "unselected source, syntax, prose or maintenance identity changed")
+    prior, current = (state["records"][record_id] for state in (left, right))
+    _require(current["status"] == "pending" and current["current_acknowledgment_id"] is None
+             and current["reasons"] == sorted(set(prior["reasons"]) | {"producer-incompatible"}),
+             "producer requalification must reopen review without acknowledging it")
+    for record in (prior, current):
+        _strip_maintenance_issuer(record["last_present_basis"])
+        for key in ("status", "current_acknowledgment_id", "reasons"):
+            record.pop(key)
+    _require(canonical_bytes(prior) == canonical_bytes(current),
+             "producer requalification changed review history or mapping")
+
+
 @dataclass(frozen=True)
 class ScopedRepairBoundary:
     """Original global inputs and the only concept pages allowed to change."""
@@ -131,11 +192,15 @@ class ScopedRepairBoundary:
             object_reader=read_object,
         )
         new = validated.knowledge
-        _require(old.bundle.producer == new.bundle.producer == self.producer, "producer transition requires a full owning update")
+        _require(canonical_bytes(asdict(new.bundle.producer)) == canonical_bytes(asdict(self.producer)),
+                 "candidate producer differs from the checked current analysis")
         before, after = (json.loads(json.dumps(knowledge_index_to_payload(k))) for k in (old, new))
-        # Revision and snapshot roots are transaction metadata. All modeled
+        # The checked full analysis owns the new producer. It may requalify
+        # identical known observations, never launder changed or unknown ones.
+        # Revision and snapshot roots are transaction metadata. All other
         # source inputs/options and repository identity must remain unchanged.
         for payload in (before, after):
+            payload["bundle"].pop("producer")
             payload["bundle"]["repository"].pop("evaluated_revision", None)
             payload["bundle"]["snapshot"].pop("markdown_snapshot_hash", None)
             payload["bundle"]["snapshot"].pop("surface_index_hash", None)
@@ -145,6 +210,9 @@ class ScopedRepairBoundary:
         left = {c["locator"]: c for c in before["concepts"]}
         right = {c["locator"]: c for c in after["concepts"]}
         _require(left.keys() == right.keys(), "concept creation or retirement needs full review")
+        for key in left.keys() - allowed:
+            _strip_concept_issuers(left[key])
+            _strip_concept_issuers(right[key], current_captures=p.inventory_result.implementation_observations or {})
         _require(all(canonical_bytes(left[k]) == canonical_bytes(right[k]) for k in left.keys() - allowed),
                  "unselected concept facts changed")
         _require(
@@ -176,6 +244,10 @@ class ScopedRepairBoundary:
         _require(right_state["generation"] >= left_state["generation"], "maintenance generation regressed")
         for record_id, observation in list(left_state["observations"].items()):
             if observation["target"]["canonical_path"] not in self.pages:
+                _require(record_id in right_state["observations"] and record_id in right_state["records"],
+                         "unselected maintenance identity disappeared")
+                _check_maintenance_requalification(left_state, right_state, record_id,
+                                                   p.inventory_result.implementation_observations or {})
                 continue
             _require(record_id in right_state["observations"] and record_id in right_state["records"],
                      "selected maintenance identity disappeared")
@@ -203,25 +275,24 @@ class ScopedRepairBoundary:
 
 
 def prepare_boundary(options, prepared) -> ScopedRepairBoundary:
-    """Accept only an adopted, coherent, stable-producer unchanged-source repair."""
+    """Accept an adopted unchanged-source repair after complete revalidation."""
     from .knowledge_orchestration import (
         RuntimeLiveEvaluationInputs, build_runtime_live_evaluation,
-        runtime_generation_options, RUNTIME_GENERATION_OPTION_DEFAULTS,
+        runtime_generation_options, runtime_source_snapshot_hash, RUNTIME_GENERATION_OPTION_DEFAULTS,
     )
 
     p = prepared
     _require(not p.seed_manifest and not p.repair_only and p.committed_state is not None
              and p.committed_state.artifacts is not None, "complete committed authority is required")
     assert p.committed_state is not None and p.committed_state.artifacts is not None
-    _require(not p.generator_refresh_required, "global generator transition cannot be applied partially")
+    paths = frozenset(options.repair_paths)
     _require(p.manifest.maintenance_state is not None, "ordinary maintenance ownership and its recovery preimage are required")
-    _require(not p.runtime_provenance_changed, "global source or generation policy changed")
-    _require(not p.diff.has_changes and not p.diff.missing_pages and not p.diff.generated_page_repairs,
+    _require(not replace(p.diff, generated_page_repairs={}).has_changes
+             and all(owner.source_path in paths for owner in p.diff.generated_page_repairs.values()),
              "mixed source edits, retirement or projection repairs require full review")
     _require(not p.surface_plan.has_work and not p.infrastructure_plan.has_changes
              and not p.source_selection_prune.deselected_source_paths,
              "surface, infrastructure or selection changes require full review")
-    paths = frozenset(options.repair_paths)
     for path in sorted(paths):
         _require(path in p.manifest.sources and path in p.inventory
                  and path in p.source_snapshot.captured_content_hashes,
@@ -251,16 +322,35 @@ def prepare_boundary(options, prepared) -> ScopedRepairBoundary:
         plugin_components=p.inventory_result.producer_plugin_components,
     ))
     prior = artifacts.knowledge.bundle.producer
-    _require(not prior.plugins and prior == live.producer,
-             "producer/helper/runtime transition or plugin capture requires a full owning update")
-    _require(all(ac.component_record(c) is not None for c in (prior.tool, *prior.extractors)),
-             "complete producer analysis commitments are required; version labels are insufficient")
+    _require(not prior.plugins and not live.producer.plugins,
+             "plugin capture requires a full owning update")
+
+    def annotations(producer):
+        return {"producer": producer.extensions, "components": {
+            component.component_id: {k: v for k, v in component.extensions.items() if k != ac.EXTENSION}
+            for component in (producer.tool, *producer.extractors)
+        }}
+
+    _require(canonical_bytes(annotations(prior)) == canonical_bytes(annotations(live.producer)),
+             "producer annotations or component selection changed")
+    _require(all(ac.component_record(c) is not None for c in (live.producer.tool, *live.producer.extractors)),
+             "complete current producer analysis commitments are required; version labels are insufficient")
+    _require(artifacts.knowledge.bundle.snapshot.generation_options_hash == live.generation_options_hash
+             and artifacts.knowledge.bundle.snapshot.source_snapshot_hash == runtime_source_snapshot_hash(
+                 p.source_snapshot, generation_inputs=p.surface_plan.generation_inputs,
+                 plugin_lock_path=p.inventory_result.plugin_lock_path,
+                 plugin_lock_hash=p.inventory_result.plugin_lock_hash),
+             "global source or generation policy changed")
     pages = frozenset(name for name, owner in p.manifest.page_source_mappings.items() if owner.source_path in paths)
+    # A shared producer can advance only after every retained known observation
+    # is reproduced. Unselected unknowns stay unknown in the candidate; the
+    # complete plan check also protects graph facts, custody and page bytes.
     for concept in artifacts.knowledge.concepts:
         page = concept.document.canonical_path
-        if page not in pages:
+        baseline = p.manifest.evidence_baselines.get(page)
+        if baseline is None or (page not in pages and not baseline.is_known):
             continue
-        recorded = p.manifest.evidence_baselines[page].basis
+        recorded = baseline.basis
         current = live.concept_bases.get(concept.locator)
         _require(recorded is not None and current is not None and current.is_known,
                  "complete captured source coordinates and valid fresh evidence are required")

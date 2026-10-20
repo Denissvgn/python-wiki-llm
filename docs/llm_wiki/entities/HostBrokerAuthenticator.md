@@ -30,7 +30,7 @@ Supported protocol implemented after protected host authentication.
 flowchart LR
     n0["HostBrokerAuthenticator (src/llm_wiki_cli/services/calibration/host_broker.py)"]
     n1["Protocol"]
-    n2["use_calibration_host_broker_authenticator (src/llm_wiki_cli/api.py)"]
+    n2["src/llm_wiki_cli/api.py"]
     n3["require_process_host_broker_authenticator (src/llm_wiki_cli/services/calibration/host_broker.py)"]
     n4["use_calibration_host_broker_authenticator (src/llm_wiki_cli/services/calibration/host_broker.py)"]
     n0 --> n1
@@ -59,6 +59,6 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `use_calibration_host_broker_authenticator` | type_reference | [api](../modules/api.md) | — |
+| `api` | import | [api](../modules/api.md) | — |
 | `require_process_host_broker_authenticator` | type_reference | [host_broker](../modules/host_broker.md) | — |
 | `use_calibration_host_broker_authenticator` | type_reference | [host_broker](../modules/host_broker.md) | — |

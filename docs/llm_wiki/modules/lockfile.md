@@ -11,7 +11,9 @@ _Auto-generated from `src/llm_wiki_cli/services/lockfile.py`._
 | Source | Symbols |
 |--------|---------|
 | `errno` | `errno` |
+| `fcntl` | `fcntl`, `fcntl` |
 | `math` | `math` |
+| `msvcrt` | `msvcrt`, `msvcrt` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `sys` | `sys` |

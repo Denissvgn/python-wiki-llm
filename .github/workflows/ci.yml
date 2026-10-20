@@ -317,6 +317,42 @@ jobs:
       - name: Install dependencies
         run: python -m pip install -e ".[dev,tokens]"
 
+      - name: Verify scoped evidence repair on native Windows and Linux
+        id: scoped-evidence
+        if: ${{ matrix.lane == 'core-windows-3.13' || matrix.lane == 'core-ubuntu-3.10' }}
+        shell: bash
+        env:
+          LLM_WIKI_CACHE_DIR: ${{ runner.temp }}/scoped-evidence-helpers
+          LLM_WIKI_REQUIRE_NATIVE_DIAGNOSTICS: "1"
+          PYTHONUTF8: "1"
+          PYTHONIOENCODING: utf-8
+        run: |
+          set -euo pipefail
+          python -m llm_wiki_cli.cli prepare-extractors --src-dir . \
+            --language typescript --cache-dir "${LLM_WIKI_CACHE_DIR}"
+          python -m pytest -q \
+            tests/test_scoped_sync_repair.py tests/test_sync_guard_diagnostics.py \
+            tests/test_evidence_recovery_guidance.py tests/test_default_development_workflow.py \
+            -p no:cacheprovider --strict-config --strict-markers -W error -o xfail_strict=true \
+            --junitxml="${RUNNER_TEMP}/scoped-evidence-${{ matrix.lane }}.xml"
+          python -I release/qualification.py verify-junit \
+            --junit "${RUNNER_TEMP}/scoped-evidence-${{ matrix.lane }}.xml" \
+            --lane "scoped-evidence-${{ matrix.lane }}" --allowlist release/skip-allowlist.json \
+            --minimum-collected 146 --minimum-passed 146 \
+            --output "${RUNNER_TEMP}/scoped-evidence-${{ matrix.lane }}-result.json"
+
+      - name: Retain native scoped evidence repair results
+        if: ${{ always() && (steps.scoped-evidence.outcome == 'success' || steps.scoped-evidence.outcome == 'failure') }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          archive: true
+          name: native-scoped-evidence-${{ matrix.lane }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/scoped-evidence-${{ matrix.lane }}.xml
+            ${{ runner.temp }}/scoped-evidence-${{ matrix.lane }}-result.json
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Verify JavaScript evidence on native Windows
         id: javascript-evidence
         if: ${{ matrix.lane == 'core-windows-3.13' }}

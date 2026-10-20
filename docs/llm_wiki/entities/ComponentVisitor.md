@@ -7,7 +7,7 @@
 
 ## Description
 
-_Auto-generated from `ComponentVisitor` in `src/llm_wiki_cli/extractors/python_extractor.py`._
+Collects Python declaration metadata and scoped import observations without executing the inspected module. Its import-only class walk preserves lexical order and enclosing function/type-only scope without duplicating methods, nested declarations, constants or module entry guards.
 
 ## Attributes
 
@@ -23,6 +23,7 @@ _Auto-generated from `ComponentVisitor` in `src/llm_wiki_cli/extractors/python_e
 | `visit_Import` | `(node)` | — | — |
 | `visit_ImportFrom` | `(node)` | — | — |
 | `visit_ClassDef` | `(node)` | — | — |
+| `_visit_class_imports` | `(node: ast.ClassDef) -> None` | — | Collect only imports, retaining enclosing execution/type-only scopes. |
 | `visit_FunctionDef` | `(node)` | — | — |
 | `visit_AsyncFunctionDef` | `(node)` | — | — |
 | `visit_Assign` | `(node)` | — | Detect module-level UPPER_CASE constants and ``__all__``. |
@@ -52,7 +53,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [python_extractor](../modules/python_extractor.md) | 13 | — |
+| [python_extractor](../modules/python_extractor.md) | 14 | — |
 
 ### Structure
 

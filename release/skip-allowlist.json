@@ -1040,6 +1040,18 @@
     },
     {
       "lane": "core-macos-3.14",
+      "node_id": "tests/test_scoped_sync_repair.py::test_released_250_dynamic_import_repairs_after_explicit_upgrade[scoped_repair_2_5_0_mixed.json]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared typescript helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-macos-3.14",
+      "node_id": "tests/test_scoped_sync_repair.py::test_released_250_dynamic_import_repairs_after_explicit_upgrade[sync_guard_2_5_0.json]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared typescript helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-macos-3.14",
       "node_id": "tests/test_task_compact_readable.py::test_actual_mcp_v2_metadata_toggle_keeps_qualifications_and_receipts",
       "owner_lane": "mcp-3.13",
       "reason": "MCP SDK is not installed."
@@ -2495,6 +2507,18 @@
       "node_id": "tests/test_rust_extract.py::test_rust_inventory_evidence_contract",
       "owner_lane": "toolchains",
       "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_scoped_sync_repair.py::test_released_250_dynamic_import_repairs_after_explicit_upgrade[scoped_repair_2_5_0_mixed.json]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared typescript helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-ubuntu-3.10",
+      "node_id": "tests/test_scoped_sync_repair.py::test_released_250_dynamic_import_repairs_after_explicit_upgrade[sync_guard_2_5_0.json]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared typescript helper required; owned by toolchains"
     },
     {
       "lane": "core-ubuntu-3.10",
@@ -4313,6 +4337,18 @@
       "node_id": "tests/test_rust_extract.py::test_rust_inventory_evidence_contract",
       "owner_lane": "toolchains",
       "reason": "Prepared Rust helper not available \u2014 Rust extractor integration tests skipped"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_scoped_sync_repair.py::test_released_250_dynamic_import_repairs_after_explicit_upgrade[scoped_repair_2_5_0_mixed.json]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared typescript helper required; owned by toolchains"
+    },
+    {
+      "lane": "core-windows-3.13",
+      "node_id": "tests/test_scoped_sync_repair.py::test_released_250_dynamic_import_repairs_after_explicit_upgrade[sync_guard_2_5_0.json]",
+      "owner_lane": "toolchains",
+      "reason": "Prepared typescript helper required; owned by toolchains"
     },
     {
       "lane": "core-windows-3.13",

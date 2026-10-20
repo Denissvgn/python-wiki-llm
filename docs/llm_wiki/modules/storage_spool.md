@@ -10,7 +10,7 @@ Provides request-owned byte and JSON spill buffers with bounded metadata and dis
 
 | Source | Symbols |
 |--------|---------|
-| `.knowledge_storage` | `MAX_OBJECT_BYTES`, `KnowledgeStorageError` |
+| `.knowledge_storage` | `MAX_OBJECT_BYTES`, `KnowledgeStorageError`, `canonical_bytes` |
 | `__future__` | `annotations` |
 | `collections` | `OrderedDict` |
 | `collections.abc` | `Iterator`, `MutableMapping` |
@@ -41,6 +41,7 @@ flowchart LR
     n2 --> n0
     n2 --> n3
     n2 --> n6
+    n3 --> n1
     n4 --> n0
     n4 --> n2
     n4 --> n3

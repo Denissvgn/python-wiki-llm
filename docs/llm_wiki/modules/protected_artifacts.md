@@ -28,7 +28,9 @@ not authenticity.
 | `contextlib` | `contextmanager` |
 | `ctypes` | `ctypes` |
 | `errno` | `errno` |
+| `fcntl` | `fcntl`, `fcntl` |
 | `json` | `json` |
+| `msvcrt` | `msvcrt`, `msvcrt` |
 | `os` | `os` |
 | `pathlib` | `Path`, `PurePosixPath` |
 | `stat` | `stat` |

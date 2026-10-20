@@ -12,6 +12,7 @@ _Auto-generated from `src/llm_wiki_cli/services/imports.py`._
 |--------|---------|
 | `..config` | `is_agent_worktree_path` |
 | `..extractors.common` | `TYPESCRIPT_FAMILY_EXTENSIONS` |
+| `.packages` | `discover_packages`, `stamp_inventory_packages` |
 | `.python_imports` | `PythonModuleIndex`, `is_python_source` |
 | `.source_snapshot` | `SourceSnapshot` |
 | `.validation` | `path_is_under`, `path_is_under_scope` |
@@ -44,9 +45,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (8) |
-| Outbound | `src` (5) |
+| Outbound | `src` (6) |
 
-> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 14 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

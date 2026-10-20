@@ -139,38 +139,38 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| attach_routes_to_entry_points | defaultdict | 1922 | `defaultdict(list)` |
-| attach_routes_to_entry_points | defaultdict | 1923 | `defaultdict(set)` |
-| attach_routes_to_entry_points | contracts.get | 1924 | `contracts.get('operations', [...])` |
-| attach_routes_to_entry_points | operation.get (src/llm_wiki_cli/services…ach_routes_to_entry_points) | 1925 | `operation.get('handler')` |
-| attach_routes_to_entry_points | isinstance (src/llm_wiki_cli/services…ach_routes_to_entry_points) | 1926 | `isinstance(handler, Mapping)` |
-| attach_routes_to_entry_points | str | 1928 | `str(...)` |
-| attach_routes_to_entry_points | handler.get | 1928 | `handler.get('file')` |
+| attach_routes_to_entry_points | defaultdict | 1923 | `defaultdict(list)` |
+| attach_routes_to_entry_points | defaultdict | 1924 | `defaultdict(set)` |
+| attach_routes_to_entry_points | contracts.get | 1925 | `contracts.get('operations', [...])` |
+| attach_routes_to_entry_points | operation.get (src/llm_wiki_cli/services…ach_routes_to_entry_points) | 1926 | `operation.get('handler')` |
+| attach_routes_to_entry_points | isinstance (src/llm_wiki_cli/services…ach_routes_to_entry_points) | 1927 | `isinstance(handler, Mapping)` |
 | attach_routes_to_entry_points | str | 1929 | `str(...)` |
-| attach_routes_to_entry_points | handler.get | 1929 | `handler.get('symbol')` |
+| attach_routes_to_entry_points | handler.get | 1929 | `handler.get('file')` |
 | attach_routes_to_entry_points | str | 1930 | `str(...)` |
-| attach_routes_to_entry_points | handler.get | 1930 | `handler.get('qualname')` |
+| attach_routes_to_entry_points | handler.get | 1930 | `handler.get('symbol')` |
+| attach_routes_to_entry_points | str | 1931 | `str(...)` |
+| attach_routes_to_entry_points | handler.get | 1931 | `handler.get('qualname')` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `handler_routes.append` | `attach_routes_to_entry_points` | 1936 |
-| mutation | `item.pop` | `attach_routes_to_entry_points` | 1949 |
-| mutation | `result.append` | `attach_routes_to_entry_points` | 1954 |
+| mutation | `handler_routes.append` | `attach_routes_to_entry_points` | 1937 |
+| mutation | `item.pop` | `attach_routes_to_entry_points` | 1950 |
+| mutation | `result.append` | `attach_routes_to_entry_points` | 1955 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `attach_routes_to_entry_points` | `defaultdict` | 1922 |
 | external_call | `attach_routes_to_entry_points` | `defaultdict` | 1923 |
-| unresolved_call | `attach_routes_to_entry_points` | `contracts.get` | 1924 |
-| unresolved_call | `attach_routes_to_entry_points` | `operation.get` | 1925 |
-| external_call | `attach_routes_to_entry_points` | `isinstance` | 1926 |
-| unresolved_call | `attach_routes_to_entry_points` | `handler.get` | 1928 |
+| external_call | `attach_routes_to_entry_points` | `defaultdict` | 1924 |
+| unresolved_call | `attach_routes_to_entry_points` | `contracts.get` | 1925 |
+| unresolved_call | `attach_routes_to_entry_points` | `operation.get` | 1926 |
+| external_call | `attach_routes_to_entry_points` | `isinstance` | 1927 |
 | unresolved_call | `attach_routes_to_entry_points` | `handler.get` | 1929 |
 | unresolved_call | `attach_routes_to_entry_points` | `handler.get` | 1930 |
+| unresolved_call | `attach_routes_to_entry_points` | `handler.get` | 1931 |
 | step_limit | `attach_routes_to_entry_points` | `first 12 steps` | 0 |
 
 ## Behavior

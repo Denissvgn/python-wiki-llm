@@ -37,18 +37,18 @@ sequenceDiagram
     participant p14 as _record_value
     participant p15 as _operation_id
     participant p16 as ModulePathResolver.build
-    participant p17 as _display_call
-    participant p18 as stamp_inventory_packages
-    participant p19 as discover_packages
-    participant p20 as _is_typescript_index
-    participant p21 as _read_go_module_scopes
-    participant p22 as _inventory_go_scopes
-    participant p23 as _read_ts_path_aliases
-    participant p24 as PythonModuleIndex.build
-    participant p25 as _package_import_scope
-    participant p26 as _go_module_dir_is_agent_worktree
-    participant p27 as _parse_tsconfig_aliases
-    participant p28 as _configured_import_roots
+    participant p17 as _import_bindings
+    participant p18 as _display_call
+    participant p19 as stamp_inventory_packages
+    participant p20 as discover_packages
+    participant p21 as _is_typescript_index
+    participant p22 as _read_go_module_scopes
+    participant p23 as _inventory_go_scopes
+    participant p24 as _read_ts_path_aliases
+    participant p25 as PythonModuleIndex.build
+    participant p26 as _package_import_scope
+    participant p27 as _go_module_dir_is_agent_worktree
+    participant p28 as _parse_tsconfig_aliases
     participant p29 as isinstance (src/llm_wiki_cli/services…uild_static_api_contracts)
     participant p30 as fastapi.get (src/llm_wiki_cli/services…uild_static_api_contracts)
     p0->>p1: _operation_methods
@@ -67,25 +67,25 @@ sequenceDiagram
     p0->>p14: _record_value
     p0->>p15: _operation_id
     p3->>p16: ModulePathResolver.build
-    p6->>p17: _display_call
-    p16->>p18: stamp_inventory_packages
-    p16->>p19: discover_packages
-    p16->>p20: _is_typescript_index
-    p16->>p21: _read_go_module_scopes
-    p16->>p22: _inventory_go_scopes
-    p16->>p23: _read_ts_path_aliases
-    p16->>p24: PythonModuleIndex.build
-    p18->>p25: _package_import_scope
-    p21->>p26: _go_module_dir_is_agent_worktree
-    p23->>p27: _parse_tsconfig_aliases
-    p19->>p28: _configured_import_roots
+    p4->>p17: _import_bindings
+    p6->>p18: _display_call
+    p16->>p19: stamp_inventory_packages
+    p16->>p20: discover_packages
+    p16->>p21: _is_typescript_index
+    p16->>p22: _read_go_module_scopes
+    p16->>p23: _inventory_go_scopes
+    p16->>p24: _read_ts_path_aliases
+    p16->>p25: PythonModuleIndex.build
+    p19->>p26: _package_import_scope
+    p22->>p27: _go_module_dir_is_agent_worktree
+    p24->>p28: _parse_tsconfig_aliases
     p0-->>p29: isinstance (src/llm_wiki_cli/services…uild_static_api_contracts)(record, Mapping)
     p0-->>p30: fastapi.get (src/llm_wiki_cli/services…uild_static_api_contracts)(kind, [...])
 ```
 
-> Call sequence diagram shows 30 of 591 interactions; 561 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 610 interactions; 580 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 222 (221 omitted); unresolved 1 of 265 (264 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 225 (224 omitted); unresolved 1 of 280 (279 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -99,7 +99,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/api_contracts.py:_operation_methods` | 25 | - | external | 4 |
 | `src/llm_wiki_cli/services/api_contracts.py:_operation_methods` | 25 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/api_contracts.py:_operation_methods` | 25 | [src/llm_wiki_cli/services/api_contracts.py](../modules/api_contracts.md) | internal | 1 |
-> Omission summary shows 8 of 113 groups; 105 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 116 groups; 108 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -183,13 +183,13 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_static_api_contracts | _framework_records | 742 | `_framework_records(inventory)` |
-| _framework_records | inventory.items (src/llm_wiki_cli/services…cts.py:_framework_records) | 219 | `inventory.items(data not statically known)` |
-| _framework_records | file_data.get (src/llm_wiki_cli/services…cts.py:_framework_records) | 220 | `file_data.get('frameworks')` |
-| _framework_records | isinstance (src/llm_wiki_cli/services…cts.py:_framework_records) | 221 | `isinstance(frameworks, Mapping)` |
-| _framework_records | frameworks.get | 221 | `frameworks.get('fastapi')` |
-| _framework_records | isinstance (src/llm_wiki_cli/services…cts.py:_framework_records) | 222 | `isinstance(fastapi, Mapping)` |
-| build_static_api_contracts | is_test_source_path | 743 | `is_test_source_path(filepath)` |
+| build_static_api_contracts | _framework_records | 743 | `_framework_records(inventory)` |
+| _framework_records | inventory.items (src/llm_wiki_cli/services…cts.py:_framework_records) | 220 | `inventory.items(data not statically known)` |
+| _framework_records | file_data.get (src/llm_wiki_cli/services…cts.py:_framework_records) | 221 | `file_data.get('frameworks')` |
+| _framework_records | isinstance (src/llm_wiki_cli/services…cts.py:_framework_records) | 222 | `isinstance(frameworks, Mapping)` |
+| _framework_records | frameworks.get | 222 | `frameworks.get('fastapi')` |
+| _framework_records | isinstance (src/llm_wiki_cli/services…cts.py:_framework_records) | 223 | `isinstance(fastapi, Mapping)` |
+| build_static_api_contracts | is_test_source_path | 744 | `is_test_source_path(filepath)` |
 | is_test_source_path | str(…).replace(…).strip | 41 | `str(value).replace('\\', '/').strip('/')` |
 | is_test_source_path | str(…).replace (src/llm_wiki_cli/services…hs.py:is_test_source_path) | 41 | `str(value).replace('\\', '/')` |
 | is_test_source_path | str (src/llm_wiki_cli/services…hs.py:is_test_source_path) | 41 | `str(value)` |
@@ -199,24 +199,24 @@ flowchart LR
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `diagnostics.append` | `build_static_api_contracts` | 754 |
-| mutation | `diagnostics.append` | `build_static_api_contracts` | 782 |
-| mutation | `diagnostics.append` | `build_static_api_contracts` | 819 |
-| mutation | `unknowns.append` | `build_static_api_contracts` | 836 |
-| mutation | `unknowns.append` | `build_static_api_contracts` | 845 |
-| mutation | `applications.append` | `build_static_api_contracts` | 854 |
-| mutation | `diagnostics.append` | `build_static_api_contracts` | 1163 |
-| mutation | `assembled.sort` | `build_static_api_contracts` | 1181 |
+| mutation | `diagnostics.append` | `build_static_api_contracts` | 755 |
+| mutation | `diagnostics.append` | `build_static_api_contracts` | 783 |
+| mutation | `diagnostics.append` | `build_static_api_contracts` | 820 |
+| mutation | `unknowns.append` | `build_static_api_contracts` | 837 |
+| mutation | `unknowns.append` | `build_static_api_contracts` | 846 |
+| mutation | `applications.append` | `build_static_api_contracts` | 855 |
+| mutation | `diagnostics.append` | `build_static_api_contracts` | 1164 |
+| mutation | `assembled.sort` | `build_static_api_contracts` | 1182 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_framework_records` | `inventory.items` | 219 |
-| unresolved_call | `_framework_records` | `file_data.get` | 220 |
-| external_call | `_framework_records` | `isinstance` | 221 |
-| unresolved_call | `_framework_records` | `frameworks.get` | 221 |
+| unresolved_call | `_framework_records` | `inventory.items` | 220 |
+| unresolved_call | `_framework_records` | `file_data.get` | 221 |
 | external_call | `_framework_records` | `isinstance` | 222 |
+| unresolved_call | `_framework_records` | `frameworks.get` | 222 |
+| external_call | `_framework_records` | `isinstance` | 223 |
 | unresolved_call | `is_test_source_path` | `str(value).replace('\\', '/').strip` | 41 |
 | unresolved_call | `is_test_source_path` | `str(value).replace` | 41 |
 | external_call | `is_test_source_path` | `PurePosixPath` | 44 |
@@ -226,3 +226,5 @@ flowchart LR
 ## Behavior
 
 This flow starts at `build_static_api_contracts` and is classified as `api`. The generated call and data-flow sections are bounded static projections; runtime conditions and side effects require source-level confirmation.
+
+Global Python response aliases are normalized through matching captured module bindings. Local dependency imports cannot supply unrelated global model aliases; static output is not runtime validation.

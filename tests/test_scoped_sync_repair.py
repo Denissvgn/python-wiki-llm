@@ -2,6 +2,9 @@
 
 import subprocess
 from copy import deepcopy
+import json
+import base64
+from pathlib import Path
 
 import pytest
 
@@ -93,8 +96,15 @@ def _project(tmp_path, monkeypatch, *, count=2, unknown_scope='module'):
 
 @pytest.mark.parametrize('unknown_scope', ['module', 'entity'])
 @pytest.mark.parametrize('cache', [False, True])
-def test_one_source_repair_preserves_other_failures_and_global_facts(tmp_path, monkeypatch, capsys, unknown_scope, cache):
-    wiki = _project(tmp_path, monkeypatch, unknown_scope=unknown_scope)
+@pytest.mark.parametrize('transition', [False, True])
+def test_one_source_repair_preserves_other_failures_and_global_facts(tmp_path, monkeypatch, capsys, unknown_scope, cache, transition):
+    from llm_wiki_cli.services import knowledge_orchestration
+
+    with monkeypatch.context() as capture:
+        if transition:
+            capture.setattr(sync_cmd, '__version__', '2.5.0')
+            capture.setattr(knowledge_orchestration, '__version__', '2.5.0')
+        wiki = _project(tmp_path, monkeypatch, unknown_scope=unknown_scope)
     before = load_knowledge_state(wiki)
     assert before.knowledge is not None and before.manifest_basis is not None
     original = snapshot_wiki(wiki)
@@ -113,6 +123,9 @@ def test_one_source_repair_preserves_other_failures_and_global_facts(tmp_path, m
     sync_cmd.run(args)
     after = load_knowledge_state(wiki)
     assert after.knowledge is not None and after.manifest_basis is not None
+    if transition:
+        assert before.knowledge.bundle.producer.tool.version == '2.5.0'
+        assert after.knowledge.bundle.producer.tool.version == knowledge_orchestration.__version__
     target = 'modules/f000.md' if unknown_scope == 'module' else 'entities/Item0.md'
     other = 'modules/f001.md' if unknown_scope == 'module' else 'entities/Item1.md'
     assert after.manifest_basis.evidence_baselines[target].is_known
@@ -143,7 +156,171 @@ def replace_args(args, **changes):
     return Namespace(**(vars(args) | changes))
 
 
-@pytest.mark.parametrize('kind', ['source', 'wiki', 'missing-page', 'producer', 'unowned', 'malformed'])
+@pytest.mark.parametrize('fixture_name', ['sync_guard_2_5_0.json', 'scoped_repair_2_5_0_mixed.json'])
+def test_released_250_dynamic_import_repairs_after_explicit_upgrade(
+    tmp_path, monkeypatch, capsys, require_prepared_diagnostics_helper, fixture_name
+):
+    from llm_wiki_cli.commands import upgrade_cmd, lint_cmd, ci_check_cmd
+
+    cache = require_prepared_diagnostics_helper('typescript')
+    fixture = json.loads((Path(__file__).parent / 'fixtures' / fixture_name).read_text())
+    assert fixture['producer_version'] == '2.5.0'
+    monkeypatch.chdir(tmp_path)
+    for name, content in fixture['files'].items():
+        target = tmp_path / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(base64.b64decode(content) if fixture.get('encoding') == 'base64' else content.encode('utf-8'))
+    parser = cli._build_parser()
+    bindings = ['--src-dir', '.', '--wiki-dir', 'wiki',
+                '--source-selection', '.llm-wiki/source-selection.json', '--helper-cache-dir', cache]
+    # Storage/ownership preparation preserves the actual released evidence.
+    # It is not an implicit adoption inside the scoped writer.
+    upgrade_cmd.run(parser.parse_args(['upgrade', *bindings]))
+    before = load_knowledge_state('wiki')
+    assert before.knowledge is not None and before.manifest_basis is not None
+    assert before.knowledge.bundle.producer.tool.version == '2.5.0'
+    assert before.manifest_basis.evidence_baselines['modules/dyn.md'].unknown_reason == 'invalid-inventory-shape'
+    original = snapshot_wiki('wiki')
+    source = Path('src/dyn.mjs').read_bytes()
+    repair = ['sync', *bindings, '--no-cache', '--no-plugins', '--repair-evidence', 'src/dyn.mjs']
+    sync_cmd.run(parser.parse_args([*repair, '--dry-run']))
+    assert snapshot_wiki('wiki') == original
+    sync_cmd.run(parser.parse_args(repair))
+    after = load_knowledge_state('wiki')
+    assert after.knowledge is not None and after.manifest_basis is not None
+    assert after.manifest_basis.evidence_baselines['modules/dyn.md'].is_known
+    assert all(baseline == after.manifest_basis.evidence_baselines[page]
+               for page, baseline in before.manifest_basis.evidence_baselines.items() if page != 'modules/dyn.md')
+    old_state, new_state = before.manifest_basis.maintenance_state, after.manifest_basis.maintenance_state
+    assert old_state is not None and new_state is not None
+    assert old_state['records'].keys() == new_state['records'].keys()
+    for record_id, record in old_state['records'].items():
+        for history in ('acknowledgment_history', 'coordinate_history', 'target_history'):
+            assert record[history] == new_state['records'][record_id][history]
+        if record['current_acknowledgment_id'] is not None:
+            assert new_state['records'][record_id]['status'] == 'pending'
+            assert new_state['records'][record_id]['current_acknowledgment_id'] is None
+            assert 'producer-incompatible' in new_state['records'][record_id]['reasons']
+    assert after.knowledge.bundle.producer.tool.version != '2.5.0'
+    assert source == Path('src/dyn.mjs').read_bytes()
+    assert all(snapshot_wiki('wiki')[p] == content for p, content in original.items()
+               if p.endswith('.md') and p not in {'modules/dyn.md', 'log.md'})
+    stable = snapshot_wiki('wiki')
+    sync_cmd.run(parser.parse_args(repair))
+    assert snapshot_wiki('wiki') == stable
+    lint_cmd.run(parser.parse_args(['lint', '--strict', *bindings, '--no-cache']))
+    ci_check_cmd.run(parser.parse_args(['ci-check', '--no-report', '--format', 'json', *bindings, '--no-plugins', '--no-cache']))
+    capsys.readouterr()
+
+
+def test_producer_transition_cannot_discard_opaque_annotations(tmp_path, monkeypatch, capsys):
+    from dataclasses import replace
+    from llm_wiki_cli.services import knowledge_orchestration as orchestration
+
+    tool = orchestration._tool_component
+
+    def annotated(*args, **kwargs):
+        component = tool(*args, **kwargs)
+        return replace(component, extensions={**component.extensions, 'consumer/annotation': {'flag': False}})
+
+    with monkeypatch.context() as capture:
+        capture.setattr(orchestration, '_tool_component', annotated)
+        wiki = _project(tmp_path, monkeypatch)
+    original = snapshot_wiki(wiki)
+    with pytest.raises(SystemExit) as stopped:
+        sync_cmd.run(_args('--repair-evidence', 'f000.py', '--force'))
+    assert stopped.value.code == 2
+    assert 'producer annotations or component selection changed' in capsys.readouterr().err
+    assert snapshot_wiki(wiki) == original
+
+
+@pytest.mark.parametrize(('before', 'after'), [(False, 0), (True, 1)])
+def test_candidate_producer_json_types_match_checked_analysis(tmp_path, monkeypatch, capsys, before, after):
+    from dataclasses import replace
+    from llm_wiki_cli.services import knowledge_orchestration as orchestration
+
+    tool = orchestration._tool_component
+
+    def annotated(*args, **kwargs):
+        component = tool(*args, **kwargs)
+        return replace(component, extensions={**component.extensions, 'consumer/flag': before})
+
+    monkeypatch.setattr(orchestration, '_tool_component', annotated)
+    wiki = _project(tmp_path, monkeypatch)
+    original = snapshot_wiki(wiki)
+    validate = scoped.validate_knowledge_artifacts
+
+    def changed(**kwargs):
+        checked = validate(**kwargs)
+        producer = checked.knowledge.bundle.producer
+        altered = replace(producer.tool, extensions={**producer.tool.extensions, 'consumer/flag': after})
+        return replace(checked, knowledge=replace(checked.knowledge, bundle=replace(
+            checked.knowledge.bundle, producer=replace(producer, tool=altered))))
+
+    monkeypatch.setattr(scoped, 'validate_knowledge_artifacts', changed)
+    with pytest.raises(SystemExit) as stopped:
+        sync_cmd.run(_args('--repair-evidence', 'f000.py'))
+    assert stopped.value.code == 2
+    assert 'candidate producer differs from the checked current analysis' in capsys.readouterr().err
+    assert snapshot_wiki(wiki) == original
+
+
+@pytest.mark.parametrize('changed', ['syntax', 'issuer'])
+def test_unselected_executable_facts_and_current_issuer_are_protected(tmp_path, monkeypatch, capsys, changed):
+    from llm_wiki_cli.services.implementation_evidence import IMPLEMENTATION_KEY
+
+    wiki = _project(tmp_path, monkeypatch)
+    original = snapshot_wiki(wiki)
+    serialize = scoped.knowledge_index_to_payload
+    calls = []
+
+    def altered(knowledge):
+        payload = deepcopy(serialize(knowledge))
+        if calls:
+            concept = next(c for c in payload['concepts'] if c['locator'] == 'llm-wiki://entities/Item1')
+            evidence = concept['extensions'][IMPLEMENTATION_KEY]
+            if changed == 'syntax':
+                evidence['executable_hash'] = 'sha256:' + '0' * 64
+            else:
+                evidence['producer']['analysis_compatibility_hash'] = 'sha256:' + '0' * 64
+        calls.append(True)
+        return payload
+
+    monkeypatch.setattr(scoped, 'knowledge_index_to_payload', altered)
+    with pytest.raises(SystemExit) as stopped:
+        sync_cmd.run(_args('--repair-evidence', 'f000.py', '--force'))
+    assert stopped.value.code == 2
+    expected = 'unselected concept facts changed' if changed == 'syntax' else 'candidate executable issuer differs'
+    assert expected in capsys.readouterr().err
+    assert snapshot_wiki(wiki) == original
+
+
+@pytest.mark.parametrize('source', ['f000.py', 'f001.py'])
+def test_changed_known_observation_cannot_inherit_current_producer(tmp_path, monkeypatch, capsys, source):
+    from dataclasses import replace
+
+    wiki = _project(tmp_path, monkeypatch)
+    original = snapshot_wiki(wiki)
+    from llm_wiki_cli.services import knowledge_orchestration as evaluate
+    build = evaluate.build_runtime_live_evaluation
+
+    def changed(inputs):
+        live = build(inputs)
+        bases = dict(live.concept_bases)
+        for locator, basis in bases.items():
+            if basis.scope == 'entity' and basis.source_path == source:
+                bases[locator] = replace(basis, concept_observation_hash='sha256:' + '0' * 64)
+        return replace(live, concept_bases=bases)
+
+    monkeypatch.setattr(evaluate, 'build_runtime_live_evaluation', changed)
+    with pytest.raises(SystemExit) as stopped:
+        sync_cmd.run(_args('--repair-evidence', 'f000.py', '--force'))
+    assert stopped.value.code == 2
+    assert 'known observation changed despite unchanged source' in capsys.readouterr().err
+    assert snapshot_wiki(wiki) == original
+
+
+@pytest.mark.parametrize('kind', ['source', 'wiki', 'missing-page', 'unowned', 'malformed'])
 def test_mixed_or_unqualified_inputs_refuse_without_active_writes(tmp_path, monkeypatch, capsys, kind):
     wiki = _project(tmp_path, monkeypatch)
     path = 'f000.py'
@@ -153,8 +330,6 @@ def test_mixed_or_unqualified_inputs_refuse_without_active_writes(tmp_path, monk
         (wiki / 'modules/f001.md').write_bytes((wiki / 'modules/f001.md').read_bytes() + b'\nUser edit\n')
     elif kind == 'missing-page':
         (wiki / 'entities/Item0.md').unlink()
-    elif kind == 'producer':
-        monkeypatch.setattr(sync_cmd, '__version__', '9.9.9')
     elif kind == 'unowned':
         path = 'not-owned.py'
     elif kind == 'malformed':
@@ -245,8 +420,15 @@ def test_publication_race_preserves_existing_complete_recovery(tmp_path, monkeyp
 
 
 @pytest.mark.parametrize(('count', 'selected'), [(51, 51), (10, 4)])
-def test_scoped_evidence_inputs_keep_count_and_ratio_review(tmp_path, monkeypatch, capsys, count, selected):
-    wiki = _project(tmp_path, monkeypatch, count=count)
+@pytest.mark.parametrize('transition', [False, True])
+def test_scoped_evidence_inputs_keep_count_and_ratio_review(tmp_path, monkeypatch, capsys, count, selected, transition):
+    from llm_wiki_cli.services import knowledge_orchestration
+
+    with monkeypatch.context() as capture:
+        if transition:
+            capture.setattr(sync_cmd, '__version__', '2.5.0')
+            capture.setattr(knowledge_orchestration, '__version__', '2.5.0')
+        wiki = _project(tmp_path, monkeypatch, count=count)
     before = snapshot_wiki(wiki)
     capsys.readouterr()
     with pytest.raises(SystemExit) as stopped:

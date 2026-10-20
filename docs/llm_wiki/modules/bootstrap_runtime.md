@@ -15,6 +15,8 @@ Normal first use writes current compressed native knowledge immediately and esta
 
 Generated import tables label unresolved JavaScript imports with their gap reason, source line and deferred scope. They preserve the distinction between an unknown target and a resolved module; imports without named symbols render a dash rather than an empty code span.
 
+Python reference rendering distinguishes captured module-level type uses from lexical imports. A class or method import can remain an imported-by relationship without being treated as a module function annotation binding.
+
 ## Imports
 
 | Source | Symbols |
@@ -46,7 +48,7 @@ Generated import tables label unresolved JavaScript imports with their gap reaso
 | `.markdown_sections` | `GENERATED_INDEX_ENTRY_POINT_FLOWS_HEADING`, `GENERATED_INDEX_HTTP_API_CONTRACTS_HEADING`, `GENERATED_INDEX_INTRO_WITH_GUIDES`, `GENERATED_INDEX_INTRO_WITHOUT_GUIDES`, `preserve_level_two_section_exact` |
 | `.module_maps` | `build_module_dependency_maps` |
 | `.paths` | `normalize_source_path`, `portable_source_root_label` |
-| `.python_imports` | `is_python_source` |
+| `.python_imports` | `is_python_source`, `module_binding_imports` |
 | `.relationships` | `build_entity_page_relationship_summaries` |
 | `.schema` | `ALL_SCHEMA_FILES`, `CONSTRAINT_END`, `CONSTRAINT_START`, `decode_managed_document_bytes`, `encode_managed_document_text`, `pin_source_selection_command_recipes` |
 | `.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
@@ -99,19 +101,19 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 737 | — | — |
-| [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 1015 | — | — |
-| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3156 | — | — |
-| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4449 | — | — |
-| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4475 | — | — |
-| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4488 | — | — |
-| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4495 | — | — |
-| [_WorkflowResult](../entities/WorkflowResult.md) | 4503 | — | — |
-| [_FlowResult](../entities/FlowResult.md) | 4509 | — | — |
-| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4520 | — | — |
-| [_DependencyResult](../entities/DependencyResult.md) | 4531 | — | — |
-| [_ApiContractResult](../entities/ApiContractResult.md) | 4539 | — | — |
-| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4546 | — | — |
+| [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 742 | — | — |
+| [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 1020 | — | — |
+| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3161 | — | — |
+| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4454 | — | — |
+| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4480 | — | — |
+| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4493 | — | — |
+| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4500 | — | — |
+| [_WorkflowResult](../entities/WorkflowResult.md) | 4508 | — | — |
+| [_FlowResult](../entities/FlowResult.md) | 4514 | — | — |
+| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4525 | — | — |
+| [_DependencyResult](../entities/DependencyResult.md) | 4536 | — | — |
+| [_ApiContractResult](../entities/ApiContractResult.md) | 4544 | — | — |
+| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4551 | — | — |
 
 ## Functions
 

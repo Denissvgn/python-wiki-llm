@@ -87,10 +87,12 @@ Malformed or unsupported observations are not promoted as repaired.
 
 With `--no-plugins --repair-evidence`, the command can limit an unchanged-source
 evidence repair to canonical POSIX source keys while retaining full analysis and
-reconciliation. It requires adopted valid authority and matching producer inputs,
-preflights an isolated candidate, preserves unselected failures and rejects wider
-logical or graph changes. Ordinary full sync remains required for producer
-transitions and mixed edits; force cannot override that boundary.
+reconciliation. It requires adopted valid authority and complete current producer
+inputs. A producer transition must reproduce retained known observations and
+preserve unselected structural evidence, pages and graph facts. Identical executable
+observations can re-anchor to the actual captured issuer, reopening ordinary review
+without losing history or acknowledging it. Isolated preflight and publication
+checks reject wider logical changes or mixed edits; force cannot override them.
 
 Isolated sync previews omit the two reserved root governance/storage runtime
 lock files while keeping the live owner's coordination intact. Nested files

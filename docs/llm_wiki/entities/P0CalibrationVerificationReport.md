@@ -32,7 +32,7 @@ Recomputed evidence, citation, and transition gates.
 ```mermaid
 flowchart LR
     n0["P0CalibrationVerificationReport (src/llm_wiki_cli/services/calibration/controller.py)"]
-    n1["verify_calibration_run (src/llm_wiki_cli/api.py)"]
+    n1["src/llm_wiki_cli/api.py"]
     n2["P0CalibrationVerificationReport.from_dict (src/llm_wiki_cli/services/calibration/controller.py)"]
     n3["verify_calibration_run (src/llm_wiki_cli/services/calibration/controller.py)"]
     n1 --> n0
@@ -54,7 +54,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `verify_calibration_run` | type_reference | [api](../modules/api.md) | — |
+| `api` | import | [api](../modules/api.md) | — |
 | `P0CalibrationVerificationReport.from_dict` | call | [controller](../modules/controller.md) | 1 |
 | `P0CalibrationVerificationReport.from_dict` | type_reference | [controller](../modules/controller.md) | — |
 | `verify_calibration_run` | type_reference | [controller](../modules/controller.md) | — |

@@ -10,6 +10,8 @@ from __future__ import annotations
 import ast
 from collections.abc import Callable, Mapping
 
+from ..services.python_imports import module_binding_imports
+
 
 PARAM_POSITIONAL_ONLY = "positional_only"
 PARAM_POSITIONAL_OR_KEYWORD = "positional_or_keyword"
@@ -502,7 +504,7 @@ def finalize_inventory_model_kinds(
     for model_kind in ("pydantic", "typeddict"):
         _finalize_inventory_model_kind(inventory, model_kind, module_candidates)
     for file_data in inventory.values():
-        aliases = _inventory_import_aliases(file_data.get("imports", []))
+        aliases = _inventory_import_aliases(module_binding_imports(file_data))
         for item in file_data.get("classes", []):
             if item.get("model_kind") == "typeddict":
                 _apply_typed_dict_presence(item, aliases)
@@ -527,7 +529,7 @@ def _finalize_inventory_model_kind(
 
         for filepath, file_data in inventory.items():
             imported_bases: dict[str, tuple[str, str]] = {}
-            for record in file_data.get("imports", []):
+            for record in module_binding_imports(file_data):
                 if not isinstance(record, Mapping):
                     continue
                 if record.get("type") == "from" and record.get("name"):

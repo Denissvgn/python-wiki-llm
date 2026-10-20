@@ -10,10 +10,13 @@ The helpers in this module deliberately operate on syntax only.  They never
 import or evaluate the inspected project, which keeps extraction deterministic
 and safe for applications whose imports have startup side effects.
 
+Cross-module model inference and TypedDict presence use imports that match captured module bindings. Dependency-only imports inside classes or functions cannot supply or shadow module model aliases.
+
 ## Imports
 
 | Source | Symbols |
 |--------|---------|
+| `..services.python_imports` | `module_binding_imports` |
 | `__future__` | `annotations` |
 | `ast` | `ast` |
 | `collections.abc` | `Callable`, `Mapping` |
@@ -26,12 +29,16 @@ flowchart LR
     n0["src/llm_wiki_cli/extractors/python_contracts.py"]
     n1["src/llm_wiki_cli/extractors/python_extractor.py"]
     n2["src/llm_wiki_cli/services/extraction_service.py"]
+    n3["src/llm_wiki_cli/services/python_imports.py"]
+    n0 --> n3
     n1 --> n0
     n2 --> n0
     n2 --> n1
+    n2 --> n3
     click n0 "../modules/python_contracts.md"
     click n1 "../modules/python_extractor.md"
     click n2 "../modules/extraction_service.md"
+    click n3 "../modules/python_imports.md"
 ```
 
 ### Internal neighbors
@@ -40,6 +47,7 @@ flowchart LR
 |---|---|
 | Inbound | [python_extractor](../modules/python_extractor.md) |
 | Inbound | [extraction_service](../modules/extraction_service.md) |
+| Outbound | [python_imports](../modules/python_imports.md) |
 
 ## Functions
 

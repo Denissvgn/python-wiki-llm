@@ -13,6 +13,8 @@ is disabled for ordinary calls; diagnostic collection retains its legacy invento
 retention returns the parser-produced record with an attributable `retained_empty`
 outcome; module aliases are never promoted merely because emptiness was requested.
 
+Lexical imports are collected inside class bodies, methods and nested scopes without re-entering declaration extraction. Top-level class imports are eager; enclosing function bodies defer them, and recognized TYPE_CHECKING guards retain type-only scope. Import records and location sidecars keep their existing shape.
+
 ## Imports
 
 | Source | Symbols |
@@ -96,7 +98,7 @@ flowchart LR
 |-------|------|-------|-------------|
 | [_DataEffectVisitor](../entities/DataEffectVisitor.md) | 520 | `ast.NodeVisitor` | — |
 | [ComponentVisitor](../entities/ComponentVisitor.md) | 1063 | `ast.NodeVisitor` | — |
-| [PythonExtractor](../entities/PythonExtractor.md) | 1644 | — | Extractor for Python source files using the built-in :mod:`ast` module. |
+| [PythonExtractor](../entities/PythonExtractor.md) | 1677 | — | Extractor for Python source files using the built-in :mod:`ast` module. |
 
 ## Functions
 

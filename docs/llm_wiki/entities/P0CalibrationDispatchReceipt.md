@@ -32,28 +32,25 @@ Broker receipt binding one invocation to protected controller state.
 ```mermaid
 flowchart LR
     n0["P0CalibrationDispatchReceipt (src/llm_wiki_cli/services/calibration/controller.py)"]
-    n1["dispatch_calibration_agent (src/llm_wiki_cli/api.py)"]
-    n2["record_calibration_agent_result (src/llm_wiki_cli/api.py)"]
-    n3["_record_p0_calibration_agent_result (src/llm_wiki_cli/services/calibration/controller.py)"]
-    n4["_validate_result_import_bindings (src/llm_wiki_cli/services/calibration/controller.py)"]
-    n5["dispatch_calibration_agent (src/llm_wiki_cli/services/calibration/controller.py)"]
-    n6["P0CalibrationDispatchReceipt.from_dict (src/llm_wiki_cli/services/calibration/controller.py)"]
-    n7["record_calibration_agent_result (src/llm_wiki_cli/services/calibration/controller.py)"]
+    n1["src/llm_wiki_cli/api.py"]
+    n2["_record_p0_calibration_agent_result (src/llm_wiki_cli/services/calibration/controller.py)"]
+    n3["_validate_result_import_bindings (src/llm_wiki_cli/services/calibration/controller.py)"]
+    n4["dispatch_calibration_agent (src/llm_wiki_cli/services/calibration/controller.py)"]
+    n5["P0CalibrationDispatchReceipt.from_dict (src/llm_wiki_cli/services/calibration/controller.py)"]
+    n6["record_calibration_agent_result (src/llm_wiki_cli/services/calibration/controller.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
     n5 --> n0
     n6 --> n0
-    n7 --> n0
     click n0 "../modules/controller.md"
     click n1 "../modules/api.md"
-    click n2 "../modules/api.md"
+    click n2 "../modules/controller.md"
     click n3 "../modules/controller.md"
     click n4 "../modules/controller.md"
     click n5 "../modules/controller.md"
     click n6 "../modules/controller.md"
-    click n7 "../modules/controller.md"
 ```
 
 ### Summary
@@ -66,8 +63,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
-| `dispatch_calibration_agent` | type_reference | [api](../modules/api.md) | — |
-| `record_calibration_agent_result` | type_reference | [api](../modules/api.md) | — |
+| `api` | import | [api](../modules/api.md) | — |
 | `_record_p0_calibration_agent_result` | type_reference | [controller](../modules/controller.md) | — |
 | `_validate_result_import_bindings` | type_reference | [controller](../modules/controller.md) | — |
 | `dispatch_calibration_agent` | type_reference | [controller](../modules/controller.md) | — |

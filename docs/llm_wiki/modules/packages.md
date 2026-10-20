@@ -34,22 +34,29 @@ source root).  Each discovered package is represented as a
 flowchart LR
     n0["src/llm_wiki_cli/config.py"]
     n1["src/llm_wiki_cli/services/extraction_service.py"]
-    n2["src/llm_wiki_cli/services/packages.py"]
-    n3["src/llm_wiki_cli/services/python_imports.py"]
-    n4["src/llm_wiki_cli/services/source_snapshot.py"]
+    n2["src/llm_wiki_cli/services/imports.py"]
+    n3["src/llm_wiki_cli/services/packages.py"]
+    n4["src/llm_wiki_cli/services/python_imports.py"]
+    n5["src/llm_wiki_cli/services/source_snapshot.py"]
     n1 --> n0
     n1 --> n2
     n1 --> n3
     n1 --> n4
+    n1 --> n5
     n2 --> n0
     n2 --> n3
     n2 --> n4
-    n4 --> n0
+    n2 --> n5
+    n3 --> n0
+    n3 --> n4
+    n3 --> n5
+    n5 --> n0
     click n0 "../modules/config.md"
     click n1 "../modules/extraction_service.md"
-    click n2 "../modules/packages.md"
-    click n3 "../modules/python_imports.md"
-    click n4 "../modules/source_snapshot.md"
+    click n2 "../modules/imports.md"
+    click n3 "../modules/packages.md"
+    click n4 "../modules/python_imports.md"
+    click n5 "../modules/source_snapshot.md"
 ```
 
 ### Internal neighbors
@@ -57,6 +64,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [extraction_service](../modules/extraction_service.md) |
+| Inbound | [imports](../modules/imports.md) |
 | Outbound | [config](../modules/config.md) |
 | Outbound | [python_imports](../modules/python_imports.md) |
 | Outbound | [source_snapshot](../modules/source_snapshot.md) |

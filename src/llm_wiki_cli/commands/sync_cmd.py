@@ -2446,7 +2446,7 @@ def _sync_run_options_from_args(args) -> _SyncRunOptions:
     try:
         scoped_paths = repair_paths(getattr(args, "repair_evidence", None))
         if scoped_paths and include_plugins:
-            raise ScopedRepairError("--repair-evidence requires --no-plugins and an existing matching built-in producer")
+            raise ScopedRepairError("--repair-evidence requires --no-plugins and complete built-in analysis")
         if scoped_paths and (initialize_surfaces or not preserve_semantic or openapi_file or clear_openapi_file
                              or getattr(args, "knowledge_format", None) or getattr(args, "rebuild_knowledge", False)):
             raise ScopedRepairError("--repair-evidence cannot change generation/storage policy or initialize surfaces")
@@ -4230,7 +4230,7 @@ def _prepare_sync_run(
     )
     evidence_refresh_sources = (
         _recoverable_evidence_refresh_sources(manifest, inventory, diff)
-        if not generator_refresh_required and not options.initialize_surfaces
+        if not options.initialize_surfaces
         and not seed_manifest and not repair_only else ()
     )
     runtime_basis_refresh = bool(
@@ -4406,7 +4406,9 @@ def _prepare_sync_run(
     )
     if evidence_refresh_sources:
         application_diff = deepcopy(application_diff)
-        application_diff.changed_files.extend(evidence_refresh_sources)
+        application_diff.changed_files.extend(
+            path for path in evidence_refresh_sources if path not in application_diff.changed_files
+        )
         application_diff.unchanged_files = [
             path for path in application_diff.unchanged_files if path not in evidence_refresh_sources
         ]
@@ -5405,6 +5407,7 @@ def _run_sync_options(options, write_basis=None) -> None:
             boundary = prepare_boundary(options, prepared)
             selected = tuple(path for path in prepared.evidence_refresh_sources if path in options.repair_paths)
             application = deepcopy(prepared.diff)
+            application.generated_page_repairs = {}
             application.changed_files.extend(selected)
             application.unchanged_files = [p for p in application.unchanged_files if p not in selected]
             maps = prepared.page_maps

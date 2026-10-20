@@ -112,7 +112,7 @@ sequenceDiagram
 
 > Call sequence diagram shows 30 of 3128 interactions; 3098 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1055 (1054 omitted); unresolved 1 of 1298 (1297 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1055 (1054 omitted); unresolved 1 of 1296 (1295 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -126,7 +126,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_source_root` | 23 | - | external | 11 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 23 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 6 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 23 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
-> Omission summary shows 8 of 702 groups; 694 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 704 groups; 696 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -264,3 +264,5 @@ extraction. It retains source selection and prepared helper-cache bindings and
 does not take a wiki argument. Raw success is a fresh observation, not a repair
 of captured manifest evidence. Missing helper setup and runtime mismatch retain
 their explicit owner and authorization requirements.
+
+Python imports include class bodies, methods and nested scopes with source locations and eager/deferred/type-only classifications. These dependency facts are distinct from captured module bindings and do not imply that the target application was executed.

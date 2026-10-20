@@ -148,34 +148,34 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| load_openapi_document | _resolve_openapi_path | 1285 | `_resolve_openapi_path(path, source_root, source_snapshot=source_snapshot)` |
-| _resolve_openapi_path | Path(…).resolve | 1213 | `Path(source_root).resolve(data not statically known)` |
-| _resolve_openapi_path | Path | 1213 | `Path(source_root)` |
-| _resolve_openapi_path | Path(…).expanduser | 1214 | `Path(path).expanduser(data not statically known)` |
-| _resolve_openapi_path | Path | 1214 | `Path(path)` |
-| _resolve_openapi_path | candidate.is_absolute | 1215 | `candidate.is_absolute(data not statically known)` |
-| _resolve_openapi_path | Path(…).relative_to(…).as_posix | 1218 | `Path(os.path.abspath(candidate)).relative_to(root).as_posix(data not statically known)` |
-| _resolve_openapi_path | Path(…).relative_to | 1218 | `Path(os.path.abspath(candidate)).relative_to(root)` |
-| _resolve_openapi_path | Path | 1218 | `Path(os.path.abspath(...))` |
-| _resolve_openapi_path | os.path.abspath | 1218 | `os.path.abspath(candidate)` |
-| _resolve_openapi_path | ApiContractError | 1220 | `ApiContractError(...)` |
+| load_openapi_document | _resolve_openapi_path | 1286 | `_resolve_openapi_path(path, source_root, source_snapshot=source_snapshot)` |
+| _resolve_openapi_path | Path(…).resolve | 1214 | `Path(source_root).resolve(data not statically known)` |
+| _resolve_openapi_path | Path | 1214 | `Path(source_root)` |
+| _resolve_openapi_path | Path(…).expanduser | 1215 | `Path(path).expanduser(data not statically known)` |
+| _resolve_openapi_path | Path | 1215 | `Path(path)` |
+| _resolve_openapi_path | candidate.is_absolute | 1216 | `candidate.is_absolute(data not statically known)` |
+| _resolve_openapi_path | Path(…).relative_to(…).as_posix | 1219 | `Path(os.path.abspath(candidate)).relative_to(root).as_posix(data not statically known)` |
+| _resolve_openapi_path | Path(…).relative_to | 1219 | `Path(os.path.abspath(candidate)).relative_to(root)` |
+| _resolve_openapi_path | Path | 1219 | `Path(os.path.abspath(...))` |
+| _resolve_openapi_path | os.path.abspath | 1219 | `os.path.abspath(candidate)` |
+| _resolve_openapi_path | ApiContractError | 1221 | `ApiContractError(...)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_read | `resolved.read_bytes` | `load_openapi_document` | 1292 |
+| filesystem_read | `resolved.read_bytes` | `load_openapi_document` | 1293 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_resolve_openapi_path` | `Path(source_root).resolve` | 1213 |
-| unresolved_call | `_resolve_openapi_path` | `Path(path).expanduser` | 1214 |
-| unresolved_call | `_resolve_openapi_path` | `candidate.is_absolute` | 1215 |
-| unresolved_call | `_resolve_openapi_path` | `Path(os.path.abspath(candidate)).relative_to(root).as_posix` | 1218 |
-| unresolved_call | `_resolve_openapi_path` | `Path(os.path.abspath(candidate)).relative_to` | 1218 |
-| external_call | `_resolve_openapi_path` | `os.path.abspath` | 1218 |
+| unresolved_call | `_resolve_openapi_path` | `Path(source_root).resolve` | 1214 |
+| unresolved_call | `_resolve_openapi_path` | `Path(path).expanduser` | 1215 |
+| unresolved_call | `_resolve_openapi_path` | `candidate.is_absolute` | 1216 |
+| unresolved_call | `_resolve_openapi_path` | `Path(os.path.abspath(candidate)).relative_to(root).as_posix` | 1219 |
+| unresolved_call | `_resolve_openapi_path` | `Path(os.path.abspath(candidate)).relative_to` | 1219 |
+| external_call | `_resolve_openapi_path` | `os.path.abspath` | 1219 |
 | step_limit | `load_openapi_document` | `first 12 steps` | 0 |
 | truncated_flow | `load_openapi_document` | `depth limit` | 0 |
 

@@ -9,9 +9,9 @@
 
 <!-- Auto-generated static call-chain projection. Reviewed runtime ordering, branching, and side effects belong in Behavior. -->
 1. `knowledge_artifacts.validate_knowledge_artifacts`
-2. `knowledge_model.knowledge_index_to_payload`
+2. `knowledge_storage.canonical_bytes`
 3. `knowledge_storage.canonical_bytes`
-4. `knowledge_storage.canonical_bytes`
+4. `knowledge_model.knowledge_index_to_payload`
 5. `knowledge_storage.canonical_bytes`
 6. `knowledge_storage.canonical_bytes`
 7. `knowledge_storage.canonical_bytes`
@@ -20,6 +20,8 @@
 10. `knowledge_storage.canonical_bytes`
 11. `knowledge_storage.canonical_bytes`
 12. `knowledge_storage.canonical_bytes`
+13. `knowledge_storage.canonical_bytes`
+14. `knowledge_storage.canonical_bytes`
 
 ## Touches
 
@@ -30,16 +32,8 @@
 
 ## Behavior
 
-Before publication, this check revalidates source, provider and Markdown inputs
-and validates the complete candidate's native artifacts. It compares producer,
-global bundle, protected concepts, relationships and extensions against the
-committed state while excluding only declared transaction metadata and selected
-pages. Canonical JSON comparisons preserve boolean/number distinctions and
-missing versus explicit null extension keys.
+Before publication, this check revalidates source, provider and Markdown inputs and validates the complete native candidate. Its producer must match the checked current analysis through canonical JSON, preserving boolean/number and missing/null distinctions. Global source, policy, repository and graph facts remain protected alongside unselected structural baselines, page bytes and relationships.
 
-Selected review histories cannot change or acquire an acknowledgment. After
-removing only the permitted selected observations and transaction fields, the
-remaining manifest must also match. A mismatch refuses the scoped update before
-active publication; success establishes these application boundaries, not global
-evidence completeness or human review. The caller retains the ordinary guarded,
-recoverable publication workflow.
+Closed executable issuer fields can re-anchor only when the actual current capture supplies that issuer and all source, syntax, prose and availability facts match. An issuer change can reopen ordinary review, preserving its histories and mapping; it cannot manufacture an acknowledgement. All remaining manifest facts must match after the declared selected and transaction fields are removed.
+
+A mismatch refuses the scoped update through the existing guarded publication and recovery workflow. Success establishes these application boundaries, not whole-wiki evidence completeness, runtime behavior or human review.

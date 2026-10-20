@@ -129,10 +129,25 @@ native quoting in PowerShell.
    A source count caused by generator refresh is not a source-file edit.
 4. Ordinary sync owns coherent evidence/projection updates. The separately
    authorized `--repair-evidence` writer requires an adopted coherent wiki,
-   unchanged source, matching complete producer/helper/runtime commitments
-   and its other scope checks. It still performs full analysis and cannot
-   partially apply a generator transition. Missing/corrupt authority requires
+   unchanged source and generation policy, complete current producer/helper/runtime
+   commitments and its other scope checks. A producer transition is permitted
+   only when full analysis reproduces every retained known observation and the
+   complete candidate preserves unselected evidence, graph facts, pages and review
+   history. Identical executable observations may acquire the current issuer;
+   changed issuer bindings reopen review without creating an acknowledgement.
+   Only selected invalid structural evidence is refreshed; unrelated captured failures
+   remain blocking. It still performs full analysis. Missing/corrupt authority requires
    its explicit recovery route, never init, re-adoption or generated JSON edits.
+
+   Preview one authorized source repair with the original bindings:
+
+   ```bash
+   llm-wiki sync --no-plugins --repair-evidence src/orders.py --dry-run --src-dir . --wiki-dir docs/llm_wiki
+   ```
+
+   Review its complete actions, then repeat without `--dry-run` within the
+   existing repair authority. Producer changes that alter retained observations,
+   graph facts or custody still require the ordinary full owning review route.
 5. Review supported semantic sections, re-anchor changed prose with the same
    owning sync, then run strict validation through the complete loop below.
    Keep source selection, caches, strict gates and current defaults unchanged.

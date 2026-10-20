@@ -20,6 +20,7 @@ import yaml  # pyright: ignore[reportMissingModuleSource]
 
 from .imports import build_module_path_resolver
 from .paths import is_test_source_path
+from .python_imports import module_binding_imports
 from .source_selection import (
     SourceSelectionError,
     path_is_link_or_reparse,
@@ -277,7 +278,7 @@ def _canonical_node_key(
 
 def _import_bindings(file_data: Mapping[str, Any]) -> dict[str, tuple[str, str | None]]:
     result: dict[str, tuple[str, str | None]] = {}
-    for record in file_data.get("imports", []):
+    for record in module_binding_imports(file_data):
         if not isinstance(record, Mapping):
             continue
         import_type = record.get("type")

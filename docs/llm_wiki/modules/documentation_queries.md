@@ -24,12 +24,16 @@ repair the snapshot or turn an unknown basis into current evidence.
 |--------|---------|
 | `.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY` |
 | `.dependencies` | `build_dependency_graph`, `dependency_metrics`, `detect_cycles`, `topological_order` |
+| `.evidence_diagnostics` | `captured_evidence_diagnostic` |
+| `.implementation_evidence` | `compact_implementation_summary` |
 | `.knowledge_consumption` | `KnowledgeAvailability`, `KnowledgeReadReason`, `KnowledgeReadView` |
 | `.knowledge_governance` | `GOVERNANCE_EXTENSION_KEY` |
 | `.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS`, `KnowledgeGraphError`, `typed_graph_from_knowledge_extensions` |
 | `.knowledge_model` | `knowledge_index_to_payload` |
 | `.knowledge_observability` | `knowledge_freshness_hint`, `knowledge_status_payload` |
+| `.maintenance_status` | `compact_maintenance_summary` |
 | `.relationships` | `build_entity_relationship_summaries` |
+| `.source_snapshot` | `SourceSnapshot` |
 | `.validation` | `normalize_legacy_portable_relative_path`, `require_nonempty_text` |
 | `__future__` | `annotations` |
 | `collections` | `defaultdict` |
@@ -42,6 +46,7 @@ repair the snapshot or turn an unknown basis into current evidence.
 | `pathlib` | `PurePosixPath` |
 | `re` | `re` |
 | `typing` | `Any`, `Callable`, `Iterable`, `Mapping`, `Optional`, `ParamSpec`, `Sequence`, `cast` |
+| `urllib.parse` | `quote` |
 
 ## Local dependency map
 
@@ -62,9 +67,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (10) |
-| Outbound | `src` (9) |
+| Outbound | `src` (13) |
 
-> All 19 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 23 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 

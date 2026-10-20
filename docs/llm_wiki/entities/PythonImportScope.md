@@ -1,6 +1,6 @@
 # PythonImportScope
 
-**Location:** `src/llm_wiki_cli/services/python_imports.py:37`
+**Location:** `src/llm_wiki_cli/services/python_imports.py:63`
 **Kind:** Class
 **Bases:** —
 **Module:** [python_imports](../modules/python_imports.md)

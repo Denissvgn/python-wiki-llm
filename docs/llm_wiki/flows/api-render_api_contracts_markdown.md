@@ -157,42 +157,42 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| render_api_contracts_markdown | contracts.get | 2022 | `contracts.get('openapi')` |
-| render_api_contracts_markdown | isinstance (src/llm_wiki_cli/services…er_api_contracts_markdown) | 2023 | `isinstance(openapi, Mapping)` |
-| render_api_contracts_markdown | lines.extend | 2024 | `lines.extend([...])` |
-| render_api_contracts_markdown | openapi.get | 2026 | `openapi.get('version')` |
-| render_api_contracts_markdown | _md_code | 2026 | `_md_code(openapi.get(...))` |
-| _md_code | str(…).replace(…).replace (src/llm_wiki_cli/services/api_contracts.py:_md_code) | 1973 | `str(value).replace('\|', '\\\|').replace('\n', ' ')` |
-| _md_code | str(…).replace (src/llm_wiki_cli/services/api_contracts.py:_md_code) | 1973 | `str(value).replace('\|', '\\\|')` |
-| _md_code | str (src/llm_wiki_cli/services/api_contracts.py:_md_code) | 1973 | `str(value)` |
-| _md_code | max | 1975 | `max(..., default=0)` |
-| _md_code | len (src/llm_wiki_cli/services/api_contracts.py:_md_code) | 1975 | `len(match)` |
-| _md_code | re.findall | 1975 | `re.findall('`+', text)` |
+| render_api_contracts_markdown | contracts.get | 2023 | `contracts.get('openapi')` |
+| render_api_contracts_markdown | isinstance (src/llm_wiki_cli/services…er_api_contracts_markdown) | 2024 | `isinstance(openapi, Mapping)` |
+| render_api_contracts_markdown | lines.extend | 2025 | `lines.extend([...])` |
+| render_api_contracts_markdown | openapi.get | 2027 | `openapi.get('version')` |
+| render_api_contracts_markdown | _md_code | 2027 | `_md_code(openapi.get(...))` |
+| _md_code | str(…).replace(…).replace (src/llm_wiki_cli/services/api_contracts.py:_md_code) | 1974 | `str(value).replace('\|', '\\\|').replace('\n', ' ')` |
+| _md_code | str(…).replace (src/llm_wiki_cli/services/api_contracts.py:_md_code) | 1974 | `str(value).replace('\|', '\\\|')` |
+| _md_code | str (src/llm_wiki_cli/services/api_contracts.py:_md_code) | 1974 | `str(value)` |
+| _md_code | max | 1976 | `max(..., default=0)` |
+| _md_code | len (src/llm_wiki_cli/services/api_contracts.py:_md_code) | 1976 | `len(match)` |
+| _md_code | re.findall | 1976 | `re.findall('`+', text)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `lines.extend` | `render_api_contracts_markdown` | 2024 |
-| mutation | `lines.extend` | `render_api_contracts_markdown` | 2032 |
-| mutation | `lines.extend` | `render_api_contracts_markdown` | 2041 |
-| mutation | `lines.extend` | `render_api_contracts_markdown` | 2043 |
-| mutation | `lines.append` | `render_api_contracts_markdown` | 2060 |
-| mutation | `lines.append` | `render_api_contracts_markdown` | 2073 |
-| mutation | `lines.extend` | `render_api_contracts_markdown` | 2081 |
-| mutation | `lines.append` | `render_api_contracts_markdown` | 2083 |
+| mutation | `lines.extend` | `render_api_contracts_markdown` | 2025 |
+| mutation | `lines.extend` | `render_api_contracts_markdown` | 2033 |
+| mutation | `lines.extend` | `render_api_contracts_markdown` | 2042 |
+| mutation | `lines.extend` | `render_api_contracts_markdown` | 2044 |
+| mutation | `lines.append` | `render_api_contracts_markdown` | 2061 |
+| mutation | `lines.append` | `render_api_contracts_markdown` | 2074 |
+| mutation | `lines.extend` | `render_api_contracts_markdown` | 2082 |
+| mutation | `lines.append` | `render_api_contracts_markdown` | 2084 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `render_api_contracts_markdown` | `contracts.get` | 2022 |
-| external_call | `render_api_contracts_markdown` | `isinstance` | 2023 |
-| unresolved_call | `render_api_contracts_markdown` | `openapi.get` | 2026 |
-| unresolved_call | `_md_code` | `str(value).replace('\|', '\\\|').replace` | 1973 |
-| unresolved_call | `_md_code` | `str(value).replace` | 1973 |
-| external_call | `_md_code` | `max` | 1975 |
-| external_call | `_md_code` | `re.findall` | 1975 |
+| unresolved_call | `render_api_contracts_markdown` | `contracts.get` | 2023 |
+| external_call | `render_api_contracts_markdown` | `isinstance` | 2024 |
+| unresolved_call | `render_api_contracts_markdown` | `openapi.get` | 2027 |
+| unresolved_call | `_md_code` | `str(value).replace('\|', '\\\|').replace` | 1974 |
+| unresolved_call | `_md_code` | `str(value).replace` | 1974 |
+| external_call | `_md_code` | `max` | 1976 |
+| external_call | `_md_code` | `re.findall` | 1976 |
 | step_limit | `render_api_contracts_markdown` | `first 12 steps` | 0 |
 
 ## Behavior
