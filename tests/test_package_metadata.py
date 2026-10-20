@@ -227,7 +227,7 @@ def test_project_distribution_name_is_pypi_safe_name():
 
 def test_project_version_is_release_target():
     data = _pyproject()
-    assert data["project"]["version"] == "3.1.0"
+    assert data["project"]["version"] == "3.2.0"
 
 
 def test_standalone_guide_is_installed_as_canonical_shared_documentation():
