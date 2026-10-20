@@ -30,6 +30,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
     "inventory": (
         "tests/test_source_selection.py",
         "tests/test_analysis_input_preflight.py",
+        "tests/test_analysis_targets.py",
         "tests/test_architecture_layers.py",
         "tests/test_api_exception_taxonomy.py",
     ),
@@ -66,6 +67,7 @@ GROUPS: dict[str, tuple[str, ...]] = {
         "tests/test_package_validation.py",
         "tests/test_package_metadata.py",
         "tests/test_preflight.py",
+        "tests/test_preflight_targets.py",
         "tests/test_preflight_contracts.py",
         "tests/test_preflight_runner.py",
         "tests/test_release_workflows.py",

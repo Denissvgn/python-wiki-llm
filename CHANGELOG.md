@@ -7,7 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-10-20
+
 ### Fixed
+
+- Local release preparation identifies committed wiki captures that require a
+  different declared proof runtime before hosted verification. The read-only
+  `doctor --target-runtime` diagnostic preserves unknown prerequisites and keeps
+  target-native proof separate from local readiness.
 
 - Scoped evidence repair can refresh a captured invalid record after a producer
   upgrade when complete analysis verifies unchanged retained observations and
@@ -1520,7 +1527,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.1.0...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.2.0...HEAD
+[3.2.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.5.0...v3.0.0
 [2.5.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.4.0...v2.5.0

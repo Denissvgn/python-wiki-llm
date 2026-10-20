@@ -319,6 +319,14 @@ also applies when skills are disabled or unavailable:
   cases without blanket skips. Before sync/qualified extraction, check prepared
   helper identity and active runtime with the same cache base. Do not manufacture
   runtime compatibility; use authorized setup or keep the prerequisite unresolved.
+- Before hosted wiki proof, derive target runtimes from the project's maintained
+  proof owners. Use `llm-wiki doctor --target-runtime <permitted-targets.json>
+  --wiki-dir <wiki-dir>` for committed metadata only, without inventory or target
+  execution. Missing/dynamic declarations stay unknown; matching prerequisites
+  are not package equivalence or hosted proof. Review authorized target-host
+  capture, complete snapshot provenance and removals when required. Never infer
+  another project's platform or perform setup/sync/force/upgrade/adoption from
+  this diagnostic. Fresh target-native proof remains required.
 - Classify retained failures as environment, fixture, product or workflow before
   correction; verify an independent discriminating case and affected required
   gates on the actual candidate. Keep failed attempts and source/evidence identities.

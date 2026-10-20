@@ -229,9 +229,19 @@ For an early diagnostic check before version preparation is complete, append
 `--stage contracts` to `run`. A partial invocation remains `blocked` for release
 readiness even when its checks succeed. Full execution runs the maintained
 host-applicable checks, independent builds and installed-artifact verification
-serially. It reports `failed`, `blocked`, or
-`local-ready-hosted-required`; the last result still requires normal hosted
+serially. It reports `failed`, `blocked`, `target-capture-required`,
+`target-runtime-unknown`, or `local-ready-hosted-required`; the last result still requires normal hosted
 qualification and all required target environments.
+
+Planning includes `readiness.target_runtime`, derived from the maintained proof
+owner and its composite runtime declarations. It reads committed wiki producer
+metadata without another application inventory. A known runtime mismatch needs
+the authorized target-host capture and review; unresolved declarations remain
+unknown. Local stage success cannot conceal either requirement. Advisory policy
+does not become a new mandatory gate. The generic installed
+[target prerequisite diagnostic](target-runtime-prerequisites.md) can also be
+used by other projects with their own declarations. Matching declared metadata
+is separate from package identity and fresh target-native proof.
 
 Local macOS success cannot establish Windows or Linux semantics, an unsupported
 helper or OCI architecture, an authenticated policy proof, or publication

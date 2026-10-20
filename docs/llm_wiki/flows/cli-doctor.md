@@ -2,15 +2,17 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [doctor_cmd](../modules/doctor_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [capability_diagnostics](../modules/capability_diagnostics.md), and 43 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [analysis_targets](../modules/analysis_targets.md), [api](../modules/api.md), and 62 more
 
 **Complete modules touched:**
 
 - [analysis_capture](../modules/analysis_capture.md)
 - [analysis_compatibility](../modules/analysis_compatibility.md)
+- [analysis_targets](../modules/analysis_targets.md)
 - [api](../modules/api.md)
 - [capability_diagnostics](../modules/capability_diagnostics.md)
 - [common](../modules/common.md)
+- [concept_identity](../modules/concept_identity.md)
 - [config](../modules/config.md)
 - [data_flow](../modules/data_flow.md)
 - [doctor_cmd](../modules/doctor_cmd.md)
@@ -25,6 +27,7 @@
 - [health_policy](../modules/health_policy.md)
 - [health_summary](../modules/health_summary.md)
 - [immutable](../modules/immutable.md)
+- [implementation_evidence](../modules/implementation_evidence.md)
 - [infrastructure_inventory](../modules/infrastructure_inventory.md)
 - [inventory_cache](../modules/inventory_cache.md)
 - [io](../modules/io.md)
@@ -33,14 +36,29 @@
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_freshness](../modules/knowledge_freshness.md)
+- [knowledge_governance](../modules/knowledge_governance.md)
+- [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_loader](../modules/knowledge_loader.md)
+- [knowledge_model](../modules/knowledge_model.md)
 - [knowledge_observability](../modules/knowledge_observability.md)
 - [knowledge_orchestration](../modules/knowledge_orchestration.md)
+- [knowledge_packs](../modules/knowledge_packs.md)
+- [knowledge_reuse](../modules/knowledge_reuse.md)
+- [knowledge_storage](../modules/knowledge_storage.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
 - [lint_service](../modules/lint_service.md)
+- [maintenance_evidence](../modules/maintenance_evidence.md)
+- [maintenance_projection](../modules/maintenance_projection.md)
+- [maintenance_shapes](../modules/maintenance_shapes.md)
+- [maintenance_state](../modules/maintenance_state.md)
+- [manifest_storage](../modules/manifest_storage.md)
+- [markdown_sections](../modules/markdown_sections.md)
 - [plugins](../modules/plugins.md)
 - [progress](../modules/progress.md)
+- [python_implementation](../modules/python_implementation.md)
 - [runtime_output](../modules/runtime_output.md)
+- [section_ownership](../modules/section_ownership.md)
 - [services_dependencies](../modules/services_dependencies.md)
 - [source_retirement](../modules/source_retirement.md)
 - [source_selection](../modules/source_selection.md)
@@ -51,6 +69,7 @@
 - [validation](../modules/validation.md)
 - [wiki_lifecycle](../modules/wiki_lifecycle.md)
 - [wiki_media](../modules/wiki_media.md)
+- [wiki_surface](../modules/wiki_surface.md)
 - [yaml_formats](../modules/yaml_formats.md)
 - [yaml_syntax](../modules/yaml_syntax.md)
 
@@ -62,85 +81,85 @@
 ```mermaid
 sequenceDiagram
     participant p0 as run
-    participant p1 as get_analysis_input_status
-    participant p2 as build_capability_doctor
-    participant p3 as extraction_job_request_from_args
-    participant p4 as render_capability_doctor
-    participant p5 as render_doctor_text
-    participant p6 as _render_analysis_input_text
-    participant p7 as build_doctor_report
-    participant p8 as analysis_input_status
-    participant p9 as build_capability_diagnostics
-    participant p10 as _render_doctor_payload
-    participant p11 as validate_source_root
-    participant p12 as build_source_snapshot
-    participant p13 as resolve_helper_cache_root
-    participant p14 as get_prepared_typescript_root
-    participant p15 as get_prepared_binary
-    participant p16 as helper_preparation_argv
-    participant p17 as build_report
-    participant p18 as detailed_health_rows
-    participant p19 as compose_doctor_report
-    participant p20 as read_lock
-    participant p21 as validate_plugin
-    participant p22 as plugin_store
-    participant p23 as validate_path
-    participant p24 as _validate_capture_options
-    participant p25 as lock_path
-    participant p26 as _manifest_root
-    participant p27 as _manifest_current
-    participant p28 as _ensure_no_reserved_plugin_sources
+    participant p1 as validate_path
+    participant p2 as inspect_targets
+    participant p3 as load_targets
+    participant p4 as get_analysis_input_status
+    participant p5 as build_capability_doctor
+    participant p6 as extraction_job_request_from_args
+    participant p7 as render_capability_doctor
+    participant p8 as render_doctor_text
+    participant p9 as _render_analysis_input_text
+    participant p10 as build_doctor_report
+    participant p11 as analysis_input_status
+    participant p12 as build_capability_diagnostics
+    participant p13 as read_guarded
+    participant p14 as StorageReadSession.read
+    participant p15 as _parse_bundle
+    participant p16 as parse_packed_root
+    participant p17 as parse_knowledge_index
+    participant p18 as SyncManifest.load
+    participant p19 as _render_doctor_payload
+    participant p20 as compare_targets
+    participant p21 as _require_relative_name
+    participant p22 as _record
+    participant p23 as decode_bytes
+    participant p24 as validate_source_root
+    participant p25 as _fields (src/llm_wiki_cli/services/knowledge_storage.py)
+    participant p26 as _absolute_path
+    participant p27 as _parse_repository
+    participant p28 as _fail (src/llm_wiki_cli/services/knowledge_packs.py)
     participant p29 as getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)
     participant p30 as report.to_payload (src/llm_wiki_cli/commands/doctor_cmd.py:run)
-    p0->>p1: get_analysis_input_status
-    p0->>p2: build_capability_doctor
-    p0->>p3: extraction_job_request_from_args
-    p0->>p4: render_capability_doctor
-    p0->>p5: render_doctor_text
-    p0->>p6: _render_analysis_input_text
-    p0->>p7: build_doctor_report
-    p1->>p8: analysis_input_status
-    p2->>p9: build_capability_diagnostics
-    p4->>p10: _render_doctor_payload
-    p9->>p11: validate_source_root
-    p9->>p12: build_source_snapshot
-    p9->>p13: resolve_helper_cache_root
-    p9->>p14: get_prepared_typescript_root
-    p9->>p15: get_prepared_binary
-    p9->>p16: helper_preparation_argv
-    p7->>p17: build_report
-    p10->>p18: detailed_health_rows
-    p7->>p19: compose_doctor_report
-    p9->>p20: read_lock
-    p9->>p21: validate_plugin
-    p9->>p22: plugin_store
-    p11->>p23: validate_path
-    p12->>p24: _validate_capture_options
-    p20->>p25: lock_path
-    p21->>p26: _manifest_root
-    p14->>p27: _manifest_current
-    p21->>p28: _ensure_no_reserved_plugin_sources
+    p0->>p1: validate_path
+    p0->>p2: inspect_targets
+    p0->>p3: load_targets
+    p0->>p4: get_analysis_input_status
+    p0->>p5: build_capability_doctor
+    p0->>p6: extraction_job_request_from_args
+    p0->>p7: render_capability_doctor
+    p0->>p8: render_doctor_text
+    p0->>p9: _render_analysis_input_text
+    p0->>p10: build_doctor_report
+    p4->>p11: analysis_input_status
+    p5->>p12: build_capability_diagnostics
+    p3->>p13: read_guarded
+    p2->>p14: StorageReadSession.read
+    p2->>p15: _parse_bundle
+    p2->>p16: parse_packed_root
+    p2->>p17: parse_knowledge_index
+    p2->>p18: SyncManifest.load
+    p7->>p19: _render_doctor_payload
+    p2->>p20: compare_targets
+    p14->>p21: _require_relative_name
+    p15->>p22: _record
+    p16->>p23: decode_bytes
+    p12->>p24: validate_source_root
+    p16->>p25: _fields (src/llm_wiki_cli/services/knowledge_storage.py)
+    p13->>p26: _absolute_path
+    p15->>p27: _parse_repository
+    p16->>p28: _fail (src/llm_wiki_cli/services/knowledge_packs.py)
     p0-->>p29: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'report_schema', 'auto')
     p0-->>p30: report.to_payload (src/llm_wiki_cli/commands/doctor_cmd.py:run)(report_schema=report_schema)
 ```
 
-> Call sequence diagram shows 30 of 1437 interactions; 1407 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3538 interactions; 3508 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 444 (443 omitted); unresolved 1 of 446 (445 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1088 (1087 omitted); unresolved 1 of 826 (825 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/commands/doctor_cmd.py:run` | 1 | - | external | 28 |
-| `src/llm_wiki_cli/services/analysis_capture.py:analysis_input_status` | 6 | - | external | 8 |
-| `src/llm_wiki_cli/services/analysis_capture.py:analysis_input_status` | 6 | - | unresolved | 7 |
-| `src/llm_wiki_cli/services/analysis_capture.py:analysis_input_status` | 6 | [src/llm_wiki_cli/services/analysis_capture.py](../modules/analysis_capture.md) | internal | 5 |
-| `src/llm_wiki_cli/services/analysis_capture.py:registry` | 12 | - | external | 2 |
-| `src/llm_wiki_cli/services/analysis_capture.py:registry` | 12 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/analysis_capture.py:_input_rows` | 17 | - | unresolved | 12 |
-| `src/llm_wiki_cli/services/analysis_capture.py:_input_rows` | 17 | - | external | 6 |
-> Omission summary shows 8 of 383 groups; 375 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/commands/doctor_cmd.py:run` | 1 | - | external | 40 |
+| `src/llm_wiki_cli/config.py:validate_path` | 7 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 2 |
+| `src/llm_wiki_cli/config.py:validate_path` | 7 | - | unresolved | 3 |
+| `src/llm_wiki_cli/config.py:validate_path` | 7 | - | external | 2 |
+| `src/llm_wiki_cli/commands/doctor_cmd.py:run` | 1 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 1 |
+| `src/llm_wiki_cli/services/analysis_targets.py:inspect_targets` | 16 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 4 |
+| `src/llm_wiki_cli/services/analysis_targets.py:inspect_targets` | 16 | - | external | 7 |
+| `src/llm_wiki_cli/services/knowledge_storage_io.py:_require_relative_name` | 20 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+> Omission summary shows 8 of 856 groups; 848 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -153,26 +172,26 @@ flowchart LR
     s1["1. run"]
     s2["2. getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)"]
     s3["3. getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)"]
-    s4["4. ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)"]
-    s5["5. get_analysis_input_status"]
-    s6["6. analysis_input_status"]
-    s7["7. type (src/llm_wiki_cli/services….py:analysis_input_status)"]
-    s8["8. ValueError (src/llm_wiki_cli/services….py:analysis_input_status)"]
-    s9["9. Path (src/llm_wiki_cli/services….py:analysis_input_status)"]
-    s10["10. Path(…).resolve (src/llm_wiki_cli/services….py:analysis_input_status)"]
-    s11["11. Path (src/llm_wiki_cli/services….py:analysis_input_status)"]
-    s12["12. registry"]
+    s4["4. getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)"]
+    s5["5. getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)"]
+    s6["6. ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)"]
+    s7["7. validate_path"]
+    s8["8. PathValidationError"]
+    s9["9. (…).resolve (src/llm_wiki_cli/config.py:validate_path)"]
+    s10["10. Path.cwd (src/llm_wiki_cli/config.py:validate_path)"]
+    s11["11. Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)"]
+    s12["12. Path.cwd (src/llm_wiki_cli/config.py:validate_path)"]
     s1 -. "getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'report_schema', 'auto')" .-> s2
-    s1 -. "getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'analysis_inputs', False)" .-> s3
-    s1 -. "ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)('--analysis-inputs and --report-schema are mutually exclusive')" .-> s4
-    s1 -->|"get_analysis_input_status(data not statically known)"| s5
-    s5 -->|"analysis_input_status(limit=limit)"| s6
-    s6 -. "type (src/llm_wiki_cli/services….py:analysis_input_status)(limit)" .-> s7
-    s6 -. "ValueError (src/llm_wiki_cli/services….py:analysis_input_status)('analysis input path limit must be an integer from 1 to 100')" .-> s8
-    s6 -. "Path (src/llm_wiki_cli/services….py:analysis_input_status)(package_root)" .-> s9
-    s6 -. "Path(…).resolve (src/llm_wiki_cli/services….py:analysis_input_status)(data not statically known)" .-> s10
-    s6 -. "Path (src/llm_wiki_cli/services….py:analysis_input_status)(__file__)" .-> s11
-    s6 -->|"registry(root)"| s12
+    s1 -. "getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'target_runtime', None)" .-> s3
+    s1 -. "getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'strict', False)" .-> s4
+    s1 -. "getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'comparison_policy', 'auto')" .-> s5
+    s1 -. "ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)(…)" .-> s6
+    s1 -->|"validate_path(args.wiki_dir, '--wiki-dir')"| s7
+    s7 -->|"PathValidationError(...)"| s8
+    s7 -. "(…).resolve (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s9
+    s7 -. "Path.cwd (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s10
+    s7 -. "Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s11
+    s7 -. "Path.cwd (src/llm_wiki_cli/config.py:validate_path)(data not statically known)" .-> s12
     b0["output print"]
     s1 -. "output print" .-> b0
     b1["output print"]
@@ -181,14 +200,17 @@ flowchart LR
     s1 -. "output print" .-> b2
     b3["output print"]
     s1 -. "output print" .-> b3
-    b4["mutation rows.append"]
-    s6 -. "mutation rows.append" .-> b4
-    b5["filesystem_read path.read_text"]
-    s12 -. "filesystem_read path.read_text" .-> b5
+    b4["output print"]
+    s1 -. "output print" .-> b4
+    b5["output print"]
+    s1 -. "output print" .-> b5
+    b6["output print"]
+    s1 -. "output print" .-> b6
+    b7["output print"]
+    s1 -. "output print" .-> b7
     click s1 "../modules/doctor_cmd.md"
-    click s5 "../modules/api.md"
-    click s6 "../modules/analysis_capture.md"
-    click s12 "../modules/analysis_capture.md"
+    click s7 "../modules/config.md"
+    click s8 "../modules/config.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
     class b1 boundary
@@ -196,65 +218,74 @@ flowchart LR
     class b3 boundary
     class b4 boundary
     class b5 boundary
+    class b6 boundary
+    class b7 boundary
 ```
 
 ### Step data
 
 | Step | Inputs | Reads | Writes | Returns |
 |---|---|---|---|---|
-| `run` | `args` | `DEFAULT_WIKI_DIR` | - | `none`, `none` |
+| `run` | `args` | `DEFAULT_WIKI_DIR` | - | `none`, `none`, `none` |
+| `getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)` | - | - | - | - |
+| `getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)` | - | - | - | - |
 | `getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)` | - | - | - | - |
 | `getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)` | - | - | - | - |
 | `ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run)` | - | - | - | - |
-| `get_analysis_input_status` | `limit: int` | - | - | `analysis_input_status(...)` |
-| `analysis_input_status` | `package_root`, `limit` | - | - | `_status(...)`, `_status(...)`, `_status(...)` |
-| `type (src/llm_wiki_cli/services….py:analysis_input_status)` | - | - | - | - |
-| `ValueError (src/llm_wiki_cli/services….py:analysis_input_status)` | - | - | - | - |
-| `Path (src/llm_wiki_cli/services….py:analysis_input_status)` | - | - | - | - |
-| `Path(…).resolve (src/llm_wiki_cli/services….py:analysis_input_status)` | - | - | - | - |
-| `Path (src/llm_wiki_cli/services….py:analysis_input_status)` | - | - | - | - |
-| `registry` | `root: Path \| None` | `REGISTRY_PATH` | - | `value` |
+| `validate_path` | `path: str`, `label: str` | - | - | `resolved` |
+| `PathValidationError` | - | - | - | - |
+| `(…).resolve (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
+| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
+| `Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
+| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 28 | `getattr(args, 'report_schema', 'auto')` |
-| run | getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 29 | `getattr(args, 'analysis_inputs', False)` |
-| run | ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 31 | `ValueError('--analysis-inputs and --report-schema are mutually exclusive')` |
-| run | get_analysis_input_status | 34 | `get_analysis_input_status(data not statically known)` |
-| get_analysis_input_status | analysis_input_status | 1846 | `analysis_input_status(limit=limit)` |
-| analysis_input_status | type (src/llm_wiki_cli/services….py:analysis_input_status) | 97 | `type(limit)` |
-| analysis_input_status | ValueError (src/llm_wiki_cli/services….py:analysis_input_status) | 98 | `ValueError('analysis input path limit must be an integer from 1 to 100')` |
-| analysis_input_status | Path (src/llm_wiki_cli/services….py:analysis_input_status) | 99 | `Path(package_root)` |
-| analysis_input_status | Path(…).resolve (src/llm_wiki_cli/services….py:analysis_input_status) | 99 | `Path(__file__).resolve(data not statically known)` |
-| analysis_input_status | Path (src/llm_wiki_cli/services….py:analysis_input_status) | 99 | `Path(__file__)` |
-| analysis_input_status | registry | 101 | `registry(root)` |
+| run | getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 34 | `getattr(args, 'report_schema', 'auto')` |
+| run | getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 35 | `getattr(args, 'target_runtime', None)` |
+| run | getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 37 | `getattr(args, 'strict', False)` |
+| run | getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 38 | `getattr(args, 'comparison_policy', 'auto')` |
+| run | ValueError (src/llm_wiki_cli/commands/doctor_cmd.py:run) | 40 | `ValueError('--target-runtime checks declared prerequisites only; run strict health and comparison-policy checks separately')` |
+| run | validate_path | 46 | `validate_path(args.wiki_dir, '--wiki-dir')` |
+| validate_path | PathValidationError | 134 | `PathValidationError(...)` |
+| validate_path | (…).resolve (src/llm_wiki_cli/config.py:validate_path) | 135 | `(Path.cwd() / path).resolve(data not statically known)` |
+| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 135 | `Path.cwd(data not statically known)` |
+| validate_path | Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd().resolve(data not statically known)` |
+| validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd(data not statically known)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 35 |
+| output | `print` | `run` | 50 |
 | output | `print` | `run` | 52 |
-| output | `print` | `run` | 71 |
+| output | `print` | `run` | 54 |
+| output | `print` | `run` | 60 |
+| output | `print` | `run` | 61 |
 | output | `print` | `run` | 73 |
-| mutation | `rows.append` | `analysis_input_status` | 110 |
-| filesystem_read | `path.read_text` | `registry` | 170 |
+| output | `print` | `run` | 104 |
+| output | `print` | `run` | 127 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `run` | `getattr` | 28 |
-| external_call | `run` | `getattr` | 29 |
-| external_call | `run` | `ValueError` | 31 |
-| external_call | `analysis_input_status` | `type` | 97 |
-| external_call | `analysis_input_status` | `ValueError` | 98 |
-| unresolved_call | `analysis_input_status` | `Path(__file__).resolve` | 99 |
+| external_call | `run` | `getattr` | 34 |
+| external_call | `run` | `getattr` | 35 |
+| external_call | `run` | `getattr` | 37 |
+| external_call | `run` | `getattr` | 38 |
+| external_call | `run` | `ValueError` | 40 |
+| unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 135 |
+| external_call | `validate_path` | `Path.cwd` | 135 |
+| unresolved_call | `validate_path` | `Path.cwd().resolve` | 136 |
+| external_call | `validate_path` | `Path.cwd` | 136 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 
 ## Behavior
 
 This flow starts at `run` and is classified as `cli`. The generated call and data-flow sections are bounded static projections; runtime conditions and side effects require source-level confirmation.
+
+With `--target-runtime`, the command validates the local declaration/wiki paths and reads the target file and committed metadata. It reports matching declared provenance, registered portability, capture-required mismatches or unknown prerequisites without source inventory, extraction, helper setup or target execution. Aggregate qualification includes omitted rows. Exit 0 only establishes declared prerequisite alignment; exit 2 retains unresolved/capture requirements. Strict health and explicit comparison-policy requests must run separately. The diagnostic cannot replace fresh target-native proof or authorize a writer.

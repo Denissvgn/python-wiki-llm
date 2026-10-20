@@ -29,29 +29,34 @@ Pure release-health decisions derived from one validated CI evaluation.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/services/analysis_compatibility.py"]
-    n1["src/llm_wiki_cli/services/ci_report.py"]
-    n2["src/llm_wiki_cli/services/doctor_service.py"]
-    n3["src/llm_wiki_cli/services/health_policy.py"]
-    n4["src/llm_wiki_cli/services/knowledge_maintenance.py"]
+    n1["src/llm_wiki_cli/services/analysis_targets.py"]
+    n2["src/llm_wiki_cli/services/ci_report.py"]
+    n3["src/llm_wiki_cli/services/doctor_service.py"]
+    n4["src/llm_wiki_cli/services/health_policy.py"]
+    n5["src/llm_wiki_cli/services/knowledge_maintenance.py"]
     n1 --> n0
-    n1 --> n2
+    n1 --> n4
     n2 --> n0
     n2 --> n3
     n3 --> n0
-    n3 --> n1
+    n3 --> n4
     n4 --> n0
-    n4 --> n3
+    n4 --> n2
+    n5 --> n0
+    n5 --> n4
     click n0 "../modules/analysis_compatibility.md"
-    click n1 "../modules/ci_report.md"
-    click n2 "../modules/doctor_service.md"
-    click n3 "../modules/health_policy.md"
-    click n4 "../modules/knowledge_maintenance.md"
+    click n1 "../modules/analysis_targets.md"
+    click n2 "../modules/ci_report.md"
+    click n3 "../modules/doctor_service.md"
+    click n4 "../modules/health_policy.md"
+    click n5 "../modules/knowledge_maintenance.md"
 ```
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
+| Inbound | [analysis_targets](../modules/analysis_targets.md) |
 | Inbound | [doctor_service](../modules/doctor_service.md) |
 | Inbound | [knowledge_maintenance](../modules/knowledge_maintenance.md) |
 | Outbound | [analysis_compatibility](../modules/analysis_compatibility.md) |

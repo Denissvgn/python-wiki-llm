@@ -114,6 +114,16 @@ execution runtime under the same cache base. Inspect package, helper and runtime
 bases separately; do not manufacture compatibility for runtime-bound observations.
 Use the authorized setup route or leave the prerequisite unresolved.
 
+Before a hosted wiki proof, derive target runtime declarations from that project's
+maintained proof owners. Where applicable, use `llm-wiki doctor --target-runtime
+<permitted-targets.json> --wiki-dir <wiki-dir>` to compare committed metadata
+without source inventory or target execution. Missing or dynamic declarations
+remain unknown; a match is not package equivalence or hosted proof. A known
+mismatch requires the project's authorized target-host capture and review,
+including complete snapshot provenance and removals. Never infer another
+project's platform, install dependencies, sync, force, upgrade or adopt from this
+diagnostic. Fresh target-native proof remains required.
+
 Classify retained failures as environment, fixture, product or workflow issues
 before correcting them. Verify the correction with an independently expected,
 discriminating case and the affected required gates on the actual candidate.
