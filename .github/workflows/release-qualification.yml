@@ -1677,6 +1677,7 @@ jobs:
           tests/test_documentation_dogfood.py
           tests/test_verified_bug_migrations.py::test_javascript_health_refresh_and_first_sync_converge
           tests/test_native_helper_path_diagnostics.py
+          tests/test_scoped_sync_repair.py::test_released_250_dynamic_import_repairs_after_explicit_upgrade
           tests/test_qualified_empty_modules.py
           tests/test_javascript_module_coverage.py
           -p no:cacheprovider --strict-config --strict-markers

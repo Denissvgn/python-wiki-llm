@@ -699,7 +699,7 @@
       ],
       "condition": "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}",
       "cost": "heavy",
-      "declaration_sha256": "e7361657976dd7be8523a599199165a255e8a6c63733ab2c88b00c8d7cbfa51f",
+      "declaration_sha256": "05d711bdaedd066d47efcddd6c734121592263ca1efe8dc9bd2a141b74434dae",
       "environments": [
         "ubuntu-24.04"
       ],
