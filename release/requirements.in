@@ -11,3 +11,5 @@ setuptools==83.0.0
 twine==7.0.0
 # Retain the patched HTTP transport used by release tooling.
 urllib3==2.8.0
+# Retain the patched CA bundle used by release tooling.
+certifi==2026.10.19
