@@ -90,8 +90,15 @@ def test_mcp_extra_stays_on_compatible_dependency_lines():
 
     assert data["project"]["optional-dependencies"]["mcp"] == [
         "mcp>=1.27,<2; python_version >= '3.10'",
+        "pydantic>=2.11,<3; python_version >= '3.10'",
         "pydantic-settings>=2.5.2,<2.15; python_version >= '3.10'",
+        "uvicorn>=0.31.1,<1; python_version >= '3.10' and sys_platform != 'emscripten'",
     ]
+    base_names = {
+        re.split(r"[<>=!~;\[]", dependency, maxsplit=1)[0]
+        for dependency in data["project"]["dependencies"]
+    }
+    assert base_names.isdisjoint({"mcp", "pydantic", "pydantic-settings", "uvicorn"})
 
 
 def test_build_backend_requirement_is_a_dev_only_dependency():
