@@ -5,6 +5,7 @@ from __future__ import annotations
 import unicodedata
 from collections.abc import Mapping, Sequence
 
+from . import analysis_compatibility as ac
 from .freshness_wording import SOURCE_CHANGED_STRUCTURE_UNCHANGED
 
 
@@ -87,6 +88,19 @@ def _versions(recorded, live, kind: str, limit: int = 3) -> str:
     return text
 
 
+def captured_analysis_diagnostic(report: Mapping) -> dict | None:
+    """Read validated native commitments, never the current installation."""
+    detail = report.get("health_details")
+    if detail is None or detail["schema_version"] != "llm-wiki-health-details/v2":
+        return None
+    basis = detail["basis"]
+    if basis["recorded"] is None or basis["live"] is None:
+        return None
+    return ac.analysis_diagnostic(
+        ac.captured_components(basis, "recorded"), ac.captured_components(basis, "live"),
+    )
+
+
 def detailed_health_rows(report: Mapping) -> list[tuple[str, str]]:
     """Describe validated evidence; legacy reports cannot gain inferred detail."""
     detail = report.get("health_details")
@@ -96,6 +110,14 @@ def detailed_health_rows(report: Mapping) -> list[tuple[str, str]]:
     evaluation = detail["evaluation"]["state"]
     basis = detail["basis"]
     recorded, live = basis["recorded"], basis["live"]
+    analysis_diagnosis = None
+    analysis_detail = "unavailable in this legacy comparison"
+    if detail["schema_version"] == "llm-wiki-health-details/v2":
+        analysis_detail = "unavailable (recorded or live producer basis missing)"
+        if recorded is not None and live is not None:
+            analysis_diagnosis = captured_analysis_diagnostic(report)
+            analysis_detail = (analysis_diagnosis["description"] if analysis_diagnosis is not None else
+                               "No changed analysis commitments; exact-version and other policy requirements remain separate.")
     def value(item):
         return "not evaluated" if item is None else str(item)
     outcome = coverage["outcomes"]
@@ -119,6 +141,8 @@ def detailed_health_rows(report: Mapping) -> list[tuple[str, str]]:
         remedy = "Review source changes and run llm-wiki sync with the same selection and generation options."
     elif outcome and outcome["basis-incompatible"]:
         remedy = "Align the installed producer and selected helpers, then refresh with llm-wiki sync."
+        if analysis_diagnosis is not None and basis.get("comparison", {}).get("reason") == "analysis-configuration-changed":
+            remedy = analysis_diagnosis["hint"]
     elif outcome and outcome["unknown"]:
         remedy = "Inspect missing modeled evidence in the full JSON; prepare providers and reevaluate."
     else:
@@ -130,6 +154,7 @@ def detailed_health_rows(report: Mapping) -> list[tuple[str, str]]:
         ("Modeled outcomes", freshness_counts(outcome)),
         ("Producer", tool),
         ("Comparison policy", basis["policy"] + ("; " + basis["comparison"]["reason"] if "comparison" in basis else "")),
+        ("Analysis dimensions", analysis_detail),
         ("Components", "extractors: " + _versions(recorded, live, "extractors") + "; plugins: " + _versions(recorded, live, "plugins")),
         ("Primary causes (concepts)", causes),
         ("Affected examples", "; ".join(examples) or "none reported"),

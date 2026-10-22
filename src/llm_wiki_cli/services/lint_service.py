@@ -83,6 +83,7 @@ from .validation import path_is_in_top_level_directory
 from .knowledge_observability import (
     KnowledgeAggregateSummary,
     KnowledgePhaseDurations,
+    freshness_analysis_diagnostic,
     knowledge_freshness_hint,
     summarize_knowledge_view,
 )
@@ -2179,6 +2180,9 @@ def _check_knowledge_concepts(
             freshness.state,
             freshness.reason_code,
         )
+        analysis_diagnosis = freshness_analysis_diagnostic(view, concept)
+        if analysis_diagnosis is not None:
+            hint = analysis_diagnosis["hint"]
         message = (
             f"Knowledge freshness for {concept.locator!r} is "
             f"{freshness.state.value} [reason={freshness.reason_code}]: "

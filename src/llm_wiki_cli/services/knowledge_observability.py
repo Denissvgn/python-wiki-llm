@@ -24,6 +24,7 @@ from .knowledge_consumption import (
     build_knowledge_read_view,
 )
 from .knowledge_freshness import (
+    analysis_basis_diagnostic,
     REASON_EXTRACTOR_CONFIGURATION_CHANGED,
     REASON_EXTRACTOR_CONFIGURATION_UNKNOWN,
     REASON_EXTRACTOR_LIMITATIONS_CHANGED,
@@ -54,7 +55,7 @@ from .knowledge_loader import (
     KnowledgeStateLoadError,
     load_knowledge_state,
 )
-from .knowledge_model import ComputedFreshness, EvidenceState, KnowledgeLoadState
+from .knowledge_model import ComputedFreshness, ConceptRecord, EvidenceState, KnowledgeLoadState
 from .source_selection import (
     SourceSelectionError,
     resolve_source_selection,
@@ -484,6 +485,22 @@ def knowledge_freshness_hint(
         raise ValueError(
             "basis-incompatible freshness requires a known actionable reason code"
         ) from exc
+
+
+def freshness_analysis_diagnostic(view: KnowledgeReadView, concept: ConceptRecord) -> dict | None:
+    """Precise live guidance for free-text reports, not frozen projection hints."""
+    report = view.freshness
+    basis = concept.facets.structure.basis
+    result = None if report is None else report.by_locator.get(concept.locator)
+    if (view.knowledge is None or report is None or report.live_producer is None
+        or basis is None or basis.extractor_ref is None or result is None
+        or result.state is not ComputedFreshness.BASIS_INCOMPATIBLE
+        or result.reason_code not in {REASON_TOOL_CONFIGURATION_CHANGED,
+                                     REASON_EXTRACTOR_CONFIGURATION_CHANGED,
+                                     REASON_PLUGIN_CONFIGURATION_CHANGED}):
+        return None
+    return analysis_basis_diagnostic(view.knowledge.bundle.producer, report.live_producer,
+                                     extractor_ref=basis.extractor_ref)
 
 
 def _freshness_disclosure(

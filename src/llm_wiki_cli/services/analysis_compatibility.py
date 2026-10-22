@@ -141,6 +141,66 @@ def compare_components(recorded, live, *, policy: str = "auto", plugins: bool = 
     return None
 
 
+def analysis_diagnostic(recorded: Mapping, live: Mapping) -> dict | None:
+    """Explain bound analysis commitments without making an eligibility decision.
+
+    ``None`` means the available analysis commitments match, not that an exact
+    version/plugin policy passes. Missing, unsupported or unbound metadata cannot
+    establish a changed dimension. The legacy comparison vocabulary stays intact.
+    """
+    if not recorded and not live:
+        return {
+            "changes": {}, "unavailable": (),
+            "description": "Analysis-basis details unavailable: no components were captured.",
+            "hint": "Inspect the unavailable recorded/live analysis commitments before selecting a repair.",
+        }
+    changes = {}
+    unavailable = []
+    for key in sorted(set(recorded) | set(live)):
+        try:
+            before = component_record(recorded[key])
+            after = component_record(live[key])
+            if (before is None or after is None
+                or before["component"] != key or after["component"] != key):
+                raise ValueError("comparable analysis commitments unavailable")
+        except (AttributeError, KeyError, TypeError, ValueError):
+            unavailable.append(key)
+            continue
+        dimensions = tuple(
+            name for name in ("contract", "implementation", "configuration", "runtime")
+            if before[name] != after[name]
+        )
+        if dimensions:
+            changes[key] = dimensions
+    if not changes and not unavailable:
+        return None
+    parts = []
+    if changes:
+        parts.append("Analysis commitments changed: " + "; ".join(
+            key + ": " + ", ".join(dimensions) for key, dimensions in changes.items()
+        ) + ".")
+    if unavailable:
+        parts.append(f"Analysis-basis details unavailable for {len(unavailable)} component(s).")
+        if not changes:
+            parts.append("No contract, implementation, configuration or runtime cause can be inferred.")
+        hint = "Inspect the unavailable recorded/live analysis commitments before selecting a repair."
+    else:
+        dimensions = {name for names in changes.values() for name in names}
+        actions = []
+        if "contract" in dimensions:
+            actions.append("Use a supported observation contract before refreshing evidence.")
+        if "implementation" in dimensions:
+            actions.append("Align the producer/helper implementation with the intended analysis basis.")
+        if "configuration" in dimensions:
+            actions.append("Restore the recorded configuration, or review an owning refresh with the intended configuration.")
+        if "runtime" in dimensions:
+            actions.append("Review the changed execution runtime and capture on the intended target host with the same source selection and helper cache.")
+        actions.append("Re-run strict validation after the reviewed owning refresh.")
+        hint = " ".join(actions)
+    return {"changes": changes, "unavailable": tuple(unavailable),
+            "description": " ".join(parts), "hint": hint}
+
+
 def report_schema(requested: str, details: Mapping | None, *, legacy: str = "v1") -> str:
     migrated = bool(details and details.get("schema_version") == "llm-wiki-health-details/v2")
     if requested == "auto":

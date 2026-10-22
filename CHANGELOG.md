@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Knowledge health diagnostics identify changes in analysis implementation,
+  configuration and execution runtime while preserving historical reason codes
+  and stored evidence compatibility.
+
 - Optional MCP installations explicitly declare the Pydantic types and Uvicorn
   HTTP server they use, while the default installation stays lightweight.
 

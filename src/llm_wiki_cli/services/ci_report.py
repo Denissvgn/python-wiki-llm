@@ -27,8 +27,8 @@ from .contracts import (
 from .doctor_service import compose_doctor_report
 from . import analysis_compatibility as ac
 from .health_contract import HealthDetailsError, validate_health_details
-from .health_summary import FRESHNESS_DISCLOSURE, detailed_health_rows, freshness_counts, reason_list, summary_cell
-from .knowledge_observability import KnowledgeAggregateSummary
+from .health_summary import FRESHNESS_DISCLOSURE, captured_analysis_diagnostic, detailed_health_rows, freshness_counts, reason_list, summary_cell
+from .knowledge_observability import KnowledgeAggregateSummary, knowledge_freshness_hint
 from .lint_service import LintReport, report_to_dict
 
 
@@ -1306,15 +1306,26 @@ def load_ci_check_payload(
 def _health_detail_lines(report: Mapping[str, Any]) -> list[str]:
     """Summarize the already validated diagnostics; never evaluate source."""
     health = report["knowledge_health"]
+    health_rows = detailed_health_rows(health)
+    analysis_diagnosis = captured_analysis_diagnostic(health)
     records = [row for row in report["diagnostics"] if row["category"] == "knowledge_freshness"]
     counts: Counter[str] = Counter()
     examples: dict[str, tuple[bool, bool, str, str]] = {}
     for row in records:
         hint, path = row.get("hint") or "", row.get("path") or row.get("target") or ""
-        example = (not bool(hint), not bool(path), hint, path)
         # Use the validator's existing reason extraction, including legacy
         # message reason tags. One record may supply several distinct reasons.
         for reason in _finding_reasons([row]):
+            # Translate exact historical umbrella hints for display only. The
+            # raw report and frozen projection vocabulary remain unchanged.
+            displayed_hint = hint
+            if (
+                reason in {"producer-tool-configuration-changed", "extractor-configuration-changed", "plugin-configuration-changed"}
+                and hint == knowledge_freshness_hint("basis-incompatible", reason)
+            ):
+                displayed_hint = (analysis_diagnosis["hint"] if analysis_diagnosis is not None else
+                                  "Inspect the recorded and live analysis basis before selecting a repair.")
+            example = (not bool(displayed_hint), not bool(path), displayed_hint, path)
             counts[reason] += 1
             if reason not in examples or example < examples[reason]:
                 examples[reason] = example
@@ -1344,7 +1355,7 @@ def _health_detail_lines(report: Mapping[str, Any]) -> list[str]:
         "- " + FRESHNESS_DISCLOSURE,
     ])
     lines.extend(guidance[1:])
-    detail_lines = [f"- {label}: `{summary_cell(value)}`." for label, value in detailed_health_rows(health)]
+    detail_lines = [f"- {label}: `{summary_cell(value)}`." for label, value in health_rows]
     return detail_lines + lines
 
 

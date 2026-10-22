@@ -576,6 +576,14 @@ def _evaluate_concept(
         live,
     )
     if incompatibility is not None:
+        diagnosis = (
+            analysis_basis_diagnostic(knowledge.bundle.producer, live.producer,
+                                      extractor_ref=recorded.extractor_ref)
+            if incompatibility in {REASON_TOOL_CONFIGURATION_CHANGED,
+                                   REASON_EXTRACTOR_CONFIGURATION_CHANGED,
+                                   REASON_PLUGIN_CONFIGURATION_CHANGED}
+            else None
+        )
         return _result(
             concept.locator,
             ComputedFreshness.BASIS_INCOMPATIBLE,
@@ -583,6 +591,7 @@ def _evaluate_concept(
             recorded_details,
             live_details,
             compared=True,
+            description=None if diagnosis is None else diagnosis["description"],
         )
 
     assert recorded.source_content_hash is not None
@@ -646,6 +655,18 @@ def _evaluate_concept(
         live_details,
         compared=True,
     )
+
+
+def analysis_basis_diagnostic(
+    recorded: ProducerRecord, live: ProducerRecord, *, extractor_ref: str,
+) -> dict | None:
+    """Explain the captured components that actually qualify this concept."""
+    def components(producer):
+        return {component.component_id: component for component in (
+            producer.tool, *producer.plugins,
+            *(item for item in producer.extractors if item.component_id == extractor_ref),
+        )}
+    return ac.analysis_diagnostic(components(recorded), components(live))
 
 
 def _reliable_recorded_basis(concept: ConceptRecord) -> EvidenceBasis | None:
@@ -880,6 +901,7 @@ def _result(
     live_basis: ConceptFreshnessBasis | None,
     *,
     compared: bool,
+    description: str | None = None,
 ) -> ConceptFreshnessResult:
     assert FRESHNESS_REASON_STATES[reason_code] is state
     return ConceptFreshnessResult(
@@ -889,7 +911,7 @@ def _result(
         recorded_basis=recorded_basis,
         live_basis=live_basis,
         live_comparison_performed=compared,
-        description=_REASON_DESCRIPTIONS[reason_code],
+        description=_REASON_DESCRIPTIONS[reason_code] if description is None else description,
     )
 
 

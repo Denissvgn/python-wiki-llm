@@ -41,6 +41,7 @@ from .knowledge_graph import (
 from .knowledge_governance import GOVERNANCE_EXTENSION_KEY
 from .knowledge_model import knowledge_index_to_payload
 from .knowledge_observability import (
+    freshness_analysis_diagnostic,
     knowledge_freshness_hint,
     knowledge_status_payload,
 )
@@ -2539,6 +2540,10 @@ class DocumentationGraphQueryService:
             from .evidence_diagnostics import captured_evidence_diagnostic
 
             concept = next((c for c in view.knowledge.concepts if c.locator == locator), None)
+            analysis_diagnosis = None if concept is None else freshness_analysis_diagnostic(view, concept)
+            if analysis_diagnosis is not None:
+                hint = analysis_diagnosis["hint"]
+                result["hint"] = hint
             diagnosis = None if concept is None else captured_evidence_diagnostic(view, concept)
             if diagnosis is not None:
                 result["description"] = freshness.description + " " + diagnosis[0]

@@ -977,6 +977,18 @@ Snapshot hashes identify declared input sets and do not themselves prove freshne
 The v3 option cannot be combined with `--capabilities`, which retains its
 separate v2 contract.
 
+With native analysis metadata, fresh report diagnostics and live evidence
+explanations identify which contract, implementation, configuration or runtime
+commitments differ. Human health summaries use the same captured comparisons.
+Runtime-only drift calls for reviewing the execution runtime and target-host
+capture, rather than restoring unchanged configuration. Missing, unbound or
+unsupported comparisons remain explicitly unavailable.
+
+Historical primary reason codes and compact projection hints remain compatible.
+A configuration-related legacy reason code can group several analysis-basis
+differences; use the precise diagnostic and recorded/live commitments to choose
+the repair. Reporting does not perform preparation, sync or capture.
+
 To keep the health read from executing project plugin code, `doctor` never
 loads source plugins. Evidence that only a source plugin can produce may
 therefore be unavailable or basis-incompatible; strict mode can classify the
