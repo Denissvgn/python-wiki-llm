@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Static caller/callee and flow analysis resolves direct calls to closed,
+  unescaped nested helpers while preserving uncertainty for callbacks, closures,
+  rebinding and dynamic namespace changes.
+
 - Coverage reports distinguish static compatibility module routes and
   declaration-free package initializers from missing extraction, while keeping
   ambiguous routes and genuine implementation gaps visible.

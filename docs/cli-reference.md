@@ -467,6 +467,21 @@ completeness. Generated import tables label these gaps with their reason and
 source line.
 Go `_test.go` files are omitted unless `--include-tests go` is supplied; Python
 test files remain part of normal Python extraction.
+Python deep extraction can capture a bounded static subset of nested helpers.
+A unique, unconditional, undecorated helper with no lexical free variables can
+resolve direct calls after its definition when its binding is neither reassigned
+nor escaped. These functions use qualified symbols such as
+`run.<locals>.clean` in the existing `nested_functions` list; optional
+`python_lexical_functions` witnesses identify the enclosing declaration and
+exact call locations. Their contract is `llm-wiki-python-lexical-functions/v1`.
+The original lexical call-binding records remain intact. Readers without these
+witnesses retain unresolved answers; malformed or unsupported witnesses cannot
+establish a target. Caller/callee queries and bounded flows use the same proven
+source target. Closure captures, callbacks, decorators, namespace mutation and
+ambiguous or reassigned bindings remain outside this subset. Extraction uses
+syntax and symbol tables without executing project imports; resolved static
+edges do not establish runtime behavior or complete flow coverage.
+
 JavaScript `.js` and `.jsx` files are handled by the TypeScript extractor
 family and use `language: "javascript"` in inventory output. Prepare the same
 helper with `llm-wiki prepare-extractors --language typescript`.
