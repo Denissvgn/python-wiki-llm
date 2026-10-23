@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Coverage reports distinguish static compatibility module routes and
+  declaration-free package initializers from missing extraction, while keeping
+  ambiguous routes and genuine implementation gaps visible.
+
 - Validation reports put health guidance first, separate external call boundaries
   from unresolved calls and truncation, and link bounded previews to complete rows.
 - Skipped dependency checks name their manifests and explain observed source

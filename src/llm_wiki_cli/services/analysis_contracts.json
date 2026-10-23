@@ -200,6 +200,7 @@
     "services/markdown_sections.py",
     "services/mcp_server.py",
     "services/metrics.py",
+    "services/module_coverage.py",
     "services/module_maps.py",
     "services/native_inspection.py",
     "services/normalization_diagnostics.py",

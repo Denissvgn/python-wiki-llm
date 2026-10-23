@@ -16,6 +16,7 @@ from ..extractors.common import normalize_include_tests
 from . import wiki_media
 from .data_flow import analyze_data_flow
 from .dependencies import analyze_dependencies, describe_unscanned_scopes
+from .module_coverage import classify_uncovered_python_sources
 from .diagrams import (
     GENERATED_DIAGRAM_CHAR_LIMIT,
     GENERATED_DIAGRAM_LINE_LIMIT,
@@ -1380,14 +1381,41 @@ def _check_module_coverage(
     uncovered = sorted(
         _extracted_source_files(source_snapshot, statuses) - set(deep_inventory)
     )
+    classifications = classify_uncovered_python_sources(source_snapshot, deep_inventory, uncovered)
     for rel_path in uncovered:
+        classification = classifications.get(rel_path, {})
+        reason = classification.get("reason")
+        content_hash = classification.get("content_hash")
+        if reason == "declaration-free-initializer":
+            _diagnose(
+                report, "module_source_presence",
+                f"Package initializer is present with no implementation declarations or executable setup: {rel_path} ({content_hash}); no separate module page is required by this classification.",
+                path=rel_path, target=rel_path, severity="info", reason_code=reason,
+                hint="Source presence and its captured hash remain part of the selected snapshot; this does not establish package-wide coverage.",
+            )
+            continue
+        route = classification.get("route", [])
+        if reason == "static-module-alias":
+            _diagnose(
+                report, "module_source_routes",
+                f"Static compatibility module route: {' -> '.join(route)} ({content_hash}); the destination has an extracted module entry.",
+                path=rel_path, target=route[-1], severity="info", reason_code=reason,
+                hint="Use the destination for implementation lookup; its wiki coverage is checked separately. This static route does not adopt a governance alias or prove runtime import behavior.",
+            )
+            continue
+        detail = (
+            f". Static alias route remains unresolved ({reason}): {' -> '.join(route)} ({content_hash})."
+            if reason else ""
+        )
         _diagnose(
             report,
             "uncovered_source_files",
             "Scanned source file produced no module entry, so it has no wiki "
-            f"page: {rel_path}",
+            f"page: {rel_path}" + detail,
             path=rel_path,
             target=rel_path,
+            reason_code=reason,
+            hint=("Inspect the selected target, package bindings and extraction outcome; no implementation owner was inferred." if reason else None),
         )
 
     if undoc_mods:

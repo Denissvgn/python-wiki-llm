@@ -698,6 +698,24 @@ underlying source analysis was complete. Canonical lint/CI JSON retains the
 original findings, severities and hints. CI text and compact Action summaries use
 the same category/kind distinctions without changing their existing failure rules.
 
+Python coverage diagnostics distinguish static compatibility redirects from
+implementation gaps. A single unconditional, import-bound
+`sys.modules[__name__]` redirect can produce an informational
+`module_source_routes` record naming its selected, extracted destination.
+The source path and captured hash remain visible; the route creates no duplicate
+implementation or durable governance alias and does not prove runtime import
+behavior. Destination wiki coverage is checked separately. Re-exports keep
+their own module entries. Conditional or dynamic redirects, ambiguous package
+bindings, cycles, excluded targets and missing extraction remain uncovered or
+unresolved rather than acquiring an inferred owner.
+
+Comment/docstring-only package initializers produce informational
+`module_source_presence` records with their captured hashes when they have no
+module entry. Initializers with declarations, exports or executable setup retain
+the normal coverage checks. Classification reads at most 1 MiB per selected file
+and follows at most 16 redirect hops; unavailable or bounded-out proof stays
+unresolved. It never executes project imports or changes source selection.
+
 `--profile` suppresses the human-readable lint text and prints one JSON object
 to stdout containing the normal lint report, diagnostics, and phase timings.
 The JSON contract is preserved for extractor failures as well; lint still exits

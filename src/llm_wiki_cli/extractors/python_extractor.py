@@ -815,17 +815,82 @@ def _is_self_module_alias(statement) -> bool:
 
 
 def module_alias_target(tree: ast.Module) -> str:
-    """Return the module a self-aliasing file redirects to, else ``""``.
+    """Return the imported binding of a static self-module shim, else ``""``.
 
-    ``sys.modules[__name__] = impl`` makes importing this path yield *impl*
-    itself, so the file is a redirect rather than a module: it has no symbols of
-    its own and its name is another module's name. Callers use this to avoid
-    describing a redirect as though it were a separate unit.
+    Only one unconditional assignment through an unshadowed ``sys`` import
+    qualifies. Other executable statements, declarations, rebinding and
+    conditional/dynamic redirects retain their own inventory entry. This is a
+    syntactic classification, not execution of the imported object.
     """
+    bindings: dict[str, str] = {}
+    target_name = ""
     for statement in tree.body:
-        if isinstance(statement, ast.Assign) and _is_self_module_alias(statement):
-            return _annotation_to_str(statement.value)
-    return ""
+        if isinstance(statement, ast.Pass) or (
+            isinstance(statement, ast.Expr)
+            and isinstance(statement.value, ast.Constant)
+            and isinstance(statement.value.value, str)
+        ):
+            continue
+        if target_name:
+            return ""
+        imported = _static_import_bindings(statement)
+        if imported is not None:
+            if set(imported) & (set(bindings) | {"__name__"}):
+                return ""
+            bindings.update(imported)
+            continue
+        if _static_type_checking_block(statement, bindings):
+            continue
+        if (not isinstance(statement, ast.Assign)
+                or len(statement.targets) != 1
+                or not _is_self_module_alias(statement)
+                or not isinstance(statement.value, ast.Name)
+                or statement.value.id not in bindings):
+            return ""
+        target = statement.targets[0]
+        if (not isinstance(target, ast.Subscript)
+                or not isinstance(target.value, ast.Attribute)
+                or not isinstance(target.value.value, ast.Name)
+                or bindings.get(target.value.value.id) != "sys"):
+            return ""
+        target_name = statement.value.id
+    return target_name
+
+
+def _static_import_bindings(statement: ast.AST) -> dict[str, str] | None:
+    """Capture direct import spellings; no module loading or attribute lookup."""
+    if not isinstance(statement, (ast.Import, ast.ImportFrom)):
+        return None
+    bindings: dict[str, str] = {}
+    for alias in statement.names:
+        if alias.name == "*":
+            return None
+        if isinstance(statement, ast.ImportFrom):
+            prefix = "." * statement.level + (statement.module or "")
+            module = prefix + ("." if statement.module else "") + alias.name
+            name = alias.asname or alias.name
+        else:
+            name = alias.asname or alias.name.split(".", 1)[0]
+            module = alias.name if alias.asname else name
+        if name in bindings:
+            return None
+        bindings[name] = module
+    return bindings
+
+
+def _static_type_checking_block(statement: ast.AST, bindings: dict[str, str]) -> bool:
+    """Recognize import-only mirrors behind a directly bound typing guard."""
+    if not isinstance(statement, ast.If) or statement.orelse:
+        return False
+    test = _simple_reference_to_str(statement.test)
+    root, _, tail = test.partition(".")
+    guard = bindings.get(root, "") + ("." + tail if tail else "")
+    if guard not in {"typing.TYPE_CHECKING", "typing_extensions.TYPE_CHECKING"}:
+        return False
+    return all(
+        _static_import_bindings(item) is not None or isinstance(item, ast.Pass)
+        for item in statement.body
+    )
 
 
 def _import_time_body(statement, type_checking_names: set[str]) -> list:
