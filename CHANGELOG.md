@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Validation reports put health guidance first, separate external call boundaries
+  from unresolved calls and truncation, and link bounded previews to complete rows.
+- Skipped dependency checks name their manifests and explain observed source
+  scope without inferring unused packages or helper preparation state.
+
 - Integrity and health summaries distinguish blocking checks, advisory drift,
   release-policy evidence, human review and scoped machine verification.
 - Stale machine receipts retain their earlier result without being mistaken for

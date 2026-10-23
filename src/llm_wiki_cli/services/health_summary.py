@@ -3,7 +3,12 @@
 from __future__ import annotations
 
 import unicodedata
+import hashlib
+import json
+import re
+from collections import defaultdict
 from collections.abc import Mapping, Sequence
+from typing import Any
 
 from . import analysis_compatibility as ac
 from .freshness_wording import SOURCE_CHANGED_STRUCTURE_UNCHANGED
@@ -86,6 +91,165 @@ def assurance_rows(report: Mapping) -> list[tuple[str, str]]:
         ("Human review", review),
         ("Machine verification", machine),
     ]
+
+
+def ci_health_rows(report: Mapping, health: Mapping) -> list[tuple[str, str]]:
+    """Reuse the captured classification without inferring release admission."""
+    rows = [
+        ("Structural integrity", f"{'passed' if report['ok'] else 'failed'} (strict; blocking)"),
+        ("Knowledge health", f"{health['status']} (exit {health['exit_code']}; non-strict; advisory)"),
+        ("Native drift", "report-only (advisory)" if report["knowledge_drift_report"] else "disabled"),
+        ("Release policy", RELEASE_POLICY_UNAVAILABLE),
+        *assurance_rows(health),
+    ]
+    rows.extend((label, value) for label, value in detailed_health_rows(health)
+                if label in {"Analysis dimensions", "Primary causes (concepts)", "Next action"})
+    return rows
+
+
+def _diagnostic_kind(record: Mapping) -> str:
+    if record["category"] != "data_flow_gaps":
+        return "finding"
+    target = record.get("target")
+    prefix = f"Data-flow gap in {target}: "
+    message = record["message"]
+    if isinstance(target, str) and message.startswith(prefix):
+        token = message[len(prefix):].split(" ", 1)[0]
+        if re.fullmatch(r"[a-z][a-z_]*", token):
+            return token
+    return "unclassified"
+
+
+def _diagnostic_priority(category: str, kind: str) -> int:
+    if category.startswith("knowledge_") or category in {"extractor_failure", "source-selection-mismatch"}:
+        return 0
+    if category == "data_flow_gaps":
+        return 3 if kind == "external_call" else 2
+    return 1
+
+
+def _record_order(record: Mapping) -> tuple[str, ...]:
+    return tuple(str(record.get(key) or "") for key in
+                 ("path", "target", "message", "severity", "reason_code", "hint"))
+
+
+def diagnostic_groups(records: Sequence[Mapping]) -> list[dict[str, Any]]:
+    """Partition emitted records; external grouping needs an exact producer prefix."""
+    groups: dict[tuple[str, str], list[Mapping]] = defaultdict(list)
+    for record in records:
+        groups[(record["category"], _diagnostic_kind(record))].append(record)
+    return [
+        {"category": category, "kind": kind, "records": sorted(groups[(category, kind)], key=_record_order)}
+        for category, kind in sorted(groups, key=lambda key: (_diagnostic_priority(*key), *key))
+    ]
+
+
+def diagnostic_preview(records: Sequence[Mapping]) -> dict[str, Any]:
+    """Bound examples, keeping duplicate occurrences and exact omitted totals."""
+    groups = diagnostic_groups(records)
+    shown = [{**group, "records": group["records"][:1], "total": len(group["records"])}
+             for group in groups[:8]]
+    returned = sum(len(group["records"]) for group in shown)
+    return {"total": len(records), "returned": returned, "omitted": len(records) - returned,
+            "groups": shown, "group_total": len(groups)}
+
+
+def _diagnostic_anchor(group: Mapping) -> str:
+    identity = json.dumps([group["category"], group["kind"]], ensure_ascii=True).encode()
+    return "diagnostic-group-" + hashlib.sha256(identity).hexdigest()[:16]
+
+
+def _display_hint(record: Mapping, health: Mapping | None) -> str | None:
+    hint = record.get("hint")
+    if health is not None and record["category"] == "knowledge_freshness":
+        from .knowledge_observability import knowledge_freshness_hint
+
+        reasons = {record.get("reason_code")}
+        for match in re.findall(r"\[reason=([a-z0-9-]+(?:,[a-z0-9-]+)*)\]", record["message"]):
+            reasons.update(match.split(","))
+        for reason in ("producer-tool-configuration-changed", "extractor-configuration-changed", "plugin-configuration-changed"):
+            if reason in reasons and hint == knowledge_freshness_hint("basis-incompatible", reason):
+                diagnosis = captured_analysis_diagnostic(health)
+                return (diagnosis["hint"] if diagnosis else
+                        "Inspect the recorded and live analysis basis before selecting a repair.")
+    return hint
+
+
+def _legacy_scope_disclosure(record: Mapping) -> str | None:
+    if (record["category"] == "unscanned_manifest_scopes"
+            and not record.get("path") and not record.get("reason_code")):
+        return ("Exact manifest and ownership/cause were not recorded; this read does not infer them. "
+                "Skipping is not proof of unused packages or unprepared helpers.")
+    return None
+
+
+def render_validation_markdown(report: Mapping, *, health: Mapping | None = None) -> str:
+    """Present a bounded prefix and complete deterministic rows; never scan source."""
+    issues, records = report["issues"], report["diagnostics"]
+    lines = [
+        "# LLM Wiki Validation Report", "",
+        f"- Wiki: `{summary_cell(report['wiki_dir'])}`",
+        f"- Source: `{summary_cell(report['src_dir'])}`",
+        f"- Mode: `{'strict' if report['strict'] else 'normal'}`",
+        f"- Native drift: `{'report-only' if report['knowledge_drift_report'] else 'disabled'}`",
+        f"- Result: **{'passed' if report['ok'] else 'failed'}**",
+        f"- Issues: {report['issue_count']}", f"- Diagnostics: {len(records)}",
+    ]
+    if report.get("knowledge_summary"):
+        lines.append("- Freshness: " + str(report["knowledge_summary"]["freshness"]))
+    if health is not None:
+        lines.extend("- " + label + ": " + summary_cell(value) for label, value in ci_health_rows(report, health))
+        lines.extend(["", ASSURANCE_DISCLOSURE])
+    if issues:
+        first = sorted(issues, key=lambda row: (_diagnostic_priority(row["category"], "finding"), _record_order(row)))[0]
+        lines.append("- Blocking finding: " + summary_cell(first["message"]))
+    groups = diagnostic_groups(records)
+    preview = diagnostic_preview(records)
+    lines.extend(["", "## Diagnostic summary", "",
+                  f"Preview: {preview['returned']} of {preview['total']} emitted diagnostic records; "
+                  f"{preview['omitted']} omitted from this preview. "
+                  f"Groups shown: {len(preview['groups'])} of {preview['group_total']}.",
+                  "Counts describe emitted records, not scan coverage or resolved findings. "
+                  "[Complete diagnostic index](#complete-diagnostic-index) and complete rows follow; "
+                  "canonical lint/CI JSON retains every original field.", ""])
+    for group in preview["groups"]:
+        lines.append(f"- `{summary_cell(group['category'])}` / `{summary_cell(group['kind'])}`: "
+                     f"{group['total']} records; 1 shown, {group['total'] - 1} omitted; "
+                     f"[complete rows](#{_diagnostic_anchor(group)}).")
+        row = group["records"][0]
+        lines.append("  - " + summary_cell(row["message"]))
+        disclosure = _legacy_scope_disclosure(row)
+        if disclosure:
+            lines.append("  - " + disclosure)
+        hint = _display_hint(row, health)
+        if hint:
+            lines.append("  - Next action (reported hint): " + summary_cell(hint))
+    lines.extend(["", "## Issues", ""])
+    for row in sorted(issues, key=lambda row: (_diagnostic_priority(row["category"], "finding"), _record_order(row))):
+        location = f" (`{row['path']}`)" if row.get("path") else ""
+        lines.append(f"- **{row['category']}**{location}: {row['message']}")
+    if not issues:
+        lines.append("No issues found.")
+    lines.extend(["", "## Complete diagnostic index", "",
+                  "| Category | Kind | Records | Complete rows |", "|---|---|---:|---|"])
+    for group in groups:
+        lines.append(f"| `{summary_cell(group['category'])}` | `{summary_cell(group['kind'])}` | "
+                     f"{len(group['records'])} | [rows](#{_diagnostic_anchor(group)}) |")
+    lines.extend(["", "## Diagnostics", ""])
+    for group in groups:
+        lines.extend([f'<a id="{_diagnostic_anchor(group)}"></a>', "",
+                      f"### `{summary_cell(group['category'])}` / `{summary_cell(group['kind'])}`", ""])
+        for row in group["records"]:
+            location = f" (`{row['path']}`)" if row.get("path") else ""
+            lines.append(f"- **{row['category']}**{location} [{row.get('severity') or 'warning'}]: {row['message']}")
+            disclosure = _legacy_scope_disclosure(row)
+            if disclosure:
+                lines.append("  - " + disclosure)
+            hint = _display_hint(row, health)
+            if hint is not None:
+                lines.append("  - Hint: " + hint)
+        lines.append("")
+    return "\n".join(lines) + "\n"
 
 
 def freshness_counts(counts: Mapping[str, int] | None) -> str:

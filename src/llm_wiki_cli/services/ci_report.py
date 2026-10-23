@@ -30,7 +30,7 @@ from .health_contract import HealthDetailsError, validate_health_details
 from .health_summary import (
     ASSURANCE_DISCLOSURE, FRESHNESS_DISCLOSURE,
     assurance_rows, captured_analysis_diagnostic, detailed_health_rows,
-    freshness_counts, reason_list, summary_cell,
+    diagnostic_groups, freshness_counts, reason_list, render_validation_markdown, summary_cell,
 )
 from .knowledge_observability import KnowledgeAggregateSummary, knowledge_freshness_hint
 from .lint_service import LintReport, report_to_dict
@@ -1362,7 +1362,20 @@ def _health_detail_lines(report: Mapping[str, Any]) -> list[str]:
     ])
     lines.extend(guidance[1:])
     detail_lines = [f"- {label}: `{summary_cell(value)}`." for label, value in health_rows]
-    return detail_lines + lines
+    groups = diagnostic_groups(report["diagnostics"])
+    totals = "; ".join(f"{g['category']}/{g['kind']}={len(g['records'])}" for g in groups[:3])
+    return detail_lines + lines + [
+        "- Diagnostic category/kind totals (emitted records, not scan coverage): "
+        f"`{summary_cell(totals or 'none')}`; {max(0, len(groups) - 3)} additional groups; full totals/rows in JSON and Markdown.",
+        f"- Skipped dependency scopes: `{sum(row['category'] == 'unscanned_manifest_scopes' for row in report['diagnostics'])}`; "
+        "skipped does not mean unused or unprepared; inspect each complete scope record.",
+    ]
+
+
+def render_ci_markdown(report: Mapping[str, Any], *, cli_exit: int) -> str:
+    """Render validated captured CI data without another scan or policy decision."""
+    validate_ci_check_payload(report, cli_exit=cli_exit)
+    return render_validation_markdown(report, health=report["knowledge_health"])
 
 
 def _bounded_summary(

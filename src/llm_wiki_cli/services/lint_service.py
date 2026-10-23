@@ -15,7 +15,7 @@ from ..config import validate_path, validate_source_root
 from ..extractors.common import normalize_include_tests
 from . import wiki_media
 from .data_flow import analyze_data_flow
-from .dependencies import analyze_dependencies
+from .dependencies import analyze_dependencies, describe_unscanned_scopes
 from .diagrams import (
     GENERATED_DIAGRAM_CHAR_LIMIT,
     GENERATED_DIAGRAM_LINE_LIMIT,
@@ -1661,15 +1661,24 @@ def _check_dependency_coverage(
                 f"(declared, not imported): {package}{suffix}",
                 target=package,
             )
-        for scope_root in data.get("unscanned_scopes", []) or []:
-            scope = _format_dependency_scope(scope_root or None)
+        for detail in describe_unscanned_scopes(
+            src_dir, language, data.get("unscanned_scopes", []) or [], source_snapshot,
+        ) if data.get("unscanned_scopes") else []:
+            scope_root = detail["scope"]
+            scope = _format_dependency_scope(scope_root)
+            if language == "rust" and not scope_root:
+                scope += " (language-wide reconciliation)"
+            manifests = ", ".join(detail["manifests"]) or "unavailable (not recorded)"
+            sources = ", ".join(detail["sources"]) or "unavailable"
             _diagnose(
                 report,
                 "unscanned_manifest_scopes",
-                f"Skipped unused-dependency analysis for the {language} manifest "
-                f"scope {scope}: it declares dependencies but no source file "
-                "under it was extracted",
+                f"Skipped unused-dependency analysis for the {language} manifest scope {scope}; "
+                f"manifests: {manifests}; owner: {detail['owner']}; "
+                f"{detail['description']}; source evidence: {sources}.",
                 target=scope_root or language,
+                path=detail["manifests"][0] if len(detail["manifests"]) == 1 else None,
+                reason_code=detail["reason"], hint=detail["hint"],
             )
         for module, files in sorted((data.get("path_aliases") or {}).items()):
             locations = ", ".join(files)
@@ -3006,6 +3015,14 @@ def render_text(report: LintReport) -> str:
             return text if len(text) <= 400 else text[:397] + "..."
 
         lines.append(f"  Advisory diagnostics [{excerpt(category)}]: {len(records)} record(s).")
+        if category == "data_flow_gaps":
+            from .health_summary import _diagnostic_kind, diagnostic_groups as group_records
+
+            groups = group_records([_lint_issue_payload(row) for row in records])
+            order = {group["kind"]: index for index, group in enumerate(groups)}
+            records = sorted(records, key=lambda row: order[_diagnostic_kind(_lint_issue_payload(row))])
+            kinds = "; ".join(f"{group['kind']}={len(group['records'])}" for group in groups)
+            lines.append("    Kinds (emitted records, not resolved calls): " + excerpt(kinds))
         for diagnostic in records[:5]:
             marker = "INFO" if diagnostic.severity == "info" else diagnostic.severity.upper()
             location = diagnostic.path or diagnostic.target
@@ -3267,53 +3284,10 @@ def render_text(report: LintReport) -> str:
     return "\n".join(lines) + "\n"
 
 
-def render_markdown(report: LintReport) -> str:
-    status = "passed" if report.passed else "failed"
-    lines = [
-        "# LLM Wiki Validation Report",
-        "",
-        f"- Wiki: `{report.wiki_dir}`",
-        f"- Source: `{report.src_dir}`",
-        f"- Mode: `{'strict' if report.strict else 'normal'}`",
-        (
-            "- Native drift: "
-            f"`{'report-only' if report.knowledge_drift_report else 'disabled'}`"
-        ),
-        f"- Result: **{status}**",
-        f"- Issues: {report.issue_count}",
-        f"- Diagnostics: {len(report.diagnostics)}",
-    ]
-    if report.knowledge_summary is not None:
-        lines.append(f"- Freshness: {report.knowledge_summary.freshness}")
-    lines.append("")
-    if not report.issues and not report.diagnostics:
-        lines.append("No issues found.")
-        return "\n".join(lines) + "\n"
+def render_markdown(report: LintReport, *, health: Mapping | None = None) -> str:
+    from .health_summary import render_validation_markdown
 
-    if report.issues:
-        lines.append("## Issues")
-        lines.append("")
-        for issue in report.issues:
-            location = f" (`{issue.path}`)" if issue.path else ""
-            lines.append(f"- **{issue.category}**{location}: {issue.message}")
-        lines.append("")
-    else:
-        lines.append("No issues found.")
-        lines.append("")
-
-    if report.diagnostics:
-        lines.append("## Diagnostics")
-        lines.append("")
-        for diagnostic in report.diagnostics:
-            location = f" (`{diagnostic.path}`)" if diagnostic.path else ""
-            severity = diagnostic.severity or "warning"
-            lines.append(
-                f"- **{diagnostic.category}**{location} [{severity}]: "
-                f"{diagnostic.message}"
-            )
-            if diagnostic.hint is not None:
-                lines.append(f"  - Hint: {diagnostic.hint}")
-    return "\n".join(lines) + "\n"
+    return render_validation_markdown(report_to_dict(report), health=health)
 
 
 def run(args):

@@ -689,6 +689,15 @@ checks. Ordinary CI and doctor reports disclose release policy as unavailable:
 only the separate release-policy verifier can establish its outcome from
 authenticated evidence matching the candidate, scope and captured inputs.
 
+Full Markdown reports start with captured health guidance and a bounded diagnostic
+preview. The complete diagnostic index reconciles category/kind totals and links
+to every emitted row. Routine external-call boundaries appear separately from
+unresolved or unfamiliar call findings and explicit step/depth truncation. Preview
+returned/omitted counts describe emitted records; they do not establish that the
+underlying source analysis was complete. Canonical lint/CI JSON retains the
+original findings, severities and hints. CI text and compact Action summaries use
+the same category/kind distinctions without changing their existing failure rules.
+
 `--profile` suppresses the human-readable lint text and prints one JSON object
 to stdout containing the normal lint report, diagnostics, and phase timings.
 The JSON contract is preserved for extractor failures as well; lint still exits
@@ -808,6 +817,13 @@ dependencies as warning diagnostics. These warnings are visible in human output
 and profile JSON but do not make `lint`, `lint --strict`, or `ci-check` fail by
 themselves. Stale architecture pages with no current source modules remain hard
 issues.
+Skipped unused-dependency checks name the actual manifest paths and source scope.
+Where supported by the captured scope and package ownership guard, they distinguish
+excluded bundled helper implementations, missing source witnesses, source present
+without extraction, and unsupported inputs. Unknown ownership or coverage stays
+unknown. Skipping provides no unused-package verdict and does not diagnose helper
+preparation. Review the exact named paths read-only; helper-specific verification
+or preparation remains a separate operation with its existing toolchain needs.
 Python dependency reconciliation reads `pyproject.toml` and `requirements*.txt`
 manifests, including nested manifests scoped to their directory. Python imports
 use the selected source root, conventional `src` layouts, and declared packaging
