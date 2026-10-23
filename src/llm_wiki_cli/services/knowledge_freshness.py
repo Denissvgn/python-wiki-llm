@@ -576,6 +576,7 @@ def _evaluate_concept(
         live,
     )
     if incompatibility is not None:
+        assert recorded.extractor_ref is not None  # Required by the reliable-basis guard.
         diagnosis = (
             analysis_basis_diagnostic(knowledge.bundle.producer, live.producer,
                                       extractor_ref=recorded.extractor_ref)

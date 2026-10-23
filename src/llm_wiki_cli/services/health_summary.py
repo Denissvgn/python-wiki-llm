@@ -18,6 +18,13 @@ FRESHNESS_DISCLOSURE = (
     "evidence; zero confirmed drift alone does not establish currentness. "
     "nonsemantic-source-change: " + SOURCE_CHANGED_STRUCTURE_UNCHANGED
 )
+RELEASE_POLICY_UNAVAILABLE = (
+    "unavailable (requires separate authenticated, matching release-policy evidence)"
+)
+ASSURANCE_DISCLOSURE = (
+    "Structural integrity and freshness are separate from human review and machine "
+    "verification; none alone establishes semantic approval."
+)
 
 
 def summary_cell(value: object, limit: int = 240) -> str:
@@ -53,6 +60,32 @@ def health_policy(strict: bool) -> str:
 def optional_status(state: str, *, absent: str) -> str:
     """Disclose optional absence without changing present evidence states."""
     return state + " (optional; absent)" if state == absent else state
+
+
+def assurance_rows(report: Mapping) -> list[tuple[str, str]]:
+    """Describe captured assurance without inferring adoption or review coverage."""
+    governance = report["governance"]
+    verification = report["verification_receipt"]
+    authority = optional_status(governance["state"], absent="not-present")
+    if governance["state"] != "not-present":
+        authority += f"; ledger={governance['ledger']}; projection={governance['projection']}"
+    if governance["reasons"]:
+        authority += "; " + reason_list(governance["reasons"])
+    review = (
+        f"expired={governance['expired_reviews']}; current review coverage not established "
+        "by this aggregate; inspect scoped review records"
+    )
+    machine = optional_status(verification["state"], absent="absent")
+    if verification["state"] != "absent":
+        machine += (
+            f"; recorded={verification['recorded_result']}; current_passed={verification['passed']}"
+            "; recorded scope/checks only"
+        )
+    return [
+        ("Governance authority", authority),
+        ("Human review", review),
+        ("Machine verification", machine),
+    ]
 
 
 def freshness_counts(counts: Mapping[str, int] | None) -> str:

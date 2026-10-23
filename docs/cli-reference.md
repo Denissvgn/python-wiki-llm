@@ -680,6 +680,15 @@ retain their normal blocking policy.
 Legacy wikis with no declared knowledge projection continue in surface-only
 mode. See [Native knowledge reads][native-knowledge-strict]
 for the complete policy.
+
+CI text, Markdown and Action summaries show structural integrity separately
+from the embedded non-strict advisory health result. A passing integrity check
+can accompany degraded health. Native drift is explicitly `disabled` or
+`report-only`; that diagnostic mode does not change the blocking integrity
+checks. Ordinary CI and doctor reports disclose release policy as unavailable:
+only the separate release-policy verifier can establish its outcome from
+authenticated evidence matching the candidate, scope and captured inputs.
+
 `--profile` suppresses the human-readable lint text and prints one JSON object
 to stdout containing the normal lint report, diagnostics, and phase timings.
 The JSON contract is preserved for extractor failures as well; lint still exits
@@ -945,6 +954,22 @@ llm-wiki doctor --wiki-dir docs/llm_wiki --src-dir . --strict
 The report composes the existing availability, live freshness, snapshot parity,
 governance and review, drift, and verification-receipt checks. It does not
 define a separate source analyzer. Human output is a compact screen summary.
+It states the health classification mode; `--strict` does not by itself prove
+release admission. The doctor Action separately displays its configured failure
+threshold, which remains independent of the report's classification mode.
+
+Governance adoption and running verification checkers are explicit operations;
+expected optional absence is disclosed without inventing review or semantic approval.
+A valid governance ledger does not establish current human-review coverage,
+and zero expired findings does not mean every section was reviewed. Inspect
+the scoped review records. A valid machine receipt covers its recorded scope
+and checks only. A stale receipt retains its historical result while current
+validity fails; stale, failed and invalid receipts remain unhealthy. Missing
+previously committed governance authority remains invalid and requires the
+exact ledger to be restored. Reports never adopt governance, acknowledge a
+review or execute verification checkers. See [`knowledge`](#knowledge) for
+explicit adoption, review and verification operations.
+
 For legacy knowledge, automatic JSON output uses `llm-wiki-doctor/v1` and contains the same
 six named sections, complete freshness counts when evaluation succeeds, and
 the required evaluated or snapshot-only disclosure.

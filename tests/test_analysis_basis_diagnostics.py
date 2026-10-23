@@ -32,6 +32,7 @@ def test_diagnosis_retains_all_real_dimensions_without_changing_eligibility(opti
     before, after = component(), component(**options)
     assert before.configuration_hash != after.configuration_hash
     result = ac.analysis_diagnostic({before.component_id: before}, {after.component_id: after})
+    assert result is not None
     assert result["changes"] == {"agent-wiki-cli": expected}
     assert result["unavailable"] == ()
     assert all(name in result["description"] for name in expected)
@@ -47,6 +48,7 @@ def test_diagnosis_retains_all_real_dimensions_without_changing_eligibility(opti
 def test_unavailable_comparisons_do_not_guess_a_dimension_or_relax_validation(damage):
     before = component()
     record = deepcopy(ac.component_record(before))
+    assert record is not None
     if damage == "missing":
         after = replace(before, extensions={})
     elif damage == "binding":
@@ -61,6 +63,7 @@ def test_unavailable_comparisons_do_not_guess_a_dimension_or_relax_validation(da
         if damage == "contract":
             after = replace(after, configuration_hash=ac.configuration_commitment(record))
     result = ac.analysis_diagnostic({before.component_id: before}, {after.component_id: after})
+    assert result is not None
     assert result["changes"] == {}
     assert result["unavailable"] == ("agent-wiki-cli",)
     assert "unavailable" in result["description"].lower()
@@ -82,6 +85,7 @@ def test_no_captured_components_are_unavailable_rather_than_a_match():
 def test_version_and_display_provenance_do_not_invent_analysis_drift(monkeypatch):
     before, after = component(), component("1.0.1")
     record = deepcopy(ac.component_record(after))
+    assert record is not None
     record["provenance"]["platform"] = "different-display-provenance"
     after = replace(after, extensions={ac.EXTENSION: record})
     from pathlib import Path
@@ -101,6 +105,7 @@ def test_multiple_components_and_unavailable_detail_are_not_lost():
 
     def python_component(value):
         record = deepcopy(ac.component_record(value))
+        assert record is not None
         record["component"] = "llm-wiki/extractor/python"
         record["identity"] = ac.digest({k: v for k, v in record.items() if k not in {"identity", "provenance"}})
         return replace(value, component_id=record["component"],
@@ -111,11 +116,13 @@ def test_multiple_components_and_unavailable_detail_are_not_lost():
     left = {python.component_id: python, before.component_id: before}
     right = {runtime.component_id: runtime, configured.component_id: configured}
     result = ac.analysis_diagnostic(left, right)
+    assert result is not None
     assert list(result["changes"]) == ["agent-wiki-cli", "llm-wiki/extractor/python"]
     assert result["changes"] == {"agent-wiki-cli": ("runtime",),
                                   "llm-wiki/extractor/python": ("configuration",)}
     del right[python.component_id]
     result = ac.analysis_diagnostic(left, right)
+    assert result is not None
     assert result["changes"] == {"agent-wiki-cli": ("runtime",)}
     assert result["unavailable"] == ("llm-wiki/extractor/python",)
 
@@ -153,6 +160,7 @@ def test_live_reports_explain_the_same_commitments_with_legacy_reasons(recorded_
         assert all(name in finding.message for name in dimensions)
         assert "producer tool configuration changed" not in finding.message.lower()
         if dimensions == ("runtime",):
+            assert finding.hint is not None
             assert "target host" in finding.hint
             assert "restore" not in finding.hint.lower()
     # Canonical compact projections retain exactly the historical hint vocabulary.
@@ -176,7 +184,10 @@ def test_live_reports_explain_the_same_commitments_with_legacy_reasons(recorded_
     from llm_wiki_cli.services.documentation_queries import DocumentationGraphQueryService
 
     service = DocumentationGraphQueryService({}, knowledge_view=report.knowledge_view)
-    explained = api.explain_evidence(findings[0].target, service=service)["evidence"]["freshness"]
+    assert findings[0].target is not None
+    explanation = api.explain_evidence(findings[0].target, service=service)["evidence"]
+    assert explanation is not None
+    explained = explanation["freshness"]
     assert set(explained) == {"state", "reason", "description", "live_comparison_performed",
                               "recorded_basis", "live_basis", "hint"}
     assert explained["hint"] == findings[0].hint
@@ -192,6 +203,7 @@ def test_live_reports_explain_the_same_commitments_with_legacy_reasons(recorded_
     assert mcp["evidence"]["freshness"] == explained
     from llm_wiki_cli.services.knowledge_projection import _project_freshness
 
+    assert report.knowledge_view is not None and report.knowledge_view.knowledge is not None
     concept = next(c for c in report.knowledge_view.knowledge.concepts if c.locator == findings[0].target)
     projected = _project_freshness(concept, report.knowledge_view)
     assert set(projected) == {"state", "reason", "evaluated", "live_comparison_performed", "hint"}
@@ -211,6 +223,7 @@ def test_live_reports_explain_the_same_commitments_with_legacy_reasons(recorded_
     if dimensions == ("runtime",):
         historical = deepcopy(ci)
         old_hint = knowledge_freshness_hint("basis-incompatible", findings[0].reason_code)
+        assert old_hint is not None
         for finding in historical["diagnostics"]:
             if finding["category"] == "knowledge_freshness":
                 finding["hint"] = old_hint

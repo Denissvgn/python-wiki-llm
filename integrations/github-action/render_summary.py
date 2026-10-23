@@ -13,11 +13,13 @@ from typing import Any
 from llm_wiki_cli.services.ci_report import validate_doctor_payload
 from llm_wiki_cli.services.contracts import DOCTOR_V3_SCHEMA_VERSION
 from llm_wiki_cli.services.health_summary import (
+    ASSURANCE_DISCLOSURE,
     FRESHNESS_DISCLOSURE,
+    RELEASE_POLICY_UNAVAILABLE,
+    assurance_rows,
     detailed_health_rows,
     freshness_counts,
     health_policy,
-    optional_status,
     reason_list,
     summary_cell,
 )
@@ -427,9 +429,9 @@ def render_summary(
     availability = _object(report["availability"], "report.availability")
     freshness = _object(report["freshness"], "report.freshness")
     snapshot = _object(report["snapshot_parity"], "report.snapshot_parity")
-    governance = _object(report["governance"], "report.governance")
+    _object(report["governance"], "report.governance")
     drift = _object(report["drift"], "report.drift")
-    verification = _object(
+    _object(
         report["verification_receipt"],
         "report.verification_receipt",
     )
@@ -438,6 +440,7 @@ def render_summary(
     _string(report_name, "report name")
     if evidence_artifact is not None:
         _string(evidence_artifact, "evidence artifact")
+    assurance = dict(assurance_rows(report))
     rows = (
         ("Overall", report["status"]),
         ("Wiki scope", report["wiki_dir"]),
@@ -452,7 +455,8 @@ def render_summary(
         ("Freshness", freshness.get("disclosure", "unknown")),
         ("Freshness states", freshness_counts(freshness["counts_by_state"])),
         ("Snapshot parity", snapshot.get("state", "unknown")),
-        ("Governance", optional_status(governance["state"], absent="not-present")),
+        ("Governance", assurance["Governance authority"]),
+        ("Human review", assurance["Human review"]),
         (
             "Drift",
             (
@@ -461,7 +465,8 @@ def render_summary(
                 f"indeterminate={drift.get('indeterminate', 0)})"
             ),
         ),
-        ("Verification receipt", optional_status(verification["state"], absent="absent")),
+        ("Verification receipt", assurance["Machine verification"]),
+        ("Release policy", RELEASE_POLICY_UNAVAILABLE),
         ("Drift diagnostics", drift["diagnostic_count"]),
         ("Drift reasons", reason_list(drift["reasons"])),
         ("Health reasons", reason_list(sorted(set(
@@ -482,15 +487,13 @@ def render_summary(
         "|---|---|",
         *(f"| {_cell(label)} | `{_cell(value)}` |" for label, value in rows),
         "",
-        FRESHNESS_DISCLOSURE,
+        FRESHNESS_DISCLOSURE + " " + ASSURANCE_DISCLOSURE,
         "",
         (
             "Captured coverage, primary concept reasons and producer versions are available in the full v3 JSON."
             if report["schema_version"] in {DOCTOR_V3_SCHEMA_VERSION, "llm-wiki-doctor/v4"} else
             "Doctor v1 supplies no per-reason counts, recovery hints or producer versions."
-        ),
-        "",
-        f"Full JSON: `{_cell(report_name)}`. Text marked `[truncated]` is abbreviated.",
+        ) + f" Full JSON: `{_cell(report_name)}`. Text marked `[truncated]` is abbreviated.",
     ]
     if evidence_artifact is not None:
         lines.append(f"Evidence artifact: `{_cell(evidence_artifact)}`.")

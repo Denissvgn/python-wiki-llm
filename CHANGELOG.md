@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Integrity and health summaries distinguish blocking checks, advisory drift,
+  release-policy evidence, human review and scoped machine verification.
+- Stale machine receipts retain their earlier result without being mistaken for
+  currently passing verification.
+
 - Knowledge health diagnostics identify changes in analysis implementation,
   configuration and execution runtime while preserving historical reason codes
   and stored evidence compatibility.

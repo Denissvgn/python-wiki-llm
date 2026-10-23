@@ -27,7 +27,11 @@ from .contracts import (
 from .doctor_service import compose_doctor_report
 from . import analysis_compatibility as ac
 from .health_contract import HealthDetailsError, validate_health_details
-from .health_summary import FRESHNESS_DISCLOSURE, captured_analysis_diagnostic, detailed_health_rows, freshness_counts, reason_list, summary_cell
+from .health_summary import (
+    ASSURANCE_DISCLOSURE, FRESHNESS_DISCLOSURE,
+    assurance_rows, captured_analysis_diagnostic, detailed_health_rows,
+    freshness_counts, reason_list, summary_cell,
+)
 from .knowledge_observability import KnowledgeAggregateSummary, knowledge_freshness_hint
 from .lint_service import LintReport, report_to_dict
 
@@ -931,7 +935,9 @@ def _validate_doctor(
         raise CiCheckReportError(
             "report.knowledge_health.verification_receipt result fields disagree"
         )
-    if recorded_result == "passed" and passed is not True:
+    # A stale receipt preserves its historical result while current validity
+    # fails. Do not confuse that earlier pass with a currently passing check.
+    if recorded_result == "passed" and passed is not True and verification_state != "stale":
         raise CiCheckReportError(
             "report.knowledge_health.verification_receipt recorded result disagrees"
         )
@@ -1473,9 +1479,11 @@ def render_ci_summary(
     if report is not None:
         lines.extend([
             f"- Scope: wiki `{summary_cell(report['wiki_dir'])}`; source `{summary_cell(report['src_dir'])}`",
-            "- Policies: strict integrity (blocking); non-strict health (advisory).",
+            "- Policies: strict integrity (blocking); non-strict health (advisory). "
+            + ("Native drift: `report-only` (advisory)." if report["knowledge_drift_report"] else "Native drift: `disabled`."),
         ])
         health = _object(report["knowledge_health"], "report.knowledge_health")
+        assurance = dict(assurance_rows(health))
         availability = _object(
             health["availability"], "report.knowledge_health.availability"
         )
@@ -1496,15 +1504,18 @@ def render_ci_summary(
         )
         lines.extend(
             [
-                f"- Blocking issues: `{report['issue_count']}`",
-                f"- Knowledge health: `{health['status']}`",
+                f"- Blocking issues: `{report['issue_count']}`; Structural integrity: `{'passed' if report['ok'] else 'failed'}` (strict; blocking).",
+                f"- Knowledge health: `{health['status']}` (exit {health['exit_code']}; non-strict; advisory)",
+                "- Release policy: `unavailable`; requires separate authenticated, matching release-policy evidence.",
                 f"- Availability: `{availability['state']}`",
                 f"- Freshness: `{freshness_label}`",
                 (
                     "- Snapshot / governance: "
                     f"`{snapshot['state']}` / `{governance['state']}`"
                     + (" (governance optional; absent)" if governance["state"] == "not-present" else "")
+                    + ("; " + summary_cell(assurance["Governance authority"]) if governance["state"] != "not-present" else "")
                 ),
+                "- Human review: " + summary_cell(assurance["Human review"]),
                 (
                     "- Drift: "
                     f"`{drift['state']}` "
@@ -1515,6 +1526,8 @@ def render_ci_summary(
                 + (" (optional; absent)" if verification["state"] == "absent" else ""),
             ]
         )
+        if verification["state"] != "absent":
+            lines[-1] += summary_cell(assurance["Machine verification"].removeprefix(verification["state"]))
     else:
         lines.extend(
             [
@@ -1526,10 +1539,11 @@ def render_ci_summary(
                 "- Snapshot / governance: `unavailable` / `unavailable`",
                 "- Drift: `unavailable`",
                 "- Verification receipt: `unavailable`",
+                "- Release policy: `unavailable`; no authenticated policy evidence in this report.",
             ]
         )
     lines.append(
-        "- Native drift diagnostics are advisory; integrity validation remains blocking."
+        "- Native drift diagnostics are advisory; integrity validation remains blocking. " + ASSURANCE_DISCLOSURE
     )
     evidence = f"`{summary_cell(report_name)}`" if report is not None else "unavailable"
     if evidence_artifact is not None:
