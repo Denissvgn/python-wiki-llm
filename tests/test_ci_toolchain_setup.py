@@ -204,7 +204,10 @@ def fake_lock(tmp_path: Path) -> Path:
         "toolchains": {
             "node": {
                 "artifact": node_artifact,
-                "platform_artifacts": {"darwin_arm64": node_artifact},
+                "platform_artifacts": {
+                    "darwin_arm64": node_artifact,
+                    "linux_arm64": node_artifact,
+                },
                 "version": NODE_VERSION,
                 "version_output": f"v{NODE_VERSION}",
             },
@@ -411,6 +414,74 @@ def test_routine_local_setup_uses_lock_and_writes_sourceable_environment(
     assert sourced.stdout.splitlines() == [f"v{NODE_VERSION}", NPM_VERSION]
     assert "export PATH=" in environment_file.read_text(encoding="utf-8")
     assert not (install_root / "go").exists()
+
+
+@pytest.mark.parametrize("machine", ["aarch64", "arm64"])
+def test_linux_arm64_routine_uses_only_its_locked_artifact(
+    tmp_path: Path, fake_lock: Path, setup_harness: SetupHarness, machine: str,
+) -> None:
+    payload = json.loads(fake_lock.read_text(encoding="utf-8"))
+    payload["toolchains"]["node"]["artifact"]["url"] = "file:///not-requested-x64"
+    payload["toolchains"]["node"]["platform_artifacts"]["darwin_arm64"]["url"] = "file:///not-requested-darwin"
+    fake_lock.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    install_root = setup_harness.root / ".git" / "llm-wiki-ci-arm64"
+    environment_file = setup_harness.root / ".git" / "llm-wiki-ci-arm64.env"
+    environment = _with_fake_uname(tmp_path, dict(os.environ), system="Linux", machine=machine)
+    completed = _run_setup(
+        setup_harness,
+        *_local_arguments(mode="routine", install_root=install_root,
+                          environment_file=environment_file, lock=fake_lock),
+        environment=environment,
+    )
+    _assert_success(completed)
+    sourced = subprocess.run(
+        ["bash", "-c", 'source "$1"; node --version; npm --version', "bash", str(environment_file)],
+        cwd=setup_harness.root, env=environment, capture_output=True, text=True, check=False,
+    )
+    assert sourced.returncode == 0, (sourced.stdout, sourced.stderr)
+    assert sourced.stdout.splitlines() == [f"v{NODE_VERSION}", NPM_VERSION]
+    assert not (install_root / "go").exists()
+
+
+@pytest.mark.parametrize("toolchain", ["node", "npm"])
+def test_linux_arm64_routine_rejects_corrupt_download_before_publication(
+    tmp_path: Path, fake_lock: Path, setup_harness: SetupHarness, toolchain: str,
+) -> None:
+    payload = json.loads(fake_lock.read_text(encoding="utf-8"))
+    artifact = (payload["toolchains"]["node"]["platform_artifacts"]["linux_arm64"]
+                if toolchain == "node" else payload["toolchains"]["npm"]["artifact"])
+    artifact["sha256"] = "0" * 64
+    fake_lock.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    install_root = setup_harness.root / ".git" / "llm-wiki-ci-arm64-corrupt"
+    environment_file = setup_harness.root / ".git" / "llm-wiki-ci-arm64-corrupt.env"
+    completed = _run_setup(
+        setup_harness,
+        *_local_arguments(mode="routine", install_root=install_root,
+                          environment_file=environment_file, lock=fake_lock),
+        environment=_with_fake_uname(tmp_path, dict(os.environ), system="Linux", machine="aarch64"),
+    )
+    assert completed.returncode != 0
+    assert "digest mismatch" in completed.stderr
+    assert not (install_root / "node").exists()
+    assert not environment_file.exists()
+
+
+@pytest.mark.parametrize("mode", ["qualification-go", "extractor-go", "extractor-rust", "extractor-haskell"])
+def test_linux_arm64_does_not_infer_support_for_other_toolchains(
+    tmp_path: Path, fake_lock: Path, setup_harness: SetupHarness, mode: str,
+) -> None:
+    install_root = setup_harness.root / ".git" / "llm-wiki-ci-arm64-unsupported"
+    environment_file = setup_harness.root / ".git" / "llm-wiki-ci-arm64-unsupported.env"
+    completed = _run_setup(
+        setup_harness,
+        *_local_arguments(mode=mode, install_root=install_root,
+                          environment_file=environment_file, lock=fake_lock),
+        environment=_with_fake_uname(tmp_path, dict(os.environ), system="Linux", machine="aarch64"),
+    )
+    assert completed.returncode != 0
+    assert f"no locked {mode} artifact for Linux/aarch64" in completed.stderr
+    assert not install_root.exists()
+    assert not environment_file.exists()
 
 
 def test_qualification_go_is_isolated_and_exports_exact_go_path(
@@ -701,9 +772,8 @@ def test_corrupt_locked_download_fails_before_install_or_environment_publish(
     payload = json.loads(fake_lock.read_text(encoding="utf-8"))
     payload["toolchains"][toolchain]["artifact"]["sha256"] = "0" * 64
     if toolchain in {"node", "go"}:
-        payload["toolchains"][toolchain]["platform_artifacts"][
-            "darwin_arm64"
-        ]["sha256"] = "0" * 64
+        for artifact in payload["toolchains"][toolchain]["platform_artifacts"].values():
+            artifact["sha256"] = "0" * 64
     fake_lock.write_text(json.dumps(payload) + "\n", encoding="utf-8")
     install_root = (
         setup_harness.root / ".git" / f"llm-wiki-ci-corrupt-{toolchain}"
@@ -1168,6 +1238,10 @@ def test_setup_source_treats_lock_and_checksum_verifier_as_authoritative() -> No
         assert artifact["url"].startswith("https://")
         assert "darwin-arm64" in artifact["url"]
         assert re.fullmatch(r"[0-9a-f]{64}", artifact["sha256"])
+    arm64 = lock["toolchains"]["node"]["platform_artifacts"]["linux_arm64"]
+    assert set(arm64) == {"sha256", "url"}
+    assert arm64["url"] == f"https://nodejs.org/dist/v{lock['toolchains']['node']['version']}/node-v{lock['toolchains']['node']['version']}-linux-arm64.tar.xz"
+    assert re.fullmatch(r"[0-9a-f]{64}", arm64["sha256"])
     assert "release/qualification.py" in script
     assert "lock-value" in script
     assert "verify-download" in script

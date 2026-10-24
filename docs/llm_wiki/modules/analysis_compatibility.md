@@ -40,9 +40,9 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (20) |
+| Inbound | `src` (21) |
 
-> All 20 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 21 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 
@@ -58,6 +58,7 @@ flowchart LR
 | `committed_configuration` | `(configuration: Mapping, record: Mapping) -> dict` | — | — |
 | `configuration_commitment` | `(record: Mapping) -> str` | — | — |
 | `compare_components` | `(recorded, live, *, policy: str = 'auto', plugins: bool = False, configuration_required: bool = True) -> str \| None` | — | Return the differing basis, or None; callers map it to their contract. |
+| `analysis_diagnostic` | `(recorded: Mapping, live: Mapping) -> dict \| None` | — | Explain bound analysis commitments without making an eligibility decision. |
 | `report_schema` | `(requested: str, details: Mapping \| None, *, legacy: str = 'v1') -> str` | — | — |
 | `legacy_details` | `(details: Mapping) -> dict` | — | — |
 | `comparison_entrypoint` | `(function: Callable[_P, _R]) -> Callable[_P, _R]` | — | — |

@@ -197,7 +197,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| render_compact_task_context (src/llm_wiki_cli/api.py) | render_compact_task_context (src/llm_wiki_cli/services/task_compact.py) | 1452 | `render(canonical_text, request, view_options=view_options, profile=profile, policy=policy, counter=counter)` |
+| render_compact_task_context (src/llm_wiki_cli/api.py) | render_compact_task_context (src/llm_wiki_cli/services/task_compact.py) | 1457 | `render(canonical_text, request, view_options=view_options, profile=profile, policy=policy, counter=counter)` |
 | render_compact_task_context (src/llm_wiki_cli/services/task_compact.py) | _validated | 475 | `_validated(canonical_text, request, profile, policy, counter)` |
 | _validated | isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated) | 171 | `isinstance(canonical_text, TaskContext)` |
 | _validated | TaskCompactError | 173 | `TaskCompactError('canonical-unavailable', 'An unsuccessful canonical result has no compact context')` |

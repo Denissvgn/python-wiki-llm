@@ -16,6 +16,96 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .imports import ModulePathResolver
 
+PYTHON_LEXICAL_FUNCTIONS_SCHEMA = "llm-wiki-python-lexical-functions/v1"
+
+
+def _lexical_table(data: Mapping) -> tuple[dict, list] | None:
+    """Validate optional lexical witnesses without changing legacy bindings."""
+    table = data.get("python_lexical_functions")
+    if (not isinstance(table, dict) or set(table) != {"schema_version", "functions", "calls"}
+            or table.get("schema_version") != PYTHON_LEXICAL_FUNCTIONS_SCHEMA
+            or not isinstance(table.get("functions"), list) or not table["functions"]
+            or not isinstance(table.get("calls"), list) or not table["calls"]):
+        return None
+    definitions = {}
+    parent_records = {}
+    for item in table["functions"]:
+        if not isinstance(item, dict) or set(item) != {
+            "symbol", "enclosing_symbol", "enclosing_line", "local_name", "definition_line", "end_line"
+        }:
+            return None
+        owner, local = item["enclosing_symbol"], item["local_name"]
+        if (not isinstance(owner, str) or not owner.isidentifier()
+                or not isinstance(local, str) or not local.isidentifier()
+                or item["symbol"] != f"{owner}.<locals>.{local}"
+                or any(type(item[k]) is not int for k in ("enclosing_line", "definition_line", "end_line"))
+                or not 0 < item["enclosing_line"] < item["definition_line"] <= item["end_line"]
+                or item["symbol"] in definitions):
+            return None
+        parents = [fn for fn in data.get("functions", [])
+                   if isinstance(fn, dict) and fn.get("name") == owner]
+        functions = [fn for fn in data.get("nested_functions", [])
+                     if isinstance(fn, dict) and fn.get("name") == item["symbol"]]
+        if (len(parents) != 1 or len(functions) != 1
+                or parents[0].get("line") != item["enclosing_line"]
+                or functions[0].get("line") != item["definition_line"]
+                or functions[0].get("decorators")):
+            return None
+        definitions[item["symbol"]] = item
+        parent_records[(owner, item["enclosing_line"])] = parents[0]
+    seen = set()
+    for call in table["calls"]:
+        if not isinstance(call, dict) or set(call) != {"caller", "caller_line", "line", "column", "callee"}:
+            return None
+        if not isinstance(call["callee"], str) or call["callee"] not in definitions:
+            return None
+        definition = definitions[call["callee"]]
+        if (call["caller"] != definition["enclosing_symbol"]
+                or type(call["caller_line"]) is not int
+                or call["caller_line"] != definition["enclosing_line"]
+                or type(call["line"]) is not int or call["line"] <= definition["end_line"]
+                or type(call["column"]) is not int or call["column"] < 0):
+            return None
+        key = (call["caller"], call["caller_line"], call["line"], call["column"])
+        if key in seen:
+            return None
+        seen.add(key)
+        parent = parent_records[(call["caller"], call["caller_line"])]
+        invocations = parent.get("calls", [])
+        bindings = parent.get("call_bindings", [])
+        if not isinstance(invocations, list) or not isinstance(bindings, list) or len(invocations) != len(bindings):
+            return None
+        matches = [i for i, invocation in enumerate(invocations) if isinstance(invocation, dict)
+                   and (invocation.get("line"), invocation.get("column"), invocation.get("name"))
+                   == (call["line"], call["column"], definition["local_name"])]
+        if (len(matches) != 1 or not isinstance(bindings[matches[0]], Mapping)
+                or bindings[matches[0]].get("kind") != "unresolved"
+                or bindings[matches[0]].get("reason") != "receiver-binding-unresolved"):
+            return None
+    return definitions, table["calls"]
+
+
+def _lexical_call(call, filepath, data, context, binding):
+    if (binding is None or binding.get("kind") != "unresolved"
+            or binding.get("reason") != "receiver-binding-unresolved"
+            or "python_lexical_functions" not in data):
+        return None
+    validated = _lexical_table(data)
+    if validated is None:
+        return PythonCallDecision(None, call["name"], "unresolved", reason="lexical-facts-invalid",
+                                  location=_invocation_location(call, binding, filepath))
+    definitions, calls = validated
+    key = (context.callable.get("name"), context.callable.get("line"), call.get("line"), call.get("column"))
+    matches = [row for row in calls if (row["caller"], row["caller_line"], row["line"], row["column"]) == key]
+    if not matches:
+        return None
+    target = definitions[matches[0]["callee"]]
+    if call.get("attr") or call["name"] != target["local_name"]:
+        return PythonCallDecision(None, call["name"], "unresolved", reason="lexical-facts-invalid",
+                                  location=_invocation_location(call, binding, filepath))
+    return PythonCallDecision(filepath, target["symbol"], "internal", reason="closed-lexical-function",
+                              location=_invocation_location(call, binding, filepath))
+
 
 @dataclass(frozen=True)
 class PythonCallContext:
@@ -268,6 +358,9 @@ def resolve_python_call_decision(
                 reason="call-binding-invalid",
                 location=_invocation_location(call, {}, filepath),
             )
+    lexical = _lexical_call(call, filepath, data, context, binding)
+    if lexical is not None:
+        return lexical
     if binding is not None and binding.get("kind") == "constructed-receiver":
         if not valid_python_constructor_facts(data):
             return PythonCallDecision(

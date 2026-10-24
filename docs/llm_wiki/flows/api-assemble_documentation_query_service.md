@@ -43,7 +43,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| assemble_documentation_query_service | service_factory | 383 | `service_factory(inventory, call_edges=call_edges, flows=flows, data_flows=data_flows, dependency_analysis=dependency_analysis, surface_index=surface_index, limit=limit, knowledge_view=knowledge_view, machine_verification=machine_verification, **=captured_options)` |
+| assemble_documentation_query_service | service_factory | 384 | `service_factory(inventory, call_edges=call_edges, flows=flows, data_flows=data_flows, dependency_analysis=dependency_analysis, surface_index=surface_index, limit=limit, knowledge_view=knowledge_view, machine_verification=machine_verification, **=captured_options)` |
 
 ### Boundary effects
 
@@ -53,7 +53,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `assemble_documentation_query_service` | `service_factory` | 383 |
+| unresolved_call | `assemble_documentation_query_service` | `service_factory` | 384 |
 
 ## Behavior
 

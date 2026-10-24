@@ -35,21 +35,21 @@ sequenceDiagram
     participant p11 as _normalization_diagnostics
     participant p12 as _key
     participant p13 as _body_requirements
-    participant p14 as _raw_operation
-    participant p15 as _dereference
-    participant p16 as _requirements
-    participant p17 as _openapi_parameter
-    participant p18 as path_is_selected
-    participant p19 as _path_contains_link_or_reparse
-    participant p20 as _windows_sid_string
-    participant p21 as _openapi_request_body
-    participant p22 as _openapi_responses
-    participant p23 as _selection_path
-    participant p24 as path_is_link_or_reparse
-    participant p25 as _schema_name
-    participant p26 as ApiContractError
-    participant p27 as PathValidationError
-    participant p28 as first_unsafe_path_component
+    participant p14 as compare_exports.<locals>.identity
+    participant p15 as _raw_operation
+    participant p16 as _dereference
+    participant p17 as _requirements
+    participant p18 as _openapi_parameter
+    participant p19 as path_is_selected
+    participant p20 as _path_contains_link_or_reparse
+    participant p21 as _windows_sid_string
+    participant p22 as _openapi_request_body
+    participant p23 as _openapi_responses
+    participant p24 as _selection_path
+    participant p25 as path_is_link_or_reparse
+    participant p26 as _schema_name
+    participant p27 as ApiContractError
+    participant p28 as PathValidationError
     participant p29 as print
     participant p30 as html.escape(…).replace
     p0->>p1: validate_source_root
@@ -65,28 +65,28 @@ sequenceDiagram
     p5->>p11: _normalization_diagnostics
     p5->>p12: _key
     p5->>p13: _body_requirements
-    p13->>p14: _raw_operation
-    p8->>p15: _dereference
-    p13->>p16: _requirements
-    p8->>p17: _openapi_parameter
-    p9->>p18: path_is_selected
-    p9->>p19: _path_contains_link_or_reparse
-    p10->>p20: _windows_sid_string
-    p8->>p21: _openapi_request_body
-    p8->>p22: _openapi_responses
-    p18->>p23: _selection_path
-    p19->>p24: path_is_link_or_reparse
-    p17->>p25: _schema_name
-    p2->>p26: ApiContractError
-    p1->>p27: PathValidationError
-    p1->>p28: first_unsafe_path_component
+    p5->>p14: compare_exports.<locals>.identity
+    p13->>p15: _raw_operation
+    p8->>p16: _dereference
+    p13->>p17: _requirements
+    p8->>p18: _openapi_parameter
+    p9->>p19: path_is_selected
+    p9->>p20: _path_contains_link_or_reparse
+    p10->>p21: _windows_sid_string
+    p8->>p22: _openapi_request_body
+    p8->>p23: _openapi_responses
+    p19->>p24: _selection_path
+    p20->>p25: path_is_link_or_reparse
+    p18->>p26: _schema_name
+    p2->>p27: ApiContractError
+    p1->>p28: PathValidationError
     p0-->>p29: print(..., end=...)
     p3-->>p30: html.escape(…).replace('\n', ' ')
 ```
 
-> Call sequence diagram shows 30 of 495 interactions; 465 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 500 interactions; 470 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 206 (205 omitted); unresolved 1 of 183 (182 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 208 (207 omitted); unresolved 1 of 183 (182 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -100,7 +100,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_source_root` | 2 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 5 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 21 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:_current_windows_user_sid` | 23 | - | external | 19 |
-> Omission summary shows 8 of 83 groups; 75 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 87 groups; 79 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

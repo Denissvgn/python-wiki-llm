@@ -58,10 +58,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| normalize_documentation_query_limit | isinstance | 56 | `isinstance(value, bool)` |
-| normalize_documentation_query_limit | isinstance | 56 | `isinstance(value, int)` |
-| normalize_documentation_query_limit | DocumentationQueryError | 57 | `DocumentationQueryError('limit must be a positive integer.')` |
-| normalize_documentation_query_limit | min | 58 | `min(value, MAX_DOCUMENTATION_QUERY_LIMIT)` |
+| normalize_documentation_query_limit | isinstance | 57 | `isinstance(value, bool)` |
+| normalize_documentation_query_limit | isinstance | 57 | `isinstance(value, int)` |
+| normalize_documentation_query_limit | DocumentationQueryError | 58 | `DocumentationQueryError('limit must be a positive integer.')` |
+| normalize_documentation_query_limit | min | 59 | `min(value, MAX_DOCUMENTATION_QUERY_LIMIT)` |
 
 ### Boundary effects
 
@@ -71,8 +71,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `normalize_documentation_query_limit` | `isinstance` | 56 |
-| external_call | `normalize_documentation_query_limit` | `min` | 58 |
+| external_call | `normalize_documentation_query_limit` | `isinstance` | 57 |
+| external_call | `normalize_documentation_query_limit` | `min` | 59 |
 
 ## Behavior
 

@@ -166,16 +166,16 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| compose_doctor_report | isinstance (src/llm_wiki_cli/services….py:compose_doctor_report) | 187 | `isinstance(lint, LintReport)` |
-| compose_doctor_report | TypeError (src/llm_wiki_cli/services….py:compose_doctor_report) | 188 | `TypeError('lint must be a LintReport')` |
-| compose_doctor_report | isinstance (src/llm_wiki_cli/services….py:compose_doctor_report) | 189 | `isinstance(strict, bool)` |
-| compose_doctor_report | TypeError (src/llm_wiki_cli/services….py:compose_doctor_report) | 190 | `TypeError('strict must be a boolean')` |
-| compose_doctor_report | Path | 193 | `Path(wiki_dir)` |
-| compose_doctor_report | _availability_section | 194 | `_availability_section(lint, view, wiki_root)` |
-| _availability_section | _knowledge_declared | 309 | `_knowledge_declared(wiki_root)` |
-| _knowledge_declared | path.exists | 343 | `path.exists(data not statically known)` |
-| _knowledge_declared | path.is_symlink | 343 | `path.is_symlink(data not statically known)` |
-| _knowledge_declared | SyncManifest.load | 346 | `SyncManifest.load(wiki_root)` |
+| compose_doctor_report | isinstance (src/llm_wiki_cli/services….py:compose_doctor_report) | 190 | `isinstance(lint, LintReport)` |
+| compose_doctor_report | TypeError (src/llm_wiki_cli/services….py:compose_doctor_report) | 191 | `TypeError('lint must be a LintReport')` |
+| compose_doctor_report | isinstance (src/llm_wiki_cli/services….py:compose_doctor_report) | 192 | `isinstance(strict, bool)` |
+| compose_doctor_report | TypeError (src/llm_wiki_cli/services….py:compose_doctor_report) | 193 | `TypeError('strict must be a boolean')` |
+| compose_doctor_report | Path | 196 | `Path(wiki_dir)` |
+| compose_doctor_report | _availability_section | 197 | `_availability_section(lint, view, wiki_root)` |
+| _availability_section | _knowledge_declared | 314 | `_knowledge_declared(wiki_root)` |
+| _knowledge_declared | path.exists | 348 | `path.exists(data not statically known)` |
+| _knowledge_declared | path.is_symlink | 348 | `path.is_symlink(data not statically known)` |
+| _knowledge_declared | SyncManifest.load | 351 | `SyncManifest.load(wiki_root)` |
 | SyncManifest.load | manifest_path.exists | 1160 | `manifest_path.exists(data not statically known)` |
 
 ### Boundary effects
@@ -188,12 +188,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `compose_doctor_report` | `isinstance` | 187 |
-| external_call | `compose_doctor_report` | `TypeError` | 188 |
-| external_call | `compose_doctor_report` | `isinstance` | 189 |
-| external_call | `compose_doctor_report` | `TypeError` | 190 |
-| unresolved_call | `_knowledge_declared` | `path.exists` | 343 |
-| unresolved_call | `_knowledge_declared` | `path.is_symlink` | 343 |
+| external_call | `compose_doctor_report` | `isinstance` | 190 |
+| external_call | `compose_doctor_report` | `TypeError` | 191 |
+| external_call | `compose_doctor_report` | `isinstance` | 192 |
+| external_call | `compose_doctor_report` | `TypeError` | 193 |
+| unresolved_call | `_knowledge_declared` | `path.exists` | 348 |
+| unresolved_call | `_knowledge_declared` | `path.is_symlink` | 348 |
 | unresolved_call | `SyncManifest.load` | `manifest_path.exists` | 1160 |
 | step_limit | `compose_doctor_report` | `first 12 steps` | 0 |
 | truncated_flow | `compose_doctor_report` | `depth limit` | 0 |

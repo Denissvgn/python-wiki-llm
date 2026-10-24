@@ -128,6 +128,11 @@ a different runtime identity and can prevent portable release-health comparison.
 On a source checkout, prepare and activate the ignored local toolchain before
 refreshing:
 
+Routine Node/npm preparation supports Linux x86_64, Linux ARM64 and macOS ARM64
+with platform-specific checksum-verified artifacts. Other language toolchains
+retain their own declared host limits; an ARM64 capture does not establish
+x86_64 execution or portable comparison.
+
 ```bash
 bash .github/scripts/setup-llm-wiki-ci-toolchains.sh --mode routine \
   --install-root .git/llm-wiki-ci-toolchains \

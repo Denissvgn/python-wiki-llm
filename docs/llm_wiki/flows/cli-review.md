@@ -115,9 +115,9 @@ sequenceDiagram
     p5-->>p30: Path(…).expanduser (src/llm_wiki_cli/services/io.py:write_text_output)
 ```
 
-> Call sequence diagram shows 30 of 2158 interactions; 2128 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2159 interactions; 2129 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 703 (702 omitted); unresolved 1 of 727 (726 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 704 (703 omitted); unresolved 1 of 715 (714 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -131,7 +131,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_source_root` | 7 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 7 | - | external | 11 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 26 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
-> Omission summary shows 8 of 566 groups; 558 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 567 groups; 559 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

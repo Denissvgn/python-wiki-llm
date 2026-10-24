@@ -7,9 +7,11 @@ ruff==0.15.22
 # Resolve keyring's Linux-only closure while compiling this lock on macOS.
 jeepney==0.9.0
 secretstorage==3.4.0
-setuptools==83.0.0
+setuptools==84.1.0
 twine==7.0.0
 # Retain the patched HTTP transport used by release tooling.
 urllib3==2.8.0
 # Retain the patched CA bundle used by release tooling.
 certifi==2026.10.19
+# Avoid affected newer lock implementations while retaining Python 3.10 support.
+filelock==3.20.3

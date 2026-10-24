@@ -41,6 +41,7 @@ from .knowledge_graph import (
 from .knowledge_governance import GOVERNANCE_EXTENSION_KEY
 from .knowledge_model import knowledge_index_to_payload
 from .knowledge_observability import (
+    freshness_analysis_diagnostic,
     knowledge_freshness_hint,
     knowledge_status_payload,
 )
@@ -877,6 +878,7 @@ class DocumentationGraphQueryService:
         self.limit = limit
         # Preserve private captured metadata without altering public inventory.
         self.inventory_result = inventory_result
+        self.flow_query_binding: Mapping[str, Any] | None = None
         self.path_outcomes: dict[str, dict[str, Any]] = {}
         self.knowledge_view = knowledge_view
         self.snapshot_call_inventory = snapshot_call_inventory
@@ -929,6 +931,14 @@ class DocumentationGraphQueryService:
         self.raw_callers, self.raw_callees = self._raw_function_links()
         self._build_graph_query_indexes()
         self._build_knowledge_indexes(knowledge_view)
+
+    @_bounded_query_result
+    def flow_segment(self, value: str, *, basis: str | None = None, offset: int = 0) -> dict[str, Any]:
+        """Inspect a bounded exact-callable trace in the captured source graph."""
+        from .flow_followup import segment
+
+        return segment(self.inventory, self.call_edges, self.inventory_result, value,
+                       limit=self.limit, basis=basis, offset=offset, query_binding=self.flow_query_binding)
 
     @_bounded_query_result
     def flow_for_entrypoint(self, id_or_symbol: object) -> dict[str, Any]:
@@ -2539,6 +2549,10 @@ class DocumentationGraphQueryService:
             from .evidence_diagnostics import captured_evidence_diagnostic
 
             concept = next((c for c in view.knowledge.concepts if c.locator == locator), None)
+            analysis_diagnosis = None if concept is None else freshness_analysis_diagnostic(view, concept)
+            if analysis_diagnosis is not None:
+                hint = analysis_diagnosis["hint"]
+                result["hint"] = hint
             diagnosis = None if concept is None else captured_evidence_diagnostic(view, concept)
             if diagnosis is not None:
                 result["description"] = freshness.description + " " + diagnosis[0]

@@ -150,9 +150,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| normalize_supplied_paths | _portable_supplied_path | 139 | `_portable_supplied_path(value)` |
-| _portable_supplied_path | DocumentationQueryError | 117 | `DocumentationQueryError('paths must contain normalized portable relative source paths.')` |
-| _portable_supplied_path | require_portable_relative_path | 120 | `require_portable_relative_path(value, text_error=error, relative_error=error, escape_error=error, traversal_error=error, separator_error=error, utf8_error=error, control_error=error, non_nfc_error=error, nonportable_error=error, reserved_error=error)` |
+| normalize_supplied_paths | _portable_supplied_path | 140 | `_portable_supplied_path(value)` |
+| _portable_supplied_path | DocumentationQueryError | 118 | `DocumentationQueryError('paths must contain normalized portable relative source paths.')` |
+| _portable_supplied_path | require_portable_relative_path | 121 | `require_portable_relative_path(value, text_error=error, relative_error=error, escape_error=error, traversal_error=error, separator_error=error, utf8_error=error, control_error=error, non_nfc_error=error, nonportable_error=error, reserved_error=error)` |
 | require_portable_relative_path | isinstance (src/llm_wiki_cli/services…ire_portable_relative_path) | 216 | `isinstance(value, (...))` |
 | require_portable_relative_path | _default_path_error | 217 | `_default_path_error(value)` |
 | _default_path_error | SharedValidationError | 113 | `SharedValidationError(...)` |

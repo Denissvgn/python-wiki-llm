@@ -69,12 +69,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| knowledge_freshness_disclosure | isinstance | 448 | `isinstance(view, KnowledgeReadView)` |
-| knowledge_freshness_disclosure | TypeError | 449 | `TypeError('view must be a KnowledgeReadView')` |
-| knowledge_freshness_disclosure | _freshness_disclosure | 453 | `_freshness_disclosure(evaluated=True, concepts_evaluated=sum(...))` |
-| knowledge_freshness_disclosure | sum | 455 | `sum(...)` |
-| knowledge_freshness_disclosure | int | 455 | `int(count)` |
-| knowledge_freshness_disclosure | view.freshness.counts.values | 455 | `view.freshness.counts.values(data not statically known)` |
+| knowledge_freshness_disclosure | isinstance | 449 | `isinstance(view, KnowledgeReadView)` |
+| knowledge_freshness_disclosure | TypeError | 450 | `TypeError('view must be a KnowledgeReadView')` |
+| knowledge_freshness_disclosure | _freshness_disclosure | 454 | `_freshness_disclosure(evaluated=True, concepts_evaluated=sum(...))` |
+| knowledge_freshness_disclosure | sum | 456 | `sum(...)` |
+| knowledge_freshness_disclosure | int | 456 | `int(count)` |
+| knowledge_freshness_disclosure | view.freshness.counts.values | 456 | `view.freshness.counts.values(data not statically known)` |
 
 ### Boundary effects
 
@@ -84,10 +84,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `knowledge_freshness_disclosure` | `isinstance` | 448 |
-| external_call | `knowledge_freshness_disclosure` | `TypeError` | 449 |
-| external_call | `knowledge_freshness_disclosure` | `sum` | 455 |
-| unresolved_call | `knowledge_freshness_disclosure` | `view.freshness.counts.values` | 455 |
+| external_call | `knowledge_freshness_disclosure` | `isinstance` | 449 |
+| external_call | `knowledge_freshness_disclosure` | `TypeError` | 450 |
+| external_call | `knowledge_freshness_disclosure` | `sum` | 456 |
+| unresolved_call | `knowledge_freshness_disclosure` | `view.freshness.counts.values` | 456 |
 
 ## Behavior
 

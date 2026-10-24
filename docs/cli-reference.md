@@ -266,6 +266,13 @@ observations. A changed file refreshes its observations; deletions remove them.
 Cross-file class classification is recalculated after cached and fresh files
 are combined.
 
+A cache hit does not mean that all analysis was avoided. Read the fresh-file
+counters and extractor phases as well as the hit count. Invocations that capture
+Python implementation observations still perform fresh Python extraction;
+ordinary inventory reuse and committed sync-analysis reuse have different work
+and qualification scopes. Source content, rather than size or modification time
+alone, determines whether a per-file entry matches.
+
 After a successful sync records its generation inputs, an unchanged run can
 reuse the validated knowledge snapshot without rebuilding the graph or
 rewriting artifacts. Source/configuration, Markdown, assets, implementation,
@@ -287,11 +294,22 @@ The command reports `Sync analysis reuse: hit` or `miss` with a reason, and
 progress includes a `sync_analysis_reuse` phase. Missing, corrupted, oversized
 or redirected cache files fall back to ordinary analysis. Source changes,
 generated-section changes, unavailable helpers and incompatible inputs prevent
-reuse. Governed, maintenance-adopted and plugin-configured projects use ordinary
-analysis. `--no-cache`, `--rebuild-cache` and `--rebuild-knowledge` disable this
+reuse. An eligible ordinary maintenance owner is part of the input binding;
+cached observations never acknowledge review or replace current owner checks.
+Governed and plugin-configured projects use ordinary analysis.
+`--no-cache`, `--rebuild-cache` and `--rebuild-knowledge` disable this
 shortcut. An established unchanged snapshot is preserved without adding cache
 metadata solely to warm a cache. Standalone strict lint and CI still validate
 their own invocation inputs.
+
+Keep inventory caches in a trusted project-owned location. Restoring a
+sync-analysis file alone cannot authorize reuse without the matching native
+commitment. The integrity Action already restores exact prepared-helper caches
+and saves newly prepared ones only after successful default-branch pushes.
+Additional transport of application analysis data needs its own source-root,
+producer/runtime, settings and trust boundaries. Assess archive size, transfer,
+validation and required fresh work together; local warm timings do not establish
+a hosted net saving.
 
 `sync`, `lint`, and `ci-check` accept `--progress auto|always|never` and
 `--progress-format text|json`. Progress events are flushed to stderr. `auto`
@@ -467,6 +485,21 @@ completeness. Generated import tables label these gaps with their reason and
 source line.
 Go `_test.go` files are omitted unless `--include-tests go` is supplied; Python
 test files remain part of normal Python extraction.
+Python deep extraction can capture a bounded static subset of nested helpers.
+A unique, unconditional, undecorated helper with no lexical free variables can
+resolve direct calls after its definition when its binding is neither reassigned
+nor escaped. These functions use qualified symbols such as
+`run.<locals>.clean` in the existing `nested_functions` list; optional
+`python_lexical_functions` witnesses identify the enclosing declaration and
+exact call locations. Their contract is `llm-wiki-python-lexical-functions/v1`.
+The original lexical call-binding records remain intact. Readers without these
+witnesses retain unresolved answers; malformed or unsupported witnesses cannot
+establish a target. Caller/callee queries and bounded flows use the same proven
+source target. Closure captures, callbacks, decorators, namespace mutation and
+ambiguous or reassigned bindings remain outside this subset. Extraction uses
+syntax and symbol tables without executing project imports; resolved static
+edges do not establish runtime behavior or complete flow coverage.
+
 JavaScript `.js` and `.jsx` files are handled by the TypeScript extractor
 family and use `language: "javascript"` in inventory output. Prepare the same
 helper with `llm-wiki prepare-extractors --language typescript`.
@@ -680,6 +713,42 @@ retain their normal blocking policy.
 Legacy wikis with no declared knowledge projection continue in surface-only
 mode. See [Native knowledge reads][native-knowledge-strict]
 for the complete policy.
+
+CI text, Markdown and Action summaries show structural integrity separately
+from the embedded non-strict advisory health result. A passing integrity check
+can accompany degraded health. Native drift is explicitly `disabled` or
+`report-only`; that diagnostic mode does not change the blocking integrity
+checks. Ordinary CI and doctor reports disclose release policy as unavailable:
+only the separate release-policy verifier can establish its outcome from
+authenticated evidence matching the candidate, scope and captured inputs.
+
+Full Markdown reports start with captured health guidance and a bounded diagnostic
+preview. The complete diagnostic index reconciles category/kind totals and links
+to every emitted row. Routine external-call boundaries appear separately from
+unresolved or unfamiliar call findings and explicit step/depth truncation. Preview
+returned/omitted counts describe emitted records; they do not establish that the
+underlying source analysis was complete. Canonical lint/CI JSON retains the
+original findings, severities and hints. CI text and compact Action summaries use
+the same category/kind distinctions without changing their existing failure rules.
+
+Python coverage diagnostics distinguish static compatibility redirects from
+implementation gaps. A single unconditional, import-bound
+`sys.modules[__name__]` redirect can produce an informational
+`module_source_routes` record naming its selected, extracted destination.
+The source path and captured hash remain visible; the route creates no duplicate
+implementation or durable governance alias and does not prove runtime import
+behavior. Destination wiki coverage is checked separately. Re-exports keep
+their own module entries. Conditional or dynamic redirects, ambiguous package
+bindings, cycles, excluded targets and missing extraction remain uncovered or
+unresolved rather than acquiring an inferred owner.
+
+Comment/docstring-only package initializers produce informational
+`module_source_presence` records with their captured hashes when they have no
+module entry. Initializers with declarations, exports or executable setup retain
+the normal coverage checks. Classification reads at most 1 MiB per selected file
+and follows at most 16 redirect hops; unavailable or bounded-out proof stays
+unresolved. It never executes project imports or changes source selection.
+
 `--profile` suppresses the human-readable lint text and prints one JSON object
 to stdout containing the normal lint report, diagnostics, and phase timings.
 The JSON contract is preserved for extractor failures as well; lint still exits
@@ -799,6 +868,13 @@ dependencies as warning diagnostics. These warnings are visible in human output
 and profile JSON but do not make `lint`, `lint --strict`, or `ci-check` fail by
 themselves. Stale architecture pages with no current source modules remain hard
 issues.
+Skipped unused-dependency checks name the actual manifest paths and source scope.
+Where supported by the captured scope and package ownership guard, they distinguish
+excluded bundled helper implementations, missing source witnesses, source present
+without extraction, and unsupported inputs. Unknown ownership or coverage stays
+unknown. Skipping provides no unused-package verdict and does not diagnose helper
+preparation. Review the exact named paths read-only; helper-specific verification
+or preparation remains a separate operation with its existing toolchain needs.
 Python dependency reconciliation reads `pyproject.toml` and `requirements*.txt`
 manifests, including nested manifests scoped to their directory. Python imports
 use the selected source root, conventional `src` layouts, and declared packaging
@@ -945,6 +1021,22 @@ llm-wiki doctor --wiki-dir docs/llm_wiki --src-dir . --strict
 The report composes the existing availability, live freshness, snapshot parity,
 governance and review, drift, and verification-receipt checks. It does not
 define a separate source analyzer. Human output is a compact screen summary.
+It states the health classification mode; `--strict` does not by itself prove
+release admission. The doctor Action separately displays its configured failure
+threshold, which remains independent of the report's classification mode.
+
+Governance adoption and running verification checkers are explicit operations;
+expected optional absence is disclosed without inventing review or semantic approval.
+A valid governance ledger does not establish current human-review coverage,
+and zero expired findings does not mean every section was reviewed. Inspect
+the scoped review records. A valid machine receipt covers its recorded scope
+and checks only. A stale receipt retains its historical result while current
+validity fails; stale, failed and invalid receipts remain unhealthy. Missing
+previously committed governance authority remains invalid and requires the
+exact ledger to be restored. Reports never adopt governance, acknowledge a
+review or execute verification checkers. See [`knowledge`](#knowledge) for
+explicit adoption, review and verification operations.
+
 For legacy knowledge, automatic JSON output uses `llm-wiki-doctor/v1` and contains the same
 six named sections, complete freshness counts when evaluation succeeds, and
 the required evaluated or snapshot-only disclosure.
@@ -976,6 +1068,18 @@ evaluation; later filesystem or installed-package changes do not rewrite it.
 Snapshot hashes identify declared input sets and do not themselves prove freshness.
 The v3 option cannot be combined with `--capabilities`, which retains its
 separate v2 contract.
+
+With native analysis metadata, fresh report diagnostics and live evidence
+explanations identify which contract, implementation, configuration or runtime
+commitments differ. Human health summaries use the same captured comparisons.
+Runtime-only drift calls for reviewing the execution runtime and target-host
+capture, rather than restoring unchanged configuration. Missing, unbound or
+unsupported comparisons remain explicitly unavailable.
+
+Historical primary reason codes and compact projection hints remain compatible.
+A configuration-related legacy reason code can group several analysis-basis
+differences; use the precise diagnostic and recorded/live commitments to choose
+the repair. Reporting does not perform preparation, sync or capture.
 
 To keep the health read from executing project plugin code, `doctor` never
 loads source plugins. Evidence that only a source plugin can produce may
@@ -1073,10 +1177,45 @@ supplied files or a supplied diff, use the bounded
 `query_documentation` tool with the `impact` operation. Exact concept,
 related-concept, surface, and typed queries use the committed snapshot;
 supplied file or unified-diff impact queries use targeted extraction. Symbol,
-entrypoint, and dependency queries
+entrypoint, flow-segment, and dependency queries
 perform a full inventory only when `allow_full_inventory=true` is supplied.
 The context budget and focus bound emitted output after a full deep inventory;
 they do not make that scan computationally cheap.
+
+Inspect transitions omitted from a bounded flow with an exact callable owner:
+
+```bash
+printf '%s\n' '{"operation":"flow-segment","value":"src/orders.py:submit","allow_full_inventory":true}' | llm-wiki query --request - --src-dir . --wiki-dir docs/llm_wiki
+```
+
+The same request works through Python `query_documentation` and MCP
+`query_documentation` (inside its `request` argument). The additive
+`llm-wiki-flow-segment/v1` result uses `file:symbol`, including class or nested
+qualification when present. Missing or duplicate owners remain unselected.
+It returns at most 12 trace rows and keeps the existing depth limit of 6;
+`limit` can request fewer rows. Legacy flow and data-flow results retain their
+existing shapes, ordering and limits.
+
+Follow an available top-level `follow_up.request` to inspect the next rows.
+An available `steps[].follow_up.request` narrows a depth frontier to a new
+root in the same graph; its depths and counts start from that root. Supply the
+returned request unchanged, with the same roots, source selection and prepared
+helpers. Its `basis` binds captured source bytes, source generation/selection,
+producer commitments, graph order and traversal options. Changed bindings are
+rejected; restart instead of appending results from a different basis. An
+unavailable follow-up includes its reason, including missing capture bindings
+or a row that exceeds the delivery byte budget.
+
+`coverage` separates observed reachable rows, depth-eligible rows, returned
+rows, omissions before/after the page, and depth omissions. `work` separately
+counts the complete inventory/graph binding and graph traversal/counting work.
+Every CLI/MCP dispatcher request repeats full source inventory; a smaller
+segment does not make that inventory cheaper. For repeated Python queries,
+reuse `api.flow_segment("src/orders.py:submit", service=service)` on a built
+documentation query service. That route performs no new extraction or file I/O
+and answers the service's captured view; build a fresh service after source
+changes. Static order, a complete page or a matching binding never proves
+runtime execution, runtime completeness or live freshness.
 
 Explain one exact concept using the existing evidence service:
 

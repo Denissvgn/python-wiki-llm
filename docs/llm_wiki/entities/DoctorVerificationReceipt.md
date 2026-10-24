@@ -1,6 +1,6 @@
 # DoctorVerificationReceipt
 
-**Location:** `src/llm_wiki_cli/api_types.py:556`
+**Location:** `src/llm_wiki_cli/api_types.py:575`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

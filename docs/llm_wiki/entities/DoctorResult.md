@@ -1,6 +1,6 @@
 # DoctorResult
 
-**Location:** `src/llm_wiki_cli/api_types.py:563`
+**Location:** `src/llm_wiki_cli/api_types.py:582`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

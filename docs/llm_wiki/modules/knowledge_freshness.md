@@ -87,6 +87,7 @@ flowchart LR
 | `_validate_live_producer` | `(recorded: KnowledgeIndex, live: LiveKnowledgeEvaluation) -> None` | — | — |
 | `structural_freshness_modeled` | `(concept: ConceptRecord) -> bool` | — | Whether the contract models this concept, independent of basis presence. |
 | `_evaluate_concept` | `(knowledge: KnowledgeIndex, concept: ConceptRecord, live: _ValidatedLiveEvaluation \| None) -> ConceptFreshnessResult` | — | — |
+| `analysis_basis_diagnostic` | `(recorded: ProducerRecord, live: ProducerRecord, *, extractor_ref: str) -> dict \| None` | — | Explain the captured components that actually qualify this concept. |
 | `_reliable_recorded_basis` | `(concept: ConceptRecord) -> EvidenceBasis \| None` | — | — |
 | `_basis_incompatibility_reason` | `(recorded: KnowledgeIndex, recorded_basis: EvidenceBasis, live: _ValidatedLiveEvaluation) -> str \| None` | — | — |
 | `_component_change_reason` | `(recorded: ProducerComponent, live: ProducerComponent, *, prefix: str, policy: str = 'auto', plugins: bool = False) -> str \| None` | — | — |
@@ -99,5 +100,5 @@ flowchart LR
 | `_configuration_marked_unknown` | `(component: ProducerComponent) -> bool` | — | — |
 | `_version_unknown` | `(component: ProducerComponent) -> bool` | — | — |
 | `comparable_producer_components` | `(recorded: ProducerComponent, live: ProducerComponent, *, configuration_required: bool = True) -> bool` | — | Apply the same conservative component rule to report consistency checks. |
-| `_result` | `(locator: str, state: ComputedFreshness, reason_code: str, recorded_basis: ConceptFreshnessBasis \| None, live_basis: ConceptFreshnessBasis \| None, *, compared: bool) -> ConceptFreshnessResult` | — | — |
+| `_result` | `(locator: str, state: ComputedFreshness, reason_code: str, recorded_basis: ConceptFreshnessBasis \| None, live_basis: ConceptFreshnessBasis \| None, *, compared: bool, description: str \| None = None) -> ConceptFreshnessResult` | — | — |
 | `_validate_source_path` | `(value: object, field_name: str) -> None` | — | — |

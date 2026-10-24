@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools==83.0.0"]
+requires = ["setuptools==84.1.0"]
 build-backend = "release_build_backend"
 backend-path = ["."]
 
@@ -35,7 +35,7 @@ dev = [
     "pytest-cov>=4.0",
     "jsonschema>=4.18",
     "markdown-it-py>=4.0,<5",
-    "setuptools==83.0.0",
+    "setuptools==84.1.0",
     # Analyze Python 3.10 fallback imports from newer development interpreters.
     "tomli>=2",
 ]
@@ -49,7 +49,10 @@ rust = []
 # MCP server support uses the official Python MCP SDK, which requires Python 3.10+.
 mcp = [
     "mcp>=1.27,<2; python_version >= '3.10'",
+    # Directly used strict types and HTTP server; align with the supported SDK.
+    "pydantic>=2.11,<3; python_version >= '3.10'",
     "pydantic-settings>=2.5.2,<2.15; python_version >= '3.10'",
+    "uvicorn>=0.31.1,<1; python_version >= '3.10' and sys_platform != 'emscripten'",
 ]
 
 [project.urls]

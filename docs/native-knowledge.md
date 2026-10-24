@@ -59,6 +59,16 @@ Freshness does not imply truth, human review, lifecycle, or authorization. A
 hash match means only that the compared observation basis is unchanged. It
 does not make an unverified concept verified or an active concept approved.
 
+Even with live evaluation, flows, workflows and dependency views keep structural
+freshness `unknown` (`freshness-not-modeled`). An unchanged entry-point module does not
+prove that downstream calls are unchanged. A matching visible trace also does
+not establish compatible producers, traversal options or source selection;
+an aggregate input hash alone is not a complete per-view observation basis.
+These views need their own recorded and live derivation commitments before
+they can claim structural currentness. Inspect exact flow or dependency
+queries for captured observations, retaining their uncertainty and bounds.
+Authored Behavior and other semantic claims still require independent review.
+
 Snapshot-only operations, including `llm-wiki status` and MCP `get_status`, do
 not collect a live source basis. They report
 `freshness: unevaluated (snapshot-only read)` instead of claiming that

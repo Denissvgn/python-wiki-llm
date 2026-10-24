@@ -172,7 +172,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_live_query_source_selection | SyncManifest.load | 302 | `SyncManifest.load(wiki_root)` |
+| validate_live_query_source_selection | SyncManifest.load | 303 | `SyncManifest.load(wiki_root)` |
 | SyncManifest.load | manifest_path.exists | 1160 | `manifest_path.exists(data not statically known)` |
 | SyncManifest.load | FileNotFoundError | 1161 | `FileNotFoundError(manifest_path)` |
 | SyncManifest.load | json.loads (src/llm_wiki_cli/services…fest.py:SyncManifest.load) | 1180 | `json.loads(manifest_path.read_text(...), object_pairs_hook=unique_object, parse_constant=reject_constant)` |

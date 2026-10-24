@@ -1,6 +1,6 @@
 # PythonCallContext
 
-**Location:** `src/llm_wiki_cli/services/python_calls.py:21`
+**Location:** `src/llm_wiki_cli/services/python_calls.py:111`
 **Kind:** Class
 **Bases:** —
 **Module:** [python_calls](../modules/python_calls.md)

@@ -1,6 +1,6 @@
 # HealthDetailsV2
 
-**Location:** `src/llm_wiki_cli/api_types.py:697`
+**Location:** `src/llm_wiki_cli/api_types.py:716`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

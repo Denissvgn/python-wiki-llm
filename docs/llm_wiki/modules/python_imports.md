@@ -33,38 +33,40 @@ flowchart LR
     n4["src/llm_wiki_cli/services/entrypoints.py"]
     n5["src/llm_wiki_cli/services/extraction_service.py"]
     n6["src/llm_wiki_cli/services/imports.py"]
-    n7["src/llm_wiki_cli/services/packages.py"]
-    n8["src/llm_wiki_cli/services/python_imports.py"]
-    n9["src/llm_wiki_cli/services/python_stdlib.py"]
-    n10["src/llm_wiki_cli/services/relationships.py"]
-    n0 --> n8
+    n7["src/llm_wiki_cli/services/module_coverage.py"]
+    n8["src/llm_wiki_cli/services/packages.py"]
+    n9["src/llm_wiki_cli/services/python_imports.py"]
+    n10["src/llm_wiki_cli/services/python_stdlib.py"]
+    n11["src/llm_wiki_cli/services/relationships.py"]
+    n0 --> n9
     n1 --> n6
-    n1 --> n8
+    n1 --> n9
     n2 --> n1
     n2 --> n3
     n2 --> n4
     n2 --> n5
     n2 --> n6
-    n2 --> n8
-    n2 --> n10
+    n2 --> n9
+    n2 --> n11
     n3 --> n6
-    n3 --> n8
     n3 --> n9
+    n3 --> n10
     n4 --> n6
-    n4 --> n8
+    n4 --> n9
     n5 --> n0
     n5 --> n1
     n5 --> n3
     n5 --> n4
     n5 --> n6
-    n5 --> n7
     n5 --> n8
-    n6 --> n7
+    n5 --> n9
     n6 --> n8
-    n7 --> n8
+    n6 --> n9
+    n7 --> n9
     n8 --> n9
-    n10 --> n6
-    n10 --> n8
+    n9 --> n10
+    n11 --> n6
+    n11 --> n9
     click n0 "../modules/python_contracts.md"
     click n1 "../modules/api_contracts.md"
     click n2 "../modules/bootstrap_runtime.md"
@@ -72,10 +74,11 @@ flowchart LR
     click n4 "../modules/entrypoints.md"
     click n5 "../modules/extraction_service.md"
     click n6 "../modules/imports.md"
-    click n7 "../modules/packages.md"
-    click n8 "../modules/python_imports.md"
-    click n9 "../modules/python_stdlib.md"
-    click n10 "../modules/relationships.md"
+    click n7 "../modules/module_coverage.md"
+    click n8 "../modules/packages.md"
+    click n9 "../modules/python_imports.md"
+    click n10 "../modules/python_stdlib.md"
+    click n11 "../modules/relationships.md"
 ```
 
 ### Internal neighbors
@@ -89,6 +92,7 @@ flowchart LR
 | Inbound | [entrypoints](../modules/entrypoints.md) |
 | Inbound | [extraction_service](../modules/extraction_service.md) |
 | Inbound | [imports](../modules/imports.md) |
+| Inbound | [module_coverage](../modules/module_coverage.md) |
 | Inbound | [packages](../modules/packages.md) |
 | Inbound | [relationships](../modules/relationships.md) |
 | Outbound | [python_stdlib](../modules/python_stdlib.md) |

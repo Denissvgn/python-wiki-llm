@@ -113,9 +113,9 @@ sequenceDiagram
     p3-->>p30: Path(…).expanduser (src/llm_wiki_cli/services/io.py:write_text_output)
 ```
 
-> Call sequence diagram shows 30 of 1739 interactions; 1709 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1754 interactions; 1724 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 684 (683 omitted); unresolved 1 of 481 (480 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 687 (686 omitted); unresolved 1 of 479 (478 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -127,8 +127,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/request_json.py:parse_request` | 4 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/request_json.py:load_request` | 2 | - | unresolved | 3 |
 | `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 21 | - | external | 13 |
-| `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 21 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 17 |
-| `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 21 | - | unresolved | 15 |
+| `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 21 | [src/llm_wiki_cli/api.py](../modules/api.md) | internal | 19 |
+| `src/llm_wiki_cli/api.py:_validate_documentation_query_request` | 21 | - | unresolved | 19 |
 > Omission summary shows 8 of 389 groups; 381 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 

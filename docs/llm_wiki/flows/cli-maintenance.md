@@ -138,7 +138,7 @@ sequenceDiagram
 
 > Call sequence diagram shows 30 of 2528 interactions; 2498 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 835 (834 omitted); unresolved 1 of 548 (547 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 835 (834 omitted); unresolved 1 of 541 (540 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -152,7 +152,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 7 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 7 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/maintenance_service.py:adopt_maintenance_authority` | 6 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 1 |
-> Omission summary shows 8 of 593 groups; 585 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 594 groups; 586 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -236,10 +236,10 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | run | adopt_maintenance | 58 | `api.adopt_maintenance(args.src_dir, args.wiki_dir, recovery_dir=args.recovery_dir, manifest_format=args.manifest_format, **=_capture_options(...))` |
-| adopt_maintenance | type (src/llm_wiki_cli/api.py:adopt_maintenance) | 1590 | `type(allow_external_src)` |
-| adopt_maintenance | ValueError (src/llm_wiki_cli/api.py:adopt_maintenance) | 1591 | `ValueError('Unsupported maintenance adoption options')` |
-| adopt_maintenance | cast (src/llm_wiki_cli/api.py:adopt_maintenance) | 1592 | `cast(MaintenanceAdoptionResult, adopt_maintenance_authority(...))` |
-| adopt_maintenance | adopt_maintenance_authority | 1592 | `adopt_maintenance_authority(src_dir, _validate_wiki_dir(...), recovery_dir=recovery_dir, manifest_format=manifest_format, source_selection=source_selection, helper_cache_dir=helper_cache_dir, allow_external_src=allow_external_src)` |
+| adopt_maintenance | type (src/llm_wiki_cli/api.py:adopt_maintenance) | 1595 | `type(allow_external_src)` |
+| adopt_maintenance | ValueError (src/llm_wiki_cli/api.py:adopt_maintenance) | 1596 | `ValueError('Unsupported maintenance adoption options')` |
+| adopt_maintenance | cast (src/llm_wiki_cli/api.py:adopt_maintenance) | 1597 | `cast(MaintenanceAdoptionResult, adopt_maintenance_authority(...))` |
+| adopt_maintenance | adopt_maintenance_authority | 1597 | `adopt_maintenance_authority(src_dir, _validate_wiki_dir(...), recovery_dir=recovery_dir, manifest_format=manifest_format, source_selection=source_selection, helper_cache_dir=helper_cache_dir, allow_external_src=allow_external_src)` |
 | adopt_maintenance_authority | _absolute_path | 83 | `_absolute_path(wiki_dir)` |
 | _absolute_path | Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `Path(os.path.abspath(...))` |
 | _absolute_path | os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path) | 49 | `os.path.abspath(path)` |
@@ -263,9 +263,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `adopt_maintenance` | `type` | 1590 |
-| external_call | `adopt_maintenance` | `ValueError` | 1591 |
-| external_call | `adopt_maintenance` | `cast` | 1592 |
+| external_call | `adopt_maintenance` | `type` | 1595 |
+| external_call | `adopt_maintenance` | `ValueError` | 1596 |
+| external_call | `adopt_maintenance` | `cast` | 1597 |
 | external_call | `_absolute_path` | `os.path.abspath` | 49 |
 | external_call | `first_unsafe_path_component` | `os.fspath` | 51 |
 | step_limit | `run` | `first 12 steps` | 0 |

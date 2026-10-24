@@ -6,11 +6,11 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 670 | [Open section](#entities) |
-| Modules | 251 | [Open section](#modules) |
+| Entities | 672 | [Open section](#entities) |
+| Modules | 253 | [Open section](#modules) |
 | Workflows | 229 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
-| Entry-point flows | 465 | [Open section](#entry-point-flows) |
+| Entry-point flows | 466 | [Open section](#entry-point-flows) |
 | Infrastructure | 2 | [Open section](#infrastructure) |
 | HTTP API contracts | 0 | No pages |
 | Dependency architecture | 2 | [Open section](#dependency-architecture) |
@@ -213,6 +213,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [FlowForEntrypointResult](entities/FlowForEntrypointResult.md)
 - [FlowOverview](entities/FlowOverview.md)
 - [FlowResult](entities/FlowResult.md)
+- [FlowSegmentResult](entities/FlowSegmentResult.md)
 - [FrontMatterParseResult](entities/FrontMatterParseResult.md)
 - [FrozenDict](entities/FrozenDict.md)
 - [FrozenList](entities/FrozenList.md)
@@ -344,6 +345,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [LazyCalibrationAnnotations](entities/LazyCalibrationAnnotations.md)
 - [LegacyHookError](entities/LegacyHookError.md)
 - [LegacyHookInspection](entities/LegacyHookInspection.md)
+- [LexicalBody](entities/LexicalBody.md)
 - [Lifecycle](entities/Lifecycle.md)
 - [LifecycleEvent](entities/LifecycleEvent.md)
 - [LifecycleStatus](entities/LifecycleStatus.md)
@@ -757,6 +759,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [extractors___init__](modules/extractors___init__.md) - Extractor plugin architecture for agent-wiki-cli.
 - [fastapi_contracts](modules/fastapi_contracts.md) - Syntax-only FastAPI declaration extraction.
 - [filesystem_guard](modules/filesystem_guard.md) - Small cross-platform guards for security-sensitive workspace writes.
+- [flow_followup](modules/flow_followup.md) - Bounded, source-bound navigation over an already captured static call graph.
 - [flow_overview](modules/flow_overview.md) - Pure bounded presentation selection over a complete captured call trace.
 - [freshness_wording](modules/freshness_wording.md) - Shared interpretation of the legacy structural freshness diagnostic.
 - [generate_prompt_cmd](modules/generate_prompt_cmd.md) - `src/llm_wiki_cli/commands/generate_prompt_cmd.py`
@@ -833,6 +836,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [metrics](modules/metrics.md) - `src/llm_wiki_cli/services/metrics.py`
 - [metrics_cmd](modules/metrics_cmd.md) - `src/llm_wiki_cli/commands/metrics_cmd.py`
 - [migrate_cmd](modules/migrate_cmd.md) - Legacy wiki migration command.
+- [module_coverage](modules/module_coverage.md) - Static coverage explanations over selected, content-bound Python sources.
 - [module_maps](modules/module_maps.md) - Pure per-module dependency mini-map summaries.
 - [native_diagnostics](modules/native_diagnostics.md) - Owned per-file diagnostics for the bundled Go, Rust and Haskell helpers.
 - [native_inspection](modules/native_inspection.md) - One bounded concept inspection over one captured native read view.
@@ -1020,6 +1024,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [check_sync_manifest](workflows/check_sync_manifest.md) - entry: `lint_service._check_sync_manifest`
 - [check_team_conventions](workflows/check_team_conventions.md) - entry: `team.check_team_conventions`
 - [ci_check_cmd_flow](workflows/ci_check_cmd_flow.md) - entry: `ci_check_cmd.run`
+- [classify_uncovered_python_sources](workflows/classify_uncovered_python_sources.md) - entry: `module_coverage.classify_uncovered_python_sources`
 - [clean_agent_schemas](workflows/clean_agent_schemas.md) - entry: `uninstall_cmd._clean_agent_schemas`
 - [collect_lint_inputs](workflows/collect_lint_inputs.md) - entry: `lint_service._collect_lint_inputs`
 - [collect_runtime](workflows/collect_runtime.md) - entry: `documentation_native._collect_runtime`
@@ -1081,7 +1086,6 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [normalize_task_request](workflows/normalize_task_request.md) - entry: `task_contract.normalize_task_request`
 - [observe_requirement](workflows/observe_requirement.md) - entry: `task_evidence.observe_requirement`
 - [parse_knowledge_index](workflows/parse_knowledge_index.md) - entry: `knowledge_model.parse_knowledge_index`
-- [persist_report](workflows/persist_report.md) - entry: `ci_check_cmd._persist_report`
 - [plan_page_transitions](workflows/plan_page_transitions.md) - entry: `sync_transitions.plan_page_transitions`
 - [plan_source_page_transitions](workflows/plan_source_page_transitions.md) - entry: `sync_cmd._plan_source_page_transitions`
 - [plan_source_read](workflows/plan_source_read.md) - entry: `task_context.plan_source_read`
@@ -1319,6 +1323,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api-finalize_runtime_knowledge](flows/api-finalize_runtime_knowledge.md) - entry: `finalize_runtime_knowledge`
 - [api-find_identity_collisions](flows/api-find_identity_collisions.md) - entry: `find_identity_collisions`
 - [api-flow_for_entrypoint](flows/api-flow_for_entrypoint.md) - entry: `flow_for_entrypoint`
+- [api-flow_segment](flows/api-flow_segment.md) - entry: `flow_segment`
 - [api-format_field_differences](flows/api-format_field_differences.md) - entry: `format_field_differences`
 - [api-format_table_row](flows/api-format_table_row.md) - entry: `format_table_row`
 - [api-formatted_json_bytes](flows/api-formatted_json_bytes.md) - entry: `formatted_json_bytes`

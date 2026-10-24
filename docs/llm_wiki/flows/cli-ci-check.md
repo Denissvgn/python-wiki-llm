@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [ci_check_cmd](../modules/ci_check_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 73 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 78 more
 
 **Complete modules touched:**
 
@@ -18,15 +18,18 @@
 - [data_flow](../modules/data_flow.md)
 - [dependency_versions](../modules/dependency_versions.md)
 - [doctor_service](../modules/doctor_service.md)
+- [documentation_queries](../modules/documentation_queries.md)
 - [entrypoints](../modules/entrypoints.md)
 - [evidence_diagnostics](../modules/evidence_diagnostics.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [flow_followup](../modules/flow_followup.md)
 - [go_calls](../modules/go_calls.md)
 - [health_contract](../modules/health_contract.md)
 - [health_details](../modules/health_details.md)
 - [health_policy](../modules/health_policy.md)
+- [health_summary](../modules/health_summary.md)
 - [immutable](../modules/immutable.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
 - [imports](../modules/imports.md)
@@ -58,11 +61,13 @@
 - [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [metrics](../modules/metrics.md)
+- [module_coverage](../modules/module_coverage.md)
 - [packages](../modules/packages.md)
 - [plugins](../modules/plugins.md)
 - [progress](../modules/progress.md)
 - [python_calls](../modules/python_calls.md)
 - [python_contracts](../modules/python_contracts.md)
+- [python_extractor](../modules/python_extractor.md)
 - [python_implementation](../modules/python_implementation.md)
 - [python_imports](../modules/python_imports.md)
 - [python_observations](../modules/python_observations.md)
@@ -99,26 +104,26 @@ sequenceDiagram
     participant p6 as build_report
     participant p7 as storage_report
     participant p8 as _persist_report
-    participant p9 as _render_console
-    participant p10 as record_validation_event
-    participant p11 as RuntimeOutputError
-    participant p12 as validate_path
-    participant p13 as LintIssue
-    participant p14 as InventoryCacheStats
+    participant p9 as record_validation_event
+    participant p10 as RuntimeOutputError
+    participant p11 as validate_path
+    participant p12 as LintIssue
+    participant p13 as InventoryCacheStats
+    participant p14 as _render_console
     participant p15 as format_cache_stats
     participant p16 as write_bytes_atomic
     participant p17 as _safe_knowledge_summary
-    participant p18 as build_ci_check_payload
-    participant p19 as record_event
-    participant p20 as resolve_inventory_cache_path
-    participant p21 as render_text
-    participant p22 as _new_lint_report
-    participant p23 as _storage_report
-    participant p24 as _preflight_lint_inputs
-    participant p25 as _finalize_lint_report
-    participant p26 as _collect_lint_inputs
-    participant p27 as prepare_destination
-    participant p28 as _run_report_checks
+    participant p18 as record_event
+    participant p19 as resolve_inventory_cache_path
+    participant p20 as _new_lint_report
+    participant p21 as _storage_report
+    participant p22 as _preflight_lint_inputs
+    participant p23 as _finalize_lint_report
+    participant p24 as _collect_lint_inputs
+    participant p25 as prepare_destination
+    participant p26 as _run_report_checks
+    participant p27 as windows_current_user_sid
+    participant p28 as resolve_team_policy
     participant p29 as getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)
     participant p30 as storage.get
     p0->>p1: validate_source_root
@@ -129,33 +134,33 @@ sequenceDiagram
     p0->>p6: build_report
     p0->>p7: storage_report
     p0->>p8: _persist_report
-    p0->>p9: _render_console
-    p0->>p10: record_validation_event
-    p0->>p11: RuntimeOutputError
-    p0->>p12: validate_path
-    p0->>p13: LintIssue
-    p0->>p14: InventoryCacheStats
+    p0->>p9: record_validation_event
+    p0->>p10: RuntimeOutputError
+    p0->>p11: validate_path
+    p0->>p12: LintIssue
+    p0->>p13: InventoryCacheStats
+    p0->>p14: _render_console
     p0->>p15: format_cache_stats
     p8->>p16: write_bytes_atomic
-    p10->>p17: _safe_knowledge_summary
-    p9->>p18: build_ci_check_payload
-    p10->>p19: record_event
-    p4->>p20: resolve_inventory_cache_path
-    p9->>p21: render_text
-    p6->>p22: _new_lint_report
-    p7->>p23: _storage_report
-    p6->>p24: _preflight_lint_inputs
-    p6->>p25: _finalize_lint_report
-    p6->>p26: _collect_lint_inputs
-    p3->>p27: prepare_destination
-    p6->>p28: _run_report_checks
+    p9->>p17: _safe_knowledge_summary
+    p9->>p18: record_event
+    p4->>p19: resolve_inventory_cache_path
+    p6->>p20: _new_lint_report
+    p7->>p21: _storage_report
+    p6->>p22: _preflight_lint_inputs
+    p6->>p23: _finalize_lint_report
+    p6->>p24: _collect_lint_inputs
+    p3->>p25: prepare_destination
+    p6->>p26: _run_report_checks
+    p1->>p27: windows_current_user_sid
+    p22->>p28: resolve_team_policy
     p0-->>p29: getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run)(args, 'storage_git_base', None)
     p0-->>p30: storage.get('failures', [...])
 ```
 
-> Call sequence diagram shows 30 of 4218 interactions; 4188 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4561 interactions; 4531 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1269 (1268 omitted); unresolved 1 of 1331 (1330 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1379 (1378 omitted); unresolved 1 of 1419 (1418 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -169,7 +174,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_path` | 16 | - | external | 2 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 15 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 15 | - | external | 11 |
-> Omission summary shows 8 of 1073 groups; 1065 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1134 groups; 1126 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -247,41 +252,41 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 98 | `getattr(args, 'storage_git_base', None)` |
-| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 99 | `getattr(args, 'storage_git_head', None)` |
-| run | RuntimeOutputError | 101 | `RuntimeOutputError('Storage Git checks require both --storage-git-base and --storage-git-head')` |
-| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 102 | `getattr(args, 'src_dir', '.')` |
-| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 103 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
-| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 104 | `getattr(args, 'format', 'text')` |
-| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 105 | `getattr(args, 'report_schema', 'auto')` |
-| run | RuntimeOutputError | 107 | `RuntimeOutputError('--report-schema must be auto, v1, v2, v3 or v4')` |
-| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 108 | `getattr(args, 'helper_cache_dir', None)` |
-| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 109 | `getattr(args, 'include_tests', None)` |
-| run | bool (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 110 | `bool(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 120 | `getattr(args, 'storage_git_base', None)` |
+| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 121 | `getattr(args, 'storage_git_head', None)` |
+| run | RuntimeOutputError | 123 | `RuntimeOutputError('Storage Git checks require both --storage-git-base and --storage-git-head')` |
+| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 124 | `getattr(args, 'src_dir', '.')` |
+| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 125 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
+| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 126 | `getattr(args, 'format', 'text')` |
+| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 127 | `getattr(args, 'report_schema', 'auto')` |
+| run | RuntimeOutputError | 129 | `RuntimeOutputError('--report-schema must be auto, v1, v2, v3 or v4')` |
+| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 130 | `getattr(args, 'helper_cache_dir', None)` |
+| run | getattr (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 131 | `getattr(args, 'include_tests', None)` |
+| run | bool (src/llm_wiki_cli/commands/ci_check_cmd.py:run) | 132 | `bool(getattr(...))` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `report.issues.append` | `run` | 152 |
-| mutation | `report.issues.append` | `run` | 155 |
-| mutation | `report.diagnostics.append` | `run` | 158 |
-| output | `print` | `run` | 183 |
-| output | `print` | `run` | 197 |
-| output | `print` | `run` | 204 |
+| mutation | `report.issues.append` | `run` | 174 |
+| mutation | `report.issues.append` | `run` | 177 |
+| mutation | `report.diagnostics.append` | `run` | 180 |
+| output | `print` | `run` | 205 |
+| output | `print` | `run` | 219 |
+| output | `print` | `run` | 226 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `run` | `getattr` | 98 |
-| external_call | `run` | `getattr` | 99 |
-| external_call | `run` | `getattr` | 102 |
-| external_call | `run` | `getattr` | 103 |
-| external_call | `run` | `getattr` | 104 |
-| external_call | `run` | `getattr` | 105 |
-| external_call | `run` | `getattr` | 108 |
-| external_call | `run` | `getattr` | 109 |
+| external_call | `run` | `getattr` | 120 |
+| external_call | `run` | `getattr` | 121 |
+| external_call | `run` | `getattr` | 124 |
+| external_call | `run` | `getattr` | 125 |
+| external_call | `run` | `getattr` | 126 |
+| external_call | `run` | `getattr` | 127 |
+| external_call | `run` | `getattr` | 130 |
+| external_call | `run` | `getattr` | 131 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

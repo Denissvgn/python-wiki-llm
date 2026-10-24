@@ -29,6 +29,7 @@ Shared construction for supported documentation query services.
 | `.wiki_surface_index` | `evaluate_surface_index` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Iterable`, `Mapping` |
+| `hashlib` | `hashlib` |
 | `itertools` | `islice` |
 | `os` | `os` |
 | `pathlib` | `Path` |

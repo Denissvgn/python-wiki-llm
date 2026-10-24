@@ -29,6 +29,7 @@ flowchart LR
     n2["src/llm_wiki_cli/services/extraction_service.py"]
     n3["src/llm_wiki_cli/services/python_calls.py"]
     n1 --> n0
+    n1 --> n3
     n2 --> n0
     n2 --> n1
     n2 --> n3

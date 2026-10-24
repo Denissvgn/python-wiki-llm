@@ -704,7 +704,7 @@ def test_query_projects_every_live_freshness_outcome_and_reason(tmp_path):
     ("reason_code", "expected_hint"),
     tuple(BASIS_INCOMPATIBLE_HINTS.items()),
 )
-def test_query_compact_and_full_freshness_render_every_incompatible_hint(
+def test_query_compact_preserves_hints_and_full_respects_available_commitments(
     tmp_path,
     reason_code,
     expected_hint,
@@ -729,7 +729,19 @@ def test_query_compact_and_full_freshness_render_every_incompatible_hint(
     full = service.explain_evidence(USER_LOCATOR)["evidence"]["freshness"]
 
     assert compact["reason"] == full["reason"] == reason_code
-    assert compact["hint"] == full["hint"] == expected_hint
+    assert compact["hint"] == expected_hint
+    if reason_code in {
+        "extractor-configuration-changed",
+        "plugin-configuration-changed",
+        "producer-tool-configuration-changed",
+    }:
+        # This legacy fixture has no inner analysis commitment records. The
+        # detailed route must disclose that gap rather than invent its cause.
+        assert full["hint"] == (
+            "Inspect the unavailable recorded/live analysis commitments before selecting a repair."
+        )
+    else:
+        assert full["hint"] == expected_hint
     assert compact["state"] == full["state"] == "basis-incompatible"
 
 

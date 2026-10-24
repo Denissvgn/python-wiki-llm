@@ -357,6 +357,19 @@ class DataFlowForEntrypointResult(_BoundedQueryResult):
     data_flow: dict[str, Any] | None
 
 
+class FlowSegmentResult(_BoundedQueryResult, total=False):
+    """Additive source-bound static segment; absent coverage means unavailable."""
+
+    segment_schema: str
+    owner: dict[str, Any] | None
+    basis: str | None
+    steps: list[dict[str, Any]]
+    coverage: dict[str, Any]
+    work: dict[str, Any]
+    follow_up: dict[str, Any]
+    limitations: list[str]
+
+
 class _StaticCallQueryOptions(TypedDict, total=False):
     """Additive captured-source coverage for static call queries."""
 
@@ -479,6 +492,12 @@ class DocumentationQueryResult(_DocumentationQueryRequired, total=False):
     coverage: dict[str, Any]
     flow: dict[str, Any] | None
     data_flow: dict[str, Any] | None
+    segment_schema: str
+    owner: dict[str, Any] | None
+    basis: str | None
+    steps: list[dict[str, Any]]
+    work: dict[str, Any]
+    follow_up: dict[str, Any]
     path: str | None
     inbound: list[str]
     outbound: list[str]
@@ -767,6 +786,7 @@ __all__ = [
     "EvidenceExplanationResult",
     "ExtractSourceResult",
     "FlowForEntrypointResult",
+    "FlowSegmentResult",
     "MarkdownContextResult",
     "KnowledgeMode",
     "KnowledgeCoverageCounts",

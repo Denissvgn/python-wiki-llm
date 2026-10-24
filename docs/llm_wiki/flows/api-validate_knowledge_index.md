@@ -101,7 +101,7 @@ sequenceDiagram
     p3-->>p30: model.bundle.snapshot.extensions.get(INVENTORY_HASH_EXTENSION)
 ```
 
-> Call sequence diagram shows 30 of 2321 interactions; 2291 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2323 interactions; 2293 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 1 of 615 (614 omitted); unresolved 1 of 408 (407 omitted). These counts cover the captured static trace.
 
@@ -117,7 +117,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_model.py:_record` | 4 | - | external | 4 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_record` | 4 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 6 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_parse_extensions` | 22 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 7 |
-> Omission summary shows 8 of 573 groups; 565 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 575 groups; 567 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

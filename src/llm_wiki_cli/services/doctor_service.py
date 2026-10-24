@@ -19,7 +19,10 @@ from . import analysis_compatibility as ac
 from .health_details import CapturedHealthDetails
 from .health_contract import validate_health_details
 from .health_policy import DoctorStatus, DOCTOR_EXIT_CODES, classify_health_sections
-from .health_summary import detailed_health_rows, summary_cell
+from .health_summary import (
+    ASSURANCE_DISCLOSURE, RELEASE_POLICY_UNAVAILABLE, assurance_rows,
+    detailed_health_rows, health_policy, summary_cell,
+)
 from .extraction_jobs import ExtractionJobRequest
 from .knowledge_consumption import (
     KnowledgeAvailability,
@@ -244,11 +247,14 @@ def _render_doctor_payload(payload: Mapping[str, Any]) -> str:
     assert isinstance(governance, Mapping)
     assert isinstance(drift, Mapping)
     assert isinstance(verification, Mapping)
+    assurance = dict(assurance_rows(payload))
 
     freshness_counts = _format_counts(freshness["counts_by_state"])
     lines = [
         "LLM Wiki Doctor",
         f"Status:               {payload['status']} (exit {payload['exit_code']})",
+        f"Health classification: {health_policy(payload['strict'])}",
+        f"Release policy: {RELEASE_POLICY_UNAVAILABLE}",
         (
             "Availability:         "
             f"{availability['state']} ({availability['reason']})"
@@ -265,10 +271,7 @@ def _render_doctor_payload(payload: Mapping[str, Any]) -> str:
             ),
             (
                 "Governance:          "
-                f"{governance['state']} "
-                f"(ledger={governance['ledger']}, "
-                f"projection={governance['projection']}, "
-                f"expired reviews={governance['expired_reviews']})"
+                f"{summary_cell(assurance['Governance authority'])}"
             ),
             (
                 "Drift:               "
@@ -279,7 +282,7 @@ def _render_doctor_payload(payload: Mapping[str, Any]) -> str:
             ),
             (
                 "Verification receipt: "
-                f"{verification['state']} ({verification['reason']})"
+                f"{summary_cell(assurance['Machine verification'])} ({verification['reason']})"
             ),
         ]
     )
@@ -291,6 +294,8 @@ def _render_doctor_payload(payload: Mapping[str, Any]) -> str:
         lines.append("Unhealthy:            " + ", ".join(payload["unhealthy_reasons"]))
     if payload["degraded_reasons"]:
         lines.append("Degraded:             " + ", ".join(payload["degraded_reasons"]))
+    lines.append("Human review: " + summary_cell(assurance["Human review"]))
+    lines.append(ASSURANCE_DISCLOSURE)
     lines.extend(
         f"{label}: {summary_cell(value)}"
         for label, value in detailed_health_rows(payload)

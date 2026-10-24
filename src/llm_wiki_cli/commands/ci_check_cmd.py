@@ -49,9 +49,31 @@ def _render_console(report, output_format: str, **payload_options) -> str:
             )
             + "\n"
         )
+    health = _health_for_report(report)
     if output_format == "markdown":
-        return render_markdown(report)
-    return render_text(report)
+        return render_markdown(report, health=health)
+    return _decision_summary(report, markdown=False, health=health) + render_text(report)
+
+
+def _health_for_report(report):
+    from ..services.doctor_service import compose_doctor_report
+
+    return compose_doctor_report(
+        report, strict=False, wiki_dir=report.wiki_dir, src_dir=report.src_dir,
+    ).to_payload()
+
+
+def _decision_summary(report, *, markdown: bool, health=None) -> str:
+    """Present the captured evaluation; ordinary CI has no release admission."""
+    from ..services.health_summary import ASSURANCE_DISCLOSURE, ci_health_rows, summary_cell
+    from ..services.lint_service import report_to_dict
+
+    if health is None:
+        health = _health_for_report(report)
+    rows = ci_health_rows(report_to_dict(report), health)
+    prefix = "- " if markdown else ""
+    lines = [prefix + label + ": " + summary_cell(value) for label, value in rows]
+    return "\n" + "\n".join([*lines, ASSURANCE_DISCLOSURE]) + "\n"
 
 
 def _report_destination(args) -> RuntimeDestination:
@@ -80,7 +102,7 @@ def _persist_report(destination: RuntimeDestination, report) -> int:
         assert destination.path is not None
         try:
             write_bytes_atomic(
-                destination.path, render_markdown(report).encode("utf-8")
+                destination.path, _render_console(report, "markdown").encode("utf-8")
             )
         except OSError as exc:
             destination.status = "failed"

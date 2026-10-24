@@ -11,11 +11,14 @@ from ..services.python_observations import (
 from ..services.python_implementation import capture as capture_implementation, envelope as implementation_envelope, producer as implementation_producer
 
 import ast
+from collections import Counter
+import symtable
 import sys
 from pathlib import Path
 
 from ..config import build_gitignore_matcher
 from ..services.imports import build_module_path_resolver
+from ..services.python_calls import PYTHON_LEXICAL_FUNCTIONS_SCHEMA
 from .common import (
     IMPORT_SCOPE_DEFERRED,
     IMPORT_SCOPE_TYPE_CHECKING,
@@ -815,17 +818,82 @@ def _is_self_module_alias(statement) -> bool:
 
 
 def module_alias_target(tree: ast.Module) -> str:
-    """Return the module a self-aliasing file redirects to, else ``""``.
+    """Return the imported binding of a static self-module shim, else ``""``.
 
-    ``sys.modules[__name__] = impl`` makes importing this path yield *impl*
-    itself, so the file is a redirect rather than a module: it has no symbols of
-    its own and its name is another module's name. Callers use this to avoid
-    describing a redirect as though it were a separate unit.
+    Only one unconditional assignment through an unshadowed ``sys`` import
+    qualifies. Other executable statements, declarations, rebinding and
+    conditional/dynamic redirects retain their own inventory entry. This is a
+    syntactic classification, not execution of the imported object.
     """
+    bindings: dict[str, str] = {}
+    target_name = ""
     for statement in tree.body:
-        if isinstance(statement, ast.Assign) and _is_self_module_alias(statement):
-            return _annotation_to_str(statement.value)
-    return ""
+        if isinstance(statement, ast.Pass) or (
+            isinstance(statement, ast.Expr)
+            and isinstance(statement.value, ast.Constant)
+            and isinstance(statement.value.value, str)
+        ):
+            continue
+        if target_name:
+            return ""
+        imported = _static_import_bindings(statement)
+        if imported is not None:
+            if set(imported) & (set(bindings) | {"__name__"}):
+                return ""
+            bindings.update(imported)
+            continue
+        if _static_type_checking_block(statement, bindings):
+            continue
+        if (not isinstance(statement, ast.Assign)
+                or len(statement.targets) != 1
+                or not _is_self_module_alias(statement)
+                or not isinstance(statement.value, ast.Name)
+                or statement.value.id not in bindings):
+            return ""
+        target = statement.targets[0]
+        if (not isinstance(target, ast.Subscript)
+                or not isinstance(target.value, ast.Attribute)
+                or not isinstance(target.value.value, ast.Name)
+                or bindings.get(target.value.value.id) != "sys"):
+            return ""
+        target_name = statement.value.id
+    return target_name
+
+
+def _static_import_bindings(statement: ast.AST) -> dict[str, str] | None:
+    """Capture direct import spellings; no module loading or attribute lookup."""
+    if not isinstance(statement, (ast.Import, ast.ImportFrom)):
+        return None
+    bindings: dict[str, str] = {}
+    for alias in statement.names:
+        if alias.name == "*":
+            return None
+        if isinstance(statement, ast.ImportFrom):
+            prefix = "." * statement.level + (statement.module or "")
+            module = prefix + ("." if statement.module else "") + alias.name
+            name = alias.asname or alias.name
+        else:
+            name = alias.asname or alias.name.split(".", 1)[0]
+            module = alias.name if alias.asname else name
+        if name in bindings:
+            return None
+        bindings[name] = module
+    return bindings
+
+
+def _static_type_checking_block(statement: ast.AST, bindings: dict[str, str]) -> bool:
+    """Recognize import-only mirrors behind a directly bound typing guard."""
+    if not isinstance(statement, ast.If) or statement.orelse:
+        return False
+    test = _simple_reference_to_str(statement.test)
+    root, _, tail = test.partition(".")
+    guard = bindings.get(root, "") + ("." + tail if tail else "")
+    if guard not in {"typing.TYPE_CHECKING", "typing_extensions.TYPE_CHECKING"}:
+        return False
+    return all(
+        _static_import_bindings(item) is not None or isinstance(item, ast.Pass)
+        for item in statement.body
+    )
 
 
 def _import_time_body(statement, type_checking_names: set[str]) -> list:
@@ -1444,6 +1512,144 @@ class ComponentVisitor(ast.NodeVisitor):
 # ── Core scan logic ──────────────────────────────────────────────────
 
 
+class _LexicalBody(ast.NodeVisitor):
+    """Current-body writes/calls, without entering deferred definitions."""
+
+    def __init__(self):
+        self.writes: Counter[str] = Counter()
+        self.calls: list[ast.Call] = []
+
+    def visit_Name(self, node):
+        if isinstance(node.ctx, (ast.Store, ast.Del)):
+            self.writes[node.id] += 1
+
+    def visit_Call(self, node):
+        self.calls.append(node)
+        self.generic_visit(node)
+
+    def visit_FunctionDef(self, node: ast.FunctionDef | ast.AsyncFunctionDef):
+        self.writes[node.name] += 1
+        for expression in [*node.decorator_list, *node.args.defaults, *filter(None, node.args.kw_defaults)]:
+            self.visit(expression)
+
+    def visit_AsyncFunctionDef(self, node):
+        self.visit_FunctionDef(node)
+
+    def visit_ClassDef(self, node):
+        self.writes[node.name] += 1
+
+    def visit_Lambda(self, node):
+        for expression in [*node.args.defaults, *filter(None, node.args.kw_defaults)]:
+            self.visit(expression)
+
+    def visit_Import(self, node):
+        self.writes.update(alias.asname or alias.name.split(".", 1)[0] for alias in node.names)
+
+    def visit_ImportFrom(self, node):
+        self.writes.update(alias.asname or alias.name for alias in node.names)
+
+    def visit_ExceptHandler(self, node):
+        if node.name:
+            self.writes[node.name] += 1
+        self.generic_visit(node)
+
+    def visit_MatchAs(self, node):
+        if node.name:
+            self.writes[node.name] += 1
+        self.generic_visit(node)
+
+    def visit_MatchStar(self, node):
+        if node.name:
+            self.writes[node.name] += 1
+
+    def visit_MatchMapping(self, node):
+        if node.rest:
+            self.writes[node.rest] += 1
+        self.generic_visit(node)
+
+
+def _closed_lexical_functions(tree, source, filepath, visitor, bindings, effects):
+    """Attest an unescaped, closure-free direct-helper subset without execution."""
+    parents = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
+    if not any(any(isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)) for n in p.body) for p in parents):
+        return None
+    try:
+        symbols = symtable.symtable(source, filepath, "exec")
+    except (SyntaxError, ValueError):
+        return None
+    definitions, calls = [], []
+    namespace_names = {"locals", "globals", "vars", "exec", "eval"}
+    frame_names = {"f_locals", "f_globals", "__dict__", "currentframe", "_getframe"}
+    for parent in parents:
+        if sum(fn["name"] == parent.name for fn in visitor.functions) != 1:
+            continue
+        nodes = list(ast.walk(parent))
+        if any((isinstance(n, ast.Name) and n.id in namespace_names)
+               or (isinstance(n, ast.alias) and n.name in namespace_names | {"*"})
+               or (isinstance(n, ast.Attribute) and n.attr in namespace_names | frame_names)
+               for n in nodes):
+            continue
+        scopes = [s for s in symbols.get_children() if s.get_name() == parent.name and s.get_lineno() == parent.lineno]
+        if len(scopes) != 1:
+            continue
+        scope = scopes[0]
+        if not isinstance(scope, symtable.Function):
+            continue
+        body = _LexicalBody()
+        for statement in parent.body:
+            body.visit(statement)
+        parent_record = next(fn for fn in visitor.functions if fn["name"] == parent.name)
+        visible_calls = {(call["line"], call.get("column"), call["name"])
+                         for call in parent_record.get("calls", [])}
+        for function in parent.body:
+            if (not isinstance(function, (ast.FunctionDef, ast.AsyncFunctionDef))
+                    or function.decorator_list or body.writes[function.name] != 1
+                    or scope.lookup(function.name).is_parameter()
+                    or scope.lookup(function.name).is_global()
+                    or scope.lookup(function.name).is_nonlocal()):
+                continue
+            child_scopes = [s for s in scope.get_children() if s.get_name() == function.name and s.get_lineno() == function.lineno]
+            if (len(child_scopes) != 1 or not isinstance(child_scopes[0], symtable.Function)
+                    or child_scopes[0].get_frees()):
+                continue
+            if any(isinstance(n, (ast.Global, ast.Nonlocal)) and function.name in n.names for n in nodes):
+                continue
+            if any(isinstance(n, (ast.Global, ast.Nonlocal)) for n in ast.walk(function)):
+                continue
+            if any(isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda))
+                   for statement in function.body for n in ast.walk(statement)):
+                continue
+            try:
+                for value in [*function.args.defaults, *filter(None, function.args.kw_defaults)]:
+                    ast.literal_eval(value)
+            except (ValueError, TypeError):
+                continue
+            candidates = [call for call in body.calls if isinstance(call.func, ast.Name) and call.func.id == function.name]
+            permitted = {id(call.func) for call in candidates}
+            if any(isinstance(n, ast.Name) and isinstance(n.ctx, ast.Load)
+                   and n.id == function.name and id(n) not in permitted for n in nodes):
+                continue
+            sites = [call for call in candidates if call.lineno > (function.end_lineno or function.lineno)
+                     and (call.lineno, call.col_offset, function.name) in visible_calls]
+            if not sites:
+                continue
+            symbol = f"{parent.name}.<locals>.{function.name}"
+            definition = _extract_function_info(
+                function, deep=True, module_globals=visitor._module_globals,
+                module_import_aliases=visitor._module_import_aliases,
+                call_binding_facts=bindings.calls, data_effect_observations=effects,
+                observation_symbol=symbol,
+            )
+            definition["name"] = symbol
+            visitor.nested_functions.append(definition)
+            definitions.append({"symbol": symbol, "enclosing_symbol": parent.name, "enclosing_line": parent.lineno,
+                                "local_name": function.name, "definition_line": function.lineno,
+                                "end_line": function.end_lineno or function.lineno})
+            calls.extend({"caller": parent.name, "caller_line": parent.lineno, "line": call.lineno,
+                          "column": call.col_offset, "callee": symbol} for call in sites)
+    return {"schema_version": PYTHON_LEXICAL_FUNCTIONS_SCHEMA, "functions": definitions, "calls": calls} if calls else None
+
+
 def _scan_python_files(
     src_dir: str,
     deep: bool = False,
@@ -1545,6 +1751,10 @@ def _scan_python_files(
             constructor_dispatch=python_bindings.classes if python_bindings else None,
         )
         visitor.visit(tree)
+        lexical_functions = (
+            _closed_lexical_functions(tree, source, rel.as_posix(), visitor, python_bindings, file_effect_observations)
+            if deep else None
+        )
         if data_effect_observations is not None:
             data_effect_observations.extend(
                 {"file": rel.as_posix(), **observation}
@@ -1627,6 +1837,8 @@ def _scan_python_files(
                     )
                 if visitor.nested_functions:
                     file_entry["nested_functions"] = visitor.nested_functions
+                if lexical_functions is not None:
+                    file_entry["python_lexical_functions"] = lexical_functions
                 if module_calls:
                     file_entry["module_calls"] = module_calls
                 if fastapi_declarations:

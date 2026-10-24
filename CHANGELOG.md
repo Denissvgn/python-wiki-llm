@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Builds and development installations use patched Setuptools 84.1.0.
+- Qualification tooling pins unaffected Filelock 3.20.3 while retaining
+  Python 3.10 support.
+
+- Routine Node/npm preparation supports native Linux ARM64 with a separately
+  locked artifact, preserving checksum verification and existing host limits for
+  other toolchains.
+
+- Bounded flow diagnostics identify an exact callable query. Source-bound static
+  segments recover omitted transitions with explicit paging, depth frontiers and
+  work counts, rejecting follow-ups after their captured basis changes.
+
+- Static caller/callee and flow analysis resolves direct calls to closed,
+  unescaped nested helpers while preserving uncertainty for callbacks, closures,
+  rebinding and dynamic namespace changes.
+
+- Coverage reports distinguish static compatibility module routes and
+  declaration-free package initializers from missing extraction, while keeping
+  ambiguous routes and genuine implementation gaps visible.
+
+- Validation reports put health guidance first, separate external call boundaries
+  from unresolved calls and truncation, and link bounded previews to complete rows.
+- Skipped dependency checks name their manifests and explain observed source
+  scope without inferring unused packages or helper preparation state.
+
+- Integrity and health summaries distinguish blocking checks, advisory drift,
+  release-policy evidence, human review and scoped machine verification.
+- Stale machine receipts retain their earlier result without being mistaken for
+  currently passing verification.
+
+- Knowledge health diagnostics identify changes in analysis implementation,
+  configuration and execution runtime while preserving historical reason codes
+  and stored evidence compatibility.
+
+- Optional MCP installations explicitly declare the Pydantic types and Uvicorn
+  HTTP server they use, while the default installation stays lightweight.
+
 ## [3.2.0] - 2026-10-20
 
 ### Fixed

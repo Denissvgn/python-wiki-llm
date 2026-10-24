@@ -22,7 +22,7 @@ verification-receipt evaluation already produced by strict lint.
 | `.health_contract` | `validate_health_details` |
 | `.health_details` | `CapturedHealthDetails` |
 | `.health_policy` | `DoctorStatus`, `DOCTOR_EXIT_CODES`, `classify_health_sections` |
-| `.health_summary` | `detailed_health_rows`, `summary_cell` |
+| `.health_summary` | `ASSURANCE_DISCLOSURE`, `RELEASE_POLICY_UNAVAILABLE`, `assurance_rows`, `detailed_health_rows`, `health_policy`, `summary_cell` |
 | `.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME` |
 | `.knowledge_consumption` | `KnowledgeAvailability`, `KnowledgeReadView`, `MachineVerificationAvailability` |
 | `.knowledge_governance` | `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_FILENAME` |
@@ -57,16 +57,16 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (4) |
+| Inbound | `src` (5) |
 | Outbound | `src` (18) |
 
-> All 22 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 23 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [DoctorReport](../entities/DoctorReport.md) | 60 | — | One stable machine report plus its process exit classification. |
+| [DoctorReport](../entities/DoctorReport.md) | 63 | — | One stable machine report plus its process exit classification. |
 
 ## Functions
 

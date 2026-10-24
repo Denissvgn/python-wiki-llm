@@ -1,6 +1,6 @@
 # _BoundedResult
 
-**Location:** `src/llm_wiki_cli/services/documentation_queries.py:348`
+**Location:** `src/llm_wiki_cli/services/documentation_queries.py:349`
 **Kind:** Class
 **Bases:** —
 **Module:** [documentation_queries](../modules/documentation_queries.md)

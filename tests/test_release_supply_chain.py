@@ -21,7 +21,7 @@ def test_release_python_tools_are_exact_and_hash_locked():
         "pip-audit==2.10.1",
         "pyright==1.1.411",
         "ruff==0.15.22",
-        "setuptools==83.0.0",
+        "setuptools==84.1.0",
         "twine==7.0.0",
     ):
         start = requirements.index(requirement)

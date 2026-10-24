@@ -27,8 +27,12 @@ from .contracts import (
 from .doctor_service import compose_doctor_report
 from . import analysis_compatibility as ac
 from .health_contract import HealthDetailsError, validate_health_details
-from .health_summary import FRESHNESS_DISCLOSURE, detailed_health_rows, freshness_counts, reason_list, summary_cell
-from .knowledge_observability import KnowledgeAggregateSummary
+from .health_summary import (
+    ASSURANCE_DISCLOSURE, FRESHNESS_DISCLOSURE,
+    assurance_rows, captured_analysis_diagnostic, detailed_health_rows,
+    diagnostic_groups, freshness_counts, reason_list, render_validation_markdown, summary_cell,
+)
+from .knowledge_observability import KnowledgeAggregateSummary, knowledge_freshness_hint
 from .lint_service import LintReport, report_to_dict
 
 
@@ -931,7 +935,9 @@ def _validate_doctor(
         raise CiCheckReportError(
             "report.knowledge_health.verification_receipt result fields disagree"
         )
-    if recorded_result == "passed" and passed is not True:
+    # A stale receipt preserves its historical result while current validity
+    # fails. Do not confuse that earlier pass with a currently passing check.
+    if recorded_result == "passed" and passed is not True and verification_state != "stale":
         raise CiCheckReportError(
             "report.knowledge_health.verification_receipt recorded result disagrees"
         )
@@ -1306,15 +1312,26 @@ def load_ci_check_payload(
 def _health_detail_lines(report: Mapping[str, Any]) -> list[str]:
     """Summarize the already validated diagnostics; never evaluate source."""
     health = report["knowledge_health"]
+    health_rows = detailed_health_rows(health)
+    analysis_diagnosis = captured_analysis_diagnostic(health)
     records = [row for row in report["diagnostics"] if row["category"] == "knowledge_freshness"]
     counts: Counter[str] = Counter()
     examples: dict[str, tuple[bool, bool, str, str]] = {}
     for row in records:
         hint, path = row.get("hint") or "", row.get("path") or row.get("target") or ""
-        example = (not bool(hint), not bool(path), hint, path)
         # Use the validator's existing reason extraction, including legacy
         # message reason tags. One record may supply several distinct reasons.
         for reason in _finding_reasons([row]):
+            # Translate exact historical umbrella hints for display only. The
+            # raw report and frozen projection vocabulary remain unchanged.
+            displayed_hint = hint
+            if (
+                reason in {"producer-tool-configuration-changed", "extractor-configuration-changed", "plugin-configuration-changed"}
+                and hint == knowledge_freshness_hint("basis-incompatible", reason)
+            ):
+                displayed_hint = (analysis_diagnosis["hint"] if analysis_diagnosis is not None else
+                                  "Inspect the recorded and live analysis basis before selecting a repair.")
+            example = (not bool(displayed_hint), not bool(path), displayed_hint, path)
             counts[reason] += 1
             if reason not in examples or example < examples[reason]:
                 examples[reason] = example
@@ -1344,8 +1361,21 @@ def _health_detail_lines(report: Mapping[str, Any]) -> list[str]:
         "- " + FRESHNESS_DISCLOSURE,
     ])
     lines.extend(guidance[1:])
-    detail_lines = [f"- {label}: `{summary_cell(value)}`." for label, value in detailed_health_rows(health)]
-    return detail_lines + lines
+    detail_lines = [f"- {label}: `{summary_cell(value)}`." for label, value in health_rows]
+    groups = diagnostic_groups(report["diagnostics"])
+    totals = "; ".join(f"{g['category']}/{g['kind']}={len(g['records'])}" for g in groups[:3])
+    return detail_lines + lines + [
+        "- Diagnostic category/kind totals (emitted records, not scan coverage): "
+        f"`{summary_cell(totals or 'none')}`; {max(0, len(groups) - 3)} additional groups; full totals/rows in JSON and Markdown.",
+        f"- Skipped dependency scopes: `{sum(row['category'] == 'unscanned_manifest_scopes' for row in report['diagnostics'])}`; "
+        "skipped does not mean unused or unprepared; inspect each complete scope record.",
+    ]
+
+
+def render_ci_markdown(report: Mapping[str, Any], *, cli_exit: int) -> str:
+    """Render validated captured CI data without another scan or policy decision."""
+    validate_ci_check_payload(report, cli_exit=cli_exit)
+    return render_validation_markdown(report, health=report["knowledge_health"])
 
 
 def _bounded_summary(
@@ -1462,9 +1492,11 @@ def render_ci_summary(
     if report is not None:
         lines.extend([
             f"- Scope: wiki `{summary_cell(report['wiki_dir'])}`; source `{summary_cell(report['src_dir'])}`",
-            "- Policies: strict integrity (blocking); non-strict health (advisory).",
+            "- Policies: strict integrity (blocking); non-strict health (advisory). "
+            + ("Native drift: `report-only` (advisory)." if report["knowledge_drift_report"] else "Native drift: `disabled`."),
         ])
         health = _object(report["knowledge_health"], "report.knowledge_health")
+        assurance = dict(assurance_rows(health))
         availability = _object(
             health["availability"], "report.knowledge_health.availability"
         )
@@ -1485,15 +1517,18 @@ def render_ci_summary(
         )
         lines.extend(
             [
-                f"- Blocking issues: `{report['issue_count']}`",
-                f"- Knowledge health: `{health['status']}`",
+                f"- Blocking issues: `{report['issue_count']}`; Structural integrity: `{'passed' if report['ok'] else 'failed'}` (strict; blocking).",
+                f"- Knowledge health: `{health['status']}` (exit {health['exit_code']}; non-strict; advisory)",
+                "- Release policy: `unavailable`; requires separate authenticated, matching release-policy evidence.",
                 f"- Availability: `{availability['state']}`",
                 f"- Freshness: `{freshness_label}`",
                 (
                     "- Snapshot / governance: "
                     f"`{snapshot['state']}` / `{governance['state']}`"
                     + (" (governance optional; absent)" if governance["state"] == "not-present" else "")
+                    + ("; " + summary_cell(assurance["Governance authority"]) if governance["state"] != "not-present" else "")
                 ),
+                "- Human review: " + summary_cell(assurance["Human review"]),
                 (
                     "- Drift: "
                     f"`{drift['state']}` "
@@ -1504,6 +1539,8 @@ def render_ci_summary(
                 + (" (optional; absent)" if verification["state"] == "absent" else ""),
             ]
         )
+        if verification["state"] != "absent":
+            lines[-1] += summary_cell(assurance["Machine verification"].removeprefix(verification["state"]))
     else:
         lines.extend(
             [
@@ -1515,10 +1552,11 @@ def render_ci_summary(
                 "- Snapshot / governance: `unavailable` / `unavailable`",
                 "- Drift: `unavailable`",
                 "- Verification receipt: `unavailable`",
+                "- Release policy: `unavailable`; no authenticated policy evidence in this report.",
             ]
         )
     lines.append(
-        "- Native drift diagnostics are advisory; integrity validation remains blocking."
+        "- Native drift diagnostics are advisory; integrity validation remains blocking. " + ASSURANCE_DISCLOSURE
     )
     evidence = f"`{summary_cell(report_name)}`" if report is not None else "unavailable"
     if evidence_artifact is not None:

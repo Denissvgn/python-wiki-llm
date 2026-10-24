@@ -29,28 +29,28 @@ sequenceDiagram
     participant p4 as _arguments
     participant p5 as _append
     participant p6 as _validate_report_bytes
-    participant p7 as detailed_health_rows
-    participant p8 as _cell
-    participant p9 as _required_object
-    participant p10 as _enum (integrations/github-action/render_summary.py)
-    participant p11 as _validate_availability
-    participant p12 as _validate_freshness
-    participant p13 as _validate_snapshot
-    participant p14 as _validate_governance
-    participant p15 as _validate_drift
-    participant p16 as _validate_verification
-    participant p17 as validate_doctor_payload
-    participant p18 as _exact_object (src/llm_wiki_cli/services/ci_report.py)
-    participant p19 as _string_list
-    participant p20 as _freshness_counts (integrations/github-action/render_summary.py)
-    participant p21 as _nullable_boolean (integrations/github-action/render_summary.py)
-    participant p22 as validate_health_details
-    participant p23 as _contract_object
-    participant p24 as _string (src/llm_wiki_cli/services/ci_report.py)
-    participant p25 as _validate_doctor
-    participant p26 as _exact_object (integrations/github-action/render_summary.py)
-    participant p27 as _object (src/llm_wiki_cli/services/ci_report.py)
-    participant p28 as _object (src/llm_wiki_cli/services/health_contract.py)
+    participant p7 as assurance_rows
+    participant p8 as detailed_health_rows
+    participant p9 as _cell
+    participant p10 as captured_analysis_diagnostic
+    participant p11 as _required_object
+    participant p12 as _enum (integrations/github-action/render_summary.py)
+    participant p13 as _validate_availability
+    participant p14 as _validate_freshness
+    participant p15 as _validate_snapshot
+    participant p16 as _validate_governance
+    participant p17 as _validate_drift
+    participant p18 as _validate_verification
+    participant p19 as validate_doctor_payload
+    participant p20 as analysis_diagnostic
+    participant p21 as _exact_object (src/llm_wiki_cli/services/ci_report.py)
+    participant p22 as _string_list
+    participant p23 as _freshness_counts (integrations/github-action/render_summary.py)
+    participant p24 as _nullable_boolean (integrations/github-action/render_summary.py)
+    participant p25 as validate_health_details
+    participant p26 as _contract_object
+    participant p27 as _string (src/llm_wiki_cli/services/ci_report.py)
+    participant p28 as _validate_doctor
     participant p29 as Path (integrations/github-action/render_summary.py:main)
     participant p30 as Path(…).read_bytes (integrations/github-actio…er_summary.py:load_report)
     p0->>p1: load_report
@@ -59,35 +59,35 @@ sequenceDiagram
     p0->>p4: _arguments
     p0->>p5: _append
     p1->>p6: _validate_report_bytes
-    p2->>p7: detailed_health_rows
-    p2->>p8: _cell
-    p6->>p9: _required_object
-    p6->>p10: _enum (integrations/github-action/render_summary.py)
-    p6->>p11: _validate_availability
-    p6->>p12: _validate_freshness
-    p6->>p13: _validate_snapshot
-    p6->>p14: _validate_governance
-    p6->>p15: _validate_drift
-    p6->>p16: _validate_verification
-    p6->>p17: validate_doctor_payload
-    p17->>p18: _exact_object (src/llm_wiki_cli/services/ci_report.py)
-    p13->>p19: _string_list
-    p12->>p20: _freshness_counts (integrations/github-action/render_summary.py)
-    p16->>p21: _nullable_boolean (integrations/github-action/render_summary.py)
-    p17->>p22: validate_health_details
-    p17->>p23: _contract_object
-    p17->>p24: _string (src/llm_wiki_cli/services/ci_report.py)
-    p17->>p25: _validate_doctor
-    p20->>p26: _exact_object (integrations/github-action/render_summary.py)
-    p18->>p27: _object (src/llm_wiki_cli/services/ci_report.py)
-    p22->>p28: _object (src/llm_wiki_cli/services/health_contract.py)
+    p2->>p7: assurance_rows
+    p2->>p8: detailed_health_rows
+    p2->>p9: _cell
+    p8->>p10: captured_analysis_diagnostic
+    p6->>p11: _required_object
+    p6->>p12: _enum (integrations/github-action/render_summary.py)
+    p6->>p13: _validate_availability
+    p6->>p14: _validate_freshness
+    p6->>p15: _validate_snapshot
+    p6->>p16: _validate_governance
+    p6->>p17: _validate_drift
+    p6->>p18: _validate_verification
+    p6->>p19: validate_doctor_payload
+    p10->>p20: analysis_diagnostic
+    p19->>p21: _exact_object (src/llm_wiki_cli/services/ci_report.py)
+    p15->>p22: _string_list
+    p14->>p23: _freshness_counts (integrations/github-action/render_summary.py)
+    p18->>p24: _nullable_boolean (integrations/github-action/render_summary.py)
+    p19->>p25: validate_health_details
+    p19->>p26: _contract_object
+    p19->>p27: _string (src/llm_wiki_cli/services/ci_report.py)
+    p19->>p28: _validate_doctor
     p0-->>p29: Path (integrations/github-action/render_summary.py:main)(args.report)
     p1-->>p30: Path(…).read_bytes (integrations/github-actio…er_summary.py:load_report)
 ```
 
-> Call sequence diagram shows 30 of 571 interactions; 541 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 606 interactions; 576 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 189 (188 omitted); unresolved 1 of 99 (98 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 198 (197 omitted); unresolved 1 of 109 (108 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -101,7 +101,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `integrations/github-action/render_summary.py:_required_object` | 21 | [integrations/github-action/render_summary.py](../modules/render_summary.md) | internal | 1 |
 | `integrations/github-action/render_summary.py:_object` | 22 | - | external | 2 |
 | `integrations/github-action/render_summary.py:_required_object` | 21 | - | external | 3 |
-> Omission summary shows 8 of 114 groups; 106 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 121 groups; 113 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -166,39 +166,39 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| main | _arguments | 549 | `_arguments(data not statically known)` |
-| _arguments | argparse.ArgumentParser | 119 | `argparse.ArgumentParser(data not statically known)` |
-| _arguments | parser.add_argument | 120 | `parser.add_argument('--report', required=True)` |
-| _arguments | parser.add_argument | 121 | `parser.add_argument('--fail-on', choices=sorted(...), required=True)` |
-| _arguments | sorted (integrations/github-actio…der_summary.py:_arguments) | 121 | `sorted(FAIL_THRESHOLDS)` |
-| _arguments | parser.add_argument | 122 | `parser.add_argument('--doctor-exit-code', choices=range(...), required=True, type=int)` |
-| _arguments | range | 124 | `range(4)` |
-| _arguments | parser.add_argument | 128 | `parser.add_argument('--expected-strict', choices=(...), required=True)` |
-| _arguments | parser.add_argument | 133 | `parser.add_argument('--receipt')` |
-| _arguments | parser.add_argument | 134 | `parser.add_argument('--evidence-artifact')` |
-| _arguments | parser.parse_args | 135 | `parser.parse_args(data not statically known)` |
+| main | _arguments | 552 | `_arguments(data not statically known)` |
+| _arguments | argparse.ArgumentParser | 121 | `argparse.ArgumentParser(data not statically known)` |
+| _arguments | parser.add_argument | 122 | `parser.add_argument('--report', required=True)` |
+| _arguments | parser.add_argument | 123 | `parser.add_argument('--fail-on', choices=sorted(...), required=True)` |
+| _arguments | sorted (integrations/github-actio…der_summary.py:_arguments) | 123 | `sorted(FAIL_THRESHOLDS)` |
+| _arguments | parser.add_argument | 124 | `parser.add_argument('--doctor-exit-code', choices=range(...), required=True, type=int)` |
+| _arguments | range | 126 | `range(4)` |
+| _arguments | parser.add_argument | 130 | `parser.add_argument('--expected-strict', choices=(...), required=True)` |
+| _arguments | parser.add_argument | 135 | `parser.add_argument('--receipt')` |
+| _arguments | parser.add_argument | 136 | `parser.add_argument('--evidence-artifact')` |
+| _arguments | parser.parse_args | 137 | `parser.parse_args(data not statically known)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| environment_read | `os.environ.get` | `main` | 563 |
-| environment_read | `os.environ.get` | `main` | 565 |
+| environment_read | `os.environ.get` | `main` | 566 |
+| environment_read | `os.environ.get` | `main` | 568 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_arguments` | `argparse.ArgumentParser` | 119 |
-| unresolved_call | `_arguments` | `parser.add_argument` | 120 |
-| unresolved_call | `_arguments` | `parser.add_argument` | 121 |
-| external_call | `_arguments` | `sorted` | 121 |
+| external_call | `_arguments` | `argparse.ArgumentParser` | 121 |
 | unresolved_call | `_arguments` | `parser.add_argument` | 122 |
-| external_call | `_arguments` | `range` | 124 |
-| unresolved_call | `_arguments` | `parser.add_argument` | 128 |
-| unresolved_call | `_arguments` | `parser.add_argument` | 133 |
-| unresolved_call | `_arguments` | `parser.add_argument` | 134 |
-| unresolved_call | `_arguments` | `parser.parse_args` | 135 |
+| unresolved_call | `_arguments` | `parser.add_argument` | 123 |
+| external_call | `_arguments` | `sorted` | 123 |
+| unresolved_call | `_arguments` | `parser.add_argument` | 124 |
+| external_call | `_arguments` | `range` | 126 |
+| unresolved_call | `_arguments` | `parser.add_argument` | 130 |
+| unresolved_call | `_arguments` | `parser.add_argument` | 135 |
+| unresolved_call | `_arguments` | `parser.add_argument` | 136 |
+| unresolved_call | `_arguments` | `parser.parse_args` | 137 |
 | step_limit | `main` | `first 12 steps` | 0 |
 | truncated_flow | `main` | `depth limit` | 0 |
 

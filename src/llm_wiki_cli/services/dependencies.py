@@ -31,16 +31,20 @@ name mapping is best-effort per ecosystem, so undeclared/unused are advisory.
 from __future__ import annotations
 
 import heapq
+import hashlib
 import json
 import os
 import re
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Mapping, Optional
+from typing import Any, Callable, Mapping, Optional
 
 from ..config import is_agent_worktree_path
-from ..extractors.common import executes_at_import
+from ..extractors.common import (
+    BUNDLED_HELPER_IMPLEMENTATION_PATHS, executes_at_import,
+    is_bundled_helper_implementation_path,
+)
 from .dependency_versions import build_dependency_version_details
 from .imports import build_module_path_resolver
 from .python_imports import is_python_source
@@ -2171,6 +2175,114 @@ def _scope_was_scanned(scope: _ManifestScope, scanned_files: frozenset[str]) -> 
     would otherwise report every one of its declared dependencies as unused.
     """
     return any(_path_under_scope(path, scope.root) for path in scanned_files)
+
+
+def _scope_manifest_paths(root: Path, language: str, snapshot: SourceSnapshot) -> list[Path]:
+    walkers = {"python": _walk_python_manifest_files, "typescript": _walk_ts_manifest_files,
+               "go": _walk_go_manifest_files, "haskell": _walk_haskell_manifest_files}
+    if language in walkers:
+        return walkers[language](root, snapshot)
+    if language == "rust":
+        return (_snapshot_package_marker_paths(root, snapshot, lambda name: name == "Cargo.toml")
+                if snapshot.source_selection_policy is not None else
+                [root / "Cargo.toml"] if (root / "Cargo.toml").is_file() else [])
+    return []
+
+
+def _owned_scope_sources(root: Path, manifest: Path, language: str) -> list[Path]:
+    suffixes = {"typescript": {".js", ".ts", ".jsx", ".tsx", ".mjs", ".cjs"},
+                "rust": {".rs"}, "go": {".go"}, "haskell": {".hs", ".lhs"}}
+    for package in manifest.parents:
+        name = package.name.casefold() if os.name == "nt" else package.name
+        if name != "llm_wiki_cli":
+            continue
+        candidates = [package / name.removeprefix("llm_wiki_cli/")
+                      for name in sorted(BUNDLED_HELPER_IMPLEMENTATION_PATHS)]
+        return [path for path in candidates if path.suffix in suffixes.get(language, set())
+                and path.is_relative_to(root) and path.is_relative_to(manifest.parent)
+                and is_bundled_helper_implementation_path(path)]
+    return []
+
+
+def _explicit_missing_scope_source(root: Path, manifests: list[Path], language: str,
+                                   snapshot: SourceSnapshot) -> list[str]:
+    if language != "typescript":
+        return []
+    for manifest in manifests:
+        config = manifest.parent / "tsconfig.json"
+        relative = config.relative_to(root).as_posix()
+        expected = snapshot.captured_content_hashes.get(relative)
+        if expected is None:
+            continue
+        try:
+            raw = config.read_bytes()
+            if "sha256:" + hashlib.sha256(raw).hexdigest() != expected:
+                continue
+            value = json.loads(raw)
+        except (OSError, UnicodeError, ValueError):
+            continue
+        files = value.get("files") if isinstance(value, dict) else None
+        if not isinstance(files, list):
+            continue
+        # A bounded positive witness, not a census of all declared files.
+        for name in files[:20]:
+            if not isinstance(name, str) or "\\" in name:
+                continue
+            relative_source = Path(name)
+            if relative_source.is_absolute() or ".." in relative_source.parts:
+                continue
+            path = config.parent / relative_source
+            if (path.suffix in {".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"}
+                    and path.resolve().is_relative_to(root) and not path.is_file() and not path.is_symlink()):
+                return [path.relative_to(root).as_posix()]
+    return []
+
+
+def describe_unscanned_scopes(
+    project_root: str | Path, language: str, scopes: list[str],
+    source_snapshot: SourceSnapshot | None = None,
+) -> list[dict[str, Any]]:
+    """Explain existing skip records without changing reconciliation or discovery."""
+    root = Path(project_root).resolve()
+    if not scopes:
+        return []
+    snapshot = source_snapshot or build_source_snapshot(root)
+    same_root = snapshot.root == root
+    paths = _scope_manifest_paths(root, language, snapshot) if same_root else []
+    results = []
+    for scope in scopes:
+        # Rust's legacy empty scope denotes the complete language, potentially
+        # several selected manifests. Preserve that scope and skip count.
+        manifests = paths if language == "rust" else [p for p in paths if p.parent == root / scope]
+        owned = [_owned_scope_sources(root, p, language) for p in manifests]
+        sources = [p for group in owned for p in group]
+        missing = [p.relative_to(root).as_posix() for p in sources if not p.is_file()]
+        selected = [p for p in snapshot.language_paths(language) if _path_under_scope(p, scope)] if same_root else []
+        unsupported = [p.rel_path for files in snapshot.unsupported_files_by_language.values()
+                       for p in files if _path_under_scope(p.rel_path, scope)] if same_root else []
+        declared_missing = _explicit_missing_scope_source(root, manifests, language, snapshot)
+        owner = "llm-wiki-helper" if owned and all(owned) else "unknown"
+        if owner == "llm-wiki-helper" and missing:
+            reason, description, witnesses = "owned-helper-source-missing", "known owned helper source is missing", missing
+        elif owner == "llm-wiki-helper":
+            reason, description, witnesses = "owned-helper-excluded", "owned helper implementation is deliberately excluded from application discovery", [p.relative_to(root).as_posix() for p in sources]
+        elif declared_missing:
+            reason, description, witnesses = "declared-source-missing", "an explicitly declared source file is missing (positive witness, not a complete missing-file count)", declared_missing
+        elif selected:
+            reason, description, witnesses = "supported-source-not-extracted", "source is present in the selected snapshot but no extraction record was supplied; extraction cause and ownership remain unknown", selected
+        elif unsupported:
+            reason, description, witnesses = "unsupported-inputs-present", "unsupported inputs are present in this scope; no sources for this reconciliation language were extracted", unsupported
+        elif sources:
+            reason, description, witnesses = "mixed-source-scope", "owned helper sources are excluded for some manifests; other source availability and ownership remain unknown", [p.relative_to(root).as_posix() for p in sources]
+        else:
+            reason, description, witnesses = "source-scope-unavailable", "no source coverage evidence is available for this scope; source availability and ownership remain unknown", []
+        results.append({
+            "scope": scope, "manifests": [p.relative_to(root).as_posix() for p in manifests],
+            "reason": reason, "description": description, "owner": owner, "sources": sorted(set(witnesses)),
+            "hint": "Inspect the exact listed manifest/source paths read-only. Skipping is not an unused-package verdict. "
+                    "Toolchain/helper preparation was not evaluated; helper-specific verification or preparation needs separate authorization.",
+        })
+    return results
 
 
 def _reconcile_scoped_language(

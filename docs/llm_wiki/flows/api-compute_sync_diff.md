@@ -25,22 +25,23 @@ sequenceDiagram
     participant p11 as without_line_metadata
     participant p12 as _page_name_for_entity
     participant p13 as _safe_page_component
-    participant p14 as _disambiguate_paths
-    participant p15 as _globally_disambiguate_module_pages
-    participant p16 as _page_name_from_source_path
-    participant p17 as _RecordedEntityPages
-    participant p18 as SyncOwnershipError
-    participant p19 as sha256_bytes
-    participant p20 as _legacy_entity_page_map
-    participant p21 as _entity_occurrences
-    participant p22 as portable_path_key
-    participant p23 as portable_page_component
-    participant p24 as _page_name_with_extension
-    participant p25 as Counter (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
-    participant p26 as manifest.sources.items (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
-    participant p27 as old_cls_counts.update
-    participant p28 as info.get (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
-    participant p29 as old_cls_to_files.setdefault(…).add
+    participant p14 as portable_page_component
+    participant p15 as _disambiguate_paths
+    participant p16 as _globally_disambiguate_module_pages
+    participant p17 as portable_page_component.<locals>.sanitize
+    participant p18 as _page_name_from_source_path
+    participant p19 as _RecordedEntityPages
+    participant p20 as SyncOwnershipError
+    participant p21 as sha256_bytes
+    participant p22 as _legacy_entity_page_map
+    participant p23 as _entity_occurrences
+    participant p24 as portable_path_key
+    participant p25 as _page_name_with_extension
+    participant p26 as is_portable_path_component
+    participant p27 as Counter (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
+    participant p28 as manifest.sources.items (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
+    participant p29 as old_cls_counts.update
+    participant p30 as info.get (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
     p0->>p1: _recorded_entity_pages
     p0->>p2: _ownership_error
     p0->>p3: hash_file
@@ -54,28 +55,28 @@ sequenceDiagram
     p4->>p11: without_line_metadata
     p1->>p12: _page_name_for_entity
     p12->>p13: _safe_page_component
-    p7->>p14: _disambiguate_paths
-    p7->>p15: _globally_disambiguate_module_pages
-    p15->>p16: _page_name_from_source_path
-    p1->>p17: _RecordedEntityPages
-    p2->>p18: SyncOwnershipError
-    p3->>p19: sha256_bytes
-    p5->>p20: _legacy_entity_page_map
-    p10->>p21: _entity_occurrences
-    p10->>p22: portable_path_key
-    p13->>p23: portable_page_component
-    p14->>p24: _page_name_with_extension
-    p0-->>p25: Counter (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
-    p0-->>p26: manifest.sources.items (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
-    p0-->>p27: old_cls_counts.update(info.get(...))
-    p0-->>p28: info.get (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)('entities', [...])
-    p0-->>p28: info.get (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)('entities', [...])
-    p0-->>p29: old_cls_to_files.setdefault(…).add(filepath)
+    p13->>p14: portable_page_component
+    p7->>p15: _disambiguate_paths
+    p7->>p16: _globally_disambiguate_module_pages
+    p14->>p17: portable_page_component.<locals>.sanitize
+    p16->>p18: _page_name_from_source_path
+    p1->>p19: _RecordedEntityPages
+    p2->>p20: SyncOwnershipError
+    p3->>p21: sha256_bytes
+    p5->>p22: _legacy_entity_page_map
+    p10->>p23: _entity_occurrences
+    p10->>p24: portable_path_key
+    p15->>p25: _page_name_with_extension
+    p17->>p26: is_portable_path_component
+    p0-->>p27: Counter (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
+    p0-->>p28: manifest.sources.items (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)
+    p0-->>p29: old_cls_counts.update(info.get(...))
+    p0-->>p30: info.get (src/llm_wiki_cli/services…ysis.py:compute_sync_diff)('entities', [...])
 ```
 
-> Call sequence diagram shows 30 of 199 interactions; 169 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 209 interactions; 179 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 69 (68 omitted); unresolved 5 of 82 (77 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 72 (71 omitted); unresolved 3 of 86 (83 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -84,12 +85,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/sync_analysis.py:_recorded_entity_pages` | 3 | - | external | 12 |
 | `src/llm_wiki_cli/services/sync_analysis.py:_recorded_entity_pages` | 3 | - | unresolved | 14 |
 | `src/llm_wiki_cli/services/sync_analysis.py:_recorded_entity_pages` | 3 | [src/llm_wiki_cli/services/sync_analysis.py](../modules/sync_analysis.md) | internal | 2 |
-| `src/llm_wiki_cli/services/validation.py:portable_page_component` | 35 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/sync_analysis.py:compute_sync_diff` | 1 | - | unresolved | 24 |
+| `src/llm_wiki_cli/services/validation.py:portable_page_component.<locals>.sanitize` | 36 | - | unresolved | 6 |
+| `src/llm_wiki_cli/services/validation.py:portable_page_component.<locals>.sanitize` | 36 | - | external | 3 |
+| `src/llm_wiki_cli/services/validation.py:portable_page_component` | 35 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
+| `src/llm_wiki_cli/services/sync_analysis.py:compute_sync_diff` | 1 | - | unresolved | 26 |
 | `src/llm_wiki_cli/services/sync_analysis.py:compute_sync_diff` | 1 | - | external | 18 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:sha256_bytes` | 69 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/knowledge_evidence.py:sha256_bytes` | 69 | - | external | 1 |
-> Omission summary shows 8 of 39 groups; 31 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 41 groups; 33 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

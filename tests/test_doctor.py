@@ -244,7 +244,7 @@ def test_human_report_is_compact_and_contains_every_required_section(
 
     rendered = doctor_service.render_doctor_text(report)
 
-    assert len(rendered.splitlines()) <= 12
+    assert len(rendered.splitlines()) <= 16
     for label in (
         "Availability:",
         "Freshness:",

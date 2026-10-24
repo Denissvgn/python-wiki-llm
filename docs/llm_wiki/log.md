@@ -3220,3 +3220,49 @@ Selected invalid structural evidence can be repaired after a producer upgrade wh
 - Pages deprecated: 0
 - Semantic fields preserved: 178
 - Moved entities: none
+
+## 2026-10-24
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.2.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:215616ad2afc9c9d70944bf0e13c7d893e4d6fd55acb4e2ce0df436184ad61c7`
+- Pages created: 6
+- Pages updated: 242
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1387
+- Pages deprecated: 1
+- Semantic fields preserved: 21
+- Moved entities: none
+- Flow pages initialized: 1 (api=1)
+- Workflow pages created: 1
+- Dependency pages initialized: 0
+- Surface policy updated: no
+- Generated surface pages retired: 1
+
+
+## 2026-10-24 — Analysis evidence and bounded navigation
+
+Static navigation resolves only supported closed local functions and exposes source-bound follow-ups with bounded paging and depth frontiers. Derived views remain unmodeled for structural freshness; static observations do not establish runtime behavior or semantic review.
+
+Health presentation separates structural integrity, advisory native drift and separately bound release-health admission. Human review and scoped machine verification remain distinct claims. The recorded capture uses native Linux ARM64 with Python 3.13.16, Node 24.18.0 and npm 11.16.0; comparisons on other targets retain their runtime and basis checks.
+
+## 2026-10-24
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.2.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:a461ce1ec4d8bcb1b56d75d5389b0f39924034a1eef129e3f3a6a3c428c60190`
+- Pages created: 0
+- Pages updated: 0
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1622
+- Pages deprecated: 0
+- Semantic fields preserved: 0
+- Moved entities: none
+
+Build and development tooling use patched Setuptools 84.1.0 while retaining Python 3.10 support. Native ARM64 Linux capture refreshes the recorded tooling basis.

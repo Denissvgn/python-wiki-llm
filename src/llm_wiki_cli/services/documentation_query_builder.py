@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Mapping
 from itertools import islice
+import hashlib
 import os
 from pathlib import Path
 import shlex
@@ -728,6 +729,18 @@ def build_live_documentation_query_service(
         service_factory=service_factory,
         inventory_result=inventory_result,
     )
+    if isinstance(service, DocumentationGraphQueryService):
+        # Capture the query producer with the read. Service methods remain pure
+        # and cannot mistake a changed navigation implementation for reuse.
+        try:
+            service.flow_query_binding = {
+                name: "sha256:" + hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()
+                for name in ("flow_followup.py", "entrypoints.py", "data_flow.py", "documentation_queries.py")
+            }
+        except OSError:
+            # Preserve legacy queries when this optional capability cannot be
+            # bound (for example a source-less installation).
+            service.flow_query_binding = None
     stage_ns["service_assembly"] = perf_counter_ns() - stage_started
     for path, outcome in getattr(inventory_result, "path_outcomes", {}).items():
         if path in path_outcomes and path_outcomes[path]["selection_state"] == "included" and path_outcomes[path]["filesystem_state"] == "file":

@@ -1,6 +1,6 @@
 # PythonExtractor
 
-**Location:** `src/llm_wiki_cli/extractors/python_extractor.py:1677`
+**Location:** `src/llm_wiki_cli/extractors/python_extractor.py:1889`
 **Kind:** Class
 **Bases:** —
 **Module:** [python_extractor](../modules/python_extractor.md)
