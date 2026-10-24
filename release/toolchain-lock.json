@@ -44,6 +44,10 @@
         "darwin_arm64": {
           "sha256": "4477b9f78efb77744cf5eb57a0e9594dba66466b38b4e93fa9f35cb907a095a6",
           "url": "https://nodejs.org/dist/v24.18.0/node-v24.18.0-darwin-arm64.tar.xz"
+        },
+        "linux_arm64": {
+          "sha256": "58c9520501f6ae2b52d5b210444e24b9d0c029a58c5011b797bc1fe7105886f6",
+          "url": "https://nodejs.org/dist/v24.18.0/node-v24.18.0-linux-arm64.tar.xz"
         }
       },
       "version": "24.18.0",

@@ -35,6 +35,8 @@ Options:
 When GITHUB_ACTIONS=true, --install-root must be below RUNNER_TEMP and the
 script persists executable paths through GITHUB_PATH/GITHUB_ENV. Otherwise,
 the install root and environment file must be ignored paths in this checkout.
+Routine Node/npm supports Linux x86_64/ARM64 and Darwin ARM64. Other modes
+require their own locked host artifact.
 EOF
 }
 
@@ -260,6 +262,11 @@ case "${kernel}:${machine}" in
     artifact_suffix="artifact"
     expected_go_platform="linux/amd64"
     linux_x86_64=true
+    ;;
+  Linux:aarch64|Linux:arm64)
+    [[ "${mode}" == "routine" ]] ||
+      die "no locked ${mode} artifact for ${kernel}/${machine}"
+    artifact_suffix="platform_artifacts.linux_arm64"
     ;;
   Darwin:arm64|Darwin:aarch64)
     artifact_suffix="platform_artifacts.darwin_arm64"
