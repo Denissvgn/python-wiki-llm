@@ -13,3 +13,5 @@ twine==7.0.0
 urllib3==2.8.0
 # Retain the patched CA bundle used by release tooling.
 certifi==2026.10.19
+# Avoid affected newer lock implementations while retaining Python 3.10 support.
+filelock==3.20.3
