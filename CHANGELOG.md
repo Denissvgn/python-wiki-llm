@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.0] - 2026-10-25
+
 ### Fixed
 
 - Builds and development installations use patched Setuptools 84.1.0.
@@ -1566,7 +1568,8 @@ surface backfill](https://github.com/Denissvgn/python-wiki-llm/issues/10).
 - **Cross-platform locking** — fcntl on POSIX, msvcrt on Windows
 - **CI** — GitHub Actions matrix (Python 3.9–3.13, Linux/macOS/Windows) + PyPI publish on tag
 
-[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.2.0...HEAD
+[Unreleased]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.3.0...HEAD
+[3.3.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.2.0...v3.3.0
 [3.2.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/Denissvgn/python-wiki-llm/compare/v2.5.0...v3.0.0
