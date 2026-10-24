@@ -33,12 +33,15 @@ _Auto-generated from `PythonModuleIndex` in `src/llm_wiki_cli/services/python_im
 flowchart LR
     n0["PythonModuleIndex (src/llm_wiki_cli/services/python_imports.py)"]
     n1["src/llm_wiki_cli/services/imports.py"]
-    n2["PythonModuleIndex.build (src/llm_wiki_cli/services/python_imports.py)"]
+    n2["src/llm_wiki_cli/services/module_coverage.py"]
+    n3["PythonModuleIndex.build (src/llm_wiki_cli/services/python_imports.py)"]
     n1 --> n0
     n2 --> n0
+    n3 --> n0
     click n0 "../modules/python_imports.md"
     click n1 "../modules/imports.md"
-    click n2 "../modules/python_imports.md"
+    click n2 "../modules/module_coverage.md"
+    click n3 "../modules/python_imports.md"
 ```
 
 ### Summary
@@ -52,5 +55,6 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `imports` | import | [imports](../modules/imports.md) | — |
+| `module_coverage` | import | [module_coverage](../modules/module_coverage.md) | — |
 | `PythonModuleIndex.build` | call | [python_imports](../modules/python_imports.md) | 1 |
 | `PythonModuleIndex.build` | type_reference | [python_imports](../modules/python_imports.md) | — |

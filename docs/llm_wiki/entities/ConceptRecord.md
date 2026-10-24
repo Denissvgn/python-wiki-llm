@@ -92,4 +92,4 @@ flowchart LR
 | `_concept_to_payload` | type_reference | [knowledge_model](../modules/knowledge_model.md) | — |
 | `_parse_concept` | call | [knowledge_model](../modules/knowledge_model.md) | 1 |
 
-> References: showing 12 of 23 logical references; 11 omitted by the 12-row generated summary limit.
+> References: showing 12 of 24 logical references; 12 omitted by the 12-row generated summary limit.

@@ -95,4 +95,4 @@ flowchart LR
 | `documentation_query_builder` | import | [documentation_query_builder](../modules/documentation_query_builder.md) | — |
 | `dependencies` | import | [documentation_run_dependencies](../modules/documentation_run_dependencies.md) | — |
 
-> References: showing 12 of 46 logical references; 34 omitted by the 12-row generated summary limit.
+> References: showing 12 of 47 logical references; 35 omitted by the 12-row generated summary limit.

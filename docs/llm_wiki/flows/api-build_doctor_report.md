@@ -2,7 +2,7 @@
 
 **Entry point:** `build_doctor_report` (`api`)
 **Source:** [doctor_service](../modules/doctor_service.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 65 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 69 more
 
 **Complete modules touched:**
 
@@ -16,11 +16,13 @@
 - [data_flow](../modules/data_flow.md)
 - [dependency_versions](../modules/dependency_versions.md)
 - [doctor_service](../modules/doctor_service.md)
+- [documentation_queries](../modules/documentation_queries.md)
 - [entrypoints](../modules/entrypoints.md)
 - [evidence_diagnostics](../modules/evidence_diagnostics.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [flow_followup](../modules/flow_followup.md)
 - [go_calls](../modules/go_calls.md)
 - [health_contract](../modules/health_contract.md)
 - [health_details](../modules/health_details.md)
@@ -51,11 +53,13 @@
 - [maintenance_state](../modules/maintenance_state.md)
 - [maintenance_status](../modules/maintenance_status.md)
 - [manifest_storage](../modules/manifest_storage.md)
+- [module_coverage](../modules/module_coverage.md)
 - [packages](../modules/packages.md)
 - [plugins](../modules/plugins.md)
 - [progress](../modules/progress.md)
 - [python_calls](../modules/python_calls.md)
 - [python_contracts](../modules/python_contracts.md)
+- [python_extractor](../modules/python_extractor.md)
 - [python_implementation](../modules/python_implementation.md)
 - [python_imports](../modules/python_imports.md)
 - [python_observations](../modules/python_observations.md)
@@ -145,9 +149,9 @@ sequenceDiagram
     p0-->>p30: lint.health_details.to_payload
 ```
 
-> Call sequence diagram shows 30 of 3177 interactions; 3147 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3397 interactions; 3367 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 948 (947 omitted); unresolved 1 of 1051 (1050 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1035 (1034 omitted); unresolved 1 of 1119 (1118 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -161,7 +165,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_source_root` | 21 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 21 | - | external | 11 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 33 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
-> Omission summary shows 8 of 858 groups; 850 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 902 groups; 894 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -218,17 +222,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 132 | `isinstance(strict, bool)` |
-| build_doctor_report | TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 133 | `TypeError('strict must be a boolean')` |
-| build_doctor_report | ValueError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 135 | `ValueError('report_schema must be auto, v1, v3 or v4')` |
-| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 136 | `isinstance(allow_external_src, bool)` |
-| build_doctor_report | TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 137 | `TypeError('allow_external_src must be a boolean')` |
-| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 138 | `isinstance(parallel_jobs, bool)` |
-| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 138 | `isinstance(parallel_jobs, int)` |
-| build_doctor_report | TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 139 | `TypeError('parallel_jobs must be an integer')` |
-| build_doctor_report | ValueError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 141 | `ValueError('parallel_jobs must be greater than zero')` |
-| build_doctor_report | str (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 143 | `str(wiki_dir)` |
-| build_doctor_report | str (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 144 | `str(src_dir)` |
+| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 135 | `isinstance(strict, bool)` |
+| build_doctor_report | TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 136 | `TypeError('strict must be a boolean')` |
+| build_doctor_report | ValueError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 138 | `ValueError('report_schema must be auto, v1, v3 or v4')` |
+| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 139 | `isinstance(allow_external_src, bool)` |
+| build_doctor_report | TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 140 | `TypeError('allow_external_src must be a boolean')` |
+| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 141 | `isinstance(parallel_jobs, bool)` |
+| build_doctor_report | isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 141 | `isinstance(parallel_jobs, int)` |
+| build_doctor_report | TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 142 | `TypeError('parallel_jobs must be an integer')` |
+| build_doctor_report | ValueError (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 144 | `ValueError('parallel_jobs must be greater than zero')` |
+| build_doctor_report | str (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 146 | `str(wiki_dir)` |
+| build_doctor_report | str (src/llm_wiki_cli/services…ce.py:build_doctor_report) | 147 | `str(src_dir)` |
 
 ### Boundary effects
 
@@ -238,14 +242,14 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_doctor_report` | `isinstance` | 132 |
-| external_call | `build_doctor_report` | `TypeError` | 133 |
-| external_call | `build_doctor_report` | `ValueError` | 135 |
-| external_call | `build_doctor_report` | `isinstance` | 136 |
-| external_call | `build_doctor_report` | `TypeError` | 137 |
-| external_call | `build_doctor_report` | `isinstance` | 138 |
-| external_call | `build_doctor_report` | `TypeError` | 139 |
-| external_call | `build_doctor_report` | `ValueError` | 141 |
+| external_call | `build_doctor_report` | `isinstance` | 135 |
+| external_call | `build_doctor_report` | `TypeError` | 136 |
+| external_call | `build_doctor_report` | `ValueError` | 138 |
+| external_call | `build_doctor_report` | `isinstance` | 139 |
+| external_call | `build_doctor_report` | `TypeError` | 140 |
+| external_call | `build_doctor_report` | `isinstance` | 141 |
+| external_call | `build_doctor_report` | `TypeError` | 142 |
+| external_call | `build_doctor_report` | `ValueError` | 144 |
 | step_limit | `build_doctor_report` | `first 12 steps` | 0 |
 | truncated_flow | `build_doctor_report` | `depth limit` | 0 |
 

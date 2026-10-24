@@ -48,11 +48,18 @@ trusted extractor, generation, or lint plugins need a separately reviewed
 trusted workflow. Installation does not bootstrap or synchronize the wiki,
 install hooks, add secrets, push changes, or alter branch protection.
 
-The JSON evidence uses the `llm-wiki-ci-check/v1` envelope. Its nested
-`llm-wiki-doctor/v1` projection is composed from the same lint evaluation, so
-the summary can present knowledge health without a duplicate source scan. The
-top-level `ok` value, blocking issue count, and original `ci-check` exit remain
-authoritative.
+The Action defaults to the `llm-wiki-ci-check/v4` envelope with
+`comparison-policy: auto`; its nested health projection is composed from the
+same lint evaluation. The CLI selects v1 automatically for legacy comparison
+metadata and v4 for native metadata. An explicit older report format still
+requires compatible comparison metadata. The top-level `ok` value, blocking
+issue count, and original `ci-check` exit remain authoritative.
+
+The summary separates blocking structural integrity from advisory native drift
+and knowledge health. Required release-health admission needs its separately
+bound policy receipt; an ordinary integrity report does not grant it. Human
+review and scoped machine verification remain separate claims, and absent or
+stale evidence cannot establish current approval.
 
 ### Manual convergence observation
 

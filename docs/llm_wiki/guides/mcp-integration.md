@@ -36,6 +36,12 @@ local clients that need them.
 - Use `search_wiki` to locate relevant pages across registered surfaces.
 - Use `query_graph` for bounded callers, callees, dependency-neighborhood,
   entry-point flow, data-flow, and symbol-page queries.
+- Use `query_documentation` with `operation: "flow-segment"`, an exact
+  `file:symbol` value and `allow_full_inventory: true` for a source-bound static
+  flow segment. Follow the returned request unchanged for paging or an exact
+  depth frontier. Changed source, selection, producer or traversal options
+  require restarting the query. Each fresh request may perform full inventory;
+  bounded output does not imply bounded upstream analysis or runtime completeness.
 - Use `get_context` or `get_context_packet` when an agent needs a token-bounded
   multi-page context rather than a single document.
 - Use `check_wiki` for validation and `get_status` for a snapshot-only health

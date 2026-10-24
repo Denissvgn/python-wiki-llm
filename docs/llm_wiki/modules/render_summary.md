@@ -21,7 +21,7 @@ degraded or unhealthy failure threshold.
 | `json` | `json` |
 | `llm_wiki_cli.services.ci_report` | `validate_doctor_payload` |
 | `llm_wiki_cli.services.contracts` | `DOCTOR_V3_SCHEMA_VERSION` |
-| `llm_wiki_cli.services.health_summary` | `FRESHNESS_DISCLOSURE`, `detailed_health_rows`, `freshness_counts`, `health_policy`, `optional_status`, `reason_list`, `summary_cell` |
+| `llm_wiki_cli.services.health_summary` | `ASSURANCE_DISCLOSURE`, `FRESHNESS_DISCLOSURE`, `RELEASE_POLICY_UNAVAILABLE`, `assurance_rows`, `detailed_health_rows`, `freshness_counts`, `health_policy`, `reason_list`, `summary_cell` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `typing` | `Any` |

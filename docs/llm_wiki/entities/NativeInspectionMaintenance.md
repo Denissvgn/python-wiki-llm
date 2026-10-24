@@ -1,6 +1,6 @@
 # _NativeInspectionMaintenance
 
-**Location:** `src/llm_wiki_cli/api_types.py:391`
+**Location:** `src/llm_wiki_cli/api_types.py:404`
 **Kind:** Class
 **Bases:** `TypedDict`
 **Module:** [api_types](../modules/api_types.md)

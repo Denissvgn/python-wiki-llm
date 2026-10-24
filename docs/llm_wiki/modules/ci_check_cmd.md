@@ -19,11 +19,13 @@ best effort.
 |--------|---------|
 | `..config` | `DEFAULT_WIKI_DIR`, `validate_path`, `validate_source_root` |
 | `..services.ci_report` | `build_ci_check_payload` |
+| `..services.doctor_service` | `compose_doctor_report` |
 | `..services.extraction_jobs` | `extraction_job_request_from_args`, `print_extraction_job_plan` |
+| `..services.health_summary` | `ASSURANCE_DISCLOSURE`, `ci_health_rows`, `summary_cell` |
 | `..services.inventory_cache` | `InventoryCacheStats`, `cache_options_from_args`, `format_cache_stats`, `prepare_cache_options` |
 | `..services.io` | `write_bytes_atomic` |
 | `..services.knowledge_storage_diagnostics` | `storage_report` |
-| `..services.lint_service` | `LintIssue`, `build_report`, `render_markdown`, `render_text` |
+| `..services.lint_service` | `LintIssue`, `build_report`, `render_markdown`, `render_text`, `report_to_dict` |
 | `..services.metrics` | `record_validation_event` |
 | `..services.progress` | `observed_phase` |
 | `..services.runtime_output` | `RuntimeDestination`, `RuntimeOutputError`, `prepare_destination`, `stderr_warning` |
@@ -39,83 +41,31 @@ best effort.
 <!-- Auto-generated local dependency summary. Do not edit by hand. -->
 ```mermaid
 flowchart LR
-    n0["src/llm_wiki_cli/cli.py"]
+    n0["src"]
     n1["src/llm_wiki_cli/commands/ci_check_cmd.py"]
-    n2["src/llm_wiki_cli/config.py"]
-    n3["src/llm_wiki_cli/services/ci_report.py"]
-    n4["src/llm_wiki_cli/services/extraction_jobs.py"]
-    n5["src/llm_wiki_cli/services/inventory_cache.py"]
-    n6["src/llm_wiki_cli/services/io.py"]
-    n7["src/llm_wiki_cli/services/knowledge_storage_diagnostics.py"]
-    n8["src/llm_wiki_cli/services/lint_service.py"]
-    n9["src/llm_wiki_cli/services/metrics.py"]
-    n10["src/llm_wiki_cli/services/progress.py"]
-    n11["src/llm_wiki_cli/services/runtime_output.py"]
     n0 --> n1
-    n0 --> n2
-    n0 --> n4
-    n0 --> n8
-    n0 --> n10
-    n0 --> n11
-    n1 --> n2
-    n1 --> n3
-    n1 --> n4
-    n1 --> n5
-    n1 --> n6
-    n1 --> n7
-    n1 --> n8
-    n1 --> n9
-    n1 --> n10
-    n1 --> n11
-    n2 --> n6
-    n3 --> n8
-    n5 --> n2
-    n5 --> n6
-    n5 --> n10
-    n5 --> n11
-    n8 --> n2
-    n8 --> n4
-    n8 --> n5
-    n8 --> n6
-    n8 --> n9
-    n8 --> n10
-    n9 --> n2
-    n9 --> n8
-    click n0 "../modules/cli.md"
+    n1 --> n0
     click n1 "../modules/ci_check_cmd.md"
-    click n2 "../modules/config.md"
-    click n3 "../modules/ci_report.md"
-    click n4 "../modules/extraction_jobs.md"
-    click n5 "../modules/inventory_cache.md"
-    click n6 "../modules/io.md"
-    click n7 "../modules/knowledge_storage_diagnostics.md"
-    click n8 "../modules/lint_service.md"
-    click n9 "../modules/metrics.md"
-    click n10 "../modules/progress.md"
-    click n11 "../modules/runtime_output.md"
 ```
+
+> Module-level dependencies exceed the generated-diagram limits, so the diagram and table below group them by top-level package. Counts report the number of module neighbors in each package.
 
 ### Internal neighbors
 
 | Direction | Module |
 |---|---|
-| Inbound | [cli](../modules/cli.md) |
-| Outbound | [config](../modules/config.md) |
-| Outbound | [ci_report](../modules/ci_report.md) |
-| Outbound | [extraction_jobs](../modules/extraction_jobs.md) |
-| Outbound | [inventory_cache](../modules/inventory_cache.md) |
-| Outbound | [io](../modules/io.md) |
-| Outbound | [knowledge_storage_diagnostics](../modules/knowledge_storage_diagnostics.md) |
-| Outbound | [lint_service](../modules/lint_service.md) |
-| Outbound | [metrics](../modules/metrics.md) |
-| Outbound | [progress](../modules/progress.md) |
-| Outbound | [runtime_output](../modules/runtime_output.md) |
+| Inbound | `src` (1) |
+| Outbound | `src` (12) |
+
+> All 13 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
 | `_render_console` | `(report, output_format: str, **payload_options) -> str` | — | — |
+| `_health_for_report` | `(report)` | — | — |
+| `_decision_summary` | `(report, *, markdown: bool, health = None) -> str` | — | Present the captured evaluation; ordinary CI has no release admission. |
 | `_report_destination` | `(args) -> RuntimeDestination` | — | — |
 | `_persist_report` | `(destination: RuntimeDestination, report) -> int` | `@observed_phase('report_persistence')` | — |
 | `run` | `(args) -> None` | — | — |

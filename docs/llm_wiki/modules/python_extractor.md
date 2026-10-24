@@ -21,6 +21,7 @@ Lexical imports are collected inside class bodies, methods and nested scopes wit
 |--------|---------|
 | `..config` | `build_gitignore_matcher` |
 | `..services.imports` | `build_module_path_resolver` |
+| `..services.python_calls` | `PYTHON_LEXICAL_FUNCTIONS_SCHEMA` |
 | `..services.python_implementation` | `capture`, `envelope`, `producer` |
 | `..services.python_observations` | `DATA_EFFECT_OBSERVATIONS_SCHEMA`, `IMPORT_LOCATION_OBSERVATIONS_SCHEMA`, `data_effect_sidecar`, `import_sidecar` |
 | `.common` | `IMPORT_SCOPE_DEFERRED`, `IMPORT_SCOPE_TYPE_CHECKING`, `discover_source_files` |
@@ -29,7 +30,9 @@ Lexical imports are collected inside class bodies, methods and nested scopes wit
 | `.python_contracts` | `class_kind`, `explicit_type_alias`, `expression_to_str`, `extract_class_attributes`, `extract_enum_attributes`, `extract_model_config`, `extract_parameters`, `extract_validator`, `finalize_inventory_model_kinds`, `finalize_model_kinds`, `inferred_type_alias`, `is_pydantic_model`, `is_typed_dict`, `type_alias_record` |
 | `__future__` | `annotations` |
 | `ast` | `ast` |
+| `collections` | `Counter` |
 | `pathlib` | `Path` |
+| `symtable` | `symtable` |
 | `sys` | `sys` |
 
 ## Local dependency map
@@ -45,8 +48,10 @@ flowchart LR
     n5["src/llm_wiki_cli/extractors/python_extractor.py"]
     n6["src/llm_wiki_cli/services/extraction_service.py"]
     n7["src/llm_wiki_cli/services/imports.py"]
-    n8["src/llm_wiki_cli/services/python_implementation.py"]
-    n9["src/llm_wiki_cli/services/python_observations.py"]
+    n8["src/llm_wiki_cli/services/module_coverage.py"]
+    n9["src/llm_wiki_cli/services/python_calls.py"]
+    n10["src/llm_wiki_cli/services/python_implementation.py"]
+    n11["src/llm_wiki_cli/services/python_observations.py"]
     n1 --> n0
     n5 --> n0
     n5 --> n1
@@ -54,18 +59,23 @@ flowchart LR
     n5 --> n3
     n5 --> n4
     n5 --> n7
-    n5 --> n8
     n5 --> n9
+    n5 --> n10
+    n5 --> n11
     n6 --> n0
     n6 --> n1
     n6 --> n3
     n6 --> n4
     n6 --> n5
     n6 --> n7
-    n6 --> n8
     n6 --> n9
+    n6 --> n10
+    n6 --> n11
     n7 --> n0
     n7 --> n1
+    n8 --> n5
+    n9 --> n3
+    n9 --> n7
     click n0 "../modules/config.md"
     click n1 "../modules/common.md"
     click n2 "../modules/fastapi_contracts.md"
@@ -74,8 +84,10 @@ flowchart LR
     click n5 "../modules/python_extractor.md"
     click n6 "../modules/extraction_service.md"
     click n7 "../modules/imports.md"
-    click n8 "../modules/python_implementation.md"
-    click n9 "../modules/python_observations.md"
+    click n8 "../modules/module_coverage.md"
+    click n9 "../modules/python_calls.md"
+    click n10 "../modules/python_implementation.md"
+    click n11 "../modules/python_observations.md"
 ```
 
 ### Internal neighbors
@@ -83,12 +95,14 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [extraction_service](../modules/extraction_service.md) |
+| Inbound | [module_coverage](../modules/module_coverage.md) |
 | Outbound | [config](../modules/config.md) |
 | Outbound | [common](../modules/common.md) |
 | Outbound | [fastapi_contracts](../modules/fastapi_contracts.md) |
 | Outbound | [python_bindings](../modules/python_bindings.md) |
 | Outbound | [python_contracts](../modules/python_contracts.md) |
 | Outbound | [imports](../modules/imports.md) |
+| Outbound | [python_calls](../modules/python_calls.md) |
 | Outbound | [python_implementation](../modules/python_implementation.md) |
 | Outbound | [python_observations](../modules/python_observations.md) |
 
@@ -96,9 +110,10 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_DataEffectVisitor](../entities/DataEffectVisitor.md) | 520 | `ast.NodeVisitor` | — |
-| [ComponentVisitor](../entities/ComponentVisitor.md) | 1063 | `ast.NodeVisitor` | — |
-| [PythonExtractor](../entities/PythonExtractor.md) | 1677 | — | Extractor for Python source files using the built-in :mod:`ast` module. |
+| [_DataEffectVisitor](../entities/DataEffectVisitor.md) | 523 | `ast.NodeVisitor` | — |
+| [ComponentVisitor](../entities/ComponentVisitor.md) | 1131 | `ast.NodeVisitor` | — |
+| [_LexicalBody](../entities/LexicalBody.md) | 1515 | `ast.NodeVisitor` | Current-body writes/calls, without entering deferred definitions. |
+| [PythonExtractor](../entities/PythonExtractor.md) | 1889 | — | Extractor for Python source files using the built-in :mod:`ast` module. |
 
 ## Functions
 
@@ -135,7 +150,9 @@ flowchart LR
 | `_module_call_record` | `(call: ast.Call, target: str = '') -> dict \| None` | — | Build a module-level side-effect record, optionally with its bound name. |
 | `_module_mutation_record` | `(statement: ast.Assign) -> dict \| None` | — | Record an import-time assignment that mutates state outside the module. |
 | `_is_self_module_alias` | `(statement) -> bool` | — | Detect ``sys.modules[__name__] = other`` — a module replacing itself. |
-| `module_alias_target` | `(tree: ast.Module) -> str` | — | Return the module a self-aliasing file redirects to, else ``""``. |
+| `module_alias_target` | `(tree: ast.Module) -> str` | — | Return the imported binding of a static self-module shim, else ``""``. |
+| `_static_import_bindings` | `(statement: ast.AST) -> dict[str, str] \| None` | — | Capture direct import spellings; no module loading or attribute lookup. |
+| `_static_type_checking_block` | `(statement: ast.AST, bindings: dict[str, str]) -> bool` | — | Recognize import-only mirrors behind a directly bound typing guard. |
 | `_import_time_body` | `(statement, type_checking_names: set[str]) -> list` | — | Return the nested statements of *statement* that run at import time. |
 | `_collect_module_calls` | `(body, calls: list[dict], type_checking_names: set[str]) -> None` | — | — |
 | `_extract_module_calls` | `(tree: ast.Module) -> list[dict]` | — | Collect module-scope executable side effects (import-time work). |
@@ -147,4 +164,5 @@ flowchart LR
 | `_is_main_guard` | `(test) -> bool` | — | Detect an ``if __name__ == "__main__"`` test node. |
 | `_collect_type_checking_names` | `(tree: ast.Module) -> set[str]` | — | Names bound to ``typing.TYPE_CHECKING`` anywhere in *tree*. |
 | `_is_type_checking_test` | `(test, names: set[str]) -> bool` | — | Detect an ``if TYPE_CHECKING:`` / ``if typing.TYPE_CHECKING:`` test. |
+| `_closed_lexical_functions` | `(tree, source, filepath, visitor, bindings, effects)` | — | Attest an unescaped, closure-free direct-helper subset without execution. |
 | `_scan_python_files` | `(src_dir: str, deep: bool = False, only_files: list[str] \| None = None, include_empty: bool = False, source_files: list[str] \| None = None, data_effect_observations: list[dict] \| None = None, import_location_observations: list[dict] \| None = None, defer_inventory_model_kinds: bool = False, implementation_observations: dict[str, dict] \| None = None, implementation_analysis_hash: str \| None = None, path_outcomes: dict[str, dict] \| None = None, retain_empty_paths: tuple[str, ...] = ()) -> dict` | — | Scan Python files under *src_dir* and return a raw inventory dict. |

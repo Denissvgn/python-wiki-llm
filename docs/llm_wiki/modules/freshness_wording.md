@@ -20,6 +20,7 @@ flowchart LR
     n0 --> n2
     n0 --> n4
     n2 --> n1
+    n2 --> n4
     n3 --> n1
     n4 --> n1
     n4 --> n3

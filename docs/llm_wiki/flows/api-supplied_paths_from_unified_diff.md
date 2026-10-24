@@ -150,33 +150,33 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| supplied_paths_from_unified_diff | isinstance (src/llm_wiki_cli/services…d_paths_from_unified_diff) | 174 | `isinstance(value, str)` |
-| supplied_paths_from_unified_diff | DocumentationQueryError | 175 | `DocumentationQueryError('diff must be a UTF-8 text string.')` |
-| supplied_paths_from_unified_diff | value.encode | 177 | `value.encode('utf-8')` |
-| supplied_paths_from_unified_diff | DocumentationQueryError | 179 | `DocumentationQueryError('diff must be valid UTF-8 text.')` |
-| supplied_paths_from_unified_diff | len (src/llm_wiki_cli/services…d_paths_from_unified_diff) | 180 | `len(encoded)` |
-| supplied_paths_from_unified_diff | DocumentationQueryError | 181 | `DocumentationQueryError(...)` |
-| supplied_paths_from_unified_diff | set | 185 | `set(data not statically known)` |
-| supplied_paths_from_unified_diff | value.splitlines | 191 | `value.splitlines(data not statically known)` |
-| supplied_paths_from_unified_diff | line.startswith | 192 | `line.startswith('diff --git ')` |
-| supplied_paths_from_unified_diff | DocumentationQueryError | 194 | `DocumentationQueryError('diff contains unpaired file-header metadata.')` |
-| supplied_paths_from_unified_diff | shlex.split (src/llm_wiki_cli/services…d_paths_from_unified_diff) | 198 | `shlex.split(..., posix=True)` |
+| supplied_paths_from_unified_diff | isinstance (src/llm_wiki_cli/services…d_paths_from_unified_diff) | 175 | `isinstance(value, str)` |
+| supplied_paths_from_unified_diff | DocumentationQueryError | 176 | `DocumentationQueryError('diff must be a UTF-8 text string.')` |
+| supplied_paths_from_unified_diff | value.encode | 178 | `value.encode('utf-8')` |
+| supplied_paths_from_unified_diff | DocumentationQueryError | 180 | `DocumentationQueryError('diff must be valid UTF-8 text.')` |
+| supplied_paths_from_unified_diff | len (src/llm_wiki_cli/services…d_paths_from_unified_diff) | 181 | `len(encoded)` |
+| supplied_paths_from_unified_diff | DocumentationQueryError | 182 | `DocumentationQueryError(...)` |
+| supplied_paths_from_unified_diff | set | 186 | `set(data not statically known)` |
+| supplied_paths_from_unified_diff | value.splitlines | 192 | `value.splitlines(data not statically known)` |
+| supplied_paths_from_unified_diff | line.startswith | 193 | `line.startswith('diff --git ')` |
+| supplied_paths_from_unified_diff | DocumentationQueryError | 195 | `DocumentationQueryError('diff contains unpaired file-header metadata.')` |
+| supplied_paths_from_unified_diff | shlex.split (src/llm_wiki_cli/services…d_paths_from_unified_diff) | 199 | `shlex.split(..., posix=True)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `selected.update` | `supplied_paths_from_unified_diff` | 215 |
+| mutation | `selected.update` | `supplied_paths_from_unified_diff` | 216 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `supplied_paths_from_unified_diff` | `isinstance` | 174 |
-| unresolved_call | `supplied_paths_from_unified_diff` | `value.encode` | 177 |
-| unresolved_call | `supplied_paths_from_unified_diff` | `value.splitlines` | 191 |
-| unresolved_call | `supplied_paths_from_unified_diff` | `line.startswith` | 192 |
-| external_call | `supplied_paths_from_unified_diff` | `shlex.split` | 198 |
+| external_call | `supplied_paths_from_unified_diff` | `isinstance` | 175 |
+| unresolved_call | `supplied_paths_from_unified_diff` | `value.encode` | 178 |
+| unresolved_call | `supplied_paths_from_unified_diff` | `value.splitlines` | 192 |
+| unresolved_call | `supplied_paths_from_unified_diff` | `line.startswith` | 193 |
+| external_call | `supplied_paths_from_unified_diff` | `shlex.split` | 199 |
 | step_limit | `supplied_paths_from_unified_diff` | `first 12 steps` | 0 |
 | truncated_flow | `supplied_paths_from_unified_diff` | `depth limit` | 0 |
 

@@ -1,6 +1,6 @@
 # _PythonCallResolver
 
-**Location:** `src/llm_wiki_cli/services/python_calls.py:118`
+**Location:** `src/llm_wiki_cli/services/python_calls.py:208`
 **Kind:** Class
 **Bases:** —
 **Module:** [python_calls](../modules/python_calls.md)

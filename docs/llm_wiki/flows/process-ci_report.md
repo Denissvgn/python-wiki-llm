@@ -36,29 +36,29 @@ sequenceDiagram
     participant p3 as _arguments
     participant p4 as CiCheckReportError
     participant p5 as validate_ci_check_payload
-    participant p6 as _health_detail_lines
-    participant p7 as _bounded_summary
-    participant p8 as _validate_ci_v3
-    participant p9 as _validate_lint_findings
-    participant p10 as _validate_execution
-    participant p11 as _validate_knowledge_summary
-    participant p12 as detailed_health_rows
-    participant p13 as validate_doctor_payload
-    participant p14 as _array
-    participant p15 as _positive_integer
-    participant p16 as _validate_ci_v2
-    participant p17 as _count_mapping
-    participant p18 as _canonical_plan_ids
-    participant p19 as _exact_object
-    participant p20 as validate_health_details
-    participant p21 as _contract_object
-    participant p22 as _string
-    participant p23 as _validate_doctor
-    participant p24 as _nullable_string
-    participant p25 as summary_cell
-    participant p26 as _object (src/llm_wiki_cli/services/ci_report.py)
-    participant p27 as _finding_reasons
-    participant p28 as _boolean
+    participant p6 as assurance_rows
+    participant p7 as _health_detail_lines
+    participant p8 as _bounded_summary
+    participant p9 as detailed_health_rows
+    participant p10 as _validate_ci_v3
+    participant p11 as _validate_lint_findings
+    participant p12 as _validate_execution
+    participant p13 as _validate_knowledge_summary
+    participant p14 as diagnostic_groups
+    participant p15 as validate_doctor_payload
+    participant p16 as _array
+    participant p17 as captured_analysis_diagnostic
+    participant p18 as _positive_integer
+    participant p19 as _validate_ci_v2
+    participant p20 as _count_mapping
+    participant p21 as _canonical_plan_ids
+    participant p22 as analysis_diagnostic
+    participant p23 as _exact_object
+    participant p24 as captured_components
+    participant p25 as validate_health_details
+    participant p26 as _contract_object
+    participant p27 as _string
+    participant p28 as _validate_doctor
     participant p29 as Path (src/llm_wiki_cli/services/ci_report.py:main)
     participant p30 as status_path.is_symlink
     p0->>p1: load_ci_check_payload
@@ -66,36 +66,36 @@ sequenceDiagram
     p0->>p3: _arguments
     p0->>p4: CiCheckReportError
     p1->>p5: validate_ci_check_payload
-    p2->>p6: _health_detail_lines
-    p2->>p7: _bounded_summary
-    p5->>p8: _validate_ci_v3
-    p5->>p9: _validate_lint_findings
-    p5->>p10: _validate_execution
-    p5->>p11: _validate_knowledge_summary
-    p6->>p12: detailed_health_rows
-    p8->>p13: validate_doctor_payload
-    p9->>p14: _array
-    p10->>p15: _positive_integer
-    p8->>p16: _validate_ci_v2
-    p11->>p17: _count_mapping
-    p10->>p18: _canonical_plan_ids
-    p13->>p19: _exact_object
-    p13->>p20: validate_health_details
-    p13->>p21: _contract_object
-    p13->>p22: _string
-    p13->>p23: _validate_doctor
-    p16->>p24: _nullable_string
-    p2->>p25: summary_cell
-    p2->>p26: _object (src/llm_wiki_cli/services/ci_report.py)
-    p6->>p27: _finding_reasons
-    p5->>p28: _boolean
+    p2->>p6: assurance_rows
+    p2->>p7: _health_detail_lines
+    p2->>p8: _bounded_summary
+    p7->>p9: detailed_health_rows
+    p5->>p10: _validate_ci_v3
+    p5->>p11: _validate_lint_findings
+    p5->>p12: _validate_execution
+    p5->>p13: _validate_knowledge_summary
+    p7->>p14: diagnostic_groups
+    p10->>p15: validate_doctor_payload
+    p11->>p16: _array
+    p9->>p17: captured_analysis_diagnostic
+    p12->>p18: _positive_integer
+    p10->>p19: _validate_ci_v2
+    p13->>p20: _count_mapping
+    p12->>p21: _canonical_plan_ids
+    p17->>p22: analysis_diagnostic
+    p15->>p23: _exact_object
+    p17->>p24: captured_components
+    p15->>p25: validate_health_details
+    p15->>p26: _contract_object
+    p15->>p27: _string
+    p15->>p28: _validate_doctor
     p0-->>p29: Path (src/llm_wiki_cli/services/ci_report.py:main)(args.status_path)
     p0-->>p30: status_path.is_symlink
 ```
 
-> Call sequence diagram shows 30 of 559 interactions; 529 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 636 interactions; 606 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 128 (127 omitted); unresolved 1 of 107 (106 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 159 (158 omitted); unresolved 1 of 130 (129 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -109,7 +109,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/ci_report.py:validate_ci_check_payload` | 32 | - | external | 9 |
 | `src/llm_wiki_cli/services/ci_report.py:validate_ci_check_payload` | 32 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/ci_report.py:validate_doctor_payload` | 36 | - | external | 2 |
-> Omission summary shows 8 of 74 groups; 66 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 92 groups; 84 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -171,38 +171,38 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| main | _arguments | 1569 | `_arguments(argv)` |
-| _arguments | argparse.ArgumentParser | 1542 | `argparse.ArgumentParser(data not statically known)` |
-| _arguments | parser.add_subparsers | 1543 | `parser.add_subparsers(dest='action', required=True)` |
-| _arguments | commands.add_parser | 1544 | `commands.add_parser('validate')` |
-| _arguments | validate.add_argument | 1545 | `validate.add_argument('--report', required=True)` |
-| _arguments | validate.add_argument | 1546 | `validate.add_argument('--cli-exit', required=True, type=int)` |
-| _arguments | validate.add_argument | 1547 | `validate.add_argument('--schema', choices=(...))` |
-| _arguments | commands.add_parser | 1549 | `commands.add_parser('render-summary')` |
-| _arguments | summary.add_argument | 1550 | `summary.add_argument('--report')` |
-| _arguments | summary.add_argument | 1551 | `summary.add_argument('--evidence-artifact')` |
-| _arguments | summary.add_argument | 1552 | `summary.add_argument('--cli-exit', required=True, type=int)` |
+| main | _arguments | 1607 | `_arguments(argv)` |
+| _arguments | argparse.ArgumentParser | 1580 | `argparse.ArgumentParser(data not statically known)` |
+| _arguments | parser.add_subparsers | 1581 | `parser.add_subparsers(dest='action', required=True)` |
+| _arguments | commands.add_parser | 1582 | `commands.add_parser('validate')` |
+| _arguments | validate.add_argument | 1583 | `validate.add_argument('--report', required=True)` |
+| _arguments | validate.add_argument | 1584 | `validate.add_argument('--cli-exit', required=True, type=int)` |
+| _arguments | validate.add_argument | 1585 | `validate.add_argument('--schema', choices=(...))` |
+| _arguments | commands.add_parser | 1587 | `commands.add_parser('render-summary')` |
+| _arguments | summary.add_argument | 1588 | `summary.add_argument('--report')` |
+| _arguments | summary.add_argument | 1589 | `summary.add_argument('--evidence-artifact')` |
+| _arguments | summary.add_argument | 1590 | `summary.add_argument('--cli-exit', required=True, type=int)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_write | `output.write_bytes` | `main` | 1609 |
+| filesystem_write | `output.write_bytes` | `main` | 1647 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_arguments` | `argparse.ArgumentParser` | 1542 |
-| unresolved_call | `_arguments` | `parser.add_subparsers` | 1543 |
-| unresolved_call | `_arguments` | `commands.add_parser` | 1544 |
-| unresolved_call | `_arguments` | `validate.add_argument` | 1545 |
-| unresolved_call | `_arguments` | `validate.add_argument` | 1546 |
-| unresolved_call | `_arguments` | `validate.add_argument` | 1547 |
-| unresolved_call | `_arguments` | `commands.add_parser` | 1549 |
-| unresolved_call | `_arguments` | `summary.add_argument` | 1550 |
-| unresolved_call | `_arguments` | `summary.add_argument` | 1551 |
-| unresolved_call | `_arguments` | `summary.add_argument` | 1552 |
+| external_call | `_arguments` | `argparse.ArgumentParser` | 1580 |
+| unresolved_call | `_arguments` | `parser.add_subparsers` | 1581 |
+| unresolved_call | `_arguments` | `commands.add_parser` | 1582 |
+| unresolved_call | `_arguments` | `validate.add_argument` | 1583 |
+| unresolved_call | `_arguments` | `validate.add_argument` | 1584 |
+| unresolved_call | `_arguments` | `validate.add_argument` | 1585 |
+| unresolved_call | `_arguments` | `commands.add_parser` | 1587 |
+| unresolved_call | `_arguments` | `summary.add_argument` | 1588 |
+| unresolved_call | `_arguments` | `summary.add_argument` | 1589 |
+| unresolved_call | `_arguments` | `summary.add_argument` | 1590 |
 | step_limit | `main` | `first 12 steps` | 0 |
 | truncated_flow | `main` | `depth limit` | 0 |
 

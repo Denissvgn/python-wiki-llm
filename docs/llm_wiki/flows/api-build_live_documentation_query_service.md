@@ -105,9 +105,9 @@ sequenceDiagram
     p0-->>p30: selected_snapshot_builder(source_root, **=snapshot_options)
 ```
 
-> Call sequence diagram shows 30 of 1966 interactions; 1936 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1975 interactions; 1945 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 677 (676 omitted); unresolved 1 of 532 (531 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 681 (680 omitted); unresolved 1 of 518 (517 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -121,7 +121,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/validation.py:_syntax_key` | 12 | - | external | 6 |
 | `src/llm_wiki_cli/services/validation.py:_known_syntax` | 19 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/validation.py:_check_path_collision` | 22 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 2 |
-> Omission summary shows 8 of 492 groups; 484 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 495 groups; 487 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -186,10 +186,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_live_documentation_query_service | normalize_supplied_paths | 506 | `normalize_supplied_paths(paths)` |
-| normalize_supplied_paths | _portable_supplied_path | 139 | `_portable_supplied_path(value)` |
-| _portable_supplied_path | DocumentationQueryError | 117 | `DocumentationQueryError('paths must contain normalized portable relative source paths.')` |
-| _portable_supplied_path | require_portable_relative_path | 120 | `require_portable_relative_path(value, text_error=error, relative_error=error, escape_error=error, traversal_error=error, separator_error=error, utf8_error=error, control_error=error, non_nfc_error=error, nonportable_error=error, reserved_error=error)` |
+| build_live_documentation_query_service | normalize_supplied_paths | 507 | `normalize_supplied_paths(paths)` |
+| normalize_supplied_paths | _portable_supplied_path | 140 | `_portable_supplied_path(value)` |
+| _portable_supplied_path | DocumentationQueryError | 118 | `DocumentationQueryError('paths must contain normalized portable relative source paths.')` |
+| _portable_supplied_path | require_portable_relative_path | 121 | `require_portable_relative_path(value, text_error=error, relative_error=error, escape_error=error, traversal_error=error, separator_error=error, utf8_error=error, control_error=error, non_nfc_error=error, nonportable_error=error, reserved_error=error)` |
 | require_portable_relative_path | isinstance (src/llm_wiki_cli/services…re_portable_relative_path) | 216 | `isinstance(value, (...))` |
 | require_portable_relative_path | _default_path_error | 217 | `_default_path_error(value)` |
 | _default_path_error | SharedValidationError | 113 | `SharedValidationError(...)` |

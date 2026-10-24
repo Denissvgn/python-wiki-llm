@@ -101,9 +101,9 @@ sequenceDiagram
     p0-->>p30: _query_service(…).dependency_neighborhood(query)
 ```
 
-> Call sequence diagram shows 30 of 957 interactions; 927 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 963 interactions; 933 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 384 (383 omitted); unresolved 1 of 227 (226 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 387 (386 omitted); unresolved 1 of 218 (217 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -182,14 +182,14 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| dependency_neighborhood | _normalize_query_input | 2264 | `_normalize_query_input(...)` |
-| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 2008 | `callback(data not statically known)` |
-| _normalize_query_input | InvalidRequestError | 2010 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
-| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 2011 | `str(exc)` |
-| dependency_neighborhood | normalize_supplied_paths | 2264 | `normalize_supplied_paths((...))` |
-| normalize_supplied_paths | _portable_supplied_path | 139 | `_portable_supplied_path(value)` |
-| _portable_supplied_path | DocumentationQueryError | 117 | `DocumentationQueryError('paths must contain normalized portable relative source paths.')` |
-| _portable_supplied_path | require_portable_relative_path | 120 | `require_portable_relative_path(value, text_error=error, relative_error=error, escape_error=error, traversal_error=error, separator_error=error, utf8_error=error, control_error=error, non_nfc_error=error, nonportable_error=error, reserved_error=error)` |
+| dependency_neighborhood | _normalize_query_input | 2294 | `_normalize_query_input(...)` |
+| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 2013 | `callback(data not statically known)` |
+| _normalize_query_input | InvalidRequestError | 2015 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
+| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 2016 | `str(exc)` |
+| dependency_neighborhood | normalize_supplied_paths | 2294 | `normalize_supplied_paths((...))` |
+| normalize_supplied_paths | _portable_supplied_path | 140 | `_portable_supplied_path(value)` |
+| _portable_supplied_path | DocumentationQueryError | 118 | `DocumentationQueryError('paths must contain normalized portable relative source paths.')` |
+| _portable_supplied_path | require_portable_relative_path | 121 | `require_portable_relative_path(value, text_error=error, relative_error=error, escape_error=error, traversal_error=error, separator_error=error, utf8_error=error, control_error=error, non_nfc_error=error, nonportable_error=error, reserved_error=error)` |
 | require_portable_relative_path | isinstance (src/llm_wiki_cli/services…re_portable_relative_path) | 216 | `isinstance(value, (...))` |
 | require_portable_relative_path | _default_path_error | 217 | `_default_path_error(value)` |
 | _default_path_error | SharedValidationError | 113 | `SharedValidationError(...)` |
@@ -202,7 +202,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalize_query_input` | `callback` | 2008 |
+| unresolved_call | `_normalize_query_input` | `callback` | 2013 |
 | external_call | `require_portable_relative_path` | `isinstance` | 216 |
 | step_limit | `dependency_neighborhood` | `first 12 steps` | 0 |
 | truncated_flow | `dependency_neighborhood` | `depth limit` | 0 |

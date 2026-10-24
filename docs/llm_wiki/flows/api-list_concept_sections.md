@@ -102,9 +102,9 @@ sequenceDiagram
     p0-->>p30: _query_service(…).list_concept_sections(query, ownership=selected_ownership)
 ```
 
-> Call sequence diagram shows 30 of 965 interactions; 935 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 971 interactions; 941 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 387 (386 omitted); unresolved 1 of 220 (219 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 390 (389 omitted); unresolved 1 of 211 (210 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -180,17 +180,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| list_concept_sections | _normalize_query_input | 2362 | `_normalize_query_input(...)` |
-| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 2008 | `callback(data not statically known)` |
-| _normalize_query_input | InvalidRequestError | 2010 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
-| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 2011 | `str(exc)` |
-| list_concept_sections | normalize_concept_coordinate | 2363 | `normalize_concept_coordinate(locator_or_exact_route)` |
-| normalize_concept_coordinate | normalize_documentation_query_text | 77 | `normalize_documentation_query_text(value, field='locator_or_exact_route')` |
-| normalize_documentation_query_text | isinstance (src/llm_wiki_cli/services…_documentation_query_text) | 64 | `isinstance(value, str)` |
-| normalize_documentation_query_text | value.strip (src/llm_wiki_cli/services…_documentation_query_text) | 64 | `value.strip(data not statically known)` |
-| normalize_documentation_query_text | DocumentationQueryError | 65 | `DocumentationQueryError(...)` |
-| normalize_documentation_query_text | value.strip (src/llm_wiki_cli/services…_documentation_query_text) | 66 | `value.strip(data not statically known)` |
-| normalize_documentation_query_text | len (src/llm_wiki_cli/services…_documentation_query_text) | 67 | `len(selected.encode(...))` |
+| list_concept_sections | _normalize_query_input | 2392 | `_normalize_query_input(...)` |
+| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 2013 | `callback(data not statically known)` |
+| _normalize_query_input | InvalidRequestError | 2015 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
+| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 2016 | `str(exc)` |
+| list_concept_sections | normalize_concept_coordinate | 2393 | `normalize_concept_coordinate(locator_or_exact_route)` |
+| normalize_concept_coordinate | normalize_documentation_query_text | 78 | `normalize_documentation_query_text(value, field='locator_or_exact_route')` |
+| normalize_documentation_query_text | isinstance (src/llm_wiki_cli/services…_documentation_query_text) | 65 | `isinstance(value, str)` |
+| normalize_documentation_query_text | value.strip (src/llm_wiki_cli/services…_documentation_query_text) | 65 | `value.strip(data not statically known)` |
+| normalize_documentation_query_text | DocumentationQueryError | 66 | `DocumentationQueryError(...)` |
+| normalize_documentation_query_text | value.strip (src/llm_wiki_cli/services…_documentation_query_text) | 67 | `value.strip(data not statically known)` |
+| normalize_documentation_query_text | len (src/llm_wiki_cli/services…_documentation_query_text) | 68 | `len(selected.encode(...))` |
 
 ### Boundary effects
 
@@ -200,10 +200,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalize_query_input` | `callback` | 2008 |
-| external_call | `normalize_documentation_query_text` | `isinstance` | 64 |
-| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 64 |
-| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 66 |
+| unresolved_call | `_normalize_query_input` | `callback` | 2013 |
+| external_call | `normalize_documentation_query_text` | `isinstance` | 65 |
+| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 65 |
+| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 67 |
 | step_limit | `list_concept_sections` | `first 12 steps` | 0 |
 | truncated_flow | `list_concept_sections` | `depth limit` | 0 |
 

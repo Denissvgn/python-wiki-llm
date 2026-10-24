@@ -185,7 +185,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| expand_compact_task_context (src/llm_wiki_cli/api.py) | expand_compact_task_context (src/llm_wiki_cli/services/task_compact.py) | 1478 | `expand(compact_text, canonical_text, request, view_options=view_options, profile=profile, policy=policy, counter=counter)` |
+| expand_compact_task_context (src/llm_wiki_cli/api.py) | expand_compact_task_context (src/llm_wiki_cli/services/task_compact.py) | 1483 | `expand(compact_text, canonical_text, request, view_options=view_options, profile=profile, policy=policy, counter=counter)` |
 | expand_compact_task_context (src/llm_wiki_cli/services/task_compact.py) | validate_compact_task_context | 601 | `validate_compact_task_context(compact_text, canonical_text, request, view_options=view_options, profile=profile, policy=policy, counter=counter)` |
 | validate_compact_task_context | render_compact_task_context | 560 | `render_compact_task_context(canonical_text, request, view_options=view_options, profile=profile, policy=policy, counter=counter)` |
 | render_compact_task_context | _validated | 475 | `_validated(canonical_text, request, profile, policy, counter)` |

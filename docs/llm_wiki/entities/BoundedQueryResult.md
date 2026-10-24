@@ -37,7 +37,8 @@ flowchart LR
     n5["DataFlowForEntrypointResult (src/llm_wiki_cli/api_types.py)"]
     n6["DependencyNeighborhoodResult (src/llm_wiki_cli/api_types.py)"]
     n7["FlowForEntrypointResult (src/llm_wiki_cli/api_types.py)"]
-    n8["PagesForSymbolResult (src/llm_wiki_cli/api_types.py)"]
+    n8["FlowSegmentResult (src/llm_wiki_cli/api_types.py)"]
+    n9["PagesForSymbolResult (src/llm_wiki_cli/api_types.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -46,6 +47,7 @@ flowchart LR
     n6 --> n0
     n7 --> n0
     n8 --> n0
+    n9 --> n0
     click n0 "../modules/api_types.md"
     click n2 "../modules/api_types.md"
     click n3 "../modules/api_types.md"
@@ -54,6 +56,7 @@ flowchart LR
     click n6 "../modules/api_types.md"
     click n7 "../modules/api_types.md"
     click n8 "../modules/api_types.md"
+    click n9 "../modules/api_types.md"
 ```
 
 ### Summary
@@ -73,4 +76,5 @@ flowchart LR
 | Subclass | `DataFlowForEntrypointResult` | [api_types](../modules/api_types.md) |
 | Subclass | `DependencyNeighborhoodResult` | [api_types](../modules/api_types.md) |
 | Subclass | `FlowForEntrypointResult` | [api_types](../modules/api_types.md) |
+| Subclass | `FlowSegmentResult` | [api_types](../modules/api_types.md) |
 | Subclass | `PagesForSymbolResult` | [api_types](../modules/api_types.md) |

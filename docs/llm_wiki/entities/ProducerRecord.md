@@ -33,10 +33,11 @@ flowchart LR
     n1["_producer (src/llm_wiki_cli/services/health_details.py)"]
     n2["build_producer_record (src/llm_wiki_cli/services/knowledge_envelope.py)"]
     n3["_analysis_basis_hash (src/llm_wiki_cli/services/knowledge_freshness.py)"]
-    n4["_downgrade_incompatible_tombstones (src/llm_wiki_cli/services/knowledge_generation.py)"]
-    n5["_validated_previous_producer (src/llm_wiki_cli/services/knowledge_generation.py)"]
-    n6["_parse_producer (src/llm_wiki_cli/services/knowledge_model.py)"]
-    n7["_previous_committed_producer (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
+    n4["analysis_basis_diagnostic (src/llm_wiki_cli/services/knowledge_freshness.py)"]
+    n5["_downgrade_incompatible_tombstones (src/llm_wiki_cli/services/knowledge_generation.py)"]
+    n6["_validated_previous_producer (src/llm_wiki_cli/services/knowledge_generation.py)"]
+    n7["_parse_producer (src/llm_wiki_cli/services/knowledge_model.py)"]
+    n8["_previous_committed_producer (src/llm_wiki_cli/services/knowledge_orchestration.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -44,14 +45,16 @@ flowchart LR
     n5 --> n0
     n6 --> n0
     n7 --> n0
+    n8 --> n0
     click n0 "../modules/knowledge_model.md"
     click n1 "../modules/health_details.md"
     click n2 "../modules/knowledge_envelope.md"
     click n3 "../modules/knowledge_freshness.md"
-    click n4 "../modules/knowledge_generation.md"
+    click n4 "../modules/knowledge_freshness.md"
     click n5 "../modules/knowledge_generation.md"
-    click n6 "../modules/knowledge_model.md"
-    click n7 "../modules/knowledge_orchestration.md"
+    click n6 "../modules/knowledge_generation.md"
+    click n7 "../modules/knowledge_model.md"
+    click n8 "../modules/knowledge_orchestration.md"
 ```
 
 ### Summary
@@ -68,6 +71,7 @@ flowchart LR
 | `build_producer_record` | call | [knowledge_envelope](../modules/knowledge_envelope.md) | 1 |
 | `build_producer_record` | type_reference | [knowledge_envelope](../modules/knowledge_envelope.md) | — |
 | `_analysis_basis_hash` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
+| `analysis_basis_diagnostic` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
 | `_downgrade_incompatible_tombstones` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) | — |
 | `_validated_previous_producer` | type_reference | [knowledge_generation](../modules/knowledge_generation.md) | — |
 | `_parse_producer` | call | [knowledge_model](../modules/knowledge_model.md) | 1 |

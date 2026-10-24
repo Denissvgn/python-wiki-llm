@@ -1,6 +1,6 @@
 # DoctorReport
 
-**Location:** `src/llm_wiki_cli/services/doctor_service.py:60`
+**Location:** `src/llm_wiki_cli/services/doctor_service.py:63`
 **Kind:** Class
 **Bases:** —
 **Module:** [doctor_service](../modules/doctor_service.md)

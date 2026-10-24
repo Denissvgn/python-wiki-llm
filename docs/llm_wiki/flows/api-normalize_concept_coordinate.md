@@ -146,15 +146,15 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| normalize_concept_coordinate | normalize_documentation_query_text | 77 | `normalize_documentation_query_text(value, field='locator_or_exact_route')` |
-| normalize_documentation_query_text | isinstance (src/llm_wiki_cli/services…e_documentation_query_text) | 64 | `isinstance(value, str)` |
-| normalize_documentation_query_text | value.strip (src/llm_wiki_cli/services…e_documentation_query_text) | 64 | `value.strip(data not statically known)` |
-| normalize_documentation_query_text | DocumentationQueryError | 65 | `DocumentationQueryError(...)` |
-| normalize_documentation_query_text | value.strip (src/llm_wiki_cli/services…e_documentation_query_text) | 66 | `value.strip(data not statically known)` |
-| normalize_documentation_query_text | len (src/llm_wiki_cli/services…e_documentation_query_text) | 67 | `len(selected.encode(...))` |
-| normalize_documentation_query_text | selected.encode | 67 | `selected.encode('utf-8')` |
-| normalize_documentation_query_text | DocumentationQueryError | 68 | `DocumentationQueryError(...)` |
-| normalize_concept_coordinate | validate_exact_page_coordinate | 82 | `wiki_surface.validate_exact_page_coordinate(selected)` |
+| normalize_concept_coordinate | normalize_documentation_query_text | 78 | `normalize_documentation_query_text(value, field='locator_or_exact_route')` |
+| normalize_documentation_query_text | isinstance (src/llm_wiki_cli/services…e_documentation_query_text) | 65 | `isinstance(value, str)` |
+| normalize_documentation_query_text | value.strip (src/llm_wiki_cli/services…e_documentation_query_text) | 65 | `value.strip(data not statically known)` |
+| normalize_documentation_query_text | DocumentationQueryError | 66 | `DocumentationQueryError(...)` |
+| normalize_documentation_query_text | value.strip (src/llm_wiki_cli/services…e_documentation_query_text) | 67 | `value.strip(data not statically known)` |
+| normalize_documentation_query_text | len (src/llm_wiki_cli/services…e_documentation_query_text) | 68 | `len(selected.encode(...))` |
+| normalize_documentation_query_text | selected.encode | 68 | `selected.encode('utf-8')` |
+| normalize_documentation_query_text | DocumentationQueryError | 69 | `DocumentationQueryError(...)` |
+| normalize_concept_coordinate | validate_exact_page_coordinate | 83 | `wiki_surface.validate_exact_page_coordinate(selected)` |
 | validate_exact_page_coordinate | isinstance (src/llm_wiki_cli/services…date_exact_page_coordinate) | 263 | `isinstance(value, str)` |
 | validate_exact_page_coordinate | value.strip (src/llm_wiki_cli/services…date_exact_page_coordinate) | 263 | `value.strip(data not statically known)` |
 
@@ -166,10 +166,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `normalize_documentation_query_text` | `isinstance` | 64 |
-| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 64 |
-| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 66 |
-| unresolved_call | `normalize_documentation_query_text` | `selected.encode` | 67 |
+| external_call | `normalize_documentation_query_text` | `isinstance` | 65 |
+| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 65 |
+| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 67 |
+| unresolved_call | `normalize_documentation_query_text` | `selected.encode` | 68 |
 | external_call | `validate_exact_page_coordinate` | `isinstance` | 263 |
 | unresolved_call | `validate_exact_page_coordinate` | `value.strip` | 263 |
 | step_limit | `normalize_concept_coordinate` | `first 12 steps` | 0 |

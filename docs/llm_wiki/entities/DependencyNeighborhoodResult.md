@@ -1,6 +1,6 @@
 # DependencyNeighborhoodResult
 
-**Location:** `src/llm_wiki_cli/api_types.py:376`
+**Location:** `src/llm_wiki_cli/api_types.py:389`
 **Kind:** Class
 **Bases:** `_BoundedQueryResult`
 **Module:** [api_types](../modules/api_types.md)

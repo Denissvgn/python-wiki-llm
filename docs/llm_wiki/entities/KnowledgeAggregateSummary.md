@@ -1,6 +1,6 @@
 # KnowledgeAggregateSummary
 
-**Location:** `src/llm_wiki_cli/services/knowledge_observability.py:225`
+**Location:** `src/llm_wiki_cli/services/knowledge_observability.py:226`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_observability](../modules/knowledge_observability.md)

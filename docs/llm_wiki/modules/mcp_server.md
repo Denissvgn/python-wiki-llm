@@ -93,7 +93,7 @@ flowchart LR
 
 | Language | Used packages | Undeclared packages |
 |---|---:|---:|
-| python | 3 | 2 |
+| python | 3 | 0 |
 
 > All 33 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 

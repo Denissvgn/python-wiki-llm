@@ -26,8 +26,8 @@ does not establish compatibility with the captured native basis.
 | `.contracts` | `CI_CHECK_SCHEMA_VERSION`, `CI_CHECK_V2_SCHEMA_VERSION`, `CI_CHECK_V3_SCHEMA_VERSION`, `DOCTOR_SCHEMA_VERSION`, `DOCTOR_V3_SCHEMA_VERSION` |
 | `.doctor_service` | `compose_doctor_report` |
 | `.health_contract` | `HealthDetailsError`, `validate_health_details` |
-| `.health_summary` | `FRESHNESS_DISCLOSURE`, `detailed_health_rows`, `freshness_counts`, `reason_list`, `summary_cell` |
-| `.knowledge_observability` | `KnowledgeAggregateSummary` |
+| `.health_summary` | `ASSURANCE_DISCLOSURE`, `FRESHNESS_DISCLOSURE`, `assurance_rows`, `captured_analysis_diagnostic`, `detailed_health_rows`, `diagnostic_groups`, `freshness_counts`, `reason_list`, `render_validation_markdown`, `summary_cell` |
+| `.knowledge_observability` | `KnowledgeAggregateSummary`, `knowledge_freshness_hint` |
 | `.lint_service` | `LintReport`, `report_to_dict` |
 | `__future__` | `annotations` |
 | `argparse` | `argparse` |
@@ -58,6 +58,8 @@ flowchart LR
     n0 --> n4
     n0 --> n8
     n1 --> n3
+    n1 --> n5
+    n1 --> n8
     n1 --> n10
     n3 --> n2
     n3 --> n4
@@ -77,7 +79,10 @@ flowchart LR
     n6 --> n4
     n7 --> n2
     n7 --> n3
+    n8 --> n2
+    n8 --> n9
     n10 --> n2
+    n10 --> n8
     n10 --> n9
     click n0 "../modules/render_summary.md"
     click n1 "../modules/ci_check_cmd.md"
@@ -111,7 +116,7 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [CiCheckReportError](../entities/CiCheckReportError.md) | 188 | `ValueError` | A field-specific failure in the versioned CI report contract. |
+| [CiCheckReportError](../entities/CiCheckReportError.md) | 192 | `ValueError` | A field-specific failure in the versioned CI report contract. |
 
 ## Functions
 
@@ -150,6 +155,7 @@ flowchart LR
 | `validate_ci_check_payload` | `(value: object, *, cli_exit: int) -> Mapping[str, Any]` | — | Validate CI v1/v2 and distinguish check and required-output failures. |
 | `load_ci_check_payload` | `(path: str \| Path, *, cli_exit: int) -> Mapping[str, Any]` | — | Read strict UTF-8 JSON and validate the complete CI v1 contract. |
 | `_health_detail_lines` | `(report: Mapping[str, Any]) -> list[str]` | — | Summarize the already validated diagnostics; never evaluate source. |
+| `render_ci_markdown` | `(report: Mapping[str, Any], *, cli_exit: int) -> str` | — | Render validated captured CI data without another scan or policy decision. |
 | `_bounded_summary` | `(core: list[str], details: list[str], suffix: list[str], *, max_lines: int, max_bytes: int) -> bytes` | — | Preserve status and dirty paths, disclosing any omitted health detail. |
 | `render_ci_summary` | `(report: Mapping[str, Any] \| None, *, result: str, cli_exit: int, json_state: str, markdown_state: str, tree_state: str, status_records: Sequence[bytes], status_count: int, status_limit: int, max_lines: int, max_bytes: int, report_name: str = 'llm-wiki-ci-report.json', evidence_artifact: str \| None = None) -> bytes` | — | Render fixed-state integrity and health evidence within strict bounds. |
 | `_arguments` | `(argv: Sequence[str] \| None = None) -> argparse.Namespace` | — | — |

@@ -191,7 +191,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_snapshot_documentation_query_service | _wiki_anchor | 440 | `_wiki_anchor(wiki_root)` |
+| build_snapshot_documentation_query_service | _wiki_anchor | 441 | `_wiki_anchor(wiki_root)` |
 | _wiki_anchor | str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor) | 5116 | `str(current)` |
 | _wiki_anchor | directory_identity | 5116 | `directory_identity(current)` |
 | directory_identity | path.stat | 699 | `path.stat(follow_symlinks=False)` |

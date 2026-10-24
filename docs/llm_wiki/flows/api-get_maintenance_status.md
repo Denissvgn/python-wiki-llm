@@ -140,7 +140,7 @@ sequenceDiagram
 
 > Call sequence diagram shows 30 of 2416 interactions; 2386 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 804 (803 omitted); unresolved 1 of 579 (578 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 804 (803 omitted); unresolved 1 of 567 (566 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -214,15 +214,15 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| get_maintenance_status | type (src/llm_wiki_cli/api.py:get_maintenance_status) | 1609 | `type(live)` |
-| get_maintenance_status | type (src/llm_wiki_cli/api.py:get_maintenance_status) | 1609 | `type(allow_external_src)` |
-| get_maintenance_status | ValueError (src/llm_wiki_cli/api.py:get_maintenance_status) | 1610 | `ValueError('Maintenance status boolean options must be booleans')` |
-| get_maintenance_status | validate_queue_limit | 1611 | `validate_queue_limit(limit)` |
+| get_maintenance_status | type (src/llm_wiki_cli/api.py:get_maintenance_status) | 1614 | `type(live)` |
+| get_maintenance_status | type (src/llm_wiki_cli/api.py:get_maintenance_status) | 1614 | `type(allow_external_src)` |
+| get_maintenance_status | ValueError (src/llm_wiki_cli/api.py:get_maintenance_status) | 1615 | `ValueError('Maintenance status boolean options must be booleans')` |
+| get_maintenance_status | validate_queue_limit | 1616 | `validate_queue_limit(limit)` |
 | validate_queue_limit | isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 58 | `isinstance(limit, bool)` |
 | validate_queue_limit | isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 59 | `isinstance(limit, int)` |
 | validate_queue_limit | ValueError (src/llm_wiki_cli/services…e.py:validate_queue_limit) | 62 | `ValueError(...)` |
-| get_maintenance_status | cast (src/llm_wiki_cli/api.py:get_maintenance_status) | 1612 | `cast(MaintenanceStatusResult, get_maintenance_status_authority(...))` |
-| get_maintenance_status | get_maintenance_status_authority | 1612 | `get_maintenance_status_authority(src_dir, _validate_wiki_dir(...), live=live, record_id=record_id, limit=limit, source_selection=source_selection, helper_cache_dir=helper_cache_dir, allow_external_src=allow_external_src)` |
+| get_maintenance_status | cast (src/llm_wiki_cli/api.py:get_maintenance_status) | 1617 | `cast(MaintenanceStatusResult, get_maintenance_status_authority(...))` |
+| get_maintenance_status | get_maintenance_status_authority | 1617 | `get_maintenance_status_authority(src_dir, _validate_wiki_dir(...), live=live, record_id=record_id, limit=limit, source_selection=source_selection, helper_cache_dir=helper_cache_dir, allow_external_src=allow_external_src)` |
 | get_maintenance_status_authority | _validate_status_request | 404 | `_validate_status_request(live, record_id, limit)` |
 | _validate_status_request | type (src/llm_wiki_cli/services…:_validate_status_request) | 331 | `type(live)` |
 
@@ -234,12 +234,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `get_maintenance_status` | `type` | 1609 |
-| external_call | `get_maintenance_status` | `ValueError` | 1610 |
+| external_call | `get_maintenance_status` | `type` | 1614 |
+| external_call | `get_maintenance_status` | `ValueError` | 1615 |
 | external_call | `validate_queue_limit` | `isinstance` | 58 |
 | external_call | `validate_queue_limit` | `isinstance` | 59 |
 | external_call | `validate_queue_limit` | `ValueError` | 62 |
-| external_call | `get_maintenance_status` | `cast` | 1612 |
+| external_call | `get_maintenance_status` | `cast` | 1617 |
 | external_call | `_validate_status_request` | `type` | 331 |
 | step_limit | `get_maintenance_status` | `first 12 steps` | 0 |
 | truncated_flow | `get_maintenance_status` | `depth limit` | 0 |

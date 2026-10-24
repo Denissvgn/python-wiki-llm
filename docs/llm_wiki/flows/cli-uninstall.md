@@ -87,9 +87,9 @@ sequenceDiagram
     p5-->>p30: wiki_dir.exists
 ```
 
-> Call sequence diagram shows 30 of 1161 interactions; 1131 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1167 interactions; 1137 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 540 (539 omitted); unresolved 1 of 239 (238 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 541 (540 omitted); unresolved 1 of 239 (238 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -103,7 +103,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/legacy_hooks.py:_hook_directories` | 17 | - | unresolved | 9 |
 | `src/llm_wiki_cli/services/legacy_hooks.py:_hook_directories` | 17 | - | external | 7 |
 | `src/llm_wiki_cli/services/legacy_hooks.py:_hook_directories` | 17 | [src/llm_wiki_cli/services/legacy_hooks.py](../modules/legacy_hooks.md) | internal | 6 |
-> Omission summary shows 8 of 249 groups; 241 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 252 groups; 244 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

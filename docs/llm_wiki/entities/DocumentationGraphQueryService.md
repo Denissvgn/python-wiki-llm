@@ -1,6 +1,6 @@
 # DocumentationGraphQueryService
 
-**Location:** `src/llm_wiki_cli/services/documentation_queries.py:852`
+**Location:** `src/llm_wiki_cli/services/documentation_queries.py:853`
 **Kind:** Class
 **Bases:** —
 **Module:** [documentation_queries](../modules/documentation_queries.md)
@@ -18,6 +18,7 @@ Read-only graph query service over already-derived documentation payloads.
 | Method | Signature | Decorators | Description |
 |--------|-----------|------------|-------------|
 | `__init__` | `(inventory: Mapping[str, Mapping[str, Any]], *, call_edges: Optional[Iterable[Mapping[str, Any]]] = None, flows: Optional[Iterable[Mapping[str, Any]]] = None, data_flows: Optional[object] = None, dependency_analysis: Optional[Mapping[str, Any]] = None, surface_index: Optional[Mapping[str, Any]] = None, limit: int = _DEFAULT_LIMIT, knowledge_view: Optional[KnowledgeReadView] = None, machine_verification: Optional[Mapping[str, Mapping[str, Any]]] = None, inventory_result: object \| None = None, snapshot_call_inventory: bool = False)` | — | — |
+| `flow_segment` | `(value: str, *, basis: str \| None = None, offset: int = 0) -> dict[str, Any]` | `@_bounded_query_result` | Inspect a bounded exact-callable trace in the captured source graph. |
 | `flow_for_entrypoint` | `(id_or_symbol: object) -> dict[str, Any]` | `@_bounded_query_result` | Return a bounded user-flow payload for an entry-point id or symbol. |
 | `_static_call_coverage` | `()` | — | — |
 | `callers` | `(symbol: object) -> dict[str, Any]` | `@_bounded_query_result` | Return bounded callers for exactly one callable symbol. |
@@ -89,7 +90,7 @@ flowchart LR
     n9["dependency_neighborhood (src/llm_wiki_cli/api.py)"]
     n10["explain_evidence (src/llm_wiki_cli/api.py)"]
     n11["flow_for_entrypoint (src/llm_wiki_cli/api.py)"]
-    n12["get_concept (src/llm_wiki_cli/api.py)"]
+    n12["flow_segment (src/llm_wiki_cli/api.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -121,7 +122,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [documentation_queries](../modules/documentation_queries.md) | 54 | — |
+| [documentation_queries](../modules/documentation_queries.md) | 55 | — |
 
 ### References
 
@@ -138,6 +139,6 @@ flowchart LR
 | `dependency_neighborhood` | type_reference | [api](../modules/api.md) | — |
 | `explain_evidence` | type_reference | [api](../modules/api.md) | — |
 | `flow_for_entrypoint` | type_reference | [api](../modules/api.md) | — |
-| `get_concept` | type_reference | [api](../modules/api.md) | — |
+| `flow_segment` | type_reference | [api](../modules/api.md) | — |
 
-> References: showing 12 of 36 logical references; 24 omitted by the 12-row generated summary limit.
+> References: showing 12 of 37 logical references; 25 omitted by the 12-row generated summary limit.

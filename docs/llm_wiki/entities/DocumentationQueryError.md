@@ -1,6 +1,6 @@
 # DocumentationQueryError
 
-**Location:** `src/llm_wiki_cli/services/documentation_queries.py:128`
+**Location:** `src/llm_wiki_cli/services/documentation_queries.py:129`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [documentation_queries](../modules/documentation_queries.md)
@@ -95,4 +95,4 @@ flowchart LR
 | `DocumentationGraphQueryService._build_knowledge_indexes` | call | [documentation_queries](../modules/documentation_queries.md) | 6 |
 | `DocumentationGraphQueryService._build_section_ownership_indexes` | call | [documentation_queries](../modules/documentation_queries.md) | 6 |
 
-> References: showing 12 of 35 logical references; 23 omitted by the 12-row generated summary limit.
+> References: showing 12 of 37 logical references; 25 omitted by the 12-row generated summary limit.

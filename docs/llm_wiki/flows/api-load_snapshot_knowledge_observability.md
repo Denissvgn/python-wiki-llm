@@ -195,9 +195,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| load_snapshot_knowledge_observability | time.perf_counter (src/llm_wiki_cli/services…t_knowledge_observability) | 529 | `time.perf_counter(data not statically known)` |
-| load_snapshot_knowledge_observability | Path (src/llm_wiki_cli/services…t_knowledge_observability) | 530 | `Path(wiki_dir)` |
-| load_snapshot_knowledge_observability | resolve_source_selection | 535 | `resolve_source_selection(effective_src_dir, source_selection)` |
+| load_snapshot_knowledge_observability | time.perf_counter (src/llm_wiki_cli/services…t_knowledge_observability) | 546 | `time.perf_counter(data not statically known)` |
+| load_snapshot_knowledge_observability | Path (src/llm_wiki_cli/services…t_knowledge_observability) | 547 | `Path(wiki_dir)` |
+| load_snapshot_knowledge_observability | resolve_source_selection | 552 | `resolve_source_selection(effective_src_dir, source_selection)` |
 | resolve_source_selection | Path(…).resolve (src/llm_wiki_cli/services…:resolve_source_selection) | 606 | `Path(root).resolve(data not statically known)` |
 | resolve_source_selection | Path (src/llm_wiki_cli/services…:resolve_source_selection) | 606 | `Path(root)` |
 | resolve_source_selection | SourceSelectionError | 608 | `SourceSelectionError('source_root', 'must resolve to a repository path')` |
@@ -215,7 +215,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `load_snapshot_knowledge_observability` | `time.perf_counter` | 529 |
+| external_call | `load_snapshot_knowledge_observability` | `time.perf_counter` | 546 |
 | unresolved_call | `resolve_source_selection` | `Path(root).resolve` | 606 |
 | external_call | `_override_text` | `isinstance` | 583 |
 | unresolved_call | `_override_text` | `override.as_posix` | 583 |

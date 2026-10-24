@@ -1,6 +1,6 @@
 # DocumentationQueryResult
 
-**Location:** `src/llm_wiki_cli/api_types.py:455`
+**Location:** `src/llm_wiki_cli/api_types.py:468`
 **Kind:** Class
 **Bases:** `_DocumentationQueryRequired`
 **Module:** [api_types](../modules/api_types.md)
@@ -37,6 +37,12 @@ Common envelope returned by the shared bounded query dispatcher.
 | `coverage` | `dict[str, Any]` | *optional* | — |
 | `flow` | `dict[str, Any] \| None` | *optional* | — |
 | `data_flow` | `dict[str, Any] \| None` | *optional* | — |
+| `segment_schema` | `str` | *optional* | — |
+| `owner` | `dict[str, Any] \| None` | *optional* | — |
+| `basis` | `str \| None` | *optional* | — |
+| `steps` | `list[dict[str, Any]]` | *optional* | — |
+| `work` | `dict[str, Any]` | *optional* | — |
+| `follow_up` | `dict[str, Any]` | *optional* | — |
 | `path` | `str \| None` | *optional* | — |
 | `inbound` | `list[str]` | *optional* | — |
 | `outbound` | `list[str]` | *optional* | — |
@@ -77,7 +83,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [api_types](../modules/api_types.md) | 0 | `callees`, `callers`, `concept`, `concepts`, `coverage`, `cycle_groups`, `data_flow`, `direction`, `edges`, `evidence`, `external_targets`, `flow` |
+| [api_types](../modules/api_types.md) | 0 | `basis`, `callees`, `callers`, `concept`, `concepts`, `coverage`, `cycle_groups`, `data_flow`, `direction`, `edges`, `evidence`, `external_targets` |
 
 ### Structure
 

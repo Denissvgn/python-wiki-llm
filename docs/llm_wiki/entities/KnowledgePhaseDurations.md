@@ -1,6 +1,6 @@
 # KnowledgePhaseDurations
 
-**Location:** `src/llm_wiki_cli/services/knowledge_observability.py:194`
+**Location:** `src/llm_wiki_cli/services/knowledge_observability.py:195`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_observability](../modules/knowledge_observability.md)

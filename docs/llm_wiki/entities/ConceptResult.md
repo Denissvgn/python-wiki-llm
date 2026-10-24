@@ -1,6 +1,6 @@
 # ConceptResult
 
-**Location:** `src/llm_wiki_cli/api_types.py:395`
+**Location:** `src/llm_wiki_cli/api_types.py:408`
 **Kind:** Class
 **Bases:** `_BoundedQueryResult`, `_NativeInspectionMaintenance`
 **Module:** [api_types](../modules/api_types.md)

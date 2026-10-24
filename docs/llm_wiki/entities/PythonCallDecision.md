@@ -1,6 +1,6 @@
 # PythonCallDecision
 
-**Location:** `src/llm_wiki_cli/services/python_calls.py:29`
+**Location:** `src/llm_wiki_cli/services/python_calls.py:119`
 **Kind:** Class
 **Bases:** —
 **Module:** [python_calls](../modules/python_calls.md)
@@ -37,10 +37,13 @@ _Auto-generated from `PythonCallDecision` in `src/llm_wiki_cli/services/python_c
 ```mermaid
 flowchart LR
     n0["PythonCallDecision (src/llm_wiki_cli/services/python_calls.py)"]
-    n1["resolve_python_call_decision (src/llm_wiki_cli/services/python_calls.py)"]
+    n1["_lexical_call (src/llm_wiki_cli/services/python_calls.py)"]
+    n2["resolve_python_call_decision (src/llm_wiki_cli/services/python_calls.py)"]
     n1 --> n0
+    n2 --> n0
     click n0 "../modules/python_calls.md"
     click n1 "../modules/python_calls.md"
+    click n2 "../modules/python_calls.md"
 ```
 
 ### Summary
@@ -53,5 +56,6 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `_lexical_call` | call | [python_calls](../modules/python_calls.md) | 3 |
 | `resolve_python_call_decision` | call | [python_calls](../modules/python_calls.md) | 5 |
 | `resolve_python_call_decision` | type_reference | [python_calls](../modules/python_calls.md) | — |

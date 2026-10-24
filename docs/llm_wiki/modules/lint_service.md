@@ -43,13 +43,15 @@ guidance is conditional on a valid fresh result and never weakens evidence gates
 | `.analysis_compatibility` | `comparison_entrypoint` |
 | `.bootstrap_runtime` | `build_entity_occurrence_page_map`, `build_module_page_map` |
 | `.data_flow` | `analyze_data_flow` |
-| `.dependencies` | `analyze_dependencies` |
+| `.dependencies` | `analyze_dependencies`, `describe_unscanned_scopes` |
 | `.diagrams` | `GENERATED_DIAGRAM_CHAR_LIMIT`, `GENERATED_DIAGRAM_LINE_LIMIT`, `GENERATED_DIAGRAM_NODE_LIMIT` |
-| `.entrypoints` | `build_flow`, `get_entry_points`, `javascript_flow_limitations`, `read_console_scripts` |
+| `.entrypoints` | `build_flow`, `get_entry_points`, `javascript_flow_limitations`, `read_console_scripts`, `_iter_callables` |
 | `.evidence_diagnostics` | `captured_evidence_diagnostic` |
 | `.extraction_jobs` | `ExtractionJobPlan`, `ExtractionJobRequest`, `extraction_job_request_from_args`, `print_extraction_job_plan` |
 | `.extraction_service` | `ExtractorStatus`, `InventoryResult`, `get_call_graph`, `get_docker_inventory`, `get_inventory_result`, `resolve_call_edges` |
+| `.flow_followup` | `validate_request` |
 | `.health_details` | `CapturedHealthDetails`, `capture_health_details` |
+| `.health_summary` | `_diagnostic_kind`, `diagnostic_groups`, `render_validation_markdown` |
 | `.infrastructure_inventory` | `get_yaml_infrastructure_inventory`, `infrastructure_page_name` |
 | `.infrastructure_sync` | `INFRASTRUCTURE_GENERATION_INPUT_KEY`, `INFRASTRUCTURE_SYNC_SCHEMA_VERSION`, `build_infrastructure_page_map` |
 | `.inventory_cache` | `InventoryCacheOptions`, `cache_options_from_args`, `prepare_cache_options`, `InventoryCacheStats`, `format_cache_stats` |
@@ -59,10 +61,11 @@ guidance is conditional on a valid fresh result and never weakens evidence gates
 | `.knowledge_governance` | `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_FILENAME`, `evaluate_review_event`, `load_governance` |
 | `.knowledge_loader` | `KnowledgeLoadIssue`, `KnowledgeLoadResult`, `KnowledgeMismatchPolicy`, `KnowledgeStateLoadError`, `load_knowledge_state` |
 | `.knowledge_model` | `ComputedFreshness`, `EvidenceState`, `KnowledgeLoadState`, `ObservationScope` |
-| `.knowledge_observability` | `KnowledgeAggregateSummary`, `KnowledgePhaseDurations`, `knowledge_freshness_hint`, `summarize_knowledge_view` |
+| `.knowledge_observability` | `KnowledgeAggregateSummary`, `KnowledgePhaseDurations`, `freshness_analysis_diagnostic`, `knowledge_freshness_hint`, `summarize_knowledge_view` |
 | `.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeLiveEvaluationInputs`, `build_runtime_live_evaluation`, `runtime_generation_options` |
 | `.knowledge_verification` | `attach_machine_verification_read_view` |
 | `.metrics` | `record_validation_event` |
+| `.module_coverage` | `classify_uncovered_python_sources` |
 | `.plugins` | `PluginError`, `iter_components`, `load_entry_point`, `runtime_plugin_fallback_root`, `runtime_project_plugins_enabled` |
 | `.progress` | `phase` |
 | `.source_retirement` | `ENTITY_RETIREMENT_SCHEMA_VERSION`, `SOURCE_RETIREMENT_EXTENSION_KEY`, `SourceRetirementError`, `retired_entity_mappings`, `retained_empty_module_paths` |
@@ -77,6 +80,7 @@ guidance is conditional on a valid fresh result and never weakens evidence gates
 | `.wiki_surface` | `PageKind`, `is_safe_page_id`, `iter_page_kinds` |
 | `.wiki_surface_index` | `SURFACE_INDEX_FILENAME` |
 | `__future__` | `annotations` |
+| `collections` | `Counter` |
 | `collections.abc` | `Callable`, `Iterable`, `Iterator`, `Mapping` |
 | `contextlib` | `contextmanager` |
 | `dataclasses` | `asdict`, `dataclass`, `field`, `replace` |
@@ -107,22 +111,22 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (8) |
-| Outbound | `src` (39) |
+| Outbound | `src` (42) |
 
-> All 46 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 49 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_LintProfiler](../entities/LintProfiler.md) | 201 | — | — |
-| [LintIssue](../entities/LintIssue.md) | 240 | — | — |
-| [KnowledgeLintSummary](../entities/KnowledgeLintSummary.md) | 251 | `KnowledgeAggregateSummary` | Aggregate strict-lint knowledge status without exposing evidence. |
-| [LintReport](../entities/LintReport.md) | 289 | — | — |
-| [_WikiPageIndex](../entities/WikiPageIndex.md) | 330 | — | — |
-| [_LintInputs](../entities/LintInputs.md) | 337 | — | — |
-| [_LintPreflight](../entities/LintPreflight.md) | 351 | — | — |
-| [_KnowledgeLintState](../entities/KnowledgeLintState.md) | 358 | — | — |
+| [_LintProfiler](../entities/LintProfiler.md) | 204 | — | — |
+| [LintIssue](../entities/LintIssue.md) | 243 | — | — |
+| [KnowledgeLintSummary](../entities/KnowledgeLintSummary.md) | 254 | `KnowledgeAggregateSummary` | Aggregate strict-lint knowledge status without exposing evidence. |
+| [LintReport](../entities/LintReport.md) | 292 | — | — |
+| [_WikiPageIndex](../entities/WikiPageIndex.md) | 333 | — | — |
+| [_LintInputs](../entities/LintInputs.md) | 340 | — | — |
+| [_LintPreflight](../entities/LintPreflight.md) | 354 | — | — |
+| [_KnowledgeLintState](../entities/KnowledgeLintState.md) | 361 | — | — |
 
 ## Functions
 
@@ -206,5 +210,5 @@ flowchart LR
 | `_profile_report_to_dict` | `(report: LintReport, profiler: _LintProfiler, *, include_cache: bool = False) -> dict` | — | — |
 | `_add_extractor_failures` | `(report: LintReport, inventory_result) -> None` | — | — |
 | `render_text` | `(report: LintReport) -> str` | — | — |
-| `render_markdown` | `(report: LintReport) -> str` | — | — |
+| `render_markdown` | `(report: LintReport, *, health: Mapping \| None = None) -> str` | — | — |
 | `run` | `(args)` | — | — |

@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [doctor_cmd](../modules/doctor_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [analysis_targets](../modules/analysis_targets.md), [api](../modules/api.md), and 62 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [analysis_targets](../modules/analysis_targets.md), [api](../modules/api.md), and 65 more
 
 **Complete modules touched:**
 
@@ -22,6 +22,7 @@
 - [extraction_service](../modules/extraction_service.md)
 - [extractor_helpers](../modules/extractor_helpers.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
+- [flow_followup](../modules/flow_followup.md)
 - [health_contract](../modules/health_contract.md)
 - [health_details](../modules/health_details.md)
 - [health_policy](../modules/health_policy.md)
@@ -54,6 +55,8 @@
 - [maintenance_state](../modules/maintenance_state.md)
 - [manifest_storage](../modules/manifest_storage.md)
 - [markdown_sections](../modules/markdown_sections.md)
+- [module_coverage](../modules/module_coverage.md)
+- [paths](../modules/paths.md)
 - [plugins](../modules/plugins.md)
 - [progress](../modules/progress.md)
 - [python_implementation](../modules/python_implementation.md)
@@ -99,16 +102,16 @@ sequenceDiagram
     participant p16 as parse_packed_root
     participant p17 as parse_knowledge_index
     participant p18 as SyncManifest.load
-    participant p19 as _render_doctor_payload
-    participant p20 as compare_targets
-    participant p21 as _require_relative_name
-    participant p22 as _record
-    participant p23 as decode_bytes
-    participant p24 as validate_source_root
-    participant p25 as _fields (src/llm_wiki_cli/services/knowledge_storage.py)
-    participant p26 as _absolute_path
-    participant p27 as _parse_repository
-    participant p28 as _fail (src/llm_wiki_cli/services/knowledge_packs.py)
+    participant p19 as render_capability_doctor.<locals>.command
+    participant p20 as _render_doctor_payload
+    participant p21 as compare_targets
+    participant p22 as _require_relative_name
+    participant p23 as _record
+    participant p24 as decode_bytes
+    participant p25 as validate_source_root
+    participant p26 as _fields (src/llm_wiki_cli/services/knowledge_storage.py)
+    participant p27 as _absolute_path
+    participant p28 as _parse_repository
     participant p29 as getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)
     participant p30 as report.to_payload (src/llm_wiki_cli/commands/doctor_cmd.py:run)
     p0->>p1: validate_path
@@ -129,23 +132,23 @@ sequenceDiagram
     p2->>p16: parse_packed_root
     p2->>p17: parse_knowledge_index
     p2->>p18: SyncManifest.load
-    p7->>p19: _render_doctor_payload
-    p2->>p20: compare_targets
-    p14->>p21: _require_relative_name
-    p15->>p22: _record
-    p16->>p23: decode_bytes
-    p12->>p24: validate_source_root
-    p16->>p25: _fields (src/llm_wiki_cli/services/knowledge_storage.py)
-    p13->>p26: _absolute_path
-    p15->>p27: _parse_repository
-    p16->>p28: _fail (src/llm_wiki_cli/services/knowledge_packs.py)
+    p7->>p19: render_capability_doctor.<locals>.command
+    p7->>p20: _render_doctor_payload
+    p2->>p21: compare_targets
+    p14->>p22: _require_relative_name
+    p15->>p23: _record
+    p16->>p24: decode_bytes
+    p12->>p25: validate_source_root
+    p16->>p26: _fields (src/llm_wiki_cli/services/knowledge_storage.py)
+    p13->>p27: _absolute_path
+    p15->>p28: _parse_repository
     p0-->>p29: getattr (src/llm_wiki_cli/commands/doctor_cmd.py:run)(args, 'report_schema', 'auto')
     p0-->>p30: report.to_payload (src/llm_wiki_cli/commands/doctor_cmd.py:run)(report_schema=report_schema)
 ```
 
-> Call sequence diagram shows 30 of 3538 interactions; 3508 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3618 interactions; 3588 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1088 (1087 omitted); unresolved 1 of 826 (825 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1112 (1111 omitted); unresolved 1 of 852 (851 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -159,7 +162,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/analysis_targets.py:inspect_targets` | 16 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 4 |
 | `src/llm_wiki_cli/services/analysis_targets.py:inspect_targets` | 16 | - | external | 7 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_require_relative_name` | 20 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-> Omission summary shows 8 of 856 groups; 848 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 876 groups; 868 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

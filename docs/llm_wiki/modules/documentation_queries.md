@@ -25,12 +25,13 @@ repair the snapshot or turn an unknown basis into current evidence.
 | `.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY` |
 | `.dependencies` | `build_dependency_graph`, `dependency_metrics`, `detect_cycles`, `topological_order` |
 | `.evidence_diagnostics` | `captured_evidence_diagnostic` |
+| `.flow_followup` | `segment` |
 | `.implementation_evidence` | `compact_implementation_summary` |
 | `.knowledge_consumption` | `KnowledgeAvailability`, `KnowledgeReadReason`, `KnowledgeReadView` |
 | `.knowledge_governance` | `GOVERNANCE_EXTENSION_KEY` |
 | `.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS`, `KnowledgeGraphError`, `typed_graph_from_knowledge_extensions` |
 | `.knowledge_model` | `knowledge_index_to_payload` |
-| `.knowledge_observability` | `knowledge_freshness_hint`, `knowledge_status_payload` |
+| `.knowledge_observability` | `freshness_analysis_diagnostic`, `knowledge_freshness_hint`, `knowledge_status_payload` |
 | `.maintenance_status` | `compact_maintenance_summary` |
 | `.relationships` | `build_entity_relationship_summaries` |
 | `.source_snapshot` | `SourceSnapshot` |
@@ -66,18 +67,18 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (10) |
-| Outbound | `src` (13) |
+| Inbound | `src` (11) |
+| Outbound | `src` (14) |
 
-> All 23 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 24 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [DocumentationQueryError](../entities/DocumentationQueryError.md) | 128 | `ValueError` | Raised when a documentation graph query request is invalid. |
-| [_BoundedResult](../entities/BoundedResult.md) | 348 | — | One deterministic collection plus its exact response bounds. |
-| [DocumentationGraphQueryService](../entities/DocumentationGraphQueryService.md) | 852 | — | Read-only graph query service over already-derived documentation payloads. |
+| [DocumentationQueryError](../entities/DocumentationQueryError.md) | 129 | `ValueError` | Raised when a documentation graph query request is invalid. |
+| [_BoundedResult](../entities/BoundedResult.md) | 349 | — | One deterministic collection plus its exact response bounds. |
+| [DocumentationGraphQueryService](../entities/DocumentationGraphQueryService.md) | 853 | — | Read-only graph query service over already-derived documentation payloads. |
 
 ## Functions
 

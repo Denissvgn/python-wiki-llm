@@ -142,7 +142,7 @@ sequenceDiagram
 
 > Call sequence diagram shows 30 of 2850 interactions; 2820 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 958 (957 omitted); unresolved 1 of 690 (689 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 958 (957 omitted); unresolved 1 of 676 (675 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -156,7 +156,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/api.py:acknowledge_maintenance` | 1 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/maintenance_state.py:_identity` | 18 | - | external | 2 |
 | `src/llm_wiki_cli/services/maintenance_state.py:_identity` | 18 | [src/llm_wiki_cli/services/maintenance_shapes.py](../modules/maintenance_shapes.md) | internal | 2 |
-> Omission summary shows 8 of 674 groups; 666 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 675 groups; 667 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -219,16 +219,16 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| acknowledge_maintenance | type (src/llm_wiki_cli/api.py:acknowledge_maintenance) | 1631 | `type(allow_external_src)` |
-| acknowledge_maintenance | ValueError (src/llm_wiki_cli/api.py:acknowledge_maintenance) | 1632 | `ValueError('allow_external_src must be a boolean')` |
-| acknowledge_maintenance | _detached | 1633 | `_detached(expected_basis)` |
+| acknowledge_maintenance | type (src/llm_wiki_cli/api.py:acknowledge_maintenance) | 1636 | `type(allow_external_src)` |
+| acknowledge_maintenance | ValueError (src/llm_wiki_cli/api.py:acknowledge_maintenance) | 1637 | `ValueError('allow_external_src must be a boolean')` |
+| acknowledge_maintenance | _detached | 1638 | `_detached(expected_basis)` |
 | _detached | deepcopy (src/llm_wiki_cli/services…enance_state.py:_detached) | 952 | `deepcopy(value)` |
 | _detached | MaintenanceError | 954 | `MaintenanceError('schema-invalid', 'maintenance owner must contain strict JSON')` |
 | _detached | require | 957 | `require(..., 'schema-invalid', 'maintenance owner must be an object')` |
 | require | MaintenanceError | 27 | `MaintenanceError(code, message)` |
 | _detached | type (src/llm_wiki_cli/services…enance_state.py:_detached) | 958 | `type(result)` |
 | _detached | isinstance (src/llm_wiki_cli/services…enance_state.py:_detached) | 960 | `isinstance(result, dict)` |
-| acknowledge_maintenance | maintenance_core | 1634 | `maintenance_core(data not statically known)` |
+| acknowledge_maintenance | maintenance_core | 1639 | `maintenance_core(data not statically known)` |
 | maintenance_core | MaintenanceCore | 946 | `MaintenanceCore(validate_implementation_evidence)` |
 
 ### Boundary effects
@@ -239,8 +239,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `acknowledge_maintenance` | `type` | 1631 |
-| external_call | `acknowledge_maintenance` | `ValueError` | 1632 |
+| external_call | `acknowledge_maintenance` | `type` | 1636 |
+| external_call | `acknowledge_maintenance` | `ValueError` | 1637 |
 | external_call | `_detached` | `deepcopy` | 952 |
 | external_call | `_detached` | `type` | 958 |
 | external_call | `_detached` | `isinstance` | 960 |

@@ -14,7 +14,7 @@ callers to depend on typed results rather than CLI namespaces or console text.
 
 | Source | Symbols |
 |--------|---------|
-| `.api_types` | `CalleesResult`, `CallersResult`, `ConceptResult`, `ConceptSectionsResult`, `ContextPayload`, `DataFlowForEntrypointResult`, `DependencyNeighborhoodResult`, `DocumentationQueryResult`, `DocumentationExportResult`, `DoctorResult`, `DoctorV3Result`, `DoctorV4Result`, `EvidenceExplanationResult`, `ExtractSourceResult`, `FlowForEntrypointResult`, `KnowledgeMode`, `KnowledgeCoverageResult`, `NativeInspectionResult`, `MarkdownContextResult`, `PagesForSymbolResult`, `RelatedConceptsResult`, `TypedGraphTraversalResult`, `WikiPage`, `WikiPageCounts`, `WikiPagesResult`, `SearchResult`, `MaintenanceQueueResult`, `MaintenanceStatusResult`, `MaintenanceAdoptionResult`, `MaintenanceAcknowledgmentResult`, `MaintenanceRecoveryResult` |
+| `.api_types` | `CalleesResult`, `CallersResult`, `ConceptResult`, `ConceptSectionsResult`, `ContextPayload`, `DataFlowForEntrypointResult`, `DependencyNeighborhoodResult`, `DocumentationQueryResult`, `DocumentationExportResult`, `DoctorResult`, `DoctorV3Result`, `DoctorV4Result`, `EvidenceExplanationResult`, `ExtractSourceResult`, `FlowForEntrypointResult`, `FlowSegmentResult`, `KnowledgeMode`, `KnowledgeCoverageResult`, `NativeInspectionResult`, `MarkdownContextResult`, `PagesForSymbolResult`, `RelatedConceptsResult`, `TypedGraphTraversalResult`, `WikiPage`, `WikiPageCounts`, `WikiPagesResult`, `SearchResult`, `MaintenanceQueueResult`, `MaintenanceStatusResult`, `MaintenanceAdoptionResult`, `MaintenanceAcknowledgmentResult`, `MaintenanceRecoveryResult` |
 | `.config` | `DEFAULT_WIKI_DIR`, `PathValidationError`, `validate_path`, `validate_source_root` |
 | `.services` | `analysis_compatibility`, `bootstrap_runtime`, `context_service`, `extraction_service`, `context_packet`, `wiki_surface` |
 | `.services.analysis_capture` | `analysis_input_status` |
@@ -36,6 +36,7 @@ callers to depend on typed results rather than CLI namespaces or console text.
 | `.services.documentation_wiki_input` | `DocumentationWikiInputError`, `DocumentationWikiSnapshot`, `adopt_documentation_wiki_snapshot`, `fingerprint_documentation_wiki_input` |
 | `.services.entrypoints` | `build_flow` |
 | `.services.evidence_explanation` | `explain_source`, `explanation_provenance` |
+| `.services.flow_followup` | `validate_request`, `validate_request` |
 | `.services.knowledge_consumption` | `KnowledgeReadView`, `load_knowledge_read_view` |
 | `.services.knowledge_coverage` | `KNOWLEDGE_COVERAGE_SCHEMA_VERSION`, `build_knowledge_coverage` |
 | `.services.knowledge_graph` | `CORE_RELATIONSHIP_KINDS`, `GRAPH_ORIGINS`, `GRAPH_RESOLUTIONS` |
@@ -90,20 +91,20 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (7) |
-| Outbound | `src` (49) |
+| Outbound | `src` (50) |
 
-> All 56 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 57 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_LazyCalibrationAnnotations](../entities/LazyCalibrationAnnotations.md) | 273 | `dict[str, Any]` | Load calibration types only when an annotation consumer evaluates them. |
-| [LlmWikiApiError](../entities/LlmWikiApiError.md) | 354 | `RuntimeError` | Base exception raised by the supported Python API. |
-| [InvalidRequestError](../entities/InvalidRequestError.md) | 369 | `LlmWikiApiError` | Raised when arguments or a submitted request contract are invalid. |
-| [WorkspaceStateError](../entities/WorkspaceStateError.md) | 373 | `LlmWikiApiError` | Raised when workspace state or an operational dependency is unusable. |
-| [ArtifactIntegrityError](../entities/ArtifactIntegrityError.md) | 377 | `LlmWikiApiError` | Raised when persisted or supplied artifact integrity cannot be trusted. |
-| [ContextSession](../entities/api_ContextSession.md) | 1500 | `_ContextSession` | Explicit disposable reuse, with the public API error contract. |
+| [_LazyCalibrationAnnotations](../entities/LazyCalibrationAnnotations.md) | 274 | `dict[str, Any]` | Load calibration types only when an annotation consumer evaluates them. |
+| [LlmWikiApiError](../entities/LlmWikiApiError.md) | 355 | `RuntimeError` | Base exception raised by the supported Python API. |
+| [InvalidRequestError](../entities/InvalidRequestError.md) | 370 | `LlmWikiApiError` | Raised when arguments or a submitted request contract are invalid. |
+| [WorkspaceStateError](../entities/WorkspaceStateError.md) | 374 | `LlmWikiApiError` | Raised when workspace state or an operational dependency is unusable. |
+| [ArtifactIntegrityError](../entities/ArtifactIntegrityError.md) | 378 | `LlmWikiApiError` | Raised when persisted or supplied artifact integrity cannot be trusted. |
+| [ContextSession](../entities/api_ContextSession.md) | 1505 | `_ContextSession` | Explicit disposable reuse, with the public API error contract. |
 
 ## Functions
 
@@ -172,6 +173,7 @@ flowchart LR
 | `_normalize_optional_ownership` | `(value: object) -> str \| None` | — | — |
 | `_normalize_query_limit` | `(value: object) -> int` | — | — |
 | `_effective_query_limit` | `(service: DocumentationGraphQueryService \| None, value: int) -> int` | — | — |
+| `flow_segment` | `(value: str, *, basis: str \| None = None, offset: int = 0, service: DocumentationGraphQueryService \| None = None, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, limit: int = 20, allow_external_src: bool = False, source_selection: str \| Path \| None = None) -> FlowSegmentResult` | `@_api_boundary` | Return a bounded exact-callable trace; reuse a service for no new extraction. |
 | `flow_for_entrypoint` | `(id_or_symbol: object, *, service: DocumentationGraphQueryService \| None = None, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, limit: int = 20, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None) -> FlowForEntrypointResult` | `@_api_boundary` | Return a bounded user-flow query result for an entry point. |
 | `data_flow_for_entrypoint` | `(id_or_symbol: object, *, service: DocumentationGraphQueryService \| None = None, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, limit: int = 20, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None) -> DataFlowForEntrypointResult` | `@_api_boundary` | Return a bounded data-flow query result for an entry point. |
 | `callers` | `(symbol: object, *, service: DocumentationGraphQueryService \| None = None, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, limit: int = 20, allow_external_src: bool = False, read_only: bool = True, source_selection: str \| Path \| None = None) -> CallersResult` | `@_api_boundary` | Return bounded callers for one callable symbol. |

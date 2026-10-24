@@ -101,9 +101,9 @@ sequenceDiagram
     p0-->>p30: _query_service(…).flow_for_entrypoint(query)
 ```
 
-> Call sequence diagram shows 30 of 906 interactions; 876 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 912 interactions; 882 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 369 (368 omitted); unresolved 1 of 210 (209 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 372 (371 omitted); unresolved 1 of 201 (200 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -178,17 +178,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| flow_for_entrypoint | _normalize_query_input | 2126 | `_normalize_query_input(...)` |
-| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 2008 | `callback(data not statically known)` |
-| _normalize_query_input | InvalidRequestError | 2010 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
-| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 2011 | `str(exc)` |
-| flow_for_entrypoint | normalize_documentation_query_text | 2127 | `normalize_documentation_query_text(id_or_symbol, field='id_or_symbol')` |
-| normalize_documentation_query_text | isinstance (src/llm_wiki_cli/services…_documentation_query_text) | 64 | `isinstance(value, str)` |
-| normalize_documentation_query_text | value.strip | 64 | `value.strip(data not statically known)` |
-| normalize_documentation_query_text | DocumentationQueryError | 65 | `DocumentationQueryError(...)` |
-| normalize_documentation_query_text | value.strip | 66 | `value.strip(data not statically known)` |
-| normalize_documentation_query_text | len (src/llm_wiki_cli/services…_documentation_query_text) | 67 | `len(selected.encode(...))` |
-| normalize_documentation_query_text | selected.encode | 67 | `selected.encode('utf-8')` |
+| flow_for_entrypoint | _normalize_query_input | 2156 | `_normalize_query_input(...)` |
+| _normalize_query_input | callback (src/llm_wiki_cli/api.py:_normalize_query_input) | 2013 | `callback(data not statically known)` |
+| _normalize_query_input | InvalidRequestError | 2015 | `InvalidRequestError(str(...), code='invalid-request', details={...})` |
+| _normalize_query_input | str (src/llm_wiki_cli/api.py:_normalize_query_input) | 2016 | `str(exc)` |
+| flow_for_entrypoint | normalize_documentation_query_text | 2157 | `normalize_documentation_query_text(id_or_symbol, field='id_or_symbol')` |
+| normalize_documentation_query_text | isinstance (src/llm_wiki_cli/services…_documentation_query_text) | 65 | `isinstance(value, str)` |
+| normalize_documentation_query_text | value.strip | 65 | `value.strip(data not statically known)` |
+| normalize_documentation_query_text | DocumentationQueryError | 66 | `DocumentationQueryError(...)` |
+| normalize_documentation_query_text | value.strip | 67 | `value.strip(data not statically known)` |
+| normalize_documentation_query_text | len (src/llm_wiki_cli/services…_documentation_query_text) | 68 | `len(selected.encode(...))` |
+| normalize_documentation_query_text | selected.encode | 68 | `selected.encode('utf-8')` |
 
 ### Boundary effects
 
@@ -198,11 +198,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_normalize_query_input` | `callback` | 2008 |
-| external_call | `normalize_documentation_query_text` | `isinstance` | 64 |
-| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 64 |
-| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 66 |
-| unresolved_call | `normalize_documentation_query_text` | `selected.encode` | 67 |
+| unresolved_call | `_normalize_query_input` | `callback` | 2013 |
+| external_call | `normalize_documentation_query_text` | `isinstance` | 65 |
+| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 65 |
+| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 67 |
+| unresolved_call | `normalize_documentation_query_text` | `selected.encode` | 68 |
 | step_limit | `flow_for_entrypoint` | `first 12 steps` | 0 |
 | truncated_flow | `flow_for_entrypoint` | `depth limit` | 0 |
 

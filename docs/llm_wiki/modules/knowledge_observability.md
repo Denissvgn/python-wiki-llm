@@ -19,9 +19,9 @@ timestamps.
 | `.freshness_wording` | `SOURCE_CHANGED_STRUCTURE_UNCHANGED` |
 | `.knowledge_artifacts` | `KNOWLEDGE_INDEX_FILENAME` |
 | `.knowledge_consumption` | `KnowledgeAvailability`, `KnowledgeReadReason`, `KnowledgeReadView`, `build_knowledge_read_view` |
-| `.knowledge_freshness` | `REASON_EXTRACTOR_CONFIGURATION_CHANGED`, `REASON_EXTRACTOR_CONFIGURATION_UNKNOWN`, `REASON_EXTRACTOR_LIMITATIONS_CHANGED`, `REASON_EXTRACTOR_SELECTION_CHANGED`, `REASON_EXTRACTOR_VERSION_CHANGED`, `REASON_GENERATION_OPTIONS_CHANGED`, `REASON_IDENTICAL_SOURCE_OBSERVATION_MISMATCH`, `REASON_LIVE_EXTRACTOR_UNAVAILABLE`, `REASON_OBSERVATION_SCOPE_CHANGED`, `REASON_PLUGIN_CONFIGURATION_CHANGED`, `REASON_PLUGIN_CONFIGURATION_UNKNOWN`, `REASON_PLUGIN_LIMITATIONS_CHANGED`, `REASON_PLUGIN_SET_CHANGED`, `REASON_PLUGIN_VERSION_CHANGED`, `REASON_SCHEMA_VERSION_CHANGED`, `REASON_SOURCE_MAPPING_CHANGED`, `REASON_TOOL_CONFIGURATION_CHANGED`, `REASON_TOOL_CONFIGURATION_UNKNOWN`, `REASON_TOOL_ID_CHANGED`, `REASON_TOOL_LIMITATIONS_CHANGED`, `REASON_TOOL_VERSION_CHANGED`, `REASON_VERSION_UNKNOWN` |
+| `.knowledge_freshness` | `analysis_basis_diagnostic`, `REASON_EXTRACTOR_CONFIGURATION_CHANGED`, `REASON_EXTRACTOR_CONFIGURATION_UNKNOWN`, `REASON_EXTRACTOR_LIMITATIONS_CHANGED`, `REASON_EXTRACTOR_SELECTION_CHANGED`, `REASON_EXTRACTOR_VERSION_CHANGED`, `REASON_GENERATION_OPTIONS_CHANGED`, `REASON_IDENTICAL_SOURCE_OBSERVATION_MISMATCH`, `REASON_LIVE_EXTRACTOR_UNAVAILABLE`, `REASON_OBSERVATION_SCOPE_CHANGED`, `REASON_PLUGIN_CONFIGURATION_CHANGED`, `REASON_PLUGIN_CONFIGURATION_UNKNOWN`, `REASON_PLUGIN_LIMITATIONS_CHANGED`, `REASON_PLUGIN_SET_CHANGED`, `REASON_PLUGIN_VERSION_CHANGED`, `REASON_SCHEMA_VERSION_CHANGED`, `REASON_SOURCE_MAPPING_CHANGED`, `REASON_TOOL_CONFIGURATION_CHANGED`, `REASON_TOOL_CONFIGURATION_UNKNOWN`, `REASON_TOOL_ID_CHANGED`, `REASON_TOOL_LIMITATIONS_CHANGED`, `REASON_TOOL_VERSION_CHANGED`, `REASON_VERSION_UNKNOWN` |
 | `.knowledge_loader` | `KnowledgeLoadIssue`, `KnowledgeLoadResult`, `KnowledgeMismatchPolicy`, `KnowledgeStateLoadError`, `load_knowledge_state` |
-| `.knowledge_model` | `ComputedFreshness`, `EvidenceState`, `KnowledgeLoadState` |
+| `.knowledge_model` | `ComputedFreshness`, `ConceptRecord`, `EvidenceState`, `KnowledgeLoadState` |
 | `.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `source_selection_identity_from_generation_inputs`, `source_selection_inputs_from_generation_inputs`, `validate_persisted_source_selection_identity` |
 | `.source_snapshot` | `build_source_snapshot`, `capture_source_selection_inputs` |
 | `.sync_manifest` | `SyncManifest` |
@@ -52,18 +52,18 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (14) |
+| Inbound | `src` (15) |
 | Outbound | `src` (10) |
 
-> All 24 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 25 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [KnowledgePhaseDurations](../entities/KnowledgePhaseDurations.md) | 194 | — | Operational phase durations in milliseconds. |
-| [KnowledgeAggregateSummary](../entities/KnowledgeAggregateSummary.md) | 225 | — | Low-cardinality knowledge status safe for reports and local metrics. |
-| [SnapshotKnowledgeObservability](../entities/SnapshotKnowledgeObservability.md) | 389 | — | One snapshot-only read view and its aggregate operational summary. |
+| [KnowledgePhaseDurations](../entities/KnowledgePhaseDurations.md) | 195 | — | Operational phase durations in milliseconds. |
+| [KnowledgeAggregateSummary](../entities/KnowledgeAggregateSummary.md) | 226 | — | Low-cardinality knowledge status safe for reports and local metrics. |
+| [SnapshotKnowledgeObservability](../entities/SnapshotKnowledgeObservability.md) | 390 | — | One snapshot-only read view and its aggregate operational summary. |
 
 ## Functions
 
@@ -74,6 +74,7 @@ flowchart LR
 | `summarize_knowledge_view` | `(view: KnowledgeReadView, *, durations: KnowledgePhaseDurations \| None = None) -> KnowledgeAggregateSummary` | — | Project one read view into a fixed, evidence-free aggregate summary. |
 | `knowledge_freshness_disclosure` | `(view: KnowledgeReadView) -> str` | — | Describe whether the read produced one freshness result per concept. |
 | `knowledge_freshness_hint` | `(state: ComputedFreshness \| str \| None, reason_code: object) -> str \| None` | — | Return a shared interpretation or recovery guidance for freshness. |
+| `freshness_analysis_diagnostic` | `(view: KnowledgeReadView, concept: ConceptRecord) -> dict \| None` | — | Precise live guidance for free-text reports, not frozen projection hints. |
 | `_freshness_disclosure` | `(*, evaluated: bool, concepts_evaluated: int) -> str` | — | — |
 | `knowledge_status_payload` | `(view: KnowledgeReadView \| None) -> dict[str, object]` | — | Return the stable compact status envelope used by MCP and CLI status. |
 | `load_snapshot_knowledge_observability` | `(wiki_dir: str \| Path, *, src_dir: str \| Path \| None = None, source_selection: str \| Path \| None = None) -> SnapshotKnowledgeObservability` | — | Load status without extraction while checking current selection identity. |

@@ -73,13 +73,13 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| normalize_documentation_query_text | isinstance | 64 | `isinstance(value, str)` |
-| normalize_documentation_query_text | value.strip | 64 | `value.strip(data not statically known)` |
-| normalize_documentation_query_text | DocumentationQueryError | 65 | `DocumentationQueryError(...)` |
-| normalize_documentation_query_text | value.strip | 66 | `value.strip(data not statically known)` |
-| normalize_documentation_query_text | len | 67 | `len(selected.encode(...))` |
-| normalize_documentation_query_text | selected.encode | 67 | `selected.encode('utf-8')` |
-| normalize_documentation_query_text | DocumentationQueryError | 68 | `DocumentationQueryError(...)` |
+| normalize_documentation_query_text | isinstance | 65 | `isinstance(value, str)` |
+| normalize_documentation_query_text | value.strip | 65 | `value.strip(data not statically known)` |
+| normalize_documentation_query_text | DocumentationQueryError | 66 | `DocumentationQueryError(...)` |
+| normalize_documentation_query_text | value.strip | 67 | `value.strip(data not statically known)` |
+| normalize_documentation_query_text | len | 68 | `len(selected.encode(...))` |
+| normalize_documentation_query_text | selected.encode | 68 | `selected.encode('utf-8')` |
+| normalize_documentation_query_text | DocumentationQueryError | 69 | `DocumentationQueryError(...)` |
 
 ### Boundary effects
 
@@ -89,10 +89,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `normalize_documentation_query_text` | `isinstance` | 64 |
-| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 64 |
-| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 66 |
-| unresolved_call | `normalize_documentation_query_text` | `selected.encode` | 67 |
+| external_call | `normalize_documentation_query_text` | `isinstance` | 65 |
+| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 65 |
+| unresolved_call | `normalize_documentation_query_text` | `value.strip` | 67 |
+| unresolved_call | `normalize_documentation_query_text` | `selected.encode` | 68 |
 
 ## Behavior
 
