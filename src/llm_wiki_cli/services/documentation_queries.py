@@ -878,6 +878,7 @@ class DocumentationGraphQueryService:
         self.limit = limit
         # Preserve private captured metadata without altering public inventory.
         self.inventory_result = inventory_result
+        self.flow_query_binding: Mapping[str, Any] | None = None
         self.path_outcomes: dict[str, dict[str, Any]] = {}
         self.knowledge_view = knowledge_view
         self.snapshot_call_inventory = snapshot_call_inventory
@@ -930,6 +931,14 @@ class DocumentationGraphQueryService:
         self.raw_callers, self.raw_callees = self._raw_function_links()
         self._build_graph_query_indexes()
         self._build_knowledge_indexes(knowledge_view)
+
+    @_bounded_query_result
+    def flow_segment(self, value: str, *, basis: str | None = None, offset: int = 0) -> dict[str, Any]:
+        """Inspect a bounded exact-callable trace in the captured source graph."""
+        from .flow_followup import segment
+
+        return segment(self.inventory, self.call_edges, self.inventory_result, value,
+                       limit=self.limit, basis=basis, offset=offset, query_binding=self.flow_query_binding)
 
     @_bounded_query_result
     def flow_for_entrypoint(self, id_or_symbol: object) -> dict[str, Any]:

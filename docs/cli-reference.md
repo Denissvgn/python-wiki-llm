@@ -1159,10 +1159,45 @@ supplied files or a supplied diff, use the bounded
 `query_documentation` tool with the `impact` operation. Exact concept,
 related-concept, surface, and typed queries use the committed snapshot;
 supplied file or unified-diff impact queries use targeted extraction. Symbol,
-entrypoint, and dependency queries
+entrypoint, flow-segment, and dependency queries
 perform a full inventory only when `allow_full_inventory=true` is supplied.
 The context budget and focus bound emitted output after a full deep inventory;
 they do not make that scan computationally cheap.
+
+Inspect transitions omitted from a bounded flow with an exact callable owner:
+
+```bash
+printf '%s\n' '{"operation":"flow-segment","value":"src/orders.py:submit","allow_full_inventory":true}' | llm-wiki query --request - --src-dir . --wiki-dir docs/llm_wiki
+```
+
+The same request works through Python `query_documentation` and MCP
+`query_documentation` (inside its `request` argument). The additive
+`llm-wiki-flow-segment/v1` result uses `file:symbol`, including class or nested
+qualification when present. Missing or duplicate owners remain unselected.
+It returns at most 12 trace rows and keeps the existing depth limit of 6;
+`limit` can request fewer rows. Legacy flow and data-flow results retain their
+existing shapes, ordering and limits.
+
+Follow an available top-level `follow_up.request` to inspect the next rows.
+An available `steps[].follow_up.request` narrows a depth frontier to a new
+root in the same graph; its depths and counts start from that root. Supply the
+returned request unchanged, with the same roots, source selection and prepared
+helpers. Its `basis` binds captured source bytes, source generation/selection,
+producer commitments, graph order and traversal options. Changed bindings are
+rejected; restart instead of appending results from a different basis. An
+unavailable follow-up includes its reason, including missing capture bindings
+or a row that exceeds the delivery byte budget.
+
+`coverage` separates observed reachable rows, depth-eligible rows, returned
+rows, omissions before/after the page, and depth omissions. `work` separately
+counts the complete inventory/graph binding and graph traversal/counting work.
+Every CLI/MCP dispatcher request repeats full source inventory; a smaller
+segment does not make that inventory cheaper. For repeated Python queries,
+reuse `api.flow_segment("src/orders.py:submit", service=service)` on a built
+documentation query service. That route performs no new extraction or file I/O
+and answers the service's captured view; build a fresh service after source
+changes. Static order, a complete page or a matching binding never proves
+runtime execution, runtime completeness or live freshness.
 
 Explain one exact concept using the existing evidence service:
 

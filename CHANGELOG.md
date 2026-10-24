@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Bounded flow diagnostics identify an exact callable query. Source-bound static
+  segments recover omitted transitions with explicit paging, depth frontiers and
+  work counts, rejecting follow-ups after their captured basis changes.
+
 - Static caller/callee and flow analysis resolves direct calls to closed,
   unescaped nested helpers while preserving uncertainty for callbacks, closures,
   rebinding and dynamic namespace changes.

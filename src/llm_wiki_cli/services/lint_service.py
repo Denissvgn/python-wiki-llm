@@ -4,6 +4,7 @@ import json
 import re
 import sys
 import time
+from collections import Counter
 from collections.abc import Callable, Iterable, Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field, replace
@@ -1537,6 +1538,10 @@ def _check_data_flow_diagnostics(
         return
 
     edges = resolve_call_edges(deep_inventory)
+    from .entrypoints import _iter_callables
+    from .flow_followup import validate_request
+
+    owners = Counter((path, symbol) for path, symbol, _ in _iter_callables(deep_inventory))
     for entry_point in get_entry_points(
         deep_inventory,
         console_scripts=read_console_scripts(
@@ -1562,6 +1567,23 @@ def _check_data_flow_diagnostics(
         for gap in data_flow["gaps"]:
             line = gap.get("line")
             location = f" line {line}" if line else ""
+            hint = None
+            if gap["kind"] in {"step_limit", "truncated_flow"}:
+                owner = entry_point.get("file")
+                exact_owner = f"{owner}:{entry_point['symbol']}"
+                try:
+                    validate_request(exact_owner)
+                    unique_owner = owners[(owner, entry_point['symbol'])] == 1
+                except ValueError:
+                    unique_owner = False
+                if owner and unique_owner:
+                    request = {"operation": "flow-segment", "value": f"{owner}:{entry_point['symbol']}",
+                               "allow_full_inventory": True}
+                    hint = ("Inspect this exact static owner with query_documentation request " + json.dumps(request, sort_keys=True)
+                            + ". For CLI, save that JSON as FILE and use query --request FILE with the same roots, selection and helpers. Follow returned bound requests; "
+                            "this performs a full inventory and does not prove runtime completeness.")
+                else:
+                    hint = "Exact flow follow-up unavailable: this entry point has no uniquely captured callable source owner."
             _diagnose(
                 report,
                 "data_flow_gaps",
@@ -1570,6 +1592,7 @@ def _check_data_flow_diagnostics(
                     f"{gap['step']} -> {gap['target']}{location}"
                 ),
                 target=entry_point["id"],
+                hint=hint,
             )
 
 

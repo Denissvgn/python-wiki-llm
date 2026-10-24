@@ -43,6 +43,7 @@ from .api_types import (
     EvidenceExplanationResult,
     ExtractSourceResult,
     FlowForEntrypointResult,
+    FlowSegmentResult,
     KnowledgeMode,
     KnowledgeCoverageResult,
     NativeInspectionResult,
@@ -718,6 +719,8 @@ _NATIVE_QUERY_ERROR_FIELDS = frozenset(
         "request",
         "operation",
         "value",
+        "basis",
+        "offset",
         "locator_or_exact_route",
         "limit",
         "paths",
@@ -882,6 +885,8 @@ def _raise_native_query_api_error(exc: Exception) -> NoReturn:
         else:
             message = {
                 "limit": "limit must be a positive integer; values above 100 are capped.",
+                "basis": "The flow binding is invalid or changed; restart with the same source selection, producer and traversal options.",
+                "offset": "Supply a valid offset from a bound flow-segment follow-up.",
                 "kinds": "Supply an iterable with at most 100 values and supported relationship kinds.",
                 "origins": "Supply an iterable with at most 100 values and supported origins.",
                 "resolutions": "Supply an iterable with at most 100 values and supported resolutions.",
@@ -2111,6 +2116,31 @@ def _effective_query_limit(
 
 
 @_api_boundary
+def flow_segment(
+    value: str,
+    *,
+    basis: str | None = None,
+    offset: int = 0,
+    service: DocumentationGraphQueryService | None = None,
+    src_dir: str = ".",
+    wiki_dir: str = DEFAULT_WIKI_DIR,
+    limit: int = 20,
+    allow_external_src: bool = False,
+    source_selection: str | Path | None = None,
+) -> FlowSegmentResult:
+    """Return a bounded exact-callable trace; reuse a service for no new extraction."""
+    from .services.flow_followup import validate_request
+
+    _normalize_query_input(lambda: validate_request(value, basis, offset))
+    bounded_limit = _effective_query_limit(service, limit)
+    return cast(FlowSegmentResult, _run_query(lambda: _query_service(
+        service, src_dir=src_dir, wiki_dir=wiki_dir, limit=bounded_limit,
+        allow_external_src=allow_external_src, read_only=True,
+        source_selection=source_selection,
+    ).flow_segment(value, basis=basis, offset=offset)))
+
+
+@_api_boundary
 def flow_for_entrypoint(
     id_or_symbol: object,
     *,
@@ -2558,6 +2588,7 @@ _DOCUMENTATION_QUERY_FIELDS = {
     ),
     "symbol": frozenset({"operation", "value", "limit", "allow_full_inventory"}),
     "entrypoint": frozenset({"operation", "value", "limit", "allow_full_inventory"}),
+    "flow-segment": frozenset({"operation", "value", "limit", "allow_full_inventory", "basis", "offset"}),
     "dependency": frozenset({"operation", "value", "limit", "allow_full_inventory"}),
     "impact": frozenset(
         {
@@ -2707,7 +2738,12 @@ def _validate_documentation_query_request(
     limit = _normalize_query_limit(request.get("limit", 20))
     # Operation-specific transport fields are input validation, not part of
     # loading the query service. Reject them before any workspace access.
-    if operation == "explain":
+    if operation == "flow-segment":
+        from .services.flow_followup import validate_request
+
+        _normalize_query_input(lambda: validate_request(request.get("value"), request.get("basis"), request.get("offset", 0)))
+        _require_full_inventory_opt_in(request)
+    elif operation == "explain":
         if type(request.get("live", False)) is not bool:
             raise InvalidRequestError("live must be a boolean.", code="invalid-request", details={"field": "live"})
         if type(request.get("allow_full_inventory", False)) is not bool:
@@ -3137,7 +3173,7 @@ def query_documentation(
             field="value",
         )
 
-    if operation in {"symbol", "entrypoint", "dependency"}:
+    if operation in {"symbol", "entrypoint", "dependency", "flow-segment"}:
         _require_full_inventory_opt_in(request)
         service = build_documentation_query_service(
             src_dir,
@@ -3238,6 +3274,8 @@ def query_documentation(
                 "callees": callee_result["bounds"]["callees"],
             }
         )
+    elif operation == "flow-segment":
+        payload = service.flow_segment(value, basis=request.get("basis"), offset=request.get("offset", 0))
     elif operation == "entrypoint":
         flow = service.flow_for_entrypoint(value)
         data_flow = service.data_flow_for_entrypoint(value)
@@ -3736,6 +3774,7 @@ __all__ = [
     "ExtractionError",
     "ExtractSourceResult",
     "FlowForEntrypointResult",
+    "FlowSegmentResult",
     "LlmWikiApiError",
     "InvalidRequestError",
     "KnowledgeMode",
@@ -3790,6 +3829,7 @@ __all__ = [
     "export_documentation_run",
     "extract_source",
     "flow_for_entrypoint",
+    "flow_segment",
     "fingerprint_documentation_wiki_input",
     "get_concept",
     "get_calibration_run_status",

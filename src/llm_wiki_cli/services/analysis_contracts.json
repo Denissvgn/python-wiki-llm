@@ -141,6 +141,7 @@
     "services/extraction_service.py",
     "services/extractor_helpers.py",
     "services/filesystem_guard.py",
+    "services/flow_followup.py",
     "services/flow_overview.py",
     "services/freshness_wording.py",
     "services/go_calls.py",
