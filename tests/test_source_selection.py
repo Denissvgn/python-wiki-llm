@@ -1365,16 +1365,17 @@ def test_committed_profile_freezes_intended_product_census():
     assert "src/llm_wiki_cli/services/analysis_targets.py" in snapshot.language_paths("python")
     assert "src/llm_wiki_cli/extractors/native_diagnostics.py" in snapshot.language_paths("python")
     assert "src/llm_wiki_cli/services/module_coverage.py" in snapshot.language_paths("python")
+    assert "src/llm_wiki_cli/services/flow_followup.py" in snapshot.language_paths("python")
     assert {
         language: len(files) for language, files in snapshot.files_by_language.items()
     } == {
-        "python": 259,
+        "python": 260,
         "typescript": 3,
         "go": 0,
         "rust": 0,
         "haskell": 0,
     }
-    assert len(snapshot.all_source_paths) == 262
+    assert len(snapshot.all_source_paths) == 263
     assert {
         "src/llm_wiki_cli/services/analysis_compatibility.py",
         "src/llm_wiki_cli/services/analysis_capture.py",
