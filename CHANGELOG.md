@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Builds and development installations use patched Setuptools 84.1.0.
+
 - Routine Node/npm preparation supports native Linux ARM64 with a separately
   locked artifact, preserving checksum verification and existing host limits for
   other toolchains.

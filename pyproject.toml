@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools==83.0.0"]
+requires = ["setuptools==84.1.0"]
 build-backend = "release_build_backend"
 backend-path = ["."]
 
@@ -35,7 +35,7 @@ dev = [
     "pytest-cov>=4.0",
     "jsonschema>=4.18",
     "markdown-it-py>=4.0,<5",
-    "setuptools==83.0.0",
+    "setuptools==84.1.0",
     # Analyze Python 3.10 fallback imports from newer development interpreters.
     "tomli>=2",
 ]

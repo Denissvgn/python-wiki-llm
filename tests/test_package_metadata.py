@@ -105,7 +105,7 @@ def test_build_backend_requirement_is_a_dev_only_dependency():
     data = _pyproject()
     backend_requirement = data["build-system"]["requires"][0]
 
-    assert backend_requirement == "setuptools==83.0.0"
+    assert backend_requirement == "setuptools==84.1.0"
     assert backend_requirement in data["project"]["optional-dependencies"]["dev"]
     assert not any(
         dependency.lower().startswith("setuptools")
@@ -249,7 +249,7 @@ def test_release_metadata_uses_current_license_fields_and_pinned_backend():
     assert data["project"]["license"] == "MIT"
     assert data["project"]["license-files"] == ["LICENSE"]
     assert data["build-system"] == {
-        "requires": ["setuptools==83.0.0"],
+        "requires": ["setuptools==84.1.0"],
         "build-backend": "release_build_backend",
         "backend-path": ["."],
     }
