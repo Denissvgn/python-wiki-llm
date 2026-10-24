@@ -266,6 +266,13 @@ observations. A changed file refreshes its observations; deletions remove them.
 Cross-file class classification is recalculated after cached and fresh files
 are combined.
 
+A cache hit does not mean that all analysis was avoided. Read the fresh-file
+counters and extractor phases as well as the hit count. Invocations that capture
+Python implementation observations still perform fresh Python extraction;
+ordinary inventory reuse and committed sync-analysis reuse have different work
+and qualification scopes. Source content, rather than size or modification time
+alone, determines whether a per-file entry matches.
+
 After a successful sync records its generation inputs, an unchanged run can
 reuse the validated knowledge snapshot without rebuilding the graph or
 rewriting artifacts. Source/configuration, Markdown, assets, implementation,
@@ -287,11 +294,22 @@ The command reports `Sync analysis reuse: hit` or `miss` with a reason, and
 progress includes a `sync_analysis_reuse` phase. Missing, corrupted, oversized
 or redirected cache files fall back to ordinary analysis. Source changes,
 generated-section changes, unavailable helpers and incompatible inputs prevent
-reuse. Governed, maintenance-adopted and plugin-configured projects use ordinary
-analysis. `--no-cache`, `--rebuild-cache` and `--rebuild-knowledge` disable this
+reuse. An eligible ordinary maintenance owner is part of the input binding;
+cached observations never acknowledge review or replace current owner checks.
+Governed and plugin-configured projects use ordinary analysis.
+`--no-cache`, `--rebuild-cache` and `--rebuild-knowledge` disable this
 shortcut. An established unchanged snapshot is preserved without adding cache
 metadata solely to warm a cache. Standalone strict lint and CI still validate
 their own invocation inputs.
+
+Keep inventory caches in a trusted project-owned location. Restoring a
+sync-analysis file alone cannot authorize reuse without the matching native
+commitment. The integrity Action already restores exact prepared-helper caches
+and saves newly prepared ones only after successful default-branch pushes.
+Additional transport of application analysis data needs its own source-root,
+producer/runtime, settings and trust boundaries. Assess archive size, transfer,
+validation and required fresh work together; local warm timings do not establish
+a hosted net saving.
 
 `sync`, `lint`, and `ci-check` accept `--progress auto|always|never` and
 `--progress-format text|json`. Progress events are flushed to stderr. `auto`
