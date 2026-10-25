@@ -163,6 +163,7 @@ def capture(root: Path, evidence: Path, *, operation: str, candidate: str,
                 "sync.log": result.stdout + result.stderr}
     for name, raw in payloads.items():
         write(evidence / name, raw)
+    require(context(root) == observed, "writer basis changed; no owning receipt was emitted")
     scoped_only = scoped == whole
     convergence = {
         "schema_version": "llm-wiki-convergence/v1", "candidate_sha": candidate,

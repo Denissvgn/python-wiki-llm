@@ -144,6 +144,19 @@ def test_outside_wiki_write_cannot_report_a_successful_writer(case, monkeypatch)
     assert not (case[1] / "wiki-review-snapshot.tar").exists()
 
 
+def test_changed_binding_during_writer_retains_logs_but_no_owning_receipt(case, monkeypatch):
+    observed = case[3]
+    values = iter([observed, observed, {**observed, "helper": "changed during writer"}])
+    monkeypatch.setattr(driver, "context", lambda _: next(values))
+    with pytest.raises(ValueError, match="writer basis changed"):
+        invoke(case, operation="apply", approved=case[5])
+    assert case[4] == [True, False]
+    assert (case[1] / "sync.stdout").read_bytes() == b"owning sync complete\n"
+    assert (case[1] / "wiki-status-after.txt").stat().st_size > 0
+    assert not (case[1] / "convergence-result.json").exists()
+    assert not (case[1] / "wiki-review-snapshot.tar").exists()
+
+
 @pytest.mark.parametrize("fault", ["candidate", "dirty", "occupied", "inside-source"])
 def test_invalid_start_never_invokes_a_preview_or_writer(case, fault):
     root, evidence, sha, *_ = case
