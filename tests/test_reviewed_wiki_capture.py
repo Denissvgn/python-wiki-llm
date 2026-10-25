@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import importlib.util
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath
+import shlex
 import subprocess
 import tarfile
 
@@ -200,6 +201,13 @@ def test_new_workflow_is_manual_pinned_read_only_and_preview_by_default():
     assert 'test "${RUN_REF}" = refs/heads/main' in guard
     assert 'test "${CANDIDATE}" = "${RUN_SHA}"' in guard
     assert 'test "${WORKFLOW_SHA}" = "${RUN_SHA}"' in guard
+    setup = next(step["run"] for step in steps if step.get("name") == "Prepare the selected locked helper")
+    command = shlex.split(next(line for line in setup.splitlines()
+                              if "setup-llm-wiki-ci-toolchains.sh" in line))
+    install_root = command[command.index("--install-root") + 1]
+    assert install_root.startswith("${RUNNER_TEMP}/")
+    child = PurePosixPath(install_root.removeprefix("${RUNNER_TEMP}/"))
+    assert not child.is_absolute() and ".." not in child.parts and child.parts
     assert "approved-preview-sha256" in source
     assert "writer-succeeded == 'true'" in source
     assert "${{ secrets." not in source
