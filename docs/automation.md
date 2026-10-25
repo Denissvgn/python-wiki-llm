@@ -255,6 +255,29 @@ main changes, current native CI and the existing qualification and publication
 procedure using its verified artifacts. Local rehearsal distributions and
 receipts cannot replace that evidence.
 
+### Reviewed broad release captures
+
+The ordinary convergence observer keeps its normal sync limits. A generator
+upgrade that exceeds those limits needs a complete preview and a separately
+authorized broad write. **Reviewed release wiki capture** provides that manual
+route without changing the observer or publishing repository changes.
+
+Dispatch `reviewed-wiki-capture.yml` from main with `operation=preview` and the
+exact current main SHA as `candidate-sha`. Review the full `preview.stdout` and
+its source, wiki, installed package, runtime and prepared-helper binding in
+`preview.json`. Preview does not produce an owning-sync receipt or a snapshot.
+After explicitly approving that complete plan, dispatch `operation=apply` with
+the same candidate and `approved-preview-sha256` from the reviewed result.
+Apply recomputes the complete preview and refuses a changed binding before
+invoking the broad writer. It never automatically retries a failed normal sync
+with force.
+
+The workflow retains the drift decision and complete successful writer output
+for review. A drift result can fail the run while retaining a valid snapshot;
+that snapshot is not policy approval or release qualification. Review and
+validate the whole capture before a separate wiki pull request. Neither
+operation commits, pushes, tags or publishes anything.
+
 ### Qualification after merging
 
 Repository release automation is disabled by default in

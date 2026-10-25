@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Release wiki captures support a complete preview and require its matching
+  caller-approved binding before an explicit broad generator refresh.
+
 - Builds and development installations use patched Setuptools 84.1.0.
 - Qualification tooling pins unaffected Filelock 3.20.3 while retaining
   Python 3.10 support.
