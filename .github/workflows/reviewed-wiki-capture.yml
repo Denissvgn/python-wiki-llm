@@ -72,7 +72,7 @@ jobs:
         run: |
           .venv/bin/python -m llm_wiki_cli.cli prepare-extractors --src-dir . --plan --format json > "${RUNNER_TEMP}/reviewed-extractor-plan.json"
           .venv/bin/python -c 'import json,sys; p=json.load(open(sys.argv[1])); assert p == {"schema":"llm-wiki-prepare-extractors-plan/v1","languages":["typescript"]}' "${RUNNER_TEMP}/reviewed-extractor-plan.json"
-          bash .github/scripts/setup-llm-wiki-ci-toolchains.sh --mode routine --install-root .git/llm-wiki-ci-toolchains --python .venv/bin/python
+          bash .github/scripts/setup-llm-wiki-ci-toolchains.sh --mode routine --install-root "${RUNNER_TEMP}/reviewed-wiki-capture-toolchains" --python .venv/bin/python
       - name: Prepare the source-matching TypeScript helper
         run: .venv/bin/python -m llm_wiki_cli.cli prepare-extractors --language typescript --cache-dir .git
       - name: Run the explicitly selected operation
