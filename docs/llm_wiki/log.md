@@ -3266,3 +3266,19 @@ Health presentation separates structural integrity, advisory native drift and se
 - Moved entities: none
 
 Build and development tooling use patched Setuptools 84.1.0 while retaining Python 3.10 support. Native ARM64 Linux capture refreshes the recorded tooling basis.
+
+## 2026-10-25
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:9e3f9958101830cfddd7d9101d98f68bd5a19998c48c54e87190b3e3c72f85e6`
+- Pages created: 0
+- Pages updated: 126
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1558
+- Pages deprecated: 0
+- Semantic fields preserved: 180
+- Moved entities: none
