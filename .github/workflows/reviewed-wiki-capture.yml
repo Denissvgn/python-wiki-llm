@@ -1,0 +1,103 @@
+name: Reviewed release wiki capture
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Preview first; apply only after reviewing the exact complete preview
+        type: choice
+        options: [preview, apply]
+        default: preview
+        required: true
+      candidate-sha:
+        description: Exact current main commit to preview or capture
+        type: string
+        required: true
+      approved-preview-sha256:
+        description: Reviewed preview binding hash; required only for explicit apply
+        type: string
+        default: ""
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reviewed-release-wiki-capture-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      CI: "true"
+      PYTHONUTF8: "1"
+      PYTHONIOENCODING: utf-8
+      PIP_NO_INPUT: "1"
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+    steps:
+      - name: Require the exact manual main candidate
+        env:
+          CANDIDATE: ${{ inputs.candidate-sha }}
+          RUN_SHA: ${{ github.sha }}
+          RUN_REF: ${{ github.ref }}
+          EVENT: ${{ github.event_name }}
+          IS_FORK: ${{ github.event.repository.fork }}
+          WORKFLOW_SHA: ${{ github.workflow_sha }}
+          WORKFLOW_REF: ${{ github.workflow_ref }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          test "${EVENT}" = workflow_dispatch
+          test "${RUN_REF}" = refs/heads/main
+          test "${IS_FORK}" = false
+          [[ "${CANDIDATE}" =~ ^[0-9a-f]{40}$ ]]
+          test "${CANDIDATE}" = "${RUN_SHA}"
+          test "${WORKFLOW_SHA}" = "${RUN_SHA}"
+          test "${WORKFLOW_REF}" = "${REPOSITORY}/.github/workflows/reviewed-wiki-capture.yml@refs/heads/main"
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        id: python
+        with:
+          python-version: "3.13"
+      - name: Install the candidate with locked validation tools
+        run: |
+          "${{ steps.python.outputs.python-path }}" -m venv .venv
+          .venv/bin/python -m pip install --require-hashes -r release/validation-requirements.txt
+          .venv/bin/python -m pip install --no-build-isolation --no-deps .
+      - name: Prepare the selected locked helper
+        run: |
+          .venv/bin/python -m llm_wiki_cli.cli prepare-extractors --src-dir . --plan --format json > "${RUNNER_TEMP}/reviewed-extractor-plan.json"
+          .venv/bin/python -c 'import json,sys; p=json.load(open(sys.argv[1])); assert p == {"schema":"llm-wiki-prepare-extractors-plan/v1","languages":["typescript"]}' "${RUNNER_TEMP}/reviewed-extractor-plan.json"
+          bash .github/scripts/setup-llm-wiki-ci-toolchains.sh --mode routine --install-root .git/llm-wiki-ci-toolchains --python .venv/bin/python
+      - name: Prepare the source-matching TypeScript helper
+        run: .venv/bin/python -m llm_wiki_cli.cli prepare-extractors --language typescript --cache-dir .git
+      - name: Run the explicitly selected operation
+        id: capture
+        env:
+          OPERATION: ${{ inputs.operation }}
+          CANDIDATE: ${{ inputs.candidate-sha }}
+          APPROVED_PREVIEW: ${{ inputs.approved-preview-sha256 }}
+        run: >-
+          .venv/bin/python -I .github/scripts/run-reviewed-wiki-capture.py
+          --operation "${OPERATION}" --candidate-sha "${CANDIDATE}"
+          --approved-preview-sha256 "${APPROVED_PREVIEW}"
+          --evidence-dir "${RUNNER_TEMP}/reviewed-wiki-capture"
+      - name: Capture complete successful writer output
+        if: ${{ always() && inputs.operation == 'apply' && steps.capture.outputs.writer-succeeded == 'true' }}
+        run: >-
+          .venv/bin/python -I .github/scripts/capture-llm-wiki-review-snapshot.py
+          --root . --evidence-dir "${RUNNER_TEMP}/reviewed-wiki-capture"
+          --candidate-sha "${{ github.sha }}" --run-id "${{ github.run_id }}"
+          --attempt "${{ github.run_attempt }}"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          archive: true
+          name: reviewed-wiki-capture-${{ inputs.operation }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/reviewed-wiki-capture/
+          if-no-files-found: error
+          retention-days: 14
