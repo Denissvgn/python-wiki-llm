@@ -204,6 +204,14 @@ def test_new_workflow_is_manual_pinned_read_only_and_preview_by_default():
     assert "writer-succeeded == 'true'" in source
     assert "${{ secrets." not in source
     assert "git push" not in source and "git commit" not in source
+    uploaded = steps[-1]["with"]["path"].splitlines()
+    assert all(path.startswith("${{ runner.temp }}/reviewed-wiki-capture/") for path in uploaded)
+    assert {path.rsplit("/", 1)[1] for path in uploaded} == {
+        "preview.json", "preview.stdout", "preview.stderr", "sync.stdout", "sync.stderr",
+        "sync.log", "convergence-result.json", "wiki-status-before.txt", "wiki-status-after.txt",
+        "worktree-status-after.txt", "wiki-diff.patch", "wiki-review-snapshot.tar",
+        "wiki-review-snapshot.json",
+    }
 
 
 @pytest.mark.parametrize("event,ref,repository", [

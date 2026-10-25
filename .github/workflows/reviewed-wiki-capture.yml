@@ -98,6 +98,19 @@ jobs:
         with:
           archive: true
           name: reviewed-wiki-capture-${{ inputs.operation }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/reviewed-wiki-capture/
+          path: |
+            ${{ runner.temp }}/reviewed-wiki-capture/preview.json
+            ${{ runner.temp }}/reviewed-wiki-capture/preview.stdout
+            ${{ runner.temp }}/reviewed-wiki-capture/preview.stderr
+            ${{ runner.temp }}/reviewed-wiki-capture/sync.stdout
+            ${{ runner.temp }}/reviewed-wiki-capture/sync.stderr
+            ${{ runner.temp }}/reviewed-wiki-capture/sync.log
+            ${{ runner.temp }}/reviewed-wiki-capture/convergence-result.json
+            ${{ runner.temp }}/reviewed-wiki-capture/wiki-status-before.txt
+            ${{ runner.temp }}/reviewed-wiki-capture/wiki-status-after.txt
+            ${{ runner.temp }}/reviewed-wiki-capture/worktree-status-after.txt
+            ${{ runner.temp }}/reviewed-wiki-capture/wiki-diff.patch
+            ${{ runner.temp }}/reviewed-wiki-capture/wiki-review-snapshot.tar
+            ${{ runner.temp }}/reviewed-wiki-capture/wiki-review-snapshot.json
           if-no-files-found: error
           retention-days: 14
