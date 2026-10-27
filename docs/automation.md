@@ -295,6 +295,16 @@ qualification for that exact main commit. Normal qualification waits when the
 version, release tag, or changelog is not ready; unavailable remote checks are
 reported as blocked. Source, health, and integrity failures remain blocking.
 
+The final `qualified-release` ZIP has a dedicated reader. It validates the
+repository, source, run attempt and successful assembly job before download,
+then requires the API-declared ZIP length and SHA-256 digest exactly. Its
+transport is capped by the existing 256 MiB envelope; expanded bytes remain
+limited to 256 MiB and members to 10,000. Ordinary source and producer ZIPs
+retain their 64 MiB transport limit. Canonical paths, file kinds and portable
+collision checks precede extraction. The complete manifest, distribution and
+producer-evidence verification still governs qualification. Existing valid
+small bundles remain supported; this reader does not enable automation.
+
 Configure the following before setting `enabled` to `true`:
 
 - Enable repository auto-merge and protect main through pull requests, with no

@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Release coordination reads authenticated final qualification bundles through
+  a dedicated bounded reader while retaining source and producer artifact limits.
+
 - TypeScript and JavaScript helper reuse verifies the complete prepared
   dependency tree. Legacy preparation receipts remain available for diagnosis
   and require an explicit refresh before reuse.
