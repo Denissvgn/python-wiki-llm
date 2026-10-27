@@ -297,6 +297,8 @@ def freeze_provider(ci, root: Path, base: str, destination: Path) -> dict:
         "README.md",
         "LICENSE",
         "MANIFEST.in",
+        # The trusted build declares this manual as an installed data-file.
+        "docs/standalone-documentation.md",
     }
     paths = sorted(
         p for p in catalog if p.startswith("src/llm_wiki_cli/") or p in build_files

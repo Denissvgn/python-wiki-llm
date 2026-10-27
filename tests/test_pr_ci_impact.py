@@ -401,6 +401,7 @@ def test_frozen_provider_comes_from_base_objects_without_executing_package(
         "src/llm_wiki_cli/__init__.py": original,
         "src/llm_wiki_cli/services/analysis_contracts.json": b"{}",
         "src/llm_wiki_cli/extractors/example/.gitignore": b"build/\n",
+        "docs/standalone-documentation.md": b"Trusted installed manual\n",
         ".llm-wiki/source-selection.json": b'{"include":["src/llm_wiki_cli"]}',
     }
     root, _, event, _ = fixture_repository(tmp_path, policy, sources)
@@ -418,6 +419,9 @@ def test_frozen_provider_comes_from_base_objects_without_executing_package(
         "services/analysis_contracts.json": ci.digest(b"{}"),
     }
     assert (destination / "src/llm_wiki_cli/extractors/example/.gitignore").is_file()
+    assert (destination / "docs/standalone-documentation.md").read_bytes() == (
+        b"Trusted installed manual\n"
+    )
     assert not (destination / "tests").exists()
     assert frozen["base_sha"] == event["pull_request"]["base"]["sha"]
 
