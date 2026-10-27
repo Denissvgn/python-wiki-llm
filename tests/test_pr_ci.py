@@ -514,6 +514,27 @@ def test_policy_has_no_missing_or_arbitrary_execution_targets():
             assert (ROOT / ci.selector(selected).split("::")[0]).is_file()
     assert "typecheck" in policy["groups"]["ci-policy"]["jobs"]
     assert policy["groups"]["typescript"]["helpers"] == ["typescript"]
+    assert "tests/test_pr_ci_workflow.py" not in policy["groups"]["ci-policy"]["tests"]
+
+
+def test_routing_controls_are_required_when_present_but_not_before_bootstrap(
+    policy, sources
+):
+    policy["groups"]["ci-policy"] = {
+        "tests": ["tests/test_query.py"],
+        "lanes": ["ubuntu"],
+        "jobs": ["typecheck"],
+        "helpers": [],
+    }
+    policy["rules"].append(
+        {"paths": [".github/workflows/ci.yml"], "groups": ["ci-policy"]}
+    )
+    rows = [changed(".github/workflows/ci.yml")]
+    early = selection(policy, sources, rows)
+    assert early["lanes"]["ubuntu"]["selectors"] == ["tests/test_query.py"]
+    sources["tests/test_pr_ci_workflow.py"] = b"def test_gate(): pass\n"
+    after = selection(policy, sources, rows)
+    assert "tests/test_pr_ci_workflow.py" in after["lanes"]["ubuntu"]["selectors"]
 
 
 @pytest.mark.parametrize("revision", [None, True, 0, 2])

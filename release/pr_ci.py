@@ -611,6 +611,11 @@ def select(
     addition = proposal(body, policy["groups"])
     groups.update(addition["groups"])
     explicit_tests.update(addition["tests"])
+    # The routing contract is introduced after the base-policy bootstrap.
+    # Once present it is mandatory; deleting it still fails the diff review.
+    routing_test = "tests/test_pr_ci_workflow.py"
+    if "ci-policy" in groups and routing_test in after:
+        explicit_tests.add(routing_test)
     lanes: dict[str, set[str]] = {}
     helpers: dict[str, set[str]] = {}
     jobs = {"activation-proof", "wiki-integrity"}
