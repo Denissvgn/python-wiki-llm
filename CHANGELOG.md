@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- TypeScript and JavaScript helper reuse verifies the complete prepared
+  dependency tree. Legacy preparation receipts remain available for diagnosis
+  and require an explicit refresh before reuse.
+
 ## [3.3.0] - 2026-10-25
 
 ### Fixed

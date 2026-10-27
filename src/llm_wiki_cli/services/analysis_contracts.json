@@ -263,6 +263,7 @@
     "services/task_implementation.py",
     "services/team.py",
     "services/token_counting.py",
+    "services/typescript_helper_identity.py",
     "services/validation.py",
     "services/verification_contracts.py",
     "services/versioning.py",
@@ -376,7 +377,8 @@
       "extractors/ts_scripts/package-lock.json",
       "extractors/ts_scripts/package.json",
       "services/extractor_helpers.py",
-      "services/imports.py"
+      "services/imports.py",
+      "services/typescript_helper_identity.py"
     ]
   },
   "schema_version": "llm-wiki-analysis-registry/v1",

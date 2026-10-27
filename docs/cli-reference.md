@@ -645,6 +645,21 @@ For automatic preparation during project setup, use
 missing or stale ones. `prepare-extractors` also checks the current build
 toolchain when explicitly rebuilding or refreshing the cache.
 
+TypeScript and JavaScript preparation records the complete cached `node_modules`
+tree, including sibling and nested dependencies. A dependency change makes that
+helper unavailable until explicit preparation succeeds again. Older receipts
+remain readable for diagnosis but cannot establish this complete identity;
+rerun `prepare-extractors --language typescript` with the same cache base after
+updating the CLI. Read-only commands do not migrate receipts or install packages.
+Go, Rust and Haskell retain their existing receipt formats.
+
+The TypeScript identity read is limited to 10,000 entries, 128 MiB total,
+32 MiB per file and 32 path components; receipt metadata is limited to 1 MiB.
+Links, reparse points, hard links,
+special files and detected changes during observation refuse qualification.
+These are observed cached bytes, independent of the active Node runtime and
+not proof of package authenticity.
+
 ```bash
 llm-wiki prepare-extractors --src-dir .
 llm-wiki prepare-extractors --src-dir . --plan --format json

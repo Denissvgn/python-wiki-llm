@@ -16,6 +16,10 @@ from llm_wiki_cli.services.source_selection import SourceSelectionError
 
 def _prepare_fixture(language, cache_root):
     root = cache_root / language / "fixture"
+    toolchain = "node v24.18.0; npm 11.16.0"
+    key = helpers.helper_cache_key(language, toolchain_version=toolchain)
+    if language == "typescript":
+        root = cache_root / language / key
     root.mkdir(parents=True, exist_ok=True)
     if language == "typescript":
         artifact = root / "node_modules" / "ts-morph"
@@ -30,13 +34,16 @@ def _prepare_fixture(language, cache_root):
         cache_root,
         language,
         {
-            "version": helpers.HELPER_MANIFEST_VERSION,
+            "version": helpers.TYPESCRIPT_HELPER_MANIFEST_VERSION if language == "typescript" else helpers.HELPER_MANIFEST_VERSION,
             "language": language,
             "platform": helpers.platform_id(),
             "source_fingerprint": helpers.helper_source_fingerprint(language),
-            "artifact_fingerprint": helpers.helper_artifact_fingerprint(artifact),
+            "artifact_fingerprint": (helpers.ts_identity.dependency_fingerprint(root / "node_modules")
+                                     if language == "typescript" else helpers.helper_artifact_fingerprint(artifact)),
             "root": str(root),
             "path": str(artifact),
+            **({"artifact_scope": helpers.ts_identity.ARTIFACT_SCOPE, "key": key,
+                "toolchain": toolchain} if language == "typescript" else {}),
         },
     )
     return helpers.HelperPrepareResult(language, "prepared", "ok", str(artifact))
