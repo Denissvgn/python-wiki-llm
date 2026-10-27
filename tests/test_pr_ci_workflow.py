@@ -52,7 +52,7 @@ def test_base_policy_is_loaded_without_a_candidate_bootstrap_or_write_token():
     assert "git show HEAD:" not in load["run"]
     assert (
         'registry.get("revision")' in load["run"]
-        and 'registry["revision"] != 1' in load["run"]
+        and 'registry["revision"] != 2' in load["run"]
     )
     assert (
         json.loads((ROOT / "release/automation.json").read_text())["enabled"] is False
@@ -149,7 +149,7 @@ def test_full_native_release_and_new_native_evidence_are_still_required():
 
 def test_shared_action_dependencies_retain_their_required_consumer():
     policy = json.loads((ROOT / "release/pr-ci-policy.json").read_text())
-    assert type(policy["revision"]) is int and policy["revision"] == 1
+    assert type(policy["revision"]) is int and policy["revision"] == 2
     for path in [
         ".github/scripts/setup-llm-wiki-ci-toolchains.sh",
         "release/qualification.py",

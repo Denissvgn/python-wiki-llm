@@ -537,7 +537,7 @@ def test_routing_controls_are_required_when_present_but_not_before_bootstrap(
     assert "tests/test_pr_ci_workflow.py" in after["lanes"]["ubuntu"]["selectors"]
 
 
-@pytest.mark.parametrize("revision", [None, True, 0, 2])
+@pytest.mark.parametrize("revision", [None, True, 0, 3])
 def test_unadmitted_bootstrap_policy_revision_is_refused(tmp_path, revision):
     value = json.loads((ROOT / "release/pr-ci-policy.json").read_text())
     if revision is None:

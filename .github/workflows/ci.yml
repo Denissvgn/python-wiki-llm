@@ -99,7 +99,7 @@ jobs:
       run: |
         set -euo pipefail
         mkdir -p "${RUNNER_TEMP}/pr-ci"
-        for name in pr_ci.py pr_ci_pytest.py pr-ci-policy.json skip-allowlist.json hosted_evidence.py qualification.py toolchain-lock.json; do
+        for name in pr_ci.py pr_ci_pytest.py pr-ci-policy.json skip-allowlist.json hosted_evidence.py qualification.py toolchain-lock.json pr_ci_impact.py pr-ci-impact-requirements.txt; do
           if ! git cat-file -e "${BASE_SHA}:release/${name}"; then
             echo "::error::Trusted base selection policy is missing. Land the reviewed policy bootstrap first; candidate policy is never executed as a fallback."
             exit 2
@@ -109,7 +109,7 @@ jobs:
         .venv/bin/python -I - "${RUNNER_TEMP}/pr-ci/pr-ci-policy.json" <<'PY'
         import json, pathlib, sys
         registry = json.loads(pathlib.Path(sys.argv[1]).read_bytes())
-        if type(registry.get("revision")) is not int or registry["revision"] != 1:
+        if type(registry.get("revision")) is not int or registry["revision"] != 2:
             raise SystemExit("Trusted base policy revision is not admitted; review the complete bootstrap first")
         PY
     - name: Bind selected checks to this exact candidate
@@ -121,6 +121,19 @@ jobs:
           --root . --event "${GITHUB_EVENT_PATH}" --candidate "${GITHUB_SHA}" \
           --repository "${GITHUB_REPOSITORY}" --run-id "${GITHUB_RUN_ID}" \
           --attempt "${GITHUB_RUN_ATTEMPT}" --output "${RUNNER_TEMP}/pr-ci/plan.json"
+    - name: Retain optional impact diagnostics
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        archive: true
+        name: pr-ci-impact-${{ github.run_attempt }}
+        path: |
+          ${{ runner.temp }}/pr-ci-impact-work/request.json
+          ${{ runner.temp }}/pr-ci-impact-work/response.json
+          ${{ runner.temp }}/pr-ci-impact-work/provider-setup.log
+          ${{ runner.temp }}/pr-ci-impact-work/worker.log
+        if-no-files-found: ignore
+        retention-days: 14
     - name: Retain authenticated selection inputs
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
       with:
@@ -156,7 +169,7 @@ jobs:
     - name: Check the release lint scope
       shell: bash
       run: '"${{ steps.python.outputs.python-path }}" -m ruff check src tests examples integrations/github-action/render_summary.py
-        release/preflight.py release/preflight_contracts.py release/preflight_runner.py release/pr_ci.py release/pr_ci_pytest.py
+        release/preflight.py release/preflight_contracts.py release/preflight_runner.py release/pr_ci.py release/pr_ci_pytest.py release/pr_ci_impact.py
         | tee ruff.log'
     - name: Upload typing diagnostics
       if: always()
@@ -263,7 +276,7 @@ jobs:
         "${PR_CI_PYTHON}" -I - <<'PY'
         import hashlib, json, os, pathlib
         root = pathlib.Path("incoming/pr-ci")
-        names = ("pr_ci.py", "pr_ci_pytest.py", "pr-ci-policy.json", "skip-allowlist.json", "hosted_evidence.py", "qualification.py", "toolchain-lock.json")
+        names = ("pr_ci.py", "pr_ci_pytest.py", "pr-ci-policy.json", "skip-allowlist.json", "hosted_evidence.py", "qualification.py", "toolchain-lock.json", "pr_ci_impact.py", "pr-ci-impact-requirements.txt")
         files = {name: hashlib.sha256((root / name).read_bytes()).hexdigest() for name in names}
         identity = hashlib.sha256(json.dumps(files, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
         if identity != os.environ["BASE_POLICY_SHA256"] or hashlib.sha256((root / "plan.json").read_bytes()).hexdigest() != os.environ["PLAN_SHA256"]:
@@ -281,7 +294,7 @@ jobs:
         "${PR_CI_PYTHON}" -I - <<'PY'
         import hashlib, json, os, pathlib
         root = pathlib.Path("incoming/pr-ci")
-        names = ("pr_ci.py", "pr_ci_pytest.py", "pr-ci-policy.json", "skip-allowlist.json", "hosted_evidence.py", "qualification.py", "toolchain-lock.json")
+        names = ("pr_ci.py", "pr_ci_pytest.py", "pr-ci-policy.json", "skip-allowlist.json", "hosted_evidence.py", "qualification.py", "toolchain-lock.json", "pr_ci_impact.py", "pr-ci-impact-requirements.txt")
         files = {name: hashlib.sha256((root / name).read_bytes()).hexdigest() for name in names}
         identity = hashlib.sha256(json.dumps(files, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
         if identity != os.environ["BASE_POLICY_SHA256"] or hashlib.sha256((root / "plan.json").read_bytes()).hexdigest() != os.environ["PLAN_SHA256"]:
@@ -673,7 +686,7 @@ jobs:
         "${PR_CI_PYTHON}" -I - <<'PY'
         import hashlib, json, os, pathlib
         root = pathlib.Path("incoming/pr-ci")
-        names = ("pr_ci.py", "pr_ci_pytest.py", "pr-ci-policy.json", "skip-allowlist.json", "hosted_evidence.py", "qualification.py", "toolchain-lock.json")
+        names = ("pr_ci.py", "pr_ci_pytest.py", "pr-ci-policy.json", "skip-allowlist.json", "hosted_evidence.py", "qualification.py", "toolchain-lock.json", "pr_ci_impact.py", "pr-ci-impact-requirements.txt")
         files = {name: hashlib.sha256((root / name).read_bytes()).hexdigest() for name in names}
         identity = hashlib.sha256(json.dumps(files, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
         if identity != os.environ["BASE_POLICY_SHA256"] or hashlib.sha256((root / "plan.json").read_bytes()).hexdigest() != os.environ["PLAN_SHA256"]:

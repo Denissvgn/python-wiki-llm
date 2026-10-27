@@ -179,7 +179,7 @@ def test_routine_ci_checks_the_full_release_typing_surface() -> None:
     assert lint["run"].split("-m ruff check", 1)[1].split("|", 1)[0].split() == [
         "src", "tests", "examples", "integrations/github-action/render_summary.py",
         "release/preflight.py", "release/preflight_contracts.py", "release/preflight_runner.py",
-        "release/pr_ci.py", "release/pr_ci_pytest.py",
+        "release/pr_ci.py", "release/pr_ci_pytest.py", "release/pr_ci_impact.py",
     ]
 
 

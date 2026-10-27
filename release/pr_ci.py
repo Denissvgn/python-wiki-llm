@@ -20,6 +20,7 @@ import platform
 import re
 import subprocess
 import sys
+import tempfile
 from typing import Any
 import xml.etree.ElementTree as ET
 import zipfile
@@ -34,6 +35,8 @@ POLICY_FILES = (
     "hosted_evidence.py",
     "qualification.py",
     "toolchain-lock.json",
+    "pr_ci_impact.py",
+    "pr-ci-impact-requirements.txt",
 )
 MAX_JSON = 4 * 1024 * 1024
 MAX_SOURCE = 64 * 1024 * 1024
@@ -259,7 +262,7 @@ def policy_load(directory: Path) -> dict:
         and set(value) == {"schema", "revision", "groups", "rules", "owners", "always"}
         and value["schema"] == SCHEMA
         and type(value["revision"]) is int
-        and value["revision"] == 1,
+        and value["revision"] in {1, 2},
         "invalid trusted selection policy",
     )
     require(
@@ -483,17 +486,16 @@ def select(
     rows: list[dict],
     body: str | None,
     allowlist: dict,
+    *,
+    imports_index: dict[str, set[str]] | None = None,
 ) -> dict:
     """Select declared contracts plus direct/import consumers without executing them."""
     groups = set(policy["always"])
     reasons: dict[str, list[str]] = {}
     explicit_tests: set[str] = set()
-    old_imports = {p: imports(p, raw) for p, raw in before.items() if python_input(p)}
-    new_imports = {p: imports(p, raw) for p, raw in after.items() if python_input(p)}
-    all_imports = {
-        p: old_imports.get(p, set()) | new_imports.get(p, set())
-        for p in old_imports.keys() | new_imports.keys()
-    }
+    all_imports = (
+        imports_index if imports_index is not None else ownership_index(before, after)
+    )
     unresolved = []
     for row in rows:
         path, old = row["path"], row["old"]
@@ -722,6 +724,211 @@ def select(
     }
 
 
+def ownership_index(
+    before: dict[str, bytes], after: dict[str, bytes]
+) -> dict[str, set[str]]:
+    old = {p: imports(p, raw) for p, raw in before.items() if python_input(p)}
+    new = {p: imports(p, raw) for p, raw in after.items() if python_input(p)}
+    return {p: old.get(p, set()) | new.get(p, set()) for p in old.keys() | new.keys()}
+
+
+def additive_floor(floor: dict, effective: dict) -> None:
+    require(
+        set(floor["jobs"]) <= set(effective["jobs"]), "impact removed a mandatory job"
+    )
+    require(
+        set(floor["groups"]) <= set(effective["groups"]),
+        "impact removed a mandatory contract",
+    )
+    for lane, data in floor["lanes"].items():
+        require(lane in effective["lanes"], "impact removed a native owner")
+        target = effective["lanes"][lane]
+        require(
+            all(target[k] == data[k] for k in LANES[lane]),
+            "impact changed a native runtime",
+        )
+        require(
+            all(
+                any(matches(new, old) for new in target["selectors"])
+                for old in data["selectors"]
+            ),
+            "impact reduced mandatory test coverage",
+        )
+        require(
+            set(data["helpers"]) <= set(target["helpers"]),
+            "impact removed a helper capability",
+        )
+        require(
+            set(data.get("profile", "dev,mcp,tokens").split(","))
+            <= set(target.get("profile", "dev,mcp,tokens").split(",")),
+            "impact reduced dependency capabilities",
+        )
+    require(
+        {canonical(edge) for edge in floor["skip_edges"]}
+        <= {canonical(edge) for edge in effective["skip_edges"]},
+        "impact changed a skip-owner obligation",
+    )
+
+
+def impact_module(directory: Path):
+    spec = importlib.util.spec_from_file_location(
+        "trusted_pr_ci_impact", directory / "pr_ci_impact.py"
+    )
+    if spec is None or spec.loader is None:
+        raise SelectionError("trusted impact adapter unavailable")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def enrich_impact(
+    root: Path,
+    directory: Path,
+    policy: dict,
+    before: dict,
+    after: dict,
+    plan: dict,
+    work: Path,
+    provider_python: Path | None = None,
+) -> dict:
+    floor = {
+        key: plan[key]
+        for key in (
+            "groups",
+            "reasons",
+            "proposal",
+            "lanes",
+            "jobs",
+            "skip_edges",
+            "qualification",
+        )
+    }
+    floor = json.loads(canonical(floor))
+    binding = {
+        key: plan[key]
+        for key in (
+            "base_sha",
+            "head_sha",
+            "candidate_sha",
+            "candidate_tree",
+            "policy_sha256",
+            "repository",
+            "run_id",
+            "run_attempt",
+        )
+        if key in plan
+    }
+    adapter = impact_module(directory)
+    evidence = adapter.collect(
+        sys.modules[__name__],
+        root,
+        directory,
+        binding,
+        plan["changes"],
+        work,
+        provider_python,
+    )
+    require(
+        evidence.get("schema") == adapter.SCHEMA
+        and evidence.get("binding") == binding
+        and evidence.get("advisory") is True
+        and evidence.get("can_reduce_selection") is False,
+        "impact evidence cannot change selection authority",
+    )
+    current = json.loads(canonical(floor))
+    admissions = []
+    actual_changes = {p for row in plan["changes"] for p in (row["old"], row["path"])}
+    index = ownership_index(before, after)
+    inventory = {
+        p
+        for p in after
+        if python_input(p)
+        and p.startswith("tests/")
+        and Path(p).name.startswith("test_")
+    }
+    hints = evidence.get("affected_sources", [])
+    require(
+        isinstance(hints, list) and len(hints) <= adapter.MAX_HINTS,
+        "impact source count exceeds limit",
+    )
+    for raw in hints:
+        try:
+            path = safe_path(raw)
+            require(
+                path in before or path in after,
+                "impact source is outside immutable code inventory",
+            )
+            if path in actual_changes:
+                continue
+            addition = select(
+                policy,
+                before,
+                after,
+                [{"status": "M", "old": path, "path": path}],
+                None,
+                read_json(directory / "skip-allowlist.json"),
+                imports_index=index,
+            )
+            candidate = json.loads(canonical(current))
+            for field in ("groups", "jobs"):
+                candidate[field] = sorted(set(candidate[field]) | set(addition[field]))
+            for lane, value in addition["lanes"].items():
+                if lane not in candidate["lanes"]:
+                    candidate["lanes"][lane] = value
+                else:
+                    target = candidate["lanes"][lane]
+                    target["selectors"] = compact(
+                        set(target["selectors"]) | set(value["selectors"])
+                    )
+                    target["helpers"] = sorted(
+                        set(target["helpers"]) | set(value["helpers"])
+                    )
+                    target["profile"] = ",".join(
+                        sorted(
+                            set(target["profile"].split(","))
+                            | set(value["profile"].split(","))
+                        )
+                    )
+            edge_map = {
+                canonical(e): e
+                for e in [*candidate["skip_edges"], *addition["skip_edges"]]
+            }
+            candidate["skip_edges"] = sorted(
+                edge_map.values(), key=lambda e: (e["lane"], e["node_id"], e["reason"])
+            )
+            selected = {
+                s.partition("::")[0]
+                for lane in candidate["lanes"].values()
+                for s in lane["selectors"]
+            }
+            require(
+                len(inventory) <= 1 or selected != inventory,
+                "impact cannot request complete PR inventory",
+            )
+            additive_floor(floor, candidate)
+            current = candidate
+            admissions.append(
+                {"source": path, "status": "admitted", "groups": addition["groups"]}
+            )
+        except SelectionError as exc:
+            admissions.append(
+                {"source": raw, "status": "rejected", "reason": str(exc)[:512]}
+            )
+    evidence["admissions"] = admissions
+    if any(row["status"] == "rejected" for row in admissions):
+        evidence["gaps"].append(
+            {"reason": "some-impact-sources-have-no-admitted-test-owner"}
+        )
+        if evidence["status"] == "observed":
+            evidence["status"] = "partial"
+    evidence["selection_floor_sha256"] = digest(canonical(floor))
+    plan.update(current)
+    plan["selection_floor"] = floor
+    plan["impact"] = evidence
+    additive_floor(floor, plan)
+    return plan
+
+
 def make_plan(
     root: Path,
     directory: Path,
@@ -730,6 +937,9 @@ def make_plan(
     repository: str,
     run_id: int,
     attempt: int,
+    *,
+    impact_work: Path | None = None,
+    provider_python: Path | None = None,
 ) -> dict:
     require(
         SHA.fullmatch(candidate) is not None
@@ -772,15 +982,16 @@ def make_plan(
     policy = policy_load(directory)
     before_catalog, after_catalog = tree(root, base), tree(root, candidate)
     rows = changes(root, base, candidate)
+    before_code, after_code = blobs(root, before_catalog), blobs(root, after_catalog)
     selected = select(
         policy,
-        blobs(root, before_catalog),
-        blobs(root, after_catalog),
+        before_code,
+        after_code,
         rows,
         pr.get("body"),
         read_json(directory / "skip-allowlist.json"),
     )
-    return {
+    result = {
         "schema": SCHEMA,
         "mode": "pull-request",
         "repository": repository,
@@ -797,12 +1008,44 @@ def make_plan(
         "changes": rows,
         **selected,
     }
+    if policy["revision"] >= 2:
+        if impact_work is not None:
+            result = enrich_impact(
+                root,
+                directory,
+                policy,
+                before_code,
+                after_code,
+                result,
+                impact_work,
+                provider_python,
+            )
+        else:
+            with tempfile.TemporaryDirectory(prefix="llm-wiki-pr-impact-") as scratch:
+                result = enrich_impact(
+                    root,
+                    directory,
+                    policy,
+                    before_code,
+                    after_code,
+                    result,
+                    Path(scratch) / "work",
+                    provider_python,
+                )
+    return result
 
 
 def verify_plan(path: Path, expected: str, root: Path | None = None) -> dict:
     raw = bounded_file(path, MAX_JSON)
     require(digest(raw) == expected, "selection receipt digest differs")
     plan = strict_json(raw)
+    if "selection_floor" in plan:
+        additive_floor(plan["selection_floor"], plan)
+        require(
+            plan.get("impact", {}).get("selection_floor_sha256")
+            == digest(canonical(plan["selection_floor"])),
+            "impact floor digest differs",
+        )
     require(
         plan.get("schema") == SCHEMA
         and plan.get("mode") in {"pull-request", "main-reuse"}
@@ -1435,6 +1678,7 @@ def main() -> int:
     plan_parser.add_argument("--run-id", type=int, required=True)
     plan_parser.add_argument("--attempt", type=int, required=True)
     plan_parser.add_argument("--output", type=Path, required=True)
+    plan_parser.add_argument("--impact-provider-python", type=Path)
     preview = subs.add_parser(
         "preview", help="Read-only agent proposal; never CI or release authority"
     )
@@ -1442,6 +1686,11 @@ def main() -> int:
     preview.add_argument("--base", required=True)
     preview.add_argument("--head", required=True)
     preview.add_argument("--body", type=Path)
+    preview.add_argument(
+        "--impact-provider-python",
+        type=Path,
+        help="Use an already installed trusted base provider; preview never installs one",
+    )
     for name in ("run", "gate", "prepare"):
         command = subs.add_parser(name)
         command.add_argument("--plan", type=Path, required=True)
@@ -1475,16 +1724,46 @@ def main() -> int:
                 body,
                 read_json(directory / "skip-allowlist.json"),
             )
+            preview_result = {
+                "schema": SCHEMA,
+                "mode": "preview",
+                "authority": "proposal-only; trusted base validation remains required",
+                "base_sha": args.base,
+                "head_sha": args.head,
+                **result,
+            }
+            if args.impact_provider_python is not None:
+                preview_result.update(
+                    {
+                        "candidate_sha": args.head,
+                        "candidate_tree": git(
+                            args.root, "rev-parse", args.head + "^{tree}"
+                        )
+                        .decode()
+                        .strip(),
+                        "repository": "Denissvgn/python-wiki-llm",
+                        "policy_sha256": policy_identity(directory),
+                        "run_id": 0,
+                        "run_attempt": 0,
+                        "changes": changes(args.root, args.base, args.head),
+                    }
+                )
+                with tempfile.TemporaryDirectory(
+                    prefix="llm-wiki-impact-preview-"
+                ) as scratch:
+                    preview_result = enrich_impact(
+                        args.root,
+                        directory,
+                        policy_load(directory),
+                        blobs(args.root, tree(args.root, args.base)),
+                        blobs(args.root, tree(args.root, args.head)),
+                        preview_result,
+                        Path(scratch) / "work",
+                        args.impact_provider_python,
+                    )
             print(
                 json.dumps(
-                    {
-                        "schema": SCHEMA,
-                        "mode": "preview",
-                        "authority": "proposal-only; trusted base validation remains required",
-                        "base_sha": args.base,
-                        "head_sha": args.head,
-                        **result,
-                    },
+                    preview_result,
                     indent=2,
                 )
             )
@@ -1500,6 +1779,9 @@ def main() -> int:
                     args.repository,
                     args.run_id,
                     args.attempt,
+                    impact_work=args.output.resolve().parent.parent
+                    / "pr-ci-impact-work",
+                    provider_python=args.impact_provider_python,
                 )
             else:
                 require(
