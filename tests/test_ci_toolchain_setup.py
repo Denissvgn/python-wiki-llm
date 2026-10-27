@@ -218,7 +218,8 @@ def fake_lock(tmp_path: Path) -> Path:
             },
             "go": {
                 "artifact": go_artifact,
-                "platform_artifacts": {"darwin_arm64": go_artifact},
+                # These archives contain native shell shims, not Go binaries.
+                "platform_artifacts": {"darwin_arm64": go_artifact, "linux_arm64": go_artifact},
                 "version": GO_VERSION,
                 "version_output": f"go version go{GO_VERSION}",
             },
@@ -1229,6 +1230,8 @@ def test_setup_source_treats_lock_and_checksum_verifier_as_authoritative() -> No
     script = SETUP_SCRIPT.read_text(encoding="utf-8")
     lock = json.loads(LOCK_PATH.read_text(encoding="utf-8"))
     serialized_values = json.dumps(lock)
+    # Synthetic portability fixtures do not expand the production target set.
+    assert "linux_arm64" not in lock["toolchains"]["go"]["platform_artifacts"]
 
     for toolchain in ("node", "go"):
         artifact = lock["toolchains"][toolchain]["platform_artifacts"][
