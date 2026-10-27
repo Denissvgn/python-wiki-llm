@@ -97,7 +97,9 @@ def test_release_cache_is_opt_in_hash_checked_and_never_an_installed_environment
 def test_probe_proves_all_cases_and_reserves_cache_service_writes_for_manual_runs():
     value = workflow("dependency-setup-check.yml")
     events = value.get("on", value.get(True))
-    assert set(events) == {"pull_request", "workflow_dispatch"}
+    assert set(events) == {"workflow_call", "workflow_dispatch"}
+    caller = workflow("ci.yml")["jobs"]["dependency-controls"]
+    assert caller["if"] == "${{ needs.plan.outputs.dependency-controls == 'true' }}"
     assert value["permissions"] == {"contents": "read"}
     jobs = value["jobs"]
     controls = jobs["controls"]

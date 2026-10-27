@@ -1279,7 +1279,12 @@ def test_setup_has_no_privileged_or_qualification_only_dependency_surface() -> N
     ci = (ROOT / ".github" / "workflows" / "ci.yml").read_text(
         encoding="utf-8"
     )
-    assert "ghc" not in ci.lower()
+    import yaml
+    job = yaml.safe_load(ci)["jobs"]["test"]
+    ghc = next(step for step in job["steps"] if step.get("name") == "Install selected locked haskell compiler")
+    assert ghc["if"] == "${{ matrix.haskell }}"
+    assert "toolchains.haskell.artifact" in ghc["run"]
+    assert 'test "$(uname -m)" = x86_64' in ghc["run"]
 
 
 def test_local_python_contract_is_project_virtualenv_only() -> None:

@@ -355,15 +355,14 @@ def test_early_selection_excludes_only_the_intrinsically_macos_case(host_platfor
 def test_ci_uses_shared_driver_without_replacing_full_producers():
     workflow = (ROOT / p.WORKFLOW).read_text()
     ci = (ROOT / ".github/workflows/ci.yml").read_text()
-    assert "${{ runner.temp }}/preflight-contracts/" in ci
+    assert "${{ runner.temp }}/preflight-contracts/" not in ci
     assert (
         "release/preflight_contracts.py check --repo ." in workflow
         and "release/preflight_contracts.py check --repo ." in ci
     )
-    assert (
-        "--repo . --group inventory --group defaults" in workflow
-        and "--repo . --group inventory --group defaults" in ci
-    )
+    assert "--repo . --group inventory --group defaults" in workflow
+    assert "--repo . --group inventory --group defaults" not in ci
+    assert "pr_ci.py run --root ." in ci
     assert "Run strict core suite with canonical coverage" in workflow
     assert "verify-qualification-completion" in workflow
     assert "qualified-release/" in workflow

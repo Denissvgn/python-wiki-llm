@@ -1,17 +1,6 @@
 # Nonqualifying native equivalence evidence; qualifying shards use separate receipts.
 name: Core shard shadow
 'on':
-  pull_request:
-    paths:
-    - .github/workflows/core-shard-shadow.yml
-    - release/core_shards.py
-    - release/core_shard_runner.py
-    - release/core-shard-timings.json
-    - release/qualification.py
-    - tests/test_core_shards.py
-    - tests/test_core_shard_runner.py
-    - tests/test_core_shard_workflow.py
-    - tests/xml_writer_fixtures.py
   workflow_dispatch:
     inputs:
       candidate-sha:

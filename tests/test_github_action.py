@@ -951,8 +951,10 @@ def test_selftest_workflow_is_valid_and_dogfoods_the_local_action() -> None:
     steps = jobs["repository-fixture"]["steps"]
 
     triggers = workflow[True]
-    assert triggers["push"]["branches"] == ["main"]
-    assert triggers["push"]["paths"] == triggers["pull_request"]["paths"]
+    assert set(triggers) == {"workflow_call", "workflow_dispatch"}
+    caller = _yaml(ROOT / ".github/workflows/ci.yml")["jobs"]["action"]
+    assert caller["uses"] == "./.github/workflows/action-selftest.yml"
+    assert caller["if"] == "${{ needs.plan.outputs.action == 'true' }}"
     assert workflow["concurrency"] == {
         "group": (
             "${{ github.workflow }}-${{ "

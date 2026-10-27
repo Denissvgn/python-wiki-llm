@@ -168,7 +168,8 @@
         "tests/test_release_workflows.py",
         "tests/test_preflight_contracts.py",
         "tests/test_dependency_setup_workflow.py",
-        "tests/test_core_shard_workflow.py"
+        "tests/test_core_shard_workflow.py",
+        "tests/test_pr_ci_workflow.py"
       ],
       "lanes": [
         "ubuntu"

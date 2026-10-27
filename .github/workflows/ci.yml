@@ -1,15 +1,21 @@
 name: CI
-
-on:
+'on':
   push:
-    branches: [main]
+    branches:
+    - main
   pull_request:
-    branches: [main]
-
+    branches:
+    - main
+    types:
+    - opened
+    - synchronize
+    - reopened
+    - edited
+permissions:
+  contents: read
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
-
 jobs:
   activation-proof:
     name: Release activation proof
@@ -55,181 +61,68 @@ jobs:
             echo 'Trusted verifier bootstrap or main CI; no activation PR was accepted.'
           fi
 
-  complete:
-    name: CI complete
-    if: always()
-    needs: [activation-proof, core-check-inputs, core-check-comparison, typecheck, test, mcp-sdk, wiki-integrity, p0-oci-integration]
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: read
-    steps:
-      - name: Set up gate Python
-        id: python
-        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
-        with:
-          python-version: "3.13"
-      - name: Create gate environment
-        run: '"${{ steps.python.outputs.python-path }}" -m venv .venv'
-      - name: Require every mandatory CI producer
-        env:
-          PRODUCERS: ${{ toJSON(needs) }}
-        run: |
-          .venv/bin/python -I - <<'PY'
-          import json, os
-          producers = json.loads(os.environ["PRODUCERS"])
-          optional = {"core-check-inputs"}
-          if producers["core-check-inputs"].get("outputs", {}).get("enabled") != "true":
-              optional.add("core-check-comparison")
-          failed = [name for name, value in producers.items()
-                    if value["result"] not in ({"success", "skipped"} if name in optional else {"success"})]
-          if failed:
-              raise SystemExit("Required CI producers did not succeed: " + ", ".join(failed))
-          PY
-
-  core-check-inputs:
-    name: Freeze core-check comparison inputs
-    if: ${{ github.event_name == 'pull_request' }}
+  plan:
+    name: Select affected PR contracts
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       contents: read
+      actions: read
+      pull-requests: read
     outputs:
-      enabled: ${{ steps.changes.outputs.enabled }}
-      inputs-sha256: ${{ steps.freeze.outputs.inputs-sha256 }}
+      plan-sha256: ${{ steps.select.outputs.plan-sha256 }}
+      policy-sha256: ${{ steps.select.outputs.policy-sha256 }}
+      has-tests: ${{ steps.select.outputs.has-tests }}
+      matrix: ${{ steps.select.outputs.matrix }}
+      typecheck: ${{ steps.select.outputs.typecheck }}
+      mcp-sdk: ${{ steps.select.outputs.mcp-sdk }}
+      p0-oci-integration: ${{ steps.select.outputs.p0-oci-integration }}
+      action: ${{ steps.select.outputs.action }}
+      dependency-controls: ${{ steps.select.outputs.dependency-controls }}
+      package: ${{ steps.select.outputs.package }}
+      core-check-inputs: ${{ steps.select.outputs.core-check-inputs }}
+      core-check-comparison: ${{ steps.select.outputs.core-check-comparison }}
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      - name: Detect core-check implementation changes
-        id: changes
-        env:
-          BASELINE_SHA: ${{ github.event.pull_request.base.sha }}
-        run: |
-          set -euo pipefail
-          git diff --name-only "${BASELINE_SHA}" HEAD -- \
-            .github/workflows/ci.yml release/core_check_performance.py \
-            tests/test_architecture_layers.py tests/python_source_inventory.py \
-            tests/test_python_source_inventory.py tests/test_public_docs_vocabulary.py \
-            tests/test_public_docs_performance.py tests/test_core_check_performance.py \
-            > core-check-changes.txt
-          if [[ -s core-check-changes.txt ]]; then
-            echo "enabled=true" >> "${GITHUB_OUTPUT}"
-          else
-            echo "enabled=false" >> "${GITHUB_OUTPUT}"
+    - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      with:
+        fetch-depth: 0
+        persist-credentials: false
+    - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+      id: python
+      with:
+        python-version: '3.13'
+    - name: Create planner environment
+      run: '"${{ steps.python.outputs.python-path }}" -m venv .venv'
+    - name: Load only the trusted base selection policy
+      env:
+        BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
+      run: |
+        set -euo pipefail
+        mkdir -p "${RUNNER_TEMP}/pr-ci"
+        for name in pr_ci.py pr_ci_pytest.py pr-ci-policy.json skip-allowlist.json hosted_evidence.py qualification.py toolchain-lock.json; do
+          if ! git cat-file -e "${BASE_SHA}:release/${name}"; then
+            echo "::error::Trusted base selection policy is missing. Land the reviewed policy bootstrap first; candidate policy is never executed as a fallback."
+            exit 2
           fi
-      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
-        if: ${{ steps.changes.outputs.enabled == 'true' }}
-        with:
-          python-version: "3.13"
-      - name: Freeze baseline policies and candidate inputs
-        id: freeze
-        if: ${{ steps.changes.outputs.enabled == 'true' }}
-        env:
-          BASELINE_SHA: ${{ github.event.pull_request.base.sha }}
-        run: >-
-          python -I release/core_check_performance.py freeze
-          --baseline "${BASELINE_SHA}" --candidate "${GITHUB_SHA}"
-          --output core-check-inputs
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: ${{ steps.changes.outputs.enabled == 'true' }}
-        with:
-          archive: true
-          name: core-check-inputs
-          path: core-check-inputs/
-          compression-level: 0
-          if-no-files-found: error
-          retention-days: 14
-
-  core-check-comparison:
-    name: Core-check comparison (${{ matrix.lane }})
-    needs: core-check-inputs
-    if: ${{ needs.core-check-inputs.outputs.enabled == 'true' }}
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 30
-    permissions:
-      contents: read
-    strategy:
-      fail-fast: false
-      max-parallel: 3
-      matrix:
-        include:
-          - lane: ubuntu-3.10
-            os: ubuntu-24.04
-            python: "3.10"
-            coverage: true
-          - lane: windows-3.13
-            os: windows-2025
-            python: "3.13"
-            coverage: false
-          - lane: macos-3.14
-            os: macos-15
-            python: "3.14"
-            coverage: false
-    defaults:
-      run:
-        shell: bash
-    steps:
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          digest-mismatch: error
-          name: core-check-inputs
-          path: incoming
-      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
-        with:
-          python-version: ${{ matrix.python }}
-      - name: Verify the frozen helper before execution
-        env:
-          INPUTS_SHA256: ${{ needs.core-check-inputs.outputs.inputs-sha256 }}
-        run: |
-          python -I -c 'import hashlib, json, pathlib, sys; root = pathlib.Path(sys.argv[1]); raw = (root / "inputs.json").read_bytes(); assert hashlib.sha256(raw).hexdigest() == sys.argv[2], "input manifest digest mismatch"; manifest = json.loads(raw); assert hashlib.sha256((root / "core_check_performance.py").read_bytes()).hexdigest() == manifest["files"]["core_check_performance.py"], "helper digest mismatch"' incoming "${INPUTS_SHA256}"
-          python -I incoming/core_check_performance.py prepare \
-            --inputs incoming --inputs-sha256 "${INPUTS_SHA256}" --work work
-          python -m venv .venv
-          if [[ "${RUNNER_OS}" == "Windows" ]]; then
-            echo "CORE_PYTHON=${PWD}/.venv/Scripts/python.exe" >> "${GITHUB_ENV}"
-          else
-            echo "CORE_PYTHON=${PWD}/.venv/bin/python" >> "${GITHUB_ENV}"
-          fi
-      - name: Install the candidate profile noneditably
-        run: '"${CORE_PYTHON}" -m pip install --no-cache-dir "./work/candidate[dev,tokens]"'
-      - name: Run affected assertions and mutation controls
-        working-directory: work/candidate
-        env:
-          LLM_WIKI_QUALIFICATION_SOURCE_ARCHIVE: ${{ github.workspace }}/incoming/candidate-source.tar
-          PYTHONUTF8: "1"
-          PYTHONIOENCODING: "utf-8"
-        run: >-
-          "${CORE_PYTHON}" -m pytest
-          tests/test_architecture_layers.py tests/test_static_quality_architecture.py
-          tests/test_python_source_inventory.py tests/test_public_docs_vocabulary.py
-          tests/test_public_docs_performance.py tests/test_core_check_performance.py
-          -q -p no:cacheprovider --strict-config --strict-markers -W error
-          -o xfail_strict=true --junitxml=../../core-check-controls.xml
-      - name: Compare policies on identical candidate inputs
-        env:
-          INPUTS_SHA256: ${{ needs.core-check-inputs.outputs.inputs-sha256 }}
-          COVERAGE: ${{ matrix.coverage }}
-          PYTHONUTF8: "1"
-          PYTHONIOENCODING: "utf-8"
-        run: |
-          coverage=()
-          if [[ "${COVERAGE}" == "true" ]]; then coverage=(--coverage); fi
-          "${CORE_PYTHON}" -I incoming/core_check_performance.py compare \
-            --inputs incoming --inputs-sha256 "${INPUTS_SHA256}" \
-            --work work --output comparison --samples 2 "${coverage[@]}"
-      - name: Retain comparison and failure evidence
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          archive: true
-          name: core-check-comparison-${{ matrix.lane }}
-          path: |
-            comparison/
-            core-check-controls.xml
-          if-no-files-found: warn
-          retention-days: 14
-
+          git show "${BASE_SHA}:release/${name}" > "${RUNNER_TEMP}/pr-ci/${name}"
+        done
+    - name: Bind selected checks to this exact candidate
+      id: select
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        .venv/bin/python -I "${RUNNER_TEMP}/pr-ci/pr_ci.py" plan \
+          --root . --event "${GITHUB_EVENT_PATH}" --candidate "${GITHUB_SHA}" \
+          --repository "${GITHUB_REPOSITORY}" --run-id "${GITHUB_RUN_ID}" \
+          --attempt "${GITHUB_RUN_ATTEMPT}" --output "${RUNNER_TEMP}/pr-ci/plan.json"
+    - name: Retain authenticated selection inputs
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        archive: true
+        name: pr-ci-plan-${{ github.run_attempt }}
+        path: ${{ runner.temp }}/pr-ci/
+        if-no-files-found: error
+        retention-days: 14
   typecheck:
     name: Python type checks
     runs-on: ubuntu-24.04
@@ -237,346 +130,169 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
-      - name: Set up qualification Python
-        id: python
-        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
-        with:
-          python-version: "3.13"
-      - name: Check shared local and hosted producer contracts
-        run: python -I release/preflight_contracts.py check --repo .
-      - name: Install release typing dependencies
-        run: |
-          python -m pip install ".[dev,mcp,tokens]"
-          python -m pip install --require-hashes --only-binary=:all: -r examples/fastapi-contracts/requirements-ci.txt
-          python -m pip install --require-hashes -r release/requirements.txt
-      - name: Run shared early preparation contracts
-        run: >-
-          python -I release/preflight_contracts.py groups
-          --repo . --group inventory --group defaults
-          --output "${RUNNER_TEMP}/preflight-contracts"
-      - name: Check the complete project type surface
-        shell: bash
-        run: >-
-          "${{ steps.python.outputs.python-path }}" -m pyright
-          --pythonpath "${{ steps.python.outputs.python-path }}"
-          | tee pyright.log
-      - name: Check the release lint scope
-        shell: bash
-        run: >-
-          "${{ steps.python.outputs.python-path }}" -m ruff check
-          src tests examples integrations/github-action/render_summary.py
-          release/preflight.py release/preflight_contracts.py release/preflight_runner.py
-          | tee ruff.log
-      - name: Upload typing diagnostics
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          archive: true
-          name: python-typecheck-${{ github.run_attempt }}
-          path: |
-            pyright.log
-            ruff.log
-            ${{ runner.temp }}/preflight-contracts/
-          if-no-files-found: warn
-          retention-days: 14
+    - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+    - name: Set up qualification Python
+      id: python
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+      with:
+        python-version: '3.13'
+    - name: Check shared local and hosted producer contracts
+      run: python -I release/preflight_contracts.py check --repo .
+    - name: Install release typing dependencies
+      run: |
+        python -m pip install ".[dev,mcp,tokens]"
+        python -m pip install --require-hashes --only-binary=:all: -r examples/fastapi-contracts/requirements-ci.txt
+        python -m pip install --require-hashes -r release/requirements.txt
+    - name: Check the complete project type surface
+      shell: bash
+      run: '"${{ steps.python.outputs.python-path }}" -m pyright --pythonpath "${{ steps.python.outputs.python-path
+        }}" | tee pyright.log'
+    - name: Check the release lint scope
+      shell: bash
+      run: '"${{ steps.python.outputs.python-path }}" -m ruff check src tests examples integrations/github-action/render_summary.py
+        release/preflight.py release/preflight_contracts.py release/preflight_runner.py release/pr_ci.py release/pr_ci_pytest.py
+        | tee ruff.log'
+    - name: Upload typing diagnostics
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        archive: true
+        name: python-typecheck-${{ github.run_attempt }}
+        path: |+
+          pyright.log
+          ruff.log
 
+        if-no-files-found: warn
+        retention-days: 14
+    needs: plan
+    if: ${{ needs.plan.outputs.typecheck == 'true' }}
   test:
-    name: test (${{ matrix.os }}, ${{ matrix.python-version }})
+    name: Selected tests (${{ matrix.lane }})
+    needs: plan
+    if: ${{ needs.plan.outputs.has-tests == 'true' }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - lane: core-ubuntu-3.10
-            os: ubuntu-24.04
-            python-version: "3.10"
-            coverage: true
-            package: true
-          - lane: core-windows-3.13
-            os: windows-2025
-            python-version: "3.13"
-            coverage: false
-            package: false
-          - lane: core-macos-3.14
-            os: macos-15
-            python-version: "3.14"
-            coverage: false
-            package: false
-
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    defaults:
+      run:
+        shell: bash
+    env:
+      PYTHONUTF8: '1'
+      PYTHONIOENCODING: utf-8
+      LLM_WIKI_REQUIRE_NATIVE_DIAGNOSTICS: ${{ (matrix.lane == 'toolchains' || matrix.typescript) && '1' || '' }}
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
-        with:
-          python-version: ${{ matrix.python-version }}
-          cache: pip
-          cache-dependency-path: pyproject.toml
-
-      - name: Install dependencies
-        run: python -m pip install -e ".[dev,tokens]"
-
-      - name: Verify scoped evidence repair on native Windows and Linux
-        id: scoped-evidence
-        if: ${{ matrix.lane == 'core-windows-3.13' || matrix.lane == 'core-ubuntu-3.10' }}
-        shell: bash
-        env:
-          LLM_WIKI_CACHE_DIR: ${{ runner.temp }}/scoped-evidence-helpers
-          LLM_WIKI_REQUIRE_NATIVE_DIAGNOSTICS: "1"
-          PYTHONUTF8: "1"
-          PYTHONIOENCODING: utf-8
-        run: |
-          set -euo pipefail
-          python -m llm_wiki_cli.cli prepare-extractors --src-dir . \
-            --language typescript --cache-dir "${LLM_WIKI_CACHE_DIR}"
-          python -m pytest -q \
-            tests/test_scoped_sync_repair.py tests/test_sync_guard_diagnostics.py \
-            tests/test_evidence_recovery_guidance.py tests/test_default_development_workflow.py \
-            -p no:cacheprovider --strict-config --strict-markers -W error -o xfail_strict=true \
-            --junitxml="${RUNNER_TEMP}/scoped-evidence-${{ matrix.lane }}.xml"
-          python -I release/qualification.py verify-junit \
-            --junit "${RUNNER_TEMP}/scoped-evidence-${{ matrix.lane }}.xml" \
-            --lane "scoped-evidence-${{ matrix.lane }}" --allowlist release/skip-allowlist.json \
-            --minimum-collected 146 --minimum-passed 146 \
-            --output "${RUNNER_TEMP}/scoped-evidence-${{ matrix.lane }}-result.json"
-
-      - name: Retain native scoped evidence repair results
-        if: ${{ always() && (steps.scoped-evidence.outcome == 'success' || steps.scoped-evidence.outcome == 'failure') }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          archive: true
-          name: native-scoped-evidence-${{ matrix.lane }}-${{ github.run_attempt }}
-          path: |
-            ${{ runner.temp }}/scoped-evidence-${{ matrix.lane }}.xml
-            ${{ runner.temp }}/scoped-evidence-${{ matrix.lane }}-result.json
-          if-no-files-found: error
-          retention-days: 14
-
-      - name: Verify JavaScript evidence on native Windows
-        id: javascript-evidence
-        if: ${{ matrix.lane == 'core-windows-3.13' }}
-        shell: bash
-        env:
-          LLM_WIKI_CACHE_DIR: ${{ runner.temp }}/javascript-evidence-helpers
-          PYTHONUTF8: "1"
-          PYTHONIOENCODING: utf-8
-        run: |
-          set -euo pipefail
-          python -m llm_wiki_cli.cli prepare-extractors --src-dir . \
-            --language typescript --cache-dir "${LLM_WIKI_CACHE_DIR}"
-          python -m pytest -q \
-            tests/test_ts_extract.py::test_unresolved_import_producer_consumer_contract \
-            tests/test_ts_extract.py::test_dynamic_import_gap_survives_bootstrap_sync_and_strict_gates \
-            tests/test_ts_extract.py::test_released_unknown_evidence_guarded_upgrade_and_refresh \
-            -p no:cacheprovider --strict-config --strict-markers -W error -o xfail_strict=true \
-            --junitxml="${RUNNER_TEMP}/javascript-evidence-windows.xml"
-          python -I release/qualification.py verify-junit \
-            --junit "${RUNNER_TEMP}/javascript-evidence-windows.xml" \
-            --lane javascript-evidence-windows --allowlist release/skip-allowlist.json \
-            --minimum-collected 8 --minimum-passed 8 \
-            --output "${RUNNER_TEMP}/javascript-evidence-windows-result.json"
-
-      - name: Upload native JavaScript evidence
-        if: ${{ always() && matrix.lane == 'core-windows-3.13' && steps.javascript-evidence.outcome != 'skipped' }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          archive: true
-          name: native-javascript-evidence-${{ github.run_attempt }}
-          path: |
-            ${{ runner.temp }}/javascript-evidence-windows.xml
-            ${{ runner.temp }}/javascript-evidence-windows-result.json
-          if-no-files-found: error
-          retention-days: 14
-
-      - name: Verify stdin harness inside a native Windows venv
-        id: stdio-venv
-        if: ${{ matrix.lane == 'core-windows-3.13' }}
-        timeout-minutes: 10
-        shell: bash
-        env:
-          PYTHONUTF8: "1"
-          PYTHONIOENCODING: "utf-8"
-        run: |
-          set -euo pipefail
-          python -m venv "${RUNNER_TEMP}/stdio-venv"
-          "${RUNNER_TEMP}/stdio-venv/Scripts/python.exe" -m pip install ".[dev]"
-          "${RUNNER_TEMP}/stdio-venv/Scripts/python.exe" -m pytest \
-            tests/test_readonly_subprocess_stdin.py -q \
-            -p no:cacheprovider --strict-config --strict-markers \
-            -W error -o xfail_strict=true \
-            --junitxml="${RUNNER_TEMP}/stdio-venv.xml" \
-            | tee "${RUNNER_TEMP}/stdio-venv.log"
-
-      - name: Upload native Windows venv probe evidence
-        if: ${{ always() && (steps.stdio-venv.outcome == 'success' || steps.stdio-venv.outcome == 'failure') }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          archive: true
-          name: native-windows-stdio-${{ github.run_attempt }}
-          path: |
-            ${{ runner.temp }}/stdio-venv.xml
-            ${{ runner.temp }}/stdio-venv.log
-          if-no-files-found: warn
-          retention-days: 14
-
-      - name: Check recursion coverage boundaries before the full Linux suite
-        id: coverage-boundary
-        if: ${{ matrix.coverage }}
-        env:
-          COVERAGE_FILE: ${{ runner.temp }}/coverage-recursion/coverage.data
-          COVERAGE_BOUNDARY_OUTPUT: ${{ runner.temp }}/coverage-recursion
-        run: |
-          mkdir -p "${COVERAGE_BOUNDARY_OUTPUT}"
-          python -m pytest \
-            tests/test_python_implementation.py::test_deep_owned_ast_has_iterative_declaration_walk_and_explicit_digest_gap \
-            -q -p no:cacheprovider --strict-config --strict-markers \
-            -W error -o xfail_strict=true --cov=llm_wiki_cli \
-            --cov-report= --cov-fail-under=0 \
-            --junitxml="${COVERAGE_BOUNDARY_OUTPUT}/junit.xml"
-          python -I - <<'PY'
-          import os, sys
-          from pathlib import Path
-          sys.path.insert(0, str(Path.cwd()))
-          from release import core_shard_runner as runner
-          package = (Path.cwd() / "src/llm_wiki_cli").resolve()
-          output = Path(os.environ["COVERAGE_BOUNDARY_OUTPUT"])
-          rows = runner.coverage_rows(output / "coverage.data", [package.as_posix()], runner.source_manifest(package))
-          runner.q.write_json(output / "source-boundary.json", {
-              "scope": "focused source probe; full native and hosted gates remain required",
-              "measured_files": len(rows), "source_root": package.as_posix(),
-          })
-          PY
-
-      - name: Retain native Linux coverage boundary evidence
-        if: ${{ always() && matrix.coverage && (steps.coverage-boundary.outcome == 'success' || steps.coverage-boundary.outcome == 'failure') }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          archive: true
-          name: native-linux-coverage-boundary-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/coverage-recursion/
-          if-no-files-found: warn
-          retention-days: 14
-
-      - name: Run strict suite with coverage
-        if: ${{ matrix.coverage }}
-        env:
-          PYTHONUTF8: "1"
-          PYTHONIOENCODING: "utf-8"
-        run: >-
-          python -m pytest tests -q
-          -p no:cacheprovider
-          --strict-config
-          --strict-markers
-          -W error
-          -o xfail_strict=true
-          --junitxml="junit-${{ matrix.lane }}.xml"
-          --cov=llm_wiki_cli
-          --cov-report=term-missing
-          --cov-fail-under=87
-
-      - name: Check release corrections on native Windows
-        id: native-corrections
-        if: ${{ matrix.lane == 'core-windows-3.13' }}
-        env:
-          PYTHONUTF8: "1"
-          PYTHONIOENCODING: "utf-8"
-        run: >-
-          python -m pytest tests/test_wiki_review_snapshot.py
-          tests/test_default_development_workflow.py
-          tests/test_current_install_defaults.py
-          tests/test_storage_lock_diagnostics.py
-          tests/test_real_caller_action_fixture.py
-          tests/test_scoped_sync_repair.py
-          tests/test_sync_guard_diagnostics.py
-          tests/test_preflight_contracts.py
-          tests/test_preflight_runner.py
-          tests/test_sync_runtime_regressions.py::test_wiki_only_commits_do_not_rewrite_repository_revision -q
-          -p no:cacheprovider --strict-config --strict-markers -W error
-          -o xfail_strict=true
-          --junitxml="${{ runner.temp }}/native-corrections.xml"
-
-      - name: Retain native Windows correction evidence
-        if: ${{ always() && (steps.native-corrections.outcome == 'success' || steps.native-corrections.outcome == 'failure') }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          archive: true
-          name: native-windows-corrections-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/native-corrections.xml
-          if-no-files-found: warn
-          retention-days: 14
-
-      - name: Run strict suite
-        if: ${{ !matrix.coverage }}
-        env:
-          PYTHONUTF8: "1"
-          PYTHONIOENCODING: "utf-8"
-        run: >-
-          python -m pytest tests -q
-          -p no:cacheprovider
-          --strict-config
-          --strict-markers
-          -W error
-          -o xfail_strict=true
-          --junitxml="junit-${{ matrix.lane }}.xml"
-
-      - name: Enforce exact skips and minimum inventory
-        run: >-
-          python -I release/qualification.py verify-junit
-          --junit "junit-${{ matrix.lane }}.xml"
-          --lane "${{ matrix.lane }}"
-          --allowlist release/skip-allowlist.json
-          --minimum-collected 5322
-          --minimum-passed 5070
-          --output "result-${{ matrix.lane }}.json"
-
-      - name: Check package builds
-        if: ${{ matrix.package }}
-        run: |
-          python -m pip install "build==1.5.0"
-          python -m build
-          python tests/verify_installed_knowledge_schema.py dist
-
-      - name: Verify installed provider artifacts on native Windows
-        id: provider-artifacts
-        if: ${{ matrix.lane == 'core-windows-3.13' }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          python -m pip install "build==1.5.0" "pyright==1.1.411"
-          python -m build --no-isolation --outdir "${RUNNER_TEMP}/provider-dist"
-          version="$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
-          python tests/run_provider_artifact_checks.py \
-            --artifacts "${RUNNER_TEMP}/provider-dist" \
-            --work "${RUNNER_TEMP}/provider-consumers" \
-            --output "${RUNNER_TEMP}/provider-evidence" \
-            --version "${version}"
-
-      - name: Upload native Windows provider evidence
-        if: >-
-          ${{ always() && matrix.lane == 'core-windows-3.13' &&
-              (steps.provider-artifacts.outcome == 'success' ||
-               steps.provider-artifacts.outcome == 'failure') }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          archive: true
-          name: native-windows-provider-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/provider-evidence
-          if-no-files-found: error
-          retention-days: 14
-
-      - name: Upload failed lane diagnostics
-        if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          archive: true
-          name: ci-diagnostics-${{ matrix.lane }}-${{ github.run_attempt }}
-          path: |
-            junit-${{ matrix.lane }}.xml
-            result-${{ matrix.lane }}.json
-          if-no-files-found: warn
-          retention-days: 14
-
+    - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      with:
+        persist-credentials: false
+    - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      with:
+        name: pr-ci-plan-${{ github.run_attempt }}
+        path: incoming/pr-ci
+        digest-mismatch: error
+    - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+      id: python
+      with:
+        python-version: ${{ matrix.python }}
+        cache: pip
+        cache-dependency-path: pyproject.toml
+    - name: Create isolated candidate environment
+      run: |
+        "${{ steps.python.outputs.python-path }}" -m venv .venv
+        if [[ "${RUNNER_OS}" == Windows ]]; then
+          echo "PR_CI_PYTHON=${PWD}/.venv/Scripts/python.exe" >> "${GITHUB_ENV}"
+        else
+          echo "PR_CI_PYTHON=${PWD}/.venv/bin/python" >> "${GITHUB_ENV}"
+        fi
+        echo "LLM_WIKI_CACHE_DIR=${RUNNER_TEMP}/pr-ci-helpers" >> "${GITHUB_ENV}"
+    - name: Install exact candidate noneditably
+      env:
+        PR_CI_PROFILE: ${{ matrix.profile }}
+      run: '"${PR_CI_PYTHON}" -m pip install ".[${PR_CI_PROFILE}]"'
+    - name: Set up selected Node runtime
+      if: ${{ matrix.typescript }}
+      uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+      with:
+        node-version: ${{ matrix.node-version }}
+        check-latest: false
+    - name: Set up selected Go runtime
+      if: ${{ matrix.go }}
+      uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e
+      with:
+        go-version: ${{ matrix.go-version }}
+        cache: false
+    - name: Install selected locked rust compiler
+      if: ${{ matrix.rust }}
+      run: |
+        set -euo pipefail
+        test "${RUNNER_OS}" = Linux
+        test "$(uname -m)" = x86_64
+        "${PR_CI_PYTHON}" -I incoming/pr-ci/qualification.py verify-download \
+          --lock incoming/pr-ci/toolchain-lock.json --key toolchains.rust.artifact --output "${RUNNER_TEMP}/pr-rust.tar.xz"
+        mkdir -p "${RUNNER_TEMP}/pr-rust-source" "${RUNNER_TEMP}/pr-rust"
+        tar -xJf "${RUNNER_TEMP}/pr-rust.tar.xz" -C "${RUNNER_TEMP}/pr-rust-source" --strip-components=1
+        "${RUNNER_TEMP}/pr-rust-source/install.sh" --prefix="${RUNNER_TEMP}/pr-rust" --disable-ldconfig
+        echo "${RUNNER_TEMP}/pr-rust/bin" >> "${GITHUB_PATH}"
+    - name: Install selected locked haskell compiler
+      if: ${{ matrix.haskell }}
+      run: |
+        set -euo pipefail
+        test "${RUNNER_OS}" = Linux
+        test "$(uname -m)" = x86_64
+        "${PR_CI_PYTHON}" -I incoming/pr-ci/qualification.py verify-download \
+          --lock incoming/pr-ci/toolchain-lock.json --key toolchains.haskell.artifact --output "${RUNNER_TEMP}/pr-ghc.tar.xz"
+        mkdir -p "${RUNNER_TEMP}/pr-ghc-source" "${RUNNER_TEMP}/pr-ghc"
+        tar -xJf "${RUNNER_TEMP}/pr-ghc.tar.xz" -C "${RUNNER_TEMP}/pr-ghc-source" --strip-components=1
+        (cd "${RUNNER_TEMP}/pr-ghc-source" && ./configure --prefix="${RUNNER_TEMP}/pr-ghc" && make install)
+        echo "${RUNNER_TEMP}/pr-ghc/bin" >> "${GITHUB_PATH}"
+    - name: Prepare only selected helper languages
+      env:
+        PLAN_SHA256: ${{ needs.plan.outputs.plan-sha256 }}
+        BASE_POLICY_SHA256: ${{ needs.plan.outputs.policy-sha256 }}
+        SELECTED_LANE: ${{ matrix.lane }}
+      run: |
+        "${PR_CI_PYTHON}" -I - <<'PY'
+        import hashlib, json, os, pathlib
+        root = pathlib.Path("incoming/pr-ci")
+        names = ("pr_ci.py", "pr_ci_pytest.py", "pr-ci-policy.json", "skip-allowlist.json", "hosted_evidence.py", "qualification.py", "toolchain-lock.json")
+        files = {name: hashlib.sha256((root / name).read_bytes()).hexdigest() for name in names}
+        identity = hashlib.sha256(json.dumps(files, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+        if identity != os.environ["BASE_POLICY_SHA256"] or hashlib.sha256((root / "plan.json").read_bytes()).hexdigest() != os.environ["PLAN_SHA256"]:
+            raise SystemExit("Base-owned selection driver or plan digest differs")
+        PY
+        "${PR_CI_PYTHON}" -I incoming/pr-ci/pr_ci.py prepare --root . \
+          --plan incoming/pr-ci/plan.json --expected-sha256 "${PLAN_SHA256}" \
+          --lane "${SELECTED_LANE}" --cache "${LLM_WIKI_CACHE_DIR}"
+    - name: Run and account for every selected case
+      env:
+        PLAN_SHA256: ${{ needs.plan.outputs.plan-sha256 }}
+        BASE_POLICY_SHA256: ${{ needs.plan.outputs.policy-sha256 }}
+        SELECTED_LANE: ${{ matrix.lane }}
+      run: |
+        "${PR_CI_PYTHON}" -I - <<'PY'
+        import hashlib, json, os, pathlib
+        root = pathlib.Path("incoming/pr-ci")
+        names = ("pr_ci.py", "pr_ci_pytest.py", "pr-ci-policy.json", "skip-allowlist.json", "hosted_evidence.py", "qualification.py", "toolchain-lock.json")
+        files = {name: hashlib.sha256((root / name).read_bytes()).hexdigest() for name in names}
+        identity = hashlib.sha256(json.dumps(files, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+        if identity != os.environ["BASE_POLICY_SHA256"] or hashlib.sha256((root / "plan.json").read_bytes()).hexdigest() != os.environ["PLAN_SHA256"]:
+            raise SystemExit("Base-owned selection driver or plan digest differs")
+        PY
+        "${PR_CI_PYTHON}" -I incoming/pr-ci/pr_ci.py run --root . \
+          --plan incoming/pr-ci/plan.json --expected-sha256 "${PLAN_SHA256}" \
+          --lane "${SELECTED_LANE}" --output "${RUNNER_TEMP}/pr-ci-evidence"
+    - name: Retain selected case evidence
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        archive: true
+        name: pr-ci-tests-${{ matrix.lane }}-${{ github.run_attempt }}
+        path: ${{ runner.temp }}/pr-ci-evidence/
+        if-no-files-found: error
+        retention-days: 14
   mcp-sdk:
     name: mcp-sdk (${{ matrix.python-version }})
     runs-on: ubuntu-24.04
@@ -584,65 +300,48 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - lane: mcp-3.10
-            python-version: "3.10"
-          - lane: mcp-3.13
-            python-version: "3.13"
-
+        - lane: mcp-3.10
+          python-version: '3.10'
+        - lane: mcp-3.13
+          python-version: '3.13'
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
-        with:
-          python-version: ${{ matrix.python-version }}
-          cache: pip
-          cache-dependency-path: pyproject.toml
-
-      - name: Install dependencies with the MCP SDK
-        run: python -m pip install -e ".[dev,mcp]"
-
-      - name: Run MCP SDK registration contract
-        env:
-          LLM_WIKI_REQUIRE_MCP_SDK: "1"
-          PYTHONUTF8: "1"
-          PYTHONIOENCODING: "utf-8"
-        run: >-
-          python -m pytest tests/test_mcp_sdk.py
-          tests/test_workflow_interfaces.py::test_real_sdk_preserves_single_counted_representation -q
-          tests/test_compact_delivery_interfaces.py::test_actual_mcp_sdk_content_carries_view_then_receipt_as_separate_transport
-          tests/test_developer_value_combined_interfaces.py::test_actual_sdk_combined_callers_compact_and_stale_custody
-          tests/test_task_compact_readable.py::test_actual_mcp_v2_metadata_toggle_keeps_qualifications_and_receipts
-          tests/test_owned_packet_recovery.py::test_registered_sdk_keeps_structured_authority_failure
-          -p no:cacheprovider
-          --strict-config
-          --strict-markers
-          -W error
-          -o xfail_strict=true
-          --junitxml="junit-${{ matrix.lane }}.xml"
-
-      - name: Enforce MCP SDK registration and canonical delivery
-        run: >-
-          python -I release/qualification.py verify-junit
-          --junit "junit-${{ matrix.lane }}.xml"
-          --lane "${{ matrix.lane }}"
-          --allowlist release/skip-allowlist.json
-          --minimum-collected 8
-          --minimum-passed 8
-          --output "result-${{ matrix.lane }}.json"
-
-      - name: Upload failed MCP diagnostics
-        if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          archive: true
-          name: ci-diagnostics-${{ matrix.lane }}-${{ github.run_attempt }}
-          path: |
-            junit-${{ matrix.lane }}.xml
-            result-${{ matrix.lane }}.json
-          if-no-files-found: warn
-          retention-days: 14
-
+    - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: pip
+        cache-dependency-path: pyproject.toml
+    - name: Install dependencies with the MCP SDK
+      run: python -m pip install -e ".[dev,mcp]"
+    - name: Run MCP SDK registration contract
+      env:
+        LLM_WIKI_REQUIRE_MCP_SDK: '1'
+        PYTHONUTF8: '1'
+        PYTHONIOENCODING: utf-8
+      run: python -m pytest tests/test_mcp_sdk.py tests/test_workflow_interfaces.py::test_real_sdk_preserves_single_counted_representation
+        -q tests/test_compact_delivery_interfaces.py::test_actual_mcp_sdk_content_carries_view_then_receipt_as_separate_transport
+        tests/test_developer_value_combined_interfaces.py::test_actual_sdk_combined_callers_compact_and_stale_custody
+        tests/test_task_compact_readable.py::test_actual_mcp_v2_metadata_toggle_keeps_qualifications_and_receipts
+        tests/test_owned_packet_recovery.py::test_registered_sdk_keeps_structured_authority_failure -p no:cacheprovider
+        --strict-config --strict-markers -W error -o xfail_strict=true --junitxml="junit-${{ matrix.lane }}.xml"
+    - name: Enforce MCP SDK registration and canonical delivery
+      run: python -I release/qualification.py verify-junit --junit "junit-${{ matrix.lane }}.xml" --lane "${{ matrix.lane
+        }}" --allowlist release/skip-allowlist.json --minimum-collected 8 --minimum-passed 8 --output "result-${{
+        matrix.lane }}.json"
+    - name: Upload failed MCP diagnostics
+      if: failure()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        archive: true
+        name: ci-diagnostics-${{ matrix.lane }}-${{ github.run_attempt }}
+        path: |
+          junit-${{ matrix.lane }}.xml
+          result-${{ matrix.lane }}.json
+        if-no-files-found: warn
+        retention-days: 14
+    needs: plan
+    if: ${{ needs.plan.outputs.mcp-sdk == 'true' }}
   wiki-integrity:
     name: LLM Wiki integrity
     runs-on: ubuntu-24.04
@@ -677,89 +376,318 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: read
-
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+    - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+    - name: Set up Python 3.13
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+      with:
+        python-version: '3.13'
+        cache: pip
+        cache-dependency-path: pyproject.toml
+    - name: Install focused test dependencies
+      run: python -m pip install -e ".[dev]"
+    - name: Build digest-pinned public synthetic OCI fixture
+      shell: bash
+      run: |
+        set -euo pipefail
 
-      - name: Set up Python 3.13
-        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
-        with:
-          python-version: "3.13"
-          cache: pip
-          cache-dependency-path: pyproject.toml
+        docker version
+        python_base_tag="python:3.13-alpine"
+        registry_tag="registry:2"
+        fixture_tag="localhost:5000/llm-wiki/p0-oci-fixture:ci"
+        registry_name="llm-wiki-p0-oci-registry"
 
-      - name: Install focused test dependencies
-        run: python -m pip install -e ".[dev]"
+        # One immutable public image carries separate fixed worker/probe modes,
+        # reducing the qualification supply chain without sharing role outputs.
+        docker pull "${python_base_tag}"
+        python_base_ref="$(docker image inspect \
+          --format='{{index .RepoDigests 0}}' "${python_base_tag}")"
+        case "${python_base_ref}" in
+          *@sha256:*) ;;
+          *) echo "Python fixture base is not digest pinned." >&2; exit 1 ;;
+        esac
 
-      - name: Build digest-pinned public synthetic OCI fixture
+        docker pull "${registry_tag}"
+        registry_ref="$(docker image inspect \
+          --format='{{index .RepoDigests 0}}' "${registry_tag}")"
+        case "${registry_ref}" in
+          *@sha256:*) ;;
+          *) echo "Local registry image is not digest pinned." >&2; exit 1 ;;
+        esac
+
+        cleanup_registry() {
+          docker rm --force "${registry_name}" >/dev/null 2>&1 || true
+        }
+        trap cleanup_registry EXIT
+        docker run --detach \
+          --publish 127.0.0.1:5000:5000 \
+          --name "${registry_name}" \
+          "${registry_ref}"
+
+        docker build \
+          --network=none \
+          --pull=false \
+          --build-arg "BASE_IMAGE=${python_base_ref}" \
+          --tag "${fixture_tag}" \
+          tests/fixtures/oci_calibration
+        docker push "${fixture_tag}"
+        docker pull "${fixture_tag}"
+        fixture_ref="$(docker image inspect \
+          --format='{{index .RepoDigests 0}}' "${fixture_tag}")"
+        case "${fixture_ref}" in
+          localhost:5000/llm-wiki/p0-oci-fixture@sha256:*) ;;
+          *) echo "Synthetic OCI fixture is not digest pinned." >&2; exit 1 ;;
+        esac
+
+        cleanup_registry
+        trap - EXIT
+
+        docker_executable="$(readlink -f "$(command -v docker)")"
+        {
+          echo "LLM_WIKI_OCI_DOCKER=${docker_executable}"
+          echo "LLM_WIKI_OCI_TEST_IMAGE=${fixture_ref}"
+        } >> "${GITHUB_ENV}"
+    - name: Run real no-egress broker qualification
+      env:
+        LLM_WIKI_RUN_OCI_INTEGRATION: '1'
+        PYTHONUTF8: '1'
+        PYTHONIOENCODING: utf-8
+      run: python -m pytest tests/test_documentation_calibration_oci_integration.py -m oci_integration -v
+    needs: plan
+    if: ${{ needs.plan.outputs.p0-oci-integration == 'true' }}
+  action:
+    needs: plan
+    if: ${{ needs.plan.outputs.action == 'true' }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/action-selftest.yml
+  dependency-controls:
+    needs: plan
+    if: ${{ needs.plan.outputs.dependency-controls == 'true' }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/dependency-setup-check.yml
+  package:
+    name: Selected package build and schema
+    needs: plan
+    if: ${{ needs.plan.outputs.package == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+    - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+    - name: Set up package Python 3.13
+      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+      with:
+        python-version: '3.13'
+        cache: pip
+        cache-dependency-path: pyproject.toml
+    - name: Install dependencies
+      run: python -m pip install -e ".[dev,tokens]"
+    - name: Check package builds
+      run: |
+        python -m pip install "build==1.5.0"
+        python -m build
+        python tests/verify_installed_knowledge_schema.py dist
+  core-check-inputs:
+    name: Freeze core-check comparison inputs
+    if: ${{ needs.plan.outputs.core-check-inputs == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    outputs:
+      enabled: ${{ steps.changes.outputs.enabled }}
+      inputs-sha256: ${{ steps.freeze.outputs.inputs-sha256 }}
+    steps:
+    - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      with:
+        fetch-depth: 0
+        persist-credentials: false
+    - name: Use the trusted affected-contract decision
+      id: changes
+      env:
+        BASELINE_SHA: ${{ github.event.pull_request.base.sha }}
+      run: echo "enabled=true" >> "${GITHUB_OUTPUT}"
+    - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+      if: ${{ steps.changes.outputs.enabled == 'true' }}
+      with:
+        python-version: '3.13'
+    - name: Freeze baseline policies and candidate inputs
+      id: freeze
+      if: ${{ steps.changes.outputs.enabled == 'true' }}
+      env:
+        BASELINE_SHA: ${{ github.event.pull_request.base.sha }}
+      run: python -I release/core_check_performance.py freeze --baseline "${BASELINE_SHA}" --candidate "${GITHUB_SHA}"
+        --output core-check-inputs
+    - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      if: ${{ steps.changes.outputs.enabled == 'true' }}
+      with:
+        archive: true
+        name: core-check-inputs
+        path: core-check-inputs/
+        compression-level: 0
+        if-no-files-found: error
+        retention-days: 14
+    needs: plan
+  core-check-comparison:
+    name: Core-check comparison (${{ matrix.lane }})
+    needs:
+    - plan
+    - core-check-inputs
+    if: ${{ needs.plan.outputs.core-check-comparison == 'true' }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        include:
+        - lane: ubuntu-3.10
+          os: ubuntu-24.04
+          python: '3.10'
+          coverage: true
+        - lane: windows-3.13
+          os: windows-2025
+          python: '3.13'
+          coverage: false
+        - lane: macos-3.14
+          os: macos-15
+          python: '3.14'
+          coverage: false
+    defaults:
+      run:
         shell: bash
-        run: |
-          set -euo pipefail
-
-          docker version
-          python_base_tag="python:3.13-alpine"
-          registry_tag="registry:2"
-          fixture_tag="localhost:5000/llm-wiki/p0-oci-fixture:ci"
-          registry_name="llm-wiki-p0-oci-registry"
-
-          # One immutable public image carries separate fixed worker/probe modes,
-          # reducing the qualification supply chain without sharing role outputs.
-          docker pull "${python_base_tag}"
-          python_base_ref="$(docker image inspect \
-            --format='{{index .RepoDigests 0}}' "${python_base_tag}")"
-          case "${python_base_ref}" in
-            *@sha256:*) ;;
-            *) echo "Python fixture base is not digest pinned." >&2; exit 1 ;;
-          esac
-
-          docker pull "${registry_tag}"
-          registry_ref="$(docker image inspect \
-            --format='{{index .RepoDigests 0}}' "${registry_tag}")"
-          case "${registry_ref}" in
-            *@sha256:*) ;;
-            *) echo "Local registry image is not digest pinned." >&2; exit 1 ;;
-          esac
-
-          cleanup_registry() {
-            docker rm --force "${registry_name}" >/dev/null 2>&1 || true
-          }
-          trap cleanup_registry EXIT
-          docker run --detach \
-            --publish 127.0.0.1:5000:5000 \
-            --name "${registry_name}" \
-            "${registry_ref}"
-
-          docker build \
-            --network=none \
-            --pull=false \
-            --build-arg "BASE_IMAGE=${python_base_ref}" \
-            --tag "${fixture_tag}" \
-            tests/fixtures/oci_calibration
-          docker push "${fixture_tag}"
-          docker pull "${fixture_tag}"
-          fixture_ref="$(docker image inspect \
-            --format='{{index .RepoDigests 0}}' "${fixture_tag}")"
-          case "${fixture_ref}" in
-            localhost:5000/llm-wiki/p0-oci-fixture@sha256:*) ;;
-            *) echo "Synthetic OCI fixture is not digest pinned." >&2; exit 1 ;;
-          esac
-
-          cleanup_registry
-          trap - EXIT
-
-          docker_executable="$(readlink -f "$(command -v docker)")"
-          {
-            echo "LLM_WIKI_OCI_DOCKER=${docker_executable}"
-            echo "LLM_WIKI_OCI_TEST_IMAGE=${fixture_ref}"
-          } >> "${GITHUB_ENV}"
-
-      - name: Run real no-egress broker qualification
-        env:
-          LLM_WIKI_RUN_OCI_INTEGRATION: "1"
-          PYTHONUTF8: "1"
-          PYTHONIOENCODING: "utf-8"
-        run: >-
-          python -m pytest
-          tests/test_documentation_calibration_oci_integration.py
-          -m oci_integration
-          -v
+    steps:
+    - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      with:
+        digest-mismatch: error
+        name: core-check-inputs
+        path: incoming
+    - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+      with:
+        python-version: ${{ matrix.python }}
+    - name: Verify the frozen helper before execution
+      env:
+        INPUTS_SHA256: ${{ needs.core-check-inputs.outputs.inputs-sha256 }}
+      run: |
+        python -I -c 'import hashlib, json, pathlib, sys; root = pathlib.Path(sys.argv[1]); raw = (root / "inputs.json").read_bytes(); assert hashlib.sha256(raw).hexdigest() == sys.argv[2], "input manifest digest mismatch"; manifest = json.loads(raw); assert hashlib.sha256((root / "core_check_performance.py").read_bytes()).hexdigest() == manifest["files"]["core_check_performance.py"], "helper digest mismatch"' incoming "${INPUTS_SHA256}"
+        python -I incoming/core_check_performance.py prepare \
+          --inputs incoming --inputs-sha256 "${INPUTS_SHA256}" --work work
+        python -m venv .venv
+        if [[ "${RUNNER_OS}" == "Windows" ]]; then
+          echo "CORE_PYTHON=${PWD}/.venv/Scripts/python.exe" >> "${GITHUB_ENV}"
+        else
+          echo "CORE_PYTHON=${PWD}/.venv/bin/python" >> "${GITHUB_ENV}"
+        fi
+    - name: Install the candidate profile noneditably
+      run: '"${CORE_PYTHON}" -m pip install --no-cache-dir "./work/candidate[dev,tokens]"'
+    - name: Run affected assertions and mutation controls
+      working-directory: work/candidate
+      env:
+        LLM_WIKI_QUALIFICATION_SOURCE_ARCHIVE: ${{ github.workspace }}/incoming/candidate-source.tar
+        PYTHONUTF8: '1'
+        PYTHONIOENCODING: utf-8
+      run: '"${CORE_PYTHON}" -m pytest tests/test_architecture_layers.py tests/test_static_quality_architecture.py
+        tests/test_python_source_inventory.py tests/test_public_docs_vocabulary.py tests/test_public_docs_performance.py
+        tests/test_core_check_performance.py -q -p no:cacheprovider --strict-config --strict-markers -W error -o
+        xfail_strict=true --junitxml=../../core-check-controls.xml'
+    - name: Compare policies on identical candidate inputs
+      env:
+        INPUTS_SHA256: ${{ needs.core-check-inputs.outputs.inputs-sha256 }}
+        COVERAGE: ${{ matrix.coverage }}
+        PYTHONUTF8: '1'
+        PYTHONIOENCODING: utf-8
+      run: |
+        coverage=()
+        if [[ "${COVERAGE}" == "true" ]]; then coverage=(--coverage); fi
+        "${CORE_PYTHON}" -I incoming/core_check_performance.py compare \
+          --inputs incoming --inputs-sha256 "${INPUTS_SHA256}" \
+          --work work --output comparison --samples 2 "${coverage[@]}"
+    - name: Retain comparison and failure evidence
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        archive: true
+        name: core-check-comparison-${{ matrix.lane }}
+        path: |
+          comparison/
+          core-check-controls.xml
+        if-no-files-found: warn
+        retention-days: 14
+  complete:
+    name: CI complete
+    if: always()
+    needs:
+    - activation-proof
+    - plan
+    - typecheck
+    - test
+    - mcp-sdk
+    - wiki-integrity
+    - p0-oci-integration
+    - action
+    - dependency-controls
+    - package
+    - core-check-inputs
+    - core-check-comparison
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    steps:
+    - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+      id: python
+      with:
+        python-version: '3.13'
+    - name: Create gate environment
+      run: '"${{ steps.python.outputs.python-path }}" -m venv .venv'
+    - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      with:
+        name: pr-ci-plan-${{ github.run_attempt }}
+        path: incoming/pr-ci
+        digest-mismatch: error
+    - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      if: ${{ needs.plan.outputs.has-tests == 'true' }}
+      with:
+        pattern: pr-ci-tests-*-${{ github.run_attempt }}
+        path: incoming/tests
+        digest-mismatch: error
+    - name: Require every selected producer and exact case owner
+      env:
+        PRODUCERS: ${{ toJSON(needs) }}
+        PLAN_SHA256: ${{ needs.plan.outputs.plan-sha256 }}
+        BASE_POLICY_SHA256: ${{ needs.plan.outputs.policy-sha256 }}
+        PR_CI_PYTHON: .venv/bin/python
+      run: |
+        "${PR_CI_PYTHON}" -I - <<'PY'
+        import hashlib, json, os, pathlib
+        root = pathlib.Path("incoming/pr-ci")
+        names = ("pr_ci.py", "pr_ci_pytest.py", "pr-ci-policy.json", "skip-allowlist.json", "hosted_evidence.py", "qualification.py", "toolchain-lock.json")
+        files = {name: hashlib.sha256((root / name).read_bytes()).hexdigest() for name in names}
+        identity = hashlib.sha256(json.dumps(files, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+        if identity != os.environ["BASE_POLICY_SHA256"] or hashlib.sha256((root / "plan.json").read_bytes()).hexdigest() != os.environ["PLAN_SHA256"]:
+            raise SystemExit("Base-owned selection driver or plan digest differs")
+        PY
+        set -euo pipefail
+        mkdir -p complete
+        .venv/bin/python -I - <<'PY'
+        import os, pathlib
+        pathlib.Path("producers.json").write_text(os.environ["PRODUCERS"], encoding="utf-8")
+        PY
+        .venv/bin/python -I incoming/pr-ci/pr_ci.py gate \
+          --plan incoming/pr-ci/plan.json --expected-sha256 "${PLAN_SHA256}" \
+          --needs producers.json --reports incoming/tests --output complete/complete.json
+        cp incoming/pr-ci/plan.json complete/plan.json
+    - name: Retain nonqualifying aggregate
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        archive: true
+        name: pr-ci-complete-${{ github.run_attempt }}
+        path: complete/
+        if-no-files-found: error
+        retention-days: 90

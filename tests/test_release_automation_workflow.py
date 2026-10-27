@@ -73,5 +73,7 @@ def test_required_ci_gates_validate_data_without_executing_proposals():
     complete = jobs["complete"]
     assert complete["name"] == "CI complete" and complete["if"] == "always()"
     assert set(complete["needs"]) == set(jobs) - {"complete"}
-    gate = next(step for step in complete["steps"] if step.get("name") == "Require every mandatory CI producer")
-    assert 'value["result"]' in gate["run"] and "raise SystemExit" in gate["run"]
+    gate = next(step for step in complete["steps"] if step.get("name") == "Require every selected producer and exact case owner")
+    assert "pr_ci.py gate" in gate["run"] and "--needs producers.json" in gate["run"]
+    assert "BASE_POLICY_SHA256" in gate["env"]
+    assert "Base-owned selection driver or plan digest differs" in gate["run"]
