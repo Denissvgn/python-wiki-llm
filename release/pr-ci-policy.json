@@ -640,6 +640,20 @@
       "groups": [
         "haskell"
       ]
+    },
+    {
+      "paths": [
+        ".github/scripts/setup-llm-wiki-ci-toolchains.sh",
+        "release/qualification.py",
+        "release/toolchain-lock.json",
+        ".github/workflows/action-selftest.yml",
+        "tests/provider_conformance/**",
+        "tests/fixtures/context-health-action/source/**",
+        "pyproject.toml"
+      ],
+      "groups": [
+        "hosted-action"
+      ]
     }
   ],
   "owners": {
@@ -713,5 +727,6 @@
       "typescript"
     ]
   },
-  "always": []
+  "always": [],
+  "revision": 1
 }

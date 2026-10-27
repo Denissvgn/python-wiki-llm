@@ -21,6 +21,7 @@ ROOT = Path(__file__).parents[1]
 def policy():
     return {
         "schema": ci.SCHEMA,
+        "revision": 1,
         "always": [],
         "groups": {
             "python": {
@@ -513,6 +514,18 @@ def test_policy_has_no_missing_or_arbitrary_execution_targets():
             assert (ROOT / ci.selector(selected).split("::")[0]).is_file()
     assert "typecheck" in policy["groups"]["ci-policy"]["jobs"]
     assert policy["groups"]["typescript"]["helpers"] == ["typescript"]
+
+
+@pytest.mark.parametrize("revision", [None, True, 0, 2])
+def test_unadmitted_bootstrap_policy_revision_is_refused(tmp_path, revision):
+    value = json.loads((ROOT / "release/pr-ci-policy.json").read_text())
+    if revision is None:
+        value.pop("revision")
+    else:
+        value["revision"] = revision
+    (tmp_path / "pr-ci-policy.json").write_text(json.dumps(value))
+    with pytest.raises(ci.SelectionError, match="trusted selection policy"):
+        ci.policy_load(tmp_path)
 
 
 def test_actual_cli_executes_and_replays_only_selected_native_cases(

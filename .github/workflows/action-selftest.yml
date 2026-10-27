@@ -10,7 +10,7 @@ on:
         required: true
         default: "63c8fa7b264610b57f0f1e24c9327eb92d8b0819"
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: context-health-action-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:

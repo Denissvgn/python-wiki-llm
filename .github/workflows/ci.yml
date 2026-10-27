@@ -106,6 +106,12 @@ jobs:
           fi
           git show "${BASE_SHA}:release/${name}" > "${RUNNER_TEMP}/pr-ci/${name}"
         done
+        .venv/bin/python -I - "${RUNNER_TEMP}/pr-ci/pr-ci-policy.json" <<'PY'
+        import json, pathlib, sys
+        registry = json.loads(pathlib.Path(sys.argv[1]).read_bytes())
+        if type(registry.get("revision")) is not int or registry["revision"] != 1:
+            raise SystemExit("Trusted base policy revision is not admitted; review the complete bootstrap first")
+        PY
     - name: Bind selected checks to this exact candidate
       id: select
       env:

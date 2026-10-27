@@ -256,8 +256,10 @@ def policy_load(directory: Path) -> dict:
     value = read_json(directory / "pr-ci-policy.json")
     require(
         isinstance(value, dict)
-        and set(value) == {"schema", "groups", "rules", "owners", "always"}
-        and value["schema"] == SCHEMA,
+        and set(value) == {"schema", "revision", "groups", "rules", "owners", "always"}
+        and value["schema"] == SCHEMA
+        and type(value["revision"]) is int
+        and value["revision"] == 1,
         "invalid trusted selection policy",
     )
     require(

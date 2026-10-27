@@ -51,6 +51,10 @@ def test_base_policy_is_loaded_without_a_candidate_bootstrap_or_write_token():
     )
     assert "git show HEAD:" not in load["run"]
     assert (
+        'registry.get("revision")' in load["run"]
+        and 'registry["revision"] != 1' in load["run"]
+    )
+    assert (
         json.loads((ROOT / "release/automation.json").read_text())["enabled"] is False
     )
 
@@ -98,6 +102,10 @@ def test_expensive_supplementary_workflows_cannot_duplicate_pr_and_main_runs():
         caller = workflow("ci.yml")["jobs"][key]
         assert caller["needs"] == "plan"
         assert caller["if"] == "${{ needs.plan.outputs." + key + " == 'true' }}"
+        assert "github.workflow" not in value["concurrency"]["group"]
+        assert (
+            value["concurrency"]["group"] != workflow("ci.yml")["concurrency"]["group"]
+        )
     shadow = workflow("core-shard-shadow.yml")
     assert set(shadow.get("on", shadow.get(True))) == {"workflow_dispatch"}
 
@@ -137,3 +145,37 @@ def test_full_native_release_and_new_native_evidence_are_still_required():
         "smoke-parity",
     ):
         assert name in jobs["bundle"]["needs"]
+
+
+def test_shared_action_dependencies_retain_their_required_consumer():
+    policy = json.loads((ROOT / "release/pr-ci-policy.json").read_text())
+    assert type(policy["revision"]) is int and policy["revision"] == 1
+    for path in [
+        ".github/scripts/setup-llm-wiki-ci-toolchains.sh",
+        "release/qualification.py",
+        "release/toolchain-lock.json",
+        ".github/workflows/action-selftest.yml",
+        "pyproject.toml",
+    ]:
+        assert any(
+            path in rule["paths"] and "hosted-action" in rule["groups"]
+            for rule in policy["rules"]
+        )
+
+
+def test_new_controller_is_in_both_pr_and_full_release_lint_scopes():
+    from release import static_checks
+    import sys
+
+    checks = static_checks.default_checks(ROOT, ROOT / "unused-evidence")
+    command = next(check.command for check in checks if check.name == "ruff")
+    assert command[:2] == (sys.executable, "-m")
+    assert {"release/pr_ci.py", "release/pr_ci_pytest.py"} <= set(command)
+    lint = next(
+        s
+        for s in workflow("ci.yml")["jobs"]["typecheck"]["steps"]
+        if s.get("name") == "Check the release lint scope"
+    )
+    assert all(
+        path in lint["run"] for path in ["release/pr_ci.py", "release/pr_ci_pytest.py"]
+    )
