@@ -2918,13 +2918,21 @@ class DocumentationGraphQueryService:
         }
 
         classes_by_name: dict[str, list[dict[str, Any]]] = defaultdict(list)
+        classes_by_route: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
         for ref in self.classes:
             name = ref.get("name")
             if isinstance(name, str) and name:
                 classes_by_name[name].append(ref)
+                filepath = ref.get("file")
+                if isinstance(filepath, str):
+                    classes_by_route[(filepath, name)].append(ref)
         self._classes_by_name = {
             name: tuple(sorted(records, key=_record_sort_key))
             for name, records in classes_by_name.items()
+        }
+        self._classes_by_route = {
+            route: tuple(sorted(records, key=_record_sort_key))
+            for route, records in classes_by_route.items()
         }
 
         def flow_index(
@@ -3046,9 +3054,21 @@ class DocumentationGraphQueryService:
             return []
         return list(self._callables_by_route.get((filepath, raw_symbol), ()))
 
+    def _class_matches(self, query: str) -> list[dict[str, Any]]:
+        matches = self._classes_by_name.get(query, ())
+        if matches:
+            return list(matches)
+        if ":" not in query:
+            return []
+        raw_file, _, raw_name = query.partition(":")
+        filepath = _normalise_source_path(raw_file, field="symbol file", required=False)
+        if not filepath or not raw_name:
+            return []
+        return list(self._classes_by_route.get((filepath, raw_name), ()))
+
     def _symbol_matches(self, query: str) -> list[dict[str, Any]]:
         callables = self._callable_matches(query)
-        classes = list(self._classes_by_name.get(query, ()))
+        classes = self._class_matches(query)
         return sorted(callables + classes, key=_record_sort_key)
 
     def _flow_matches(

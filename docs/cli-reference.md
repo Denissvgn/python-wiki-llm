@@ -1609,7 +1609,14 @@ and load order. It also exposes direct page tools including `get_flow(flow_id)` 
 Use `query_graph({"type": "callers", "value": "run", "limit": 20})` for
 bounded graph queries; supported types are `flow_for_entrypoint`,
 `data_flow_for_entrypoint`, `callers`, `callees`, `dependency_neighborhood`,
-and `pages_for_symbol`. Bounded query collections expose exact
+and `pages_for_symbol`. Class lookups support the same source-qualified route as
+callables, such as `{"type": "pages_for_symbol", "value": "src/models.py:Item"}`.
+The source path and class name must match exactly. Names shared by files and
+callable/class collisions remain ambiguous. Repeated class declarations retain
+the existing graph's file/name identity. Missing or invalid source routes do not
+fall back to another file. Related pages retain their source identity and
+existing bounds.
+Bounded query collections expose exact
 `bounds.<response-path>` totals, returned counts, and truncation. Context
 payloads, lint summaries, and status
 information report the same canonical surfaces. HTTP mode is intended for local

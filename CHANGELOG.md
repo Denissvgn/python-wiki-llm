@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Symbol page lookup accepts source-qualified class names while retaining
+  ambiguity for duplicate definitions and existing callable lookup behavior.
+
 - Reviews of changes excluded by configured source selection disclose their
   limited scope before unrelated extraction, while mixed changes retain full
   source and helper checks.
