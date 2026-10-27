@@ -209,3 +209,11 @@ flowchart LR
 ## Behavior
 
 This flow starts at `pages_for_symbol` and is classified as `api`. The generated call and data-flow sections are bounded static projections; runtime conditions and side effects require source-level confirmation.
+
+Accepts a symbol name or an exact source-relative file:symbol route. Class and
+callable routes share normalization and bounded selection; cross-file names
+and callable/class collisions remain ambiguous. Repeated class declarations
+use the existing graph file/name identity. Returned pages and native concept
+references retain the selected source owner. Reusing a supplied service
+performs no new extraction; constructing a live service retains its existing
+full-inventory requirements.

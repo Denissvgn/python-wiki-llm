@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [prepare_extractors_cmd](../modules/prepare_extractors_cmd.md)
-**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [extractor_helpers](../modules/extractor_helpers.md), [filesystem_guard](../modules/filesystem_guard.md), and 6 more
+**Modules touched:** [common](../modules/common.md), [config](../modules/config.md), [extractor_helpers](../modules/extractor_helpers.md), [filesystem_guard](../modules/filesystem_guard.md), and 8 more
 
 **Complete modules touched:**
 
@@ -12,9 +12,11 @@
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [helper_preparation](../modules/helper_preparation.md)
 - [io](../modules/io.md)
+- [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [prepare_extractors_cmd](../modules/prepare_extractors_cmd.md)
 - [source_selection](../modules/source_selection.md)
 - [source_snapshot](../modules/source_snapshot.md)
+- [typescript_helper_identity](../modules/typescript_helper_identity.md)
 - [validation](../modules/validation.md)
 
 ## Call sequence
@@ -87,9 +89,9 @@ sequenceDiagram
     p0-->>p30: results.append(result)
 ```
 
-> Call sequence diagram shows 30 of 994 interactions; 964 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1071 interactions; 1041 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 335 (334 omitted); unresolved 1 of 297 (296 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 372 (371 omitted); unresolved 1 of 320 (319 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -103,7 +105,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_path` | 16 | - | external | 2 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 15 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 15 | - | external | 11 |
-> Omission summary shows 8 of 268 groups; 260 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 289 groups; 281 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -233,3 +235,9 @@ resolves the helper cache, builds or installs bundled artifacts, and reports
 each result. Failed toolchain or filesystem operations include recovery hints
 and cause an unsuccessful exit. After recovery, callers retry their original
 analysis command with its source selection and helper cache intact.
+
+Uses a source-bound plan or an explicit language request as distinct admission
+routes. TypeScript preparation publishes the complete dependency-tree receipt
+and a separate cache key; legacy receipts remain diagnosable and old roots are
+retained. Read-only lookup never installs or migrates helpers, and active Node
+runtime identity remains independently checked.

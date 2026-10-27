@@ -9,6 +9,12 @@
 
 Read-only graph query service over already-derived documentation payloads.
 
+Source-qualified symbol coverage selects the graph class for an exact
+source-relative file/name pair. It does not guess a page locator or an
+occurrence identity. Unqualified cross-file names and callable/class
+collisions retain ambiguity, and page references preserve the selected source
+owner. Query identity, result-byte and collection bounds remain in force.
+
 ## Attributes
 
 *No annotated attributes found.*
@@ -63,6 +69,7 @@ Read-only graph query service over already-derived documentation payloads.
 | `_dependency_edges` | `() -> list[tuple[str, str]]` | — | — |
 | `_raw_function_links` | `() -> tuple[dict[tuple[object, object], list[dict[str, Any]]], dict[tuple[object, object], list[dict[str, Any]]]]` | — | — |
 | `_callable_matches` | `(query: str) -> list[dict[str, Any]]` | — | — |
+| `_class_matches` | `(query: str) -> list[dict[str, Any]]` | — | — |
 | `_symbol_matches` | `(query: str) -> list[dict[str, Any]]` | — | — |
 | `_flow_matches` | `(query: str, index: Mapping[str, Sequence[dict[str, Any]]]) -> list[dict[str, Any]]` | — | — |
 | `_selection_result` | `(query: str, matches: Sequence[Mapping[str, Any]], payload_key: str, empty_payload: object) -> dict[str, Any]` | — | — |
@@ -122,7 +129,7 @@ flowchart LR
 
 | Module | Methods | Attributes |
 |---|---:|---|
-| [documentation_queries](../modules/documentation_queries.md) | 55 | — |
+| [documentation_queries](../modules/documentation_queries.md) | 56 | — |
 
 ### References
 

@@ -13,6 +13,12 @@ GitHub output is limited to fifty annotations and the Markdown summary to
 64 KiB, with omissions recorded. Integrity and API compatibility verdicts remain
 separate checks.
 
+Excluded-only impact carries an explicit review_scope and not-evaluated
+dependency/contract bases; empty arrays do not establish no impact or accurate
+wiki coverage. Mixed and selected requests retain full inventory/graph
+requirements. Scope counts, bounded metadata rows and source-snapshot cost
+remain distinct from findings and annotation bounds.
+
 ## Imports
 
 | Source | Symbols |

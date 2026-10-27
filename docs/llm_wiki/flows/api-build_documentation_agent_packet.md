@@ -161,8 +161,8 @@ flowchart LR
 | Kind | Target | Step | Line |
 |---|---|---|---:|
 | filesystem_read | `before_path.read_bytes` | `build_documentation_agent_packet` | 166 |
-| filesystem_read | `attempt_packet_path.read_bytes` | `build_documentation_agent_packet` | 295 |
-| filesystem_read | `run_path.read_bytes` | `build_documentation_agent_packet` | 299 |
+| filesystem_read | `attempt_packet_path.read_bytes` | `build_documentation_agent_packet` | 296 |
+| filesystem_read | `run_path.read_bytes` | `build_documentation_agent_packet` | 300 |
 
 ### Static analysis gaps
 

@@ -3282,3 +3282,26 @@ Build and development tooling use patched Setuptools 84.1.0 while retaining Pyth
 - Pages deprecated: 0
 - Semantic fields preserved: 180
 - Moved entities: none
+
+## 2026-10-27
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:45b01492a924732bc994fda3e671209cc289b854c837a39bec7c022d14a2bed1`
+- Pages created: 1
+- Pages updated: 51
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1571
+- Pages deprecated: 0
+- Semantic fields preserved: 5
+- Moved entities: none
+## 2026-10-27: Qualified symbol coverage and native ownership
+
+Source-qualified class queries retain exact file ownership and legacy ambiguity.
+Review preflight exposes excluded and unknown scope before unrelated extraction.
+TypeScript helper identity covers its complete prepared dependency tree, while
+documentation ownership reports distinguish declared roles from byte custody.
+Existing permissions, validation bounds and native authority remain separate.

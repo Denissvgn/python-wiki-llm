@@ -12,6 +12,15 @@ reports candidate coverage. Missing sources retain known page mappings or
 explicitly unknown former coverage, with follow-up appropriate to deletion or
 rename.
 
+A configured excluded-only request returns bounded physical, selection and
+not-evaluated inventory observations before deep extraction or graph/wiki
+impact work. Source discovery and content capture still cover the full
+configured snapshot. Mixed, selected, empty, boundary-changing and
+unclassifiable requests retain full inventory/helper requirements; an
+available inventory cannot turn unknown selection into an empty review
+success. Metadata probes are bounded and do not read excluded file bodies or
+follow unsafe paths.
+
 ## Imports
 
 | Source | Symbols |
@@ -19,12 +28,12 @@ rename.
 | `..config` | `DEFAULT_WIKI_DIR` |
 | `..extractors.common` | `LANGUAGE_EXTENSIONS` |
 | `.bootstrap_runtime` | `build_entity_occurrence_page_map`, `build_entity_page_map`, `build_module_page_map` |
-| `.change_selection` | `_git`, `affected_page_map`, `patch_paths`, `select_changes`, `source_relative_paths` |
+| `.change_selection` | `_git`, `affected_page_map`, `patch_paths`, `portable_path`, `select_changes`, `source_relative_paths` |
 | `.entrypoints` | `get_entry_points`, `read_console_scripts` |
-| `.extraction_service` | `filter_source_diff`, `get_inventory_result` |
+| `.extraction_service` | `_snapshot_path_is_selection_input`, `filter_source_diff`, `get_inventory_result` |
 | `.plugins` | `runtime_plugin_fallback_root`, `runtime_project_plugins_enabled` |
-| `.source_selection` | `resolve_source_selection`, `validate_persisted_source_selection_identity` |
-| `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs` |
+| `.source_selection` | `SourceSelectionError`, `resolve_source_selection`, `validate_persisted_source_selection_identity` |
+| `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot`, `capture_source_selection_inputs`, `source_snapshot_matches_current_files` |
 | `.sync_manifest` | `SyncManifest` |
 | `.wiki_surface` | `PageKind`, `collect_wiki_pages` |
 | `.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `WIKI_SURFACE_INDEX_SCHEMA_VERSION`, `build_surface_index` |
@@ -32,6 +41,7 @@ rename.
 | `dataclasses` | `dataclass` |
 | `json` | `json` |
 | `pathlib` | `Path` |
+| `stat` | `stat` |
 
 ## Local dependency map
 
@@ -60,13 +70,16 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ReviewFinding](../entities/ReviewFinding.md) | 80 | — | — |
-| [ReviewAnalysis](../entities/ReviewAnalysis.md) | 89 | — | — |
+| [ReviewFinding](../entities/ReviewFinding.md) | 90 | — | — |
+| [ReviewAnalysis](../entities/ReviewAnalysis.md) | 99 | — | — |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
+| `_review_physical_state` | `(root: Path, path: str) -> str` | — | Observe bounded metadata only, stopping before unsafe ancestors. |
+| `_review_scope_preflight` | `(snapshot: SourceSnapshot, requested: dict, selected: dict) -> dict \| None` | — | Describe configured selection separately from physical/inventory state. |
+| `_review_scope_findings` | `(scope: dict \| None) -> list[ReviewFinding]` | — | — |
 | `_changed_paths` | `(diff_text: str) -> list[str]` | — | — |
 | `_added_imports_by_file` | `(diff_text: str) -> dict[str, list[str]]` | — | — |
 | `_is_dependency_path` | `(path: str) -> bool` | — | — |

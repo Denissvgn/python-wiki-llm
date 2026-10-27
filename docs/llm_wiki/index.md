@@ -7,7 +7,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 | Surface | Count | Start here |
 |---|---:|---|
 | Entities | 672 | [Open section](#entities) |
-| Modules | 253 | [Open section](#modules) |
+| Modules | 254 | [Open section](#modules) |
 | Workflows | 229 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 466 | [Open section](#entry-point-flows) |
@@ -929,6 +929,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [token_counting](modules/token_counting.md) - Trusted host counters. No repository-discovered code or network loading.
 - [trigger_cmd](modules/trigger_cmd.md) - `src/llm_wiki_cli/commands/trigger_cmd.py`
 - [ts_extractor](modules/ts_extractor.md) - TypeScript AST extractor for agent-wiki-cli.
+- [typescript_helper_identity](modules/typescript_helper_identity.md) - Bounded observations of the complete prepared TypeScript dependency tree.
 - [uninstall_cmd](modules/uninstall_cmd.md) - `src/llm_wiki_cli/commands/uninstall_cmd.py`
 - [upgrade_cmd](modules/upgrade_cmd.md) - llm-wiki upgrade — refresh all framework-managed artifacts in place.
 - [validation](modules/validation.md) - Shared, side-effect-free validators for service-layer contracts.

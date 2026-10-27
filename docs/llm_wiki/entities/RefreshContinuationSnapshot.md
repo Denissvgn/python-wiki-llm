@@ -1,6 +1,6 @@
 # _RefreshContinuationSnapshot
 
-**Location:** `src/llm_wiki_cli/services/documentation_run/contracts.py:914`
+**Location:** `src/llm_wiki_cli/services/documentation_run/contracts.py:974`
 **Kind:** Class
 **Bases:** —
 **Module:** [documentation_run_contracts](../modules/documentation_run_contracts.md)

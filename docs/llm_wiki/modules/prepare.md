@@ -6,6 +6,12 @@
 
 Documentation-run prepare services.
 
+Baseline ownership evidence records coverage separately from the unchanged
+fingerprint map and binds the complete evidence bytes in the run anchors.
+Presence, full native validity and ordinary review remain separate checks;
+preparing a documentation workspace grants no additional native edit
+authority.
+
 ## Imports
 
 | Source | Symbols |

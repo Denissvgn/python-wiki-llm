@@ -1,6 +1,6 @@
 # DocumentationIntegrityError
 
-**Location:** `src/llm_wiki_cli/services/documentation_run/contracts.py:247`
+**Location:** `src/llm_wiki_cli/services/documentation_run/contracts.py:307`
 **Kind:** Class
 **Bases:** `DocumentationRunError`
 **Module:** [documentation_run_contracts](../modules/documentation_run_contracts.md)

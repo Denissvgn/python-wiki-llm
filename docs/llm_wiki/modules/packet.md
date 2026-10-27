@@ -6,6 +6,12 @@
 
 Documentation-run packet services.
 
+Worker packets explicitly forbid edits to ordinary authority markers and
+immutable storage as well as existing generated structures. Supervisor
+verification describes the limited root-file/generated-section fingerprint
+scope. These disclosures do not broaden permitted writes or the packet/result
+contracts.
+
 ## Imports
 
 | Source | Symbols |

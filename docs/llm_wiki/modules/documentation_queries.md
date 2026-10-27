@@ -18,6 +18,15 @@ captured source/producer metadata where available, and retains provenance gaps.
 Description and hint use the existing bounded evidence envelope; they never
 repair the snapshot or turn an unknown basis into current evidence.
 
+Symbol coverage resolves class names through an exact source-file/name index
+as well as the existing unqualified index. Source-qualified class and callable
+routes share the portable relative-path contract and retain case-sensitive
+identities. Cross-file names and callable/class collisions remain ambiguous;
+repeated class declarations retain the existing graph file/name identity.
+Related pages stay bound to the selected source. Reusing an already-built
+service adds no query-time I/O or extraction; constructing a live service
+retains its full inventory cost.
+
 ## Imports
 
 | Source | Symbols |

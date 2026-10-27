@@ -1,6 +1,6 @@
 # ReviewFinding
 
-**Location:** `src/llm_wiki_cli/services/review_service.py:80`
+**Location:** `src/llm_wiki_cli/services/review_service.py:90`
 **Kind:** Class
 **Bases:** —
 **Module:** [review_service](../modules/review_service.md)
@@ -33,17 +33,20 @@ flowchart LR
     n0["ReviewFinding (src/llm_wiki_cli/services/review_service.py)"]
     n1["render_json (src/llm_wiki_cli/commands/review_cmd.py)"]
     n2["render_markdown (src/llm_wiki_cli/commands/review_cmd.py)"]
-    n3["build_analysis (src/llm_wiki_cli/services/review_service.py)"]
-    n4["build_findings (src/llm_wiki_cli/services/review_service.py)"]
+    n3["_review_scope_findings (src/llm_wiki_cli/services/review_service.py)"]
+    n4["build_analysis (src/llm_wiki_cli/services/review_service.py)"]
+    n5["build_findings (src/llm_wiki_cli/services/review_service.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
+    n5 --> n0
     click n0 "../modules/review_service.md"
     click n1 "../modules/review_cmd.md"
     click n2 "../modules/review_cmd.md"
     click n3 "../modules/review_service.md"
     click n4 "../modules/review_service.md"
+    click n5 "../modules/review_service.md"
 ```
 
 ### Summary
@@ -58,5 +61,7 @@ flowchart LR
 |---|---|---|---:|
 | `render_json` | type_reference | [review_cmd](../modules/review_cmd.md) | — |
 | `render_markdown` | type_reference | [review_cmd](../modules/review_cmd.md) | — |
+| `_review_scope_findings` | call | [review_service](../modules/review_service.md) | 1 |
+| `_review_scope_findings` | type_reference | [review_service](../modules/review_service.md) | — |
 | `build_analysis` | call | [review_service](../modules/review_service.md) | 6 |
 | `build_findings` | type_reference | [review_service](../modules/review_service.md) | — |

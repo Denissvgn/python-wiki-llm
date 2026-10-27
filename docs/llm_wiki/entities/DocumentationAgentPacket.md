@@ -1,6 +1,6 @@
 # DocumentationAgentPacket
 
-**Location:** `src/llm_wiki_cli/services/documentation_run/contracts.py:741`
+**Location:** `src/llm_wiki_cli/services/documentation_run/contracts.py:801`
 **Kind:** Class
 **Bases:** —
 **Module:** [documentation_run_contracts](../modules/documentation_run_contracts.md)

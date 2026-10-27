@@ -6,6 +6,12 @@
 
 Documentation-run refresh services.
 
+Refresh reports distinguish generated roots, authority markers and immutable
+content-addressed storage. Coverage declares omitted byte custody and excluded
+rollback rather than treating a role map as full protection. Existing root
+rollback stays unchanged; native writers own new immutable objects and
+preserved history, with independent full native validation still required.
+
 ## Imports
 
 | Source | Symbols |

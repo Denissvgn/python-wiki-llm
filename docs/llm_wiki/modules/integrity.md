@@ -6,6 +6,12 @@
 
 Documentation-run integrity services.
 
+Generated-ownership fingerprints retain their legacy root-file and
+generated-Markdown scope. New anchored evidence may add an exact coverage
+declaration; old fingerprint-only evidence remains readable. Authority markers
+and immutable objects still require their separate native guards and audits,
+and are not decoded or hashed by this inventory.
+
 ## Imports
 
 | Source | Symbols |
@@ -46,7 +52,7 @@ flowchart LR
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `capture_generated_ownership` | `(wiki_root: str \| Path) -> dict[str, str]` | — | Fingerprint CLI-owned JSON files and generated Markdown sections. |
+| `capture_generated_ownership` | `(wiki_root: str \| Path) -> dict[str, str]` | — | Fingerprint five root files and generated Markdown sections only. |
 | `compare_generated_ownership` | `(baseline: Mapping[str, str], wiki_root: str \| Path) -> dict[str, list[str]]` | — | — |
 | `_export_documentation_skills` | `(workspace_root: Path) -> list[dict[str, Any]]` | — | — |
 | `_initial_readiness_ledger` | `(run_id: str, worklist: Mapping[str, Any]) -> dict[str, Any]` | — | — |

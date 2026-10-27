@@ -1,6 +1,6 @@
 # HelperPrepareResult
 
-**Location:** `src/llm_wiki_cli/services/extractor_helpers.py:50`
+**Location:** `src/llm_wiki_cli/services/extractor_helpers.py:53`
 **Kind:** Class
 **Bases:** —
 **Module:** [extractor_helpers](../modules/extractor_helpers.md)
@@ -74,7 +74,7 @@ flowchart LR
 | `prepare_helper` | type_reference | [extractor_helpers](../modules/extractor_helpers.md) | — |
 | `prepare_rust` | call | [extractor_helpers](../modules/extractor_helpers.md) | 6 |
 | `prepare_rust` | type_reference | [extractor_helpers](../modules/extractor_helpers.md) | — |
-| `prepare_typescript` | call | [extractor_helpers](../modules/extractor_helpers.md) | 9 |
+| `prepare_typescript` | call | [extractor_helpers](../modules/extractor_helpers.md) | 11 |
 | `prepare_typescript` | type_reference | [extractor_helpers](../modules/extractor_helpers.md) | — |
 
 > References: showing 12 of 13 logical references; 1 omitted by the 12-row generated summary limit.
