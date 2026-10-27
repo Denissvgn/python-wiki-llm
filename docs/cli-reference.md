@@ -1825,6 +1825,20 @@ the controller refreshes the native projection and re-anchors generated
 ownership before later validation or dispatch; workers never edit or report
 those generated files as their own changes.
 
+Generated ownership evidence includes a `coverage` disclosure alongside the
+legacy `fingerprints` map. It hashes five root files (manifest, surface,
+knowledge, governance and verification) when present, plus generated Markdown
+sections. The disclosure also names the ordinary maintenance adoption marker
+and immutable manifest objects, knowledge objects, packs, pack indexes and index
+pages, which this inventory does not fingerprint or include in root-file rollback.
+These roles describe custody;
+they do not establish that an artifact exists or has passed validation.
+Native readers and the maintenance owner guard retain their separate validation
+obligations, including ordinary pending and acknowledged review history.
+Workers may not create, change, remove or replace these native paths. The
+controller publishes new content-addressed objects through the native writers;
+the inventory grants no additional write, deletion or review authority.
+
 Preparation also writes a priority-blind calibration flow census and an
 evidence-only current-versus-candidate shadow under `.llm-wiki-docs/evidence/`.
 They preserve source citations, detector/language provenance, route,

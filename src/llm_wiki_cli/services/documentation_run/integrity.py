@@ -8,7 +8,12 @@ from .schema import *
 from .workspace import *
 
 def capture_generated_ownership(wiki_root: str | Path) -> dict[str, str]:
-    """Fingerprint CLI-owned JSON files and generated Markdown sections."""
+    """Fingerprint five root files and generated Markdown sections only.
+
+    The legacy string-to-hash map excludes ordinary authority markers and
+    immutable storage objects. Persisted ownership evidence separately describes
+    these custody limits; this function is not a complete native storage audit.
+    """
 
     root = Path(wiki_root).expanduser().resolve()
     fingerprints: dict[str, str] = {}
@@ -612,10 +617,20 @@ def _verify_initial_integrity_anchors(
     generated_payload = _read_json(generated_path)
     _require_exact_fields(
         generated_payload,
-        allowed={"fingerprints"},
+        allowed={"fingerprints", "coverage"},
         required={"fingerprints"},
         label="anchored generated ownership",
     )
+    # Legacy evidence has only fingerprints. New declarations are descriptive,
+    # not caller-provided authority to widen the fingerprint or write scope.
+    if "coverage" in generated_payload and (
+        not isinstance(generated_payload["coverage"], dict)
+        or _sha256_json(generated_payload["coverage"])
+        != _sha256_json(_native_ownership_coverage())
+    ):
+        raise DocumentationIntegrityError(
+            "Anchored generated ownership coverage differs from its declared scope."
+        )
     fingerprints = generated_payload.get("fingerprints")
     if not isinstance(fingerprints, Mapping) or any(
         not isinstance(key, str)

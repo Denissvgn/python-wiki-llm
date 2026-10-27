@@ -135,6 +135,8 @@ _GENERATED_MARKER = "Auto-generated"
 
 _DO_NOT_EDIT_MARKER = "Do not edit by hand"
 
+# Whole-file fingerprint and root rollback scope, not complete native custody.
+# Dynamic immutable objects must stay outside this root-file transaction.
 _NATIVE_ARTIFACT_PATHS = frozenset(
     {
         ".llm-wiki-manifest.json",
@@ -148,6 +150,64 @@ _NATIVE_ARTIFACT_PATHS = frozenset(
 _NATIVE_REFRESH_MUTABLE_PATHS = _NATIVE_ARTIFACT_PATHS - {
     VERIFICATION_RECEIPT_FILENAME
 }
+
+
+def _native_ownership_coverage() -> dict[str, Any]:
+    """Describe the fixed inventory scope without inspecting or granting custody."""
+
+    return {
+        "schema_version": "llm-wiki-documentation-ownership-coverage/v1",
+        "complete_native_custody": False,
+        "presence_evaluated": False,
+        "fingerprints": {
+            "root_files": sorted(_NATIVE_ARTIFACT_PATHS),
+            "markdown": "generated-sections-only",
+        },
+        "omitted": {
+            ".llm-wiki-maintenance-adoption.json": {
+                "classification": "immutable-ordinary-authority-marker",
+                "owner": "ordinary-maintenance-owner",
+                "supervisor_action": "retain-only",
+                "fingerprinted": False,
+                "root_rollback": False,
+                "validation": "separate-maintenance-owner-guard",
+            },
+            ".llm-wiki-manifest/objects": {
+                "classification": "immutable-content-addressed-storage",
+                "owner": "native-manifest-writer",
+                "supervisor_action": "publish-new-objects-through-native-writer-only",
+                "fingerprinted": False,
+                "root_rollback": False,
+                "validation": "separate-full-native-storage-audit",
+                "authority": "may-contain-ordinary-owner-and-pending-or-acknowledged-history",
+            },
+            **{
+                directory: {
+                    "classification": "immutable-content-addressed-storage",
+                    "owner": "native-knowledge-writer",
+                    "supervisor_action": "publish-new-objects-through-native-writer-only",
+                    "fingerprinted": False,
+                    "root_rollback": False,
+                    "validation": "separate-full-native-storage-audit",
+                    "decoding": "native-storage-reader-only",
+                }
+                for directory in (
+                    ".llm-wiki-knowledge/objects",
+                    ".llm-wiki-knowledge/packs",
+                    ".llm-wiki-knowledge/pack-index",
+                    ".llm-wiki-knowledge/index-pages",
+                )
+            },
+        },
+        "worker_native_writes": "forbidden-including-omitted-paths",
+        "limitations": [
+            "Role declarations do not establish artifact presence or validity.",
+            "Root fingerprints do not fingerprint immutable object bytes.",
+            "Root rollback does not restore or remove immutable objects or authority markers.",
+            "Full native validation and ordinary review remain separate obligations.",
+        ],
+    }
+
 
 _MAX_BUILDER_LOG_BYTES = 10_000
 
@@ -1053,6 +1113,7 @@ __all__ = (
     '_DO_NOT_EDIT_MARKER',
     '_NATIVE_ARTIFACT_PATHS',
     '_NATIVE_REFRESH_MUTABLE_PATHS',
+    '_native_ownership_coverage',
     '_MAX_BUILDER_LOG_BYTES',
     '_PACKET_FORBIDDEN_FIELDS',
     '_PACKET_FORBIDDEN_KEY_SUFFIXES',

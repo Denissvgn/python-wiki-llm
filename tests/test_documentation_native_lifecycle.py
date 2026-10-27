@@ -341,7 +341,11 @@ def test_source_backed_prepare_owns_a_valid_native_trio(tmp_path: Path) -> None:
     assert refresh["freshness_evaluated"] is True
     assert set(refresh["artifacts"]) == {"surface", "knowledge", "manifest"}
     assert refresh["ownership_after"] == ownership["fingerprints"]
-    assert set(refresh["artifact_ownership"]) == PROTECTED_NATIVE_ARTIFACTS
+    assert set(refresh["artifact_ownership"]) == PROTECTED_NATIVE_ARTIFACTS | {
+        ADOPTION_FILENAME, ".llm-wiki-manifest/objects", ".llm-wiki-knowledge/objects",
+        ".llm-wiki-knowledge/packs", ".llm-wiki-knowledge/pack-index",
+        ".llm-wiki-knowledge/index-pages",
+    }
     assert refresh["governance_reconciliation"]["status"] == "not-adopted"
     assert refresh["verification_receipt"]["status"] == "absent"
     assert refresh["verification_receipt"]["policy"] == "retain-and-limit"

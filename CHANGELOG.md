@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Documentation ownership reports disclose ordinary authority markers and
+  immutable storage outside the root-file fingerprint and rollback inventory,
+  while preserving native write restrictions and legacy evidence.
+
 - Release coordination reads authenticated final qualification bundles through
   a dedicated bounded reader while retaining source and producer artifact limits.
 

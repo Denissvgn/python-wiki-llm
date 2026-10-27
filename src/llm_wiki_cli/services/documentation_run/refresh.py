@@ -333,7 +333,10 @@ def _refresh_and_reanchor_native_projection(
             phase=phase,
             payload=refresh_payload,
         )
-        _write_json(ownership_path, {"fingerprints": ownership_after})
+        _write_json(
+            ownership_path,
+            {"fingerprints": ownership_after, "coverage": _native_ownership_coverage()},
+        )
         run.evidence["native_refresh"] = refresh_path.relative_to(
             workspace_root
         ).as_posix()
@@ -472,6 +475,7 @@ def _native_refresh_payload(
         ),
         "ownership_before": dict(sorted(ownership_before.items())),
         "ownership_after": dict(sorted(ownership_after.items())),
+        "ownership_coverage": _native_ownership_coverage(),
         "artifact_ownership": {
             ".llm-wiki-manifest.json": {
                 "classification": "generated-projection",
@@ -495,6 +499,7 @@ def _native_refresh_payload(
                 "owner": "application-checker",
                 "supervisor_action": "retain-and-evaluate-only",
             },
+            **_native_ownership_coverage()["omitted"],
         },
         "governance_reconciliation": _native_artifact_transition(
             ownership_before,
