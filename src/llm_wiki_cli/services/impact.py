@@ -43,12 +43,20 @@ def build_impact(
         helper_cache_dir=helper_cache_dir,
     )
     paths = analysis.changes["paths"]
-    graph = build_dependency_graph(
-        analysis.inventory,
-        project_root=src_dir,
-        source_snapshot=analysis.source_snapshot,
+    excluded_only = (
+        analysis.review_scope is not None
+        and analysis.review_scope["status"] == "excluded-only"
     )
-    contracts = build_static_api_contracts(analysis.inventory)
+    if excluded_only:
+        graph = {"edges": [], "unresolved": []}
+        contracts = {"operations": [], "diagnostics": []}
+    else:
+        graph = build_dependency_graph(
+            analysis.inventory,
+            project_root=src_dir,
+            source_snapshot=analysis.source_snapshot,
+        )
+        contracts = build_static_api_contracts(analysis.inventory)
     operations = [
         operation
         for operation in contracts.get("operations", [])
@@ -59,10 +67,19 @@ def build_impact(
     except ValueError:
         prefix = ""
     findings = []
+    scope_gap_paths = {
+        row["path"]
+        for row in (analysis.review_scope or {}).get("paths", [])
+        if row["selection"] in {"excluded", "unavailable"}
+    }
     for finding in analysis.findings:
         value = asdict(finding)
         value["annotation_path"] = prefix + finding.source_path
-        value["basis"] = "candidate-source-and-wiki-coverage"
+        value["basis"] = (
+            "source-selection-preflight"
+            if finding.source_path in scope_gap_paths
+            else "candidate-source-and-wiki-coverage"
+        )
         findings.append(value)
     payload = {
         "schema_version": IMPACT_SCHEMA,
@@ -75,7 +92,9 @@ def build_impact(
         ),
         "page_mapping": analysis.page_mapping,
         "dependencies": {
-            "basis": "candidate-static-imports",
+            "basis": "not-evaluated-excluded-only"
+            if excluded_only
+            else "candidate-static-imports",
             "manifests": sorted(path for path in paths if _is_dependency_path(path)),
             "edges": [
                 {"from": source, "to": target}
@@ -87,7 +106,9 @@ def build_impact(
             ],
         },
         "contracts": {
-            "basis": "candidate-static-fastapi",
+            "basis": "not-evaluated-excluded-only"
+            if excluded_only
+            else "candidate-static-fastapi",
             "operations": operations,
             "diagnostics": contracts.get("diagnostics", []),
         },
@@ -105,6 +126,9 @@ def build_impact(
             }
         },
     }
+    if analysis.review_scope is not None:
+        payload["review_scope"] = analysis.review_scope
+        payload["limitations"].extend(analysis.review_scope["limitations"])
     if not source_snapshot_matches_current_files(analysis.source_snapshot):
         raise ValueError(
             "Source changed while computing impact; retry with a stable checkout"
@@ -129,17 +153,32 @@ def _cell(value, limit=512):
 
 def render_summary(impact: dict) -> str:
     findings = impact["findings"]
+    scope = impact.get("review_scope")
+    excluded_only = scope is not None and scope["status"] == "excluded-only"
     lines = [
         "# LLM Wiki change impact",
         "",
         "Advisory review; integrity status is reported separately.",
         "",
-        f"Changed paths: {len(impact['changes']['paths'])}. Directly affected pages: {len(impact['affected_pages'])}.",
-        f"Dependency edges: {len(impact['dependencies']['edges'])}. Known API operations: {len(impact['contracts']['operations'])}.",
+        (
+            f"Requested changed paths: {scope['counts']['requested']}; all excluded by configured source selection."
+            if scope is not None and excluded_only
+            else f"Changed paths: {len(impact['changes']['paths'])}. Directly affected pages: {len(impact['affected_pages'])}."
+        ),
+        (
+            "Native impact, dependencies, API contracts and wiki coverage were not evaluated; empty results do not establish no impact."
+            if excluded_only
+            else f"Dependency edges: {len(impact['dependencies']['edges'])}. Known API operations: {len(impact['contracts']['operations'])}."
+        ),
         "",
         "| Severity | Source | Related pages | Follow-up |",
         "|---|---|---|---|",
     ]
+    if scope is not None:
+        lines[4:4] = [
+            f"Review scope: {scope['status']}. Full selected source discovery/content capture performed; full extraction inventory performed: {str(scope['cost']['full_inventory_performed']).lower()}.",
+            "",
+        ]
     shown = 0
     for finding in findings[:ANNOTATION_LIMIT]:
         row = (

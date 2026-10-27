@@ -2310,6 +2310,22 @@ user-flow pages, workflow pages, infrastructure notes, and dependency/load-order
 architecture pages all count as relevant review coverage when they describe the
 changed code or dependency relationship.
 
+When configured source selection excludes every requested changed path, review
+reports that exclusion before deep extraction or unrelated helper requirements.
+It distinguishes physical file metadata, selection and an extraction inventory
+that was not evaluated. Native impact and wiki accuracy remain unknown; empty
+impact arrays do not establish that a change has no effect. The configured
+source snapshot is still discovered and captured, so this is not a narrow
+filesystem scan. Metadata disclosure is bounded to 100 paths and 32 source-relative
+components, with exact omission counts and no excluded file-content reads.
+
+Mixed changes, selected paths and selection-control changes retain the full
+inventory and applicable helper requirements. Helpers are never prepared and
+source selection is never overridden implicitly. For configured selection,
+`impact-json` adds `review_scope` with path states, scope counts and actual
+inventory cost; plain review retains its existing JSON envelope and finding
+fields. Metadata limitations do not change path admission or extraction bounds.
+
 `impact-json` returns the stable `llm-wiki-impact/v1` payload, with direct
 source-to-page mappings, candidate dependency edges and manifests, static
 FastAPI operations, findings, limitations, and an impact identity. Equivalent

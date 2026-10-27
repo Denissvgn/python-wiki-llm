@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import stat
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -13,13 +14,18 @@ from .bootstrap_runtime import (
     build_entity_page_map,
     build_module_page_map,
 )
-from .extraction_service import filter_source_diff, get_inventory_result
+from .extraction_service import (
+    _snapshot_path_is_selection_input,
+    filter_source_diff,
+    get_inventory_result,
+)
 from .entrypoints import get_entry_points, read_console_scripts
 from .plugins import (
     runtime_plugin_fallback_root,
     runtime_project_plugins_enabled,
 )
 from .source_selection import (
+    SourceSelectionError,
     resolve_source_selection,
     validate_persisted_source_selection_identity,
 )
@@ -27,6 +33,7 @@ from .source_snapshot import (
     SourceSnapshot,
     build_source_snapshot,
     capture_source_selection_inputs,
+    source_snapshot_matches_current_files,
 )
 from .sync_manifest import SyncManifest
 from .wiki_surface import PageKind, collect_wiki_pages
@@ -39,6 +46,7 @@ from .change_selection import (
     _git,
     affected_page_map,
     patch_paths,
+    portable_path,
     select_changes,
     source_relative_paths,
 )
@@ -74,6 +82,8 @@ _SYMBOL_REFERENCE_KINDS = {
     PageKind.DEPENDENCIES,
     PageKind.LOAD_ORDER,
 }
+_PREFLIGHT_PATH_LIMIT = 100
+_PREFLIGHT_COMPONENT_LIMIT = 32
 
 
 @dataclass
@@ -92,6 +102,172 @@ class ReviewAnalysis:
     page_mapping: dict[str, list[str]]
     inventory: dict
     source_snapshot: SourceSnapshot
+    review_scope: dict | None = None
+
+
+def _review_physical_state(root: Path, path: str) -> str:
+    """Observe bounded metadata only, stopping before unsafe ancestors."""
+
+    parts = Path(portable_path(path)).parts
+    if not parts:
+        return "unavailable"
+    if len(parts) > _PREFLIGHT_COMPONENT_LIMIT:
+        return "unavailable-depth-limit"
+    current = root
+    for index, part in enumerate(("", *parts)):
+        current = current / part
+        try:
+            inspected = current.lstat()
+        except FileNotFoundError:
+            return "missing" if index else "unavailable"
+        except OSError:
+            return "unavailable"
+        if (
+            stat.S_ISLNK(inspected.st_mode)
+            or getattr(inspected, "st_reparse_tag", 0)
+            or getattr(inspected, "st_file_attributes", 0) & 0x400
+        ):
+            return "unsafe-path"
+        if index < len(parts) and not stat.S_ISDIR(inspected.st_mode):
+            return "unavailable-nondirectory-ancestor"
+    if stat.S_ISREG(inspected.st_mode):
+        return "regular-file"
+    return "directory" if stat.S_ISDIR(inspected.st_mode) else "nonregular"
+
+
+def _review_scope_preflight(
+    snapshot: SourceSnapshot, requested: dict, selected: dict
+) -> dict | None:
+    """Describe configured selection separately from physical/inventory state."""
+
+    paths = requested["paths"]
+    if snapshot.source_selection_policy is None or not paths:
+        return None
+    selected_paths = set(selected["paths"])
+    classifications = {}
+    for path in paths:
+        if _snapshot_path_is_selection_input(snapshot, path):
+            classification = "selection-input"
+        elif path in selected_paths:
+            classification = "selected"
+        else:
+            try:
+                is_excluded = not snapshot.path_is_effectively_selected(path)
+            except SourceSelectionError:
+                is_excluded = False
+            classification = "excluded" if is_excluded else "unavailable"
+        classifications[path] = classification
+    excluded = sum(value == "excluded" for value in classifications.values())
+    unavailable = sum(value == "unavailable" for value in classifications.values())
+    boundary = selected["selection_boundary_changed"]
+    if boundary:
+        status = "selection-boundary-changed"
+    elif unavailable:
+        status = "selection-unavailable"
+    elif excluded == len(paths) and not selected_paths:
+        status = "excluded-only"
+    else:
+        status = "mixed" if excluded else "selected"
+    # Prioritize scope gaps so a mixed plain review also exposes its limits.
+    priority = {"excluded": 0, "unavailable": 1}
+    shown = sorted(paths, key=lambda path: (priority.get(classifications[path], 2), path))[
+        :_PREFLIGHT_PATH_LIMIT
+    ]
+    return {
+        "status": status,
+        "path_basis": "source-root",
+        "source_selection": snapshot.source_selection_identity,
+        "counts": {
+            "requested": len(paths),
+            "selected": sum(value == "selected" for value in classifications.values()),
+            "excluded": excluded,
+            "selection_unavailable": unavailable,
+            "selection_inputs": sum(
+                value == "selection-input" for value in classifications.values()
+            ),
+            "expanded_selected": len(selected_paths - set(paths)),
+        },
+        "paths": [
+            {
+                "path": path,
+                "physical": _review_physical_state(snapshot.root, path),
+                "selection": classifications[path],
+                "inventory": "not-evaluated",
+            }
+            for path in shown
+        ],
+        "cost": {
+            "preflight_scope": "bounded-path-metadata-only",
+            "source_snapshot_scope": "full-selected-discovery-and-content-capture",
+            "full_inventory_required": status != "excluded-only",
+            "full_inventory_performed": False,
+            "helper_preparation_performed": False,
+        },
+        "bounds": {
+            "paths": {
+                "total": len(paths),
+                "returned": len(shown),
+                "omitted": len(paths) - len(shown),
+            },
+            "physical_max_components": _PREFLIGHT_COMPONENT_LIMIT,
+            "excluded_content_reads": 0,
+        },
+        "limitations": [
+            "Exclusion does not establish file absence, no impact, or accurate wiki coverage.",
+            "Physical state is a preflight metadata observation, not a content or runtime check.",
+            "Configured source discovery and content capture still run; metadata rows do not bound that scan.",
+            "The excluded-content read count describes this metadata preflight, not subsequent full review of wiki pages.",
+        ],
+    }
+
+
+def _review_scope_findings(scope: dict | None) -> list[ReviewFinding]:
+    if scope is None:
+        return []
+    rows = [
+        row for row in scope["paths"] if row["selection"] in {"excluded", "unavailable"}
+    ]
+    findings = []
+    for row in rows:
+        if row["selection"] == "excluded":
+            intro = "Excluded by configured source selection; "
+            qualifier = "excluded"
+            follow_up = "Inspect the excluded change directly within its permitted scope; use selected paths for native review."
+        else:
+            intro = "Source selection could not classify this requested path; "
+            qualifier = "requested"
+            follow_up = "Resolve the source-selection diagnostic before relying on native impact for this path."
+        inventory = (
+            "extraction inventory not evaluated. "
+            if row["inventory"] == "not-evaluated"
+            else f"selected extraction inventory: {row['inventory']}. "
+        )
+        findings.append(
+            ReviewFinding(
+                severity="info",
+                source_path=row["path"],
+                wiki_pages=[],
+                reason=(
+                    intro
+                    + f"physical state: {row['physical']}; "
+                    + inventory
+                    + f"Native impact and wiki accuracy for this {qualifier} path remain unknown."
+                ),
+                suggested_follow_up=follow_up,
+            )
+        )
+    for classification, count_key, label in (
+        ("excluded", "excluded", "excluded"),
+        ("unavailable", "selection_unavailable", "unclassified"),
+    ):
+        omitted = scope["counts"][count_key] - sum(
+            row["selection"] == classification for row in rows
+        )
+        if findings and omitted:
+            findings[
+                -1
+            ].suggested_follow_up += f" {omitted} additional {label} changed paths omitted from this bounded disclosure."
+    return findings
 
 
 def _changed_paths(diff_text: str) -> list[str]:
@@ -394,16 +570,27 @@ def build_analysis(
         retained_roots=(wiki_path.as_posix(),),
         source_snapshot=source_snapshot,
     )
-    selected = select_changes(
+    requested = select_changes(
         src_dir,
         changes
         or {
             "mode": "paths",
             "paths": source_relative_paths(patch_changed, src_dir),
         },
-        snapshot=source_snapshot,
     )
+    selected = select_changes(
+        src_dir, {"mode": "paths", "paths": requested["paths"]}, snapshot=source_snapshot,
+    )
+    selected["request"] = requested["request"]
     changed = selected["paths"]
+    review_scope = _review_scope_preflight(source_snapshot, requested, selected)
+    if review_scope is not None and review_scope["status"] == "excluded-only":
+        if not source_snapshot_matches_current_files(source_snapshot):
+            raise ValueError("Source changed while computing review preflight; retry with a stable checkout")
+        return ReviewAnalysis(
+            _review_scope_findings(review_scope), selected, {}, {}, source_snapshot,
+            review_scope,
+        )
     try:
         repository_root = Path(
             _git(src_dir, "rev-parse", "--show-toplevel").rstrip("\n")
@@ -433,6 +620,10 @@ def build_analysis(
     if inventory_result.failed:
         raise ValueError("Source extraction failed while computing review impact")
     inventory = inventory_result.inventory
+    if review_scope is not None:
+        review_scope["cost"]["full_inventory_performed"] = True
+        for row in review_scope["paths"]:
+            row["inventory"] = "present" if row["path"] in inventory else "absent"
     module_page_map = build_module_page_map(inventory)
     entity_page_map = build_entity_page_map(inventory)
     entity_occurrence_page_map = build_entity_occurrence_page_map(
@@ -600,6 +791,7 @@ def build_analysis(
                 )
             )
 
+    findings.extend(_review_scope_findings(review_scope))
     findings.sort(
         key=lambda finding: (
             finding.source_path,
@@ -608,7 +800,7 @@ def build_analysis(
             finding.wiki_pages,
         )
     )
-    return ReviewAnalysis(findings, selected, page_map, inventory, source_snapshot)
+    return ReviewAnalysis(findings, selected, page_map, inventory, source_snapshot, review_scope)
 
 
 def build_findings(diff_text: str, **kwargs) -> list[ReviewFinding]:

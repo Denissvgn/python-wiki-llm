@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Reviews of changes excluded by configured source selection disclose their
+  limited scope before unrelated extraction, while mixed changes retain full
+  source and helper checks.
+
 - Documentation ownership reports disclose ordinary authority markers and
   immutable storage outside the root-file fingerprint and rollback inventory,
   while preserving native write restrictions and legacy evidence.
