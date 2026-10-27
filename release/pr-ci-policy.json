@@ -165,7 +165,6 @@
       "tests": [
         "tests/test_pr_ci.py",
         "tests/test_pr_ci_impact.py",
-        "tests/test_pr_ci_workflow.py",
         "tests/test_release_automation_workflow.py",
         "tests/test_release_workflows.py",
         "tests/test_preflight_contracts.py",

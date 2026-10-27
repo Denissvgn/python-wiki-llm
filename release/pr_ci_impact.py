@@ -331,6 +331,11 @@ def freeze_provider(ci, root: Path, base: str, destination: Path) -> dict:
         "base_tree": ci.git(root, "rev-parse", base + "^{tree}").decode().strip(),
         "source_inputs_sha256": ci.digest(ci.canonical(inputs)),
         "python_files": python,
+        "package_files": {
+            p.removeprefix("src/llm_wiki_cli/"): sha
+            for p, sha in inputs.items()
+            if p.startswith("src/llm_wiki_cli/")
+        },
         "source_selection_sha256": ci.digest(
             ci.git(root, "show", base + ":.llm-wiki/source-selection.json")
         ),
@@ -493,6 +498,14 @@ def worker(ci, request: dict) -> dict:
         "installed provider Python bytes differ from trusted base",
     )
     ci.require(
+        all(
+            (package / name).is_file()
+            and ci.digest(ci.bounded_file(package / name, ci.MAX_JSON)) == sha
+            for name, sha in expected["package_files"].items()
+        ),
+        "installed provider package bytes differ from trusted base",
+    )
+    ci.require(
         ci.digest((package / "services/analysis_contracts.json").read_bytes())
         == expected["analysis_contracts_sha256"],
         "provider analysis registry differs",
@@ -539,6 +552,7 @@ def worker(ci, request: dict) -> dict:
     result["provider"].update(
         {
             "python_files_verified": len(actual),
+            "package_files_verified": len(expected["package_files"]),
             "origin": str(package),
             "python": sys.version.split()[0],
             "editable": False,

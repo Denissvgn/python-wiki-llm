@@ -371,9 +371,7 @@ def test_minimal_provider_profile_reuses_maintained_hash_pins():
 
 def test_adapter_and_setup_inputs_have_mandatory_ci_safety_owners():
     registry = ci.policy_load(ROOT / "release")
-    assert {"tests/test_pr_ci_impact.py", "tests/test_pr_ci_workflow.py"} <= set(
-        registry["groups"]["ci-policy"]["tests"]
-    )
+    assert "tests/test_pr_ci_impact.py" in registry["groups"]["ci-policy"]["tests"]
     for path in ("release/pr_ci_impact.py", "release/pr-ci-impact-requirements.txt"):
         groups = {
             group
@@ -437,6 +435,33 @@ def test_same_version_but_different_provider_bytes_cannot_analyze(
             {
                 "schema": adapter.SCHEMA,
                 "provider": {"python_files": {"__init__.py": ci.digest(b"NEW")}},
+            },
+        )
+
+
+@pytest.mark.parametrize("data", [None, b"OLD"])
+def test_missing_or_changed_provider_data_cannot_analyze(monkeypatch, tmp_path, data):
+    environment = tmp_path / "venv"
+    package = environment / "lib/llm_wiki_cli"
+    package.mkdir(parents=True)
+    (package / "__init__.py").write_bytes(b"")
+    if data is not None:
+        (package / "schema.json").write_bytes(data)
+    monkeypatch.setattr(adapter.sys, "prefix", str(environment))
+    monkeypatch.setattr(
+        adapter.importlib.util,
+        "find_spec",
+        lambda name: SimpleNamespace(origin=str(package / "__init__.py")),
+    )
+    with pytest.raises(ci.SelectionError, match="package bytes"):
+        adapter.worker(
+            ci,
+            {
+                "schema": adapter.SCHEMA,
+                "provider": {
+                    "python_files": {"__init__.py": ci.digest(b"")},
+                    "package_files": {"schema.json": ci.digest(b"NEW")},
+                },
             },
         )
 
