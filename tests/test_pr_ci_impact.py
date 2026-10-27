@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+from fnmatch import fnmatchcase
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -167,6 +168,50 @@ def test_path_and_concept_limits_have_exact_omission_accounting(monkeypatch):
     assert len(calls) == 2
 
 
+def test_module_owner_is_queried_before_lexically_earlier_entities(monkeypatch):
+    monkeypatch.setattr(adapter, "MAX_CONCEPTS", 1)
+    calls = []
+
+    def query(request):
+        calls.append(request)
+        if request["operation"] == "impact":
+            return envelope(
+                "impact",
+                concepts=[
+                    {
+                        "locator": "llm-wiki://entities/AAA",
+                        "concept_kind": "code-entity",
+                    },
+                    {"locator": "llm-wiki://modules/zzz", "page_kind": "module"},
+                ],
+            )
+        return envelope("typed", typed_graph={"availability": "ready"}, edges=[])
+
+    result = adapter.observe(query, ["zzz.py"], {})
+    assert calls[1]["value"] == "llm-wiki://modules/zzz"
+    assert result["concept_bounds"] == {"total": 2, "returned": 1, "truncated": True}
+
+
+def test_slow_impact_retains_evidence_and_exact_unqueried_concept_count(monkeypatch):
+    ticks = iter([0, adapter.QUERY_SECONDS + 1])
+    monkeypatch.setattr(adapter.time, "monotonic", lambda: next(ticks))
+    calls = []
+    result = adapter.observe(responses(calls), ["src/pkg/api.py"], {})
+    assert len(calls) == 1 and result["status"] == "partial"
+    assert result["source_outcomes"][0]["path"] == "src/pkg/api.py"
+    assert result["concept_bounds"] == {"total": 1, "returned": 0, "truncated": True}
+    assert {"reason": "query-time-budget", "omitted": 1} in result["gaps"]
+
+
+def test_api_runtime_error_preserves_the_unavailable_fallback():
+    def query(request):
+        raise RuntimeError("API boundary refused the request")
+
+    result = adapter.observe(query, ["src/pkg/api.py"], {})
+    assert result["status"] == "unavailable" and result["affected_sources"] == []
+    assert result["gaps"][0]["error"] == "RuntimeError"
+
+
 def plan_for(policy, sources):
     floor = selection(policy, sources, [changed("README.md")])
     return {
@@ -322,6 +367,21 @@ def test_minimal_provider_profile_reuses_maintained_hash_pins():
     for line in profile.splitlines():
         if "--hash=" in line:
             assert line in original
+
+
+def test_adapter_and_setup_inputs_have_mandatory_ci_safety_owners():
+    registry = ci.policy_load(ROOT / "release")
+    assert {"tests/test_pr_ci_impact.py", "tests/test_pr_ci_workflow.py"} <= set(
+        registry["groups"]["ci-policy"]["tests"]
+    )
+    for path in ("release/pr_ci_impact.py", "release/pr-ci-impact-requirements.txt"):
+        groups = {
+            group
+            for rule in registry["rules"]
+            if any(fnmatchcase(path, pattern) for pattern in rule["paths"])
+            for group in rule["groups"]
+        }
+        assert "ci-policy" in groups
 
 
 def test_worker_refuses_a_provider_outside_its_interpreter(monkeypatch, tmp_path):

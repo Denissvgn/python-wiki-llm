@@ -14,18 +14,20 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import time
 import venv
 from typing import Callable
 
 
 SCHEMA = "agent-wiki-pr-ci-impact/v1"
 MAX_PATHS = 32
-MAX_CONCEPTS = 12
+MAX_CONCEPTS = 3
 MAX_HINTS = 32
 QUERY_LIMIT = 100
 MAX_PROVIDER_BYTES = 64 * 1024 * 1024
 MAX_PROVIDER_FILES = 2000
 WORKER_SECONDS = 90
+QUERY_SECONDS = 15
 SETUP_SECONDS = 120
 
 
@@ -58,6 +60,8 @@ def report(binding: dict, status: str, reason: str) -> dict:
             "concept_queries": MAX_CONCEPTS,
             "hops": 1,
             "affected_sources": MAX_HINTS,
+            "query_seconds": QUERY_SECONDS,
+            "worker_seconds": WORKER_SECONDS,
         },
         "limitations": [
             "Targeted extraction and recorded incoming edges do not establish global live or transitive completeness.",
@@ -75,6 +79,7 @@ def availability(value: dict) -> str | None:
 def observe(query: Callable[[dict], dict], paths: list[str], binding: dict) -> dict:
     """Use only bounded supported reads; retain uncertainty with every hint."""
     result = report(binding, "observed", "bounded-impact-hints")
+    started = time.monotonic()
     ordered = sorted(set(paths))
     selected = ordered[:MAX_PATHS]
     result["path_bounds"] = {
@@ -148,17 +153,23 @@ def observe(query: Callable[[dict], dict], paths: list[str], binding: dict) -> d
                 {"reason": "native-knowledge-unavailable", "knowledge": knowledge}
             )
         else:
+            priorities = {
+                c["locator"]: (
+                    0
+                    if c.get("page_kind") == "module"
+                    or c.get("concept_kind") == "module"
+                    else 1
+                )
+                for c in impact.get("concepts", [])
+                if isinstance(c, dict) and isinstance(c.get("locator"), str)
+            }
             concepts = sorted(
-                {
-                    c["locator"]
-                    for c in impact.get("concepts", [])
-                    if isinstance(c, dict) and isinstance(c.get("locator"), str)
-                }
+                priorities, key=lambda locator: (priorities[locator], locator)
             )
             result["concept_bounds"] = {
                 "total": len(concepts),
-                "returned": min(len(concepts), MAX_CONCEPTS),
-                "truncated": len(concepts) > MAX_CONCEPTS,
+                "returned": 0,
+                "truncated": bool(concepts),
             }
             if len(concepts) > MAX_CONCEPTS:
                 result["gaps"].append(
@@ -168,7 +179,14 @@ def observe(query: Callable[[dict], dict], paths: list[str], binding: dict) -> d
                     }
                 )
             hints = set()
-            for locator in concepts[:MAX_CONCEPTS]:
+            pending = concepts[:MAX_CONCEPTS]
+            for index, locator in enumerate(pending):
+                if time.monotonic() - started >= QUERY_SECONDS:
+                    result["gaps"].append(
+                        {"reason": "query-time-budget", "omitted": len(pending) - index}
+                    )
+                    break
+                result["concept_bounds"]["returned"] += 1
                 try:
                     related = read(
                         {
@@ -232,7 +250,7 @@ def observe(query: Callable[[dict], dict], paths: list[str], binding: dict) -> d
                                     "basis": "recorded-snapshot-relationship",
                                 }
                             )
-                except (ValueError, OSError, KeyError, TypeError) as exc:
+                except (ValueError, OSError, KeyError, TypeError, RuntimeError) as exc:
                     result["gaps"].append(
                         {
                             "reason": "related-query-failed",
@@ -240,6 +258,9 @@ def observe(query: Callable[[dict], dict], paths: list[str], binding: dict) -> d
                             "error": type(exc).__name__,
                         }
                     )
+            result["concept_bounds"]["truncated"] = result["concept_bounds"][
+                "returned"
+            ] < len(concepts)
             ordered_hints = sorted(hints)
             result["affected_source_bounds"] = {
                 "total": len(hints),
@@ -254,7 +275,7 @@ def observe(query: Callable[[dict], dict], paths: list[str], binding: dict) -> d
                         "omitted": len(hints) - MAX_HINTS,
                     }
                 )
-    except (ValueError, OSError, KeyError, TypeError) as exc:
+    except (ValueError, OSError, KeyError, TypeError, RuntimeError) as exc:
         result.update(status="unavailable", reason="impact-query-failed")
         result["gaps"].append(
             {"reason": "impact-query-failed", "error": type(exc).__name__}
@@ -501,7 +522,7 @@ def worker(ci, request: dict) -> dict:
                 query,
                 src_dir=str(root),
                 wiki_dir=str(root / request["wiki_dir"]),
-                source_selection=root / request["source_selection"],
+                source_selection=request["source_selection"],
                 allow_external_src=True,
             )
         ),
