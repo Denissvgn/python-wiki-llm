@@ -400,6 +400,7 @@ def test_frozen_provider_comes_from_base_objects_without_executing_package(
         **sources,
         "src/llm_wiki_cli/__init__.py": original,
         "src/llm_wiki_cli/services/analysis_contracts.json": b"{}",
+        "src/llm_wiki_cli/extractors/example/.gitignore": b"build/\n",
         ".llm-wiki/source-selection.json": b'{"include":["src/llm_wiki_cli"]}',
     }
     root, _, event, _ = fixture_repository(tmp_path, policy, sources)
@@ -412,6 +413,11 @@ def test_frozen_provider_comes_from_base_objects_without_executing_package(
     )
     assert (destination / "src/llm_wiki_cli/__init__.py").read_bytes() == original
     assert frozen["python_files"] == {"__init__.py": ci.digest(original)}
+    assert frozen["package_files"] == {
+        "__init__.py": ci.digest(original),
+        "services/analysis_contracts.json": ci.digest(b"{}"),
+    }
+    assert (destination / "src/llm_wiki_cli/extractors/example/.gitignore").is_file()
     assert not (destination / "tests").exists()
     assert frozen["base_sha"] == event["pull_request"]["base"]["sha"]
 

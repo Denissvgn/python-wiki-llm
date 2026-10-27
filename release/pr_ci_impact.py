@@ -334,7 +334,9 @@ def freeze_provider(ci, root: Path, base: str, destination: Path) -> dict:
         "package_files": {
             p.removeprefix("src/llm_wiki_cli/"): sha
             for p, sha in inputs.items()
-            if p.startswith("src/llm_wiki_cli/")
+            # Git ignore metadata is frozen for build identity but is not
+            # distributed as an installed provider resource.
+            if p.startswith("src/llm_wiki_cli/") and Path(p).name != ".gitignore"
         },
         "source_selection_sha256": ci.digest(
             ci.git(root, "show", base + ":.llm-wiki/source-selection.json")
@@ -571,7 +573,10 @@ def main() -> int:
     try:
         ci.write_json(args.output, worker(ci, ci.read_json(args.request)))
     except (ValueError, OSError, KeyError, TypeError) as exc:
-        print("Impact worker refused: " + type(exc).__name__, file=sys.stderr)
+        print(
+            "Impact worker refused: " + type(exc).__name__ + ": " + str(exc)[:512],
+            file=sys.stderr,
+        )
         return 2
     return 0
 
