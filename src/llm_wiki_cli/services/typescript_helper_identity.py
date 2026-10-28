@@ -44,6 +44,13 @@ def _identity(value):
             value.st_mtime_ns, value.st_ctime_ns, value.st_nlink)
 
 
+def _validate_dependency_path(relative: str) -> None:
+    """Apply the portable-path contract and dependency traversal depth bound."""
+    if relative != "." and (not is_portable_relative_path(relative)
+                            or len(Path(relative).parts) > MAX_DEPTH):
+        raise ValueError("TypeScript dependency path is unsafe or too deep")
+
+
 def _snapshot(root):
     pending = [root]
     result = {}
@@ -51,9 +58,7 @@ def _snapshot(root):
     while pending:
         path = pending.pop()
         relative = path.relative_to(root).as_posix()
-        if relative != "." and (not is_portable_relative_path(relative)
-                                or len(Path(relative).parts) > MAX_DEPTH):
-            raise ValueError("TypeScript dependency path is unsafe or too deep")
+        _validate_dependency_path(relative)
         metadata = fresh_no_follow_stat(path)
         if (stat.S_ISLNK(metadata.st_mode)
                 or getattr(metadata, "st_file_attributes", 0) & 0x400):
