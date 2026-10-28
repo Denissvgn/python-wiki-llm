@@ -570,6 +570,20 @@ def _validate_module_entity_record(record: Mapping[str, Any], pointer="") -> Non
     _validate_optional_booleans(record, ("target_truncated",), pointer)
     if (record.get("target_truncated") or "target_sha256" in record) and not is_valid_sha256(record.get("target_sha256")):
         raise _failure(_pointer(pointer, "target_sha256"), "sha256-required", "complete definition digest", record.get("target_sha256", MISSING_VALUE))
+    if record.get("target_truncated") or "target_sha256" in record:
+        target = record.get("target", MISSING_VALUE)
+        if not isinstance(target, str):
+            raise _failure(_pointer(pointer, "target"), "string-required", "alias definition or preview", target)
+        if record.get("target_truncated"):
+            if len(target) != 4096:
+                raise _failure(_pointer(pointer, "target"), "bounded-preview-length", "4,096 Unicode code points", target)
+        else:
+            try:
+                target_hash = sha256_bytes(target.encode("utf-8"))
+            except UnicodeEncodeError:
+                raise _failure(_pointer(pointer, "target"), "utf8-text", "UTF-8 alias definition", target) from None
+            if record["target_sha256"] != target_hash:
+                raise _failure(_pointer(pointer, "target_sha256"), "definition-digest-mismatch", "digest of the complete definition", record["target_sha256"])
     _validate_optional_string_array(record, "bases", pointer)
     _validate_optional_string_array(record, "type_params", pointer)
 

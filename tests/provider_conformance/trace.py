@@ -8,7 +8,7 @@ from pathlib import Path
 from markdown_it import MarkdownIt
 
 from .inventory import compare_records, paired, supported_source
-from .markdown import named_rows, signature, split_balanced, tables
+from .markdown import code_values, named_rows, signature, split_balanced, tables
 from .model import Finding, Incomplete, compare_sets, digest
 from .python_ast import calls
 
@@ -93,23 +93,25 @@ def markdown_observations(
             raise Incomplete(f"Missing/ambiguous entity page for {path}:{cls['name']}")
         entity = (wiki / pages[0]["canonical_path"]).read_text(encoding="utf-8")
         if lang == "typescript":
-            kind = re.search(r"^\*\*Kind:\*\* (.+)$", entity, re.MULTILINE)
-            if kind:
-                cls["declaration_kind"] = kind[1].strip("`").casefold().replace(" ", "_")
             target = False
-            for token in MarkdownIt("commonmark").parse(entity):
+            parser = MarkdownIt("commonmark")
+            for token in parser.parse(entity):
+                if token.type == "heading_open" and token.tag != "h1":
+                    break
                 if token.type == "inline":
-                    if token.content.startswith("**Target:**"):
-                        target = True
-                    elif token.content.startswith("**Type parameters:**"):
-                        code = [c.content for c in token.children or [] if c.type == "code_inline"]
-                        cls["type_params"] = split_balanced(code[0]) if code else []
-                    elif token.content.startswith("**Definition truncated:**"):
-                        cls["target_truncated"] = True
+                    # Adjacent metadata lines share one Markdown paragraph.
+                    for line in token.content.splitlines():
+                        if line == "**Target:**":
+                            target = True
+                        elif line.startswith("**Kind:** "):
+                            cls["declaration_kind"] = line[len("**Kind:** "):].strip("`").casefold().replace(" ", "_")
+                        elif line.startswith("**Type parameters:**"):
+                            code = code_values(parser.parseInline(line)[0])
+                            cls["type_params"] = split_balanced(code[0]) if code else []
+                        elif line.startswith("**Definition truncated:**"):
+                            cls["target_truncated"] = True
                 elif token.type == "fence" and target:
                     cls["target"] = token.content.removesuffix("\n")
-                    target = False
-                elif token.type == "heading_open":
                     target = False
         bases = re.search(r"^\*\*Bases:\*\* (.+)$", entity, re.MULTILINE)
         cls["bases"] = re.findall(r"`([^`]+)`", bases[1]) if bases else []

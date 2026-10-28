@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections import Counter
 from copy import deepcopy
+import hashlib
 
 from .model import Finding, Incomplete, compare_sets, compare_value, identities
 
@@ -184,11 +185,12 @@ def compare_records(
             )
         )
     if lang == "typescript":
-        expected = source.get("type_parameters", [])
-        observed = actual.get("type_params", [])
-        result.append(Finding(fact, representation,
-            "pass" if [v.replace("\n", " ") for v in expected] == observed else "fail",
-            "generic-binder-declarations", expected, observed, reference))
+        if "type_parameters" in source:
+            expected = source["type_parameters"]
+            observed = actual.get("type_params", [])
+            result.append(Finding(fact, representation,
+                "pass" if expected == observed else "fail",
+                "generic-binder-declarations", expected, observed, reference))
         if source.get("declaration_kind"):
             result.append(Finding(fact, representation,
                 "pass" if source["declaration_kind"] == actual.get("declaration_kind") else "fail",
@@ -197,6 +199,8 @@ def compare_records(
             expected, observed = source["type"], actual.get("target", "")
             bounded = actual.get("target_truncated") is True
             okay = (len(expected) > 4096 and observed == expected[:4096]) if bounded else compare_value(expected, observed, field="type", language=lang, normalize=normalize)
+            if bounded and representation != "markdown":
+                okay = okay and actual.get("target_sha256") == "sha256:" + hashlib.sha256(expected.encode("utf-8")).hexdigest()
             result.append(Finding(fact, representation, "pass" if okay else "fail",
                 "bounded-alias-prefix" if bounded else "alias-definition", expected, observed, reference))
     elif source.get("type_parameters"):

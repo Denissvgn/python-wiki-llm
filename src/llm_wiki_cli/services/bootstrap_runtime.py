@@ -665,7 +665,16 @@ def _table_text(value: object) -> str:
 def _table_inline_code(value: object, *, table: bool = True) -> str:
     if value in (None, ""):
         return "—"
-    text = str(value).replace("\n", " ")
+    text = str(value)
+    if any(char in text for char in "\r\n\t"):
+        # A Markdown code span folds line breaks, changing template-literal
+        # types. Keep one physical table line while preserving code whitespace
+        # and making both HTML and Markdown punctuation inert.
+        encoded = "".join(
+            char if char.isalnum() or char == " " else f"&#{ord(char)};"
+            for char in text
+        )
+        return f"<pre><code>{encoded}</code></pre>"
     if table:
         text = text.replace("|", "\\|")
     runs = [len(match.group(0)) for match in re.finditer(r"`+", text)]

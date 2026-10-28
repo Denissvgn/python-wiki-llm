@@ -742,7 +742,7 @@ def test_typescript_declaration_details_are_structural_and_validated():
         invalid['functions'][0]['params'][0][field] = 'true'
         assert _module_hash(invalid) is None
     alias = {'language': 'typescript', 'classes': [
-        {'name': 'Large', 'kind': 'type_alias', 'target': 'prefix', 'target_truncated': True,
+        {'name': 'Large', 'kind': 'type_alias', 'target': 'p' * 4096, 'target_truncated': True,
          'target_sha256': sha256_bytes(b'complete original definition')}
     ], 'functions': []}
     original = _entity_hash(alias, 'Large')
@@ -751,3 +751,23 @@ def test_typescript_declaration_details_are_structural_and_validated():
     assert _module_hash(alias) is not None
     alias['classes'][0].pop('target_sha256')
     assert _entity_hash(alias, 'Large') is None
+
+
+@pytest.mark.parametrize('target', [None, '', 'short', 'x' * 4097])
+def test_bounded_alias_requires_a_complete_preview_record(target):
+    alias = {'name': 'A', 'kind': 'type_alias', 'target_truncated': True,
+             'target_sha256': sha256_bytes(b'complete expression')}
+    if target is not None:
+        alias['target'] = target
+    record = {'language': 'typescript', 'classes': [alias], 'functions': []}
+    assert _module_hash(record) is None
+    assert _entity_hash(record, 'A') is None
+
+
+def test_complete_alias_digest_must_match_the_definition():
+    alias = {'name': 'A', 'kind': 'type_alias', 'target': '"ready"',
+             'target_sha256': sha256_bytes(b'"ready"')}
+    record = {'language': 'typescript', 'classes': [alias], 'functions': []}
+    assert _module_hash(record) is not None and _entity_hash(record, 'A') is not None
+    alias['target'] = '"changed"'
+    assert _module_hash(record) is None and _entity_hash(record, 'A') is None

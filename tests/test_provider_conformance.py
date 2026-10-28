@@ -381,3 +381,85 @@ def test_typescript_signature_decoder_retains_binders_and_calling_convention():
         damaged[0 if field == 'optional' else 1].pop(field)
         okay, reason = compare_parameters(value['params'], damaged, 'typescript', lambda *args: None)
         assert not okay and reason == 'parameter-' + field
+
+
+def test_typescript_generic_literals_with_commas_are_not_rust_lifetimes():
+    result = signature("<T = 'a,b'>(value?: T = 'a,b') -> T", 'typescript')
+    assert result['type_params'] == ["T = 'a,b'"]
+    assert result['params'] == [{'name': 'value', 'type': 'T', 'optional': True, 'rest': False, 'default': "'a,b'"}]
+    rust = signature("(value: &'a str, next: &'b str) -> &'a str", 'rust')
+    assert [p['type'] for p in rust['params']] == ["&'a str", "&'b str"]
+
+
+def test_typescript_oracle_checks_raw_binders_and_full_bounded_definition_digest():
+    import hashlib
+    from tests.provider_conformance.inventory import compare_records
+    source = {'kind': 'class', 'declaration_kind': 'type_alias',
+              'type_parameters': ['T extends {\n value: string\n}'],
+              'type': '"' + '雪' * 4096 + '"'}
+    actual = {'declaration_kind': 'type_alias', 'type_params': source['type_parameters'],
+              'target': source['type'][:4096], 'target_truncated': True,
+              'target_sha256': 'sha256:' + hashlib.sha256(source['type'].encode()).hexdigest()}
+    def check(value):
+        return compare_records(source, value, 'typescript', lambda *args: None, fact='A', representation='inventory')
+    assert all(f.status == 'pass' for f in check(actual))
+    corrupted = deepcopy(actual)
+    corrupted['target_sha256'] = 'sha256:' + '0' * 64
+    assert any(f.status == 'fail' and f.reason == 'bounded-alias-prefix' for f in check(corrupted))
+    source['type_parameters'] = []
+    actual['type_params'] = ['invented']
+    assert any(f.status == 'fail' and f.reason == 'generic-binder-declarations' for f in check(actual))
+
+
+def test_independent_frontend_preserves_source_line_endings(tmp_path, monkeypatch):
+    path = tmp_path / 'types.ts'
+    content = b'export type Name = `first\r\nsecond`;\r\n'
+    path.write_bytes(content)
+    frontend = Frontends({}, tmp_path / 'oracle')
+    seen = []
+    def batch(language, jobs):
+        seen.extend(jobs)
+        return [{'declarations': [], 'imports': []}]
+    monkeypatch.setattr(frontend, 'batch', batch)
+    frontend.observe(path)
+    assert seen[0]['text'].encode() == content
+
+
+def test_typescript_metadata_decoder_reads_shared_paragraphs_and_stops_at_prose(tmp_path):
+    from tests.provider_conformance.trace import markdown_observations
+    (tmp_path / 'modules').mkdir()
+    (tmp_path / 'entities').mkdir()
+    (tmp_path / 'modules/types.md').write_text('''# types
+
+## Classes
+
+| Class | Kind | Line | Bases / Target | Description |
+|---|---|---|---|---|
+| Mode | Type alias | 1 | — | — |
+''')
+    (tmp_path / 'entities/Mode.md').write_text('''# Mode
+
+**Location:** `types.ts:1`
+**Kind:** Type alias
+**Bases:** —
+**Module:** types
+**Target:**
+
+```typescript
+"fast" | "safe"
+```
+**Type parameters:** <pre><code>T extends &#96;first&#10;second&#96;, U = &#39;a,b&#39;</code></pre>
+
+## Description
+
+**Kind:** Class
+**Type parameters:** `invented`
+''')
+    surface = {'pages': [
+        {'kind': 'modules', 'source_path': 'types.ts', 'canonical_path': 'modules/types.md'},
+        {'kind': 'entities', 'source_path': 'types.ts', 'canonical_path': 'entities/Mode.md', 'title': 'Mode'},
+    ]}
+    row = markdown_observations(tmp_path, surface, 'types.ts', 'typescript')[0]
+    assert row['declaration_kind'] == 'type_alias'
+    assert row['target'] == '"fast" | "safe"'
+    assert row['type_params'] == ['T extends `first\nsecond`', "U = 'a,b'"]

@@ -220,7 +220,7 @@ class Frontends:
             [
                 {
                     "mode": "source",
-                    "text": path.read_text(encoding="utf-8"),
+                    "text": path.read_bytes().decode("utf-8"),
                     "filename": path.name,
                 }
             ],

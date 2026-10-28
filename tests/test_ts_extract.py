@@ -678,6 +678,22 @@ class TestTypeScriptExtractor:
         assert bounded["target"] == target[:4096] and bounded["target_truncated"] is True
         assert bounded["target_sha256"] == "sha256:" + hashlib.sha256(target.encode()).hexdigest()
         assert "Definition truncated" in _generate_entity_md(bounded, "aliases.ts", {})
+        from llm_wiki_cli.services.extractor_helpers import get_prepared_typescript_root
+        from tests.provider_conformance.frontends import Frontends
+        from tests.provider_conformance.inventory import compare_inventory
+        from tests.provider_conformance.model import conclude
+        prepared = get_prepared_typescript_root(PROJECT_ROOT)
+        assert prepared is not None
+        frontend = Frontends({'node': shutil.which('node'),
+                              'typescript_module': str(prepared / 'node_modules/ts-morph')}, tmp_path / 'oracle')
+        source = tmp_path / 'aliases.ts'
+        source.write_bytes(('export type Bounded<T extends `first\r\nsecond`> = ' + target + ';\r\n').encode())
+        data = TypeScriptExtractor().extract(str(tmp_path), deep=True)['aliases.ts']
+        observation = frontend.observe(source)
+        assert conclude(compare_inventory(observation, data, 'typescript', frontend.normalize, path='aliases.ts'))['status'] == 'pass'
+        damaged = deepcopy(data)
+        damaged['classes'][0]['target_sha256'] = 'sha256:' + '0' * 64
+        assert conclude(compare_inventory(observation, damaged, 'typescript', frontend.normalize, path='aliases.ts'))['status'] == 'fail'
 
     def test_tsx_support(self, tmp_path):
         _make_ts(
@@ -911,6 +927,11 @@ class TestTypeScriptExtractor:
                 constructor(timeout?: number, ...labels: string[]) {}
                 run<U extends T>(value?: U, ...items: U[]): void {}
             }
+            export interface Multiline<T extends `first
+second`> {
+                read(value?: `line
+break`): T;
+            }
             """,
         )
         monkeypatch.chdir(tmp_path)
@@ -954,6 +975,18 @@ class TestTypeScriptExtractor:
         assert "<U extends T>(value?: U, ...items: U[]) -> void" in client
         assert '```typescript\n"fast" | "safe"\n```' in (tmp_path / "wiki/entities/Mode.md").read_text()
         assert "(value: number) => string" in (tmp_path / "wiki/entities/Handler.md").read_text()
+        from llm_wiki_cli.services.extractor_helpers import get_prepared_typescript_root
+        from tests.provider_conformance.frontends import Frontends
+        from tests.provider_conformance.trace import compare_markdown
+        from tests.provider_conformance.model import conclude
+        prepared = get_prepared_typescript_root(PROJECT_ROOT)
+        assert prepared is not None
+        frontend = Frontends({'node': shutil.which('node'),
+                              'typescript_module': str(prepared / 'node_modules/ts-morph')}, tmp_path / 'oracle')
+        surface = json.loads((tmp_path / 'wiki/.llm-wiki-surface.json').read_text())
+        observed = frontend.observe(source)
+        findings = compare_markdown(observed, tmp_path / 'wiki', surface, 'types.ts', 'typescript', frontend.normalize)
+        assert conclude(findings)['status'] == 'pass', [f.payload() for f in findings if f.status == 'fail']
         content = content.replace(
             "_Auto-generated from `EvidenceSignals` in `types.ts`._",
             "Human-curated evidence contract.",

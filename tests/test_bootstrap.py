@@ -4410,3 +4410,32 @@ class TestBootstrapArchitecturePages:
         assert (tmp_path / "wiki" / "modules" / "a.md").exists()
         assert (tmp_path / "wiki" / "dependencies.md").exists()
         assert (tmp_path / "wiki" / "load-order.md").exists()
+
+
+@pytest.mark.parametrize('literal', [
+    '`first\nsecond`', '`first\r\nsecond`', '`first\tsecond`',
+    '`<script>bad()</script>|[x]*_\\\nsecond`',
+])
+def test_multiline_code_cells_preserve_source_text_and_inert_markup(literal):
+    from html.parser import HTMLParser
+    from markdown_it import MarkdownIt
+    from llm_wiki_cli.services.bootstrap_runtime import _table_inline_code
+
+    class CodeText(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.text, self.tags = [], []
+        def handle_starttag(self, tag, attrs):
+            self.tags.append(tag)
+        def handle_data(self, data):
+            self.text.append(data)
+
+    cell = _table_inline_code(literal)
+    assert '\n' not in cell and '\r' not in cell
+    markdown = '| Value |\n|---|\n| ' + cell + ' |\n'
+    reader = CodeText()
+    html = MarkdownIt('commonmark').enable('table').render(markdown)
+    reader.feed(html)
+    assert literal in ''.join(reader.text)
+    assert '<script>' not in html and '<a ' not in html
+    assert 'pre' in reader.tags and 'code' in reader.tags
