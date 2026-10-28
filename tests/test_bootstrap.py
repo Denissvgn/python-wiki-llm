@@ -560,6 +560,8 @@ class TestBootstrapCollisions:
         self, tmp_path, monkeypatch, capsys, assert_helper_recovery
     ):
         monkeypatch.chdir(tmp_path)
+        empty_helper_cache = tmp_path / "unprepared-helper-cache"
+        empty_helper_cache.mkdir()
         hls_app = tmp_path / "hls-analysis" / "app"
         hls_src = tmp_path / "hls-analysis" / "src" / "HLSAnalysis"
         hls_app.mkdir(parents=True)
@@ -576,6 +578,7 @@ class TestBootstrapCollisions:
                     wiki_dir="wiki",
                     format="json",
                     source_adapter=True,
+                    helper_cache_dir=str(empty_helper_cache),
                 )
             )
 
@@ -583,7 +586,10 @@ class TestBootstrapCollisions:
         assert exc_info.value.code == 1
         assert captured.out == ""
         assert "Error: haskell extraction failed" in captured.err
-        assert_helper_recovery(captured.err, language="haskell")
+        assert_helper_recovery(
+            captured.err, language="haskell", cache_dir=str(empty_helper_cache)
+        )
+        assert list(empty_helper_cache.iterdir()) == []
         assert "Unsupported sources detected" not in captured.err
         assert list((tmp_path / "wiki" / "modules").glob("*.md")) == []
 
