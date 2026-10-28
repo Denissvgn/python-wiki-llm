@@ -18,7 +18,7 @@
     "by_kind": {
       "api-contracts": 0,
       "dependencies": 1,
-      "entities": 672,
+      "entities": 673,
       "flows": 466,
       "guides": 11,
       "index": 1,
@@ -29,7 +29,7 @@
       "workflows": 233
     },
     "dependency_architecture": 2,
-    "total": 1643
+    "total": 1644
   },
   "dependency_pages": {
     "count": 2,
@@ -2105,7 +2105,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 271,
+              "line": 425,
               "step": "build_budgeted_context",
               "step_index": 2,
               "target": "legacy.update"
@@ -2113,7 +2113,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 50,
+              "line": 93,
               "step": "validate_request",
               "step_index": 3,
               "target": "legacy.pop"
@@ -2121,7 +2121,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 51,
+              "line": 94,
               "step": "validate_request",
               "step_index": 3,
               "target": "legacy.pop"
@@ -2129,7 +2129,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 52,
+              "line": 95,
               "step": "validate_request",
               "step_index": 3,
               "target": "legacy.pop"
@@ -2138,25 +2138,25 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 34,
+              "line": 77,
               "step": "validate_request",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 34,
+              "line": 77,
               "step": "validate_request",
               "target": "any"
             },
             {
               "kind": "unresolved_call",
-              "line": 36,
+              "line": 79,
               "step": "validate_request",
               "target": "data.get"
             },
             {
               "kind": "external_call",
-              "line": 42,
+              "line": 85,
               "step": "validate_request",
               "target": "sorted"
             },
@@ -2245,7 +2245,7 @@
             "src/llm_wiki_cli/services/bootstrap_runtime.py",
             "src/llm_wiki_cli/services/packet_field_policy.py"
           ],
-          "step_count": 3593,
+          "step_count": 3621,
           "truncated": true
         }
       },
@@ -32238,7 +32238,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3615,
+              "line": 3667,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32246,7 +32246,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3618,
+              "line": 3670,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32254,7 +32254,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3662,
+              "line": 3714,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32262,7 +32262,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3665,
+              "line": 3717,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32270,7 +32270,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3672,
+              "line": 3724,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32278,7 +32278,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3674,
+              "line": 3726,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32286,7 +32286,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3683,
+              "line": 3735,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32294,7 +32294,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 3685,
+              "line": 3737,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32303,13 +32303,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 3598,
+              "line": 3650,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 3439,
+              "line": 3491,
               "step": "_run_protocol",
               "target": "getattr"
             },
@@ -32398,7 +32398,7 @@
             "src/llm_wiki_cli/services/wiki_write_basis.py",
             "src/llm_wiki_cli/services/extraction_jobs.py"
           ],
-          "step_count": 1426,
+          "step_count": 1497,
           "truncated": true
         }
       },
@@ -36528,7 +36528,7 @@
             "src/llm_wiki_cli/services/task_implementation.py",
             "src/llm_wiki_cli/services/wiki_write_basis.py"
           ],
-          "step_count": 1452,
+          "step_count": 1456,
           "truncated": true
         }
       },
@@ -37201,43 +37201,43 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1347,
+              "line": 1348,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1359,
+              "line": 1360,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1361,
+              "line": 1362,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1361,
+              "line": 1362,
               "step": "_native_tool_call",
               "target": "json.dumps"
             },
             {
               "kind": "external_call",
-              "line": 1566,
+              "line": 1567,
               "step": "build_budgeted_context",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1567,
+              "line": 1568,
               "step": "build_budgeted_context",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1567,
+              "line": 1568,
               "step": "build_budgeted_context",
               "target": "TextContent"
             }
@@ -37272,43 +37272,43 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1347,
+              "line": 1348,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1359,
+              "line": 1360,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1361,
+              "line": 1362,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1361,
+              "line": 1362,
               "step": "_native_tool_call",
               "target": "json.dumps"
             },
             {
               "kind": "external_call",
-              "line": 1599,
+              "line": 1600,
               "step": "build_task_context",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 1599,
+              "line": 1600,
               "step": "build_task_context",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1599,
+              "line": 1600,
               "step": "build_task_context",
               "target": "TextContent"
             }
@@ -37343,7 +37343,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1549,
+              "line": 1550,
               "step": "check_wiki",
               "target": "service.check_wiki"
             }
@@ -37378,25 +37378,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1347,
+              "line": 1348,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1359,
+              "line": 1360,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1361,
+              "line": 1362,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1361,
+              "line": 1362,
               "step": "_native_tool_call",
               "target": "json.dumps"
             }
@@ -37431,25 +37431,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1347,
+              "line": 1348,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1359,
+              "line": 1360,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1361,
+              "line": 1362,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1361,
+              "line": 1362,
               "step": "_native_tool_call",
               "target": "json.dumps"
             }
@@ -37484,7 +37484,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1388,
+              "line": 1389,
               "step": "get_architecture_page",
               "target": "service.get_architecture_page"
             }
@@ -37519,25 +37519,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1347,
+              "line": 1348,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1359,
+              "line": 1360,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1361,
+              "line": 1362,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1361,
+              "line": 1362,
               "step": "_native_tool_call",
               "target": "json.dumps"
             }
@@ -37572,7 +37572,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1515,
+              "line": 1516,
               "step": "get_context",
               "target": "service.get_context"
             }
@@ -37607,25 +37607,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1347,
+              "line": 1348,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1359,
+              "line": 1360,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1361,
+              "line": 1362,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1361,
+              "line": 1362,
               "step": "_native_tool_call",
               "target": "json.dumps"
             }
@@ -37660,7 +37660,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1373,
+              "line": 1374,
               "step": "get_entity",
               "target": "service.get_entity"
             }
@@ -37695,7 +37695,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1383,
+              "line": 1384,
               "step": "get_flow",
               "target": "service.get_flow"
             }
@@ -37730,25 +37730,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1347,
+              "line": 1348,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1359,
+              "line": 1360,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1361,
+              "line": 1362,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1361,
+              "line": 1362,
               "step": "_native_tool_call",
               "target": "json.dumps"
             }
@@ -37783,7 +37783,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1378,
+              "line": 1379,
               "step": "get_module",
               "target": "service.get_module"
             }
@@ -37818,7 +37818,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1558,
+              "line": 1559,
               "step": "get_status",
               "target": "service.get_status"
             }
@@ -37853,25 +37853,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1347,
+              "line": 1348,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1359,
+              "line": 1360,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1361,
+              "line": 1362,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1361,
+              "line": 1362,
               "step": "_native_tool_call",
               "target": "json.dumps"
             }
@@ -37906,25 +37906,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1347,
+              "line": 1348,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1359,
+              "line": 1360,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1361,
+              "line": 1362,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1361,
+              "line": 1362,
               "step": "_native_tool_call",
               "target": "json.dumps"
             }
@@ -37959,25 +37959,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1347,
+              "line": 1348,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1359,
+              "line": 1360,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1361,
+              "line": 1362,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1361,
+              "line": 1362,
               "step": "_native_tool_call",
               "target": "json.dumps"
             }
@@ -38012,25 +38012,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1347,
+              "line": 1348,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1359,
+              "line": 1360,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1361,
+              "line": 1362,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1361,
+              "line": 1362,
               "step": "_native_tool_call",
               "target": "json.dumps"
             }
@@ -38065,7 +38065,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1393,
+              "line": 1394,
               "step": "query_graph",
               "target": "service.query_graph"
             }
@@ -38100,25 +38100,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1347,
+              "line": 1348,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1359,
+              "line": 1360,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1361,
+              "line": 1362,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1361,
+              "line": 1362,
               "step": "_native_tool_call",
               "target": "json.dumps"
             }
@@ -38153,7 +38153,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1493,
+              "line": 1494,
               "step": "search_wiki",
               "target": "service.search_wiki"
             }
@@ -38188,25 +38188,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1347,
+              "line": 1348,
               "step": "_native_tool_call",
               "target": "callback"
             },
             {
               "kind": "external_call",
-              "line": 1359,
+              "line": 1360,
               "step": "_native_tool_call",
               "target": "CallToolResult"
             },
             {
               "kind": "external_call",
-              "line": 1361,
+              "line": 1362,
               "step": "_native_tool_call",
               "target": "TextContent"
             },
             {
               "kind": "external_call",
-              "line": 1361,
+              "line": 1362,
               "step": "_native_tool_call",
               "target": "json.dumps"
             }
@@ -39072,6 +39072,7 @@
         "entities/InventoryRequest.md",
         "entities/InventoryResult.md",
         "entities/JoinedPage.md",
+        "entities/JointSelection.md",
         "entities/JsonSpool.md",
         "entities/KnowledgeAggregateSummary.md",
         "entities/KnowledgeArtifactError.md",
@@ -44107,6 +44108,18 @@
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/services/knowledge_index.py",
       "title": "_JoinedPage"
+    },
+    {
+      "canonical_path": "entities/JointSelection.md",
+      "id": "JointSelection",
+      "kind": "entities",
+      "mcp_uri": "llm-wiki://entities/JointSelection",
+      "outgoing_internal_links": [
+        "modules/context_budget.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/context_budget.py",
+      "title": "_JointSelection"
     },
     {
       "canonical_path": "entities/JsonSpool.md",
@@ -49878,6 +49891,7 @@
       "mcp_uri": "llm-wiki://modules/context_budget",
       "outgoing_internal_links": [
         "entities/BudgetedContext.md",
+        "entities/JointSelection.md",
         "modules/context_budget.md"
       ],
       "role": "semantic",
@@ -68192,5 +68206,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:dbe8ade6a286be70d618ff316f9600e85a727c529278b11d6160056c03345cb3"
+  "source_hash": "sha256:8fe1f01ebe01a2e8ad3ceca3c168a0e3035776a30da2aee8a2a83662a6eca35a"
 }

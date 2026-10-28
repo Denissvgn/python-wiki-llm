@@ -43,7 +43,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| check_wiki | service.check_wiki | 1549 | `service.check_wiki(strict=strict, format=format, knowledge_drift_report=knowledge_drift_report)` |
+| check_wiki | service.check_wiki | 1550 | `service.check_wiki(strict=strict, format=format, knowledge_drift_report=knowledge_drift_report)` |
 
 ### Boundary effects
 
@@ -53,7 +53,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `check_wiki` | `service.check_wiki` | 1549 |
+| unresolved_call | `check_wiki` | `service.check_wiki` | 1550 |
 
 ## Behavior
 

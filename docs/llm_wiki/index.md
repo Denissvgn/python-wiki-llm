@@ -6,7 +6,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 
 | Surface | Count | Start here |
 |---|---:|---|
-| Entities | 672 | [Open section](#entities) |
+| Entities | 673 | [Open section](#entities) |
 | Modules | 255 | [Open section](#modules) |
 | Workflows | 233 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
@@ -299,6 +299,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [InventoryRequest](entities/InventoryRequest.md)
 - [InventoryResult](entities/InventoryResult.md)
 - [JoinedPage](entities/JoinedPage.md)
+- [JointSelection](entities/JointSelection.md)
 - [JsonSpool](entities/JsonSpool.md)
 - [KnowledgeAggregateSummary](entities/KnowledgeAggregateSummary.md)
 - [KnowledgeArtifactError](entities/KnowledgeArtifactError.md)

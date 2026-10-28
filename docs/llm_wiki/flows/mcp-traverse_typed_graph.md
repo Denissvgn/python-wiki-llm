@@ -69,12 +69,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| traverse_typed_graph | _native_tool_call | 1447 | `_native_tool_call(service.traverse_typed_graph, locator_or_exact_route, direction=direction, kinds=kinds, origins=origins, resolutions=resolutions, include_evidence=include_evidence, limit=limit)` |
-| _native_tool_call | callback | 1347 | `callback(..., **=kwargs)` |
-| _native_tool_call | str | 1355 | `str(exc)` |
-| _native_tool_call | CallToolResult | 1359 | `CallToolResult(isError=True, content=[...], structuredContent=failure)` |
-| _native_tool_call | TextContent | 1361 | `TextContent(type='text', text=json.dumps(...))` |
-| _native_tool_call | json.dumps | 1361 | `json.dumps(failure, sort_keys=True)` |
+| traverse_typed_graph | _native_tool_call | 1448 | `_native_tool_call(service.traverse_typed_graph, locator_or_exact_route, direction=direction, kinds=kinds, origins=origins, resolutions=resolutions, include_evidence=include_evidence, limit=limit)` |
+| _native_tool_call | callback | 1348 | `callback(..., **=kwargs)` |
+| _native_tool_call | str | 1356 | `str(exc)` |
+| _native_tool_call | CallToolResult | 1360 | `CallToolResult(isError=True, content=[...], structuredContent=failure)` |
+| _native_tool_call | TextContent | 1362 | `TextContent(type='text', text=json.dumps(...))` |
+| _native_tool_call | json.dumps | 1362 | `json.dumps(failure, sort_keys=True)` |
 
 ### Boundary effects
 
@@ -84,10 +84,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `_native_tool_call` | `callback` | 1347 |
-| external_call | `_native_tool_call` | `CallToolResult` | 1359 |
-| external_call | `_native_tool_call` | `TextContent` | 1361 |
-| external_call | `_native_tool_call` | `json.dumps` | 1361 |
+| unresolved_call | `_native_tool_call` | `callback` | 1348 |
+| external_call | `_native_tool_call` | `CallToolResult` | 1360 |
+| external_call | `_native_tool_call` | `TextContent` | 1362 |
+| external_call | `_native_tool_call` | `json.dumps` | 1362 |
 
 ## Behavior
 

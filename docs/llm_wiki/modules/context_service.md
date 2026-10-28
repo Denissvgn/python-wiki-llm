@@ -69,6 +69,7 @@ Loader-selected ordinary-authority failures become typed packet refusals before 
 | `.wiki_surface_index` | `SURFACE_INDEX_FILENAME`, `SurfaceIndexEvaluation`, `evaluate_surface_index` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Mapping`, `Sequence` |
+| `copy` | `deepcopy` |
 | `dataclasses` | `dataclass` |
 | `fnmatch` | `fnmatch` |
 | `json` | `json` |
@@ -107,7 +108,7 @@ flowchart LR
 |-------|------|-------|-------------|
 | [ProtocolRequestError](../entities/ProtocolRequestError.md) | 176 | `ValueError` | Validation error for Wiki-as-Context protocol requests. |
 | [KnowledgeRequiredUnavailableError](../entities/KnowledgeRequiredUnavailableError.md) | 191 | `RuntimeError` | Explicit required mode could not produce ready qualified knowledge. |
-| [_ProtocolEnrichmentSession](../entities/ProtocolEnrichmentSession.md) | 1821 | — | Operation-scoped query state captured from one knowledge read. |
+| [_ProtocolEnrichmentSession](../entities/ProtocolEnrichmentSession.md) | 1873 | — | Operation-scoped query state captured from one knowledge read. |
 
 ## Functions
 
@@ -155,6 +156,7 @@ flowchart LR
 | `_knowledge_fallback_evidence` | `(knowledge_view: KnowledgeReadView \| None, *, surface_invalid: bool = False) -> list[str]` | — | — |
 | `_knowledge_recovery_command` | `(reason: str, *, src_dir: str, wiki_dir: str, source_selection: str \| None = None, allow_external_src: bool = False) -> str` | — | — |
 | `_build_explicit_knowledge_response` | `(knowledge_mode: str, knowledge_view: KnowledgeReadView \| None, query_service: DocumentationGraphQueryService \| None, source_priorities: Mapping[str, str], *, src_dir: str = '.', wiki_dir: str = DEFAULT_WIKI_DIR, basis_incompatible: bool = False, source_selection: str \| None = None, allow_external_src: bool = False) -> dict[str, Any]` | — | Resolve one v2 knowledge result without performing additional reads. |
+| `_select_native_context_groups` | `(knowledge, retained_locators, source_priorities)` | — | Project whole captured groups, preserving qualifications and omissions. |
 | `_fit_explicit_knowledge_response` | `(knowledge: dict[str, Any], *, knowledge_mode: str, fallback_evidence: Sequence[str]) -> dict[str, Any]` | — | Deterministically bound the standalone v2 knowledge wire payload. |
 | `_explicit_freshness_ranking_policy` | `(knowledge: Mapping[str, Any], freshness_rank_by_source: Mapping[str, int], budget_pressure: bool) -> dict[str, Any]` | — | Return the v2 disclosure for an explicitly requested freshness rank. |
 | `_capture_protocol_enrichment_session` | `(inventory: dict, *, src_root: Path, wiki_dir: str, inventory_result: InventoryResult \| None, capture_knowledge: bool, validated_surface_only: bool = False, suppress_knowledge_query: bool = False, include_plugins: bool = True) -> _ProtocolEnrichmentSession` | — | Capture the immutable inputs shared by ranking and response assembly. |

@@ -43,7 +43,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| get_architecture_page | service.get_architecture_page | 1388 | `service.get_architecture_page(page)` |
+| get_architecture_page | service.get_architecture_page | 1389 | `service.get_architecture_page(page)` |
 
 ### Boundary effects
 
@@ -53,7 +53,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `get_architecture_page` | `service.get_architecture_page` | 1388 |
+| unresolved_call | `get_architecture_page` | `service.get_architecture_page` | 1389 |
 
 ## Behavior
 
