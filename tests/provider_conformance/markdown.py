@@ -179,7 +179,7 @@ def signature(text: str, lang: str) -> dict:
             kind, name = "var_keyword", name[2:]
         elif name.startswith("*"):
             kind, name, keyword_only = "var_positional", name[1:], True
-        item = {"name": name, "type": annotation.strip() if colon else ""}
+        item: dict[str, str | bool] = {"name": name, "type": annotation.strip() if colon else ""}
         if lang == "typescript":
             item["optional"] = name.endswith("?")
             item["rest"] = name.startswith("...")
