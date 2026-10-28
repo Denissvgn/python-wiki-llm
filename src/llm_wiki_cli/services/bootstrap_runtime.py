@@ -671,7 +671,7 @@ def _table_inline_code(value: object, *, table: bool = True) -> str:
         # types. Keep one physical table line while preserving code whitespace
         # and making both HTML and Markdown punctuation inert.
         encoded = "".join(
-            char if char.isalnum() or char == " " else f"&#{ord(char)};"
+            char if char.isalnum() or char == " " or ord(char) >= 128 else f"&#{ord(char)};"
             for char in text
         )
         return f"<pre><code>{encoded}</code></pre>"

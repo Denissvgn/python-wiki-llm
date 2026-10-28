@@ -4414,6 +4414,7 @@ class TestBootstrapArchitecturePages:
 
 @pytest.mark.parametrize('literal', [
     '`first\nsecond`', '`first\r\nsecond`', '`first\tsecond`',
+    '`first\n\x80\x85\x91\x9f`',
     '`<script>bad()</script>|[x]*_\\\nsecond`',
 ])
 def test_multiline_code_cells_preserve_source_text_and_inert_markup(literal):
