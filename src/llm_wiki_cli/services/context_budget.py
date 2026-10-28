@@ -195,15 +195,24 @@ class _JointSelection:
         if knowledge.get("status") == "selected":
             selection = knowledge["selection"]
             concepts = selection["concepts"]
+            by_locator = {row["locator"]: row for row in concepts}
+            by_path = {row["canonical_path"]: row["locator"] for row in concepts}
+
+            def endpoint(value):
+                if isinstance(value, str):
+                    return value if value in by_locator else None
+                if isinstance(value, Mapping):
+                    locator = value.get("locator")
+                    return locator if locator in by_locator else by_path.get(value.get("canonical_path"))
+                return None
+
             for order, row in enumerate(concepts):
                 if row["locator"] not in self.required_native:
                     choices.append(((*self.rank(row["source_path"]), 3, order), "native", row["locator"]))
             for order, row in enumerate(selection["relationships"]):
-                related = [c for c in concepts if c["locator"] in (
-                    row.get("from"), (row.get("from") or {}).get("locator") if isinstance(row.get("from"), Mapping) else None,
-                    (row.get("target") or {}).get("locator"),
-                ) or c["canonical_path"] == (row.get("target") or {}).get("canonical_path")]
-                rank = min((self.rank(c["source_path"]) for c in related), default=(3, 1))
+                incident = (endpoint(row.get("from")), endpoint(row.get("target")))
+                rank = min((self.rank(by_locator[locator]["source_path"])
+                            for locator in incident if locator is not None), default=(3, 1))
                 choices.append(((*rank, 5, order), "relationship", order))
         if not choices:
             return None
