@@ -147,6 +147,9 @@ def test_unchanged_sync_recovers_prior_unqualified_member_removal(
 ):
     from llm_wiki_cli.services.source_retirement import SOURCE_MEMBER_REMOVED_HEADER
 
+    # Exercise the cached publication path on every host, independently of
+    # whether CI supplied a shared helper cache in the outer environment.
+    monkeypatch.setenv("LLM_WIKI_CACHE_DIR", str(tmp_path / "cache"))
     project, wiki = _bootstrap_project(
         tmp_path,
         monkeypatch,

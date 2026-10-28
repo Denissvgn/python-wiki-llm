@@ -150,6 +150,12 @@ def test_released_unknown_evidence_guarded_upgrade_and_refresh(tmp_path, monkeyp
     monkeypatch.chdir(tmp_path)
     helper = resolve_helper_cache_root(PROJECT_ROOT)
     assert helper is not None
+    from llm_wiki_cli.services.maintenance_protocol import governance_writer_lock, storage_writer_lock
+
+    # Persistent operational locks are setup state, not canonical prose or
+    # provenance. Capture the refusal baseline after provisioning both locks.
+    with governance_writer_lock(tmp_path / 'wiki'), storage_writer_lock(tmp_path / 'wiki'):
+        pass
     common = ['--src-dir', '.', '--wiki-dir', 'wiki', '--source-selection', '.llm-wiki/source-selection.json',
               '--helper-cache-dir', str(helper.parent), '--jobs', '1', '--no-cache']
     sync = ['sync', *common, '--no-plugins']

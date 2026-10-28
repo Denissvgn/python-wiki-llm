@@ -42,6 +42,9 @@ def test_dynamic_routes_publish_and_converge(
     tmp_path, monkeypatch, api_contracts, initial_dynamic
 ):
     monkeypatch.chdir(tmp_path)
+    # This fixture checks route projection convergence without optional cache
+    # metadata, whose removal on --no-cache has a separate custody contract.
+    monkeypatch.delenv("LLM_WIKI_CACHE_DIR", raising=False)
     source = tmp_path / "src"
     source.mkdir()
     app = source / "app.py"
@@ -144,6 +147,25 @@ def test_recovery_from_legacy_route_failure_preserves_authored_behavior(
         ),
         encoding="utf-8",
     )
+    if interrupted == "bootstrap":
+        from llm_wiki_cli.services.maintenance_protocol import MaintenanceProtocolError
+
+        before = {p.relative_to(wiki): p.read_bytes() for p in wiki.rglob("*") if p.is_file()}
+        with pytest.raises(SystemExit) as refused:
+            sync_cmd.run(SimpleNamespace(src_dir="src", wiki_dir=str(wiki), force=True))
+        assert refused.value.code == 2
+        with pytest.raises(MaintenanceProtocolError, match="changed or unrelated"):
+            bootstrap_cmd.run(SimpleNamespace(**args))
+        assert {p.relative_to(wiki): p.read_bytes() for p in wiki.rglob("*") if p.is_file()} == before
+        # Preserve the authored incomplete tree, establish fresh provenance, then
+        # explicitly carry its explanation into the newly generated page.
+        backup = tmp_path / "preserved-incomplete-wiki"
+        wiki.rename(backup)
+        bootstrap_cmd.run(SimpleNamespace(**args))
+        flow.write_text(sync_cmd._replace_section_body(
+            flow.read_text(), "Behavior", "Keep this operator explanation."
+        ), encoding="utf-8")
+        assert {p.relative_to(backup): p.read_bytes() for p in backup.rglob("*") if p.is_file()} == before
     sync_cmd.run(
         SimpleNamespace(
             src_dir="src", wiki_dir=str(wiki), force=True, rebuild_knowledge=True

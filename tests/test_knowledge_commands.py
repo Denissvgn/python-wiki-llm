@@ -1301,18 +1301,15 @@ def test_bootstrap_commit_interruption_never_serves_mixed_knowledge(
         bootstrap_cmd.run(_bootstrap_args(project, wiki_dir))
 
     assert not (wiki_dir / MANIFEST_FILENAME).exists()
-    with pytest.raises(KnowledgeStateLoadError) as exc_info:
-        load_knowledge_state(wiki_dir)
-    assert exc_info.value.status in {
-        KnowledgeLoadState.INVALID,
-        KnowledgeLoadState.MIXED_SNAPSHOT,
-    }
-
-    degraded = load_knowledge_state(
-        wiki_dir,
-        policy=KnowledgeMismatchPolicy.DEGRADED,
-    )
-    assert degraded.status is KnowledgeLoadState.DEGRADED
-    assert degraded.underlying_status is exc_info.value.status
-    assert degraded.surface is not None
-    assert degraded.knowledge is None
+    rebuilds = []
+    for policy in KnowledgeMismatchPolicy:
+        unavailable = load_knowledge_state(
+            wiki_dir, policy=policy,
+            rebuild_callback=rebuilds.append if policy is KnowledgeMismatchPolicy.REBUILD else None,
+        )
+        assert unavailable.status is KnowledgeLoadState.INVALID
+        assert unavailable.surface is None
+        assert unavailable.knowledge is None
+        assert unavailable.manifest_basis is None
+        assert any(issue.code == "maintenance-bootstrap-incomplete" for issue in unavailable.issues)
+    assert rebuilds == []

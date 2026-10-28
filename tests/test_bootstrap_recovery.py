@@ -310,6 +310,45 @@ def test_non_git_empty_target_retry_keeps_lock_files_operational(
     assert not recovery._record_path(wiki).is_relative_to(wiki)
 
 
+def test_non_git_source_adapter_recovery_does_not_write_beside_nested_wiki(
+    tmp_path, monkeypatch
+):
+    source = tmp_path / "source"
+    source.mkdir()
+    monkeypatch.chdir(source)
+    (source / "demo.py").write_text("class Greeter:\n    pass\n")
+    (source / ".gitignore").write_text("docs/\n")
+    wiki = source / "docs/wiki"
+
+    def source_bytes():
+        return {
+            p.relative_to(source).as_posix(): p.read_bytes()
+            for p in source.rglob("*")
+            if p.is_file() and not p.is_relative_to(wiki)
+        }
+
+    before = source_bytes()
+    arguments = cli._build_parser().parse_args(
+        [
+            "bootstrap",
+            "--src-dir",
+            ".",
+            "--wiki-dir",
+            str(wiki),
+            "--source-adapter",
+        ]
+    )
+    with monkeypatch.context() as fault:
+        interrupt_after(fault, "Greeter.md")
+        with pytest.raises(RuntimeError):
+            runtime.run(arguments)
+    assert source_bytes() == before
+    assert not recovery._record_path(wiki).is_relative_to(source)
+    runtime.run(arguments)
+    assert source_bytes() == before
+    assert not recovery.pending_bootstrap(wiki)
+
+
 def test_process_exit_between_replacement_and_observation_is_recoverable(
     project, monkeypatch
 ):

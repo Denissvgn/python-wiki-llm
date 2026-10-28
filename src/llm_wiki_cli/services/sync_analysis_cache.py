@@ -72,6 +72,9 @@ def input_key(options, snapshot, manifest, generation_inputs, *, explain=False):
         return skipped("unqualified-implementation")
     inputs = dict(generation_inputs)
     inputs.pop(REUSE_INPUT_KEY, None)
+    # Retirement is reconciled against the current wiki on every run. It is
+    # publication output, not an input to the cached structural observations.
+    inputs.pop("entity_retirement", None)
     key = {
         "schema_version": SCHEMA, "source_root": str(snapshot.root),
         "source_hashes": dict(snapshot.captured_content_hashes),

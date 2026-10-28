@@ -170,9 +170,8 @@ evidence. Edited pages or unrelated files stop recovery before restoration.
 Preserve the entire incomplete wiki outside the configured wiki path before
 starting over when those edits need to be kept. Keep the recovery journal until
 setup succeeds; it is stored under `.git/bootstrap-recovery` when a `.git`
-directory is available, otherwise under `.llm-wiki/bootstrap-recovery` beside
-the wiki. If the wiki itself is named `.llm-wiki`, recovery uses the sibling
-`.llm-wiki-bootstrap-recovery` directory.
+directory is available, otherwise under `llm-wiki/bootstrap-recovery` in the
+system temporary directory. Recovery state stays outside a non-Git source tree.
 
 An older failed bootstrap without a journal cannot be identified safely from
 its generated pages alone. For a confirmed new setup containing only that

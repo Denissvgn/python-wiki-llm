@@ -6,6 +6,7 @@ from contextlib import contextmanager
 import json
 from pathlib import Path, PurePosixPath
 import re
+import tempfile
 from uuid import uuid4
 
 from .filesystem_guard import (
@@ -37,9 +38,13 @@ LOCK_FILES = {"llm-wiki-governance.lock", "llm-wiki-storage.lock"}
 
 def _record_path(root: Path) -> Path:
     lock_root = _governance_lock_root(root)
-    parent = lock_root if lock_root != root else root.parent / ".llm-wiki"
-    if parent == root:
-        parent = root.parent / ".llm-wiki-bootstrap-recovery"
+    # A non-Git source adapter can place its wiki inside a read-only source
+    # tree. Recovery state must not add files beside that authorized output.
+    parent = (
+        lock_root
+        if lock_root != root
+        else Path(tempfile.gettempdir()).resolve() / "llm-wiki"
+    )
     return (
         parent / "bootstrap-recovery" / digest(str(root).encode())[7:] / "active.json"
     )

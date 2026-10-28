@@ -1358,6 +1358,7 @@ def test_committed_profile_freezes_intended_product_census():
     assert "src/llm_wiki_cli/services/helper_preparation.py" in snapshot.language_paths("python")
     assert "src/llm_wiki_cli/services/current_contracts.py" in snapshot.language_paths("python")
     assert "src/llm_wiki_cli/services/sync_recovery.py" in snapshot.language_paths("python")
+    assert "src/llm_wiki_cli/services/bootstrap_recovery.py" in snapshot.language_paths("python")
     assert "src/llm_wiki_cli/services/evidence_diagnostics.py" in snapshot.language_paths("python")
     assert "src/llm_wiki_cli/services/evidence_explanation.py" in snapshot.language_paths("python")
     assert "src/llm_wiki_cli/services/normalization_diagnostics.py" in snapshot.language_paths("python")
@@ -1369,13 +1370,13 @@ def test_committed_profile_freezes_intended_product_census():
     assert {
         language: len(files) for language, files in snapshot.files_by_language.items()
     } == {
-        "python": 261,
+        "python": 262,
         "typescript": 3,
         "go": 0,
         "rust": 0,
         "haskell": 0,
     }
-    assert len(snapshot.all_source_paths) == 264
+    assert len(snapshot.all_source_paths) == 265
     assert {
         "src/llm_wiki_cli/services/analysis_compatibility.py",
         "src/llm_wiki_cli/services/analysis_capture.py",

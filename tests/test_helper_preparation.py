@@ -63,6 +63,7 @@ def test_prepares_missing_reuses_current_and_repairs_stale(
     tmp_path, monkeypatch, language, suffix
 ):
     monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("LLM_WIKI_CACHE_DIR", raising=False)
     (tmp_path / ".git").mkdir()
     (tmp_path / f"main.{suffix}").write_text("fixture", encoding="utf-8")
     builds = []
@@ -119,6 +120,7 @@ def test_build_io_failure_is_reported_and_other_helpers_are_prepared(
     tmp_path, monkeypatch
 ):
     monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("LLM_WIKI_CACHE_DIR", raising=False)
     (tmp_path / ".git").mkdir()
     (tmp_path / "main.ts").write_text("fixture", encoding="utf-8")
     (tmp_path / "main.go").write_text("package main\n", encoding="utf-8")
@@ -187,6 +189,7 @@ def test_init_uses_stored_selection_and_explicit_cache(tmp_project, monkeypatch)
 def test_init_failure_does_not_publish_scaffold_and_can_be_retried(
     tmp_project, monkeypatch, capsys
 ):
+    monkeypatch.delenv("LLM_WIKI_CACHE_DIR", raising=False)
     Path("main.ts").write_text("fixture", encoding="utf-8")
     monkeypatch.setattr(
         helpers,

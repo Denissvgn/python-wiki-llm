@@ -1047,8 +1047,9 @@ class TestMigrateIntegration:
 
         helper_root = resolve_helper_cache_root(Path(__file__).resolve().parents[1])
         assert helper_root is not None
-        cache_dir = tmp_path / "helper-cache"
-        shutil.copytree(helper_root, cache_dir / helper_root.name)
+        # Prepared receipts bind their absolute cache root; a raw copy is not
+        # an authorized preparation at a different location.
+        cache_dir = helper_root.parent
         monkeypatch.setenv(ENV_CACHE_DIR, str(cache_dir))
         os.chdir(proj)
         migrate_cmd.run(_make_args())

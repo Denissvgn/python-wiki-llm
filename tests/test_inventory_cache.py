@@ -23,7 +23,7 @@ def test_resolves_normal_git_dir(tmp_path):
     src.mkdir()
     (src / ".git").mkdir()
 
-    assert resolve_inventory_cache_path(src) == src / ".git" / CACHE_FILENAME
+    assert resolve_inventory_cache_path(src, env={}) == src / ".git" / CACHE_FILENAME
 
 
 def test_resolves_git_worktree_file(tmp_path):
@@ -33,7 +33,7 @@ def test_resolves_git_worktree_file(tmp_path):
     gitdir.mkdir(parents=True)
     (src / ".git").write_text(f"gitdir: {gitdir}\n", encoding="utf-8")
 
-    assert resolve_inventory_cache_path(src) == gitdir / CACHE_FILENAME
+    assert resolve_inventory_cache_path(src, env={}) == gitdir / CACHE_FILENAME
 
 
 def test_cache_dir_flag_wins_over_env(tmp_path):
