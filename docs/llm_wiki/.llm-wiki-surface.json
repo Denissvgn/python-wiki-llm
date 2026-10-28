@@ -1797,37 +1797,37 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 6571,
+              "line": 6574,
               "step": "execute_bootstrap",
               "target": "io.StringIO"
             },
             {
               "kind": "unresolved_call",
-              "line": 4662,
+              "line": 4665,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.source_root).expanduser().resolve"
             },
             {
               "kind": "unresolved_call",
-              "line": 4662,
+              "line": 4665,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.source_root).expanduser"
             },
             {
               "kind": "unresolved_call",
-              "line": 4663,
+              "line": 4666,
               "step": "_bootstrap_run_options_from_request",
               "target": "source_root.is_dir"
             },
             {
               "kind": "unresolved_call",
-              "line": 4667,
+              "line": 4670,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.wiki_root).expanduser().resolve"
             },
             {
               "kind": "unresolved_call",
-              "line": 4667,
+              "line": 4670,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.wiki_root).expanduser"
             },
@@ -31748,7 +31748,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 6616,
+              "line": 6619,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -34458,6 +34458,7 @@
             "src/llm_wiki_cli/services/python_imports.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/bootstrap_runtime.py",
+            "src/llm_wiki_cli/services/markdown_sections.py",
             "src/llm_wiki_cli/services/wiki_surface.py",
             "src/llm_wiki_cli/services/knowledge_orchestration.py",
             "src/llm_wiki_cli/services/knowledge_envelope.py",
@@ -34473,7 +34474,7 @@
             "src/llm_wiki_cli/services/infrastructure_sync.py",
             "src/llm_wiki_cli/services/knowledge_index.py"
           ],
-          "step_count": 4063,
+          "step_count": 4067,
           "truncated": true
         }
       },
@@ -36675,9 +36676,10 @@
             "src/llm_wiki_cli/services/bootstrap_runtime.py",
             "src/llm_wiki_cli/services/infrastructure_sync.py",
             "src/llm_wiki_cli/services/knowledge_storage_lifecycle.py",
-            "src/llm_wiki_cli/services/source_retirement.py"
+            "src/llm_wiki_cli/services/source_retirement.py",
+            "src/llm_wiki_cli/services/markdown_sections.py"
           ],
-          "step_count": 2465,
+          "step_count": 2466,
           "truncated": true
         }
       },
@@ -66448,6 +66450,7 @@
         "modules/maintenance_protocol.md",
         "modules/maintenance_state.md",
         "modules/manifest_storage.md",
+        "modules/markdown_sections.md",
         "modules/migrate_cmd.md",
         "modules/packages.md",
         "modules/paths.md",
@@ -67108,6 +67111,7 @@
         "modules/knowledge_storage_lifecycle.md",
         "modules/maintenance_state.md",
         "modules/manifest_storage.md",
+        "modules/markdown_sections.md",
         "modules/packages.md",
         "modules/plugins.md",
         "modules/progress.md",
@@ -68206,5 +68210,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:538765f9fd113a6a87b2448c85f5c707089e4914e646f0ed3bc9b6db3d48c9c2"
+  "source_hash": "sha256:d0770ea8c8ae43c0ee733fc586805b6708d1cefc481edbb5674e172d568a7709"
 }
