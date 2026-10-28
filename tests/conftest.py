@@ -365,7 +365,12 @@ def require_prepared_diagnostics_helper():
         )
         if not ready:
             if os.environ.get("LLM_WIKI_REQUIRE_NATIVE_DIAGNOSTICS") == "1":
-                pytest.fail(f"prepared {language} helper is required in the owner lane")
+                scope = os.environ.get("LLM_WIKI_REQUIRED_NATIVE_LANGUAGES", "")
+                required = {name.strip() for name in scope.split(",") if name.strip()}
+                if required - {"typescript", "go", "rust", "haskell"}:
+                    pytest.fail("unsupported required native diagnostic language")
+                if not required or language in required:
+                    pytest.fail(f"prepared {language} helper is required in the owner lane")
             pytest.skip(f"Prepared {language} helper required; owned by toolchains")
         return cache
 

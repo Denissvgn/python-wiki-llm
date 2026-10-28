@@ -203,6 +203,7 @@ jobs:
       PYTHONUTF8: '1'
       PYTHONIOENCODING: utf-8
       LLM_WIKI_REQUIRE_NATIVE_DIAGNOSTICS: ${{ (matrix.lane == 'toolchains' || matrix.typescript) && '1' || '' }}
+      LLM_WIKI_REQUIRED_NATIVE_LANGUAGES: ${{ matrix.lane == 'toolchains' && 'go,haskell,rust,typescript' || (matrix.typescript && 'typescript' || '') }}
     steps:
     - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
       with:

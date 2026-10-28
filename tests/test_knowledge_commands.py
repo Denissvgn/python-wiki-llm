@@ -455,6 +455,12 @@ def test_bootstrap_matches_v1_4_0_markdown_and_surface_v1_goldens(
             historical,
             current,
         )
+    # Preserve the historical fixture while checking the corrected empty state.
+    historical_methods = b"*No public methods. Inherits from base classes.*"
+    assert expected_markdown["entities/User.md"].count(historical_methods) == 1
+    expected_markdown["entities/User.md"] = expected_markdown["entities/User.md"].replace(
+        historical_methods, b"*No declared methods.*"
+    )
     assert all(b"\r" not in content for content in expected_markdown.values())
     assert _markdown_tree_bytes(wiki_dir) == expected_markdown
 

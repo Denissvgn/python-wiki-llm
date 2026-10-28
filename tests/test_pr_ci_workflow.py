@@ -6,6 +6,7 @@ from pathlib import Path
 import re
 
 import yaml
+import pytest
 
 
 ROOT = Path(__file__).parents[1]
@@ -13,6 +14,32 @@ ROOT = Path(__file__).parents[1]
 
 def workflow(name):
     return yaml.safe_load((ROOT / ".github/workflows" / name).read_text())
+
+
+def test_selected_native_diagnostics_have_an_explicit_language_scope():
+    env = workflow("ci.yml")["jobs"]["test"]["env"]
+    assert env["LLM_WIKI_REQUIRE_NATIVE_DIAGNOSTICS"] == "${{ (matrix.lane == 'toolchains' || matrix.typescript) && '1' || '' }}"
+    assert env["LLM_WIKI_REQUIRED_NATIVE_LANGUAGES"] == "${{ matrix.lane == 'toolchains' && 'go,haskell,rust,typescript' || (matrix.typescript && 'typescript' || '') }}"
+
+
+@pytest.mark.parametrize(("scope", "language", "required"), [
+    (None, "go", True), ("", "rust", True),
+    ("typescript", "typescript", True), ("typescript", "go", False),
+    ("go,haskell,rust,typescript", "haskell", True),
+    ("unsupported", "typescript", True),
+])
+def test_native_diagnostic_scope_preserves_mandatory_owners(monkeypatch, request, scope, language, required):
+    from llm_wiki_cli.services import extractor_helpers
+    monkeypatch.setattr(extractor_helpers, "get_prepared_binary", lambda *args: None)
+    monkeypatch.setattr(extractor_helpers, "typescript_dependencies_ready", lambda *args: False)
+    monkeypatch.setenv("LLM_WIKI_REQUIRE_NATIVE_DIAGNOSTICS", "1")
+    if scope is None:
+        monkeypatch.delenv("LLM_WIKI_REQUIRED_NATIVE_LANGUAGES", raising=False)
+    else:
+        monkeypatch.setenv("LLM_WIKI_REQUIRED_NATIVE_LANGUAGES", scope)
+    require = request.getfixturevalue("require_prepared_diagnostics_helper")
+    with pytest.raises(pytest.fail.Exception if required else pytest.skip.Exception):
+        require(language)
 
 
 def test_integrity_and_activation_remain_the_exact_independent_gates():
