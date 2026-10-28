@@ -102,19 +102,19 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 750 | — | — |
-| [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 1028 | — | — |
-| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3182 | — | — |
-| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4475 | — | — |
-| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4501 | — | — |
-| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4515 | — | — |
-| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4522 | — | — |
-| [_WorkflowResult](../entities/WorkflowResult.md) | 4530 | — | — |
-| [_FlowResult](../entities/FlowResult.md) | 4536 | — | — |
-| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4547 | — | — |
-| [_DependencyResult](../entities/DependencyResult.md) | 4558 | — | — |
-| [_ApiContractResult](../entities/ApiContractResult.md) | 4566 | — | — |
-| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4573 | — | — |
+| [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 759 | — | — |
+| [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 1037 | — | — |
+| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3191 | — | — |
+| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4484 | — | — |
+| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4510 | — | — |
+| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4524 | — | — |
+| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4531 | — | — |
+| [_WorkflowResult](../entities/WorkflowResult.md) | 4539 | — | — |
+| [_FlowResult](../entities/FlowResult.md) | 4545 | — | — |
+| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4556 | — | — |
+| [_DependencyResult](../entities/DependencyResult.md) | 4567 | — | — |
+| [_ApiContractResult](../entities/ApiContractResult.md) | 4575 | — | — |
+| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4582 | — | — |
 
 ## Functions
 

@@ -32,8 +32,8 @@ sequenceDiagram
     participant p18 as _failure
     participant p19 as require_nonempty_text
     participant p20 as _optional_record_array
-    participant p21 as _validate_optional_string_array
-    participant p22 as _validate_optional_strings
+    participant p21 as _validate_optional_strings
+    participant p22 as _validate_optional_string_array
     participant p23 as _validate_optional_booleans
     participant p24 as _validate_string_array
     participant p25 as _record_object
@@ -62,10 +62,10 @@ sequenceDiagram
     p6->>p18: _failure
     p10->>p19: require_nonempty_text
     p8->>p20: _optional_record_array
-    p11->>p21: _validate_optional_string_array
-    p9->>p22: _validate_optional_strings
+    p9->>p21: _validate_optional_strings
+    p11->>p22: _validate_optional_string_array
     p9->>p23: _validate_optional_booleans
-    p21->>p24: _validate_string_array
+    p22->>p24: _validate_string_array
     p20->>p25: _record_object
     p1->>p26: require_bool
     p5->>p27: sha256_bytes
@@ -74,9 +74,9 @@ sequenceDiagram
     p4-->>p30: seen_names.get(name, 0)
 ```
 
-> Call sequence diagram shows 30 of 193 interactions; 163 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 208 interactions; 178 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 40 (39 omitted); unresolved 1 of 43 (42 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 42 (41 omitted); unresolved 1 of 47 (46 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -90,7 +90,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_normalize_module_observation` | 7 | - | external | 7 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_record_array` | 17 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_pointer` | 19 | - | unresolved | 2 |
-> Omission summary shows 8 of 61 groups; 53 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 62 groups; 54 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -168,9 +168,9 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | module_observation_hash | _validate_inventory_complete | 277 | `_validate_inventory_complete(inventory_complete)` |
-| _validate_inventory_complete | require_bool | 812 | `require_bool(inventory_complete, error=TypeError(...))` |
+| _validate_inventory_complete | require_bool | 826 | `require_bool(inventory_complete, error=TypeError(...))` |
 | require_bool | isinstance (src/llm_wiki_cli/services…alidation.py:require_bool) | 810 | `isinstance(value, bool)` |
-| _validate_inventory_complete | TypeError | 814 | `TypeError('inventory_complete must be a boolean')` |
+| _validate_inventory_complete | TypeError | 828 | `TypeError('inventory_complete must be a boolean')` |
 | module_observation_hash | normalize_module_observation | 280 | `normalize_module_observation(file_data)` |
 | normalize_module_observation | _normalize_module_observation | 241 | `_normalize_module_observation(file_data)` |
 | _normalize_module_observation | _inventory_language | 456 | `_inventory_language(file_data)` |
@@ -193,7 +193,7 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `require_bool` | `isinstance` | 810 |
-| external_call | `_validate_inventory_complete` | `TypeError` | 814 |
+| external_call | `_validate_inventory_complete` | `TypeError` | 828 |
 | external_call | `_inventory_language` | `isinstance` | 539 |
 | unresolved_call | `_inventory_language` | `file_data.get` | 541 |
 | step_limit | `module_observation_hash` | `first 12 steps` | 0 |

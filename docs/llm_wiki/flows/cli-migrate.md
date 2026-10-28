@@ -124,9 +124,9 @@ sequenceDiagram
     p0-->>p30: wiki_dir.exists (src/llm_wiki_cli/commands/migrate_cmd.py:run)
 ```
 
-> Call sequence diagram shows 30 of 4058 interactions; 4028 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4062 interactions; 4032 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1093 (1092 omitted); unresolved 1 of 1536 (1535 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1096 (1095 omitted); unresolved 1 of 1537 (1536 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

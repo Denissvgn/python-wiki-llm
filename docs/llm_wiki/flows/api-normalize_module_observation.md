@@ -27,19 +27,19 @@ sequenceDiagram
     participant p13 as _failure
     participant p14 as require_nonempty_text
     participant p15 as _optional_record_array
-    participant p16 as _validate_optional_string_array
-    participant p17 as _validate_optional_strings
+    participant p16 as _validate_optional_strings
+    participant p17 as _validate_optional_string_array
     participant p18 as _validate_optional_booleans
     participant p19 as _validate_string_array
     participant p20 as _record_object
     participant p21 as _pointer
     participant p22 as require_list
     participant p23 as is_valid_sha256
-    participant p24 as _InventoryNormalizationError
-    participant p25 as require_string
-    participant p26 as require_bool
-    participant p27 as contains_control_character
-    participant p28 as require_mapping
+    participant p24 as sha256_bytes
+    participant p25 as _InventoryNormalizationError
+    participant p26 as require_string
+    participant p27 as require_bool
+    participant p28 as contains_control_character
     participant p29 as isinstance (src/llm_wiki_cli/services…malize_module_observation)
     participant p30 as seen_names.get
     p0->>p1: _normalize_module_observation
@@ -57,26 +57,26 @@ sequenceDiagram
     p2->>p13: _failure
     p5->>p14: require_nonempty_text
     p3->>p15: _optional_record_array
-    p6->>p16: _validate_optional_string_array
-    p4->>p17: _validate_optional_strings
+    p4->>p16: _validate_optional_strings
+    p6->>p17: _validate_optional_string_array
     p4->>p18: _validate_optional_booleans
-    p16->>p19: _validate_string_array
+    p17->>p19: _validate_string_array
     p15->>p20: _record_object
     p3->>p21: _pointer
     p9->>p22: require_list
     p6->>p23: is_valid_sha256
-    p13->>p24: _InventoryNormalizationError
-    p17->>p25: require_string
-    p18->>p26: require_bool
-    p14->>p27: contains_control_character
-    p20->>p28: require_mapping
+    p6->>p24: sha256_bytes
+    p13->>p25: _InventoryNormalizationError
+    p16->>p26: require_string
+    p18->>p27: require_bool
+    p14->>p28: contains_control_character
     p1-->>p29: isinstance (src/llm_wiki_cli/services…malize_module_observation)(file_data, Mapping)
     p1-->>p30: seen_names.get(name, 0)
 ```
 
-> Call sequence diagram shows 30 of 183 interactions; 153 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 200 interactions; 170 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 39 (38 omitted); unresolved 1 of 42 (41 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 42 (41 omitted); unresolved 1 of 47 (46 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -90,7 +90,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_pointer` | 14 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_optional_record_array` | 18 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 3 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_optional_record_array` | 18 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-> Omission summary shows 8 of 52 groups; 44 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 56 groups; 48 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
