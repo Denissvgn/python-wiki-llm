@@ -74,9 +74,9 @@ sequenceDiagram
     p1-->>p30: root.is_dir
 ```
 
-> Call sequence diagram shows 30 of 304 interactions; 274 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 310 interactions; 280 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 100 (99 omitted); unresolved 1 of 110 (109 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 102 (101 omitted); unresolved 1 of 114 (113 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

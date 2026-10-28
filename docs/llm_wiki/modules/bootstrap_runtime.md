@@ -26,6 +26,7 @@ Python reference rendering distinguishes captured module-level type uses from le
 | `..config` | `DEFAULT_WIKI_DIR`, `validate_path`, `validate_source_root` |
 | `..extractors.common` | `TYPESCRIPT_FAMILY_EXTENSIONS` |
 | `.api_contracts` | `ApiContractError`, `attach_routes_to_entry_points`, `build_api_contracts`, `link_entry_point_flows`, `render_api_contracts_markdown`, `render_flow_api_contract_section` |
+| `.bootstrap_recovery` | `pending_bootstrap`, `bootstrap_write_operation`, `pending_bootstrap` |
 | `.bootstrap_service` | `BootstrapContractError`, `BootstrapExtractionError`, `BootstrapRequestError`, `BootstrapRequest`, `BootstrapResult` |
 | `.contracts` | `BOOTSTRAP_SUMMARY_SCHEMA_VERSION`, `KNOWLEDGE_SCHEMA_VERSION` |
 | `.current_contracts` | `CURRENT_KNOWLEDGE_FORMAT`, `upgrade_current_knowledge` |
@@ -93,9 +94,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (17) |
-| Outbound | `src` (37) |
+| Outbound | `src` (38) |
 
-> All 54 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 55 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -106,14 +107,14 @@ flowchart LR
 | [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3161 | — | — |
 | [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4454 | — | — |
 | [_BootstrapRunState](../entities/BootstrapRunState.md) | 4480 | — | — |
-| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4493 | — | — |
-| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4500 | — | — |
-| [_WorkflowResult](../entities/WorkflowResult.md) | 4508 | — | — |
-| [_FlowResult](../entities/FlowResult.md) | 4514 | — | — |
-| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4525 | — | — |
-| [_DependencyResult](../entities/DependencyResult.md) | 4536 | — | — |
-| [_ApiContractResult](../entities/ApiContractResult.md) | 4544 | — | — |
-| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4551 | — | — |
+| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4494 | — | — |
+| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4501 | — | — |
+| [_WorkflowResult](../entities/WorkflowResult.md) | 4509 | — | — |
+| [_FlowResult](../entities/FlowResult.md) | 4515 | — | — |
+| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4526 | — | — |
+| [_DependencyResult](../entities/DependencyResult.md) | 4537 | — | — |
+| [_ApiContractResult](../entities/ApiContractResult.md) | 4545 | — | — |
+| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4552 | — | — |
 
 ## Functions
 
@@ -323,7 +324,7 @@ flowchart LR
 | `_write_bootstrap_index` | `(state: _BootstrapRunState, entity_result: _EntityModuleResult, workflow_result: _WorkflowResult, flow_result: _FlowResult, infrastructure_result: _InfrastructureResult, dependency_result: _DependencyResult, api_contract_result: _ApiContractResult) -> None` | — | — |
 | `_append_bootstrap_log` | `(state: _BootstrapRunState, inventory: dict, entity_result: _EntityModuleResult, workflow_result: _WorkflowResult, flow_result: _FlowResult, infrastructure_result: _InfrastructureResult, dependency_result: _DependencyResult, api_contract_result: _ApiContractResult, cross_reference_count: int, *, generation_inputs: Mapping[str, object], plugin_lock_path: str \| None, plugin_lock_hash: str \| None) -> None` | — | — |
 | `_source_snapshot_log_lines` | `(snapshot: SourceSnapshot, *, generation_inputs: Mapping[str, object] \| None = None, plugin_lock_path: str \| None = None, plugin_lock_hash: str \| None = None) -> str` | — | Render portable public provenance for an evaluated source snapshot. |
-| `_emit_bootstrap_complete` | `(state: _BootstrapRunState, inventory: dict, entity_result: _EntityModuleResult, workflow_result: _WorkflowResult, flow_result: _FlowResult, infrastructure_result: _InfrastructureResult, dependency_result: _DependencyResult, api_contract_result: _ApiContractResult, cross_reference_count: int) -> None` | — | — |
+| `_bootstrap_complete_message` | `(inventory: dict, entity_result: _EntityModuleResult, workflow_result: _WorkflowResult, flow_result: _FlowResult, infrastructure_result: _InfrastructureResult, dependency_result: _DependencyResult, api_contract_result: _ApiContractResult, cross_reference_count: int) -> str` | — | — |
 | `_update_bootstrap_agent_constraints` | `(state: _BootstrapRunState) -> None` | — | — |
 | `_bootstrap_manifest_generation_state` | `(state: _BootstrapRunState, api_contract_result: _ApiContractResult, infrastructure_result: _InfrastructureResult, *, previous_manifest: SyncManifest \| None) -> tuple[dict[str, dict[str, object]], dict[str, object]]` | — | — |
 | `_load_previous_bootstrap_manifest` | `(wiki_dir: Path) -> SyncManifest \| None` | — | — |
@@ -339,7 +340,7 @@ flowchart LR
 | `_preflight_public_bootstrap` | `(options: _BootstrapRunOptions) -> None` | — | Reject overwrite and existing wiki content without reading source. |
 | `_preflight_bootstrap_source_selection` | `(options: _BootstrapRunOptions) -> None` | — | Protect private workspace refreshes from configured-to-broad downgrade. |
 | `_execute_bootstrap_options` | `(options: _BootstrapRunOptions, *, _workspace_refresh_authorized: bool = False) -> BootstrapResult` | — | — |
-| `_execute_bootstrap_options_locked` | `(options: _BootstrapRunOptions, *, _workspace_refresh_authorized: bool = False, write_basis = None) -> BootstrapResult` | — | — |
+| `_execute_bootstrap_options_locked` | `(state: _BootstrapRunState, *, write_basis = None) -> BootstrapResult` | — | — |
 | `_preflight_bootstrap_governance` | `(wiki_dir: Path) -> None` | — | Reject corrupt or missing committed governance before creating pages. |
 | `execute_bootstrap` | `(request: BootstrapRequest, *, progress_stream: TextIO \| None = None) -> BootstrapResult` | — | Execute first-use deterministic bootstrap without argparse or exits. |
 | `_execute_documentation_workspace_refresh` | `(request: BootstrapRequest, *, workspace_root: str \| Path, progress_stream: TextIO \| None = None) -> BootstrapResult` | — | Refresh an isolated documentation-workspace snapshot. |

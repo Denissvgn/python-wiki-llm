@@ -65,11 +65,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| sync_guidance | _render_recovery_command | 328 | `_render_recovery_command([...])` |
+| sync_guidance | _render_recovery_command | 334 | `_render_recovery_command([...])` |
 | _render_recovery_command | _uses_windows_command_line | 148 | `_uses_windows_command_line(data not statically known)` |
 | _render_recovery_command | subprocess.list2cmdline | 149 | `subprocess.list2cmdline(arguments)` |
 | _render_recovery_command | shlex.join | 150 | `shlex.join(arguments)` |
-| sync_guidance | str | 337 | `str(wiki_dir)` |
+| sync_guidance | str | 343 | `str(wiki_dir)` |
 
 ### Boundary effects
 

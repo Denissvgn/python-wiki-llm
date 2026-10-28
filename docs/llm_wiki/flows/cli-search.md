@@ -2,11 +2,12 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [search_cmd](../modules/search_cmd.md)
-**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [config](../modules/config.md), and 31 more
+**Modules touched:** [api](../modules/api.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 32 more
 
 **Complete modules touched:**
 
 - [api](../modules/api.md)
+- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
 - [config](../modules/config.md)
@@ -112,7 +113,7 @@ sequenceDiagram
     p1-->>p30: Path(…).expanduser
 ```
 
-> Call sequence diagram shows 30 of 1274 interactions; 1244 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1275 interactions; 1245 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 1 of 517 (516 omitted); unresolved 1 of 345 (344 omitted). These counts cover the captured static trace.
 
@@ -128,7 +129,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_source_root` | 2 | - | unresolved | 4 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 21 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:_current_windows_user_sid` | 23 | - | external | 19 |
-> Omission summary shows 8 of 219 groups; 211 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 220 groups; 212 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

@@ -2,11 +2,12 @@
 
 **Entry point:** `recover_maintenance` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [api](../modules/api.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), [config](../modules/config.md), and 30 more
+**Modules touched:** [api](../modules/api.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 31 more
 
 **Complete modules touched:**
 
 - [api](../modules/api.md)
+- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
 - [config](../modules/config.md)
@@ -71,12 +72,12 @@ sequenceDiagram
     participant p20 as _load_recovery_snapshot
     participant p21 as _validate_capture_options
     participant p22 as _unlink_guarded_bytes
-    participant p23 as _resolve_snapshot_selection
-    participant p24 as _normalize_only_files
-    participant p25 as governance_lock
-    participant p26 as _atomic_write_guarded_bytes_windows
-    participant p27 as _empty_source_snapshot
-    participant p28 as _hash_structured
+    participant p23 as guard_incomplete_bootstrap
+    participant p24 as _resolve_snapshot_selection
+    participant p25 as _normalize_only_files
+    participant p26 as governance_lock
+    participant p27 as _atomic_write_guarded_bytes_windows
+    participant p28 as _empty_source_snapshot
     participant p29 as type (src/llm_wiki_cli/api.py:recover_maintenance)
     participant p30 as intent.get
     p0->>p1: _identity (src/llm_wiki_cli/services/maintenance_state.py)
@@ -101,19 +102,19 @@ sequenceDiagram
     p7->>p20: _load_recovery_snapshot
     p12->>p21: _validate_capture_options
     p17->>p22: _unlink_guarded_bytes
-    p12->>p23: _resolve_snapshot_selection
-    p12->>p24: _normalize_only_files
-    p8->>p25: governance_lock
-    p16->>p26: _atomic_write_guarded_bytes_windows
-    p12->>p27: _empty_source_snapshot
-    p13->>p28: _hash_structured
+    p19->>p23: guard_incomplete_bootstrap
+    p12->>p24: _resolve_snapshot_selection
+    p12->>p25: _normalize_only_files
+    p8->>p26: governance_lock
+    p16->>p27: _atomic_write_guarded_bytes_windows
+    p12->>p28: _empty_source_snapshot
     p0-->>p29: type (src/llm_wiki_cli/api.py:recover_maintenance)(allow_prepared_adoption)
     p2-->>p30: intent.get('adoption_id')
 ```
 
-> Call sequence diagram shows 30 of 1814 interactions; 1784 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1843 interactions; 1813 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 612 (611 omitted); unresolved 1 of 400 (399 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 622 (621 omitted); unresolved 1 of 407 (406 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -127,7 +128,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 13 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 16 | - | external | 20 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 16 | - | unresolved | 5 |
-> Omission summary shows 8 of 421 groups; 413 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 432 groups; 424 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

@@ -74,22 +74,22 @@ sequenceDiagram
     p0-->>p30: target.is_absolute
 ```
 
-> Call sequence diagram shows 30 of 386 interactions; 356 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 392 interactions; 362 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 240 (239 omitted); unresolved 1 of 51 (50 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 242 (241 omitted); unresolved 1 of 55 (54 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/filesystem_guard.py:atomic_write_guarded_bytes` | 1 | - | external | 4 |
-| `src/llm_wiki_cli/services/wiki_write_basis.py:before_wiki_write` | 8 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/wiki_write_basis.py:before_wiki_write` | 8 | - | external | 2 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_atomic_write_guarded_bytes_windows` | 15 | - | external | 19 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 18 | - | external | 9 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 18 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 6 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 18 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 26 | - | external | 14 |
+| `src/llm_wiki_cli/services/wiki_write_basis.py:before_wiki_write` | 8 | - | unresolved | 6 |
+| `src/llm_wiki_cli/services/wiki_write_basis.py:before_wiki_write` | 8 | - | external | 3 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_atomic_write_guarded_bytes_windows` | 18 | - | external | 19 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 21 | - | external | 9 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 21 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 6 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 21 | - | unresolved | 4 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 29 | - | external | 14 |
 > Omission summary shows 8 of 48 groups; 40 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -155,10 +155,10 @@ flowchart LR
 | atomic_write_guarded_bytes | isinstance (src/llm_wiki_cli/services…tomic_write_guarded_bytes) | 1620 | `isinstance(data, bytes)` |
 | atomic_write_guarded_bytes | TypeError (src/llm_wiki_cli/services…tomic_write_guarded_bytes) | 1621 | `TypeError('Guarded output data must be bytes.')` |
 | atomic_write_guarded_bytes | before_wiki_write | 1624 | `before_wiki_write(target, data)` |
-| before_wiki_write | ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 32 | `ACTIVE_WRITE_BASIS.get(data not statically known)` |
-| before_wiki_write | basis.before_write | 34 | `basis.before_write(Path(...), content)` |
-| before_wiki_write | Path (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 34 | `Path(path)` |
-| before_wiki_write | ACTIVE_SYNC_JOURNAL.get (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 35 | `ACTIVE_SYNC_JOURNAL.get(data not statically known)` |
+| before_wiki_write | ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 33 | `ACTIVE_WRITE_BASIS.get(data not statically known)` |
+| before_wiki_write | basis.before_write | 35 | `basis.before_write(Path(...), content)` |
+| before_wiki_write | Path (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 35 | `Path(path)` |
+| before_wiki_write | ACTIVE_SYNC_JOURNAL.get (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 36 | `ACTIVE_SYNC_JOURNAL.get(data not statically known)` |
 
 ### Boundary effects
 
@@ -173,9 +173,9 @@ flowchart LR
 | external_call | `atomic_write_guarded_bytes` | `OSError` | 1619 |
 | external_call | `atomic_write_guarded_bytes` | `isinstance` | 1620 |
 | external_call | `atomic_write_guarded_bytes` | `TypeError` | 1621 |
-| unresolved_call | `before_wiki_write` | `ACTIVE_WRITE_BASIS.get` | 32 |
-| unresolved_call | `before_wiki_write` | `basis.before_write` | 34 |
-| unresolved_call | `before_wiki_write` | `ACTIVE_SYNC_JOURNAL.get` | 35 |
+| unresolved_call | `before_wiki_write` | `ACTIVE_WRITE_BASIS.get` | 33 |
+| unresolved_call | `before_wiki_write` | `basis.before_write` | 35 |
+| unresolved_call | `before_wiki_write` | `ACTIVE_SYNC_JOURNAL.get` | 36 |
 | step_limit | `atomic_write_guarded_bytes` | `first 12 steps` | 0 |
 | truncated_flow | `atomic_write_guarded_bytes` | `depth limit` | 0 |
 

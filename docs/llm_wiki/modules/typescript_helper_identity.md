@@ -71,6 +71,7 @@ flowchart LR
 |----------|-----------|------------|-------------|
 | `read_receipt` | `(path: Path)` | — | Read bounded regular receipt bytes without following redirects. |
 | `_identity` | `(value)` | — | — |
+| `_validate_dependency_path` | `(relative: str) -> None` | — | Apply the portable-path contract and dependency traversal depth bound. |
 | `_snapshot` | `(root)` | — | — |
 | `dependency_fingerprint` | `(node_modules: Path) -> str` | — | Hash all paths and regular bytes; refuse unsafe, oversized or changing trees. |
 | `execution_source_fingerprint` | `(root: Path, names) -> str` | — | Retain the existing labeled source contract using guarded bounded reads. |

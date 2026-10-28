@@ -3305,3 +3305,23 @@ Review preflight exposes excluded and unknown scope before unrelated extraction.
 TypeScript helper identity covers its complete prepared dependency tree, while
 documentation ownership reports distinguish declared roles from byte custody.
 Existing permissions, validation bounds and native authority remain separate.
+
+## 2026-10-28
+
+### Wiki sync
+- Source: `.`
+- Generator version: `3.3.0`
+- Source selection profile: `.llm-wiki/source-selection.json`
+- Source selection fingerprint: `sha256:2f5c714f7261169c13f115aa055b19a8375999a2f0c4d492026a8ab6e548ad7a`
+- Source snapshot digest: `sha256:db8ada73817012c9f3a5f09a48fd7af25b05de4604cf7d8baca0b1b3439e7660`
+- Pages created: 5
+- Pages updated: 95
+- Pages metadata-only: 0
+- Pages skipped (unchanged): 1529
+- Pages deprecated: 0
+- Semantic fields preserved: 5
+- Moved entities: none
+- Flow pages initialized: 0 (none)
+- Workflow pages created: 4
+- Dependency pages initialized: 0
+- Surface policy updated: no

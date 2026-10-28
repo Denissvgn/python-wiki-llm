@@ -27,17 +27,16 @@ flowchart LR
     n0["MaintenanceProtocolError (src/llm_wiki_cli/services/maintenance_protocol.py)"]
     n1["ValueError"]
     n2["src/llm_wiki_cli/commands/sync_cmd.py"]
-    n3["src/llm_wiki_cli/services/context_packet.py"]
-    n4["src/llm_wiki_cli/services/knowledge_loader.py"]
-    n5["src/llm_wiki_cli/services/knowledge_storage_lifecycle.py"]
-    n6["governance_writer_lock (src/llm_wiki_cli/services/maintenance_protocol.py)"]
-    n7["guard_maintenance_owner (src/llm_wiki_cli/services/maintenance_protocol.py)"]
-    n8["load_adoption_marker (src/llm_wiki_cli/services/maintenance_protocol.py)"]
-    n9["maintenance_write_operation (src/llm_wiki_cli/services/maintenance_protocol.py)"]
-    n10["save_recovery_snapshot (src/llm_wiki_cli/services/maintenance_protocol.py)"]
-    n11["snapshot_wiki (src/llm_wiki_cli/services/maintenance_protocol.py)"]
-    n12["unlink_maintenance_page (src/llm_wiki_cli/services/maintenance_protocol.py)"]
-    n13["WikiWriteBasis.after_write (src/llm_wiki_cli/services/maintenance_protocol.py)"]
+    n3["_invalid (src/llm_wiki_cli/services/bootstrap_recovery.py)"]
+    n4["_recover (src/llm_wiki_cli/services/bootstrap_recovery.py)"]
+    n5["guard_incomplete_bootstrap (src/llm_wiki_cli/services/bootstrap_recovery.py)"]
+    n6["src/llm_wiki_cli/services/context_packet.py"]
+    n7["src/llm_wiki_cli/services/knowledge_loader.py"]
+    n8["src/llm_wiki_cli/services/knowledge_storage_lifecycle.py"]
+    n9["governance_writer_lock (src/llm_wiki_cli/services/maintenance_protocol.py)"]
+    n10["guard_maintenance_owner (src/llm_wiki_cli/services/maintenance_protocol.py)"]
+    n11["load_adoption_marker (src/llm_wiki_cli/services/maintenance_protocol.py)"]
+    n12["maintenance_write_operation (src/llm_wiki_cli/services/maintenance_protocol.py)"]
     n0 --> n1
     n2 --> n0
     n3 --> n0
@@ -50,20 +49,18 @@ flowchart LR
     n10 --> n0
     n11 --> n0
     n12 --> n0
-    n13 --> n0
     click n0 "../modules/maintenance_protocol.md"
     click n2 "../modules/sync_cmd.md"
-    click n3 "../modules/context_packet.md"
-    click n4 "../modules/knowledge_loader.md"
-    click n5 "../modules/knowledge_storage_lifecycle.md"
-    click n6 "../modules/maintenance_protocol.md"
-    click n7 "../modules/maintenance_protocol.md"
-    click n8 "../modules/maintenance_protocol.md"
+    click n3 "../modules/bootstrap_recovery.md"
+    click n4 "../modules/bootstrap_recovery.md"
+    click n5 "../modules/bootstrap_recovery.md"
+    click n6 "../modules/context_packet.md"
+    click n7 "../modules/knowledge_loader.md"
+    click n8 "../modules/knowledge_storage_lifecycle.md"
     click n9 "../modules/maintenance_protocol.md"
     click n10 "../modules/maintenance_protocol.md"
     click n11 "../modules/maintenance_protocol.md"
     click n12 "../modules/maintenance_protocol.md"
-    click n13 "../modules/maintenance_protocol.md"
 ```
 
 ### Summary
@@ -83,6 +80,10 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `sync_cmd` | import | [sync_cmd](../modules/sync_cmd.md) | — |
+| `_invalid` | call | [bootstrap_recovery](../modules/bootstrap_recovery.md) | 1 |
+| `_invalid` | type_reference | [bootstrap_recovery](../modules/bootstrap_recovery.md) | — |
+| `_recover` | call | [bootstrap_recovery](../modules/bootstrap_recovery.md) | 3 |
+| `guard_incomplete_bootstrap` | call | [bootstrap_recovery](../modules/bootstrap_recovery.md) | 1 |
 | `context_packet` | import | [context_packet](../modules/context_packet.md) | — |
 | `knowledge_loader` | import | [knowledge_loader](../modules/knowledge_loader.md) | — |
 | `knowledge_storage_lifecycle` | import | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) | — |
@@ -90,9 +91,5 @@ flowchart LR
 | `guard_maintenance_owner` | call | [maintenance_protocol](../modules/maintenance_protocol.md) | 7 |
 | `load_adoption_marker` | call | [maintenance_protocol](../modules/maintenance_protocol.md) | 1 |
 | `maintenance_write_operation` | call | [maintenance_protocol](../modules/maintenance_protocol.md) | 1 |
-| `save_recovery_snapshot` | call | [maintenance_protocol](../modules/maintenance_protocol.md) | 1 |
-| `snapshot_wiki` | call | [maintenance_protocol](../modules/maintenance_protocol.md) | 1 |
-| `unlink_maintenance_page` | call | [maintenance_protocol](../modules/maintenance_protocol.md) | 1 |
-| `WikiWriteBasis.after_write` | call | [maintenance_protocol](../modules/maintenance_protocol.md) | 2 |
 
-> References: showing 12 of 25 logical references; 13 omitted by the 12-row generated summary limit.
+> References: showing 12 of 29 logical references; 17 omitted by the 12-row generated summary limit.

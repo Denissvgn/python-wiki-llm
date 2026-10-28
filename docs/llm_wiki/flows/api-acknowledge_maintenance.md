@@ -2,12 +2,13 @@
 
 **Entry point:** `acknowledge_maintenance` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 59 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [canonical_json](../modules/canonical_json.md), and 60 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
 - [api](../modules/api.md)
+- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [config](../modules/config.md)
@@ -101,11 +102,11 @@ sequenceDiagram
     participant p21 as governance_writer_lock
     participant p22 as storage_writer_lock
     participant p23 as snapshot_wiki
-    participant p24 as _commit_sharded
-    participant p25 as _recovery_directory
+    participant p24 as _recovery_directory
+    participant p25 as _commit_sharded
     participant p26 as _commit_flat
-    participant p27 as _planned_write
-    participant p28 as save_recovery_snapshot
+    participant p27 as save_recovery_snapshot
+    participant p28 as _planned_write
     participant p29 as type (src/llm_wiki_cli/api.py:acknowledge_maintenance)
     participant p30 as core.validate_schema (src/llm_wiki_cli/api.py:acknowledge_maintenance)
     p0->>p1: _detached
@@ -131,18 +132,18 @@ sequenceDiagram
     p9->>p21: governance_writer_lock
     p9->>p22: storage_writer_lock
     p9->>p23: snapshot_wiki
-    p16->>p24: _commit_sharded
-    p9->>p25: _recovery_directory
+    p9->>p24: _recovery_directory
+    p16->>p25: _commit_sharded
     p16->>p26: _commit_flat
-    p15->>p27: _planned_write
-    p9->>p28: save_recovery_snapshot
+    p9->>p27: save_recovery_snapshot
+    p15->>p28: _planned_write
     p0-->>p29: type (src/llm_wiki_cli/api.py:acknowledge_maintenance)(allow_external_src)
     p0-->>p30: core.validate_schema (src/llm_wiki_cli/api.py:acknowledge_maintenance)('maintenance-event-v1', {...})
 ```
 
-> Call sequence diagram shows 30 of 2850 interactions; 2820 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2861 interactions; 2831 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 958 (957 omitted); unresolved 1 of 676 (675 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 961 (960 omitted); unresolved 1 of 681 (680 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -156,7 +157,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/api.py:acknowledge_maintenance` | 1 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/maintenance_state.py:_identity` | 18 | - | external | 2 |
 | `src/llm_wiki_cli/services/maintenance_state.py:_identity` | 18 | [src/llm_wiki_cli/services/maintenance_shapes.py](../modules/maintenance_shapes.md) | internal | 2 |
-> Omission summary shows 8 of 675 groups; 667 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 682 groups; 674 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

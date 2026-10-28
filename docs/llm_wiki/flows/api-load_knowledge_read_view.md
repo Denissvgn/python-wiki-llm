@@ -2,12 +2,12 @@
 
 **Entry point:** `load_knowledge_read_view` (`api`)
 **Source:** [knowledge_consumption](../modules/knowledge_consumption.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [filesystem_guard](../modules/filesystem_guard.md), [immutable](../modules/immutable.md), and 32 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [immutable](../modules/immutable.md), and 32 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
-- [filesystem_guard](../modules/filesystem_guard.md)
+- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [immutable](../modules/immutable.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
 - [infrastructure_sync](../modules/infrastructure_sync.md)
@@ -70,14 +70,14 @@ sequenceDiagram
     participant p18 as evaluate_knowledge_freshness
     participant p19 as marker_from_validated_state
     participant p20 as compare_knowledge_implementation
-    participant p21 as load_adoption_marker
+    participant p21 as guard_incomplete_bootstrap
     participant p22 as validate_surface_index_bytes
-    participant p23 as SyncManifest.load
+    participant p23 as load_adoption_marker
     participant p24 as _issue_from_artifact_error
     participant p25 as load_verification_receipt
-    participant p26 as _current_markdown
-    participant p27 as _load_manifest
-    participant p28 as evaluate_verification_receipt
+    participant p26 as SyncManifest.load
+    participant p27 as _current_markdown
+    participant p28 as _load_manifest
     participant p29 as isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view)
     participant p30 as _UNSUPPORTED_REASON_BY_ISSUE.get
     p0->>p1: load_knowledge_state
@@ -100,21 +100,21 @@ sequenceDiagram
     p9->>p18: evaluate_knowledge_freshness
     p12->>p19: marker_from_validated_state
     p13->>p20: compare_knowledge_implementation
-    p11->>p21: load_adoption_marker
+    p11->>p21: guard_incomplete_bootstrap
     p14->>p22: validate_surface_index_bytes
-    p11->>p23: SyncManifest.load
+    p11->>p23: load_adoption_marker
     p14->>p24: _issue_from_artifact_error
     p8->>p25: load_verification_receipt
-    p14->>p26: _current_markdown
-    p14->>p27: _load_manifest
-    p8->>p28: evaluate_verification_receipt
+    p11->>p26: SyncManifest.load
+    p14->>p27: _current_markdown
+    p14->>p28: _load_manifest
     p0-->>p29: isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view)(include_machine_verification, bool)
     p4-->>p30: _UNSUPPORTED_REASON_BY_ISSUE.get(issue.code)
 ```
 
-> Call sequence diagram shows 30 of 1811 interactions; 1781 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1711 interactions; 1681 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 591 (590 omitted); unresolved 1 of 341 (340 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 543 (542 omitted); unresolved 1 of 327 (326 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -128,7 +128,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 16 | - | external | 20 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 16 | - | unresolved | 5 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 13 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
-> Omission summary shows 8 of 396 groups; 388 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 385 groups; 377 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

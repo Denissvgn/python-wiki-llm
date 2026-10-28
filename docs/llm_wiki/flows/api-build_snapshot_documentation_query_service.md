@@ -2,11 +2,12 @@
 
 **Entry point:** `build_snapshot_documentation_query_service` (`api`)
 **Source:** [documentation_query_builder](../modules/documentation_query_builder.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [canonical_json](../modules/canonical_json.md), [context_packet](../modules/context_packet.md), and 33 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [canonical_json](../modules/canonical_json.md), and 34 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
+- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [canonical_json](../modules/canonical_json.md)
 - [context_packet](../modules/context_packet.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
@@ -78,7 +79,7 @@ sequenceDiagram
     participant p25 as evaluate_knowledge_freshness
     participant p26 as marker_from_validated_state
     participant p27 as compare_knowledge_implementation
-    participant p28 as load_adoption_marker
+    participant p28 as guard_incomplete_bootstrap
     participant p29 as str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)
     participant p30 as current.exists
     p0->>p1: _wiki_anchor
@@ -108,14 +109,14 @@ sequenceDiagram
     p15->>p25: evaluate_knowledge_freshness
     p18->>p26: marker_from_validated_state
     p19->>p27: compare_knowledge_implementation
-    p17->>p28: load_adoption_marker
+    p17->>p28: guard_incomplete_bootstrap
     p1-->>p29: str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)(current)
     p1-->>p30: current.exists
 ```
 
-> Call sequence diagram shows 30 of 1212 interactions; 1182 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1219 interactions; 1189 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 444 (443 omitted); unresolved 1 of 239 (238 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 445 (444 omitted); unresolved 1 of 240 (239 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -129,7 +130,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_evidence.py:sha256_bytes` | 9 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:canonical_json_bytes` | 12 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:canonical_json_bytes` | 12 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 1 |
-> Omission summary shows 8 of 265 groups; 257 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 271 groups; 263 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

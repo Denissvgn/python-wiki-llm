@@ -74,22 +74,22 @@ sequenceDiagram
     p2-->>p30: basis.before_write(Path(...), content)
 ```
 
-> Call sequence diagram shows 30 of 317 interactions; 287 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 323 interactions; 293 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 187 (186 omitted); unresolved 3 of 45 (42 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 189 (188 omitted); unresolved 3 of 49 (46 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
 | Caller | Parent step | Target module | Kind | Omitted interactions |
 | --- | --- | --- | --- | --- |
-| `src/llm_wiki_cli/services/wiki_write_basis.py:before_wiki_write` | 2 | - | external | 2 |
-| `src/llm_wiki_cli/services/wiki_write_basis.py:before_wiki_write` | 2 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_unlink_guarded_bytes` | 9 | - | unresolved | 6 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_unlink_guarded_bytes` | 9 | - | external | 27 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 16 | - | external | 9 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 16 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 6 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 16 | - | unresolved | 4 |
-| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 24 | - | external | 14 |
+| `src/llm_wiki_cli/services/wiki_write_basis.py:before_wiki_write` | 2 | - | external | 3 |
+| `src/llm_wiki_cli/services/wiki_write_basis.py:before_wiki_write` | 2 | - | unresolved | 4 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_unlink_guarded_bytes` | 12 | - | unresolved | 6 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_unlink_guarded_bytes` | 12 | - | external | 27 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 19 | - | external | 9 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 19 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 6 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:guard_windows_directory_chain` | 19 | - | unresolved | 4 |
+| `src/llm_wiki_cli/services/filesystem_guard.py:_open_windows_directory_guard` | 27 | - | external | 14 |
 > Omission summary shows 8 of 41 groups; 33 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
@@ -108,10 +108,10 @@ flowchart LR
     s6["6. ACTIVE_SYNC_JOURNAL.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)"]
     s7["7. journal.before_write"]
     s8["8. Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)"]
-    s9["9. _unlink_guarded_bytes"]
-    s10["10. Path (src/llm_wiki_cli/services….py:_unlink_guarded_bytes)"]
-    s11["11. target.is_absolute"]
-    s12["12. OSError"]
+    s9["9. ACTIVE_BOOTSTRAP_JOURNAL.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)"]
+    s10["10. bootstrap.before_write"]
+    s11["11. Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)"]
+    s12["12. _unlink_guarded_bytes"]
     s1 -->|"before_wiki_write(path, None)"| s2
     s2 -. "ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)(data not statically known)" .-> s3
     s2 -. "basis.before_write(Path(...), content)" .-> s4
@@ -119,19 +119,19 @@ flowchart LR
     s2 -. "ACTIVE_SYNC_JOURNAL.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)(data not statically known)" .-> s6
     s2 -. "journal.before_write(Path(...), content)" .-> s7
     s2 -. "Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)(path)" .-> s8
-    s1 -->|"_unlink_guarded_bytes(path, expected=expected)"| s9
-    s9 -. "Path (src/llm_wiki_cli/services….py:_unlink_guarded_bytes)(path)" .-> s10
-    s9 -. "target.is_absolute(data not statically known)" .-> s11
-    s9 -. "OSError(...)" .-> s12
+    s2 -. "ACTIVE_BOOTSTRAP_JOURNAL.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)(data not statically known)" .-> s9
+    s2 -. "bootstrap.before_write(Path(...), content)" .-> s10
+    s2 -. "Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)(path)" .-> s11
+    s1 -->|"_unlink_guarded_bytes(path, expected=expected)"| s12
     b0["filesystem_write quarantine.unlink"]
-    s9 -. "filesystem_write quarantine.unlink" .-> b0
+    s12 -. "filesystem_write quarantine.unlink" .-> b0
     b1["mutation chunks.append"]
-    s9 -. "mutation chunks.append" .-> b1
+    s12 -. "mutation chunks.append" .-> b1
     b2["filesystem_write os.unlink"]
-    s9 -. "filesystem_write os.unlink" .-> b2
+    s12 -. "filesystem_write os.unlink" .-> b2
     click s1 "../modules/filesystem_guard.md"
     click s2 "../modules/wiki_write_basis.md"
-    click s9 "../modules/filesystem_guard.md"
+    click s12 "../modules/filesystem_guard.md"
     classDef boundary stroke:#b45309,stroke-dasharray: 4 2
     class b0 boundary
     class b1 boundary
@@ -150,26 +150,26 @@ flowchart LR
 | `ACTIVE_SYNC_JOURNAL.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | - | - | - | - |
 | `journal.before_write` | - | - | - | - |
 | `Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | - | - | - | - |
+| `ACTIVE_BOOTSTRAP_JOURNAL.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | - | - | - | - |
+| `bootstrap.before_write` | - | - | - | - |
+| `Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | - | - | - | - |
 | `_unlink_guarded_bytes` | `path: Path`, `expected: bytes` | `os`, `os`, `os`, `os`, `os` | - | `none` |
-| `Path (src/llm_wiki_cli/services….py:_unlink_guarded_bytes)` | - | - | - | - |
-| `target.is_absolute` | - | - | - | - |
-| `OSError` | - | - | - | - |
 
 ### Call data
 
 | From | To | Line | Call |
 |---|---|---:|---|
 | unlink_guarded_bytes | before_wiki_write | 1685 | `before_wiki_write(path, None)` |
-| before_wiki_write | ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 32 | `ACTIVE_WRITE_BASIS.get(data not statically known)` |
-| before_wiki_write | basis.before_write | 34 | `basis.before_write(Path(...), content)` |
-| before_wiki_write | Path (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 34 | `Path(path)` |
-| before_wiki_write | ACTIVE_SYNC_JOURNAL.get (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 35 | `ACTIVE_SYNC_JOURNAL.get(data not statically known)` |
-| before_wiki_write | journal.before_write | 37 | `journal.before_write(Path(...), content)` |
-| before_wiki_write | Path (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 37 | `Path(path)` |
+| before_wiki_write | ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 33 | `ACTIVE_WRITE_BASIS.get(data not statically known)` |
+| before_wiki_write | basis.before_write | 35 | `basis.before_write(Path(...), content)` |
+| before_wiki_write | Path (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 35 | `Path(path)` |
+| before_wiki_write | ACTIVE_SYNC_JOURNAL.get (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 36 | `ACTIVE_SYNC_JOURNAL.get(data not statically known)` |
+| before_wiki_write | journal.before_write | 38 | `journal.before_write(Path(...), content)` |
+| before_wiki_write | Path (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 38 | `Path(path)` |
+| before_wiki_write | ACTIVE_BOOTSTRAP_JOURNAL.get (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 39 | `ACTIVE_BOOTSTRAP_JOURNAL.get(data not statically known)` |
+| before_wiki_write | bootstrap.before_write | 41 | `bootstrap.before_write(Path(...), content)` |
+| before_wiki_write | Path (src/llm_wiki_cli/services…asis.py:before_wiki_write) | 41 | `Path(path)` |
 | unlink_guarded_bytes | _unlink_guarded_bytes | 1686 | `_unlink_guarded_bytes(path, expected=expected)` |
-| _unlink_guarded_bytes | Path (src/llm_wiki_cli/services….py:_unlink_guarded_bytes) | 1693 | `Path(path)` |
-| _unlink_guarded_bytes | target.is_absolute | 1694 | `target.is_absolute(data not statically known)` |
-| _unlink_guarded_bytes | OSError | 1695 | `OSError(...)` |
 
 ### Boundary effects
 
@@ -183,12 +183,12 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `before_wiki_write` | `ACTIVE_WRITE_BASIS.get` | 32 |
-| unresolved_call | `before_wiki_write` | `basis.before_write` | 34 |
-| unresolved_call | `before_wiki_write` | `ACTIVE_SYNC_JOURNAL.get` | 35 |
-| unresolved_call | `before_wiki_write` | `journal.before_write` | 37 |
-| unresolved_call | `_unlink_guarded_bytes` | `target.is_absolute` | 1694 |
-| external_call | `_unlink_guarded_bytes` | `OSError` | 1695 |
+| unresolved_call | `before_wiki_write` | `ACTIVE_WRITE_BASIS.get` | 33 |
+| unresolved_call | `before_wiki_write` | `basis.before_write` | 35 |
+| unresolved_call | `before_wiki_write` | `ACTIVE_SYNC_JOURNAL.get` | 36 |
+| unresolved_call | `before_wiki_write` | `journal.before_write` | 38 |
+| unresolved_call | `before_wiki_write` | `ACTIVE_BOOTSTRAP_JOURNAL.get` | 39 |
+| unresolved_call | `before_wiki_write` | `bootstrap.before_write` | 41 |
 | step_limit | `unlink_guarded_bytes` | `first 12 steps` | 0 |
 | truncated_flow | `unlink_guarded_bytes` | `depth limit` | 0 |
 

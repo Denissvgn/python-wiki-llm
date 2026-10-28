@@ -2,12 +2,13 @@
 
 **Entry point:** `query_documentation` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [api](../modules/api.md), [common](../modules/common.md), [config](../modules/config.md), and 37 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [api](../modules/api.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [common](../modules/common.md), and 38 more
 
 **Complete modules touched:**
 
 - [analysis_capture](../modules/analysis_capture.md)
 - [api](../modules/api.md)
+- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [common](../modules/common.md)
 - [config](../modules/config.md)
 - [context_packet](../modules/context_packet.md)
@@ -118,9 +119,9 @@ sequenceDiagram
     p0-->>p30: request.get (src/llm_wiki_cli/api.py:query_documentation)('source')
 ```
 
-> Call sequence diagram shows 30 of 2427 interactions; 2397 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2425 interactions; 2395 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 921 (920 omitted); unresolved 1 of 661 (660 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 918 (917 omitted); unresolved 1 of 661 (660 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

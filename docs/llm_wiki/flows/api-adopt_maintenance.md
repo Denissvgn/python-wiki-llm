@@ -2,12 +2,13 @@
 
 **Entry point:** `adopt_maintenance` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 59 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [canonical_json](../modules/canonical_json.md), and 60 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
 - [api](../modules/api.md)
+- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [config](../modules/config.md)
@@ -97,15 +98,15 @@ sequenceDiagram
     participant p17 as commit_knowledge_artifacts
     participant p18 as capture_context_read
     participant p19 as ensure_guarded_directory
-    participant p20 as current_manifest_format
-    participant p21 as SyncManifest.load
+    participant p20 as guard_incomplete_bootstrap
+    participant p21 as current_manifest_format
     participant p22 as read_guarded
-    participant p23 as validate_maintenance_adoption
-    participant p24 as governance_lock
-    participant p25 as canonical_bytes
-    participant p26 as canonical_hash
-    participant p27 as _commit_sharded
-    participant p28 as _commit_flat
+    participant p23 as SyncManifest.load
+    participant p24 as validate_maintenance_adoption
+    participant p25 as governance_lock
+    participant p26 as canonical_bytes
+    participant p27 as canonical_hash
+    participant p28 as _commit_sharded
     participant p29 as type (src/llm_wiki_cli/api.py:adopt_maintenance)
     participant p30 as captured.source_snapshot.root.resolve
     p0->>p1: adopt_maintenance_authority
@@ -127,22 +128,22 @@ sequenceDiagram
     p1->>p17: commit_knowledge_artifacts
     p11->>p18: capture_context_read
     p16->>p19: ensure_guarded_directory
-    p15->>p20: current_manifest_format
-    p8->>p21: SyncManifest.load
+    p8->>p20: guard_incomplete_bootstrap
+    p15->>p21: current_manifest_format
     p7->>p22: read_guarded
-    p7->>p23: validate_maintenance_adoption
-    p5->>p24: governance_lock
-    p7->>p25: canonical_bytes
-    p12->>p26: canonical_hash
-    p17->>p27: _commit_sharded
-    p17->>p28: _commit_flat
+    p8->>p23: SyncManifest.load
+    p7->>p24: validate_maintenance_adoption
+    p5->>p25: governance_lock
+    p7->>p26: canonical_bytes
+    p12->>p27: canonical_hash
+    p17->>p28: _commit_sharded
     p0-->>p29: type (src/llm_wiki_cli/api.py:adopt_maintenance)(allow_external_src)
     p1-->>p30: captured.source_snapshot.root.resolve
 ```
 
-> Call sequence diagram shows 30 of 3111 interactions; 3081 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3140 interactions; 3110 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1061 (1060 omitted); unresolved 1 of 717 (716 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1071 (1070 omitted); unresolved 1 of 724 (723 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -156,7 +157,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 6 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 6 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/maintenance_service.py:adopt_maintenance_authority` | 5 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 1 |
-> Omission summary shows 8 of 740 groups; 732 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 751 groups; 743 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

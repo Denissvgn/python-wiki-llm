@@ -2,10 +2,11 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [status_cmd](../modules/status_cmd.md)
-**Modules touched:** [circuit_breaker](../modules/circuit_breaker.md), [common](../modules/common.md), [config](../modules/config.md), [filesystem_guard](../modules/filesystem_guard.md), and 36 more
+**Modules touched:** [bootstrap_recovery](../modules/bootstrap_recovery.md), [circuit_breaker](../modules/circuit_breaker.md), [common](../modules/common.md), [config](../modules/config.md), and 37 more
 
 **Complete modules touched:**
 
+- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [circuit_breaker](../modules/circuit_breaker.md)
 - [common](../modules/common.md)
 - [config](../modules/config.md)
@@ -117,9 +118,9 @@ sequenceDiagram
     p0-->>p30: wiki_path.exists
 ```
 
-> Call sequence diagram shows 30 of 2089 interactions; 2059 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2093 interactions; 2063 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 716 (715 omitted); unresolved 1 of 525 (524 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 716 (715 omitted); unresolved 1 of 526 (525 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -133,7 +134,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 12 | [src/llm_wiki_cli/services/wiki_surface.py](../modules/wiki_surface.md) | internal | 1 |
 | `src/llm_wiki_cli/services/wiki_surface.py:iter_directory_kinds` | 15 | - | external | 1 |
 | `src/llm_wiki_cli/services/wiki_lifecycle.py:require_safe_wiki_scaffold` | 12 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
-> Omission summary shows 8 of 529 groups; 521 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 533 groups; 525 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

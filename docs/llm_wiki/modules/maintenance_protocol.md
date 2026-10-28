@@ -10,6 +10,7 @@ Immutable adoption detection and guarded maintenance publication basis.
 
 | Source | Symbols |
 |--------|---------|
+| `.bootstrap_recovery` | `guard_incomplete_bootstrap` |
 | `.filesystem_guard` | `ensure_guarded_directory`, `atomic_write_guarded_bytes`, `unlink_guarded_bytes` |
 | `.io` | `first_unsafe_path_component` |
 | `.knowledge_governance` | `governance_lock`, `governance_lock`, `_governance_lock_root` |
@@ -50,17 +51,17 @@ flowchart LR
 
 | Direction | Module |
 |---|---|
-| Inbound | `src` (16) |
-| Outbound | `src` (10) |
+| Inbound | `src` (17) |
+| Outbound | `src` (11) |
 
-> All 26 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 27 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
 | [MaintenanceProtocolError](../entities/MaintenanceProtocolError.md) | 30 | `ValueError` | — |
-| [WikiWriteBasis](../entities/WikiWriteBasis.md) | 156 | — | — |
+| [WikiWriteBasis](../entities/WikiWriteBasis.md) | 161 | — | — |
 
 ## Functions
 
@@ -71,7 +72,7 @@ flowchart LR
 | `governance_writer_lock` | `(wiki_dir: str \| Path) -> Iterator[None]` | `@contextmanager` | — |
 | `load_adoption_marker` | `(wiki_dir: str \| Path) -> dict \| None` | — | — |
 | `guard_maintenance_owner` | `(wiki_dir: str \| Path, manifest = None)` | — | Never seed or repair an adopted wiki whose durable authority was lost. |
-| `snapshot_wiki` | `(wiki_dir: str \| Path) -> dict[str, bytes]` | — | — |
+| `snapshot_wiki` | `(wiki_dir: str \| Path, *, include_transient: bool = False) -> dict[str, bytes]` | — | — |
 | `save_recovery_snapshot` | `(directory: Path, files: dict[str, bytes], *, marker: dict \| None, kind = 'committed')` | — | — |
 | `_recovery_directory` | `(root: Path, files: dict[str, bytes]) -> Path` | — | — |
 | `maintenance_write_operation` | `(wiki_dir: str \| Path, *, dry_run = False, recovery_dir: Path \| None = None)` | `@contextmanager` | Hold locks from capture to publication; adopted writes retain preimages. |

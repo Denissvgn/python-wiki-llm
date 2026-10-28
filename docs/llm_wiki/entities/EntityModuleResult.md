@@ -1,6 +1,6 @@
 # _EntityModuleResult
 
-**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4500`
+**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4501`
 **Kind:** Class
 **Bases:** —
 **Module:** [bootstrap_runtime](../modules/bootstrap_runtime.md)
@@ -31,7 +31,7 @@ _Auto-generated from `_EntityModuleResult` in `src/llm_wiki_cli/services/bootstr
 flowchart LR
     n0["_EntityModuleResult (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n1["_append_bootstrap_log (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
-    n2["_emit_bootstrap_complete (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n2["_bootstrap_complete_message (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n3["_write_bootstrap_index (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n4["_write_entity_and_module_pages (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n1 --> n0
@@ -56,7 +56,7 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `_append_bootstrap_log` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
-| `_emit_bootstrap_complete` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_bootstrap_complete_message` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 | `_write_bootstrap_index` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 | `_write_entity_and_module_pages` | call | [bootstrap_runtime](../modules/bootstrap_runtime.md) | 1 |
 | `_write_entity_and_module_pages` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |

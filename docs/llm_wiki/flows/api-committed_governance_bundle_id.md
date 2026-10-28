@@ -2,10 +2,11 @@
 
 **Entry point:** `committed_governance_bundle_id` (`api`)
 **Source:** [knowledge_orchestration](../modules/knowledge_orchestration.md)
-**Modules touched:** [canonical_json](../modules/canonical_json.md), [filesystem_guard](../modules/filesystem_guard.md), [immutable](../modules/immutable.md), [implementation_evidence](../modules/implementation_evidence.md), and 25 more
+**Modules touched:** [bootstrap_recovery](../modules/bootstrap_recovery.md), [canonical_json](../modules/canonical_json.md), [filesystem_guard](../modules/filesystem_guard.md), [immutable](../modules/immutable.md), and 26 more
 
 **Complete modules touched:**
 
+- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [canonical_json](../modules/canonical_json.md)
 - [filesystem_guard](../modules/filesystem_guard.md)
 - [immutable](../modules/immutable.md)
@@ -52,26 +53,26 @@ sequenceDiagram
     participant p6 as validate_knowledge_artifacts
     participant p7 as _absolute_path
     participant p8 as validate_surface_index_bytes
-    participant p9 as load_adoption_marker
-    participant p10 as SyncManifest.load
-    participant p11 as _require_validation_receipt
-    participant p12 as _unique_json_object
-    participant p13 as _reject_json_constant
-    participant p14 as freeze
-    participant p15 as open_knowledge_store
-    participant p16 as _validated_index_serialization
-    participant p17 as logical_digest
-    participant p18 as typed_graph_from_knowledge_extensions
-    participant p19 as validate_section_ownership
-    participant p20 as _validate_surface_knowledge_parity
-    participant p21 as _validate_manifest_knowledge_parity
-    participant p22 as validate_reuse_artifact_parity
-    participant p23 as governance_hash_from_knowledge
-    participant p24 as _section_object
-    participant p25 as validate_governance_projection
-    participant p26 as _validate_surface_payload
-    participant p27 as validate_knowledge_index
-    participant p28 as _section_fields
+    participant p9 as guard_incomplete_bootstrap
+    participant p10 as load_adoption_marker
+    participant p11 as SyncManifest.load
+    participant p12 as _require_validation_receipt
+    participant p13 as _unique_json_object
+    participant p14 as _reject_json_constant
+    participant p15 as freeze
+    participant p16 as open_knowledge_store
+    participant p17 as _validated_index_serialization
+    participant p18 as logical_digest
+    participant p19 as typed_graph_from_knowledge_extensions
+    participant p20 as validate_section_ownership
+    participant p21 as _validate_surface_knowledge_parity
+    participant p22 as _validate_manifest_knowledge_parity
+    participant p23 as validate_reuse_artifact_parity
+    participant p24 as governance_hash_from_knowledge
+    participant p25 as _section_object
+    participant p26 as validate_governance_projection
+    participant p27 as pending_bootstrap
+    participant p28 as _validate_surface_payload
     participant p29 as isinstance (src/llm_wiki_cli/services…_bundle_id_from_knowledge)
     participant p30 as state.require_for
     p0->>p1: _previous_committed_artifacts
@@ -82,33 +83,33 @@ sequenceDiagram
     p3->>p6: validate_knowledge_artifacts
     p4->>p7: _absolute_path
     p6->>p8: validate_surface_index_bytes
-    p4->>p9: load_adoption_marker
-    p4->>p10: SyncManifest.load
-    p6->>p11: _require_validation_receipt
-    p5->>p12: _unique_json_object
-    p5->>p13: _reject_json_constant
-    p6->>p14: freeze
-    p6->>p15: open_knowledge_store
-    p6->>p16: _validated_index_serialization
-    p6->>p17: logical_digest
-    p6->>p18: typed_graph_from_knowledge_extensions
-    p6->>p19: validate_section_ownership
-    p6->>p20: _validate_surface_knowledge_parity
-    p6->>p21: _validate_manifest_knowledge_parity
-    p6->>p22: validate_reuse_artifact_parity
-    p6->>p23: governance_hash_from_knowledge
-    p19->>p24: _section_object
-    p23->>p25: validate_governance_projection
-    p8->>p26: _validate_surface_payload
-    p16->>p27: validate_knowledge_index
-    p19->>p28: _section_fields
+    p4->>p9: guard_incomplete_bootstrap
+    p4->>p10: load_adoption_marker
+    p4->>p11: SyncManifest.load
+    p6->>p12: _require_validation_receipt
+    p5->>p13: _unique_json_object
+    p5->>p14: _reject_json_constant
+    p6->>p15: freeze
+    p6->>p16: open_knowledge_store
+    p6->>p17: _validated_index_serialization
+    p6->>p18: logical_digest
+    p6->>p19: typed_graph_from_knowledge_extensions
+    p6->>p20: validate_section_ownership
+    p6->>p21: _validate_surface_knowledge_parity
+    p6->>p22: _validate_manifest_knowledge_parity
+    p6->>p23: validate_reuse_artifact_parity
+    p6->>p24: governance_hash_from_knowledge
+    p20->>p25: _section_object
+    p24->>p26: validate_governance_projection
+    p9->>p27: pending_bootstrap
+    p8->>p28: _validate_surface_payload
     p2-->>p29: isinstance (src/llm_wiki_cli/services…_bundle_id_from_knowledge)(value, str)
     p1-->>p30: state.require_for(wiki_dir)
 ```
 
-> Call sequence diagram shows 30 of 885 interactions; 855 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 892 interactions; 862 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 290 (289 omitted); unresolved 1 of 163 (162 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 291 (290 omitted); unresolved 1 of 164 (163 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -122,7 +123,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 10 | - | unresolved | 5 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 7 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 7 | - | unresolved | 3 |
-> Omission summary shows 8 of 179 groups; 171 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 184 groups; 176 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

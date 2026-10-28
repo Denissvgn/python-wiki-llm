@@ -110,9 +110,9 @@ sequenceDiagram
     p0-->>p30: message.startswith('No files found for package')
 ```
 
-> Call sequence diagram shows 30 of 3154 interactions; 3124 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3160 interactions; 3130 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1064 (1063 omitted); unresolved 1 of 1303 (1302 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1066 (1065 omitted); unresolved 1 of 1307 (1306 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

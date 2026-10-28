@@ -93,9 +93,9 @@ sequenceDiagram
     p1-->>p30: Path.cwd().resolve
 ```
 
-> Call sequence diagram shows 30 of 658 interactions; 628 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 666 interactions; 636 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 208 (207 omitted); unresolved 1 of 152 (151 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 210 (209 omitted); unresolved 1 of 158 (157 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

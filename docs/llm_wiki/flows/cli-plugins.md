@@ -85,9 +85,9 @@ sequenceDiagram
     p7-->>p30: plugin.get('components', [...])
 ```
 
-> Call sequence diagram shows 30 of 374 interactions; 344 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 380 interactions; 350 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 123 (122 omitted); unresolved 1 of 137 (136 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 125 (124 omitted); unresolved 1 of 141 (140 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

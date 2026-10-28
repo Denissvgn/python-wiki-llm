@@ -1,6 +1,6 @@
 # _InfrastructureResult
 
-**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4525`
+**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4526`
 **Kind:** Class
 **Bases:** —
 **Module:** [bootstrap_runtime](../modules/bootstrap_runtime.md)
@@ -34,8 +34,8 @@ _Auto-generated from `_InfrastructureResult` in `src/llm_wiki_cli/services/boots
 flowchart LR
     n0["_InfrastructureResult (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n1["_append_bootstrap_log (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
-    n2["_bootstrap_manifest_generation_state (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
-    n3["_emit_bootstrap_complete (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n2["_bootstrap_complete_message (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
+    n3["_bootstrap_manifest_generation_state (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n4["_emit_bootstrap_json_summary (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n5["_infrastructure_type_count (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
     n6["_runtime_config_count (src/llm_wiki_cli/services/bootstrap_runtime.py)"]
@@ -74,8 +74,8 @@ flowchart LR
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
 | `_append_bootstrap_log` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
+| `_bootstrap_complete_message` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 | `_bootstrap_manifest_generation_state` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
-| `_emit_bootstrap_complete` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 | `_emit_bootstrap_json_summary` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 | `_infrastructure_type_count` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |
 | `_runtime_config_count` | type_reference | [bootstrap_runtime](../modules/bootstrap_runtime.md) | — |

@@ -7,8 +7,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 | Surface | Count | Start here |
 |---|---:|---|
 | Entities | 672 | [Open section](#entities) |
-| Modules | 254 | [Open section](#modules) |
-| Workflows | 229 | [Open section](#workflows) |
+| Modules | 255 | [Open section](#modules) |
+| Workflows | 233 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 466 | [Open section](#entry-point-flows) |
 | Infrastructure | 2 | [Open section](#infrastructure) |
@@ -701,6 +701,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [api_diff](modules/api_diff.md) - Conservative compatibility checks over supplied OpenAPI exports only.
 - [api_diff_cmd](modules/api_diff_cmd.md) - Compare supplied local OpenAPI exports without invoking target code.
 - [api_types](modules/api_types.md) - Static return contracts for the supported Python API.
+- [bootstrap_recovery](modules/bootstrap_recovery.md) - Recover only journaled first-use output before capturing fresh evidence.
 - [bootstrap_runtime](modules/bootstrap_runtime.md) - `src/llm_wiki_cli/services/bootstrap_runtime.py`
 - [bootstrap_service](modules/bootstrap_service.md) - Typed request/result contract for deterministic wiki bootstrap.
 - [broker](modules/broker.md) - Provider-neutral OCI broker for qualifying documentation calibration agents.
@@ -979,6 +980,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [attach_maintenance_view_from_inputs](workflows/attach_maintenance_view_from_inputs.md) - entry: `maintenance_status.attach_maintenance_view_from_inputs`
 - [audit_knowledge_stream](workflows/audit_knowledge_stream.md) - entry: `knowledge_stream_audit.audit_knowledge_stream`
 - [backup](workflows/backup.md) - entry: `knowledge_storage_lifecycle._backup`
+- [bootstrap_write_operation](workflows/bootstrap_write_operation.md) - entry: `bootstrap_recovery.bootstrap_write_operation`
 - [build_analysis](workflows/build_analysis.md) - entry: `review_service.build_analysis`
 - [build_budgeted_context](workflows/build_budgeted_context.md) - entry: `context_budget.build_budgeted_context`
 - [build_builtin_extraction_kwargs](workflows/build_builtin_extraction_kwargs.md) - entry: `extraction_service._build_builtin_extraction_kwargs`
@@ -1048,6 +1050,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [extract_bootstrap_inventory](workflows/extract_bootstrap_inventory.md) - entry: `bootstrap_runtime._extract_bootstrap_inventory`
 - [finalize_bootstrap_artifacts](workflows/finalize_bootstrap_artifacts.md) - entry: `bootstrap_runtime._finalize_bootstrap_artifacts`
 - [finalize_prepared_sync](workflows/finalize_prepared_sync.md) - entry: `sync_cmd._finalize_prepared_sync`
+- [first_use_guidance](workflows/first_use_guidance.md) - entry: `bootstrap_runtime._first_use_guidance`
 - [fresh_inventory_source_files](workflows/fresh_inventory_source_files.md) - entry: `extraction_service._fresh_inventory_source_files`
 - [generate_bootstrap_content](workflows/generate_bootstrap_content.md) - entry: `bootstrap_runtime._generate_bootstrap_content`
 - [generate_prompt_cmd_flow](workflows/generate_prompt_cmd_flow.md) - entry: `generate_prompt_cmd.run`
@@ -1121,6 +1124,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [read_once](workflows/read_once.md) - entry: `task_context._read_once`
 - [rebuild_surface_only_index](workflows/rebuild_surface_only_index.md) - entry: `sync_cmd._rebuild_surface_only_index`
 - [record_source_file](workflows/record_source_file.md) - entry: `source_snapshot._record_source_file`
+- [recover](workflows/recover.md) - entry: `bootstrap_recovery._recover`
 - [recover_knowledge_storage](workflows/recover_knowledge_storage.md) - entry: `knowledge_storage_lifecycle._recover_knowledge_storage`
 - [recover_maintenance_authority](workflows/recover_maintenance_authority.md) - entry: `maintenance_service.recover_maintenance_authority`
 - [recover_new_sync_pages](workflows/recover_new_sync_pages.md) - entry: `sync_recovery.recover_new_sync_pages`
@@ -1145,6 +1149,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [run_verify](workflows/run_verify.md) - entry: `knowledge_cmd._run_verify`
 - [runtime_flow_entries](workflows/runtime_flow_entries.md) - entry: `documentation_native._runtime_flow_entries`
 - [save](workflows/save.md) - entry: `sync_analysis_cache.save`
+- [save_record](workflows/save_record.md) - entry: `bootstrap_recovery._save_record`
 - [save_recovery_snapshot](workflows/save_recovery_snapshot.md) - entry: `maintenance_protocol.save_recovery_snapshot`
 - [scan_python_files](workflows/scan_python_files.md) - entry: `python_extractor._scan_python_files`
 - [search_prevalidated_roots](workflows/search_prevalidated_roots.md) - entry: `search_service.search_prevalidated_roots`

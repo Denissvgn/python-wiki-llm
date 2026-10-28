@@ -2,12 +2,13 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [knowledge_cmd](../modules/knowledge_cmd.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [canonical_json](../modules/canonical_json.md), [common](../modules/common.md), and 70 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [api](../modules/api.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), [canonical_json](../modules/canonical_json.md), and 71 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
 - [api](../modules/api.md)
+- [bootstrap_recovery](../modules/bootstrap_recovery.md)
 - [canonical_json](../modules/canonical_json.md)
 - [common](../modules/common.md)
 - [concept_identity](../modules/concept_identity.md)
@@ -151,9 +152,9 @@ sequenceDiagram
     p5-->>p30: prepare
 ```
 
-> Call sequence diagram shows 30 of 4434 interactions; 4404 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4436 interactions; 4406 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1340 (1339 omitted); unresolved 1 of 1041 (1040 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1340 (1339 omitted); unresolved 1 of 1042 (1041 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -167,7 +168,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/commands/knowledge_cmd.py:_wiki_root` | 3 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/knowledge_storage_lifecycle.py:migrate_knowledge_storage` | 36 | - | external | 3 |
 | `src/llm_wiki_cli/services/knowledge_storage_lifecycle.py:migrate_knowledge_storage` | 36 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 2 |
-> Omission summary shows 8 of 1068 groups; 1060 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1072 groups; 1064 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
