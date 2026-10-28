@@ -227,19 +227,9 @@ _COMPACT_QUALITY_HINTS = """\
 _REPOSITORY_CONTENT_HYGIENE = """\
 
 ## Repository content hygiene
-- Create internal docs (ADRs, plans, backlogs, reports, implementation notes)
-  only after the exact target passes `git check-ignore -q -- <path>`. With
-  missing Git or an unignored/indeterminate target, use an already ignored or
-  user-approved non-repository path. Never publish, stage, force-add, or change
-  `.gitignore`, attributes, or global excludes; ignore changes do not authorize
-  publication.
-- Public documentation (README, published docs/wiki/site, release material) must
-  not mention internal development phases or tests. Redirect incompatible
-  material to an ignore-verified internal artifact, or report the conflict.
-- Code/test surfaces (comments, docstrings, identifiers, fixtures) must not carry
-  actual epic/milestone/phase names, backlog/task IDs, or planning provenance.
-  Generic policy/product terms are valid. Do not copy or expand out-of-scope
-  conflicts; report them instead of broadening cleanup.
+- Internal docs: only after the exact target passes `git check-ignore -q -- <path>`. For missing Git or an unignored/indeterminate target: ignored or user-approved non-repository path. Never publish, stage, force-add, or change `.gitignore`, attributes, or global excludes.
+- Public documentation (README, published docs/wiki/site, release material) must not mention internal development phases or tests. Route internally or report the conflict.
+- Code/test surfaces (comments, docstrings, identifiers, fixtures) must not carry actual epic/milestone/phase names, backlog/task IDs, or planning provenance. Generic policy/product terms are valid. Report out-of-scope conflicts; no copying/expansion/cleanup.
 """
 
 
@@ -858,7 +848,7 @@ def _compact_wiki_instructions(
 - Native: retain `required`; upgrade owns storage; damaged owners: recovery. Reads never migrate.
 - Contracts: omit versions. Canonical; `--view compact`: budget/receipt outside source/wiki/inputs; count framing/follow-ups; no fit promise.
 - Broad: one serialized read-only packet: `llm-wiki context --budget 8000 --budget-mode estimated --src-dir . --wiki-dir {wiki_dir_arg} --format packet --focus changed --knowledge-mode auto --read-only{source_selection_args}`.
-- Broad `cannot-fit`: no context emitted; rejected estimate is not a global minimum. Keep requirements/native mode; choose a matching scoped task/query or explicitly authorize a larger complete-output budget and refit/recount. Never repeat the unchanged scan; 8,000 is not a fit guarantee.
+- Broad `cannot-fit`: no context; rejected estimate ≠ global minimum. Keep requirements/native mode; matching scoped task/query or explicitly authorize a larger complete-output budget and refit/recount. No unchanged reruns/8,000-token fit guarantee.
 - Narrow: API/MCP `query_documentation` (`query --request FILE`): `concept`, `related`, `surface`, `typed`, or `impact` with `paths`/`diff`. `symbol`, `entrypoint`, `dependency` require `allow_full_inventory=true`.
 - Validated context/query only. Check availability/reason, `freshness_evaluated`, concept state/reason/live comparison, coverage/bounds/truncation, ambiguity/unresolved targets. Ready/current is consumable/unchanged, not true/complete/reviewed/secure/runtime-correct. Unavailable/bounded `found: false` is not a negative fact; snapshot is not live.
 - Gaps: disclose; use validated surface/Markdown, then source/runtime. Index: `{wiki_dir}/index.md`.
@@ -874,7 +864,7 @@ def _compact_wiki_instructions(
 
 ## Managed routes and completion
 - Work: `{reference_root}/development-workflow.md`: criteria, scoped edits/independent checks, refresh/handoff; basis/failures/gaps.
-- Measure: `llm-wiki doctor --analysis-inputs --format json`. Census/files/producer lists; unavailable pending. No auto-classification/trust.
+- Measure: `llm-wiki doctor --analysis-inputs --format json`; unavailable=pending. No auto-classification/trust.
 - `{reference_root}/knowledge-consumption.md` and `{reference_root}/context-query.md`. Owner-authorized governance: `{reference_root}/governance.md`.
 - `{reference_root}/maintenance.md#diagnose-captured-evidence`: recovery: preview/review/authority; never auto-force. After every class/function/module/cross-module-flow change: sync, semantic pass, re-anchor, strict lint/CI. No lint errors.
 - Semantic prose only; generated blocks are CLI-owned. Naming: `{reference_root}/surfaces-naming.md`.
