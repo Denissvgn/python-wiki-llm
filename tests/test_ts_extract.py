@@ -694,6 +694,26 @@ class TestTypeScriptExtractor:
         damaged = deepcopy(data)
         damaged['classes'][0]['target_sha256'] = 'sha256:' + '0' * 64
         assert conclude(compare_inventory(observation, damaged, 'typescript', frontend.normalize, path='aliases.ts'))['status'] == 'fail'
+        # The preview boundary falls between CR and LF. Markdown may normalize
+        # the line ending, but must retain the preview's own trailing break.
+        target = '`' + 'x' * 4094 + '\r\ntail`'
+        source.write_bytes(('export type Bounded = ' + target + ';\r\n').encode())
+        data = TypeScriptExtractor().extract(str(tmp_path), deep=True)['aliases.ts']
+        bounded = data['classes'][0]
+        assert bounded['target'] == target[:4096] and bounded['target'].endswith('\r')
+        from llm_wiki_cli.services.bootstrap_runtime import _generate_module_md
+        from tests.provider_conformance.trace import compare_markdown
+        projection = tmp_path / 'projection'
+        (projection / 'modules').mkdir(parents=True)
+        (projection / 'entities').mkdir()
+        (projection / 'modules/aliases.md').write_text(_generate_module_md('aliases.ts', data))
+        (projection / 'entities/Bounded.md').write_text(_generate_entity_md(bounded, 'aliases.ts', {}))
+        surface = {'pages': [
+            {'kind': 'modules', 'source_path': 'aliases.ts', 'canonical_path': 'modules/aliases.md'},
+            {'kind': 'entities', 'source_path': 'aliases.ts', 'canonical_path': 'entities/Bounded.md', 'title': 'Bounded'},
+        ]}
+        findings = compare_markdown(frontend.observe(source), projection, surface, 'aliases.ts', 'typescript', frontend.normalize)
+        assert conclude(findings)['status'] == 'pass', [f.payload() for f in findings if f.status == 'fail']
 
     def test_tsx_support(self, tmp_path):
         _make_ts(
@@ -928,7 +948,7 @@ class TestTypeScriptExtractor:
                 run<U extends T>(value?: U, ...items: U[]): void {}
             }
             export interface Multiline<T extends `first
-second`> {
+\x85\u2028\u2029second`> {
                 read(value?: `line
 break`): T;
             }

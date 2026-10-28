@@ -116,6 +116,7 @@ from .markdown_sections import (
     GENERATED_INDEX_HTTP_API_CONTRACTS_HEADING,
     GENERATED_INDEX_INTRO_WITH_GUIDES,
     GENERATED_INDEX_INTRO_WITHOUT_GUIDES,
+    normalize_markdown,
     preserve_level_two_section_exact as _service_preserve_level_two_section_exact,
 )
 from .module_maps import build_module_dependency_maps
@@ -666,7 +667,7 @@ def _table_inline_code(value: object, *, table: bool = True) -> str:
     if value in (None, ""):
         return "—"
     text = str(value)
-    if any(char in text for char in "\r\n\t"):
+    if text.isspace() or any(char in text for char in "\r\n\t"):
         # A Markdown code span folds line breaks, changing template-literal
         # types. Keep one physical table line while preserving code whitespace
         # and making both HTML and Markdown punctuation inert.
@@ -1946,7 +1947,9 @@ def _generate_entity_md(
     ]
     if class_info.get("target"):
         if class_info.get("kind") == "type_alias" and Path(filepath).suffix.lower() in {".ts", ".tsx", ".mts", ".cts"}:
-            target = str(class_info["target"])
+            # Normalize before adding the fence separator. A preview ending in
+            # CR must not merge with that separator and lose its own line break.
+            target = normalize_markdown(str(class_info["target"]))
             fence = "`" * max(3, 1 + max((len(m[0]) for m in re.finditer(r"`+", target)), default=0))
             lines.extend(["**Target:**", "", f"{fence}typescript", target, fence])
         else:

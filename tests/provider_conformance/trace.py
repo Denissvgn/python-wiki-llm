@@ -100,7 +100,7 @@ def markdown_observations(
                     break
                 if token.type == "inline":
                     # Adjacent metadata lines share one Markdown paragraph.
-                    for line in token.content.splitlines():
+                    for line in token.content.split("\n"):
                         if line == "**Target:**":
                             target = True
                         elif line.startswith("**Kind:** "):

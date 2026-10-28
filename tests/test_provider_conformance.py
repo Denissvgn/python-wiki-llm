@@ -463,3 +463,39 @@ def test_typescript_metadata_decoder_reads_shared_paragraphs_and_stops_at_prose(
     assert row['declaration_kind'] == 'type_alias'
     assert row['target'] == '"fast" | "safe"'
     assert row['type_params'] == ['T extends `first\nsecond`', "U = 'a,b'"]
+
+
+@pytest.mark.parametrize('separator', ['\x85', '\u2028', '\u2029'])
+def test_unicode_separators_are_literal_generic_metadata_content(tmp_path, separator):
+    from llm_wiki_cli.services.bootstrap_runtime import _generate_entity_md, _generate_module_md
+    from tests.provider_conformance.trace import markdown_observations
+    record = {'name': 'Box', 'kind': 'interface', 'type_params': ['T extends `first\n' + separator + 'second`']}
+    (tmp_path / 'modules').mkdir()
+    (tmp_path / 'entities').mkdir()
+    (tmp_path / 'modules/types.md').write_text(_generate_module_md('types.ts', {'classes': [record], 'functions': []}))
+    (tmp_path / 'entities/Box.md').write_text(_generate_entity_md(record, 'types.ts', {}))
+    surface = {'pages': [
+        {'kind': 'modules', 'source_path': 'types.ts', 'canonical_path': 'modules/types.md'},
+        {'kind': 'entities', 'source_path': 'types.ts', 'canonical_path': 'entities/Box.md', 'title': 'Box'},
+    ]}
+    row = markdown_observations(tmp_path, surface, 'types.ts', 'typescript')[0]
+    assert row['type_params'] == record['type_params']
+
+
+def test_bounded_markdown_line_normalization_keeps_preview_and_digest_checks_distinct():
+    import hashlib
+    from tests.provider_conformance.inventory import compare_records
+    target = '`' + 'x' * 4094 + '\r\ntail`'
+    source = {'kind': 'class', 'declaration_kind': 'type_alias', 'type_parameters': [], 'type': target}
+    actual = {'declaration_kind': 'type_alias', 'target_truncated': True,
+              'target': target[:4096].replace('\r', '\n')}
+    def check(value, representation):
+        return compare_records(source, value, 'typescript', lambda *args: None, fact='A', representation=representation)
+    assert all(f.status == 'pass' for f in check(actual, 'markdown'))
+    damaged = deepcopy(actual)
+    damaged['target'] = damaged['target'].removesuffix('\n')
+    assert any(f.status == 'fail' for f in check(damaged, 'markdown'))
+    actual['target_sha256'] = 'sha256:' + hashlib.sha256(target.encode()).hexdigest()
+    assert any(f.status == 'fail' for f in check(actual, 'inventory'))
+    actual['target'] = target[:4096]
+    assert all(f.status == 'pass' for f in check(actual, 'inventory'))

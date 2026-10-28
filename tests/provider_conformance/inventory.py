@@ -198,7 +198,17 @@ def compare_records(
         if source.get("declaration_kind") == "type_alias":
             expected, observed = source["type"], actual.get("target", "")
             bounded = actual.get("target_truncated") is True
-            okay = (len(expected) > 4096 and observed == expected[:4096]) if bounded else compare_value(expected, observed, field="type", language=lang, normalize=normalize)
+            if bounded:
+                prefix = expected[:4096]
+                if representation == "markdown":
+                    # Fenced Markdown normalizes physical CR/CRLF, while the
+                    # inventory preview length and digest bind the raw source.
+                    prefix = prefix.replace("\r\n", "\n").replace("\r", "\n")
+                    if isinstance(observed, str):
+                        observed = observed.replace("\r\n", "\n").replace("\r", "\n")
+                okay = len(expected) > 4096 and observed == prefix
+            else:
+                okay = compare_value(expected, observed, field="type", language=lang, normalize=normalize)
             if bounded and representation != "markdown":
                 okay = okay and actual.get("target_sha256") == "sha256:" + hashlib.sha256(expected.encode("utf-8")).hexdigest()
             result.append(Finding(fact, representation, "pass" if okay else "fail",

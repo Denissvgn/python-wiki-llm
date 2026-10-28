@@ -4440,3 +4440,26 @@ def test_multiline_code_cells_preserve_source_text_and_inert_markup(literal):
     assert literal in ''.join(reader.text)
     assert '<script>' not in html and '<a ' not in html
     assert 'pre' in reader.tags and 'code' in reader.tags
+
+
+@pytest.mark.parametrize('value', [' ', '   ', ' \u00a0 ', ' x ', '`x`'])
+def test_inline_code_preserves_space_only_and_padded_values(value):
+    from markdown_it import MarkdownIt
+    from llm_wiki_cli.services.bootstrap_runtime import _table_inline_code
+    from tests.provider_conformance.markdown import code_values
+    for table in (False, True):
+        token = MarkdownIt('commonmark').parseInline(_table_inline_code(value, table=table))[0]
+        assert code_values(token) == [value]
+
+
+@pytest.mark.parametrize('ending', ['\r', '\r\n', '\n'])
+def test_alias_preview_fence_keeps_its_trailing_line_break(ending):
+    from markdown_it import MarkdownIt
+    from llm_wiki_cli.services.bootstrap_runtime import _generate_entity_md
+    target = '`' + 'x' * (4095 - len(ending)) + ending
+    assert len(target) == 4096
+    page = _generate_entity_md({'name': 'A', 'kind': 'type_alias', 'target': target,
+                               'target_truncated': True, 'target_sha256': 'sha256:' + '0' * 64}, 'types.ts', {})
+    block = next(t for t in MarkdownIt('commonmark').parse(page) if t.type == 'fence')
+    expected = target.replace('\r\n', '\n').replace('\r', '\n')
+    assert block.content.removesuffix('\n') == expected
