@@ -155,11 +155,32 @@ llm-wiki bootstrap --format json --source-adapter
 `bootstrap` is first-use only. It accepts a nonexistent or empty target and the
 exact untouched scaffold created by `llm-wiki init`. If the target already
 contains a manifest, legacy or partial pages, custom prose, governance, or
-verification state, it stops before source extraction or target writes. Use
-`sync --jobs 1` for a maintained wiki and `migrate --dry-run` before migrating an
+verification state unrelated to an interrupted bootstrap, it stops before
+source extraction or target writes. Use `sync --jobs 1` for a maintained wiki
+and `migrate --dry-run` before migrating an
 older or partial layout. The retained `--overwrite` compatibility option always
 fails; neither that option nor a request phrased as “re-bootstrap” authorizes
 replacement.
+
+Bootstrap acquires both writer locks before changing wiki content. If a lock
+cannot be opened, fix its access permissions and retry the same command. If
+bootstrap is interrupted later, retrying uses its local recovery journal to
+restore only unchanged output from that operation, then captures fresh source
+evidence. Edited pages or unrelated files stop recovery before restoration.
+Preserve the entire incomplete wiki outside the configured wiki path before
+starting over when those edits need to be kept. Keep the recovery journal until
+setup succeeds; it is stored under `.git/bootstrap-recovery` when a `.git`
+directory is available, otherwise under `.llm-wiki/bootstrap-recovery` beside
+the wiki. If the wiki itself is named `.llm-wiki`, recovery uses the sibling
+`.llm-wiki-bootstrap-recovery` directory.
+
+An older failed bootstrap without a journal cannot be identified safely from
+its generated pages alone. For a confirmed new setup containing only that
+failed output, preserve the incomplete directory elsewhere and bootstrap a
+fresh target. `sync` retains unknown provenance when seeding existing pages;
+`--no-cache` and `--rebuild-knowledge` do not recover the missing evidence.
+An established adopted wiki with missing authority still requires its complete
+committed recovery snapshot.
 
 With built-in extractors and complete source evidence, full bootstrap records
 validated knowledge and matching reuse metadata with the generated pages. The

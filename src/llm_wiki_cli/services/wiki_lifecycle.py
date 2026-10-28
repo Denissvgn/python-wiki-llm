@@ -188,9 +188,15 @@ def is_pristine_wiki_target(wiki_dir: Union[str, Path]) -> bool:
             relative = path.relative_to(root).as_posix()
         except ValueError:
             return False
+        if relative in {"llm-wiki-governance.lock", "llm-wiki-storage.lock"}:
+            if not path.is_file() or path.stat().st_nlink != 1:
+                return False
+            continue
         paths_by_relative[relative] = path
 
     actual_paths = set(paths_by_relative)
+    if not actual_paths:
+        return True
     if actual_paths not in (
         expected_paths,
         expected_paths | {".llm-wiki-agent"},

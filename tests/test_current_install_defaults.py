@@ -171,7 +171,7 @@ def test_legacy_surface_only_upgrade_retains_a_complete_preimage(project, keep_s
     result = upgrade_current_knowledge("src", "wiki", _seed_legacy=upgrade_cmd._seed_legacy_for_current_defaults)
     recovery = Path(result["recovery_dir"]) / "legacy"
     for name, digest in before.items():
-        if name == "llm-wiki-storage.lock":
+        if name in {"llm-wiki-storage.lock", "llm-wiki-governance.lock"}:
             # Operational lock identity is excluded by the recovery protocol.
             continue
         assert hashlib.sha256((recovery / name).read_bytes()).hexdigest() == digest

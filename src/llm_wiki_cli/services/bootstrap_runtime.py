@@ -4487,6 +4487,7 @@ class _BootstrapRunState:
     unsupported_sources: dict[str, dict[str, object]] = field(default_factory=dict)
     written_structural_page_paths: set[str] = field(default_factory=set)
     summary: dict[str, Any] | None = None
+    completion_message: str | None = None
 
 
 @dataclass(frozen=True)
@@ -4733,11 +4734,12 @@ def _start_bootstrap(state: _BootstrapRunState) -> None:
         if surface.directory is None:
             continue
         directory = options.wiki_dir / surface.directory
-        directory.mkdir(parents=True, exist_ok=True)
         # Git cannot preserve an empty directory. Match init/upgrade so a
         # freshly checked-out wiki retains every directory required by strict
         # validation even when a surface currently has zero pages.
-        (directory / ".gitkeep").touch()
+        gitkeep = directory / ".gitkeep"
+        if not gitkeep.exists():
+            write_bytes_atomic(gitkeep, b"")
 
 
 def _extract_bootstrap_inventory(state: _BootstrapRunState):
@@ -4824,8 +4826,6 @@ def _finish_if_empty_bootstrap_inventory(
         },
         state.unsupported_sources,
     )
-    if options.json_mode:
-        print(json.dumps(state.summary, indent=2))
     return True
 
 
@@ -5686,8 +5686,7 @@ def _source_snapshot_log_lines(
     )
 
 
-def _emit_bootstrap_complete(
-    state: _BootstrapRunState,
+def _bootstrap_complete_message(
     inventory: dict,
     entity_result: _EntityModuleResult,
     workflow_result: _WorkflowResult,
@@ -5696,9 +5695,8 @@ def _emit_bootstrap_complete(
     dependency_result: _DependencyResult,
     api_contract_result: _ApiContractResult,
     cross_reference_count: int,
-) -> None:
-    _emit_bootstrap(
-        state,
+) -> str:
+    return (
         f"\nBootstrap complete: {entity_result.entities_created} entities, "
         f"{entity_result.modules_created} modules, {workflow_result.created} workflows, "
         f"{flow_result.created} flows, "
@@ -5706,7 +5704,7 @@ def _emit_bootstrap_complete(
         f"{dependency_result.created} architecture "
         f"and {api_contract_result.created} API contract pages "
         f"created from {len(inventory)} source files "
-        f"({cross_reference_count} cross-references).",
+        f"({cross_reference_count} cross-references)."
     )
 
 
@@ -6299,8 +6297,7 @@ def _finalize_bootstrap(
         state.summary["knowledge_schema_version"] = LOCAL_PACKED_SCHEMA
         if current.get("recovery_dir"):
             _emit_bootstrap(state, f"Native setup recovery: {current['recovery_dir']}")
-    _emit_bootstrap_complete(
-        state,
+    state.completion_message = _bootstrap_complete_message(
         inventory,
         result.entity,
         result.workflow,
@@ -6310,8 +6307,6 @@ def _finalize_bootstrap(
         result.api_contract,
         result.cross_reference_count,
     )
-    if state.options.json_mode:
-        print(json.dumps(state.summary, indent=2))
     return _bootstrap_result(state)
 
 
@@ -6334,6 +6329,14 @@ def _is_pristine_bootstrap_target(wiki_dir: Path) -> bool:
 
 
 def _first_use_guidance(options: _BootstrapRunOptions) -> str:
+    from .bootstrap_recovery import pending_bootstrap
+
+    if pending_bootstrap(options.wiki_dir):
+        return (
+            "An interrupted first-use bootstrap is recorded. Retry the same "
+            "bootstrap command without `overwrite` to recover unchanged output. "
+            "Preserve any user edits if recovery refuses them."
+        )
     state = classify_wiki_lifecycle(options.wiki_dir)
     if state is WikiLifecycleState.MIGRATION_REQUIRED:
         route = migration_guidance(
@@ -6348,6 +6351,24 @@ def _first_use_guidance(options: _BootstrapRunOptions) -> str:
             src_dir=options.src_dir,
             wiki_dir=options.wiki_dir,
         )
+        unavailable_provenance = state is WikiLifecycleState.SYNC_SEEDABLE
+        if state is WikiLifecycleState.MANAGED:
+            try:
+                previous = SyncManifest.load(options.wiki_dir)
+                unavailable_provenance = any(
+                    baseline.unknown_reason == "manifest-state-unavailable"
+                    for baseline in previous.evidence_baselines.values()
+                )
+            except (OSError, ValueError):
+                # Corrupt authority keeps its existing recovery/refusal route.
+                pass
+        if unavailable_provenance:
+            route += (
+                " Seeding preserves unknown provenance; it cannot recover evidence "
+                "from an unjournaled failed bootstrap. If this is only output from "
+                "a failed first setup, preserve the entire incomplete wiki outside "
+                "the configured wiki path, then retry bootstrap."
+            )
     else:
         route = (
             "Run the same bootstrap command without the compatibility "
@@ -6410,35 +6431,52 @@ def _execute_bootstrap_options(
     _workspace_refresh_authorized: bool = False,
 ) -> BootstrapResult:
     from .maintenance_protocol import guard_maintenance_owner, maintenance_write_operation
+    from .bootstrap_recovery import bootstrap_write_operation, pending_bootstrap
 
-    try:
-        guard_maintenance_owner(options.wiki_dir)
-    except SyncManifestError:
-        # Adopted-owner failures retain their recovery guard. A malformed
-        # legacy manifest still receives the public first-use refusal before
-        # extraction rather than leaking its parser error.
-        if not _workspace_refresh_authorized:
-            _preflight_public_bootstrap(options)
-        raise
-    if not _workspace_refresh_authorized:
+    interrupted = not _workspace_refresh_authorized and pending_bootstrap(options.wiki_dir)
+    if not interrupted:
+        try:
+            guard_maintenance_owner(options.wiki_dir)
+        except SyncManifestError:
+            # Preserve first-use refusal for malformed legacy manifests.
+            if not _workspace_refresh_authorized:
+                _preflight_public_bootstrap(options)
+            raise
+    if not _workspace_refresh_authorized and (not interrupted or options.overwrite):
         _preflight_public_bootstrap(options)
-    _preflight_bootstrap_source_selection(options)
-    with maintenance_write_operation(options.wiki_dir) as basis:
-        result = _execute_bootstrap_options_locked(options, _workspace_refresh_authorized=_workspace_refresh_authorized, write_basis=basis)
+    operation = (
+        maintenance_write_operation(options.wiki_dir) if _workspace_refresh_authorized
+        else bootstrap_write_operation(options.wiki_dir, preflight=lambda: _preflight_public_bootstrap(options))
+    )
+    state = _BootstrapRunState(options)
+    basis = None
+    try:
+        with operation as basis:
+            _preflight_bootstrap_source_selection(options)
+            result = _execute_bootstrap_options_locked(state, write_basis=basis)
+    except BaseException:
+        if not _workspace_refresh_authorized and basis is not None:
+            print("Bootstrap was interrupted. Retry the same bootstrap command after fixing the cause. "
+                  "Recovery preserves user edits and only restores unchanged journaled output; do not use sync to recover this operation.",
+                  file=options.diagnostic_stream or options.progress_stream)
+        raise
+    if state.completion_message is not None:
+        _emit_bootstrap(state, state.completion_message)
+    if options.json_mode:
+        print(json.dumps(result.summary, indent=2))
     return result
 
 
 def _execute_bootstrap_options_locked(
-    options: _BootstrapRunOptions,
+    state: _BootstrapRunState,
     *,
-    _workspace_refresh_authorized: bool = False,
     write_basis=None,
 ) -> BootstrapResult:
+    options = state.options
     try:
         _preflight_bootstrap_governance(options.wiki_dir)
     except (GovernanceError, InfrastructureSyncError) as exc:
         raise BootstrapContractError(str(exc)) from exc
-    state = _BootstrapRunState(options)
     _start_bootstrap(state)
 
     inventory_result = _extract_bootstrap_inventory(state)
