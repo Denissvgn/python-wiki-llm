@@ -627,11 +627,15 @@ def _format_signature(fn: dict) -> str:
             inserted_keyword_separator = True
 
         part = p["name"]
-        if kind == "var_positional":
+        if p.get("rest"):
+            part = f"...{part}"
+        elif kind == "var_positional":
             part = f"*{part}"
             inserted_keyword_separator = True
         elif kind == "var_keyword":
             part = f"**{part}"
+        if p.get("optional"):
+            part += "?"
         if p.get("type"):
             part += f": {p['type']}"
         if p.get("default") not in (None, ""):
@@ -645,6 +649,8 @@ def _format_signature(fn: dict) -> str:
 
     ret = fn.get("return_type", "")
     sig = f"({', '.join(params)})"
+    if fn.get("type_params"):
+        sig = f"<{', '.join(fn['type_params'])}>{sig}"
     if ret:
         sig += f" -> {ret}"
     return sig
@@ -656,10 +662,12 @@ def _table_text(value: object) -> str:
     return str(value).replace("\n", "<br>").replace("|", "\\|")
 
 
-def _table_inline_code(value: object) -> str:
+def _table_inline_code(value: object, *, table: bool = True) -> str:
     if value in (None, ""):
         return "—"
-    text = str(value).replace("\n", " ").replace("|", "\\|")
+    text = str(value).replace("\n", " ")
+    if table:
+        text = text.replace("|", "\\|")
     runs = [len(match.group(0)) for match in re.finditer(r"`+", text)]
     fence = "`" * (max(runs, default=0) + 1)
     padding = " " if runs or text.startswith(" ") or text.endswith(" ") else ""
@@ -1652,6 +1660,7 @@ def _entity_kind_label(class_info: Mapping) -> str:
     return {
         "class": "Class",
         "enum": "Enum",
+        "interface": "Interface",
         "type_alias": "Type alias",
     }.get(str(class_info.get("kind") or "class"), "Class")
 
@@ -1757,7 +1766,8 @@ def _append_attribute_contract(lines: list[str], class_info: Mapping) -> None:
     attributes = list(class_info.get("attributes", []))
     lines.extend(["## Attributes", ""])
     if not attributes:
-        lines.extend(["*No annotated attributes found.*", ""])
+        note = "*See the alias definition for its member types.*" if class_info.get("kind") == "type_alias" else "*No annotated attributes found.*"
+        lines.extend([note, ""])
         return
 
     if class_info.get("kind") == "enum":
@@ -1926,7 +1936,16 @@ def _generate_entity_md(
         f"**Module:** [{mod_name}](../modules/{mod_name}.md)",
     ]
     if class_info.get("target"):
-        lines.append(f"**Target:** {_table_inline_code(class_info['target'])}")
+        if class_info.get("kind") == "type_alias" and Path(filepath).suffix.lower() in {".ts", ".tsx", ".mts", ".cts"}:
+            target = str(class_info["target"])
+            fence = "`" * max(3, 1 + max((len(m[0]) for m in re.finditer(r"`+", target)), default=0))
+            lines.extend(["**Target:**", "", f"{fence}typescript", target, fence])
+        else:
+            lines.append(f"**Target:** {_table_inline_code(class_info['target'])}")
+    if class_info.get("target_truncated"):
+        lines.append("**Definition truncated:** first 4,096 characters only; see source for the complete definition.")
+    if class_info.get("type_params"):
+        lines.append(f"**Type parameters:** {_table_inline_code(', '.join(class_info['type_params']), table=False)}")
     lines.append("")
 
     if decorators:
@@ -1964,7 +1983,7 @@ def _generate_entity_md(
                 f"{decs} | {_table_text(doc)} |"
             )
     else:
-        lines.append("*No public methods. Inherits from base classes.*")
+        lines.append("*See the alias definition for callable and member types.*" if class_info.get("kind") == "type_alias" else "*No declared methods.*")
     lines.append("")
 
     # Relationships
@@ -2062,6 +2081,8 @@ def _generate_module_md(
             entity_link = f"[{c['name']}](../entities/{page_name}.md)"
             bases = ", ".join(_table_inline_code(base) for base in c.get("bases", []))
             bases = bases or _table_inline_code(c.get("target"))
+            if c.get("target_truncated"):
+                bases += " *(definition truncated; see source)*"
             doc = _source_doc_first_line(c.get("docstring")) or "—"
             if include_kind:
                 lines.append(

@@ -721,3 +721,33 @@ def test_registered_family_missing_null_boolean_and_zero_remain_distinct(languag
     assert _entity_basis(missing, name).is_known
     missing['classes'][0]['attributes'][0]['required'] = None
     assert _entity_basis(missing, name).unknown_reason == UNKNOWN_INVALID_INVENTORY
+
+
+def test_typescript_declaration_details_are_structural_and_validated():
+    record = {'language': 'typescript', 'classes': [], 'functions': [
+        {'name': 'collect', 'params': [{'name': 'items', 'type': 'T[]', 'rest': True}], 'type_params': ['T extends string']}
+    ]}
+    before = _module_hash(record)
+    assert before is not None
+    for change in ('rest', 'optional', 'generic'):
+        altered = deepcopy(record)
+        fn = altered['functions'][0]
+        if change == 'generic':
+            fn['type_params'] = ['T extends number']
+        else:
+            fn['params'][0][change] = False if change == 'rest' else True
+        assert _module_hash(altered) != before
+    for field in ('rest', 'optional'):
+        invalid = deepcopy(record)
+        invalid['functions'][0]['params'][0][field] = 'true'
+        assert _module_hash(invalid) is None
+    alias = {'language': 'typescript', 'classes': [
+        {'name': 'Large', 'kind': 'type_alias', 'target': 'prefix', 'target_truncated': True,
+         'target_sha256': sha256_bytes(b'complete original definition')}
+    ], 'functions': []}
+    original = _entity_hash(alias, 'Large')
+    alias['classes'][0]['target_sha256'] = sha256_bytes(b'complete changed definition')
+    assert _entity_hash(alias, 'Large') != original
+    assert _module_hash(alias) is not None
+    alias['classes'][0].pop('target_sha256')
+    assert _entity_hash(alias, 'Large') is None

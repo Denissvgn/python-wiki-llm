@@ -366,3 +366,18 @@ def test_balanced_source_fences_are_preserved():
 
     prose = "Example:\n````text\n``` is not the closing marker\n````\n\nMore prose."
     assert _sanitize_source_doc_markdown(prose) == prose
+
+
+def test_typescript_signature_decoder_retains_binders_and_calling_convention():
+    value = signature('<T extends (value: string) => Box<U>, U = "a b">(prefix?: T, ...items: U[]) -> U', 'typescript')
+    assert value['type_params'] == ['T extends (value: string) => Box<U>', 'U = "a b"']
+    assert value['params'] == [
+        {'name': 'prefix', 'type': 'T', 'optional': True, 'rest': False},
+        {'name': 'items', 'type': 'U[]', 'optional': False, 'rest': True},
+    ]
+    from tests.provider_conformance.inventory import compare_parameters
+    for field in ('optional', 'rest'):
+        damaged = deepcopy(value['params'])
+        damaged[0 if field == 'optional' else 1].pop(field)
+        okay, reason = compare_parameters(value['params'], damaged, 'typescript', lambda *args: None)
+        assert not okay and reason == 'parameter-' + field

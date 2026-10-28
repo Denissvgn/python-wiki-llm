@@ -11,6 +11,7 @@
 
 const path = require("path");
 const fs = require("fs");
+const crypto = require("crypto");
 const { Project, SyntaxKind } = require("ts-morph");
 
 // ── Argument parsing ──────────────────────────────────────────────────────────
@@ -188,6 +189,8 @@ function typeToStr(typeNode) {
 
 function extractMethodParam(param) {
   const info = { name: param.getName() };
+  if (param.hasQuestionToken?.()) info.optional = true;
+  if (param.isRestParameter?.()) info.rest = true;
   const typeNode = param.getTypeNode();
   info.type = typeToStr(typeNode);
   const initializer = param.getInitializer();
@@ -211,6 +214,8 @@ function extractMethodInfo(method) {
     info.docstring = getJsDoc(method);
     info.decorators = getDecoratorNames(method);
     info.params = (method.getParameters?.() ?? []).map(extractMethodParam);
+    const typeParams = (method.getTypeParameters?.() ?? []).map(typeToStr);
+    if (typeParams.length) info.type_params = typeParams;
     const returnTypeNode = method.getReturnTypeNode?.();
     info.return_type = typeToStr(returnTypeNode);
   }
@@ -249,6 +254,8 @@ function extractFunctionInfo(fn, name, docNode = null, line = null) {
     info.docstring = getJsDoc(docNode ?? fn);
     info.decorators = getDecoratorNames(fn);
     info.params = (fn.getParameters?.() ?? []).map(extractMethodParam);
+    const typeParams = (fn.getTypeParameters?.() ?? []).map(typeToStr);
+    if (typeParams.length) info.type_params = typeParams;
     info.return_type = typeToStr(fn.getReturnTypeNode?.());
   } else if (isAsync) {
     info.async = true;
@@ -597,6 +604,7 @@ function extractFile(sourceFile) {
         line: clsLine,
         docstring: getJsDoc(cls),
         decorators: getDecoratorNames(cls),
+        type_params: cls.getTypeParameters().map(typeToStr),
         attributes: cls.getProperties().map(extractProperty),
         methods: [
           ...cls.getMethods().map(extractMethodInfo),
@@ -635,16 +643,9 @@ function extractFile(sourceFile) {
         line: iface.getStartLineNumber(),
         docstring: getJsDoc(iface),
         decorators: [],
+        type_params: iface.getTypeParameters().map(typeToStr),
         attributes: iface.getProperties().map(extractProperty),
-        methods: iface.getMethods().map((m) => ({
-          name: m.getName(),
-          line: m.getStartLineNumber(),
-          is_async: false,
-          docstring: getJsDoc(m),
-          decorators: [],
-          params: m.getParameters().map(extractMethodParam),
-          return_type: typeToStr(m.getReturnTypeNode()),
-        })),
+        methods: iface.getMethods().map(extractMethodInfo),
       });
     } else {
       fileEntry.classes.push({
@@ -685,12 +686,22 @@ function extractFile(sourceFile) {
 
   // ── Type aliases ───────────────────────────────────────────────────────────
   for (const ta of sourceFile.getTypeAliases()) {
+    const target = deep ? typeToStr(ta.getTypeNode()) : "";
+    const definition = Array.from(target);
     fileEntry.classes.push({
       name: ta.getName(),
       kind: "type_alias",
       bases: [],
       line: ta.getStartLineNumber(),
-      ...(deep ? { docstring: getJsDoc(ta), decorators: [], attributes: [], methods: [] } : {}),
+      ...(deep ? {
+        docstring: getJsDoc(ta), decorators: [], attributes: [], methods: [],
+        type_params: ta.getTypeParameters().map(typeToStr),
+        target: definition.slice(0, 4096).join(""),
+        ...(definition.length > 4096 ? {
+          target_truncated: true,
+          target_sha256: "sha256:" + crypto.createHash("sha256").update(target, "utf8").digest("hex"),
+        } : {}),
+      } : {}),
     });
   }
 

@@ -66,6 +66,9 @@ _MODULE_ENTITY_FIELDS = (
     "model_kind",
     "bases",
     "target",
+    "target_truncated",
+    "target_sha256",
+    "type_params",
 )
 _MODULE_FUNCTION_FIELDS = (
     "name",
@@ -76,6 +79,7 @@ _MODULE_FUNCTION_FIELDS = (
     "is_async",
     "async",
     "decorators",
+    "type_params",
 )
 _MODULE_CONSTANT_FIELDS = ("name",)
 _MODULE_CALL_FIELDS = ("name", "attr", "target")
@@ -563,7 +567,11 @@ def _record_name(record: Mapping[str, Any], pointer="") -> str:
 def _validate_module_entity_record(record: Mapping[str, Any], pointer="") -> None:
     _record_name(record, pointer)
     _validate_optional_strings(record, ("kind", "model_kind", "target"), pointer)
+    _validate_optional_booleans(record, ("target_truncated",), pointer)
+    if (record.get("target_truncated") or "target_sha256" in record) and not is_valid_sha256(record.get("target_sha256")):
+        raise _failure(_pointer(pointer, "target_sha256"), "sha256-required", "complete definition digest", record.get("target_sha256", MISSING_VALUE))
     _validate_optional_string_array(record, "bases", pointer)
+    _validate_optional_string_array(record, "type_params", pointer)
 
 
 def _validate_entity_record(record: Mapping[str, Any], pointer="") -> None:
@@ -602,12 +610,14 @@ def _validate_callable_record(record: Mapping[str, Any], pointer="") -> None:
     _validate_optional_strings(record, ("kind", "return_type", "signature"), pointer)
     _validate_optional_booleans(record, ("async", "is_async"), pointer)
     _validate_optional_string_array(record, "decorators", pointer)
+    _validate_optional_string_array(record, "type_params", pointer)
     params = _optional_record_array(record, "params", pointer)
     for index, param in enumerate(params):
         position = _pointer(_pointer(pointer, "params"), index)
         if not isinstance(param.get("name"), str):
             raise _failure(_pointer(position, "name"), "string-required", "string", param.get("name", MISSING_VALUE))
         _validate_optional_strings(param, ("default", "kind", "type"), position)
+        _validate_optional_booleans(param, ("optional", "rest"), position)
 
 
 def _validate_import_record(record: Mapping[str, Any], *, language: str, pointer="") -> None:
@@ -718,7 +728,7 @@ _POINTER_FIELDS = frozenset({
     "decorators", "module", "type", "alias", "qualified", "resolution", "reason", "scope", "attributes", "methods",
     "default", "default_factory", "serialization_alias", "tag", "validation_alias", "value", "annotated_metadata",
     "examples", "literal_values", "constraints", "unknowns", "nullable", "optional", "required", "validator", "fields",
-    "options", "model_config", "deriving", "type_params", "exported", "attr",
+    "options", "model_config", "deriving", "type_params", "exported", "attr", "rest", "target_truncated", "target_sha256",
 })
 
 

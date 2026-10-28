@@ -284,5 +284,11 @@ EXTRACT_ADDITIVE_FIELDS = {
     "classes[].methods[].source_file",
     "main_block_calls",
     "params[].kind",
+    "params[].optional",
+    "params[].rest",
+    "functions[].type_params",
+    "classes[].methods[].type_params",
+    "classes[].target_truncated",
+    "classes[].target_sha256",
     "api_contracts",
 }

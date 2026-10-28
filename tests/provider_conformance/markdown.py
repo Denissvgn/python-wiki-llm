@@ -99,6 +99,30 @@ def signature(text: str, lang: str) -> dict:
     is_async = text.startswith("(async) ")
     if is_async:
         text = text[len("(async) ") :]
+    type_params = []
+    if lang == "typescript" and text.startswith("<"):
+        stack, quote, escaped = [], None, False
+        for index, char in enumerate(text):
+            if quote:
+                if escaped:
+                    escaped = False
+                elif char == "\\":
+                    escaped = True
+                elif char == quote:
+                    quote = None
+            elif char in "\"'`":
+                quote = char
+            elif char in "([{<":
+                stack.append(char)
+            elif char in ")]}>":
+                if char == ">" and index and text[index - 1] in "=-":
+                    continue
+                if not stack or stack.pop() != {")": "(", "]": "[", "}": "{", ">": "<"}[char]:
+                    raise Incomplete(f"Unbalanced generic declaration: {text}")
+                if not stack:
+                    type_params = split_balanced(text[1:index])
+                    text = text[index + 1:]
+                    break
     if not text.startswith("("):
         raise Incomplete(f"Unrecognized rendered signature: {text}")
     # The generator puts the result after the matching outer parameter group.
@@ -111,7 +135,7 @@ def signature(text: str, lang: str) -> dict:
                 escaped = True
             elif char == quote:
                 quote = None
-        elif char in "\"'":
+        elif char in "\"'`":
             if (
                 char == "'"
                 and lang == "rust"
@@ -156,6 +180,10 @@ def signature(text: str, lang: str) -> dict:
         elif name.startswith("*"):
             kind, name, keyword_only = "var_positional", name[1:], True
         item = {"name": name, "type": annotation.strip() if colon else ""}
+        if lang == "typescript":
+            item["optional"] = name.endswith("?")
+            item["rest"] = name.startswith("...")
+            item["name"] = name.removeprefix("...").removesuffix("?")
         if lang == "python":
             item["kind"] = kind
         if default is not None:
@@ -165,6 +193,7 @@ def signature(text: str, lang: str) -> dict:
     if tail and not tail.startswith("-> "):
         raise Incomplete(f"Unexpected return delimiter: {text}")
     return {
+        **({"type_params": type_params} if type_params else {}),
         "params": params,
         "return_type": tail[3:].strip() if tail else "",
         "is_async": is_async,

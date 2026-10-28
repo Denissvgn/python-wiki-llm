@@ -48,8 +48,8 @@ def supported_source(observation: dict, lang: str) -> list[dict]:
 
     Receiver parameters are implicit for Python/Rust methods. Rust impls on
     foreign types appear as module functions; their source owner stays recorded.
-    Generic binder lists and alias RHS are not represented by the existing
-    inventory schema. Types *inside* represented signatures remain structural.
+    TypeScript binders, optional/rest markers and alias definitions are exposed;
+    other frontends retain their separately declared representational scope.
     """
     records = deepcopy(observation["declarations"])
     classes = {r["name"] for r in records if r["kind"] == "class"}
@@ -97,6 +97,10 @@ def compare_parameters(
     for expected, observed in zip(source, actual):
         if expected["name"] != observed["name"]:
             return False, "parameter-order-or-name"
+        if lang == "typescript":
+            for key in ("optional", "rest"):
+                if expected.get(key, False) is not observed.get(key, False):
+                    return False, "parameter-" + key
         keys = {"type", "default"}
         if lang == "python":
             keys.add("kind")
@@ -179,7 +183,23 @@ def compare_records(
                 reference,
             )
         )
-    if source.get("type_parameters"):
+    if lang == "typescript":
+        expected = source.get("type_parameters", [])
+        observed = actual.get("type_params", [])
+        result.append(Finding(fact, representation,
+            "pass" if [v.replace("\n", " ") for v in expected] == observed else "fail",
+            "generic-binder-declarations", expected, observed, reference))
+        if source.get("declaration_kind"):
+            result.append(Finding(fact, representation,
+                "pass" if source["declaration_kind"] == actual.get("declaration_kind") else "fail",
+                "declaration-kind", source["declaration_kind"], actual.get("declaration_kind"), reference))
+        if source.get("declaration_kind") == "type_alias":
+            expected, observed = source["type"], actual.get("target", "")
+            bounded = actual.get("target_truncated") is True
+            okay = (len(expected) > 4096 and observed == expected[:4096]) if bounded else compare_value(expected, observed, field="type", language=lang, normalize=normalize)
+            result.append(Finding(fact, representation, "pass" if okay else "fail",
+                "bounded-alias-prefix" if bounded else "alias-definition", expected, observed, reference))
+    elif source.get("type_parameters"):
         result.append(
             Finding(
                 fact,
@@ -190,7 +210,7 @@ def compare_records(
                 reference=reference,
             )
         )
-    if source["kind"] == "class" and source.get("type"):
+    if lang != "typescript" and source["kind"] == "class" and source.get("type"):
         result.append(
             Finding(
                 fact,

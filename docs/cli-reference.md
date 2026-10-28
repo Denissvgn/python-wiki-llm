@@ -503,6 +503,13 @@ Unresolved JavaScript `import()` and computed `require()` calls remain explicit
 gap records in `imports`; they do not establish a resolved dependency or runtime
 completeness. Generated import tables label these gaps with their reason and
 source line.
+TypeScript deep declarations retain optional (`?`) and rest (`...`) parameter
+markers, generic binder declarations in `type_params`, and type-alias expressions
+in `target`. Interfaces keep their declaration kind in entity pages and module
+summaries. Alias expressions are limited to 4,096 Unicode characters; longer
+definitions carry `target_truncated: true` and a full-expression `target_sha256`.
+Their pages disclose the bounded preview and refer to source for the remainder.
+The digest keeps changes outside the preview visible to freshness comparisons.
 Go `_test.go` files are omitted unless `--include-tests go` is supplied; Python
 test files remain part of normal Python extraction.
 Python deep extraction can capture a bounded static subset of nested helpers.

@@ -647,6 +647,9 @@ class TestTypeScriptExtractor:
             """
             export type UserId = string;
             export type Handler = (event: Event) => void;
+            export type Mode = "fast" | "safe";
+            export type Shape<T extends string = "ready"> = { value: T; enabled?: boolean };
+            export type Fence = "```";
             """,
         )
         inv = TypeScriptExtractor().extract(str(tmp_path))
@@ -656,6 +659,25 @@ class TestTypeScriptExtractor:
         names = {c["name"] for c in classes}
         assert "UserId" in names
         assert "Handler" in names
+        assert all("target" not in record for record in classes)
+        deep = TypeScriptExtractor().extract(str(tmp_path), deep=True)["aliases.ts"]
+        aliases = {record["name"]: record for record in deep["classes"]}
+        assert aliases["Handler"]["target"] == "(event: Event) => void"
+        assert aliases["Mode"]["target"] == '"fast" | "safe"'
+        assert aliases["Shape"]["target"] == "{ value: T; enabled?: boolean }"
+        assert aliases["Shape"]["type_params"] == ['T extends string = "ready"']
+        from llm_wiki_cli.services.bootstrap_runtime import _generate_entity_md
+        page = _generate_entity_md(aliases["Mode"], "aliases.ts", {})
+        assert '```typescript\n"fast" | "safe"\n```' in page
+        assert "Inherits" not in page and "Kind:** Type alias" in page
+        page = _generate_entity_md(aliases["Fence"], "aliases.ts", {})
+        assert '````typescript\n"```"\n````' in page
+        target = '"' + "雪" * 4096 + '"'
+        (tmp_path / "aliases.ts").write_text("export type Bounded = " + target + ";\n")
+        bounded = TypeScriptExtractor().extract(str(tmp_path), deep=True)["aliases.ts"]["classes"][0]
+        assert bounded["target"] == target[:4096] and bounded["target_truncated"] is True
+        assert bounded["target_sha256"] == "sha256:" + hashlib.sha256(target.encode()).hexdigest()
+        assert "Definition truncated" in _generate_entity_md(bounded, "aliases.ts", {})
 
     def test_tsx_support(self, tmp_path):
         _make_ts(
@@ -880,6 +902,15 @@ class TestTypeScriptExtractor:
                 initialized: number = 0;
                 optional_count?: number;
             }
+            export type Mode = "fast" | "safe";
+            export type Handler = (value: number) => string;
+            export function collect(prefix?: string, ...items: string[]): string { return ""; }
+            export function identity<T extends string = "ready">(value: T): T { return value; }
+            export const arrow = <T,>(first?: T, ...rest: T[]): T[] => rest;
+            export class Client<T> {
+                constructor(timeout?: number, ...labels: string[]) {}
+                run<U extends T>(value?: U, ...items: U[]): void {}
+            }
             """,
         )
         monkeypatch.chdir(tmp_path)
@@ -911,6 +942,18 @@ class TestTypeScriptExtractor:
         state = (tmp_path / "wiki/entities/EvidenceState.md").read_text(encoding="utf-8")
         assert "| `initialized` | `number` | Yes | `0` |" in state
         assert "| `optional_count` | `number` | No | — |" in state
+        module = (tmp_path / "wiki/modules/types.md").read_text()
+        assert "(prefix?: string, ...items: string[]) -> string" in module
+        assert '<T extends string = "ready">(value: T) -> T' in module
+        assert "<T>(first?: T, ...rest: T[]) -> T[]" in module
+        assert "| [EvidenceSignals](../entities/EvidenceSignals.md) | Interface |" in module
+        assert "**Kind:** Interface" in content and "Inherits" not in content
+        client = (tmp_path / "wiki/entities/Client.md").read_text()
+        assert "**Type parameters:** `T`" in client
+        assert "(timeout?: number, ...labels: string[])" in client
+        assert "<U extends T>(value?: U, ...items: U[]) -> void" in client
+        assert '```typescript\n"fast" | "safe"\n```' in (tmp_path / "wiki/entities/Mode.md").read_text()
+        assert "(value: number) => string" in (tmp_path / "wiki/entities/Handler.md").read_text()
         content = content.replace(
             "_Auto-generated from `EvidenceSignals` in `types.ts`._",
             "Human-curated evidence contract.",
@@ -921,7 +964,7 @@ class TestTypeScriptExtractor:
         page.write_text(content, encoding="utf-8")
         before = SyncManifest.load(tmp_path / "wiki").sources
         source.write_text(
-            source.read_text(encoding="utf-8").replace("change_me:", "change_me?:"),
+            source.read_text(encoding="utf-8").replace("change_me:", "change_me?:").replace('"safe"', '"careful"').replace("prefix?:", "prefix:"),
             encoding="utf-8",
         )
         capsys.readouterr()
@@ -936,6 +979,8 @@ class TestTypeScriptExtractor:
         assert "| `change_me` | `number` | No | — |" in content
         assert "Human-curated evidence contract." in content
         assert "Omission means unavailable." in content
+        assert '"careful"' in (tmp_path / "wiki/entities/Mode.md").read_text()
+        assert "(prefix: string, ...items: string[]) -> string" in (tmp_path / "wiki/modules/types.md").read_text()
         run("sync")
         assert page.read_text(encoding="utf-8") == content
 
@@ -984,6 +1029,7 @@ class TestTypeScriptExtractor:
             export interface Repository<T> {
                 findById(id: string): Promise<T>;
                 save(entity: T): Promise<void>;
+                select<U extends T = T>(value?: U, ...rest: U[]): U;
             }
             """,
         )
@@ -993,6 +1039,11 @@ class TestTypeScriptExtractor:
         method_names = {m["name"] for m in cls["methods"]}
         assert "findById" in method_names
         assert "save" in method_names
+        method = next(m for m in cls["methods"] if m["name"] == "select")
+        assert cls["type_params"] == ["T"]
+        assert method["type_params"] == ["U extends T = T"]
+        assert method["params"][0]["optional"] is True
+        assert method["params"][1]["rest"] is True
 
 
 # ===========================================================================
