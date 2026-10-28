@@ -136,7 +136,7 @@ configured agents.
 Size the pass from `index.md`, the flows directory listing, and
 `dependency_evidence.most_depended_on` before reading any flow page in full.
 Read only the flow/architecture pages the chosen tours will link to. Use one serialized
-`llm-wiki context --budget 8000 --focus changed --format json --read-only` run
+`llm-wiki context --budget 8000 --budget-mode estimated --focus changed --format packet --knowledge-mode auto --read-only` run
 only when a persona's mental-model section needs source context the wiki pages
 do not already carry. Budget and focus bound emitted output after a full deep
 inventory; they do not make the scan computationally cheap. Do not re-run
@@ -144,3 +144,10 @@ extract for this workflow — guides are written from wiki surfaces, and if the
 wiki lacks the needed structure, qualify the existing target with `wiki-sync`
 or `llm-wiki migrate --dry-run` first. Only an absent target or the exact
 untouched `llm-wiki init` scaffold belongs to `wiki-bootstrap`.
+
+8,000 estimated tokens is an initial bound, not a fit guarantee. Broad
+`cannot-fit` emits no context; its rejected-candidate estimate is not a global
+minimum. Keep the requirements and native mode. Choose a matching scoped
+task/session or bounded documentation query, or explicitly authorize a larger
+complete-output budget and independently refit/recount the new request. Do not
+repeat the unchanged broad scan or execute generated recovery commands.

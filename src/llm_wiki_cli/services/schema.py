@@ -442,6 +442,11 @@ without installing, guessing, or treating the missing file as authority.
 - For broad repository-wide work, run one serialized
   `llm-wiki context --budget 8000 --budget-mode estimated --src-dir . --wiki-dir {wiki_dir_arg} --format packet --focus changed --knowledge-mode auto --read-only{source_selection_args}`
   qualified packet, then read only the source and wiki pages it selects.
+- 8,000 estimated tokens is an initial bound, not a fit guarantee. On broad
+  `cannot-fit`, no context was emitted; the rejected-candidate estimate is not
+  a global minimum. Keep the requirements and native mode: choose a matching
+  scoped task/query, or explicitly authorize a larger complete-output budget
+  and independently refit/recount it. Do not repeat an unchanged broad scan.
 - For a narrow task with supplied files or a supplied diff, skip the full
   context scan. Use the bounded `query_documentation` API or MCP operation:
   choose `impact` with `paths` or `diff`, or an exact `concept`, `related`,
@@ -853,6 +858,7 @@ def _compact_wiki_instructions(
 - Native: retain `required`; upgrade owns storage; damaged owners: recovery. Reads never migrate.
 - Contracts: omit versions. Canonical; `--view compact`: budget/receipt outside source/wiki/inputs; count framing/follow-ups; no fit promise.
 - Broad: one serialized read-only packet: `llm-wiki context --budget 8000 --budget-mode estimated --src-dir . --wiki-dir {wiki_dir_arg} --format packet --focus changed --knowledge-mode auto --read-only{source_selection_args}`.
+- Broad `cannot-fit`: no context emitted; rejected estimate is not a global minimum. Keep requirements/native mode; choose a matching scoped task/query or explicitly authorize a larger complete-output budget and refit/recount. Never repeat the unchanged scan; 8,000 is not a fit guarantee.
 - Narrow: API/MCP `query_documentation` (`query --request FILE`): `concept`, `related`, `surface`, `typed`, or `impact` with `paths`/`diff`. `symbol`, `entrypoint`, `dependency` require `allow_full_inventory=true`.
 - Validated context/query only. Check availability/reason, `freshness_evaluated`, concept state/reason/live comparison, coverage/bounds/truncation, ambiguity/unresolved targets. Ready/current is consumable/unchanged, not true/complete/reviewed/secure/runtime-correct. Unavailable/bounded `found: false` is not a negative fact; snapshot is not live.
 - Gaps: disclose; use validated surface/Markdown, then source/runtime. Index: `{wiki_dir}/index.md`.

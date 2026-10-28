@@ -17,6 +17,57 @@ from llm_wiki_cli.services.token_counting import EstimatedCounter, LocalTokenize
 from tests.test_context_packet_knowledge import _materialize_ready_project
 
 
+def test_refusal_recovery_is_bound_and_identical_through_api_cli_and_mcp(
+    tmp_path, monkeypatch, capsys
+):
+    from llm_wiki_cli.services.mcp_server import McpWikiError, McpWikiService
+
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "app.py").write_text("class Example:\n    pass\n")
+    request = {"protocol": "llm-wiki-context/v3", "budget_tokens": 1, "budget_mode": "estimated", "format": "packet",
+               "knowledge_mode": "off", "changes": {"mode": "paths", "paths": []}}
+    result = api.build_budgeted_context(request=request)
+    assert not result.ok and result.rendered == "" and result.error == "cannot-fit"
+    diagnostics = result.diagnostics
+    assert diagnostics is not None
+    assert diagnostics["request_id"] == context_budget.request_identity(request)
+    assert diagnostics["emitted_context_bytes"] == 0
+    assert diagnostics["accounting_meaning"] == "rejected-candidate-not-emitted-context-or-global-minimum"
+    assert [item["id"] for item in diagnostics["recovery"]] == ["scoped-evidence", "explicit-larger-budget"]
+    assert all(not item["automatic"] for item in diagnostics["recovery"])
+    assert len(json.dumps(diagnostics).encode()) < 4096
+    assert "class Example" not in json.dumps(diagnostics)
+
+    request_file = tmp_path / "request.json"
+    request_file.write_text(json.dumps(request))
+    output = tmp_path / "should-not-exist.txt"
+    monkeypatch.setattr(sys, "argv", ["llm-wiki", "context", "--request", str(request_file), "--output", str(output)])
+    with pytest.raises(SystemExit) as stopped:
+        cli.main()
+    assert stopped.value.code == 3 and not output.exists()
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert json.loads(captured.err)["diagnostics"] == diagnostics
+
+    service = McpWikiService(src_dir=".", wiki_dir="docs/llm_wiki")
+    with pytest.raises(McpWikiError) as unavailable:
+        service.build_budgeted_context(request)
+    assert unavailable.value.code == "cannot-fit"
+    assert unavailable.value.data is not None
+    assert unavailable.value.data["diagnostics"] == diagnostics
+
+
+def test_generated_broad_guidance_keeps_both_explicit_recovery_routes():
+    from llm_wiki_cli.services import schema
+
+    full = schema._wiki_instructions("docs/llm_wiki", ".agents/skills")
+    compact = schema._compact_wiki_instructions("docs/llm_wiki", ".agents/skills")
+    for text in (full, compact):
+        assert "cannot-fit" in text and "global minimum" in text
+        assert "scoped task/query" in text
+        assert "explicitly authorize a larger complete-output budget" in " ".join(text.split())
+
+
 class ByteCounter:
     identity = "utf8-bytes/v1"
     exact = True

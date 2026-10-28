@@ -1377,10 +1377,26 @@ outside this budget. Estimated mode uses UTF-8 byte length divided by four,
 rounded up, and always reports `exact_compliance: false`.
 
 The v3 envelope reports a conservative `used_tokens` upper bound that can be
-recounted with the named counter. Whole source entries are reduced or omitted
-under pressure, with omissions disclosed. Required evidence is retained. If the
+recounted with the named counter. Broad fitting jointly reduces source detail,
+optional native relationships, and whole native concept/page groups. Relevance
+tiers take precedence; requested currentness preference applies within a tier.
+Within an equal rank, optional relationships and deep source detail yield before
+native concepts and whole source summaries. When available, a useful source row
+and a fully qualified native group remain. Explicit target enrichment is retained.
+Native collection maxima are ceilings rather than fixed budget reservations.
+Source omissions/detail reductions and independent native bounds disclose the
+actual selection; neither omitted evidence nor an unavailable result is a
+negative fact. Scoped task/session requirement semantics are separate. If the
 remaining envelope cannot fit, stdout is empty, stderr contains a JSON
 `cannot-fit` result, and the command exits `3` without writing an output file.
+Its bounded `diagnostics` bind the request and counter, describe exhausted
+selection reductions, and disclose source/native counts and serialized JSON
+component sizes. Component bytes are not additive tokenizer costs. Failure
+usage describes the rejected candidate, not emitted context or a global minimum.
+Choose a scoped task/session or documentation query matching the requirements,
+or explicitly authorize a larger complete-output budget and independently fit
+and recount it. Keep required native evidence and its qualifications. Do not
+repeat an unchanged broad read or execute generated recovery commands.
 Legacy v1/v2 allocation and qualified-packet schemas remain available.
 
 Explicit changes also opt into v3, using estimated mode unless exact mode is
