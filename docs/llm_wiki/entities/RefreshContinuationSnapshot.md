@@ -23,7 +23,7 @@ Safe in-memory handoff from an archived run to a refreshed baseline.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

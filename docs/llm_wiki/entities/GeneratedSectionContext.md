@@ -21,7 +21,7 @@ _Auto-generated from `_GeneratedSectionContext` in `src/llm_wiki_cli/commands/sy
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

@@ -15,7 +15,7 @@ Raised when protected evidence or ledger integrity is violated.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

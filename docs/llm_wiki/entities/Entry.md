@@ -23,7 +23,7 @@ Private bounded cache entry containing detached read state, environment identity
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

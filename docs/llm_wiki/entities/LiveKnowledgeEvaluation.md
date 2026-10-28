@@ -33,7 +33,7 @@ they are ignored because freshness is evaluated for recorded concepts.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

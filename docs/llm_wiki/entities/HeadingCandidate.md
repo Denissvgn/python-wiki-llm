@@ -26,7 +26,7 @@ _Auto-generated from `_HeadingCandidate` in `src/llm_wiki_cli/services/markdown_
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

@@ -21,7 +21,7 @@ Operation-scoped query state captured from one knowledge read.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

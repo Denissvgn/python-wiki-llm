@@ -15,7 +15,7 @@ Raised when a Windows directory chain cannot be pinned safely.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

@@ -22,7 +22,7 @@ _Auto-generated from `_PluginEntryPointDetectionResult` in `src/llm_wiki_cli/ser
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

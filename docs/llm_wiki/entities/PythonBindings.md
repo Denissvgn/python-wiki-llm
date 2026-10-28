@@ -21,7 +21,7 @@ _Auto-generated from `PythonBindings` in `src/llm_wiki_cli/extractors/python_bin
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

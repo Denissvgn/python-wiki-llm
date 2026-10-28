@@ -24,7 +24,7 @@ One table Description cell without lossy duplicate-key collapse.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

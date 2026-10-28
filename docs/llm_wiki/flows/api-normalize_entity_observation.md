@@ -28,11 +28,11 @@ sequenceDiagram
     participant p14 as _validate_optional_json_array
     participant p15 as _validate_optional_mapping
     participant p16 as _validate_optional_record_array
-    participant p17 as _validate_optional_booleans
-    participant p18 as _validate_callable_record
-    participant p19 as _validate_optional_strings
-    participant p20 as _validate_optional_string_array
-    participant p21 as _record_object
+    participant p17 as _validate_callable_record
+    participant p18 as _validate_optional_strings
+    participant p19 as _validate_optional_booleans
+    participant p20 as _record_object
+    participant p21 as _validate_optional_string_array
     participant p22 as _validate_string_array
     participant p23 as _pointer
     participant p24 as contains_control_character
@@ -58,12 +58,12 @@ sequenceDiagram
     p8->>p14: _validate_optional_json_array
     p8->>p15: _validate_optional_mapping
     p8->>p16: _validate_optional_record_array
-    p8->>p17: _validate_optional_booleans
-    p8->>p18: _validate_callable_record
-    p11->>p19: _validate_optional_strings
-    p11->>p20: _validate_optional_string_array
-    p13->>p21: _record_object
-    p20->>p22: _validate_string_array
+    p8->>p17: _validate_callable_record
+    p11->>p18: _validate_optional_strings
+    p11->>p19: _validate_optional_booleans
+    p13->>p20: _record_object
+    p11->>p21: _validate_optional_string_array
+    p21->>p22: _validate_string_array
     p6->>p23: _pointer
     p3->>p24: contains_control_character
     p10->>p25: require_int
@@ -74,9 +74,9 @@ sequenceDiagram
     p7-->>p30: record.get (src/llm_wiki_cli/services…_evidence.py:_record_name)('name', MISSING_VALUE)
 ```
 
-> Call sequence diagram shows 30 of 146 interactions; 116 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 158 interactions; 128 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 34 (33 omitted); unresolved 1 of 16 (15 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 35 (34 omitted); unresolved 1 of 20 (19 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -90,7 +90,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_inventory_language` | 16 | - | external | 2 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_inventory_language` | 16 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_evidence.py:_inventory_language` | 16 | [src/llm_wiki_cli/services/knowledge_evidence.py](../modules/knowledge_evidence.md) | internal | 2 |
-> Omission summary shows 8 of 48 groups; 40 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 51 groups; 43 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
@@ -151,14 +151,14 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| normalize_entity_observation | _validate_entity_coordinate | 255 | `_validate_entity_coordinate(entity_name, occurrence)` |
-| _validate_entity_coordinate | require_nonempty_text | 858 | `require_nonempty_text(entity_name, error=ValueError(...), reject_control_characters=False)` |
+| normalize_entity_observation | _validate_entity_coordinate | 259 | `_validate_entity_coordinate(entity_name, occurrence)` |
+| _validate_entity_coordinate | require_nonempty_text | 868 | `require_nonempty_text(entity_name, error=ValueError(...), reject_control_characters=False)` |
 | require_nonempty_text | isinstance (src/llm_wiki_cli/services….py:require_nonempty_text) | 623 | `isinstance(value, str)` |
 | require_nonempty_text | value.strip | 625 | `value.strip(data not statically known)` |
 | require_nonempty_text | contains_control_character | 631 | `contains_control_character(parsed, reject_delete_character=reject_delete_character)` |
 | contains_control_character | pattern.search | 685 | `pattern.search(value)` |
-| _validate_entity_coordinate | ValueError | 860 | `ValueError('entity_name must be a non-empty string')` |
-| _validate_entity_coordinate | require_positive_int | 863 | `require_positive_int(occurrence, invalid_error=ValueError(...))` |
+| _validate_entity_coordinate | ValueError | 870 | `ValueError('entity_name must be a non-empty string')` |
+| _validate_entity_coordinate | require_positive_int | 873 | `require_positive_int(occurrence, invalid_error=ValueError(...))` |
 | require_positive_int | require_nonnegative_int | 848 | `require_nonnegative_int(value, error=invalid_error)` |
 | require_nonnegative_int | require_int | 826 | `require_int(value, error=error)` |
 | require_int | isinstance (src/llm_wiki_cli/services/validation.py:require_int) | 818 | `isinstance(value, bool)` |
@@ -174,7 +174,7 @@ flowchart LR
 | external_call | `require_nonempty_text` | `isinstance` | 623 |
 | unresolved_call | `require_nonempty_text` | `value.strip` | 625 |
 | unresolved_call | `contains_control_character` | `pattern.search` | 685 |
-| external_call | `_validate_entity_coordinate` | `ValueError` | 860 |
+| external_call | `_validate_entity_coordinate` | `ValueError` | 870 |
 | external_call | `require_int` | `isinstance` | 818 |
 | step_limit | `normalize_entity_observation` | `first 12 steps` | 0 |
 

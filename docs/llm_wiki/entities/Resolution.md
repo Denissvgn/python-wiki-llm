@@ -20,7 +20,7 @@ _Auto-generated from `Resolution` in `src/llm_wiki_cli/services/knowledge_model.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

@@ -20,7 +20,7 @@ Bounded inert content selected by explicit knowledge mode.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

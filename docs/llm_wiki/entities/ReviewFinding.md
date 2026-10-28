@@ -23,7 +23,7 @@ _Auto-generated from `ReviewFinding` in `src/llm_wiki_cli/services/review_servic
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

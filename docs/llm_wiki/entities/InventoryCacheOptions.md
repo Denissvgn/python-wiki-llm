@@ -24,7 +24,7 @@ Runtime cache controls for inventory-producing commands.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

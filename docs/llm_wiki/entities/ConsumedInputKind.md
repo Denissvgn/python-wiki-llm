@@ -24,7 +24,7 @@ Known classes of repository/configuration input consumed by a run.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

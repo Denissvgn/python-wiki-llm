@@ -23,7 +23,7 @@ Top-level ``extract_source`` payload.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

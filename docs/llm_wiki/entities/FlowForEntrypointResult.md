@@ -17,7 +17,7 @@ _Auto-generated from `FlowForEntrypointResult` in `src/llm_wiki_cli/api_types.py
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

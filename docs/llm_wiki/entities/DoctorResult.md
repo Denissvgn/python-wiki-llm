@@ -30,7 +30,7 @@ Stable ``llm-wiki-doctor/v1`` Python API payload.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

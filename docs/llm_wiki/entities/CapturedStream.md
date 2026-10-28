@@ -22,7 +22,7 @@ _Auto-generated from `_CapturedStream` in `src/llm_wiki_cli/services/calibration
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

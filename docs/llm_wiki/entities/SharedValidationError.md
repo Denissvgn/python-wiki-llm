@@ -15,7 +15,7 @@ Raised when a caller uses a shared validator without a domain adapter.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

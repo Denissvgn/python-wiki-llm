@@ -24,7 +24,7 @@ Stable details attached to required-mode interface failures.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

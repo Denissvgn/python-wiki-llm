@@ -22,7 +22,7 @@ _Auto-generated from `RelatedConceptsResult` in `src/llm_wiki_cli/api_types.py`.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

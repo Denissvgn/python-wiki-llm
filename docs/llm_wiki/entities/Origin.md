@@ -23,7 +23,7 @@ _Auto-generated from `Origin` in `src/llm_wiki_cli/services/knowledge_model.py`.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

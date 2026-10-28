@@ -76,13 +76,13 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| hash_json | sha256_bytes | 222 | `sha256_bytes(canonical_json_bytes(...))` |
-| sha256_bytes | hashlib.sha256(…).hexdigest | 216 | `hashlib.sha256(value).hexdigest(data not statically known)` |
-| sha256_bytes | hashlib.sha256 | 216 | `hashlib.sha256(value)` |
-| hash_json | canonical_json_bytes | 222 | `canonical_json_bytes(value)` |
-| canonical_json_bytes | canonical_json_text(…).encode | 189 | `canonical_json_text(value).encode('utf-8')` |
-| canonical_json_bytes | canonical_json_text | 189 | `canonical_json_text(value)` |
-| canonical_json_text | json.dumps | 177 | `json.dumps(value, ensure_ascii=False, separators=(...), sort_keys=True, allow_nan=False)` |
+| hash_json | sha256_bytes | 226 | `sha256_bytes(canonical_json_bytes(...))` |
+| sha256_bytes | hashlib.sha256(…).hexdigest | 220 | `hashlib.sha256(value).hexdigest(data not statically known)` |
+| sha256_bytes | hashlib.sha256 | 220 | `hashlib.sha256(value)` |
+| hash_json | canonical_json_bytes | 226 | `canonical_json_bytes(value)` |
+| canonical_json_bytes | canonical_json_text(…).encode | 193 | `canonical_json_text(value).encode('utf-8')` |
+| canonical_json_bytes | canonical_json_text | 193 | `canonical_json_text(value)` |
+| canonical_json_text | json.dumps | 181 | `json.dumps(value, ensure_ascii=False, separators=(...), sort_keys=True, allow_nan=False)` |
 
 ### Boundary effects
 
@@ -92,10 +92,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 216 |
-| external_call | `sha256_bytes` | `hashlib.sha256` | 216 |
-| unresolved_call | `canonical_json_bytes` | `canonical_json_text(value).encode` | 189 |
-| external_call | `canonical_json_text` | `json.dumps` | 177 |
+| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 220 |
+| external_call | `sha256_bytes` | `hashlib.sha256` | 220 |
+| unresolved_call | `canonical_json_bytes` | `canonical_json_text(value).encode` | 193 |
+| external_call | `canonical_json_text` | `json.dumps` | 181 |
 
 ## Behavior
 

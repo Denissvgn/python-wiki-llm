@@ -15,7 +15,7 @@ Raised when an external documentation policy cannot be enforced.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

@@ -19,7 +19,7 @@ How a repository identity was selected by an application-owned writer.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

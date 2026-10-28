@@ -21,7 +21,7 @@ Current generated concept coordinates used for reconciliation.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

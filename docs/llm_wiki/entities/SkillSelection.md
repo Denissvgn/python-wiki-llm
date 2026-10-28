@@ -21,7 +21,7 @@ One validated, dependency-closed skill selection.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

@@ -21,7 +21,7 @@ _Auto-generated from `_DocumentationPageMaps` in `src/llm_wiki_cli/services/docu
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

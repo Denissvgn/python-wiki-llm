@@ -72,8 +72,8 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ConceptObservationBasis](../entities/ConceptObservationBasis.md) | 85 | — | One source-backed concept observation basis or explicit unknown result. |
-| [_InventoryNormalizationError](../entities/InventoryNormalizationError.md) | 146 | `Exception` | — |
+| [ConceptObservationBasis](../entities/ConceptObservationBasis.md) | 89 | — | One source-backed concept observation basis or explicit unknown result. |
+| [_InventoryNormalizationError](../entities/InventoryNormalizationError.md) | 150 | `Exception` | — |
 
 ## Functions
 

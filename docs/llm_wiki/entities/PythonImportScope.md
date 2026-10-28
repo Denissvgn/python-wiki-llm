@@ -21,7 +21,7 @@ _Auto-generated from `PythonImportScope` in `src/llm_wiki_cli/services/python_im
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

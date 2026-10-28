@@ -15,7 +15,7 @@ Raised when external receipt authentication cannot be performed.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

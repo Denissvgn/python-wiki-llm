@@ -26,7 +26,7 @@ _Auto-generated from `WikiSurfacePage` in `src/llm_wiki_cli/services/wiki_surfac
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

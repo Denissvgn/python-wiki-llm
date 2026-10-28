@@ -15,7 +15,7 @@ Raised when an API-contract input cannot be consumed safely.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

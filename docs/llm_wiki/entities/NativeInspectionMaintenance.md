@@ -17,7 +17,7 @@ _Auto-generated from `_NativeInspectionMaintenance` in `src/llm_wiki_cli/api_typ
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

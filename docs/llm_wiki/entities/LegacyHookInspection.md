@@ -23,7 +23,7 @@ Exact hook bytes classified before a lifecycle operation changes files.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

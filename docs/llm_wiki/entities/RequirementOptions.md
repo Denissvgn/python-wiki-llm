@@ -17,7 +17,7 @@ Optional observation criterion for a requirement. Present evidence and complete 
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

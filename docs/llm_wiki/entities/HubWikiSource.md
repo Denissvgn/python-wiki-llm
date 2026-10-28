@@ -20,7 +20,7 @@ _Auto-generated from `HubWikiSource` in `src/llm_wiki_cli/services/site_export.p
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

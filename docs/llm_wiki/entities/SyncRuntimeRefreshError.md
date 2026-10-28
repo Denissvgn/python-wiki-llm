@@ -15,7 +15,7 @@ A runtime-basis transition cannot be applied in the requested mode.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

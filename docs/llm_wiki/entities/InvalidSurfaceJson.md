@@ -15,7 +15,7 @@ _Auto-generated from `_InvalidSurfaceJson` in `src/llm_wiki_cli/services/knowled
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

@@ -25,7 +25,7 @@ One consumer-computed freshness outcome.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

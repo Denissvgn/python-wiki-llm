@@ -15,7 +15,7 @@ Raised when source, input-wiki, or generated ownership changed.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

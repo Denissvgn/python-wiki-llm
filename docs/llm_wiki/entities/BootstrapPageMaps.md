@@ -1,6 +1,6 @@
 # _BootstrapPageMaps
 
-**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4494`
+**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4515`
 **Kind:** Class
 **Bases:** —
 **Module:** [bootstrap_runtime](../modules/bootstrap_runtime.md)
@@ -21,7 +21,7 @@ _Auto-generated from `_BootstrapPageMaps` in `src/llm_wiki_cli/services/bootstra
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

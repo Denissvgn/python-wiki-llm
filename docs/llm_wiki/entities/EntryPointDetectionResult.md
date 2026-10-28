@@ -20,7 +20,7 @@ _Auto-generated from `EntryPointDetectionResult` in `src/llm_wiki_cli/services/e
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

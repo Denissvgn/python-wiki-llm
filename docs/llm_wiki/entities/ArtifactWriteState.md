@@ -19,7 +19,7 @@ User-facing state for one planned artifact replacement.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

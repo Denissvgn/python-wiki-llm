@@ -25,7 +25,7 @@ Stable live combinations reported by ``llm-wiki status``.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

@@ -23,7 +23,7 @@ One ``compilerOptions.paths`` mapping scoped to its tsconfig directory.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

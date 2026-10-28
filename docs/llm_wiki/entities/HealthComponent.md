@@ -20,7 +20,7 @@ _Auto-generated from `HealthComponent` in `src/llm_wiki_cli/api_types.py`._
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

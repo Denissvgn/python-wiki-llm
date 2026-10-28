@@ -22,7 +22,7 @@ One verified managed-schema cleanup prepared before mutation.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

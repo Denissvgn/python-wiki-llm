@@ -23,7 +23,7 @@ Stable reasons persisted alongside the last rendered profile.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

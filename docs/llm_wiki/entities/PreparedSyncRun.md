@@ -69,7 +69,7 @@ validated against the complete prior snapshot before publication.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

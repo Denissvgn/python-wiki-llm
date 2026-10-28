@@ -22,7 +22,7 @@ A manifest parser + import classifier for one language family.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

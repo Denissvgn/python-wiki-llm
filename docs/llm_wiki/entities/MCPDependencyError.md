@@ -15,7 +15,7 @@ Raised when the optional MCP runtime cannot be used.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

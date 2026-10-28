@@ -27,7 +27,7 @@ Validated canonical projections and their exact-byte commitments.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

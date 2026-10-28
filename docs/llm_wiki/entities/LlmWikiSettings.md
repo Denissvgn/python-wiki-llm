@@ -23,7 +23,7 @@ _Auto-generated from `LlmWikiSettings` in `integrations/obsidian/llm-wiki/src/ma
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

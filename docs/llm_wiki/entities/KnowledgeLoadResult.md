@@ -26,7 +26,7 @@ Validated knowledge state or an explicit compatibility fallback.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

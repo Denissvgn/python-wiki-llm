@@ -34,7 +34,7 @@ _Auto-generated from `_Candidate` in `src/llm_wiki_cli/services/documentation_wo
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

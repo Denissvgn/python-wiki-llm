@@ -15,7 +15,7 @@ Raised when Windows cannot confirm durable filesystem metadata.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

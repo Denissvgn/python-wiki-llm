@@ -18,7 +18,7 @@ An explicitly typed source, symbol, wiki or concept coordinate. Coordinates cons
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

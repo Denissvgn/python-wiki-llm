@@ -19,7 +19,7 @@ Whether a read session evaluates live concept freshness.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

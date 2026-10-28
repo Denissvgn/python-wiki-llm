@@ -15,7 +15,7 @@ Base error for protected artifact storage.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

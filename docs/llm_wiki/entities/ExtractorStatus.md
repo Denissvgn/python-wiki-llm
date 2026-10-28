@@ -22,7 +22,7 @@ _Auto-generated from `ExtractorStatus` in `src/llm_wiki_cli/services/extraction_
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

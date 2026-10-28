@@ -22,7 +22,7 @@ Machine-readable classification of one managed schema block.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

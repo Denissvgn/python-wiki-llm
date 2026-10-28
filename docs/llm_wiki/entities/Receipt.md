@@ -22,7 +22,7 @@ _Auto-generated from `_Receipt` in `src/llm_wiki_cli/services/context_session.py
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

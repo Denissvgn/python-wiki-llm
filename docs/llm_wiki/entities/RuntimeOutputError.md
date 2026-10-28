@@ -15,7 +15,7 @@ An explicitly requested runtime destination is unusable.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

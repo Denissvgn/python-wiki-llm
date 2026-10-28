@@ -15,7 +15,7 @@ Raised when persisted or supplied artifact integrity cannot be trusted.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

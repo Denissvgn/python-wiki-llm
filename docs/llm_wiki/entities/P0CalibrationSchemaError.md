@@ -15,7 +15,7 @@ Raised when a calibration contract is malformed.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

@@ -15,7 +15,7 @@ Raised when an evidence record is malformed or does not reconcile.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

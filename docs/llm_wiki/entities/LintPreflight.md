@@ -21,7 +21,7 @@ _Auto-generated from `_LintPreflight` in `src/llm_wiki_cli/services/lint_service
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

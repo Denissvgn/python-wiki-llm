@@ -1,6 +1,6 @@
 # _FlowResult
 
-**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4515`
+**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4536`
 **Kind:** Class
 **Bases:** —
 **Module:** [bootstrap_runtime](../modules/bootstrap_runtime.md)
@@ -25,7 +25,7 @@ _Auto-generated from `_FlowResult` in `src/llm_wiki_cli/services/bootstrap_runti
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

@@ -25,7 +25,7 @@ One exact-byte action in a knowledge artifact commit.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

@@ -33,7 +33,7 @@ Already evaluated runtime values for one live freshness comparison.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

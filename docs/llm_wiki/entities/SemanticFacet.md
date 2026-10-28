@@ -23,7 +23,7 @@ _Auto-generated from `SemanticFacet` in `src/llm_wiki_cli/services/knowledge_mod
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

@@ -15,7 +15,7 @@ Raised when a Windows object lacks the required restrictive DACL.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

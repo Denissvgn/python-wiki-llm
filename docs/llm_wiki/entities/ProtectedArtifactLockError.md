@@ -15,7 +15,7 @@ Raised when the controller root lock cannot be acquired.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

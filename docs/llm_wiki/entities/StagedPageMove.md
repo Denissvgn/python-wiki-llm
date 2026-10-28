@@ -21,7 +21,7 @@ _Auto-generated from `StagedPageMove` in `src/llm_wiki_cli/services/sync_transit
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

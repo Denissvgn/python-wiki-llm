@@ -22,7 +22,7 @@ Manifest state removed because it falls outside a selected source set.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

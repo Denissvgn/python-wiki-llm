@@ -20,7 +20,7 @@ Compatibility classification for the local agent configuration.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

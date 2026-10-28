@@ -23,7 +23,7 @@ _Auto-generated from `DocumentRecord` in `src/llm_wiki_cli/services/knowledge_mo
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

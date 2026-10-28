@@ -15,7 +15,7 @@ Raised when Windows cannot expose a stable filesystem object identity.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

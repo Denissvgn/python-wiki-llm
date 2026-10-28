@@ -20,7 +20,7 @@ Closed overall health vocabulary for the doctor contract.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

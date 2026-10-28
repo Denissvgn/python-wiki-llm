@@ -23,7 +23,7 @@ Separate structural and semantic commitments for one mixed section.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

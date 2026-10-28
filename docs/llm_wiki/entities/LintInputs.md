@@ -28,7 +28,7 @@ _Auto-generated from `_LintInputs` in `src/llm_wiki_cli/services/lint_service.py
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

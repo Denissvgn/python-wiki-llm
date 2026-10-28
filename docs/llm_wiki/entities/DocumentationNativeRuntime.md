@@ -23,7 +23,7 @@ _Auto-generated from `_DocumentationNativeRuntime` in `src/llm_wiki_cli/services
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

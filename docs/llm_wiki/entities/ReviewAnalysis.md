@@ -28,7 +28,7 @@ verdict; legacy construction can omit this additional disclosure.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

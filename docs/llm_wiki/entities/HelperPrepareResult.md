@@ -22,7 +22,7 @@ _Auto-generated from `HelperPrepareResult` in `src/llm_wiki_cli/services/extract
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

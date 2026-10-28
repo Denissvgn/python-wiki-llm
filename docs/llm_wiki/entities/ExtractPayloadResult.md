@@ -25,7 +25,7 @@ _Auto-generated from `ExtractPayloadResult` in `src/llm_wiki_cli/services/extrac
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

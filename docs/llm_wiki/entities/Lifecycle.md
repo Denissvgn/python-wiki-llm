@@ -21,7 +21,7 @@ _Auto-generated from `Lifecycle` in `src/llm_wiki_cli/services/knowledge_model.p
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

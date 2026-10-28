@@ -26,7 +26,7 @@ A scoped dependency manifest rooted at a project-relative directory.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

@@ -20,7 +20,7 @@ The authority boundary of one parsed Markdown section.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

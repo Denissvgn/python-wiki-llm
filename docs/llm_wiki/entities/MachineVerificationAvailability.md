@@ -20,7 +20,7 @@ Whether the read session evaluated a disposable machine receipt.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

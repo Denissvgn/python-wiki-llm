@@ -24,7 +24,7 @@ Stable cross-consumer reasons for knowledge availability.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

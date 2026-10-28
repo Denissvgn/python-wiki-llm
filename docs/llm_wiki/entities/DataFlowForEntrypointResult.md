@@ -17,7 +17,7 @@ _Auto-generated from `DataFlowForEntrypointResult` in `src/llm_wiki_cli/api_type
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

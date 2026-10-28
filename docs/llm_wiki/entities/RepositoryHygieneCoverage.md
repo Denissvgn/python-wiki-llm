@@ -24,7 +24,7 @@ Always-inline ownership reservation for repository safeguards.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

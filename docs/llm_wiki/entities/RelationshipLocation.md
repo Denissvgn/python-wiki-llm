@@ -21,7 +21,7 @@ Half-open character offsets for a relationship observation.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

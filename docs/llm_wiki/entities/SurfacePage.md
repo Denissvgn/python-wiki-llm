@@ -26,7 +26,7 @@ _Auto-generated from `_SurfacePage` in `src/llm_wiki_cli/services/knowledge_inde
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

@@ -24,7 +24,7 @@ _Auto-generated from `RelationshipEvidence` in `src/llm_wiki_cli/services/knowle
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

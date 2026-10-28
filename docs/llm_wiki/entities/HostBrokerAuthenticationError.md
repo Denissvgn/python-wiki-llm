@@ -15,7 +15,7 @@ Raised when external broker authentication is unavailable or invalid.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

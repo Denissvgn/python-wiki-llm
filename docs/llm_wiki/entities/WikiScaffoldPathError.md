@@ -15,7 +15,7 @@ Raised when a managed scaffold path is redirected or non-regular.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

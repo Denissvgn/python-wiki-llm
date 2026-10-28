@@ -19,7 +19,7 @@ How a rendered instruction reaches one packaged destination.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

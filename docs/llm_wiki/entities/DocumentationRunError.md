@@ -15,7 +15,7 @@ Base error raised by the documentation lifecycle service.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

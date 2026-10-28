@@ -15,7 +15,7 @@ Raised when a persisted or returned contract is invalid.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

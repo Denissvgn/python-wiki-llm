@@ -22,7 +22,7 @@ _Auto-generated from `_ExpectedLinkOutcome` in `src/llm_wiki_cli/services/knowle
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

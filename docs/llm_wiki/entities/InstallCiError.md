@@ -15,7 +15,7 @@ Raised when a portable CI workflow cannot be installed safely.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

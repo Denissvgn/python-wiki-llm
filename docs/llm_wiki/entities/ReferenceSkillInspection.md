@@ -25,7 +25,7 @@ One managed-reference tree classified for the uninstall preview.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

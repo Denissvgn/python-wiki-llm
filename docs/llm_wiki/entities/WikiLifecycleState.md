@@ -20,7 +20,7 @@ One unambiguous lifecycle route for a wiki target.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

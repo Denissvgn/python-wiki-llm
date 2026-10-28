@@ -25,7 +25,7 @@ _Auto-generated from `SyncResult` in `src/llm_wiki_cli/commands/sync_cmd.py`._
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

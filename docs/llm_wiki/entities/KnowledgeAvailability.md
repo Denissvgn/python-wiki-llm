@@ -20,7 +20,7 @@ Knowledge capability available to every native read consumer.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

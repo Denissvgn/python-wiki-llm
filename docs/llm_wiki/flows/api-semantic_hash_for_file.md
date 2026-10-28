@@ -96,17 +96,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| semantic_hash_for_file | without_line_metadata | 886 | `without_line_metadata(file_data)` |
-| without_line_metadata | isinstance | 872 | `isinstance(value, dict)` |
-| without_line_metadata | without_line_metadata | 874 | `without_line_metadata(item)` |
-| without_line_metadata | sorted | 875 | `sorted(value.items(...))` |
-| without_line_metadata | value.items | 875 | `value.items(data not statically known)` |
-| without_line_metadata | isinstance | 878 | `isinstance(value, list)` |
-| without_line_metadata | without_line_metadata | 879 | `without_line_metadata(item)` |
-| semantic_hash_for_file | json.dumps(…).encode | 889 | `json.dumps(normalized, separators=(',', ':'), sort_keys=True).encode('utf-8')` |
-| semantic_hash_for_file | json.dumps | 889 | `json.dumps(normalized, separators=(...), sort_keys=True)` |
-| semantic_hash_for_file | sha256_bytes | 894 | `sha256_bytes(legacy_bytes)` |
-| sha256_bytes | hashlib.sha256(…).hexdigest | 216 | `hashlib.sha256(value).hexdigest(data not statically known)` |
+| semantic_hash_for_file | without_line_metadata | 896 | `without_line_metadata(file_data)` |
+| without_line_metadata | isinstance | 882 | `isinstance(value, dict)` |
+| without_line_metadata | without_line_metadata | 884 | `without_line_metadata(item)` |
+| without_line_metadata | sorted | 885 | `sorted(value.items(...))` |
+| without_line_metadata | value.items | 885 | `value.items(data not statically known)` |
+| without_line_metadata | isinstance | 888 | `isinstance(value, list)` |
+| without_line_metadata | without_line_metadata | 889 | `without_line_metadata(item)` |
+| semantic_hash_for_file | json.dumps(…).encode | 899 | `json.dumps(normalized, separators=(',', ':'), sort_keys=True).encode('utf-8')` |
+| semantic_hash_for_file | json.dumps | 899 | `json.dumps(normalized, separators=(...), sort_keys=True)` |
+| semantic_hash_for_file | sha256_bytes | 904 | `sha256_bytes(legacy_bytes)` |
+| sha256_bytes | hashlib.sha256(…).hexdigest | 220 | `hashlib.sha256(value).hexdigest(data not statically known)` |
 
 ### Boundary effects
 
@@ -116,13 +116,13 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `without_line_metadata` | `isinstance` | 872 |
-| external_call | `without_line_metadata` | `sorted` | 875 |
-| unresolved_call | `without_line_metadata` | `value.items` | 875 |
-| external_call | `without_line_metadata` | `isinstance` | 878 |
-| unresolved_call | `semantic_hash_for_file` | `json.dumps(normalized, separators=(',', ':'), sort_keys=True).encode` | 889 |
-| external_call | `semantic_hash_for_file` | `json.dumps` | 889 |
-| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 216 |
+| external_call | `without_line_metadata` | `isinstance` | 882 |
+| external_call | `without_line_metadata` | `sorted` | 885 |
+| unresolved_call | `without_line_metadata` | `value.items` | 885 |
+| external_call | `without_line_metadata` | `isinstance` | 888 |
+| unresolved_call | `semantic_hash_for_file` | `json.dumps(normalized, separators=(',', ':'), sort_keys=True).encode` | 899 |
+| external_call | `semantic_hash_for_file` | `json.dumps` | 899 |
+| unresolved_call | `sha256_bytes` | `hashlib.sha256(value).hexdigest` | 220 |
 | step_limit | `semantic_hash_for_file` | `first 12 steps` | 0 |
 
 ## Behavior

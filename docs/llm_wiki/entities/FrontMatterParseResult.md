@@ -21,7 +21,7 @@ _Auto-generated from `FrontMatterParseResult` in `src/llm_wiki_cli/services/site
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

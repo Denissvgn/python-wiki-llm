@@ -15,7 +15,7 @@ A field-specific failure in the versioned CI report contract.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

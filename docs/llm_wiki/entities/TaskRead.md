@@ -27,7 +27,7 @@ Private request-owned capture state retained only for an explicitly bounded sess
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

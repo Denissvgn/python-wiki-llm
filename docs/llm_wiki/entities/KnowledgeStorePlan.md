@@ -22,7 +22,7 @@ Holds the encoded root, exact immutable object bytes and storage statistics for 
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

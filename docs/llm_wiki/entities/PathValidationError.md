@@ -15,7 +15,7 @@ Raised when a user-provided path escapes the project root.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

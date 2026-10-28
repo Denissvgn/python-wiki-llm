@@ -15,7 +15,7 @@ Raised when a stage transition violates the lifecycle graph.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

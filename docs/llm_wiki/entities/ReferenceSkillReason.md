@@ -22,7 +22,7 @@ Stable lifecycle reason codes paired with :class:`ReferenceSkillState`.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

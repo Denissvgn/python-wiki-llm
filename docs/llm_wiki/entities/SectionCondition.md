@@ -19,7 +19,7 @@ Configuration switch controlling a current generated section.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

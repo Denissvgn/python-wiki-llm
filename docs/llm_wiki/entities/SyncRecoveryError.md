@@ -15,7 +15,7 @@ A recovery proof or operation cannot be admitted safely.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

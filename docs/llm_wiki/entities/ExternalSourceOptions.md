@@ -17,7 +17,7 @@ _Auto-generated from `_ExternalSourceOptions` in `src/llm_wiki_cli/services/mcp_
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

@@ -22,7 +22,7 @@ One stable, path-safe artifact load diagnostic.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

@@ -19,7 +19,7 @@ Counts returned with a wiki-page listing.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

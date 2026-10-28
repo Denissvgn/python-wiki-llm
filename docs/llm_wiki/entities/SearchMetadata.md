@@ -24,7 +24,7 @@ Optional corpus identity, scan counts and resource limits for ranked search. Rep
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

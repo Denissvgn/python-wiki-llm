@@ -24,7 +24,7 @@ Optional task intent, host attribution, exact selectors, requirements, change se
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

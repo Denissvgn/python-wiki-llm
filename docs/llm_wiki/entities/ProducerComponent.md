@@ -23,7 +23,7 @@ _Auto-generated from `ProducerComponent` in `src/llm_wiki_cli/services/knowledge
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

@@ -15,7 +15,7 @@ Persisted infrastructure state is unsafe or internally inconsistent.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

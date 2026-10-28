@@ -18,7 +18,7 @@ Renderer fragment that currently carries a correctness rule.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

@@ -15,7 +15,7 @@ An unsupported or over-budget YAML observation.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

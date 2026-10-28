@@ -36,7 +36,7 @@ _Auto-generated from `_InventoryBuildContext` in `src/llm_wiki_cli/services/extr
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

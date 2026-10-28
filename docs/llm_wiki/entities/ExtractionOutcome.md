@@ -27,7 +27,7 @@ _Auto-generated from `_ExtractionOutcome` in `src/llm_wiki_cli/services/extracti
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

@@ -35,7 +35,7 @@ Top-level documentation export and verification report.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

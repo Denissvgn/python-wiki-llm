@@ -21,7 +21,7 @@ _Auto-generated from `_InventoryPlanningResult` in `src/llm_wiki_cli/services/ex
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

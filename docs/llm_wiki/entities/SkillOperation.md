@@ -21,7 +21,7 @@ _Auto-generated from `SkillOperation` in `src/llm_wiki_cli/services/skills.py`._
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

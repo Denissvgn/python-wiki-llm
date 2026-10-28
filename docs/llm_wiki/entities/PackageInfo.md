@@ -23,7 +23,7 @@ Metadata for a single Python package discovered on disk.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

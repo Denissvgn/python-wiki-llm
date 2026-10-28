@@ -15,7 +15,7 @@ Base error for verification inputs, checkers, and receipts.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

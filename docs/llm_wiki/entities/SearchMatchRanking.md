@@ -19,7 +19,7 @@ Optional metadata attached to ranked discovery matches: lexical score, inspectab
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

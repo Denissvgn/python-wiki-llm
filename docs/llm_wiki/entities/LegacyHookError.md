@@ -15,7 +15,7 @@ Hook ownership or its filesystem snapshot cannot be verified safely.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

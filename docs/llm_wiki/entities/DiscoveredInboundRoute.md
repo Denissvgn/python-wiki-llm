@@ -23,7 +23,7 @@ Source-derived route identity used to audit the declared inventory.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

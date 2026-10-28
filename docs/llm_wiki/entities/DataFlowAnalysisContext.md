@@ -21,7 +21,7 @@ Precomputed indexes shared by all data-flow analyses in one run.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

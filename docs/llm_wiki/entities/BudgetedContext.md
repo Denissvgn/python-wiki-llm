@@ -23,7 +23,7 @@ _Auto-generated from `BudgetedContext` in `src/llm_wiki_cli/services/context_bud
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

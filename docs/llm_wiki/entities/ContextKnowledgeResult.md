@@ -17,7 +17,7 @@ Canonical explicit-mode knowledge outcome.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

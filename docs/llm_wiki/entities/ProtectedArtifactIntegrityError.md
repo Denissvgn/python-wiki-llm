@@ -15,7 +15,7 @@ Raised when artifact filesystem or canonical-byte invariants fail.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

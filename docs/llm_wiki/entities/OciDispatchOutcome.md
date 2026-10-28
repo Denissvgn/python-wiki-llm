@@ -22,7 +22,7 @@ Bounded local evidence and a hash-bound receipt returned to the controller.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

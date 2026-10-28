@@ -24,7 +24,7 @@ Already collected local VCS evidence; raw remotes are never serialized.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

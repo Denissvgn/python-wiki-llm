@@ -20,7 +20,7 @@ Result of one recorded-source cleanup transaction.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

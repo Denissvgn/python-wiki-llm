@@ -15,7 +15,7 @@ A serialized context-knowledge contract violates the frozen shape.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

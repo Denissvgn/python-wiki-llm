@@ -22,7 +22,7 @@ Captured controller state for refresh plus evidence reconciliation.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

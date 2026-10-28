@@ -21,7 +21,7 @@ Exact runtime provenance recovered from an intact committed projection.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

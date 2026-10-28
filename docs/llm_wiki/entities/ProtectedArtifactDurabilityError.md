@@ -15,7 +15,7 @@ Raised when committed filesystem metadata cannot be made durable.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

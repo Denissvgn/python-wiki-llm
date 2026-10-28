@@ -21,7 +21,7 @@ Whether source-reference cleanup completed and schema must roll back.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

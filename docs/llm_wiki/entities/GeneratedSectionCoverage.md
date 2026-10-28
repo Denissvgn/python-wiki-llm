@@ -26,7 +26,7 @@ Single-owner record for one current generated section.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

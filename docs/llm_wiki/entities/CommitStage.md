@@ -21,7 +21,7 @@ Fault-injection points reached after each successful atomic replacement.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

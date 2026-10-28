@@ -15,7 +15,7 @@ Raised when a stored documentation-run contract is corrupt.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

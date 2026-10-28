@@ -22,7 +22,7 @@ _Auto-generated from `GovernanceWriteResult` in `src/llm_wiki_cli/services/knowl
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

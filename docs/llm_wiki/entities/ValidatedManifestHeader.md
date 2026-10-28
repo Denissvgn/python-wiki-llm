@@ -24,7 +24,7 @@ An immutable view of committed generation policy, artifact hashes and the physic
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

@@ -15,7 +15,7 @@ Reports a change between source hashing and capture. The owning context read ret
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

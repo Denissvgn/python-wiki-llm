@@ -17,7 +17,7 @@ Opt-in health report with captured coverage and comparison evidence.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

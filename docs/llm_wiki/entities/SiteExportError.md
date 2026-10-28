@@ -15,7 +15,7 @@ Raised for invalid static-site export requests.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

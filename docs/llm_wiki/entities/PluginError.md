@@ -15,7 +15,7 @@ Raised when a plugin manifest, install, or lookup is invalid.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

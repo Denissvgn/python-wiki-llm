@@ -22,7 +22,7 @@ Live comparison outcomes; never serialized in the knowledge index.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

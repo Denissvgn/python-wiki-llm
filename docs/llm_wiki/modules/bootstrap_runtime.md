@@ -102,19 +102,19 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 742 | — | — |
-| [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 1020 | — | — |
-| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3161 | — | — |
-| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4454 | — | — |
-| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4480 | — | — |
-| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4494 | — | — |
-| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4501 | — | — |
-| [_WorkflowResult](../entities/WorkflowResult.md) | 4509 | — | — |
-| [_FlowResult](../entities/FlowResult.md) | 4515 | — | — |
-| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4526 | — | — |
-| [_DependencyResult](../entities/DependencyResult.md) | 4537 | — | — |
-| [_ApiContractResult](../entities/ApiContractResult.md) | 4545 | — | — |
-| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4552 | — | — |
+| [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 750 | — | — |
+| [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 1028 | — | — |
+| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3182 | — | — |
+| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4475 | — | — |
+| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4501 | — | — |
+| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4515 | — | — |
+| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4522 | — | — |
+| [_WorkflowResult](../entities/WorkflowResult.md) | 4530 | — | — |
+| [_FlowResult](../entities/FlowResult.md) | 4536 | — | — |
+| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4547 | — | — |
+| [_DependencyResult](../entities/DependencyResult.md) | 4558 | — | — |
+| [_ApiContractResult](../entities/ApiContractResult.md) | 4566 | — | — |
+| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4573 | — | — |
 
 ## Functions
 
@@ -145,7 +145,7 @@ flowchart LR
 | `_build_relationships` | `(inventory: dict, module_page_map: dict[str, str] \| None = None, *, target_entities: set[tuple[str, str]] \| None = None, resolver: ModulePathResolver \| None = None) -> dict` | — | Cross-reference imports against known entity identities to build a usage graph. |
 | `_format_signature` | `(fn: dict) -> str` | — | Build a readable function signature string. |
 | `_table_text` | `(value: object) -> str` | — | — |
-| `_table_inline_code` | `(value: object) -> str` | — | — |
+| `_table_inline_code` | `(value: object, *, table: bool = True) -> str` | — | — |
 | `_haskell_declaration_label` | `(kind: object) -> str` | — | — |
 | `_haskell_function_label` | `(kind: object) -> str` | — | — |
 | `_dash` | `(value: object) -> str` | — | — |

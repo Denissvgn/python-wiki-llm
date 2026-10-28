@@ -19,7 +19,7 @@ Whether Git permits wiki handoff instructions for a path.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

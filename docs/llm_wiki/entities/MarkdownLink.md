@@ -21,7 +21,7 @@ One parsed local Markdown link.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

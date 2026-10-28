@@ -20,7 +20,7 @@ _Auto-generated from `_HashedInputFile` in `src/llm_wiki_cli/services/documentat
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

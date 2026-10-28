@@ -23,7 +23,7 @@ One safe configuration read with provenance for status reporting.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

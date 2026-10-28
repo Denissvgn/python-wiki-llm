@@ -33,7 +33,7 @@ languages where nested manifests apply only to files below their directory.
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 

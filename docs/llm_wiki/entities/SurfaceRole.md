@@ -19,7 +19,7 @@ _Auto-generated from `SurfaceRole` in `src/llm_wiki_cli/services/wiki_surface.py
 
 ## Methods
 
-*No public methods. Inherits from base classes.*
+*No declared methods.*
 
 ## Relationships
 
