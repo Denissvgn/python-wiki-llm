@@ -254,6 +254,55 @@ def test_copy_flag_terminator_keeps_flag_looking_context_paths(syntax):
     assert "../modules/context.md" in second and "../modules/context.md" not in first
 
 
+@pytest.mark.parametrize("instruction", ["ENV", "LABEL"])
+@pytest.mark.parametrize(("value", "expected"), [
+    ("one   two", "one   two"),
+    ('" leading  value "  tail', " leading  value   tail"),
+    ("one=two   three", "one=two   three"),
+    ("one\ttwo", "one\ttwo"),
+])
+def test_legacy_declaration_values_keep_significant_whitespace(instruction, value, expected):
+    parsed = _parse_dockerfile(f"FROM scratch AS build\n{instruction} MESSAGE {value}\nFROM scratch AS runtime\n")
+    build, runtime = parsed["stages"]
+    if instruction == "ENV":
+        assert build["env_vars"] == [{"name": "MESSAGE", "default": expected}]
+        assert parsed["env_vars"] == runtime["env_vars"] == []
+    else:
+        assert build["labels"] == {"MESSAGE": expected}
+        assert parsed["labels"] == runtime["labels"] == {}
+    first, second = _stage_sections(_generate_dockerfile_md("Dockerfile", parsed))
+    assert "MESSAGE" not in second
+    if "\t" in expected:
+        assert "one&#9;two" in first
+    else:
+        values = [child.content for block in MarkdownIt().parse(first) for child in block.children or []
+                  if child.type == "code_inline"]
+        assert expected in values
+
+
+@pytest.mark.parametrize("escape", ["\\", "`"])
+@pytest.mark.parametrize("parent", ["scratch", "build"])
+def test_multiple_arg_declarations_retain_every_owner_line_and_raw_default(escape, parent):
+    source = (f'# escape={escape}\nARG FIRST=one SECOND="two words"\nFROM scratch AS build\n'
+              f'ARG LOCAL=left OTHER=right{escape} words QUOTED="quoted words" EMPTY="" NO_DEFAULT\n'
+              f'FROM {parent} AS runtime\nARG LAST=final UNKNOWN\n')
+    parsed = _parse_dockerfile(source)
+    global_args = [{"name": "FIRST", "default": "one"}, {"name": "SECOND", "default": '"two words"'}]
+    build_args = [{"name": "LOCAL", "default": "left"}, {"name": "OTHER", "default": f"right{escape} words"},
+                  {"name": "QUOTED", "default": '"quoted words"'}, {"name": "EMPTY", "default": '""'},
+                  {"name": "NO_DEFAULT", "default": ""}]
+    runtime_args = [{"name": "LAST", "default": "final"}, {"name": "UNKNOWN", "default": ""}]
+    assert parsed["global_build_args"] == global_args
+    assert parsed["stages"][0]["build_args"] == build_args
+    assert parsed["stages"][1]["build_args"] == runtime_args
+    assert parsed["build_args"] == ([{**arg, "stage": None, "line": 2} for arg in global_args]
+        + [{**arg, "stage": 0, "line": 4} for arg in build_args]
+        + [{**arg, "stage": 1, "line": 6} for arg in runtime_args])
+    first, second = _stage_sections(_generate_dockerfile_md("Dockerfile", parsed))
+    assert all(f"`{name}`" in first and f"`{name}`" not in second for name in ("LOCAL", "OTHER", "QUOTED", "EMPTY", "NO_DEFAULT"))
+    assert "`LAST`" in second and "`UNKNOWN`" in second
+
+
 def test_legacy_multistage_records_do_not_render_an_unsafe_command_pair():
     legacy = {"type": "dockerfile", "stages": [{"image": "scratch", "alias": "build"}, {"image": "scratch", "alias": "runtime"}],
               "entrypoint": '["/build-tool"]', "cmd": '["/application"]', "env_vars": [{"name": "BUILD_ONLY", "default": "1"}]}
@@ -269,7 +318,7 @@ def test_stage_sections_inherit_generated_ownership():
     assert selected and all(item.ownership is SectionOwnership.GENERATED for item in selected)
 
 
-@pytest.mark.parametrize("syntax", ["plain", "continued-from", "heredoc", "quoted-copy"])
+@pytest.mark.parametrize("syntax", ["plain", "continued-from", "heredoc", "quoted-copy", "declarations"])
 def test_stage_only_edits_flow_through_extract_bootstrap_sync_and_strict_lint(tmp_path, monkeypatch, capsys, syntax):
     (tmp_path / "demo.py").write_text("def marker():\n    pass\n")
     source = tmp_path / "Dockerfile"
@@ -280,6 +329,9 @@ def test_stage_only_edits_flow_through_extract_bootstrap_sync_and_strict_lint(tm
         text = text.replace("ENV BUILD_ONLY=1\n", 'ENV BUILD_ONLY=1\nCOPY <<E"OF" /notice\nFROM scratch AS invented\nENV WRONG=1\nEOF\n')
     elif syntax == "quoted-copy":
         text = text.replace('CMD ["/application"]', 'COPY --exclude="not needed" --from="build" demo.py /app.py\nCMD ["/application"]')
+    elif syntax == "declarations":
+        text = 'ARG GLOBAL_ONE=1 GLOBAL_TWO="two words"\n' + text.replace("ENV BUILD_ONLY=1\n",
+            "ENV BUILD_ONLY=1\nENV NOTE one   two\nLABEL note one   two\nARG BUILD_ONE=1 BUILD_TWO=2\n")
     source.write_text(text)
     monkeypatch.chdir(tmp_path)
 
@@ -297,6 +349,11 @@ def test_stage_only_edits_flow_through_extract_bootstrap_sync_and_strict_lint(tm
     assert "../modules/demo.md" not in second
     payload = json.loads(run("extract", "--deep", "--read-only"))
     assert payload["docker"]["Dockerfile"]["stages"][1]["entrypoint"] == ""
+    if syntax == "declarations":
+        info = payload["docker"]["Dockerfile"]
+        assert info["stages"][0]["env_vars"][-1] == {"name": "NOTE", "default": "one   two"}
+        assert [row["name"] for row in info["stages"][0]["build_args"]] == ["BUILD_ONE", "BUILD_TWO"]
+        assert [row["name"] for row in info["global_build_args"]] == ["GLOBAL_ONE", "GLOBAL_TWO"]
     report = json.loads(run("lint", "--strict", "--profile"))
     assert report["ok"], report["issues"]
     source.write_text(text.replace("BUILD_ONLY=1", "BUILD_ONLY=2"))

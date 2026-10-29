@@ -18,20 +18,22 @@ def _empty_declarations() -> dict:
             **{field: "" for field in _TEXT_FIELDS}, "labels": {}}
 
 
-def _words(value: str, escape: str = "\\") -> list[str]:
+def _words(value: str, escape: str = "\\", *, preserve_whitespace: bool = False) -> list[str]:
     lexer = shlex.shlex(value, posix=True)
     lexer.whitespace_split = True
+    if preserve_whitespace:
+        lexer.whitespace = ""
     lexer.commenters = ""
     lexer.escape = escape
     try:
         return list(lexer)
     except ValueError:
         # Raw instructions remain available when a fragment is not understood.
-        return value.split()
+        return [value] if preserve_whitespace else value.split()
 
 
-def _heredoc_words(value: str) -> list[str]:
-    """Retain quotes and escapes so literal redirects cannot become heredocs."""
+def _source_words(value: str, escape: str = "\\") -> list[str]:
+    """Split source words while retaining authored quotes and escapes."""
     words = []
     start = None
     quote = ""
@@ -43,7 +45,7 @@ def _heredoc_words(value: str) -> list[str]:
             start = index
         if escaped:
             escaped = False
-        elif char == "\\" and quote != "'":
+        elif char == escape and quote != "'":
             escaped = True
         elif quote:
             if char == quote:
@@ -68,7 +70,7 @@ def _heredocs(instruction: str, value: str) -> list[tuple[str, bool]]:
         instruction, value = parts[0].upper(), parts[1]
     if instruction not in {"RUN", "COPY", "ADD"}:
         return []
-    tokens = _heredoc_words(value)
+    tokens = _source_words(value)
     result = []
     for index, token in enumerate(tokens):
         if re.fullmatch(r"\d*<<", token) and index + 1 < len(tokens):
@@ -157,7 +159,9 @@ def _pairs(argument: str, escape: str) -> list[tuple[str, str]]:
     if not tokens:
         return []
     if "=" not in tokens[0]:
-        return [(tokens[0], " ".join(tokens[1:]))]
+        parts = argument.split(None, 1)
+        value = "".join(_words(parts[1], escape, preserve_whitespace=True)) if len(parts) > 1 else ""
+        return [(tokens[0], value)]
     result = []
     for token in tokens:
         if "=" in token:
@@ -229,8 +233,9 @@ def _observe(stage: dict, record: dict, escape: str) -> None:
     elif instruction == "LABEL":
         stage["labels"].update(_pairs(value, escape))
     elif instruction == "ARG":
-        name, separator, default = value.partition("=")
-        stage["build_args"].append({"name": name.strip(), "default": default.strip() if separator else ""})
+        for argument in _source_words(value, escape):
+            name, separator, default = argument.partition("=")
+            stage["build_args"].append({"name": name, "default": default if separator else ""})
     elif instruction in {"COPY", "ADD"}:
         stage["copies"].append(_copy(value, instruction, escape))
     elif instruction == "VOLUME":
@@ -268,9 +273,11 @@ def parse_dockerfile(text: str) -> dict:
             continue
         stage = stages[-1]
         stage["instructions"].append(record)
+        prior_arg_count = len(stage["build_args"])
         _observe(stage, record, escape)
-        if instruction == "ARG" and stage["build_args"]:
-            all_args.append({**stage["build_args"][-1], "stage": stage["index"], "line": record["line"]})
+        if instruction == "ARG":
+            all_args.extend({**arg, "stage": stage["index"], "line": record["line"]}
+                            for arg in stage["build_args"][prior_arg_count:])
         if instruction in {"COPY", "ADD"}:
             all_copies.append({**stage["copies"][-1], "stage": stage["index"], "line": record["line"]})
     projection = {key: deepcopy(stages[-1][key]) for key in _empty_declarations()} if stages else _empty_declarations()
