@@ -1797,37 +1797,37 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 6714,
+              "line": 6715,
               "step": "execute_bootstrap",
               "target": "io.StringIO"
             },
             {
               "kind": "unresolved_call",
-              "line": 4805,
+              "line": 4806,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.source_root).expanduser().resolve"
             },
             {
               "kind": "unresolved_call",
-              "line": 4805,
+              "line": 4806,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.source_root).expanduser"
             },
             {
               "kind": "unresolved_call",
-              "line": 4806,
+              "line": 4807,
               "step": "_bootstrap_run_options_from_request",
               "target": "source_root.is_dir"
             },
             {
               "kind": "unresolved_call",
-              "line": 4810,
+              "line": 4811,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.wiki_root).expanduser().resolve"
             },
             {
               "kind": "unresolved_call",
-              "line": 4810,
+              "line": 4811,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.wiki_root).expanduser"
             },
@@ -31662,7 +31662,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 6759,
+              "line": 6760,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -68169,5 +68169,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:020780d21bee391fe40c271baf85dbfb018ef53e41678975dde67e4469b33331"
+  "source_hash": "sha256:9fb49baf4eb8ebc581ffb2eff5a3f012ad3ec17d1f0ed75698e07c4280143429"
 }
