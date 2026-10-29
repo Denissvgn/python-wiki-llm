@@ -510,6 +510,13 @@ summaries. Alias expressions are limited to 4,096 Unicode characters; longer
 definitions carry `target_truncated: true` and a full-expression `target_sha256`.
 Their pages disclose the bounded preview and refer to source for the remainder.
 The digest keeps changes outside the preview visible to freshness comparisons.
+Deep function and class-method records retain declared overloads in `overloads`,
+including their source lines, generic binders, optional/rest markers and result
+types. Implementation records keep their existing identities for call analysis.
+Reference pages distinguish the implementation row from the generated overload
+declarations. The generated section has an explicit ownership marker; unmarked
+`Overloads` sections retain their authored content. Generic arguments in declared base and interface applications are
+retained; relationship lookup uses the named base identity.
 Go `_test.go` files are omitted unless `--include-tests go` is supplied; Python
 test files remain part of normal Python extraction.
 Python deep extraction can capture a bounded static subset of nested helpers.

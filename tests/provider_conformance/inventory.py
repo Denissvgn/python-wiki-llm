@@ -24,6 +24,10 @@ def flatten(entry: dict) -> list[dict]:
         )
         for collection, kind in (("attributes", "attribute"), ("methods", "method")):
             for member in cls.get(collection, []):
+                if kind == "method":
+                    records.extend({**overload, "kind": kind, "owner": cls["name"],
+                                    "owner_occurrence": class_occurrences[cls["name"]]}
+                                   for overload in member.get("overloads", []))
                 records.append(
                     {
                         **member,
@@ -33,6 +37,8 @@ def flatten(entry: dict) -> list[dict]:
                     }
                 )
     for function in entry.get("functions", []):
+        records.extend({**overload, "kind": "function", "declaration_kind": "function", "owner": ""}
+                       for overload in function.get("overloads", []))
         records.append(
             {
                 **function,

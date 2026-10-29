@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from pathlib import PurePosixPath
+import re
 from typing import Iterable, Mapping, Optional
 
 from .imports import build_module_path_resolver
@@ -141,6 +142,12 @@ def _resolve_base_key(
     base = raw_base.strip()
     if not base:
         return None
+    if PurePosixPath(filepath).suffix.casefold() in {".ts", ".tsx", ".mts", ".cts"}:
+        # Keep declared generic applications in inventory/Markdown. Resolve the
+        # named base identity, without interpreting calls such as mixin<T>(Base).
+        application = re.fullmatch(r"([\w$]+(?:\.[\w$]+)*)\s*<.*>", base, re.DOTALL)
+        if application:
+            base = application[1]
     leaf = base.replace("::", ".").rsplit(".", 1)[-1]
     python = is_python_source(filepath, resolver.inventory.get(filepath))
 

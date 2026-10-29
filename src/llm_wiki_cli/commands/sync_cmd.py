@@ -921,7 +921,7 @@ def _merge_entity_page(
             # Unknown/custom sections remain retained authored context on exact
             # owner revival; generated sections still come from the new source.
             from ..services.markdown_sections import parse_markdown_document
-            generated_doc = parse_markdown_document(generated, "revived-generated")
+            generated_doc = parse_markdown_document(merge_result.text, "revived-generated")
             old_doc = parse_markdown_document(existing, "revived-retained")
             known = {section.title.casefold() for section in generated_doc.sections if section.level == 2}
             extra = [old_doc.normalized_markdown[section.start:section.end] for section in old_doc.sections if section.level == 2 and section.title.casefold() not in known]

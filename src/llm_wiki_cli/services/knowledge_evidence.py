@@ -80,6 +80,7 @@ _MODULE_FUNCTION_FIELDS = (
     "async",
     "decorators",
     "type_params",
+    "overloads",
 )
 _MODULE_CONSTANT_FIELDS = ("name",)
 _MODULE_CALL_FIELDS = ("name", "attr", "target")
@@ -632,6 +633,18 @@ def _validate_callable_record(record: Mapping[str, Any], pointer="") -> None:
             raise _failure(_pointer(position, "name"), "string-required", "string", param.get("name", MISSING_VALUE))
         _validate_optional_strings(param, ("default", "kind", "type"), position)
         _validate_optional_booleans(param, ("optional", "rest"), position)
+    overloads = _optional_record_array(record, "overloads", pointer)
+    if overloads and (type(record.get("line")) is not int or record["line"] <= 0):
+        raise _failure(_pointer(pointer, "line"), "positive-integer", "implementation source line", record.get("line", MISSING_VALUE))
+    for index, overload in enumerate(overloads):
+        position = _pointer(_pointer(pointer, "overloads"), index)
+        if "overloads" in overload:
+            raise _failure(_pointer(position, "overloads"), "nested-overloads", "flat declared overload signatures", overload["overloads"])
+        if overload.get("name") != record["name"]:
+            raise _failure(_pointer(position, "name"), "callable-name-mismatch", "parent callable name", overload.get("name", MISSING_VALUE))
+        if type(overload.get("line")) is not int or overload["line"] <= 0:
+            raise _failure(_pointer(position, "line"), "positive-integer", "overload source line", overload.get("line", MISSING_VALUE))
+        _validate_callable_record(overload, position)
 
 
 def _validate_import_record(record: Mapping[str, Any], *, language: str, pointer="") -> None:
@@ -742,7 +755,7 @@ _POINTER_FIELDS = frozenset({
     "decorators", "module", "type", "alias", "qualified", "resolution", "reason", "scope", "attributes", "methods",
     "default", "default_factory", "serialization_alias", "tag", "validation_alias", "value", "annotated_metadata",
     "examples", "literal_values", "constraints", "unknowns", "nullable", "optional", "required", "validator", "fields",
-    "options", "model_config", "deriving", "type_params", "exported", "attr", "rest", "target_truncated", "target_sha256",
+    "options", "model_config", "deriving", "type_params", "overloads", "exported", "attr", "rest", "target_truncated", "target_sha256",
 })
 
 

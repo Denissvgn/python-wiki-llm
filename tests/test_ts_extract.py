@@ -952,6 +952,21 @@ class TestTypeScriptExtractor:
                 read(value?: `line
 break`): T;
             }
+            export interface Contract<T> { read(value?: T): T | undefined; }
+            export class Parent<T> {}
+            export class Overloaded<T> extends Parent<T> implements Contract<T> {
+                constructor(value?: T);
+                constructor(...values: T[]);
+                constructor(...values: T[]) { super(); }
+                read<U extends T>(value?: U, ...rest: U[]): U | undefined;
+                read(value?: T, ...rest: T[]): T | undefined;
+                read(value?: T, ...rest: T[]): T | undefined { return value ?? rest[0]; }
+            }
+            export function convert<T>(value?: T, ...rest: T[]): T | undefined;
+            export function convert(value?: number, ...rest: number[]): number | undefined;
+            export function convert(value?: unknown, ...rest: unknown[]): unknown { return value ?? rest[0]; }
+            export function oneLine(value: string): string; export function oneLine(value: number): number; export function oneLine(value: unknown): unknown { return value; }
+            export class Tiny { constructor(value: string); constructor(value: number); constructor(value: unknown) {} }
             """,
         )
         monkeypatch.chdir(tmp_path)
@@ -995,6 +1010,14 @@ break`): T;
         assert "<U extends T>(value?: U, ...items: U[]) -> void" in client
         assert '```typescript\n"fast" | "safe"\n```' in (tmp_path / "wiki/entities/Mode.md").read_text()
         assert "(value: number) => string" in (tmp_path / "wiki/entities/Handler.md").read_text()
+        overloaded = (tmp_path / 'wiki/entities/Overloaded.md').read_text()
+        assert '**Bases:** `Parent<T>`, `Contract<T>`' in overloaded
+        assert '## Overloads <!-- llm-wiki-generated:overloads -->' in overloaded
+        assert '<U extends T>(value?: U, ...rest: U[]) -> T' not in overloaded
+        assert r'<U extends T>(value?: U, ...rest: U[]) -> U \| undefined' in overloaded
+        assert '(value?: T)' in overloaded and '(...values: T[])' in overloaded
+        assert '## Overloads <!-- llm-wiki-generated:overloads -->' in module
+        assert r'<T>(value?: T, ...rest: T[]) -> T \| undefined' in module
         from llm_wiki_cli.services.extractor_helpers import get_prepared_typescript_root
         from tests.provider_conformance.frontends import Frontends
         from tests.provider_conformance.trace import compare_markdown
@@ -1007,6 +1030,16 @@ break`): T;
         observed = frontend.observe(source)
         findings = compare_markdown(observed, tmp_path / 'wiki', surface, 'types.ts', 'typescript', frontend.normalize)
         assert conclude(findings)['status'] == 'pass', [f.payload() for f in findings if f.status == 'fail']
+        from tests.provider_conformance.inventory import compare_inventory
+        inventory = TypeScriptExtractor().extract(str(tmp_path), deep=True, helper_cache_dir=str(helper_root.parent))['types.ts']
+        assert conclude(compare_inventory(observed, inventory, 'typescript', frontend.normalize, path='types.ts'))['status'] == 'pass'
+        fn = next(f for f in inventory['functions'] if f['name'] == 'convert')
+        assert len(fn['overloads']) == 2 and fn['overloads'][0]['type_params'] == ['T']
+        entity = next(c for c in inventory['classes'] if c['name'] == 'Overloaded')
+        assert entity['bases'] == ['Parent<T>', 'Contract<T>']
+        assert len(next(m for m in entity['methods'] if m['name'] == 'constructor')['overloads']) == 2
+        overloaded_page = tmp_path / 'wiki/entities/Overloaded.md'
+        overloaded_page.write_text(overloaded + '\n\n## Overloads\n\nAUTHORED overload guidance.\n')
         content = content.replace(
             "_Auto-generated from `EvidenceSignals` in `types.ts`._",
             "Human-curated evidence contract.",
@@ -1017,7 +1050,7 @@ break`): T;
         page.write_text(content, encoding="utf-8")
         before = SyncManifest.load(tmp_path / "wiki").sources
         source.write_text(
-            source.read_text(encoding="utf-8").replace("change_me:", "change_me?:").replace('"safe"', '"careful"').replace("prefix?:", "prefix:"),
+            source.read_text(encoding="utf-8").replace("change_me:", "change_me?:").replace('"safe"', '"careful"').replace("prefix?:", "prefix:").replace('convert<T>(value?: T, ...rest: T[])', 'convert<T>(value: T, ...rest: T[])'),
             encoding="utf-8",
         )
         capsys.readouterr()
@@ -1034,8 +1067,17 @@ break`): T;
         assert "Omission means unavailable." in content
         assert '"careful"' in (tmp_path / "wiki/entities/Mode.md").read_text()
         assert "(prefix: string, ...items: string[]) -> string" in (tmp_path / "wiki/modules/types.md").read_text()
+        assert r'<T>(value: T, ...rest: T[]) -> T \| undefined' in (tmp_path / 'wiki/modules/types.md').read_text()
         run("sync")
         assert page.read_text(encoding="utf-8") == content
+        assert 'AUTHORED overload guidance.' in overloaded_page.read_text()
+        source.write_bytes(b'\n\n' + source.read_bytes())
+        run('sync')
+        current_surface = json.loads((tmp_path / 'wiki/.llm-wiki-surface.json').read_text())
+        current = frontend.observe(source)
+        findings = compare_markdown(current, tmp_path / 'wiki', current_surface, 'types.ts', 'typescript', frontend.normalize)
+        assert conclude(findings)['status'] == 'pass', [f.payload() for f in findings if f.status == 'fail']
+        assert 'AUTHORED overload guidance.' in overloaded_page.read_text()
 
     def test_deep_mode_decorators(self, tmp_path):
         _make_ts(

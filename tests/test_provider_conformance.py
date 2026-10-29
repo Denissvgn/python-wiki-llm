@@ -499,3 +499,37 @@ def test_bounded_markdown_line_normalization_keeps_preview_and_digest_checks_dis
     assert any(f.status == 'fail' for f in check(actual, 'inventory'))
     actual['target'] = target[:4096]
     assert all(f.status == 'pass' for f in check(actual, 'inventory'))
+
+
+def test_source_oracle_matches_nested_overloads_by_source_line():
+    from tests.provider_conformance.inventory import flatten, paired
+    data = {'classes': [], 'functions': [
+        {'name': 'read', 'line': 5, 'params': [], 'overloads': [
+            {'name': 'read', 'line': 1, 'params': [{'name': 'value', 'type': 'T', 'optional': True}], 'type_params': ['T']},
+            {'name': 'read', 'line': 3, 'params': [{'name': 'value', 'type': 'number'}]},
+        ]}
+    ]}
+    actual = flatten(data)
+    expected = [{'kind': 'function', 'owner': '', 'name': 'read', 'line': line} for line in (1, 3, 5)]
+    coordinates = []
+    for _, source, observed in paired(expected, actual):
+        assert observed is not None
+        coordinates.append((source['line'], observed['line']))
+    assert coordinates == [(1, 1), (3, 3), (5, 5)]
+
+
+def test_same_line_overloads_keep_source_order_before_the_implementation():
+    from tests.provider_conformance.inventory import flatten, paired
+    def params(annotation):
+        return [{'name': 'value', 'type': annotation}]
+    data = {'classes': [], 'functions': [
+        {'name': 'read', 'line': 1, 'params': params('unknown'), 'overloads': [
+            {'name': 'read', 'line': 1, 'params': params('string')},
+            {'name': 'read', 'line': 1, 'params': params('number')},
+        ]}
+    ]}
+    expected = [{'kind': 'function', 'owner': '', 'name': 'read', 'line': 1, 'params': params(t)}
+                for t in ('string', 'number', 'unknown')]
+    for _, source, observed in paired(expected, flatten(data)):
+        assert observed is not None
+        assert source['params'] == observed['params']

@@ -506,3 +506,53 @@ def test_generated_section_replacement_is_surgical_and_newline_compatible():
     assert replace_generated_section(existing, generated, "Relationships") == (
         "# Entity\n\n## Relationships\n\nNew.\n\n## Custom\n\nKeep.\n"
     )
+
+
+@pytest.mark.parametrize('kind', [PageKind.ENTITIES, PageKind.MODULES])
+def test_only_explicitly_marked_overload_sections_are_generated(kind):
+    text = '''# Example
+
+## Overloads
+
+Authored guidance belongs to the user.
+
+## Overloads <!-- llm-wiki-generated:overloads -->
+
+| Method | Line | Signature |
+|---|---|---|
+| read | 2 | `(value?: string)` |
+'''
+    _, pairs = _by_title(text, kind)
+    assert ('Overloads', SectionOwnership.UNKNOWN) in pairs
+    assert ('Overloads <!-- llm-wiki-generated:overloads -->', SectionOwnership.GENERATED) in pairs
+
+
+def test_adding_overloads_keeps_authored_implementation_description():
+    from llm_wiki_cli.services.bootstrap_runtime import _generate_module_md
+    from llm_wiki_cli.services.section_ownership import merge_module_semantics
+    before = {'name': 'read', 'line': 3, 'params': [{'name': 'value', 'type': 'unknown'}]}
+    old = _generate_module_md('types.ts', {'classes': [], 'functions': [before]})
+    old = old.replace('| `read` | `(value: unknown)` | — | — |', '| `read` | `(value: unknown)` | — | AUTHORED meaning |')
+    current = deepcopy(before)
+    current['overloads'] = [{'name': 'read', 'line': 2, 'params': [{'name': 'value', 'type': 'string'}]}]
+    generated = _generate_module_md('types.ts', {'classes': [], 'functions': [current]})
+    merged = merge_module_semantics(old, generated)
+    assert '| `read` | 3 | `(value: unknown)` | — | AUTHORED meaning |' in merged.text
+    assert '| `read` | 2 | `(value: string)` |' in merged.text
+
+
+@pytest.mark.parametrize('merge', ['entity', 'module'])
+def test_unmarked_overload_guidance_survives_regeneration_and_removal(merge):
+    from llm_wiki_cli.services.section_ownership import merge_module_semantics
+    apply = merge_entity_semantics if merge == 'entity' else merge_module_semantics
+    authored = '## Overloads\n\nAUTHORED guidance.\n\n### Details\n\nKeep exact context.\n'
+    current = '# Example\n\n## Description\n\nHuman meaning.\n\n' + authored
+    generated = '# Example\n\n## Description\n\n_Auto-generated from `Example`._\n\n## Overloads <!-- llm-wiki-generated:overloads -->\n\nGenerated signatures.\n'
+    first = apply(current, generated)
+    assert authored in first.text and first.text.count('AUTHORED guidance.') == 1
+    second = apply(first.text, generated)
+    assert second.text == first.text
+    assert apply(first.text, first.text).text == first.text
+    removed = apply(first.text, '# Example\n\n## Description\n\n_Auto-generated from `Example`._\n')
+    assert authored in removed.text
+    assert 'llm-wiki-generated:overloads' not in removed.text

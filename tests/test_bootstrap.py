@@ -4463,3 +4463,36 @@ def test_alias_preview_fence_keeps_its_trailing_line_break(ending):
     block = next(t for t in MarkdownIt('commonmark').parse(page) if t.type == 'fence')
     expected = target.replace('\r\n', '\n').replace('\r', '\n')
     assert block.content.removesuffix('\n') == expected
+
+
+def test_overload_projection_preserves_implementation_identity_and_declared_signatures():
+    from llm_wiki_cli.services.bootstrap_runtime import _generate_module_md, _generate_entity_md
+    from llm_wiki_cli.services.markdown_sections import section_body
+    declaration = {'name': 'read', 'line': 2, 'type_params': ['T'],
+                   'params': [{'name': 'value', 'type': 'T', 'optional': True}, {'name': 'items', 'type': 'T[]', 'rest': True}],
+                   'return_type': 'T'}
+    implementation = {'name': 'read', 'line': 3, 'params': [{'name': 'value', 'type': 'unknown'}], 'overloads': [declaration]}
+    module = _generate_module_md('types.ts', {'classes': [], 'functions': [implementation]})
+    entity = _generate_entity_md({'name': 'Client', 'methods': [implementation]}, 'types.ts', {})
+    for text, label in ((module, 'Function'), (entity, 'Method')):
+        assert f'| {label} | Line | Signature | Decorators | Description |' in text
+        assert '| `read` | 3 | `(value: unknown)` |' in text
+        block = section_body(text, 'Overloads <!-- llm-wiki-generated:overloads -->')
+        assert block is not None
+        assert '| `read` | 2 | `<T>(value?: T, ...items: T[]) -> T` |' in block
+        assert 'public call signatures' in text
+    assert implementation['name'] == 'read' and implementation['line'] == 3
+
+
+def test_generic_heritage_keeps_named_relationships_without_interpreting_calls():
+    from llm_wiki_cli.services.relationships import build_entity_page_relationship_summaries
+    inventory = {'types.ts': {'language': 'typescript', 'classes': [
+        {'name': 'Parent', 'bases': []},
+        {'name': 'Contract', 'kind': 'interface', 'bases': []},
+        {'name': 'Child', 'bases': ['Parent<Map<string, number>>', 'Contract<`left|right`>']},
+        {'name': 'Dynamic', 'bases': ['mixin<string>(Parent)']},
+    ], 'functions': []}}
+    rows = {row['name']: row for row in build_entity_page_relationship_summaries(inventory)['classes']}
+    assert {base['name']: base['file'] for base in rows['Child']['bases']} == {'Parent': 'types.ts', 'Contract': 'types.ts'}
+    assert rows['Dynamic']['bases'] == [{'name': 'mixin<string>(Parent)', 'file': None, 'module': None}]
+    assert inventory['types.ts']['classes'][2]['bases'] == ['Parent<Map<string, number>>', 'Contract<`left|right`>']

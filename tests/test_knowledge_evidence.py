@@ -771,3 +771,39 @@ def test_complete_alias_digest_must_match_the_definition():
     assert _module_hash(record) is not None and _entity_hash(record, 'A') is not None
     alias['target'] = '"changed"'
     assert _module_hash(record) is None and _entity_hash(record, 'A') is None
+
+
+def test_overload_contracts_participate_in_observations():
+    overload = {'name': 'read', 'line': 2, 'params': [{'name': 'value', 'type': 'T', 'optional': True}], 'type_params': ['T'], 'return_type': 'T'}
+    fn = {'name': 'read', 'line': 3, 'params': [{'name': 'value', 'type': 'unknown'}], 'overloads': [overload]}
+    data = {'language': 'typescript', 'classes': [], 'functions': [fn]}
+    before = _module_hash(data)
+    assert before is not None
+    altered = deepcopy(data)
+    altered['functions'][0]['overloads'][0]['params'][0]['optional'] = False
+    assert _module_hash(altered) != before
+    entity = {'language': 'typescript', 'classes': [{'name': 'Client', 'methods': [fn]}], 'functions': []}
+    original = _entity_hash(entity, 'Client')
+    assert original is not None
+    entity['classes'][0]['methods'][0]['overloads'][0]['type_params'] = ['T extends string']
+    assert _entity_hash(entity, 'Client') != original
+
+
+@pytest.mark.parametrize('change', ['name', 'line-bool', 'line-zero', 'nested', 'not-array', 'missing-parent-line'])
+def test_malformed_overload_records_do_not_become_known(change):
+    overload: dict = {'name': 'read', 'line': 2, 'params': []}
+    fn: dict = {'name': 'read', 'line': 3, 'overloads': [overload]}
+    if change == 'name':
+        overload['name'] = 'different'
+    elif change == 'line-bool':
+        overload['line'] = True
+    elif change == 'line-zero':
+        overload['line'] = 0
+    elif change == 'nested':
+        overload['overloads'] = []
+    elif change == 'missing-parent-line':
+        fn.pop('line')
+    else:
+        fn['overloads'] = {}
+    data = {'language': 'typescript', 'classes': [], 'functions': [fn]}
+    assert _module_hash(data) is None

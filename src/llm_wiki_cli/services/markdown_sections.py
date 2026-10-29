@@ -46,6 +46,7 @@ GENERATED_INDEX_ENTRY_POINT_FLOWS_HEADING = (
 GENERATED_INDEX_HTTP_API_CONTRACTS_HEADING = (
     "HTTP API contracts <!-- llm-wiki-generated:index:http-api-contracts -->"
 )
+GENERATED_OVERLOADS_HEADING = "Overloads <!-- llm-wiki-generated:overloads -->"
 
 _ATX_HEADING_RE = re.compile(r"^ {0,3}(#{1,6})(?:[ \t]+(.*)|[ \t]*)$")
 _FENCE_OPEN_RE = re.compile(r"^ {0,3}((?:`{3,})|(?:~{3,}))(.*)$")

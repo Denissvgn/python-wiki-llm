@@ -116,6 +116,7 @@ from .markdown_sections import (
     GENERATED_INDEX_HTTP_API_CONTRACTS_HEADING,
     GENERATED_INDEX_INTRO_WITH_GUIDES,
     GENERATED_INDEX_INTRO_WITHOUT_GUIDES,
+    GENERATED_OVERLOADS_HEADING,
     normalize_markdown,
     preserve_level_two_section_exact as _service_preserve_level_two_section_exact,
 )
@@ -655,6 +656,28 @@ def _format_signature(fn: dict) -> str:
     if ret:
         sig += f" -> {ret}"
     return sig
+
+
+def _append_declared_overloads(lines, records, label):
+    """Render public overload declarations without replacing implementation rows."""
+    rows = [(record, overload) for record in records for overload in record.get("overloads", [])]
+    if not rows:
+        return
+    lines.extend([
+        f"For {label.lower()}s listed below, the preceding row describes the implementation. "
+        "The overload declarations define the public call signatures.",
+        "",
+        f"## {GENERATED_OVERLOADS_HEADING}",
+        "",
+        f"| {label} | Line | Signature |",
+        "|--------|------|-----------|",
+    ])
+    for record, overload in rows:
+        lines.append(
+            f"| {_table_inline_code(record['name'])} | {overload['line']} | "
+            f"{_table_inline_code(_format_signature(overload))} |"
+        )
+    lines.append("")
 
 
 def _table_text(value: object) -> str:
@@ -1935,7 +1958,7 @@ def _generate_entity_md(
         mod_page_name if mod_page_name is not None else _module_name_from_path(filepath)
     )
 
-    bases_str = ", ".join(f"`{b}`" for b in bases) if bases else "—"
+    bases_str = ", ".join(_table_inline_code(b, table=False) for b in bases) if bases else "—"
 
     lines = [
         f"# {name}",
@@ -1980,8 +2003,9 @@ def _generate_entity_md(
     lines.append("## Methods")
     lines.append("")
     if methods:
-        lines.append("| Method | Signature | Decorators | Description |")
-        lines.append("|--------|-----------|------------|-------------|")
+        include_lines = any(method.get("overloads") for method in methods)
+        lines.append("| Method | Line | Signature | Decorators | Description |" if include_lines else "| Method | Signature | Decorators | Description |")
+        lines.append("|--------|------|-----------|------------|-------------|" if include_lines else "|--------|-----------|------------|-------------|")
         for m in methods:
             sig = _format_signature(m)
             decs = (
@@ -1990,13 +2014,15 @@ def _generate_entity_md(
             )
             doc = _source_doc_first_line(m.get("docstring")) or "—"
             async_tag = "*(async)* " if m.get("is_async") else ""
+            source_line = f"{m.get('line', '?')} | " if include_lines else ""
             lines.append(
-                f"| `{_table_text(m['name'])}` | {async_tag}{_table_inline_code(sig)} | "
+                f"| `{_table_text(m['name'])}` | {source_line}{async_tag}{_table_inline_code(sig)} | "
                 f"{decs} | {_table_text(doc)} |"
             )
     else:
         lines.append("*See the alias definition for callable and member types.*" if class_info.get("kind") == "type_alias" else "*No declared methods.*")
     lines.append("")
+    _append_declared_overloads(lines, methods, "Method")
 
     # Relationships
     _append_relationships_to_entity(
@@ -2114,8 +2140,9 @@ def _generate_module_md(
     elif functions:
         lines.append("## Functions")
         lines.append("")
-        lines.append("| Function | Signature | Decorators | Description |")
-        lines.append("|----------|-----------|------------|-------------|")
+        include_lines = any(fn.get("overloads") for fn in functions)
+        lines.append("| Function | Line | Signature | Decorators | Description |" if include_lines else "| Function | Signature | Decorators | Description |")
+        lines.append("|----------|------|-----------|------------|-------------|" if include_lines else "|----------|-----------|------------|-------------|")
         for fn in functions:
             sig = _format_signature(fn)
             decs = (
@@ -2124,12 +2151,15 @@ def _generate_module_md(
             )
             doc = _source_doc_first_line(fn.get("docstring")) or "—"
             async_tag = "*(async)* " if fn.get("is_async") else ""
+            source_line = f"{fn.get('line', '?')} | " if include_lines else ""
             lines.append(
-                f"| `{_table_text(fn['name'])}` | {async_tag}{_table_inline_code(sig)} | "
+                f"| `{_table_text(fn['name'])}` | {source_line}{async_tag}{_table_inline_code(sig)} | "
                 f"{decs} | {_table_text(doc)} |"
             )
         lines.append("")
 
+    if not is_haskell:
+        _append_declared_overloads(lines, functions, "Function")
     return "\n".join(lines)
 
 

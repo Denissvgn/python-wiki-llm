@@ -218,6 +218,10 @@ function extractMethodInfo(method) {
     if (typeParams.length) info.type_params = typeParams;
     const returnTypeNode = method.getReturnTypeNode?.();
     info.return_type = typeToStr(returnTypeNode);
+    if (method.isImplementation?.()) {
+      const overloads = method.getOverloads?.() ?? [];
+      if (overloads.length) info.overloads = overloads.map(extractMethodInfo);
+    }
   }
 
   return info;
@@ -257,10 +261,31 @@ function extractFunctionInfo(fn, name, docNode = null, line = null) {
     const typeParams = (fn.getTypeParameters?.() ?? []).map(typeToStr);
     if (typeParams.length) info.type_params = typeParams;
     info.return_type = typeToStr(fn.getReturnTypeNode?.());
+    if (fn.isImplementation?.()) {
+      const overloads = fn.getOverloads?.() ?? [];
+      if (overloads.length) info.overloads = overloads.map(node => extractFunctionInfo(node, name));
+    }
   } else if (isAsync) {
     info.async = true;
   }
 
+  return info;
+}
+
+function extractConstructorInfo(ctor) {
+  const info = {
+    name: "constructor",
+    line: ctor.getStartLineNumber(),
+    is_async: false,
+    docstring: getJsDoc(ctor),
+    decorators: [],
+    params: ctor.getParameters().map(extractMethodParam),
+    return_type: "",
+  };
+  if (ctor.isImplementation()) {
+    const overloads = ctor.getOverloads();
+    if (overloads.length) info.overloads = overloads.map(extractConstructorInfo);
+  }
   return info;
 }
 
@@ -591,8 +616,8 @@ function extractFile(sourceFile) {
   // ── Classes ────────────────────────────────────────────────────────────────
   for (const cls of sourceFile.getClasses()) {
     const baseExpr = cls.getExtends();
-    const bases = baseExpr ? [baseExpr.getExpression().getText()] : [];
-    const implementsExprs = cls.getImplements().map((i) => i.getExpression().getText());
+    const bases = baseExpr ? [baseExpr.getText()] : [];
+    const implementsExprs = cls.getImplements().map((i) => i.getText());
 
     const clsLine = cls.getStartLineNumber();
     const clsName = cls.getName() ?? `<anonymous_L${clsLine}>`;
@@ -608,15 +633,7 @@ function extractFile(sourceFile) {
         attributes: cls.getProperties().map(extractProperty),
         methods: [
           ...cls.getMethods().map(extractMethodInfo),
-          ...cls.getConstructors().map((c) => ({
-            name: "constructor",
-            line: c.getStartLineNumber(),
-            is_async: false,
-            docstring: getJsDoc(c),
-            decorators: [],
-            params: c.getParameters().map(extractMethodParam),
-            return_type: "",
-          })),
+          ...cls.getConstructors().map(extractConstructorInfo),
         ],
       });
     } else {
@@ -633,7 +650,7 @@ function extractFile(sourceFile) {
   for (const iface of sourceFile.getInterfaces()) {
     // Use getExtends() instead of getBaseDeclarations() — the latter returns []
     // for unresolved external types (e.g. interfaces extending EventEmitter).
-    const bases = iface.getExtends().map((n) => n.getExpression().getText());
+    const bases = iface.getExtends().map((n) => n.getText());
 
     if (deep) {
       fileEntry.classes.push({
