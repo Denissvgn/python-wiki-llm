@@ -606,6 +606,11 @@ class TestTypeScriptExtractor:
         assert len(inv) == 1
         data = list(inv.values())[0]
         assert data["functions"][0]["name"] == "greet"
+        for deep in (False, True):
+            for index, line_break in enumerate(("\n", "\r\n", "\r", "\u2028", "\u2029")):
+                fixture = tmp_path / f"coordinates-{deep}-{index}"
+                fixture.mkdir()
+                self._check_compiler_line_coordinates(fixture, line_break, deep)
 
     def test_arrow_function_export(self, tmp_path):
         _make_ts(
@@ -935,9 +940,7 @@ class TestTypeScriptExtractor:
             assert properties[name]["optional"] is True
             assert properties[name]["default"] == ""
 
-    @pytest.mark.parametrize("line_break", ["\n", "\r\n", "\r", "\u2028", "\u2029"])
-    @pytest.mark.parametrize("deep", [False, True])
-    def test_compiler_line_coordinates(self, tmp_path, line_break, deep):
+    def _check_compiler_line_coordinates(self, tmp_path, line_break, deep):
         source = tmp_path / "coordinates.ts"
         source.write_bytes(line_break.join([
             "// Every separator starts a compiler source line.",
