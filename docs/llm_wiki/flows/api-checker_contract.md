@@ -39,17 +39,19 @@ sequenceDiagram
 
 Source steps: 4; effect analysis evaluated: 2, partial: 0, unavailable: 2. Counts include steps omitted from the displayed trace.
 
+Collector observations for 2 source steps with known totals: observed: 6, emitted: 6, omitted: 0. Unavailable totals are excluded.
+
 - Callable record unavailable; the selected entry symbol has no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `checker_contract` | `available` | `evaluated` | `available` |
-| `_checker_id` | `available` | `evaluated` | `available` |
-| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_CHECKER_ID_RE.fullmatch` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `VerificationContractError` | `unavailable` | `unavailable` | `unavailable` |
-| `UnknownVerificationCheckerError` | `unavailable` | `unavailable` | `unavailable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `checker_contract` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `_checker_id` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_CHECKER_ID_RE.fullmatch` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `VerificationContractError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `UnknownVerificationCheckerError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 
 ```mermaid
 flowchart LR

@@ -101,23 +101,25 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 30; effect analysis evaluated: 15, partial: 0, unavailable: 15. Counts include steps omitted from the displayed trace.
 
+Collector observations for 15 source steps with known totals: observed: 75, emitted: 75, omitted: 0. Unavailable totals are excluded.
+
 - Callable record unavailable; the selected entry symbol has no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `current_review_evidence` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…py:current_review_evidence)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `ReviewEvidence` | `unavailable` | `unavailable` | `unavailable` |
-| `ReviewEvidence` | `unavailable` | `unavailable` | `unavailable` |
-| `_review_evidence` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…rnance.py:_review_evidence)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `GovernanceError` | `unavailable` | `unavailable` | `unavailable` |
-| `GovernanceError` | `unavailable` | `unavailable` | `unavailable` |
-| `GovernanceError` | `unavailable` | `unavailable` | `unavailable` |
-| `ReviewEvidence` | `unavailable` | `unavailable` | `unavailable` |
-| `GovernanceError` | `unavailable` | `unavailable` | `unavailable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `current_review_evidence` | `available` | `evaluated` | `available` | `10` | `10` | `0` |
+| `isinstance (src/llm_wiki_cli/services…py:current_review_evidence)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ReviewEvidence` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `ReviewEvidence` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_review_evidence` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
+| `isinstance (src/llm_wiki_cli/services…rnance.py:_review_evidence)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `GovernanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `GovernanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `GovernanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `ReviewEvidence` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `GovernanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 
 ```mermaid
 flowchart LR

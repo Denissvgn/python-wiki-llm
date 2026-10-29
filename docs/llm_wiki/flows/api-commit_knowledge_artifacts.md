@@ -122,25 +122,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 346; effect analysis evaluated: 203, partial: 0, unavailable: 143. Counts include steps omitted from the displayed trace.
+Source steps: 346; effect analysis evaluated: 190, partial: 13, unavailable: 143. Counts include steps omitted from the displayed trace.
+
+Collector observations for 203 source steps with known totals: observed: 1004, emitted: 979, omitted: 25. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `commit_knowledge_artifacts` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `callable (src/llm_wiki_cli/services…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `storage_writer_lock` | `available` | `evaluated` | `available` |
-| `_absolute_path` | `available` | `evaluated` | `available` |
-| `Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `first_unsafe_path_component` | `available` | `evaluated` | `available` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `commit_knowledge_artifacts` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `callable (src/llm_wiki_cli/services…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `storage_writer_lock` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `_absolute_path` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `first_unsafe_path_component` | `available` | `evaluated` | `available` | `14` | `14` | `0` |
 
 ```mermaid
 flowchart LR

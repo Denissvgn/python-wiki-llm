@@ -110,25 +110,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 106; effect analysis evaluated: 67, partial: 0, unavailable: 39. Counts include steps omitted from the displayed trace.
+Source steps: 106; effect analysis evaluated: 63, partial: 4, unavailable: 39. Counts include steps omitted from the displayed trace.
+
+Collector observations for 67 source steps with known totals: observed: 305, emitted: 291, omitted: 14. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `build_flow_evidence_census (src/llm_wiki_cli/services…ation_run/dependencies.py)` | `available` | `evaluated` | `available` |
-| `build_flow_evidence_census (src/llm_wiki_cli/services/calibration/contracts.py)` | `available` | `evaluated` | `available` |
-| `Path(…).expanduser (src/llm_wiki_cli/services…d_flow_evidence_census, 1)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `wiki.is_dir` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `DocumentationCalibrationError` | `unavailable` | `unavailable` | `unavailable` |
-| `surface_path.exists` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_fallback_flow_records` | `available` | `evaluated` | `available` |
-| `flows_dir.is_symlink` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `flows_dir.is_dir` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `flows_dir.glob` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `path.is_file` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `build_flow_evidence_census (src/llm_wiki_cli/services…ation_run/dependencies.py)` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `build_flow_evidence_census (src/llm_wiki_cli/services/calibration/contracts.py)` | `available` | `evaluated` | `available` | `15` | `15` | `0` |
+| `Path(…).expanduser (src/llm_wiki_cli/services…d_flow_evidence_census, 1)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `wiki.is_dir` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `DocumentationCalibrationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `surface_path.exists` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_fallback_flow_records` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `flows_dir.is_symlink` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `flows_dir.is_dir` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `flows_dir.glob` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `path.is_file` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

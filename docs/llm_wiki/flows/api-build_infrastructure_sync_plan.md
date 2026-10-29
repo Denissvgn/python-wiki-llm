@@ -111,25 +111,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 99; effect analysis evaluated: 61, partial: 0, unavailable: 38. Counts include steps omitted from the displayed trace.
+Source steps: 99; effect analysis evaluated: 53, partial: 8, unavailable: 38. Counts include steps omitted from the displayed trace.
+
+Collector observations for 61 source steps with known totals: observed: 385, emitted: 362, omitted: 23. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `build_infrastructure_sync_plan` | `available` | `evaluated` | `available` |
-| `deepcopy (src/llm_wiki_cli/services…_infrastructure_sync_plan)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `dict (src/llm_wiki_cli/services…_infrastructure_sync_plan)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `sorted (src/llm_wiki_cli/services…_infrastructure_sync_plan)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `inventory.items` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `build_infrastructure_page_map` | `available` | `evaluated` | `available` |
-| `sorted (src/llm_wiki_cli/services…d_infrastructure_page_map)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `infrastructure_page_name` | `available` | `evaluated` | `available` |
-| `source_path.replace(…).replace(…).replace` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `source_path.replace(…).replace` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `source_path.replace` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `by_stem.setdefault(…).append` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `build_infrastructure_sync_plan` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
+| `deepcopy (src/llm_wiki_cli/services…_infrastructure_sync_plan)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `dict (src/llm_wiki_cli/services…_infrastructure_sync_plan)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `sorted (src/llm_wiki_cli/services…_infrastructure_sync_plan)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `inventory.items` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `build_infrastructure_page_map` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `sorted (src/llm_wiki_cli/services…d_infrastructure_page_map)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `infrastructure_page_name` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `source_path.replace(…).replace(…).replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `source_path.replace(…).replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `source_path.replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `by_stem.setdefault(…).append` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

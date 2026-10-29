@@ -123,25 +123,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 343; effect analysis evaluated: 182, partial: 0, unavailable: 161. Counts include steps omitted from the displayed trace.
+Source steps: 343; effect analysis evaluated: 170, partial: 12, unavailable: 161. Counts include steps omitted from the displayed trace.
+
+Collector observations for 182 source steps with known totals: observed: 985, emitted: 926, omitted: 59. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `install_ci_workflow` | `available` | `evaluated` | `available` |
-| `normalize_action_ref` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…r.py:normalize_action_ref)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_ACTION_REF_RE.fullmatch` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `InstallCiError` | `unavailable` | `unavailable` | `unavailable` |
-| `value.lower` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_portable_project_path` | `available` | `evaluated` | `available` |
-| `_without_github_expression` | `available` | `evaluated` | `available` |
-| `InstallCiError` | `unavailable` | `unavailable` | `unavailable` |
-| `_validated_project_path` | `available` | `evaluated` | `available` |
-| `require_repository_relative_path` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…_repository_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `install_ci_workflow` | `available` | `evaluated` | `available` | `16` | `16` | `0` |
+| `normalize_action_ref` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `isinstance (src/llm_wiki_cli/services…r.py:normalize_action_ref)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_ACTION_REF_RE.fullmatch` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `InstallCiError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `value.lower` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_portable_project_path` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `_without_github_expression` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `InstallCiError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_validated_project_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `require_repository_relative_path` | `available` | `partial` | `available` | `14` | `10` | `4` |
+| `isinstance (src/llm_wiki_cli/services…_repository_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

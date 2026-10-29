@@ -147,9 +147,9 @@ sequenceDiagram
     p0-->>p30: normalized.get (src/llm_wiki_cli/services…y:build_qualified_context)('knowledge_mode')
 ```
 
-> Call sequence diagram shows 30 of 5558 interactions; 5528 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 5561 interactions; 5531 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1754 (1753 omitted); unresolved 1 of 1856 (1855 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1755 (1754 omitted); unresolved 1 of 1858 (1857 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -176,25 +176,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1949; effect analysis evaluated: 1361, partial: 0, unavailable: 588. Counts include steps omitted from the displayed trace.
+Source steps: 1949; effect analysis evaluated: 1284, partial: 77, unavailable: 588. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1361 source steps with known totals: observed: 8004, emitted: 7575, omitted: 429. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `build_qualified_context` | `available` | `evaluated` | `available` |
-| `_normalized_request` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…et.py:_normalized_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `ProtocolRequestError` | `unavailable` | `unavailable` | `unavailable` |
-| `deepcopy (src/llm_wiki_cli/services…et.py:_normalized_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `dict (src/llm_wiki_cli/services…et.py:_normalized_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `candidate.setdefault` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `candidate.setdefault` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_validate_protocol_request` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…validate_protocol_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `data.get (src/llm_wiki_cli/services…validate_protocol_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_validate_protocol_request_impl` | `available` | `evaluated` | `available` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `build_qualified_context` | `available` | `evaluated` | `available` | `14` | `14` | `0` |
+| `_normalized_request` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `isinstance (src/llm_wiki_cli/services…et.py:_normalized_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ProtocolRequestError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `deepcopy (src/llm_wiki_cli/services…et.py:_normalized_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `dict (src/llm_wiki_cli/services…et.py:_normalized_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `candidate.setdefault` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `candidate.setdefault` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_validate_protocol_request` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `isinstance (src/llm_wiki_cli/services…validate_protocol_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `data.get (src/llm_wiki_cli/services…validate_protocol_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_validate_protocol_request_impl` | `available` | `partial` | `available` | `14` | `12` | `2` |
 
 ```mermaid
 flowchart LR

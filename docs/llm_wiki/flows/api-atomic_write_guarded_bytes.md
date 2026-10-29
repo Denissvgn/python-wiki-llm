@@ -103,25 +103,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 96; effect analysis evaluated: 54, partial: 0, unavailable: 42. Counts include steps omitted from the displayed trace.
+Source steps: 96; effect analysis evaluated: 46, partial: 8, unavailable: 42. Counts include steps omitted from the displayed trace.
+
+Collector observations for 54 source steps with known totals: observed: 383, emitted: 371, omitted: 12. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `atomic_write_guarded_bytes` | `available` | `evaluated` | `available` |
-| `Path (src/llm_wiki_cli/services…tomic_write_guarded_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `target.is_absolute` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services…tomic_write_guarded_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `before_wiki_write` | `available` | `evaluated` | `available` |
-| `ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `basis.before_write` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `ACTIVE_SYNC_JOURNAL.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `atomic_write_guarded_bytes` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `Path (src/llm_wiki_cli/services…tomic_write_guarded_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `target.is_absolute` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `OSError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…tomic_write_guarded_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…tomic_write_guarded_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `before_wiki_write` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `basis.before_write` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ACTIVE_SYNC_JOURNAL.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

@@ -155,25 +155,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 495; effect analysis evaluated: 335, partial: 0, unavailable: 160. Counts include steps omitted from the displayed trace.
+Source steps: 495; effect analysis evaluated: 294, partial: 41, unavailable: 160. Counts include steps omitted from the displayed trace.
+
+Collector observations for 335 source steps with known totals: observed: 2356, emitted: 2205, omitted: 151. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `run` | `available` | `evaluated` | `available` |
-| `getattr (src/llm_wiki_cli/commands/task_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_compact_outputs` | `available` | `evaluated` | `available` |
-| `getattr (src/llm_wiki_cli/commands…k_cmd.py:_compact_outputs)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `ValueError (src/llm_wiki_cli/commands…k_cmd.py:_compact_outputs)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `getattr (src/llm_wiki_cli/commands…k_cmd.py:_compact_outputs)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `type (src/llm_wiki_cli/commands…k_cmd.py:_compact_outputs)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `ValueError (src/llm_wiki_cli/commands…k_cmd.py:_compact_outputs)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_safe_absolute` | `available` | `evaluated` | `available` |
-| `Path(…).expanduser (src/llm_wiki_cli/commands…ask_cmd.py:_safe_absolute)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path (src/llm_wiki_cli/commands…ask_cmd.py:_safe_absolute)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `first_unsafe_path_component` | `available` | `evaluated` | `available` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `run` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `getattr (src/llm_wiki_cli/commands/task_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_compact_outputs` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `getattr (src/llm_wiki_cli/commands…k_cmd.py:_compact_outputs)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError (src/llm_wiki_cli/commands…k_cmd.py:_compact_outputs)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/commands…k_cmd.py:_compact_outputs)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `type (src/llm_wiki_cli/commands…k_cmd.py:_compact_outputs)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError (src/llm_wiki_cli/commands…k_cmd.py:_compact_outputs)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_safe_absolute` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `Path(…).expanduser (src/llm_wiki_cli/commands…ask_cmd.py:_safe_absolute)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_cli/commands…ask_cmd.py:_safe_absolute)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `first_unsafe_path_component` | `available` | `evaluated` | `available` | `14` | `14` | `0` |
 
 ```mermaid
 flowchart LR

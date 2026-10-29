@@ -118,25 +118,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 380; effect analysis evaluated: 251, partial: 0, unavailable: 129. Counts include steps omitted from the displayed trace.
+Source steps: 380; effect analysis evaluated: 239, partial: 12, unavailable: 129. Counts include steps omitted from the displayed trace.
+
+Collector observations for 251 source steps with known totals: observed: 1436, emitted: 1379, omitted: 57. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `run` | `available` | `evaluated` | `available` |
-| `getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_dedupe_languages` | `available` | `evaluated` | `available` |
-| `set (src/llm_wiki_cli/commands…_cmd.py:_dedupe_languages)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `result.append` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `seen.add` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `bool (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `bool (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `run` | `available` | `evaluated` | `available` | `13` | `13` | `0` |
+| `getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_dedupe_languages` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `set (src/llm_wiki_cli/commands…_cmd.py:_dedupe_languages)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `result.append` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `seen.add` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `bool (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `bool (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

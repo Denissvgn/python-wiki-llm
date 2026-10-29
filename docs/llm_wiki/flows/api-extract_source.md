@@ -111,9 +111,9 @@ sequenceDiagram
     p2-->>p30: seen.add (src/llm_wiki_cli/api.py:_caused_by)(id(...))
 ```
 
-> Call sequence diagram shows 30 of 3156 interactions; 3126 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3161 interactions; 3131 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1050 (1049 omitted); unresolved 1 of 1296 (1295 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1052 (1051 omitted); unresolved 1 of 1299 (1298 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -140,25 +140,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 811; effect analysis evaluated: 691, partial: 0, unavailable: 120. Counts include steps omitted from the displayed trace.
+Source steps: 811; effect analysis evaluated: 654, partial: 37, unavailable: 120. Counts include steps omitted from the displayed trace.
+
+Collector observations for 691 source steps with known totals: observed: 4204, emitted: 4080, omitted: 124. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `extract_source` | `available` | `evaluated` | `available` |
-| `build_extract_payload` | `available` | `evaluated` | `available` |
-| `validate_source_root` | `available` | `evaluated` | `available` |
-| `validate_path` | `available` | `evaluated` | `available` |
-| `PathValidationError` | `unavailable` | `unavailable` | `unavailable` |
-| `(…).resolve` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `PathValidationError` | `unavailable` | `unavailable` | `unavailable` |
-| `Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `extract_source` | `available` | `partial` | `available` | `14` | `12` | `2` |
+| `build_extract_payload` | `available` | `partial` | `available` | `35` | `21` | `14` |
+| `validate_source_root` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
+| `validate_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `PathValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `(…).resolve` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `PathValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

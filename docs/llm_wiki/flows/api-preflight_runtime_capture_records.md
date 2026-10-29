@@ -103,25 +103,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 122; effect analysis evaluated: 69, partial: 0, unavailable: 53. Counts include steps omitted from the displayed trace.
+Source steps: 122; effect analysis evaluated: 65, partial: 4, unavailable: 53. Counts include steps omitted from the displayed trace.
+
+Collector observations for 69 source steps with known totals: observed: 307, emitted: 294, omitted: 13. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `preflight_runtime_capture_records` | `available` | `evaluated` | `available` |
-| `Path(…).resolve` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_normalize_capture_record` | `available` | `evaluated` | `available` |
-| `_mapping` | `available` | `evaluated` | `available` |
-| `require_mapping` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `key.encode` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `DocumentationClaimEvidenceError` | `unavailable` | `unavailable` | `unavailable` |
-| `_exact_fields` | `available` | `evaluated` | `available` |
-| `require_exact_fields` | `available` | `evaluated` | `available` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `preflight_runtime_capture_records` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `Path(…).resolve` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_normalize_capture_record` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
+| `_mapping` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `require_mapping` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `key.encode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `DocumentationClaimEvidenceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_exact_fields` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `require_exact_fields` | `available` | `partial` | `available` | `10` | `9` | `1` |
 
 ```mermaid
 flowchart LR

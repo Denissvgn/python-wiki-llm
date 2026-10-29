@@ -103,23 +103,25 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 58; effect analysis evaluated: 53, partial: 0, unavailable: 5. Counts include steps omitted from the displayed trace.
 
+Collector observations for 53 source steps with known totals: observed: 222, emitted: 222, omitted: 0. Unavailable totals are excluded.
+
 - Callable record unavailable; the selected entry symbol has no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `merge_module_semantics` | `available` | `evaluated` | `available` |
-| `semantics.get` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `semantics.get` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `semantics.get` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `merge_semantic_markdown` | `available` | `evaluated` | `available` |
-| `normalize_markdown` | `available` | `evaluated` | `available` |
-| `text.replace(…).replace` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `text.replace` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `section_body` | `available` | `evaluated` | `available` |
-| `_markdown_lines` | `available` | `evaluated` | `available` |
-| `re.findall` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `normalize_markdown` | `available` | `evaluated` | `available` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `merge_module_semantics` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
+| `semantics.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `semantics.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `semantics.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `merge_semantic_markdown` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
+| `normalize_markdown` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `text.replace(…).replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `text.replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `section_body` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `_markdown_lines` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `re.findall` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `normalize_markdown` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 
 ```mermaid
 flowchart LR

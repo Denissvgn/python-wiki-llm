@@ -94,6 +94,8 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 8; effect analysis evaluated: 8, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
 
+Collector observations for 8 source steps with known totals: observed: 23, emitted: 23, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. load_documentation_run"]

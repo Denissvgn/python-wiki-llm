@@ -105,23 +105,25 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 88; effect analysis evaluated: 46, partial: 0, unavailable: 42. Counts include steps omitted from the displayed trace.
 
+Collector observations for 46 source steps with known totals: observed: 198, emitted: 198, omitted: 0. Unavailable totals are excluded.
+
 - Callable record unavailable; the selected entry symbol has no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `allocate_concept` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…ntity.py:allocate_concept)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError (src/llm_wiki_cli/services…ntity.py:allocate_concept)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `validate_bundle_id` | `available` | `evaluated` | `available` |
-| `_machine_text` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` |
-| `len (src/llm_wiki_cli/services…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` |
-| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `any (src/llm_wiki_cli/services…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `character.isspace` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `allocate_concept` | `available` | `evaluated` | `available` | `13` | `13` | `0` |
+| `isinstance (src/llm_wiki_cli/services…ntity.py:allocate_concept)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…ntity.py:allocate_concept)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `validate_bundle_id` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `_machine_text` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `len (src/llm_wiki_cli/services…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `any (src/llm_wiki_cli/services…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `character.isspace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

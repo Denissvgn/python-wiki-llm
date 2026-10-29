@@ -179,25 +179,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1852; effect analysis evaluated: 1228, partial: 0, unavailable: 624. Counts include steps omitted from the displayed trace.
+Source steps: 1852; effect analysis evaluated: 1151, partial: 77, unavailable: 624. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1228 source steps with known totals: observed: 7436, emitted: 6982, omitted: 454. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `refresh_documentation_native_projection` | `available` | `evaluated` | `available` |
-| `load_adoption_marker` | `available` | `evaluated` | `available` |
-| `_absolute_path` | `available` | `evaluated` | `available` |
-| `Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `first_unsafe_path_component` | `available` | `evaluated` | `available` |
-| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `os.fspath (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `os.path.abspath (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `lexical.is_absolute` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path.cwd (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `refresh_documentation_native_projection` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `load_adoption_marker` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `_absolute_path` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `first_unsafe_path_component` | `available` | `evaluated` | `available` | `14` | `14` | `0` |
+| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.fspath (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.path.abspath (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `lexical.is_absolute` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path.cwd (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

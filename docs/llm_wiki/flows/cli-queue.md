@@ -156,9 +156,9 @@ sequenceDiagram
     p2-->>p30: lines.append(...)
 ```
 
-> Call sequence diagram shows 30 of 4291 interactions; 4261 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4294 interactions; 4264 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1351 (1350 omitted); unresolved 1 of 1458 (1457 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1352 (1351 omitted); unresolved 1 of 1460 (1459 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -185,25 +185,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1483; effect analysis evaluated: 1183, partial: 0, unavailable: 300. Counts include steps omitted from the displayed trace.
+Source steps: 1483; effect analysis evaluated: 1109, partial: 74, unavailable: 300. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1183 source steps with known totals: observed: 7447, emitted: 7082, omitted: 365. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `run` | `available` | `evaluated` | `available` |
-| `build_maintenance_queue` | `available` | `evaluated` | `available` |
-| `validate_queue_limit` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `ValueError (src/llm_wiki_cli/services…e.py:validate_queue_limit)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `capture_context_read` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `callable (src/llm_wiki_cli/services…t.py:capture_context_read)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `run` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `build_maintenance_queue` | `available` | `evaluated` | `available` | `11` | `11` | `0` |
+| `validate_queue_limit` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
+| `isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError (src/llm_wiki_cli/services…e.py:validate_queue_limit)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `capture_context_read` | `available` | `partial` | `available` | `37` | `25` | `12` |
+| `isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `callable (src/llm_wiki_cli/services…t.py:capture_context_read)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

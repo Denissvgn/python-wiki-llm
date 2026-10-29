@@ -139,9 +139,9 @@ sequenceDiagram
     p1-->>p30: callback
 ```
 
-> Call sequence diagram shows 30 of 2728 interactions; 2698 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2731 interactions; 2701 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 914 (913 omitted); unresolved 1 of 852 (851 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 915 (914 omitted); unresolved 1 of 854 (853 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -168,25 +168,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 963; effect analysis evaluated: 715, partial: 0, unavailable: 248. Counts include steps omitted from the displayed trace.
+Source steps: 963; effect analysis evaluated: 659, partial: 56, unavailable: 248. Counts include steps omitted from the displayed trace.
+
+Collector observations for 715 source steps with known totals: observed: 4666, emitted: 4394, omitted: 272. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `inspect_concept` | `available` | `evaluated` | `available` |
-| `_normalize_query_input` | `available` | `evaluated` | `available` |
-| `callback` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` |
-| `str (src/llm_wiki_cli/api.py:_normalize_query_input)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `normalize_concept_coordinate` | `available` | `evaluated` | `available` |
-| `normalize_documentation_query_text` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `value.strip (src/llm_wiki_cli/services…_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `DocumentationQueryError` | `unavailable` | `unavailable` | `unavailable` |
-| `value.strip (src/llm_wiki_cli/services…_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `len (src/llm_wiki_cli/services…_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `inspect_concept` | `available` | `partial` | `available` | `13` | `11` | `2` |
+| `_normalize_query_input` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `callback` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `str (src/llm_wiki_cli/api.py:_normalize_query_input)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `normalize_concept_coordinate` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `normalize_documentation_query_text` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `isinstance (src/llm_wiki_cli/services…_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `value.strip (src/llm_wiki_cli/services…_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `DocumentationQueryError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `value.strip (src/llm_wiki_cli/services…_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `len (src/llm_wiki_cli/services…_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

@@ -74,25 +74,28 @@ sequenceDiagram
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 10; effect analysis evaluated: 5, partial: 0, unavailable: 5. Counts include steps omitted from the displayed trace.
+Source steps: 10; effect analysis evaluated: 4, partial: 1, unavailable: 5. Counts include steps omitted from the displayed trace.
+
+Collector observations for 5 source steps with known totals: observed: 23, emitted: 22, omitted: 1. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `portable_page_component` | `available` | `evaluated` | `available` |
-| `portable_page_component.<locals>.sanitize` | `available` | `evaluated` | `available` |
-| `str(…).strip` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `str` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `unicodedata.normalize (src/llm_wiki_cli/services…omponent.<locals>.sanitize)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_UNSAFE_PAGE_COMPONENT_RE.sub(…).strip` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_UNSAFE_PAGE_COMPONENT_RE.sub` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `re.sub(…).lstrip(…).rstrip` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `re.sub(…).lstrip` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `re.sub` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `safe.replace` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `is_portable_path_component` | `available` | `evaluated` | `available` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `portable_page_component` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `portable_page_component.<locals>.sanitize` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `str(…).strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `str` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `unicodedata.normalize (src/llm_wiki_cli/services…omponent.<locals>.sanitize)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_UNSAFE_PAGE_COMPONENT_RE.sub(…).strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_UNSAFE_PAGE_COMPONENT_RE.sub` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `re.sub(…).lstrip(…).rstrip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `re.sub(…).lstrip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `re.sub` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `safe.replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `is_portable_path_component` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
 
 ```mermaid
 flowchart LR

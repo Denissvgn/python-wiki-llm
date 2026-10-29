@@ -161,25 +161,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1310; effect analysis evaluated: 1013, partial: 0, unavailable: 297. Counts include steps omitted from the displayed trace.
+Source steps: 1310; effect analysis evaluated: 941, partial: 72, unavailable: 297. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1013 source steps with known totals: observed: 6234, emitted: 5769, omitted: 465. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `run` | `available` | `evaluated` | `available` |
-| `_bootstrap_run_options_from_args` | `available` | `evaluated` | `available` |
-| `Path (src/llm_wiki_cli/services…rap_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `validate_path` | `available` | `evaluated` | `available` |
-| `PathValidationError` | `unavailable` | `unavailable` | `unavailable` |
-| `(…).resolve` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path.cwd().resolve` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `PathValidationError` | `unavailable` | `unavailable` | `unavailable` |
-| `str (src/llm_wiki_cli/services…rap_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `run` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `_bootstrap_run_options_from_args` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `Path (src/llm_wiki_cli/services…rap_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `validate_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `PathValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `(…).resolve` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path.cwd().resolve` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `PathValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `str (src/llm_wiki_cli/services…rap_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR
@@ -238,9 +241,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | _bootstrap_run_options_from_args | 6808 | `_bootstrap_run_options_from_args(args)` |
-| _bootstrap_run_options_from_args | Path (src/llm_wiki_cli/services…rap_run_options_from_args) | 4819 | `Path(args.wiki_dir)` |
-| _bootstrap_run_options_from_args | validate_path | 4820 | `validate_path(str(...), '--wiki-dir')` |
+| run | _bootstrap_run_options_from_args | 6817 | `_bootstrap_run_options_from_args(args)` |
+| _bootstrap_run_options_from_args | Path (src/llm_wiki_cli/services…rap_run_options_from_args) | 4828 | `Path(args.wiki_dir)` |
+| _bootstrap_run_options_from_args | validate_path | 4829 | `validate_path(str(...), '--wiki-dir')` |
 | validate_path | PathValidationError | 134 | `PathValidationError(...)` |
 | validate_path | (…).resolve | 135 | `(Path.cwd() / path).resolve(data not statically known)` |
 | validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 135 | `Path.cwd(data not statically known)` |
@@ -248,13 +251,13 @@ flowchart LR
 | validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd(data not statically known)` |
 | validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 138 | `resolved.relative_to(cwd)` |
 | validate_path | PathValidationError | 140 | `PathValidationError(...)` |
-| _bootstrap_run_options_from_args | str (src/llm_wiki_cli/services…rap_run_options_from_args) | 4820 | `str(wiki_dir)` |
+| _bootstrap_run_options_from_args | str (src/llm_wiki_cli/services…rap_run_options_from_args) | 4829 | `str(wiki_dir)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 6814 |
+| output | `print` | `run` | 6823 |
 
 ### Static analysis gaps
 

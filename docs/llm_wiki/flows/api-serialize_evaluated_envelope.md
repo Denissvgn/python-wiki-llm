@@ -119,25 +119,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 218; effect analysis evaluated: 164, partial: 0, unavailable: 54. Counts include steps omitted from the displayed trace.
+Source steps: 218; effect analysis evaluated: 160, partial: 4, unavailable: 54. Counts include steps omitted from the displayed trace.
+
+Collector observations for 164 source steps with known totals: observed: 774, emitted: 738, omitted: 36. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `serialize_evaluated_envelope` | `available` | `evaluated` | `available` |
-| `formatted_json_text` | `available` | `evaluated` | `available` |
-| `json.dumps` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `evaluated_envelope_to_payload` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…uated_envelope_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError (src/llm_wiki_cli/services…uated_envelope_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` |
-| `_validated_bundle_payload` | `available` | `evaluated` | `available` |
-| `dict (src/llm_wiki_cli/services…_validated_bundle_payload)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `snapshot_extensions.pop` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `replace` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `replace` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `serialize_evaluated_envelope` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `formatted_json_text` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `json.dumps` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `evaluated_envelope_to_payload` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `isinstance (src/llm_wiki_cli/services…uated_envelope_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…uated_envelope_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_validated_bundle_payload` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
+| `dict (src/llm_wiki_cli/services…_validated_bundle_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `snapshot_extensions.pop` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

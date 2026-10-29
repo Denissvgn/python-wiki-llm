@@ -141,25 +141,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 815; effect analysis evaluated: 517, partial: 0, unavailable: 298. Counts include steps omitted from the displayed trace.
+Source steps: 815; effect analysis evaluated: 493, partial: 24, unavailable: 298. Counts include steps omitted from the displayed trace.
+
+Collector observations for 517 source steps with known totals: observed: 2903, emitted: 2808, omitted: 95. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `recover_maintenance` | `available` | `evaluated` | `available` |
-| `type (src/llm_wiki_cli/api.py:recover_maintenance)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `type (src/llm_wiki_cli/api.py:recover_maintenance)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `ValueError (src/llm_wiki_cli/api.py:recover_maintenance)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_identity (src/llm_wiki_cli/services/maintenance_state.py)` | `available` | `evaluated` | `available` |
-| `UUID` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `MaintenanceError` | `unavailable` | `unavailable` | `unavailable` |
-| `require` | `available` | `evaluated` | `available` |
-| `MaintenanceError` | `unavailable` | `unavailable` | `unavailable` |
-| `str (src/llm_wiki_cli/services…enance_state.py:_identity)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `cast (src/llm_wiki_cli/api.py:recover_maintenance)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `recover_maintenance_authority` | `available` | `evaluated` | `available` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `recover_maintenance` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `type (src/llm_wiki_cli/api.py:recover_maintenance)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `type (src/llm_wiki_cli/api.py:recover_maintenance)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError (src/llm_wiki_cli/api.py:recover_maintenance)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_identity (src/llm_wiki_cli/services/maintenance_state.py)` | `available` | `evaluated` | `available` | `1` | `1` | `0` |
+| `UUID` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `MaintenanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `require` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `MaintenanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `str (src/llm_wiki_cli/services…enance_state.py:_identity)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `cast (src/llm_wiki_cli/api.py:recover_maintenance)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `recover_maintenance_authority` | `available` | `evaluated` | `available` | `13` | `13` | `0` |
 
 ```mermaid
 flowchart LR

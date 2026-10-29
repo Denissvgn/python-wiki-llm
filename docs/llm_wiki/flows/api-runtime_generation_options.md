@@ -72,23 +72,25 @@ sequenceDiagram
 
 Source steps: 7; effect analysis evaluated: 3, partial: 0, unavailable: 4. Counts include steps omitted from the displayed trace.
 
+Collector observations for 3 source steps with known totals: observed: 22, emitted: 22, omitted: 0. Unavailable totals are excluded.
+
 - Callable record unavailable; the selected entry symbol has no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `runtime_generation_options` | `available` | `evaluated` | `available` |
-| `surface_value` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services…runtime_generation_options)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `sorted (src/llm_wiki_cli/services…runtime_generation_options)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `str` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_runtime_policy_from_generation_inputs` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…icy_from_generation_inputs)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeGenerationError` | `unavailable` | `unavailable` | `unavailable` |
-| `dict` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_validate_runtime_policy` | `available` | `evaluated` | `available` |
-| `set` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `sorted (src/llm_wiki_cli/services…y:_validate_runtime_policy)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `runtime_generation_options` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `surface_value` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…runtime_generation_options)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `sorted (src/llm_wiki_cli/services…runtime_generation_options)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `str` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_runtime_policy_from_generation_inputs` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `isinstance (src/llm_wiki_cli/services…icy_from_generation_inputs)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeGenerationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `dict` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_validate_runtime_policy` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `set` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `sorted (src/llm_wiki_cli/services…y:_validate_runtime_policy)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

@@ -139,25 +139,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1148; effect analysis evaluated: 691, partial: 0, unavailable: 457. Counts include steps omitted from the displayed trace.
+Source steps: 1148; effect analysis evaluated: 661, partial: 30, unavailable: 457. Counts include steps omitted from the displayed trace.
+
+Collector observations for 691 source steps with known totals: observed: 3699, emitted: 3535, omitted: 164. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `build_knowledge_commit_plan` | `available` | `evaluated` | `available` |
-| `Path (src/llm_wiki_cli/services…ild_knowledge_commit_plan)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeArtifactError` | `unavailable` | `unavailable` | `unavailable` |
-| `current_manifest_format` | `available` | `evaluated` | `available` |
-| `Path (src/llm_wiki_cli/services…y:current_manifest_format)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `adoption.exists` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `adoption.is_symlink` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `path.exists (src/llm_wiki_cli/services…y:current_manifest_format)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `path.is_symlink (src/llm_wiki_cli/services…y:current_manifest_format)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeStorageError` | `unavailable` | `unavailable` | `unavailable` |
-| `(…).exists (src/llm_wiki_cli/services…y:current_manifest_format)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeStorageError` | `unavailable` | `unavailable` | `unavailable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `build_knowledge_commit_plan` | `available` | `partial` | `available` | `25` | `21` | `4` |
+| `Path (src/llm_wiki_cli/services…ild_knowledge_commit_plan)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeArtifactError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `current_manifest_format` | `available` | `evaluated` | `available` | `11` | `11` | `0` |
+| `Path (src/llm_wiki_cli/services…y:current_manifest_format)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `adoption.exists` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `adoption.is_symlink` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `path.exists (src/llm_wiki_cli/services…y:current_manifest_format)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `path.is_symlink (src/llm_wiki_cli/services…y:current_manifest_format)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeStorageError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `(…).exists (src/llm_wiki_cli/services…y:current_manifest_format)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeStorageError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 
 ```mermaid
 flowchart LR

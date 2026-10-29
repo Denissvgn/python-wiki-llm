@@ -170,25 +170,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1225; effect analysis evaluated: 854, partial: 0, unavailable: 371. Counts include steps omitted from the displayed trace.
+Source steps: 1225; effect analysis evaluated: 808, partial: 46, unavailable: 371. Counts include steps omitted from the displayed trace.
+
+Collector observations for 854 source steps with known totals: observed: 5312, emitted: 4990, omitted: 322. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `acknowledge_maintenance` | `available` | `evaluated` | `available` |
-| `type (src/llm_wiki_cli/api.py:acknowledge_maintenance)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `ValueError (src/llm_wiki_cli/api.py:acknowledge_maintenance)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_detached` | `available` | `evaluated` | `available` |
-| `deepcopy (src/llm_wiki_cli/services…enance_state.py:_detached)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `MaintenanceError` | `unavailable` | `unavailable` | `unavailable` |
-| `require` | `available` | `evaluated` | `available` |
-| `MaintenanceError` | `unavailable` | `unavailable` | `unavailable` |
-| `type (src/llm_wiki_cli/services…enance_state.py:_detached)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services…enance_state.py:_detached)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `maintenance_core` | `available` | `evaluated` | `available` |
-| `MaintenanceCore` | `unavailable` | `unavailable` | `unavailable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `acknowledge_maintenance` | `available` | `partial` | `available` | `13` | `10` | `3` |
+| `type (src/llm_wiki_cli/api.py:acknowledge_maintenance)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError (src/llm_wiki_cli/api.py:acknowledge_maintenance)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_detached` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `deepcopy (src/llm_wiki_cli/services…enance_state.py:_detached)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `MaintenanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `require` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `MaintenanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `type (src/llm_wiki_cli/services…enance_state.py:_detached)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…enance_state.py:_detached)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `maintenance_core` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `MaintenanceCore` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 
 ```mermaid
 flowchart LR

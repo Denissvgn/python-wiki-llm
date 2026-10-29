@@ -99,25 +99,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 39; effect analysis evaluated: 20, partial: 0, unavailable: 19. Counts include steps omitted from the displayed trace.
+Source steps: 39; effect analysis evaluated: 17, partial: 3, unavailable: 19. Counts include steps omitted from the displayed trace.
+
+Collector observations for 20 source steps with known totals: observed: 150, emitted: 102, omitted: 48. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `use_calibration_host_broker_authenticator (src/llm_wiki_cli/api.py)` | `available` | `evaluated` | `available` |
-| `use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py)` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…host_broker_authenticator)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `HostBrokerAuthenticationUnavailable` | `unavailable` | `unavailable` | `unavailable` |
-| `_require_bounded_text` | `available` | `evaluated` | `available` |
-| `require_bounded_text` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…n.py:require_bounded_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `len` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `len` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `contains_control_character` | `available` | `evaluated` | `available` |
-| `pattern.search` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `use_calibration_host_broker_authenticator (src/llm_wiki_cli/api.py)` | `available` | `evaluated` | `available` | `1` | `1` | `0` |
+| `use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py)` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `isinstance (src/llm_wiki_cli/services…host_broker_authenticator)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `HostBrokerAuthenticationUnavailable` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_require_bounded_text` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `require_bounded_text` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
+| `isinstance (src/llm_wiki_cli/services…n.py:require_bounded_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `len` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `len` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `contains_control_character` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `pattern.search` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

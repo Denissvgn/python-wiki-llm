@@ -103,23 +103,25 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 125; effect analysis evaluated: 124, partial: 0, unavailable: 1. Counts include steps omitted from the displayed trace.
 
+Collector observations for 124 source steps with known totals: observed: 582, emitted: 582, omitted: 0. Unavailable totals are excluded.
+
 - Callable record unavailable; the selected entry symbol has no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `normalize_entity_observation` | `available` | `evaluated` | `available` |
-| `_validate_entity_coordinate` | `available` | `evaluated` | `available` |
-| `require_nonempty_text` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `contains_control_character` | `available` | `evaluated` | `available` |
-| `pattern.search` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `ValueError` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `require_positive_int` | `available` | `evaluated` | `available` |
-| `require_nonnegative_int` | `available` | `evaluated` | `available` |
-| `require_int` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services/validation.py:require_int)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `normalize_entity_observation` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
+| `_validate_entity_coordinate` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `require_nonempty_text` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `contains_control_character` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `pattern.search` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `require_positive_int` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `require_nonnegative_int` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `require_int` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `isinstance (src/llm_wiki_cli/services/validation.py:require_int)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

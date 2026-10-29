@@ -115,25 +115,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 156; effect analysis evaluated: 98, partial: 0, unavailable: 58. Counts include steps omitted from the displayed trace.
+Source steps: 156; effect analysis evaluated: 92, partial: 6, unavailable: 58. Counts include steps omitted from the displayed trace.
+
+Collector observations for 98 source steps with known totals: observed: 540, emitted: 527, omitted: 13. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `compose_doctor_report` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services….py:compose_doctor_report)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError (src/llm_wiki_cli/services….py:compose_doctor_report)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services….py:compose_doctor_report)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError (src/llm_wiki_cli/services….py:compose_doctor_report)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_availability_section` | `available` | `evaluated` | `available` |
-| `_knowledge_declared` | `available` | `evaluated` | `available` |
-| `path.exists` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `path.is_symlink` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `SyncManifest.load` | `available` | `evaluated` | `available` |
-| `manifest_path.exists` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `compose_doctor_report` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
+| `isinstance (src/llm_wiki_cli/services….py:compose_doctor_report)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services….py:compose_doctor_report)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services….py:compose_doctor_report)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services….py:compose_doctor_report)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_availability_section` | `available` | `evaluated` | `available` | `12` | `12` | `0` |
+| `_knowledge_declared` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `path.exists` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `path.is_symlink` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `SyncManifest.load` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
+| `manifest_path.exists` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

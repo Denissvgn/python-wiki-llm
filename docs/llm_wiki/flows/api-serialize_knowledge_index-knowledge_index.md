@@ -127,25 +127,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 723; effect analysis evaluated: 414, partial: 0, unavailable: 309. Counts include steps omitted from the displayed trace.
+Source steps: 723; effect analysis evaluated: 402, partial: 12, unavailable: 309. Counts include steps omitted from the displayed trace.
+
+Collector observations for 414 source steps with known totals: observed: 2044, emitted: 1952, omitted: 92. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `serialize_knowledge_index` | `available` | `evaluated` | `available` |
-| `_serialize_payload` | `available` | `evaluated` | `available` |
-| `json.dumps` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeModelError` | `unavailable` | `unavailable` | `unavailable` |
-| `knowledge_index_to_payload` | `available` | `evaluated` | `available` |
-| `_model_to_payload` | `available` | `evaluated` | `available` |
-| `_knowledge_index_to_payload_unchecked` | `available` | `evaluated` | `available` |
-| `_bundle_to_payload` | `available` | `evaluated` | `available` |
-| `_emit_extensions` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_parse_extensions` | `available` | `evaluated` | `available` |
-| `_wire_enum` | `available` | `evaluated` | `available` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `serialize_knowledge_index` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `_serialize_payload` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `json.dumps` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeModelError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `knowledge_index_to_payload` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `_model_to_payload` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `_knowledge_index_to_payload_unchecked` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `_bundle_to_payload` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `_emit_extensions` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_parse_extensions` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `_wire_enum` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 
 ```mermaid
 flowchart LR

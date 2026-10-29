@@ -1,6 +1,6 @@
 # _ApiContractResult
 
-**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4774`
+**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4783`
 **Kind:** Class
 **Bases:** —
 **Module:** [bootstrap_runtime](../modules/bootstrap_runtime.md)

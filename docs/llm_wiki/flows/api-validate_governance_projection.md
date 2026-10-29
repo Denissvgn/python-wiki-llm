@@ -114,25 +114,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 563; effect analysis evaluated: 349, partial: 0, unavailable: 214. Counts include steps omitted from the displayed trace.
+Source steps: 563; effect analysis evaluated: 338, partial: 11, unavailable: 214. Counts include steps omitted from the displayed trace.
+
+Collector observations for 349 source steps with known totals: observed: 1793, emitted: 1737, omitted: 56. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `validate_governance_projection` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…ate_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError (src/llm_wiki_cli/services…ate_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `knowledge.extensions.get (src/llm_wiki_cli/services…ate_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `knowledge.bundle.snapshot.extensions.get` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `concept.extensions.get` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `any (src/llm_wiki_cli/services…ate_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `GovernanceError` | `unavailable` | `unavailable` | `unavailable` |
-| `_object (src/llm_wiki_cli/services/knowledge_governance.py)` | `available` | `evaluated` | `available` |
-| `require_mapping` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `validate_governance_projection` | `available` | `partial` | `available` | `22` | `16` | `6` |
+| `isinstance (src/llm_wiki_cli/services…ate_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…ate_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `knowledge.extensions.get (src/llm_wiki_cli/services…ate_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `knowledge.bundle.snapshot.extensions.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `concept.extensions.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `any (src/llm_wiki_cli/services…ate_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `GovernanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_object (src/llm_wiki_cli/services/knowledge_governance.py)` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `require_mapping` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

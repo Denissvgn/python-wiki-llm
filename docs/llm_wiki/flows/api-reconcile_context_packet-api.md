@@ -156,25 +156,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 862; effect analysis evaluated: 617, partial: 0, unavailable: 245. Counts include steps omitted from the displayed trace.
+Source steps: 862; effect analysis evaluated: 582, partial: 35, unavailable: 245. Counts include steps omitted from the displayed trace.
+
+Collector observations for 617 source steps with known totals: observed: 4006, emitted: 3752, omitted: 254. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `reconcile_context_packet (src/llm_wiki_cli/api.py)` | `available` | `evaluated` | `available` |
-| `reconcile_context_packet (src/llm_wiki_cli/services/context_packet.py)` | `available` | `evaluated` | `available` |
-| `validate_context_packet` | `available` | `evaluated` | `available` |
-| `_coerce_packet_bytes` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `bytes (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `ContextPacketMalformedError` | `unavailable` | `unavailable` | `unavailable` |
-| `len (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `ContextPacketMalformedError` | `unavailable` | `unavailable` | `unavailable` |
-| `raw.startswith` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `reconcile_context_packet (src/llm_wiki_cli/api.py)` | `available` | `evaluated` | `available` | `12` | `12` | `0` |
+| `reconcile_context_packet (src/llm_wiki_cli/services/context_packet.py)` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
+| `validate_context_packet` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `_coerce_packet_bytes` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `bytes (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ContextPacketMalformedError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `len (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ContextPacketMalformedError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `raw.startswith` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

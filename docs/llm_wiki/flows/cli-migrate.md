@@ -155,25 +155,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1461; effect analysis evaluated: 1059, partial: 0, unavailable: 402. Counts include steps omitted from the displayed trace.
+Source steps: 1461; effect analysis evaluated: 1003, partial: 56, unavailable: 402. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1059 source steps with known totals: observed: 6211, emitted: 5867, omitted: 344. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `run` | `available` | `evaluated` | `available` |
-| `getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path (src/llm_wiki_cli/commands/migrate_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `bool (src/llm_wiki_cli/commands/migrate_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `validate_source_root` | `available` | `evaluated` | `available` |
-| `validate_path` | `available` | `evaluated` | `available` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `run` | `available` | `partial` | `available` | `20` | `16` | `4` |
+| `getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_cli/commands/migrate_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `bool (src/llm_wiki_cli/commands/migrate_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/commands/migrate_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `validate_source_root` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
+| `validate_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 
 ```mermaid
 flowchart LR

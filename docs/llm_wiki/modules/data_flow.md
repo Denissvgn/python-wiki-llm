@@ -117,7 +117,7 @@ flowchart LR
 | `_edge_sort_key` | `(edge: Mapping) -> tuple` | — | — |
 | `_detailed_context` | `(inventory: dict, edges: list[dict], context: DataFlowAnalysisContext \| None, data_effect_observations: Mapping \| None) -> DataFlowAnalysisContext` | — | — |
 | `_flow_edge_observations` | `(flow: Mapping, incoming: dict[tuple, tuple[dict, ...]]) -> list[tuple[int, dict, int \| None]]` | — | — |
-| `_raw_effects` | `(steps: Iterable[Mapping], index: dict[tuple[str \| None, str \| None], dict], effect_coverage: dict[tuple[str, str], dict[str, dict]] \| None) -> tuple[dict[str, int], bool]` | — | — |
+| `_raw_effects` | `(steps: Iterable[Mapping], index: dict[tuple[str \| None, str \| None], dict], effect_coverage: dict[tuple[str, str], dict[str, dict]] \| None) -> tuple[dict[str, int], bool, set[str]]` | — | — |
 | `_emitted_effects` | `(steps: Iterable[Mapping]) -> dict[str, int]` | — | — |
 | `_positive_source_line` | `(value: object) -> int \| None` | — | — |
 | `_normalize_detailed_value` | `(value: object, *, key: str \| None = None) -> object` | — | — |

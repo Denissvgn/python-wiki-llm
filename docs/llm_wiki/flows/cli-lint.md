@@ -179,25 +179,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1266; effect analysis evaluated: 1013, partial: 0, unavailable: 253. Counts include steps omitted from the displayed trace.
+Source steps: 1266; effect analysis evaluated: 964, partial: 49, unavailable: 253. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1013 source steps with known totals: observed: 6057, emitted: 5801, omitted: 256. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `run` | `available` | `evaluated` | `available` |
-| `Path (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `getattr (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `bool (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `getattr (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `bool (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `getattr (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `bool (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `getattr (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `bool (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `getattr (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `bool (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `run` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `Path (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `bool (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `bool (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `bool (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `bool (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `bool (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

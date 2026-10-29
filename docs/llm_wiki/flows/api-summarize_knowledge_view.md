@@ -50,23 +50,25 @@ sequenceDiagram
 
 Source steps: 3; effect analysis evaluated: 1, partial: 0, unavailable: 2. Counts include steps omitted from the displayed trace.
 
+Collector observations for 1 source steps with known totals: observed: 6, emitted: 6, omitted: 0. Unavailable totals are excluded.
+
 - Callable record unavailable; the selected entry symbol has no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `summarize_knowledge_view` | `available` | `evaluated` | `available` |
-| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgePhaseDurations` | `unavailable` | `unavailable` | `unavailable` |
-| `int` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `view.freshness.counts.items` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `sum` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `freshness_counts.values` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `int` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `view.counts.evidence_by_state.get` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeAggregateSummary` | `unavailable` | `unavailable` | `unavailable` |
-| `selected_durations.to_payload` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `summarize_knowledge_view` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
+| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgePhaseDurations` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `int` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `view.freshness.counts.items` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `sum` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `freshness_counts.values` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `int` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `view.counts.evidence_by_state.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeAggregateSummary` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `selected_durations.to_payload` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

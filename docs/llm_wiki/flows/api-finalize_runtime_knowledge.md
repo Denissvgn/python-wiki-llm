@@ -149,25 +149,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1579; effect analysis evaluated: 955, partial: 0, unavailable: 624. Counts include steps omitted from the displayed trace.
+Source steps: 1579; effect analysis evaluated: 906, partial: 49, unavailable: 624. Counts include steps omitted from the displayed trace.
+
+Collector observations for 955 source steps with known totals: observed: 5616, emitted: 5300, omitted: 316. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `finalize_runtime_knowledge` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…inalize_runtime_knowledge)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError (src/llm_wiki_cli/services…inalize_runtime_knowledge)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `capture_committed_knowledge` | `available` | `evaluated` | `available` |
-| `Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path (src/llm_wiki_cli/services…pture_committed_knowledge)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `guard_maintenance_owner` | `available` | `evaluated` | `available` |
-| `_absolute_path` | `available` | `evaluated` | `available` |
-| `Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `first_unsafe_path_component` | `available` | `evaluated` | `available` |
-| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `finalize_runtime_knowledge` | `available` | `evaluated` | `available` | `12` | `12` | `0` |
+| `isinstance (src/llm_wiki_cli/services…inalize_runtime_knowledge)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…inalize_runtime_knowledge)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `capture_committed_knowledge` | `available` | `partial` | `available` | `15` | `14` | `1` |
+| `Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_cli/services…pture_committed_knowledge)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `guard_maintenance_owner` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `_absolute_path` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `first_unsafe_path_component` | `available` | `evaluated` | `available` | `14` | `14` | `0` |
+| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

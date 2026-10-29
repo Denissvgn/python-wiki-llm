@@ -46,6 +46,8 @@ sequenceDiagram
 
 Source steps: 5; effect analysis evaluated: 5, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
 
+Collector observations for 5 source steps with known totals: observed: 34, emitted: 34, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. projection_json_value"]

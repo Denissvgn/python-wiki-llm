@@ -161,25 +161,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1368; effect analysis evaluated: 965, partial: 0, unavailable: 403. Counts include steps omitted from the displayed trace.
+Source steps: 1368; effect analysis evaluated: 921, partial: 44, unavailable: 403. Counts include steps omitted from the displayed trace.
+
+Collector observations for 965 source steps with known totals: observed: 5310, emitted: 5031, omitted: 279. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `run` | `available` | `evaluated` | `available` |
-| `getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `validate_path` | `available` | `evaluated` | `available` |
-| `PathValidationError` | `unavailable` | `unavailable` | `unavailable` |
-| `(…).resolve (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path.cwd().resolve` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `run` | `available` | `evaluated` | `available` | `13` | `13` | `0` |
+| `getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/commands/obsidian_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `validate_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `PathValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `(…).resolve (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path.cwd().resolve` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

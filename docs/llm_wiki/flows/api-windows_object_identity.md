@@ -43,20 +43,22 @@ sequenceDiagram
 
 Source steps: 4; effect analysis evaluated: 2, partial: 0, unavailable: 2. Counts include steps omitted from the displayed trace.
 
+Collector observations for 2 source steps with known totals: observed: 7, emitted: 7, omitted: 0. Unavailable totals are excluded.
+
 - Callable record unavailable; the selected entry symbol has no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `windows_object_identity` | `available` | `evaluated` | `available` |
-| `windows_object_identity_from_values` | `available` | `evaluated` | `available` |
-| `WindowsIdentityUnavailableError` | `unavailable` | `unavailable` | `unavailable` |
-| `WindowsObjectIdentity` | `unavailable` | `unavailable` | `unavailable` |
-| `int (src/llm_wiki_cli/services…bject_identity_from_values)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `int (src/llm_wiki_cli/services…py:windows_object_identity)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `getattr` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `int (src/llm_wiki_cli/services…py:windows_object_identity)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `getattr` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `windows_object_identity` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `windows_object_identity_from_values` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `WindowsIdentityUnavailableError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `WindowsObjectIdentity` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `int (src/llm_wiki_cli/services…bject_identity_from_values)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `int (src/llm_wiki_cli/services…py:windows_object_identity)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `int (src/llm_wiki_cli/services…py:windows_object_identity)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

@@ -99,25 +99,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 48; effect analysis evaluated: 20, partial: 0, unavailable: 28. Counts include steps omitted from the displayed trace.
+Source steps: 48; effect analysis evaluated: 17, partial: 3, unavailable: 28. Counts include steps omitted from the displayed trace.
+
+Collector observations for 20 source steps with known totals: observed: 127, emitted: 122, omitted: 5. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `verify_windows_restrictive_dacl` | `available` | `evaluated` | `available` |
-| `WindowsSecurityGuardError` | `unavailable` | `unavailable` | `unavailable` |
-| `Path(…).lstat` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `WindowsSecurityGuardError` | `unavailable` | `unavailable` | `unavailable` |
-| `stat.S_ISDIR` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_open_windows_directory_guard` | `available` | `evaluated` | `available` |
-| `ctypes.WinDLL (src/llm_wiki_cli/services…n_windows_directory_guard)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `create_file (src/llm_wiki_cli/services…n_windows_directory_guard)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_windows_api_path` | `available` | `evaluated` | `available` |
-| `os.path.abspath` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `os.fspath` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `verify_windows_restrictive_dacl` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `WindowsSecurityGuardError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `Path(…).lstat` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `WindowsSecurityGuardError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `stat.S_ISDIR` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_open_windows_directory_guard` | `available` | `partial` | `available` | `16` | `15` | `1` |
+| `ctypes.WinDLL (src/llm_wiki_cli/services…n_windows_directory_guard)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `create_file (src/llm_wiki_cli/services…n_windows_directory_guard)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_windows_api_path` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `os.path.abspath` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.fspath` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

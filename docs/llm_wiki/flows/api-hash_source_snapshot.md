@@ -69,23 +69,25 @@ sequenceDiagram
 
 Source steps: 9; effect analysis evaluated: 6, partial: 0, unavailable: 3. Counts include steps omitted from the displayed trace.
 
+Collector observations for 6 source steps with known totals: observed: 20, emitted: 20, omitted: 0. Unavailable totals are excluded.
+
 - Callable record unavailable; the selected entry symbol has no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `hash_source_snapshot` | `available` | `evaluated` | `available` |
-| `set (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `enumerate` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` |
-| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` |
-| `seen_paths.add` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `records.append` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `records.sort` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_hash_structured` | `available` | `evaluated` | `available` |
-| `payload.values` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_validate_json_tree` | `available` | `evaluated` | `available` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `hash_source_snapshot` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `set (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `enumerate` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `seen_paths.add` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `records.append` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `records.sort` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_hash_structured` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `payload.values` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_validate_json_tree` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 
 ```mermaid
 flowchart LR

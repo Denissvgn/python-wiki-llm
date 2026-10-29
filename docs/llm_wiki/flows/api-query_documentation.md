@@ -148,25 +148,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 847; effect analysis evaluated: 574, partial: 0, unavailable: 273. Counts include steps omitted from the displayed trace.
+Source steps: 847; effect analysis evaluated: 532, partial: 42, unavailable: 273. Counts include steps omitted from the displayed trace.
+
+Collector observations for 574 source steps with known totals: observed: 3680, emitted: 3389, omitted: 291. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `query_documentation` | `available` | `evaluated` | `available` |
-| `_validate_documentation_query_request` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/api.py:_…cumentation_query_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` |
-| `next (src/llm_wiki_cli/api.py:_…cumentation_query_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/api.py:_…cumentation_query_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` |
-| `request.get (src/llm_wiki_cli/api.py:_…cumentation_query_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/api.py:_…cumentation_query_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `', '.join (src/llm_wiki_cli/api.py:_…cumentation_query_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `repr (src/llm_wiki_cli/api.py:_…cumentation_query_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `query_documentation` | `available` | `partial` | `available` | `24` | `23` | `1` |
+| `_validate_documentation_query_request` | `available` | `partial` | `available` | `12` | `10` | `2` |
+| `isinstance (src/llm_wiki_cli/api.py:_…cumentation_query_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `next (src/llm_wiki_cli/api.py:_…cumentation_query_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/api.py:_…cumentation_query_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `request.get (src/llm_wiki_cli/api.py:_…cumentation_query_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/api.py:_…cumentation_query_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `', '.join (src/llm_wiki_cli/api.py:_…cumentation_query_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `repr (src/llm_wiki_cli/api.py:_…cumentation_query_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 
 ```mermaid
 flowchart LR

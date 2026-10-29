@@ -89,9 +89,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 ### Analysis coverage
 
-**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 13; effect analysis evaluated: 13, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+Source steps: 13; effect analysis evaluated: 12, partial: 1, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 13 source steps with known totals: observed: 75, emitted: 71, omitted: 4. Unavailable totals are excluded.
+
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `run` | `available` | `partial` | `available` | `22` | `18` | `4` |
+| `getattr` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_cli/commands/release_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `changelog_path.exists` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `print` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `sys.exit` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `find_version_file` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `Path (src/llm_wiki_cli/services…ning.py:find_version_file)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `candidate.exists` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `print` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `sys.exit` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

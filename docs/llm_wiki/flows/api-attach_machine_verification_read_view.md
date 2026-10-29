@@ -112,25 +112,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 102; effect analysis evaluated: 56, partial: 0, unavailable: 46. Counts include steps omitted from the displayed trace.
+Source steps: 102; effect analysis evaluated: 54, partial: 2, unavailable: 46. Counts include steps omitted from the displayed trace.
+
+Collector observations for 56 source steps with known totals: observed: 255, emitted: 251, omitted: 4. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `attach_machine_verification_read_view` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…ne_verification_read_view)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError (src/llm_wiki_cli/services…ne_verification_read_view)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `replace` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `load_machine_verification_read_view` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…verification_read_view, 1)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError (src/llm_wiki_cli/services…verification_read_view, 1)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `MachineVerificationReadView` | `unavailable` | `unavailable` | `unavailable` |
-| `load_verification_receipt` | `available` | `evaluated` | `available` |
-| `Path (src/llm_wiki_cli/services…load_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `first_unsafe_path_component` | `available` | `evaluated` | `available` |
-| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `attach_machine_verification_read_view` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
+| `isinstance (src/llm_wiki_cli/services…ne_verification_read_view)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…ne_verification_read_view)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `load_machine_verification_read_view` | `available` | `evaluated` | `available` | `13` | `13` | `0` |
+| `isinstance (src/llm_wiki_cli/services…verification_read_view, 1)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…verification_read_view, 1)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `MachineVerificationReadView` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `load_verification_receipt` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `Path (src/llm_wiki_cli/services…load_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `first_unsafe_path_component` | `available` | `evaluated` | `available` | `14` | `14` | `0` |
+| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

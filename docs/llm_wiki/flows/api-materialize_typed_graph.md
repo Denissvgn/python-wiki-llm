@@ -111,25 +111,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 383; effect analysis evaluated: 288, partial: 0, unavailable: 95. Counts include steps omitted from the displayed trace.
+Source steps: 383; effect analysis evaluated: 284, partial: 4, unavailable: 95. Counts include steps omitted from the displayed trace.
+
+Collector observations for 288 source steps with known totals: observed: 1314, emitted: 1298, omitted: 16. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `materialize_typed_graph` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…y:materialize_typed_graph)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services…y:materialize_typed_graph)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services…y:materialize_typed_graph)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeGraphError` | `unavailable` | `unavailable` | `unavailable` |
-| `_normalise_graph_concepts` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…_normalise_graph_concepts)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services…_normalise_graph_concepts)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeGraphError` | `unavailable` | `unavailable` | `unavailable` |
-| `set (src/llm_wiki_cli/services…_normalise_graph_concepts)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `enumerate (src/llm_wiki_cli/services…_normalise_graph_concepts)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `materialize_typed_graph` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `isinstance (src/llm_wiki_cli/services…y:materialize_typed_graph)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…y:materialize_typed_graph)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…y:materialize_typed_graph)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeGraphError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_normalise_graph_concepts` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `isinstance (src/llm_wiki_cli/services…_normalise_graph_concepts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…_normalise_graph_concepts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeGraphError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `set (src/llm_wiki_cli/services…_normalise_graph_concepts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `enumerate (src/llm_wiki_cli/services…_normalise_graph_concepts)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

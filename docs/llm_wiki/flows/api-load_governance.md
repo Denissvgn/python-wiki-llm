@@ -114,25 +114,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 271; effect analysis evaluated: 146, partial: 0, unavailable: 125. Counts include steps omitted from the displayed trace.
+Source steps: 271; effect analysis evaluated: 143, partial: 3, unavailable: 125. Counts include steps omitted from the displayed trace.
+
+Collector observations for 146 source steps with known totals: observed: 684, emitted: 670, omitted: 14. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `load_governance` | `available` | `evaluated` | `available` |
-| `Path (src/llm_wiki_cli/services…rnance.py:load_governance)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `first_unsafe_path_component` | `available` | `evaluated` | `available` |
-| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `os.fspath` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `os.path.abspath` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `lexical.is_absolute` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path.cwd` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `list` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `pending_parts.pop` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `load_governance` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `Path (src/llm_wiki_cli/services…rnance.py:load_governance)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `first_unsafe_path_component` | `available` | `evaluated` | `available` | `14` | `14` | `0` |
+| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.fspath` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.path.abspath` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `lexical.is_absolute` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path.cwd` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `list` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `pending_parts.pop` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

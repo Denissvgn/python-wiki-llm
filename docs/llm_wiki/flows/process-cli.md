@@ -116,25 +116,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 136; effect analysis evaluated: 135, partial: 0, unavailable: 1. Counts include steps omitted from the displayed trace.
+Source steps: 136; effect analysis evaluated: 134, partial: 1, unavailable: 1. Counts include steps omitted from the displayed trace.
+
+Collector observations for 135 source steps with known totals: observed: 313, emitted: 309, omitted: 4. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `main` | `available` | `evaluated` | `available` |
-| `_build_parser` | `available` | `evaluated` | `available` |
-| `argparse.ArgumentParser` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `parser.add_argument (src/llm_wiki_cli/cli.py:_build_parser)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `parser.add_subparsers (src/llm_wiki_cli/cli.py:_build_parser)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_register_commands` | `available` | `evaluated` | `available` |
-| `_add_init_command` | `available` | `evaluated` | `available` |
-| `subparsers.add_parser (src/llm_wiki_cli/cli.py:_add_init_command)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `init_parser.add_argument` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `init_parser.add_argument` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `init_parser.add_argument` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `init_parser.add_argument` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `main` | `available` | `evaluated` | `available` | `12` | `12` | `0` |
+| `_build_parser` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `argparse.ArgumentParser` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `parser.add_argument (src/llm_wiki_cli/cli.py:_build_parser)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `parser.add_subparsers (src/llm_wiki_cli/cli.py:_build_parser)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_register_commands` | `available` | `evaluated` | `available` | `1` | `1` | `0` |
+| `_add_init_command` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `subparsers.add_parser (src/llm_wiki_cli/cli.py:_add_init_command)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `init_parser.add_argument` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `init_parser.add_argument` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `init_parser.add_argument` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `init_parser.add_argument` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

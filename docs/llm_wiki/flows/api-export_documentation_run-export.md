@@ -117,25 +117,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 633; effect analysis evaluated: 466, partial: 0, unavailable: 167. Counts include steps omitted from the displayed trace.
+Source steps: 633; effect analysis evaluated: 446, partial: 20, unavailable: 167. Counts include steps omitted from the displayed trace.
+
+Collector observations for 466 source steps with known totals: observed: 2310, emitted: 2220, omitted: 90. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `export_documentation_run` | `available` | `evaluated` | `available` |
-| `_resolve_workspace_root_argument` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `load_documentation_run` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_verify_read_only_inputs` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `run.evidence.get` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `DocumentationIntegrityError (src/llm_wiki_cli/services…:export_documentation_run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_read_json` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_workspace_path` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `compare_generated_ownership` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `generated_payload.get` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `any (src/llm_wiki_cli/services…:export_documentation_run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `generated_diff.values` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `export_documentation_run` | `available` | `evaluated` | `available` | `14` | `14` | `0` |
+| `_resolve_workspace_root_argument` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `load_documentation_run` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_verify_read_only_inputs` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `run.evidence.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `DocumentationIntegrityError (src/llm_wiki_cli/services…:export_documentation_run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_read_json` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_workspace_path` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `compare_generated_ownership` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `generated_payload.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `any (src/llm_wiki_cli/services…:export_documentation_run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `generated_diff.values` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

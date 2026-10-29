@@ -141,25 +141,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 555; effect analysis evaluated: 389, partial: 0, unavailable: 166. Counts include steps omitted from the displayed trace.
+Source steps: 555; effect analysis evaluated: 360, partial: 29, unavailable: 166. Counts include steps omitted from the displayed trace.
+
+Collector observations for 389 source steps with known totals: observed: 2279, emitted: 2142, omitted: 137. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `prepare_documentation_run` | `available` | `evaluated` | `available` |
-| `_RefreshArchiveTransaction` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_InitialPrepareTransaction` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_prepare_documentation_run_impl` | `available` | `evaluated` | `available` |
-| `DocumentationSchemaError` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `DocumentationSchemaError` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `site_name.strip` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `DocumentationSchemaError` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `DocumentationSchemaError` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `DocumentationSchemaError` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `DocumentationSchemaError` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `DocumentationSchemaError` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `prepare_documentation_run` | `available` | `partial` | `available` | `24` | `9` | `15` |
+| `_RefreshArchiveTransaction` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_InitialPrepareTransaction` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_prepare_documentation_run_impl` | `available` | `partial` | `available` | `37` | `20` | `17` |
+| `DocumentationSchemaError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `DocumentationSchemaError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `site_name.strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `DocumentationSchemaError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `DocumentationSchemaError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `DocumentationSchemaError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `DocumentationSchemaError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `DocumentationSchemaError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

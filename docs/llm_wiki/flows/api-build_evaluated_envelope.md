@@ -119,25 +119,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 323; effect analysis evaluated: 219, partial: 0, unavailable: 104. Counts include steps omitted from the displayed trace.
+Source steps: 323; effect analysis evaluated: 209, partial: 10, unavailable: 104. Counts include steps omitted from the displayed trace.
+
+Collector observations for 219 source steps with known totals: observed: 1045, emitted: 991, omitted: 54. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `build_evaluated_envelope` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…:build_evaluated_envelope)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError (src/llm_wiki_cli/services…:build_evaluated_envelope)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services…:build_evaluated_envelope)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` |
-| `_extensions_copy` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…elope.py:_extensions_copy)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` |
-| `any (src/llm_wiki_cli/services…elope.py:_extensions_copy)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services…elope.py:_extensions_copy)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` |
-| `_reject_machine_local_paths` | `available` | `evaluated` | `available` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `build_evaluated_envelope` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `isinstance (src/llm_wiki_cli/services…:build_evaluated_envelope)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…:build_evaluated_envelope)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…:build_evaluated_envelope)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_extensions_copy` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `isinstance (src/llm_wiki_cli/services…elope.py:_extensions_copy)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `any (src/llm_wiki_cli/services…elope.py:_extensions_copy)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…elope.py:_extensions_copy)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_reject_machine_local_paths` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 
 ```mermaid
 flowchart LR

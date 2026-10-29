@@ -135,25 +135,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1123; effect analysis evaluated: 789, partial: 0, unavailable: 334. Counts include steps omitted from the displayed trace.
+Source steps: 1123; effect analysis evaluated: 765, partial: 24, unavailable: 334. Counts include steps omitted from the displayed trace.
+
+Collector observations for 789 source steps with known totals: observed: 3991, emitted: 3859, omitted: 132. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `project_knowledge` | `available` | `evaluated` | `available` |
-| `_projection_profile` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…on.py:_projection_profile)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeProjectionProfile` | `unavailable` | `unavailable` | `unavailable` |
-| `KnowledgeProjectionError` | `unavailable` | `unavailable` | `unavailable` |
-| `_relationship_limit` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…on.py:_relationship_limit)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services…on.py:_relationship_limit)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeProjectionError` | `unavailable` | `unavailable` | `unavailable` |
-| `_validated_source` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…tion.py:_validated_source)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError (src/llm_wiki_cli/services…tion.py:_validated_source)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `project_knowledge` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
+| `_projection_profile` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `isinstance (src/llm_wiki_cli/services…on.py:_projection_profile)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeProjectionProfile` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `KnowledgeProjectionError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_relationship_limit` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `isinstance (src/llm_wiki_cli/services…on.py:_relationship_limit)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…on.py:_relationship_limit)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeProjectionError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_validated_source` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `isinstance (src/llm_wiki_cli/services…tion.py:_validated_source)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…tion.py:_validated_source)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

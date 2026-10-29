@@ -141,25 +141,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 842; effect analysis evaluated: 474, partial: 0, unavailable: 368. Counts include steps omitted from the displayed trace.
+Source steps: 842; effect analysis evaluated: 438, partial: 36, unavailable: 368. Counts include steps omitted from the displayed trace.
+
+Collector observations for 474 source steps with known totals: observed: 3100, emitted: 2765, omitted: 335. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `load_knowledge_read_view` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError (src/llm_wiki_cli/services…:load_knowledge_read_view)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `load_knowledge_state` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeMismatchPolicy` | `unavailable` | `unavailable` | `unavailable` |
-| `ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `callable (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `guard_maintenance_owner` | `available` | `evaluated` | `available` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `load_knowledge_read_view` | `available` | `evaluated` | `available` | `11` | `11` | `0` |
+| `isinstance (src/llm_wiki_cli/services…:load_knowledge_read_view)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…:load_knowledge_read_view)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `load_knowledge_state` | `available` | `partial` | `available` | `18` | `17` | `1` |
+| `isinstance (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeMismatchPolicy` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `callable (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_cli/services…r.py:load_knowledge_state)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `guard_maintenance_owner` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
 
 ```mermaid
 flowchart LR

@@ -126,25 +126,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 628; effect analysis evaluated: 426, partial: 0, unavailable: 202. Counts include steps omitted from the displayed trace.
+Source steps: 628; effect analysis evaluated: 402, partial: 24, unavailable: 202. Counts include steps omitted from the displayed trace.
+
+Collector observations for 426 source steps with known totals: observed: 2295, emitted: 2146, omitted: 149. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `build_knowledge_read_view` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…build_knowledge_read_view)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError (src/llm_wiki_cli/services…build_knowledge_read_view)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_read_mode` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…consumption.py:_read_mode)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError (src/llm_wiki_cli/services…consumption.py:_read_mode)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services…consumption.py:_read_mode)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeReadMode` | `unavailable` | `unavailable` | `unavailable` |
-| `ValueError (src/llm_wiki_cli/services…consumption.py:_read_mode)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `ValueError (src/llm_wiki_cli/services…consumption.py:_read_mode)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_validate_load_result` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services….py:_validate_load_result)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `build_knowledge_read_view` | `available` | `partial` | `available` | `23` | `15` | `8` |
+| `isinstance (src/llm_wiki_cli/services…build_knowledge_read_view)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…build_knowledge_read_view)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_read_mode` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `isinstance (src/llm_wiki_cli/services…consumption.py:_read_mode)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…consumption.py:_read_mode)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…consumption.py:_read_mode)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeReadMode` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `ValueError (src/llm_wiki_cli/services…consumption.py:_read_mode)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError (src/llm_wiki_cli/services…consumption.py:_read_mode)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_validate_load_result` | `available` | `partial` | `available` | `20` | `13` | `7` |
+| `isinstance (src/llm_wiki_cli/services….py:_validate_load_result)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

@@ -103,25 +103,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 99; effect analysis evaluated: 59, partial: 0, unavailable: 40. Counts include steps omitted from the displayed trace.
+Source steps: 99; effect analysis evaluated: 58, partial: 1, unavailable: 40. Counts include steps omitted from the displayed trace.
+
+Collector observations for 59 source steps with known totals: observed: 224, emitted: 223, omitted: 1. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `verification_receipt_to_payload` | `available` | `evaluated` | `available` |
-| `validate_verification_receipt` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…date_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_receipt_to_payload` | `available` | `evaluated` | `available` |
-| `dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `check.to_payload` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_object` | `available` | `evaluated` | `available` |
-| `require_mapping` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `key.encode` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `verification_receipt_to_payload` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `validate_verification_receipt` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `isinstance (src/llm_wiki_cli/services…date_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_receipt_to_payload` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `check.to_payload` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_object` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `require_mapping` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `key.encode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

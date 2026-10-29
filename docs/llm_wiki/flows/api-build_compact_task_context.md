@@ -33,17 +33,20 @@ sequenceDiagram
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 3; effect analysis evaluated: 2, partial: 0, unavailable: 1. Counts include steps omitted from the displayed trace.
+Source steps: 3; effect analysis evaluated: 0, partial: 2, unavailable: 1. Counts include steps omitted from the displayed trace.
+
+Collector observations for 2 source steps with known totals: observed: 25, emitted: 18, omitted: 7. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `build_compact_task_context (src/llm_wiki_cli/api.py)` | `available` | `evaluated` | `available` |
-| `build_compact_task_context (src/llm_wiki_cli/services/task_compact_delivery.py)` | `available` | `evaluated` | `available` |
-| `ContextSession` | `unavailable` | `unavailable` | `unavailable` |
-| `session.read_compact` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `build_compact_task_context (src/llm_wiki_cli/api.py)` | `available` | `partial` | `available` | `13` | `9` | `4` |
+| `build_compact_task_context (src/llm_wiki_cli/services/task_compact_delivery.py)` | `available` | `partial` | `available` | `12` | `9` | `3` |
+| `ContextSession` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `session.read_compact` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

@@ -126,25 +126,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 757; effect analysis evaluated: 499, partial: 0, unavailable: 258. Counts include steps omitted from the displayed trace.
+Source steps: 757; effect analysis evaluated: 486, partial: 13, unavailable: 258. Counts include steps omitted from the displayed trace.
+
+Collector observations for 499 source steps with known totals: observed: 2408, emitted: 2256, omitted: 152. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `build_artifact_verification_context` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…fact_verification_context)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError (src/llm_wiki_cli/services…fact_verification_context)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_sha256` | `available` | `evaluated` | `available` |
-| `require_sha256` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…idation.py:require_sha256)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `require_trimmed_text` | `available` | `evaluated` | `available` |
-| `require_nonempty_text` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `contains_control_character` | `available` | `evaluated` | `available` |
-| `pattern.search` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `build_artifact_verification_context` | `available` | `evaluated` | `available` | `14` | `14` | `0` |
+| `isinstance (src/llm_wiki_cli/services…fact_verification_context)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…fact_verification_context)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_sha256` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `require_sha256` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `isinstance (src/llm_wiki_cli/services…idation.py:require_sha256)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `require_trimmed_text` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `require_nonempty_text` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `contains_control_character` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `pattern.search` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

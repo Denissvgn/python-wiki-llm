@@ -91,23 +91,25 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 16; effect analysis evaluated: 5, partial: 0, unavailable: 11. Counts include steps omitted from the displayed trace.
 
+Collector observations for 5 source steps with known totals: observed: 25, emitted: 25, omitted: 0. Unavailable totals are excluded.
+
 - Callable record unavailable; the selected entry symbol has no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `verify` | `available` | `evaluated` | `available` |
-| `build_verification_receipt` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…build_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError (src/llm_wiki_cli/services…build_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `tuple (src/llm_wiki_cli/services…build_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `VerificationContractError` | `unavailable` | `unavailable` | `unavailable` |
-| `any` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services…build_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `VerificationContractError` | `unavailable` | `unavailable` | `unavailable` |
-| `all` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `VerificationReceipt` | `unavailable` | `unavailable` | `unavailable` |
-| `run_verification` | `available` | `evaluated` | `available` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `verify` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `build_verification_receipt` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `isinstance (src/llm_wiki_cli/services…build_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…build_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `tuple (src/llm_wiki_cli/services…build_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `VerificationContractError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `any` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…build_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `VerificationContractError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `all` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `VerificationReceipt` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `run_verification` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
 
 ```mermaid
 flowchart LR

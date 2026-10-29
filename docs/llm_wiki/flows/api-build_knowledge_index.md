@@ -116,25 +116,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 343; effect analysis evaluated: 140, partial: 0, unavailable: 203. Counts include steps omitted from the displayed trace.
+Source steps: 343; effect analysis evaluated: 131, partial: 9, unavailable: 203. Counts include steps omitted from the displayed trace.
+
+Collector observations for 140 source steps with known totals: observed: 811, emitted: 723, omitted: 88. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `build_knowledge_index` | `available` | `evaluated` | `available` |
-| `_validate_and_join_inputs` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…_validate_and_join_inputs)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError (src/llm_wiki_cli/services…_validate_and_join_inputs)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_validated_bundle` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…ndex.py:_validated_bundle)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeIndexBuildError` | `unavailable` | `unavailable` | `unavailable` |
-| `evaluated_envelope_to_payload` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…uated_envelope_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError (src/llm_wiki_cli/services…uated_envelope_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` |
-| `_validated_bundle_payload` | `available` | `evaluated` | `available` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `build_knowledge_index` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
+| `_validate_and_join_inputs` | `available` | `evaluated` | `available` | `11` | `11` | `0` |
+| `isinstance (src/llm_wiki_cli/services…_validate_and_join_inputs)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…_validate_and_join_inputs)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_validated_bundle` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `isinstance (src/llm_wiki_cli/services…ndex.py:_validated_bundle)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeIndexBuildError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `evaluated_envelope_to_payload` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `isinstance (src/llm_wiki_cli/services…uated_envelope_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…uated_envelope_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_validated_bundle_payload` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
 
 ```mermaid
 flowchart LR

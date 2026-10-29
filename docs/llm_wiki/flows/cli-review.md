@@ -144,25 +144,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 751; effect analysis evaluated: 548, partial: 0, unavailable: 203. Counts include steps omitted from the displayed trace.
+Source steps: 751; effect analysis evaluated: 517, partial: 31, unavailable: 203. Counts include steps omitted from the displayed trace.
+
+Collector observations for 548 source steps with known totals: observed: 3120, emitted: 3010, omitted: 110. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `run` | `available` | `evaluated` | `available` |
-| `getattr (src/llm_wiki_cli/commands/review_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `getattr (src/llm_wiki_cli/commands/review_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `getattr (src/llm_wiki_cli/commands/review_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `bool (src/llm_wiki_cli/commands/review_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `getattr (src/llm_wiki_cli/commands/review_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `validate_source_root` | `available` | `evaluated` | `available` |
-| `validate_path` | `available` | `evaluated` | `available` |
-| `PathValidationError` | `unavailable` | `unavailable` | `unavailable` |
-| `(…).resolve` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `run` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `getattr (src/llm_wiki_cli/commands/review_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/commands/review_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/commands/review_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `bool (src/llm_wiki_cli/commands/review_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/commands/review_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `validate_source_root` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
+| `validate_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `PathValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `(…).resolve` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

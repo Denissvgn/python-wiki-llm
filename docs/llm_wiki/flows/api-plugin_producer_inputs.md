@@ -95,23 +95,25 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 23; effect analysis evaluated: 6, partial: 0, unavailable: 17. Counts include steps omitted from the displayed trace.
 
+Collector observations for 6 source steps with known totals: observed: 25, emitted: 25, omitted: 0. Unavailable totals are excluded.
+
 - Callable record unavailable; the selected entry symbol has no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `plugin_producer_inputs` | `available` | `evaluated` | `available` |
-| `enumerate` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` |
-| `component.get (src/llm_wiki_cli/services….py:plugin_producer_inputs)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_COMPONENT_ID_RE.fullmatch (src/llm_wiki_cli/services….py:plugin_producer_inputs)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` |
-| `component.get (src/llm_wiki_cli/services….py:plugin_producer_inputs)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` |
-| `isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `plugin_producer_inputs` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `enumerate` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `component.get (src/llm_wiki_cli/services….py:plugin_producer_inputs)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_COMPONENT_ID_RE.fullmatch (src/llm_wiki_cli/services….py:plugin_producer_inputs)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `component.get (src/llm_wiki_cli/services….py:plugin_producer_inputs)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services….py:plugin_producer_inputs)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

@@ -100,23 +100,25 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 22; effect analysis evaluated: 19, partial: 0, unavailable: 3. Counts include steps omitted from the displayed trace.
 
+Collector observations for 19 source steps with known totals: observed: 54, emitted: 54, omitted: 0. Unavailable totals are excluded.
+
 - Callable record unavailable; the selected entry symbol has no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `parse_markdown_document` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `ValueError (src/llm_wiki_cli/services…py:parse_markdown_document)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `normalize_markdown` | `available` | `evaluated` | `available` |
-| `text.replace(…).replace` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `text.replace` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `list` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_iter_structural_headings` | `available` | `evaluated` | `available` |
-| `_markdown_lines` | `available` | `evaluated` | `available` |
-| `re.findall` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `parse_markdown_document` | `available` | `evaluated` | `available` | `10` | `10` | `0` |
+| `isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…py:parse_markdown_document)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError (src/llm_wiki_cli/services…py:parse_markdown_document)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `normalize_markdown` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `text.replace(…).replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `text.replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `list` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_iter_structural_headings` | `available` | `evaluated` | `available` | `1` | `1` | `0` |
+| `_markdown_lines` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `re.findall` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

@@ -94,9 +94,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 ### Analysis coverage
 
-**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 28; effect analysis evaluated: 28, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+Source steps: 28; effect analysis evaluated: 27, partial: 1, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 28 source steps with known totals: observed: 159, emitted: 158, omitted: 1. Unavailable totals are excluded.
+
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `render_doctor_text` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `_render_doctor_payload` | `available` | `evaluated` | `available` | `18` | `18` | `0` |
+| `isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…py:_render_doctor_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `dict` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `assurance_rows` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `optional_status` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `reason_list` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
 
 ```mermaid
 flowchart LR

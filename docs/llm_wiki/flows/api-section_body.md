@@ -84,6 +84,8 @@ sequenceDiagram
 
 Source steps: 6; effect analysis evaluated: 6, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
 
+Collector observations for 6 source steps with known totals: observed: 17, emitted: 17, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. section_body"]

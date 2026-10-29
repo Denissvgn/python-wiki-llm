@@ -85,9 +85,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 ### Analysis coverage
 
-**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 42; effect analysis evaluated: 42, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+Source steps: 42; effect analysis evaluated: 41, partial: 1, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 42 source steps with known totals: observed: 154, emitted: 128, omitted: 26. Unavailable totals are excluded.
+
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `render_api_contracts_markdown` | `available` | `partial` | `available` | `42` | `16` | `26` |
+| `contracts.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…er_api_contracts_markdown)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `lines.extend` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `openapi.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_md_code` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `str(…).replace(…).replace (src/llm_wiki_cli/services/api_contracts.py:_md_code)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `str(…).replace (src/llm_wiki_cli/services/api_contracts.py:_md_code)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `str (src/llm_wiki_cli/services/api_contracts.py:_md_code)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `max` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `len (src/llm_wiki_cli/services/api_contracts.py:_md_code)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `re.findall` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

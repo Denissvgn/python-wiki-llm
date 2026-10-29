@@ -103,25 +103,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 119; effect analysis evaluated: 73, partial: 0, unavailable: 46. Counts include steps omitted from the displayed trace.
+Source steps: 119; effect analysis evaluated: 69, partial: 4, unavailable: 46. Counts include steps omitted from the displayed trace.
+
+Collector observations for 73 source steps with known totals: observed: 320, emitted: 307, omitted: 13. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `qualify_claim_evidence` | `available` | `evaluated` | `available` |
-| `_identifier` | `available` | `evaluated` | `available` |
-| `_text` | `available` | `evaluated` | `available` |
-| `require_trimmed_text` | `available` | `evaluated` | `available` |
-| `require_nonempty_text` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `contains_control_character` | `available` | `evaluated` | `available` |
-| `pattern.search` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `DocumentationClaimEvidenceError` | `unavailable` | `unavailable` | `unavailable` |
-| `_SAFE_ID_RE.fullmatch` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `DocumentationClaimEvidenceError` | `unavailable` | `unavailable` | `unavailable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `qualify_claim_evidence` | `available` | `evaluated` | `available` | `17` | `17` | `0` |
+| `_identifier` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `_text` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `require_trimmed_text` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `require_nonempty_text` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `contains_control_character` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `pattern.search` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `DocumentationClaimEvidenceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_SAFE_ID_RE.fullmatch` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `DocumentationClaimEvidenceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 
 ```mermaid
 flowchart LR

@@ -97,23 +97,25 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 20; effect analysis evaluated: 10, partial: 0, unavailable: 10. Counts include steps omitted from the displayed trace.
 
+Collector observations for 10 source steps with known totals: observed: 32, emitted: 32, omitted: 0. Unavailable totals are excluded.
+
 - Callable record unavailable; the selected entry symbol has no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `hash_generation_options` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…py:hash_generation_options)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` |
-| `isinstance (src/llm_wiki_cli/services…py:hash_generation_options)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` |
-| `_normalized_allowlist` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…e.py:_normalized_allowlist)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` |
-| `tuple` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` |
-| `any (src/llm_wiki_cli/services…e.py:_normalized_allowlist)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services…e.py:_normalized_allowlist)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `hash_generation_options` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
+| `isinstance (src/llm_wiki_cli/services…py:hash_generation_options)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…py:hash_generation_options)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_normalized_allowlist` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `isinstance (src/llm_wiki_cli/services…e.py:_normalized_allowlist)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `tuple` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `any (src/llm_wiki_cli/services…e.py:_normalized_allowlist)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…e.py:_normalized_allowlist)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

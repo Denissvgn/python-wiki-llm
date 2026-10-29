@@ -100,25 +100,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 23; effect analysis evaluated: 16, partial: 0, unavailable: 7. Counts include steps omitted from the displayed trace.
+Source steps: 23; effect analysis evaluated: 14, partial: 2, unavailable: 7. Counts include steps omitted from the displayed trace.
+
+Collector observations for 16 source steps with known totals: observed: 76, emitted: 65, omitted: 11. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `is_portable_relative_path` | `available` | `evaluated` | `available` |
-| `require_portable_relative_path` | `available` | `evaluated` | `available` |
-| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_default_path_error` | `available` | `evaluated` | `available` |
-| `SharedValidationError` | `unavailable` | `unavailable` | `unavailable` |
-| `os.fspath` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_default_path_error` | `available` | `evaluated` | `available` |
-| `_syntax_key` | `available` | `evaluated` | `available` |
-| `type` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `len (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `any (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `is_portable_relative_path` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `require_portable_relative_path` | `available` | `partial` | `available` | `21` | `11` | `10` |
+| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_default_path_error` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `SharedValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `os.fspath` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_default_path_error` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `_syntax_key` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `type` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `len (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `any (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

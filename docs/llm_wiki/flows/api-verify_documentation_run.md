@@ -78,9 +78,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 ### Analysis coverage
 
-**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1; effect analysis evaluated: 1, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+Source steps: 1; effect analysis evaluated: 0, partial: 1, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1 source steps with known totals: observed: 18, emitted: 13, omitted: 5. Unavailable totals are excluded.
+
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `verify_documentation_run` | `available` | `partial` | `available` | `18` | `13` | `5` |
+| `_resolve_workspace_root_argument` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `load_documentation_run` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `list` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `checks.extend` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_verify_read_only_inputs` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `checks.append` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `str` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `run.evidence.get` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_read_json` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_workspace_path` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `compare_generated_ownership` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

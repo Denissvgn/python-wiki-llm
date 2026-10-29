@@ -91,9 +91,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 ### Analysis coverage
 
-**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 7; effect analysis evaluated: 7, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+Source steps: 7; effect analysis evaluated: 6, partial: 1, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 7 source steps with known totals: observed: 54, emitted: 40, omitted: 14. Unavailable totals are excluded.
+
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `classify_wiki_lifecycle` | `available` | `evaluated` | `available` | `10` | `10` | `0` |
+| `Path (src/llm_wiki_cli/services…py:classify_wiki_lifecycle)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `manifest.exists` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `manifest.is_symlink` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `is_pristine_wiki_target` | `available` | `partial` | `available` | `33` | `19` | `14` |
+| `Path (src/llm_wiki_cli/services…py:is_pristine_wiki_target)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `root.is_symlink` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `root.exists` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `root.is_dir (src/llm_wiki_cli/services…py:is_pristine_wiki_target)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `iter_page_kinds` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `sorted` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `root.rglob` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

@@ -143,25 +143,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 535; effect analysis evaluated: 312, partial: 0, unavailable: 223. Counts include steps omitted from the displayed trace.
+Source steps: 535; effect analysis evaluated: 282, partial: 30, unavailable: 223. Counts include steps omitted from the displayed trace.
+
+Collector observations for 312 source steps with known totals: observed: 2187, emitted: 1960, omitted: 227. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `build_snapshot_documentation_query_service` | `available` | `evaluated` | `available` |
-| `_wiki_anchor` | `available` | `evaluated` | `available` |
-| `str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `directory_identity` | `available` | `evaluated` | `available` |
-| `path.stat` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `current.exists` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `root.exists` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_domain_hash` | `available` | `evaluated` | `available` |
-| `sha256_bytes` | `available` | `evaluated` | `available` |
-| `hashlib.sha256(…).hexdigest (src/llm_wiki_cli/services…_evidence.py:sha256_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `hashlib.sha256 (src/llm_wiki_cli/services…_evidence.py:sha256_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `canonical_json_bytes` | `available` | `evaluated` | `available` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `build_snapshot_documentation_query_service` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `_wiki_anchor` | `available` | `evaluated` | `available` | `11` | `11` | `0` |
+| `str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `directory_identity` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `path.stat` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `current.exists` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `root.exists` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_domain_hash` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `sha256_bytes` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `hashlib.sha256(…).hexdigest (src/llm_wiki_cli/services…_evidence.py:sha256_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `hashlib.sha256 (src/llm_wiki_cli/services…_evidence.py:sha256_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `canonical_json_bytes` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 
 ```mermaid
 flowchart LR

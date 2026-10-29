@@ -112,25 +112,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 192; effect analysis evaluated: 91, partial: 0, unavailable: 101. Counts include steps omitted from the displayed trace.
+Source steps: 192; effect analysis evaluated: 89, partial: 2, unavailable: 101. Counts include steps omitted from the displayed trace.
+
+Collector observations for 91 source steps with known totals: observed: 450, emitted: 438, omitted: 12. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `add_alias` | `available` | `evaluated` | `available` |
-| `validate_governance_ledger` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `GovernanceError` | `unavailable` | `unavailable` | `unavailable` |
-| `_bundle_id` | `available` | `evaluated` | `available` |
-| `validate_bundle_id` | `available` | `evaluated` | `available` |
-| `_machine_text` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` |
-| `len (src/llm_wiki_cli/services…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `add_alias` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `validate_governance_ledger` | `available` | `partial` | `available` | `20` | `14` | `6` |
+| `isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `GovernanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_bundle_id` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `validate_bundle_id` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `_machine_text` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `len (src/llm_wiki_cli/services…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 
 ```mermaid
 flowchart LR

@@ -38,17 +38,19 @@ sequenceDiagram
 
 Source steps: 3; effect analysis evaluated: 1, partial: 0, unavailable: 2. Counts include steps omitted from the displayed trace.
 
+Collector observations for 1 source steps with known totals: observed: 3, emitted: 3, omitted: 0. Unavailable totals are excluded.
+
 - Callable record unavailable; the selected entry symbol has no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `canonical_json_bytes` | `available` | `evaluated` | `available` |
-| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `ProtectedArtifactIntegrityError` | `unavailable` | `unavailable` | `unavailable` |
-| `json.dumps` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `ProtectedArtifactIntegrityError` | `unavailable` | `unavailable` | `unavailable` |
-| `(…).encode` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `canonical_json_bytes` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ProtectedArtifactIntegrityError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `json.dumps` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ProtectedArtifactIntegrityError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `(…).encode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

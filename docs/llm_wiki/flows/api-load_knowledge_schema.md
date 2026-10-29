@@ -42,19 +42,21 @@ sequenceDiagram
 
 Source steps: 3; effect analysis evaluated: 1, partial: 0, unavailable: 2. Counts include steps omitted from the displayed trace.
 
+Collector observations for 1 source steps with known totals: observed: 5, emitted: 5, omitted: 0. Unavailable totals are excluded.
+
 - Callable record unavailable; the selected entry symbol has no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `load_knowledge_schema` | `available` | `evaluated` | `available` |
-| `resources.files(…).joinpath` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `resources.files` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `json.loads` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `resource.read_text` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeModelError` | `unavailable` | `unavailable` | `unavailable` |
-| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeModelError` | `unavailable` | `unavailable` | `unavailable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `load_knowledge_schema` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `resources.files(…).joinpath` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `resources.files` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `json.loads` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `resource.read_text` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeModelError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeModelError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 
 ```mermaid
 flowchart LR

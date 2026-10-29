@@ -88,9 +88,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 ### Analysis coverage
 
-**Effect analysis evaluated.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 6; effect analysis evaluated: 6, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
+Source steps: 6; effect analysis evaluated: 5, partial: 1, unavailable: 0. Counts include steps omitted from the displayed trace.
+
+Collector observations for 6 source steps with known totals: observed: 44, emitted: 30, omitted: 14. Unavailable totals are excluded.
+
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
+
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `is_pristine_wiki_target` | `available` | `partial` | `available` | `33` | `19` | `14` |
+| `Path` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `root.is_symlink` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `root.exists` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `root.is_dir` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `iter_page_kinds` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `sorted` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `root.rglob` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `path.is_symlink` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `path.relative_to(…).as_posix` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `path.relative_to` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `path.is_file` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

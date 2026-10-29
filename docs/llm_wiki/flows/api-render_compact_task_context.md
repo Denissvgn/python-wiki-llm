@@ -134,25 +134,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 226; effect analysis evaluated: 159, partial: 0, unavailable: 67. Counts include steps omitted from the displayed trace.
+Source steps: 226; effect analysis evaluated: 157, partial: 2, unavailable: 67. Counts include steps omitted from the displayed trace.
+
+Collector observations for 159 source steps with known totals: observed: 707, emitted: 703, omitted: 4. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `render_compact_task_context (src/llm_wiki_cli/api.py)` | `available` | `evaluated` | `available` |
-| `render_compact_task_context (src/llm_wiki_cli/services/task_compact.py)` | `available` | `evaluated` | `available` |
-| `_validated` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TaskCompactError` | `unavailable` | `unavailable` | `unavailable` |
-| `isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TaskCompactError` | `unavailable` | `unavailable` | `unavailable` |
-| `normalize_task_request` | `available` | `evaluated` | `available` |
-| `exact_fields` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…w_profile.py:exact_fields)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `any (src/llm_wiki_cli/services…w_profile.py:exact_fields)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services…w_profile.py:exact_fields)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `render_compact_task_context (src/llm_wiki_cli/api.py)` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `render_compact_task_context (src/llm_wiki_cli/services/task_compact.py)` | `available` | `evaluated` | `available` | `12` | `12` | `0` |
+| `_validated` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TaskCompactError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…ask_compact.py:_validated)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TaskCompactError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `normalize_task_request` | `available` | `partial` | `available` | `23` | `21` | `2` |
+| `exact_fields` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `isinstance (src/llm_wiki_cli/services…w_profile.py:exact_fields)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `any (src/llm_wiki_cli/services…w_profile.py:exact_fields)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…w_profile.py:exact_fields)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

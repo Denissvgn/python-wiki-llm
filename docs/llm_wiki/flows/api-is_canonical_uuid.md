@@ -49,22 +49,24 @@ sequenceDiagram
 
 Source steps: 6; effect analysis evaluated: 5, partial: 0, unavailable: 1. Counts include steps omitted from the displayed trace.
 
+Collector observations for 5 source steps with known totals: observed: 26, emitted: 26, omitted: 0. Unavailable totals are excluded.
+
 - Callable record unavailable; the selected entry symbol has no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `is_canonical_uuid` | `available` | `evaluated` | `available` |
-| `SharedValidationError` | `unavailable` | `unavailable` | `unavailable` |
-| `require_uuid` | `available` | `evaluated` | `available` |
-| `require_trimmed_text` | `available` | `evaluated` | `available` |
-| `require_nonempty_text` | `available` | `evaluated` | `available` |
-| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `contains_control_character` | `available` | `evaluated` | `available` |
-| `pattern.search` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `str` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `uuid.UUID` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `is_canonical_uuid` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `SharedValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `require_uuid` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
+| `require_trimmed_text` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `require_nonempty_text` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `contains_control_character` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `pattern.search` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `str` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `uuid.UUID` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

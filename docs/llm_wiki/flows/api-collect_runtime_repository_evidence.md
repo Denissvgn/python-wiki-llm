@@ -103,25 +103,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 64; effect analysis evaluated: 55, partial: 0, unavailable: 9. Counts include steps omitted from the displayed trace.
+Source steps: 64; effect analysis evaluated: 52, partial: 3, unavailable: 9. Counts include steps omitted from the displayed trace.
+
+Collector observations for 55 source steps with known totals: observed: 361, emitted: 346, omitted: 15. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `collect_runtime_repository_evidence` | `available` | `evaluated` | `available` |
-| `Path(…).resolve (src/llm_wiki_cli/services…ntime_repository_evidence)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path (src/llm_wiki_cli/services…ntime_repository_evidence)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path(…).resolve (src/llm_wiki_cli/services…me_repository_evidence, 1)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path (src/llm_wiki_cli/services…ntime_repository_evidence)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services…ntime_repository_evidence)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError (src/llm_wiki_cli/services…ntime_repository_evidence)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `source_snapshot.root.resolve` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `ValueError (src/llm_wiki_cli/services…ntime_repository_evidence)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `selected_paths.add` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `selected_paths.update` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `source_snapshot.captured_input_kinds.items` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `collect_runtime_repository_evidence` | `available` | `evaluated` | `available` | `17` | `17` | `0` |
+| `Path(…).resolve (src/llm_wiki_cli/services…ntime_repository_evidence)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_cli/services…ntime_repository_evidence)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path(…).resolve (src/llm_wiki_cli/services…me_repository_evidence, 1)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_cli/services…ntime_repository_evidence)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…ntime_repository_evidence)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…ntime_repository_evidence)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `source_snapshot.root.resolve` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError (src/llm_wiki_cli/services…ntime_repository_evidence)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `selected_paths.add` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `selected_paths.update` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `source_snapshot.captured_input_kinds.items` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

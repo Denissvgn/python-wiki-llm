@@ -151,9 +151,9 @@ sequenceDiagram
     p3-->>p30: application.changed_files.extend(selected)
 ```
 
-> Call sequence diagram shows 30 of 6164 interactions; 6134 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 6166 interactions; 6136 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 2171 (2170 omitted); unresolved 1 of 1852 (1851 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 2172 (2171 omitted); unresolved 1 of 1853 (1852 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -180,25 +180,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 2142; effect analysis evaluated: 1566, partial: 0, unavailable: 576. Counts include steps omitted from the displayed trace.
+Source steps: 2142; effect analysis evaluated: 1467, partial: 99, unavailable: 576. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1566 source steps with known totals: observed: 9762, emitted: 9254, omitted: 508. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `run` | `available` | `evaluated` | `available` |
-| `_sync_run_options_from_args` | `available` | `evaluated` | `available` |
-| `getattr (src/llm_wiki_cli/commands…ync_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path (src/llm_wiki_cli/commands…ync_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `getattr (src/llm_wiki_cli/commands…ync_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `bool (src/llm_wiki_cli/commands…ync_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `getattr (src/llm_wiki_cli/commands…ync_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `bool (src/llm_wiki_cli/commands…ync_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `getattr (src/llm_wiki_cli/commands…ync_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_cache_options_from_args` | `available` | `evaluated` | `available` |
-| `cache_options_from_args` | `available` | `evaluated` | `available` |
-| `bool (src/llm_wiki_cli/services…y:cache_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `run` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `_sync_run_options_from_args` | `available` | `evaluated` | `available` | `12` | `12` | `0` |
+| `getattr (src/llm_wiki_cli/commands…ync_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_cli/commands…ync_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/commands…ync_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `bool (src/llm_wiki_cli/commands…ync_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/commands…ync_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `bool (src/llm_wiki_cli/commands…ync_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `getattr (src/llm_wiki_cli/commands…ync_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_cache_options_from_args` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `cache_options_from_args` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `bool (src/llm_wiki_cli/services…y:cache_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

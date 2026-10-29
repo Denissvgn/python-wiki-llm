@@ -139,9 +139,9 @@ sequenceDiagram
     p0-->>p30: validation.packet.to_payload
 ```
 
-> Call sequence diagram shows 30 of 4005 interactions; 3975 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4008 interactions; 3978 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1321 (1320 omitted); unresolved 1 of 1326 (1325 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1322 (1321 omitted); unresolved 1 of 1328 (1327 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -168,25 +168,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1359; effect analysis evaluated: 964, partial: 0, unavailable: 395. Counts include steps omitted from the displayed trace.
+Source steps: 1359; effect analysis evaluated: 907, partial: 57, unavailable: 395. Counts include steps omitted from the displayed trace.
+
+Collector observations for 964 source steps with known totals: observed: 6009, emitted: 5651, omitted: 358. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `reconcile_context_packet` | `available` | `evaluated` | `available` |
-| `validate_context_packet` | `available` | `evaluated` | `available` |
-| `_coerce_packet_bytes` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `bytes (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `ContextPacketMalformedError` | `unavailable` | `unavailable` | `unavailable` |
-| `len (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `ContextPacketMalformedError` | `unavailable` | `unavailable` | `unavailable` |
-| `raw.startswith` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `ContextPacketMalformedError` | `unavailable` | `unavailable` | `unavailable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `reconcile_context_packet` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
+| `validate_context_packet` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `_coerce_packet_bytes` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `bytes (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ContextPacketMalformedError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `len (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ContextPacketMalformedError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `raw.startswith` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ContextPacketMalformedError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 
 ```mermaid
 flowchart LR

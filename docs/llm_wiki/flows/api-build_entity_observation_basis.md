@@ -103,25 +103,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 171; effect analysis evaluated: 160, partial: 0, unavailable: 11. Counts include steps omitted from the displayed trace.
+Source steps: 171; effect analysis evaluated: 157, partial: 3, unavailable: 11. Counts include steps omitted from the displayed trace.
+
+Collector observations for 160 source steps with known totals: observed: 766, emitted: 751, omitted: 15. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `build_entity_observation_basis` | `available` | `evaluated` | `available` |
-| `_validate_basis_inputs` | `available` | `evaluated` | `available` |
-| `_validate_source_path` | `available` | `evaluated` | `available` |
-| `require_repository_relative_path` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…_repository_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_syntax_key` | `available` | `evaluated` | `available` |
-| `type (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `len (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `any (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `type (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `type (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `len (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `build_entity_observation_basis` | `available` | `evaluated` | `available` | `19` | `19` | `0` |
+| `_validate_basis_inputs` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `_validate_source_path` | `available` | `evaluated` | `available` | `1` | `1` | `0` |
+| `require_repository_relative_path` | `available` | `partial` | `available` | `14` | `10` | `4` |
+| `isinstance (src/llm_wiki_cli/services…_repository_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_syntax_key` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `type (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `len (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `any (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `type (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `type (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `len (src/llm_wiki_cli/services/validation.py:_syntax_key)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

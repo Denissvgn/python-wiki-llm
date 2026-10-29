@@ -97,25 +97,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 42; effect analysis evaluated: 15, partial: 0, unavailable: 27. Counts include steps omitted from the displayed trace.
+Source steps: 42; effect analysis evaluated: 14, partial: 1, unavailable: 27. Counts include steps omitted from the displayed trace.
+
+Collector observations for 15 source steps with known totals: observed: 104, emitted: 102, omitted: 2. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `open_windows_readonly_file` | `available` | `evaluated` | `available` |
-| `WindowsFileGuardError` | `unavailable` | `unavailable` | `unavailable` |
-| `_open_windows_readonly_file_handle` | `available` | `evaluated` | `available` |
-| `ctypes.WinDLL (src/llm_wiki_cli/services…dows_readonly_file_handle)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `create_file` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_windows_api_path` | `available` | `evaluated` | `available` |
-| `os.path.abspath` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `os.fspath` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `value.startswith` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `value.startswith` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `wintypes.HANDLE (src/llm_wiki_cli/services…dows_readonly_file_handle)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `ctypes.WinError (src/llm_wiki_cli/services…dows_readonly_file_handle)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `open_windows_readonly_file` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
+| `WindowsFileGuardError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_open_windows_readonly_file_handle` | `available` | `evaluated` | `available` | `10` | `10` | `0` |
+| `ctypes.WinDLL (src/llm_wiki_cli/services…dows_readonly_file_handle)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `create_file` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_windows_api_path` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `os.path.abspath` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.fspath` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `value.startswith` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `value.startswith` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `wintypes.HANDLE (src/llm_wiki_cli/services…dows_readonly_file_handle)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ctypes.WinError (src/llm_wiki_cli/services…dows_readonly_file_handle)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

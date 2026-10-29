@@ -49,25 +49,28 @@ sequenceDiagram
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 6; effect analysis evaluated: 1, partial: 0, unavailable: 5. Counts include steps omitted from the displayed trace.
+Source steps: 6; effect analysis evaluated: 0, partial: 1, unavailable: 5. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1 source steps with known totals: observed: 12, emitted: 11, omitted: 1. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `require_portable_path_component` | `available` | `evaluated` | `available` |
-| `component.encode` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `SharedValidationError` | `unavailable` | `unavailable` | `unavailable` |
-| `unicodedata.normalize` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `SharedValidationError` | `unavailable` | `unavailable` | `unavailable` |
-| `any` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `ord` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `ord` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `SharedValidationError` | `unavailable` | `unavailable` | `unavailable` |
-| `component.endswith` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `any` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `SharedValidationError` | `unavailable` | `unavailable` | `unavailable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `require_portable_path_component` | `available` | `partial` | `available` | `12` | `11` | `1` |
+| `component.encode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `SharedValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `unicodedata.normalize` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `SharedValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `any` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ord` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ord` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `SharedValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `component.endswith` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `any` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `SharedValidationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 
 ```mermaid
 flowchart LR

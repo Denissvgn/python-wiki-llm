@@ -140,9 +140,9 @@ sequenceDiagram
     p0-->>p30: request.get (src/llm_wiki_cli/api.py:build_qualified_context)('protocol')
 ```
 
-> Call sequence diagram shows 30 of 3752 interactions; 3722 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3755 interactions; 3725 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1232 (1231 omitted); unresolved 1 of 1295 (1294 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1233 (1232 omitted); unresolved 1 of 1297 (1296 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -169,25 +169,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1226; effect analysis evaluated: 890, partial: 0, unavailable: 336. Counts include steps omitted from the displayed trace.
+Source steps: 1226; effect analysis evaluated: 834, partial: 56, unavailable: 336. Counts include steps omitted from the displayed trace.
+
+Collector observations for 890 source steps with known totals: observed: 5709, emitted: 5354, omitted: 355. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `build_qualified_context (src/llm_wiki_cli/api.py)` | `available` | `evaluated` | `available` |
-| `_normalize_optional_knowledge_mode` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `', '.join (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `repr (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` |
-| `cast` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` |
-| `request.get (src/llm_wiki_cli/api.py:build_qualified_context)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/api.py:build_qualified_context)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` |
-| `build_qualified_context (src/llm_wiki_cli/services/context_packet.py)` | `available` | `evaluated` | `available` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `build_qualified_context (src/llm_wiki_cli/api.py)` | `available` | `partial` | `available` | `21` | `17` | `4` |
+| `_normalize_optional_knowledge_mode` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `isinstance (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `', '.join (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `repr (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `cast` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `request.get (src/llm_wiki_cli/api.py:build_qualified_context)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/api.py:build_qualified_context)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `build_qualified_context (src/llm_wiki_cli/services/context_packet.py)` | `available` | `evaluated` | `available` | `14` | `14` | `0` |
 
 ```mermaid
 flowchart LR

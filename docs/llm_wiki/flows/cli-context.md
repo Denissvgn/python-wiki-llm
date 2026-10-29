@@ -146,25 +146,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 534; effect analysis evaluated: 404, partial: 0, unavailable: 130. Counts include steps omitted from the displayed trace.
+Source steps: 534; effect analysis evaluated: 373, partial: 31, unavailable: 130. Counts include steps omitted from the displayed trace.
+
+Collector observations for 404 source steps with known totals: observed: 2912, emitted: 2624, omitted: 288. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `run (src/llm_wiki_cli/services/context_service.py)` | `available` | `evaluated` | `available` |
-| `getattr (src/llm_wiki_cli/services/context_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_run_protocol` | `available` | `evaluated` | `available` |
-| `getattr (src/llm_wiki_cli/services…_service.py:_run_protocol)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_read_protocol_request` | `available` | `evaluated` | `available` |
-| `sys.stdin.read` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path(…).read_text` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path (src/llm_wiki_cli/services…py:_read_protocol_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `ProtocolRequestError` | `unavailable` | `unavailable` | `unavailable` |
-| `json.loads (src/llm_wiki_cli/services…py:_read_protocol_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `ProtocolRequestError` | `unavailable` | `unavailable` | `unavailable` |
-| `isinstance (src/llm_wiki_cli/services…py:_read_protocol_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `run (src/llm_wiki_cli/services/context_service.py)` | `available` | `partial` | `available` | `23` | `21` | `2` |
+| `getattr (src/llm_wiki_cli/services/context_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_run_protocol` | `available` | `evaluated` | `available` | `15` | `15` | `0` |
+| `getattr (src/llm_wiki_cli/services…_service.py:_run_protocol)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_read_protocol_request` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `sys.stdin.read` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path(…).read_text` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path (src/llm_wiki_cli/services…py:_read_protocol_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ProtocolRequestError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `json.loads (src/llm_wiki_cli/services…py:_read_protocol_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ProtocolRequestError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…py:_read_protocol_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

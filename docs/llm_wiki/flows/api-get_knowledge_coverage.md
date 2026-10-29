@@ -145,9 +145,9 @@ sequenceDiagram
     p1-->>p30: counts
 ```
 
-> Call sequence diagram shows 30 of 4239 interactions; 4209 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4242 interactions; 4212 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1351 (1350 omitted); unresolved 1 of 1356 (1355 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1352 (1351 omitted); unresolved 1 of 1358 (1357 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -174,25 +174,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1533; effect analysis evaluated: 1103, partial: 0, unavailable: 430. Counts include steps omitted from the displayed trace.
+Source steps: 1533; effect analysis evaluated: 1031, partial: 72, unavailable: 430. Counts include steps omitted from the displayed trace.
+
+Collector observations for 1103 source steps with known totals: observed: 6576, emitted: 6240, omitted: 336. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `get_knowledge_coverage` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/api.py:get_knowledge_coverage)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` |
-| `isinstance (src/llm_wiki_cli/api.py:get_knowledge_coverage)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` |
-| `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` |
-| `getattr (src/llm_wiki_cli/api.py:get_knowledge_coverage)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/api.py:get_knowledge_coverage)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` |
-| `cast` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `build_knowledge_coverage` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…:build_knowledge_coverage)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `get_knowledge_coverage` | `available` | `evaluated` | `available` | `14` | `14` | `0` |
+| `isinstance (src/llm_wiki_cli/api.py:get_knowledge_coverage)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/api.py:get_knowledge_coverage)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `getattr (src/llm_wiki_cli/api.py:get_knowledge_coverage)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/api.py:get_knowledge_coverage)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `cast` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `build_knowledge_coverage` | `available` | `evaluated` | `available` | `12` | `12` | `0` |
+| `isinstance (src/llm_wiki_cli/services…:build_knowledge_coverage)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

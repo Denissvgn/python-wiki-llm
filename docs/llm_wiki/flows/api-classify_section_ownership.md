@@ -43,22 +43,25 @@ sequenceDiagram
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 4; effect analysis evaluated: 3, partial: 0, unavailable: 1. Counts include steps omitted from the displayed trace.
+Source steps: 4; effect analysis evaluated: 2, partial: 1, unavailable: 1. Counts include steps omitted from the displayed trace.
+
+Collector observations for 3 source steps with known totals: observed: 123, emitted: 39, omitted: 84. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `classify_section_ownership` | `available` | `evaluated` | `available` |
-| `_coerce_page_kind` | `available` | `evaluated` | `available` |
-| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `PageKind` | `unavailable` | `unavailable` | `unavailable` |
-| `ValueError` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_top_level_policy` | `available` | `evaluated` | `available` |
-| `title.casefold` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_LOG_DATE_HEADING_RE.fullmatch` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_HTTP_OPERATION_HEADING_RE.match` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `classify_section_ownership` | `available` | `evaluated` | `available` | `15` | `15` | `0` |
+| `_coerce_page_kind` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `PageKind` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `ValueError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_top_level_policy` | `available` | `partial` | `available` | `104` | `20` | `84` |
+| `title.casefold` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_LOG_DATE_HEADING_RE.fullmatch` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_HTTP_OPERATION_HEADING_RE.match` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

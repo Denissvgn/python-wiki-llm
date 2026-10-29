@@ -125,25 +125,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 745; effect analysis evaluated: 489, partial: 0, unavailable: 256. Counts include steps omitted from the displayed trace.
+Source steps: 745; effect analysis evaluated: 476, partial: 13, unavailable: 256. Counts include steps omitted from the displayed trace.
+
+Collector observations for 489 source steps with known totals: observed: 2356, emitted: 2204, omitted: 152. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `serialize_knowledge_index` | `available` | `evaluated` | `available` |
-| `json.dumps (src/llm_wiki_cli/services…serialize_knowledge_index)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `knowledge_index_to_payload` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError (src/llm_wiki_cli/services…nowledge_index_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_emit_extensions` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_parse_extensions` | `available` | `evaluated` | `available` |
-| `_object (src/llm_wiki_cli/services/knowledge_model.py)` | `available` | `evaluated` | `available` |
-| `dict (src/llm_wiki_cli/services…nowledge_model.py:_object)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `require_mapping` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `serialize_knowledge_index` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `json.dumps (src/llm_wiki_cli/services…serialize_knowledge_index)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `knowledge_index_to_payload` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `isinstance (src/llm_wiki_cli/services…nowledge_index_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…nowledge_index_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_emit_extensions` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_parse_extensions` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `_object (src/llm_wiki_cli/services/knowledge_model.py)` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `dict (src/llm_wiki_cli/services…nowledge_model.py:_object)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `require_mapping` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

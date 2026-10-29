@@ -101,25 +101,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 130; effect analysis evaluated: 129, partial: 0, unavailable: 1. Counts include steps omitted from the displayed trace.
+Source steps: 130; effect analysis evaluated: 128, partial: 1, unavailable: 1. Counts include steps omitted from the displayed trace.
+
+Collector observations for 129 source steps with known totals: observed: 668, emitted: 664, omitted: 4. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `normalize_module_observation` | `available` | `evaluated` | `available` |
-| `_normalize_module_observation` | `available` | `evaluated` | `available` |
-| `_inventory_language` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_failure` | `available` | `evaluated` | `available` |
-| `_InventoryNormalizationError` | `unavailable` | `unavailable` | `unavailable` |
-| `file_data.get (src/llm_wiki_cli/services…ce.py:_inventory_language)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_failure` | `available` | `evaluated` | `available` |
-| `_failure` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…malize_module_observation)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_record_array` | `available` | `evaluated` | `available` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `normalize_module_observation` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `_normalize_module_observation` | `available` | `partial` | `available` | `24` | `20` | `4` |
+| `_inventory_language` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
+| `isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_failure` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `_InventoryNormalizationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `file_data.get (src/llm_wiki_cli/services…ce.py:_inventory_language)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_failure` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `_failure` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `isinstance (src/llm_wiki_cli/services…malize_module_observation)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_record_array` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
 
 ```mermaid
 flowchart LR

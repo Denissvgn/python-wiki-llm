@@ -111,25 +111,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 213; effect analysis evaluated: 149, partial: 0, unavailable: 64. Counts include steps omitted from the displayed trace.
+Source steps: 213; effect analysis evaluated: 147, partial: 2, unavailable: 64. Counts include steps omitted from the displayed trace.
+
+Collector observations for 149 source steps with known totals: observed: 653, emitted: 648, omitted: 5. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `serialize_typed_graph` | `available` | `evaluated` | `available` |
-| `json.dumps` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `validate_typed_graph` | `available` | `evaluated` | `available` |
-| `_parse_typed_graph` | `available` | `evaluated` | `available` |
-| `_object` | `available` | `evaluated` | `available` |
-| `require_mapping` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `key.encode` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeGraphError` | `unavailable` | `unavailable` | `unavailable` |
-| `KnowledgeGraphError` | `unavailable` | `unavailable` | `unavailable` |
-| `dict` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `serialize_typed_graph` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `json.dumps` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `validate_typed_graph` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `_parse_typed_graph` | `available` | `evaluated` | `available` | `13` | `13` | `0` |
+| `_object` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `require_mapping` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `key.encode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeGraphError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `KnowledgeGraphError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `dict` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

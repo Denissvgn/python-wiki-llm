@@ -69,23 +69,25 @@ sequenceDiagram
 
 Source steps: 13; effect analysis evaluated: 8, partial: 0, unavailable: 5. Counts include steps omitted from the displayed trace.
 
+Collector observations for 8 source steps with known totals: observed: 37, emitted: 37, omitted: 0. Unavailable totals are excluded.
+
 - Callable record unavailable; the selected entry symbol has no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `repository_identities_match` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…epository_identities_match)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services…epository_identities_match)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_repository_identity` | `available` | `evaluated` | `available` |
-| `_nonempty_string` | `available` | `evaluated` | `available` |
-| `_string` | `available` | `evaluated` | `available` |
-| `require_string` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…lidation.py:require_string)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `value.encode` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeModelError` | `unavailable` | `unavailable` | `unavailable` |
-| `KnowledgeModelError` | `unavailable` | `unavailable` | `unavailable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `repository_identities_match` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `isinstance (src/llm_wiki_cli/services…epository_identities_match)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…epository_identities_match)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_repository_identity` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `_nonempty_string` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `_string` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `require_string` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `isinstance (src/llm_wiki_cli/services…lidation.py:require_string)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `value.encode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeModelError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `KnowledgeModelError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 
 ```mermaid
 flowchart LR

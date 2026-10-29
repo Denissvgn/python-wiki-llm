@@ -125,25 +125,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 943; effect analysis evaluated: 610, partial: 0, unavailable: 333. Counts include steps omitted from the displayed trace.
+Source steps: 943; effect analysis evaluated: 595, partial: 15, unavailable: 333. Counts include steps omitted from the displayed trace.
+
+Collector observations for 610 source steps with known totals: observed: 2972, emitted: 2809, omitted: 163. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `validate_knowledge_payload` | `available` | `evaluated` | `available` |
-| `parse_knowledge_index` | `available` | `evaluated` | `available` |
-| `_record` | `available` | `evaluated` | `available` |
-| `_object (src/llm_wiki_cli/services/knowledge_model.py)` | `available` | `evaluated` | `available` |
-| `dict (src/llm_wiki_cli/services…nowledge_model.py:_object)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `require_mapping` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `key.encode` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeModelError` | `unavailable` | `unavailable` | `unavailable` |
-| `KnowledgeModelError` | `unavailable` | `unavailable` | `unavailable` |
-| `KnowledgeModelError` | `unavailable` | `unavailable` | `unavailable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `validate_knowledge_payload` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `parse_knowledge_index` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `_record` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `_object (src/llm_wiki_cli/services/knowledge_model.py)` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `dict (src/llm_wiki_cli/services…nowledge_model.py:_object)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `require_mapping` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `key.encode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeModelError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `KnowledgeModelError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `KnowledgeModelError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 
 ```mermaid
 flowchart LR

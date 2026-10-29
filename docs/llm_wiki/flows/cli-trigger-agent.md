@@ -132,25 +132,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 334; effect analysis evaluated: 255, partial: 0, unavailable: 79. Counts include steps omitted from the displayed trace.
+Source steps: 334; effect analysis evaluated: 240, partial: 15, unavailable: 79. Counts include steps omitted from the displayed trace.
+
+Collector observations for 255 source steps with known totals: observed: 1699, emitted: 1649, omitted: 50. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `run` | `available` | `evaluated` | `available` |
-| `getattr (src/llm_wiki_cli/commands/trigger_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `reset_breaker` | `available` | `evaluated` | `available` |
-| `save_state` | `available` | `evaluated` | `available` |
-| `_state_path` | `available` | `evaluated` | `available` |
-| `tempfile.mkstemp` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `os.fdopen` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `json.dump` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `os.replace` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `os.unlink` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `dict (src/llm_wiki_cli/services…_breaker.py:reset_breaker)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `print (src/llm_wiki_cli/commands/trigger_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `run` | `available` | `evaluated` | `available` | `12` | `12` | `0` |
+| `getattr (src/llm_wiki_cli/commands/trigger_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `reset_breaker` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `save_state` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `_state_path` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `tempfile.mkstemp` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.fdopen` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `json.dump` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.unlink` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `dict (src/llm_wiki_cli/services…_breaker.py:reset_breaker)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `print (src/llm_wiki_cli/commands/trigger_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

@@ -97,23 +97,25 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 10; effect analysis evaluated: 9, partial: 0, unavailable: 1. Counts include steps omitted from the displayed trace.
 
+Collector observations for 9 source steps with known totals: observed: 41, emitted: 41, omitted: 0. Unavailable totals are excluded.
+
 - Callable record unavailable; the selected entry symbol has no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `description_table_cells` | `available` | `evaluated` | `available` |
-| `_markdown_lines` | `available` | `evaluated` | `available` |
-| `re.findall` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `normalize_markdown` | `available` | `evaluated` | `available` |
-| `text.replace(…).replace` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `text.replace` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_line_content` | `available` | `evaluated` | `available` |
-| `line.endswith` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `enumerate` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `split_table_row` | `available` | `evaluated` | `available` |
-| `line.strip` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `stripped.startswith` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `description_table_cells` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `_markdown_lines` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `re.findall` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `normalize_markdown` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `text.replace(…).replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `text.replace` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_line_content` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `line.endswith` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `enumerate` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `split_table_row` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `line.strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `stripped.startswith` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

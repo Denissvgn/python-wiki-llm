@@ -52,6 +52,8 @@ sequenceDiagram
 
 Source steps: 4; effect analysis evaluated: 4, partial: 0, unavailable: 0. Counts include steps omitted from the displayed trace.
 
+Collector observations for 4 source steps with known totals: observed: 27, emitted: 27, omitted: 0. Unavailable totals are excluded.
+
 ```mermaid
 flowchart LR
     s1["1. parse_utc_timestamp"]

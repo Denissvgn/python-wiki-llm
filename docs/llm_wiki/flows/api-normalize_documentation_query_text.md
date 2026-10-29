@@ -41,19 +41,21 @@ sequenceDiagram
 
 Source steps: 3; effect analysis evaluated: 1, partial: 0, unavailable: 2. Counts include steps omitted from the displayed trace.
 
+Collector observations for 1 source steps with known totals: observed: 5, emitted: 5, omitted: 0. Unavailable totals are excluded.
+
 - Callable record unavailable; the selected entry symbol has no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `normalize_documentation_query_text` | `available` | `evaluated` | `available` |
-| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `DocumentationQueryError` | `unavailable` | `unavailable` | `unavailable` |
-| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `len` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `selected.encode` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `DocumentationQueryError` | `unavailable` | `unavailable` | `unavailable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `normalize_documentation_query_text` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `DocumentationQueryError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `len` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `selected.encode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `DocumentationQueryError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 
 ```mermaid
 flowchart LR

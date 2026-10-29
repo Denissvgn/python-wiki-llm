@@ -154,25 +154,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 653; effect analysis evaluated: 471, partial: 0, unavailable: 182. Counts include steps omitted from the displayed trace.
+Source steps: 653; effect analysis evaluated: 437, partial: 34, unavailable: 182. Counts include steps omitted from the displayed trace.
+
+Collector observations for 471 source steps with known totals: observed: 3197, emitted: 2941, omitted: 256. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `build_context` | `available` | `evaluated` | `available` |
-| `_normalise_focus` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/api.py:_normalise_focus)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `list (src/llm_wiki_cli/api.py:_normalise_focus)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_normalize_optional_knowledge_mode` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `', '.join (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `repr (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` |
-| `cast (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_validate_protocol_request` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…validate_protocol_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `build_context` | `available` | `partial` | `available` | `24` | `20` | `4` |
+| `_normalise_focus` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `isinstance (src/llm_wiki_cli/api.py:_normalise_focus)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `list (src/llm_wiki_cli/api.py:_normalise_focus)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_normalize_optional_knowledge_mode` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `isinstance (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `', '.join (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `repr (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `cast (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_validate_protocol_request` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `isinstance (src/llm_wiki_cli/services…validate_protocol_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

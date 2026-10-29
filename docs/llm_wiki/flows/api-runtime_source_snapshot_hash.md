@@ -105,23 +105,25 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 23; effect analysis evaluated: 12, partial: 0, unavailable: 11. Counts include steps omitted from the displayed trace.
 
+Collector observations for 12 source steps with known totals: observed: 54, emitted: 54, omitted: 0. Unavailable totals are excluded.
+
 - Callable record unavailable; the selected entry symbol has no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `runtime_source_snapshot_hash` | `available` | `evaluated` | `available` |
-| `hash_source_snapshot` | `available` | `evaluated` | `available` |
-| `set (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `enumerate` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` |
-| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` |
-| `seen_paths.add` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `records.append` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `records.sort` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_hash_structured` | `available` | `evaluated` | `available` |
-| `payload.values` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `runtime_source_snapshot_hash` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `hash_source_snapshot` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `set (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `enumerate` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `seen_paths.add` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `records.append` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `records.sort` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_hash_structured` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `payload.values` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

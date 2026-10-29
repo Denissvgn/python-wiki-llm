@@ -114,25 +114,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1038; effect analysis evaluated: 648, partial: 0, unavailable: 390. Counts include steps omitted from the displayed trace.
+Source steps: 1038; effect analysis evaluated: 624, partial: 24, unavailable: 390. Counts include steps omitted from the displayed trace.
+
+Collector observations for 648 source steps with known totals: observed: 3049, emitted: 2951, omitted: 98. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `dispatch_calibration_agent` | `available` | `evaluated` | `available` |
-| `_require_choice` | `available` | `evaluated` | `available` |
-| `require_choice` | `available` | `evaluated` | `available` |
-| `require_trimmed_text` | `available` | `evaluated` | `available` |
-| `require_nonempty_text` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `contains_control_character` | `available` | `evaluated` | `available` |
-| `pattern.search` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `frozenset (src/llm_wiki_cli/services…idation.py:require_choice)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `choice_error` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `P0CalibrationSchemaError` | `unavailable` | `unavailable` | `unavailable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `dispatch_calibration_agent` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
+| `_require_choice` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `require_choice` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
+| `require_trimmed_text` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `require_nonempty_text` | `available` | `evaluated` | `available` | `8` | `8` | `0` |
+| `isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `contains_control_character` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `pattern.search` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `frozenset (src/llm_wiki_cli/services…idation.py:require_choice)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `choice_error` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `P0CalibrationSchemaError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 
 ```mermaid
 flowchart LR

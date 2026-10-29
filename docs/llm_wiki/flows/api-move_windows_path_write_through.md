@@ -57,23 +57,25 @@ sequenceDiagram
 
 Source steps: 5; effect analysis evaluated: 3, partial: 0, unavailable: 2. Counts include steps omitted from the displayed trace.
 
+Collector observations for 3 source steps with known totals: observed: 14, emitted: 14, omitted: 0. Unavailable totals are excluded.
+
 - Callable record unavailable; the selected entry symbol has no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `move_windows_path_write_through` | `available` | `evaluated` | `available` |
-| `WindowsDurabilityError` | `unavailable` | `unavailable` | `unavailable` |
-| `ctypes.WinDLL` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `move_file` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_windows_api_path` | `available` | `evaluated` | `available` |
-| `os.path.abspath` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `os.fspath` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `value.startswith` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `value.startswith` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `Path` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_windows_api_path` | `available` | `evaluated` | `available` |
-| `Path` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `move_windows_path_write_through` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
+| `WindowsDurabilityError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `ctypes.WinDLL` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `move_file` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_windows_api_path` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `os.path.abspath` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `os.fspath` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `value.startswith` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `value.startswith` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `Path` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_windows_api_path` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `Path` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

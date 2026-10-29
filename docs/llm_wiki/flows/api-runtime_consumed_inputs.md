@@ -87,23 +87,25 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 13; effect analysis evaluated: 5, partial: 0, unavailable: 8. Counts include steps omitted from the displayed trace.
 
+Collector observations for 5 source steps with known totals: observed: 29, emitted: 29, omitted: 0. Unavailable totals are excluded.
+
 - Callable record unavailable; the selected entry symbol has no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `runtime_consumed_inputs` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `source_snapshot.to_consumed_inputs` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_merge_explicit_consumed_input` | `available` | `evaluated` | `available` |
-| `KnowledgeGenerationError` | `unavailable` | `unavailable` | `unavailable` |
-| `KnowledgeGenerationError` | `unavailable` | `unavailable` | `unavailable` |
-| `is_valid_sha256` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…vidence.py:is_valid_sha256)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_SHA256_RE.fullmatch` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `runtime_consumed_inputs` | `available` | `evaluated` | `available` | `11` | `11` | `0` |
+| `isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `source_snapshot.to_consumed_inputs` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_merge_explicit_consumed_input` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `KnowledgeGenerationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `KnowledgeGenerationError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `is_valid_sha256` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `isinstance (src/llm_wiki_cli/services…vidence.py:is_valid_sha256)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_SHA256_RE.fullmatch` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

@@ -168,25 +168,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1062; effect analysis evaluated: 704, partial: 0, unavailable: 358. Counts include steps omitted from the displayed trace.
+Source steps: 1062; effect analysis evaluated: 650, partial: 54, unavailable: 358. Counts include steps omitted from the displayed trace.
+
+Collector observations for 704 source steps with known totals: observed: 4685, emitted: 4346, omitted: 339. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `get_maintenance_status` | `available` | `evaluated` | `available` |
-| `type (src/llm_wiki_cli/api.py:get_maintenance_status)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `type (src/llm_wiki_cli/api.py:get_maintenance_status)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `ValueError (src/llm_wiki_cli/api.py:get_maintenance_status)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `validate_queue_limit` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `ValueError (src/llm_wiki_cli/services…e.py:validate_queue_limit)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `cast (src/llm_wiki_cli/api.py:get_maintenance_status)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `get_maintenance_status_authority` | `available` | `evaluated` | `available` |
-| `_validate_status_request` | `available` | `evaluated` | `available` |
-| `type (src/llm_wiki_cli/services…:_validate_status_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `get_maintenance_status` | `available` | `evaluated` | `available` | `10` | `10` | `0` |
+| `type (src/llm_wiki_cli/api.py:get_maintenance_status)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `type (src/llm_wiki_cli/api.py:get_maintenance_status)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError (src/llm_wiki_cli/api.py:get_maintenance_status)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `validate_queue_limit` | `available` | `evaluated` | `available` | `6` | `6` | `0` |
+| `isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `ValueError (src/llm_wiki_cli/services…e.py:validate_queue_limit)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `cast (src/llm_wiki_cli/api.py:get_maintenance_status)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `get_maintenance_status_authority` | `available` | `evaluated` | `available` | `7` | `7` | `0` |
+| `_validate_status_request` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `type (src/llm_wiki_cli/services…:_validate_status_request)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

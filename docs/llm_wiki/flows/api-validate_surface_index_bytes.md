@@ -103,25 +103,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 174; effect analysis evaluated: 80, partial: 0, unavailable: 94. Counts include steps omitted from the displayed trace.
+Source steps: 174; effect analysis evaluated: 76, partial: 4, unavailable: 94. Counts include steps omitted from the displayed trace.
+
+Collector observations for 80 source steps with known totals: observed: 321, emitted: 308, omitted: 13. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `validate_surface_index_bytes` | `available` | `evaluated` | `available` |
-| `_decode_json_object` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeArtifactError` | `unavailable` | `unavailable` | `unavailable` |
-| `content.decode` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeArtifactError` | `unavailable` | `unavailable` | `unavailable` |
-| `json.loads` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_unique_json_object` | `available` | `evaluated` | `available` |
-| `KnowledgeArtifactError` | `unavailable` | `unavailable` | `unavailable` |
-| `_reject_json_constant` | `available` | `evaluated` | `available` |
-| `KnowledgeArtifactError` | `unavailable` | `unavailable` | `unavailable` |
-| `isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `validate_surface_index_bytes` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `_decode_json_object` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
+| `isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeArtifactError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `content.decode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeArtifactError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `json.loads` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_unique_json_object` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `KnowledgeArtifactError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_reject_json_constant` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `KnowledgeArtifactError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

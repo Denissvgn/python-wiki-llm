@@ -48,22 +48,24 @@ sequenceDiagram
 
 Source steps: 6; effect analysis evaluated: 4, partial: 0, unavailable: 2. Counts include steps omitted from the displayed trace.
 
+Collector observations for 4 source steps with known totals: observed: 9, emitted: 9, omitted: 0. Unavailable totals are excluded.
+
 - Callable record unavailable; the selected entry symbol has no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `relationship_edge_key` | `available` | `evaluated` | `available` |
-| `next` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeGraphError` | `unavailable` | `unavailable` | `unavailable` |
-| `sha256_bytes` | `available` | `evaluated` | `available` |
-| `hashlib.sha256(…).hexdigest` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `hashlib.sha256` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_canonical_json(…).encode` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `_canonical_json` | `available` | `evaluated` | `available` |
-| `canonical_json_text` | `available` | `evaluated` | `available` |
-| `json.dumps` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `KnowledgeGraphError` | `unavailable` | `unavailable` | `unavailable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `relationship_edge_key` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `next` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeGraphError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `sha256_bytes` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `hashlib.sha256(…).hexdigest` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `hashlib.sha256` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_canonical_json(…).encode` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `_canonical_json` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `canonical_json_text` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `json.dumps` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `KnowledgeGraphError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
 
 ```mermaid
 flowchart LR

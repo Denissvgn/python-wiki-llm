@@ -114,25 +114,28 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 655; effect analysis evaluated: 427, partial: 0, unavailable: 228. Counts include steps omitted from the displayed trace.
+Source steps: 655; effect analysis evaluated: 417, partial: 10, unavailable: 228. Counts include steps omitted from the displayed trace.
+
+Collector observations for 427 source steps with known totals: observed: 2085, emitted: 2038, omitted: 47. Unavailable totals are excluded.
 
 - Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `apply_governance_projection` | `available` | `evaluated` | `available` |
-| `_event_limit` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…overnance.py:_event_limit)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `isinstance (src/llm_wiki_cli/services…overnance.py:_event_limit)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `GovernanceError` | `unavailable` | `unavailable` | `unavailable` |
-| `strip_governance_projection` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…rip_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `TypeError (src/llm_wiki_cli/services…rip_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `dict (src/llm_wiki_cli/services…rip_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `extensions.pop` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `concepts.append (src/llm_wiki_cli/services…rip_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `replace (src/llm_wiki_cli/services…rip_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `apply_governance_projection` | `available` | `evaluated` | `available` | `13` | `13` | `0` |
+| `_event_limit` | `available` | `evaluated` | `available` | `4` | `4` | `0` |
+| `isinstance (src/llm_wiki_cli/services…overnance.py:_event_limit)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `isinstance (src/llm_wiki_cli/services…overnance.py:_event_limit)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `GovernanceError` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `strip_governance_projection` | `available` | `evaluated` | `available` | `16` | `16` | `0` |
+| `isinstance (src/llm_wiki_cli/services…rip_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `TypeError (src/llm_wiki_cli/services…rip_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `dict (src/llm_wiki_cli/services…rip_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `extensions.pop` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `concepts.append (src/llm_wiki_cli/services…rip_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `replace (src/llm_wiki_cli/services…rip_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 
 ```mermaid
 flowchart LR

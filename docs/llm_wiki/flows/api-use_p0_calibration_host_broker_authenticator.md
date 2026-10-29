@@ -58,23 +58,25 @@ sequenceDiagram
 
 Source steps: 7; effect analysis evaluated: 5, partial: 0, unavailable: 2. Counts include steps omitted from the displayed trace.
 
+Collector observations for 5 source steps with known totals: observed: 22, emitted: 22, omitted: 0. Unavailable totals are excluded.
+
 - Callable record unavailable; the selected entry symbol has no represented callable body.
 - Effect collector totals unavailable; observed counts cover captured records only.
 
-| Step | Callable record | Effect analysis | Collector totals |
-|---|---|---|---|
-| `use_p0_calibration_host_broker_authenticator` | `available` | `evaluated` | `available` |
-| `warnings.warn` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `use_calibration_host_broker_authenticator` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…_host_broker_authenticator)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `HostBrokerAuthenticationUnavailable` | `unavailable` | `unavailable` | `unavailable` |
-| `_require_bounded_text` | `available` | `evaluated` | `available` |
-| `require_bounded_text` | `available` | `evaluated` | `available` |
-| `isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `len` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `len` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` |
-| `contains_control_character` | `available` | `evaluated` | `available` |
+| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
+|---|---|---|---|---:|---:|---:|
+| `use_p0_calibration_host_broker_authenticator` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `warnings.warn` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `use_calibration_host_broker_authenticator` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
+| `isinstance (src/llm_wiki_cli/services…_host_broker_authenticator)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `HostBrokerAuthenticationUnavailable` | `unavailable` | `unavailable` | `unavailable` | — | — | — |
+| `_require_bounded_text` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
+| `require_bounded_text` | `available` | `evaluated` | `available` | `9` | `9` | `0` |
+| `isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `len` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `len` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
+| `contains_control_character` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
 
 ```mermaid
 flowchart LR
