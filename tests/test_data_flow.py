@@ -608,8 +608,11 @@ def test_detailed_data_flow_uses_raw_effect_totals_from_extractor_sidecar(tmp_pa
         "limitations": [
             "limit-applies-per-effect-kind-per-emitted-step",
             "static-effects-do-not-claim-runtime-completeness",
+            "upstream-effect-collector-limit-reached",
         ],
     }
+    assert "upstream-effect-collector-limit-reached" not in detailed["coverage"]["effects"]["by_kind"]["inputs"]["limitations"]
+    assert "upstream-effect-collector-limit-reached" not in detailed["coverage"]["boundaries"]["limitations"]
 
 
 def test_detailed_data_flow_propagates_exact_reachable_flow_step_count():

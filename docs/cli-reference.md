@@ -501,6 +501,9 @@ with callable-record and collector-total availability for each step. Known
 limitations also appear in generated flow pages, including when no effects or
 call-resolution gaps were captured. Empty observations from an unavailable
 collector do not establish an empty handler body or runtime completeness.
+Known collector omissions remain visible as partial coverage with observed,
+emitted, and omitted counts. Collector subtotals include only source steps
+with available totals; unknown counts remain unavailable.
 Dockerfile records carry `stage_schema_version: "llm-wiki-dockerfile-stages/v1"`.
 Each stage owns its configuration declarations and ordered source instructions.
 An earlier named `FROM` stage is linked through `base_stage`; `COPY --from`

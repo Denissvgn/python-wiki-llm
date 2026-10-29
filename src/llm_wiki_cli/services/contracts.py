@@ -12,6 +12,10 @@ and per-step qualifications for callable records, source effect observations,
 and collector totals. Flow assembly can be evaluated while effect analysis is
 partial or unavailable. Observation counts describe captured static evidence;
 unavailable collectors cannot establish that a handler body has no effects.
+Known collector omissions qualify effect coverage as partial. Additive
+``collector_counts`` and ``collector_observations`` retain observed, emitted,
+and omitted counts for source steps with available totals; unknown counts
+remain null and are excluded from the known subtotal.
 
 Dockerfile records may add ``stage_schema_version`` (``llm-wiki-dockerfile-stages/v1``).
 Each stage owns its source declarations and ordered ``instructions`` with source

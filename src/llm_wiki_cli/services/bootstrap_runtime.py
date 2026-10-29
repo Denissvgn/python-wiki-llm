@@ -3022,22 +3022,31 @@ def _append_flow_analysis_coverage(lines: list[str], data_flow: Mapping) -> bool
         lines.extend([f"Source steps: {analysis.get('source_steps', 0)}; effect analysis evaluated: "
             f"{counts.get('evaluated', 0)}, partial: {counts.get('partial', 0)}, "
             f"unavailable: {counts.get('unavailable', 0)}. Counts include steps omitted from the displayed trace.", ""])
+    collector_counts = analysis.get("collector_observations")
+    if isinstance(collector_counts, Mapping):
+        known_steps = (analysis.get("collector_totals", {}) or {}).get("available", 0)
+        lines.extend([f"Collector observations for {known_steps} source steps with known totals: "
+            f"observed: {collector_counts.get('observed', 0)}, emitted: {collector_counts.get('emitted', 0)}, "
+            f"omitted: {collector_counts.get('omitted', 0)}. Unavailable totals are excluded.", ""])
     messages = {
         "upstream-callable-record-unavailable": "Callable record unavailable; the selected entry symbol has no represented callable body.",
         "upstream-effect-observations-unavailable": "Effect observations unavailable for one or more represented callables.",
         "upstream-effect-collector-totals-may-be-unavailable": "Effect collector totals unavailable; observed counts cover captured records only.",
+        "upstream-effect-collector-limit-reached": "Effect collector omitted observations before flow assembly; displayed effects are partial.",
         "upstream-callable-effect-coverage-unavailable": "Callable/effect coverage metadata unavailable in this legacy projection.",
         "upstream-flow-depth-limit-reached": "Flow depth limit reached; deeper source observations are unavailable.",
     }
     for reason in limitations:
         lines.append("- " + messages.get(reason, str(_table_inline_code(reason, table=False))))
     if limitations:
-        lines.extend(["", "| Step | Callable record | Effect analysis | Collector totals |", "|---|---|---|---|"])
+        lines.extend(["", "| Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |", "|---|---|---|---|---:|---:|---:|"])
         for step in data_flow.get("steps", []):
             coverage = step.get("analysis", {}) or {}
+            counts = coverage.get("collector_counts", {}) or {}
             lines.append("| " + " | ".join(_table_inline_code(value) for value in (
                 step.get("symbol"), coverage.get("callable_record", "unknown"),
-                coverage.get("effect_analysis", "unknown"), coverage.get("collector_totals", "unknown"))) + " |")
+                coverage.get("effect_analysis", "unknown"), coverage.get("collector_totals", "unknown"),
+                counts.get("observed"), counts.get("emitted"), counts.get("omitted"))) + " |")
         lines.append("")
     return bool(limitations) or state not in {"evaluated", "not_applicable"}
 

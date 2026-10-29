@@ -7,7 +7,7 @@ import pytest
 
 from llm_wiki_cli.extractors.python_extractor import PythonExtractor
 from llm_wiki_cli.services.bootstrap_runtime import _generate_flow_md
-from llm_wiki_cli.services.data_flow import analyze_data_flow, analyze_data_flow_detailed
+from llm_wiki_cli.services.data_flow import analyze_data_flow, analyze_data_flow_detailed, build_data_flow_context
 from llm_wiki_cli.services.extraction_service import _data_flow_details_contract, _public_data_flow_coverage
 
 
@@ -140,3 +140,47 @@ def test_flow_limit_does_not_hide_omitted_handler_coverage_limitations():
     assert len(contract["flows"]) == 100 and contract["coverage"]["omitted"] == 1
     assert all(flow["analysis"]["state"] == "evaluated" for flow in contract["flows"])
     assert "upstream-callable-record-unavailable" in contract["coverage"]["upstream_analyzer_limitations"]
+
+
+def test_clipped_collector_observations_are_partial_and_disclosed_in_markdown(tmp_path):
+    text = "\n".join(f"CONFIG_{index} = {index}" for index in range(20))
+    (tmp_path / "svc.py").write_text(text + "\ndef handle():\n    return ("
+        + ", ".join(f"CONFIG_{index}" for index in range(20)) + ")\n")
+    extractor = PythonExtractor()
+    inventory = extractor.extract(str(tmp_path), deep=True, capture_data_effect_observations=True)
+    flow = _flow("handle", "svc.py")
+    context = build_data_flow_context(inventory, [], data_effect_observations=extractor.last_data_effect_observations)
+    legacy = analyze_data_flow(inventory, flow, [], context=context)
+    detailed = analyze_data_flow_detailed(inventory, flow, [], context=context)
+    assert legacy["analysis"]["state"] == detailed["analysis"]["state"] == "partial"
+    stats = detailed["steps"][0]["analysis"]["collector_counts"]
+    assert stats["observed"] - stats["emitted"] == stats["omitted"] == 12
+    assert detailed["analysis"]["collector_observations"] == stats
+    assert detailed["analysis"]["collector_totals"] == {"available": 1, "unavailable": 0}
+    page = _generate_flow_md(flow, data_flow=legacy)
+    assert "Effect collector omitted observations" in page and "omitted: 12" in page
+    assert len(detailed["steps"][0]["reads"]) == 8
+
+
+def test_zero_emitted_collector_results_are_not_equivalent_to_known_empty():
+    inventory = {"svc.py": {"functions": [{"name": "run"}]}}
+    sidecar = _zero_coverage("svc.py", ["run"])
+    sidecar["callables"][0]["coverage"]["reads"].update(observed=3, emitted=0, omitted=3, limit=0, truncated=True)
+    data = analyze_data_flow_detailed(inventory, _flow("run", "svc.py"), [], data_effect_observations=sidecar)
+    assert data["analysis"]["state"] == "partial"
+    assert data["steps"][0]["reads"] == []
+    assert data["analysis"]["collector_observations"] == {"observed": 3, "emitted": 0, "omitted": 3}
+    assert "omitted: 3" in _generate_flow_md(_flow("run", "svc.py"), data_flow=data)
+
+
+@pytest.mark.parametrize("kind", ["external", "unresolved"])
+def test_non_source_steps_do_not_borrow_same_named_local_effects(kind):
+    inventory = {"svc.py": {"functions": [{"name": "run", "data_effects": {
+        "inputs": [{"kind": "param", "name": "value"}]
+    }}]}}
+    flow = _flow("run", "svc.py")
+    flow["steps"][0]["kind"] = kind
+    data = analyze_data_flow_detailed(inventory, flow, [], data_effect_observations=_zero_coverage("svc.py", ["run"]))
+    assert data["analysis"]["state"] == "not_applicable"
+    assert data["steps"][0]["inputs"] == []
+    assert data["coverage"]["effects"]["observed"] == data["coverage"]["effects"]["emitted"] == 0

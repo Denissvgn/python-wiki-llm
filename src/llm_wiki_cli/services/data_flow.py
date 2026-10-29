@@ -247,7 +247,8 @@ def _step_summary(
     effect_coverage: dict[tuple[str, str], dict[str, dict]] | None = None,
 ) -> dict:
     record = index.get((step.get("file"), step.get("symbol")), {})
-    effects = record.get("data_effects", {}) or {}
+    analysis = _step_analysis(step, index, effect_coverage)
+    effects = {} if analysis["callable_record"] == "not_applicable" else record.get("data_effects", {}) or {}
     return {
         "index": step_index,
         "depth": step.get("depth", 0),
@@ -259,23 +260,26 @@ def _step_summary(
         "writes": _effect_list(effects, "writes"),
         "returns": _effect_list(effects, "returns"),
         "boundary_effects": _effect_list(effects, "boundary_effects"),
-        "analysis": _step_analysis(step, index, effect_coverage),
+        "analysis": analysis,
     }
 
 
 def _step_analysis(step: Mapping, index: dict, effect_coverage: dict | None) -> dict:
     if step.get("kind") in {"external", "unresolved"}:
         return {"callable_record": "not_applicable", "effect_analysis": "not_applicable",
-                "collector_totals": "not_applicable", "limitations": []}
+                "collector_totals": "not_applicable", "collector_counts": None, "limitations": []}
     key = (step.get("file"), step.get("symbol"))
     record = index.get(key)
     totals = effect_coverage.get(key) if effect_coverage is not None else None
+    collector_counts = ({kind: sum(record[kind] for record in totals.values())
+                         for kind in ("observed", "emitted", "omitted")}
+                        if totals is not None else None)
     limitations = []
     if record is None:
         effects_state = "unavailable"
         limitations.append("upstream-callable-record-unavailable")
     elif totals is not None:
-        effects_state = "evaluated"
+        effects_state = "partial" if collector_counts and collector_counts["omitted"] else "evaluated"
     elif isinstance(record.get("data_effects"), Mapping):
         effects_state = "partial"
     else:
@@ -283,9 +287,12 @@ def _step_analysis(step: Mapping, index: dict, effect_coverage: dict | None) -> 
         limitations.append("upstream-effect-observations-unavailable")
     if totals is None:
         limitations.append("upstream-effect-collector-totals-may-be-unavailable")
+    elif collector_counts and collector_counts["omitted"]:
+        limitations.append("upstream-effect-collector-limit-reached")
     return {"callable_record": "available" if record is not None else "unavailable",
             "effect_analysis": effects_state,
             "collector_totals": "available" if totals is not None else "unavailable",
+            "collector_counts": collector_counts,
             "limitations": sorted(limitations)}
 
 
@@ -293,6 +300,7 @@ def _analysis_summary(steps: Iterable[Mapping], context: DataFlowAnalysisContext
     callables = {"available": 0, "unavailable": 0}
     effects = {"evaluated": 0, "partial": 0, "unavailable": 0}
     totals = {"available": 0, "unavailable": 0}
+    collector_observations = {"observed": 0, "emitted": 0, "omitted": 0}
     limitations: set[str] = set()
     source_steps = non_source_steps = 0
     for step in steps:
@@ -304,12 +312,16 @@ def _analysis_summary(steps: Iterable[Mapping], context: DataFlowAnalysisContext
         callables[analysis["callable_record"]] += 1
         effects[analysis["effect_analysis"]] += 1
         totals[analysis["collector_totals"]] += 1
+        if analysis["collector_counts"] is not None:
+            for key in collector_observations:
+                collector_observations[key] += analysis["collector_counts"][key]
         limitations.update(analysis["limitations"])
     state = ("not_applicable" if not source_steps else "evaluated" if effects["evaluated"] == source_steps
              else "unavailable" if effects["unavailable"] == source_steps else "partial")
     return {"schema_version": _ANALYSIS_COVERAGE_SCHEMA, "state": state,
             "source_steps": source_steps, "non_source_steps": non_source_steps,
             "callables": callables, "effects": effects, "collector_totals": totals,
+            "collector_observations": collector_observations if totals["available"] else None,
             "limitations": sorted(limitations)}
 
 
@@ -540,15 +552,16 @@ def _raw_effects(
     steps: Iterable[Mapping],
     index: dict[tuple[str | None, str | None], dict],
     effect_coverage: dict[tuple[str, str], dict[str, dict]] | None,
-) -> tuple[dict[str, int], bool]:
+) -> tuple[dict[str, int], bool, set[str]]:
     counts = {key: 0 for key in _EFFECT_KEYS}
     missing_totals = False
+    limited_kinds: set[str] = set()
     for step in steps:
+        if step.get("kind") in {"external", "unresolved"}:
+            continue
         filepath = step.get("file")
         symbol = step.get("symbol")
         record = index.get((filepath, symbol), {})
-        if not record and step.get("kind") in {"external", "unresolved"}:
-            continue
         effects = record.get("data_effects", {}) or {}
         if not isinstance(effects, Mapping):
             continue
@@ -578,7 +591,9 @@ def _raw_effects(
                     f"for {filepath}:{symbol}:{key}"
                 )
             counts[key] += coverage["observed"]
-    return counts, missing_totals
+            if coverage["omitted"]:
+                limited_kinds.add(key)
+    return counts, missing_totals, limited_kinds
 
 
 def _emitted_effects(steps: Iterable[Mapping]) -> dict[str, int]:
@@ -742,7 +757,7 @@ def analyze_data_flow_detailed(
     edge_observations = _flow_edge_observations(
         flow, detailed_context.incoming_edges
     )
-    observed_effects, missing_effect_totals = _raw_effects(
+    observed_effects, missing_effect_totals, limited_effect_kinds = _raw_effects(
         raw_steps,
         detailed_context.callable_index,
         detailed_context.data_effect_coverage,
@@ -759,6 +774,8 @@ def analyze_data_flow_detailed(
     )
     effect_total_limitation = sorted(set(effect_total_limitation)
                                     | set(bounded["analysis"]["limitations"]))
+    shared_effect_limitations = [reason for reason in effect_total_limitation
+                                 if reason != "upstream-effect-collector-limit-reached"]
     effect_kind_limit = _EFFECT_LIMIT * len(bounded["steps"]) or None
     effect_total_limit = (
         _EFFECT_LIMIT * len(bounded["steps"]) * len(_EFFECT_KEYS) or None
@@ -772,7 +789,8 @@ def analyze_data_flow_detailed(
             [
                 "limit-applies-per-effect-kind-per-emitted-step",
                 "static-effects-do-not-claim-runtime-completeness",
-                *effect_total_limitation,
+                *shared_effect_limitations,
+                *(["upstream-effect-collector-limit-reached"] if key in limited_effect_kinds else []),
                 *upstream_limitation,
             ],
         )
@@ -823,7 +841,8 @@ def analyze_data_flow_detailed(
             _EFFECT_LIMIT,
             [
                 "boundary-detection-is-static",
-                *effect_total_limitation,
+                *shared_effect_limitations,
+                *(["upstream-effect-collector-limit-reached"] if "boundary_effects" in limited_effect_kinds else []),
                 *upstream_limitation,
             ],
         ),
@@ -833,7 +852,7 @@ def analyze_data_flow_detailed(
             _GAP_LIMIT,
             [
                 "absence-of-a-gap-does-not-claim-runtime-completeness",
-                *effect_total_limitation,
+                *shared_effect_limitations,
                 *upstream_limitation,
             ],
         ),
