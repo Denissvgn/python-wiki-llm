@@ -147,9 +147,9 @@ sequenceDiagram
     p0-->>p30: report.to_payload (src/llm_wiki_cli/commands/doctor_cmd.py:run)(report_schema=report_schema)
 ```
 
-> Call sequence diagram shows 30 of 3674 interactions; 3644 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3672 interactions; 3642 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1135 (1134 omitted); unresolved 1 of 874 (873 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1133 (1132 omitted); unresolved 1 of 873 (872 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

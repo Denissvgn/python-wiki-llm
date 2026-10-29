@@ -205,5 +205,6 @@ flowchart LR
 | `_scanned_files_by_language_key` | `(inventory: dict) -> dict[str, frozenset[str]]` | — | Group extracted file paths by the reconciler's canonical language key. |
 | `reconcile_dependencies` | `(inventory: dict, project_root: str = '.', *, graph: Optional[dict] = None, source_snapshot: SourceSnapshot \| None = None) -> dict` | — | Reconcile used external imports against declared dependencies per language. |
 | `analyze_dependencies` | `(inventory: dict, project_root: str = '.', *, source_snapshot: SourceSnapshot \| None = None) -> dict` | — | Run the full dependency analysis once, sharing the internal graph. |
+| `startup_cycle_groups` | `(analysis: Mapping) -> list[tuple[list[str], bool]]` | — | Retain preserved subcycles alongside larger compiler-dependent groups. |
 | `top_level_package` | `(filepath: str) -> str` | — | Return the top-level package of *filepath* (its first path component). |
 | `package_dependency_graph` | `(graph: dict) -> dict` | — | Collapse a module graph to a top-level-package graph. |

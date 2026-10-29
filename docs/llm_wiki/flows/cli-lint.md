@@ -149,9 +149,9 @@ sequenceDiagram
     p0-->>p30: report.count (src/llm_wiki_cli/services/lint_service.py:run)('extractor_failure')
 ```
 
-> Call sequence diagram shows 30 of 3529 interactions; 3499 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3534 interactions; 3504 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1071 (1070 omitted); unresolved 1 of 1205 (1204 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1073 (1072 omitted); unresolved 1 of 1207 (1206 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -165,7 +165,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_source_root` | 24 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 24 | - | external | 11 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 36 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
-> Omission summary shows 8 of 918 groups; 910 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 920 groups; 912 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -232,35 +232,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | Path (src/llm_wiki_cli/services/lint_service.py:run) | 3347 | `Path(args.wiki_dir)` |
-| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3348 | `getattr(args, 'src_dir', '.')` |
-| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3349 | `bool(getattr(...))` |
-| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3349 | `getattr(args, 'knowledge_drift_report', False)` |
-| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3350 | `bool(...)` |
-| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3350 | `getattr(args, 'strict', False)` |
+| run | Path (src/llm_wiki_cli/services/lint_service.py:run) | 3346 | `Path(args.wiki_dir)` |
+| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3347 | `getattr(args, 'src_dir', '.')` |
+| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3348 | `bool(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3348 | `getattr(args, 'knowledge_drift_report', False)` |
+| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3349 | `bool(...)` |
+| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3349 | `getattr(args, 'strict', False)` |
+| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3350 | `bool(getattr(...))` |
+| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3350 | `getattr(args, 'profile', False)` |
 | run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3351 | `bool(getattr(...))` |
-| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3351 | `getattr(args, 'profile', False)` |
+| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3351 | `getattr(args, 'cache_stats', False)` |
 | run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3352 | `bool(getattr(...))` |
-| run | getattr (src/llm_wiki_cli/services/lint_service.py:run) | 3352 | `getattr(args, 'cache_stats', False)` |
-| run | bool (src/llm_wiki_cli/services/lint_service.py:run) | 3353 | `bool(getattr(...))` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 3385 |
-| output | `print` | `run` | 3388 |
-| output | `print` | `run` | 3396 |
+| output | `print` | `run` | 3384 |
+| output | `print` | `run` | 3387 |
+| output | `print` | `run` | 3395 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
+| external_call | `run` | `getattr` | 3347 |
 | external_call | `run` | `getattr` | 3348 |
 | external_call | `run` | `getattr` | 3349 |
 | external_call | `run` | `getattr` | 3350 |
 | external_call | `run` | `getattr` | 3351 |
-| external_call | `run` | `getattr` | 3352 |
 | step_limit | `run` | `first 12 steps` | 0 |
 | truncated_flow | `run` | `depth limit` | 0 |
 

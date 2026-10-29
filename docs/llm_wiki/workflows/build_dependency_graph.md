@@ -19,8 +19,8 @@ which is the view load order and cycle detection need. Optional
 ``type_only_edges`` retain type bindings (and declaration-file imports),
 while ``conditional_import_time_edges`` qualify compiler-dependent emission.
 A definitely present import to the same target overrides that uncertainty.
-An import record with
-no ``scope`` counts as import-time, so inventories from extractors that do
+An import record without scope or runtime qualifications counts as
+import-time, so inventories from extractors that do
 not classify imports keep the historical behavior of the two being equal.
 A supported code-language inventory entry that has no ``imports`` field still
 appears as an isolated node. Entries that explicitly provide an ``imports``

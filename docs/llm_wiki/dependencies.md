@@ -16,7 +16,7 @@ flowchart TD
 
 *No import cycles detected.*
 
-> These are cycles in the full coupling graph, but not startup cycles. Deferred, `TYPE_CHECKING`, or erased TypeScript imports break the startup cycle; other edges in a group may still run while loading.
+> These additional coupling groups include deferred, `TYPE_CHECKING`, or erased TypeScript imports. Startup cycles, including any smaller cycles within these groups, are listed above.
 
 - [cli](modules/cli.md) ⇄ [init_cmd](modules/init_cmd.md) ⇄ [upgrade_cmd](modules/upgrade_cmd.md)
 - [knowledge_cmd](modules/knowledge_cmd.md) ⇄ [knowledge_storage_cmd](modules/knowledge_storage_cmd.md)

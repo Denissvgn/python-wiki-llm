@@ -31,7 +31,7 @@ Python reference rendering distinguishes captured module-level type uses from le
 | `.contracts` | `BOOTSTRAP_SUMMARY_SCHEMA_VERSION`, `KNOWLEDGE_SCHEMA_VERSION` |
 | `.current_contracts` | `CURRENT_KNOWLEDGE_FORMAT`, `upgrade_current_knowledge` |
 | `.data_flow` | `_call_args`, `analyze_data_flow`, `analyze_data_flow_detailed`, `build_data_flow_context` |
-| `.dependencies` | `analyze_dependencies`, `build_dependency_observations`, `build_external_dependency_observations`, `package_dependency_graph`, `top_level_package` |
+| `.dependencies` | `analyze_dependencies`, `build_dependency_observations`, `build_external_dependency_observations`, `package_dependency_graph`, `startup_cycle_groups`, `top_level_package` |
 | `.diagrams` | `GENERATED_DIAGRAM_CHAR_LIMIT`, `GENERATED_DIAGRAM_LINE_LIMIT`, `GENERATED_DIAGRAM_NODE_LIMIT`, `_DISPLAY_LABEL_LIMIT`, `_normalize_display_text`, `data_flow_diagram`, `flowchart`, `resolve_diagram_style`, `sequence_diagram` |
 | `.entrypoints` | `build_flow`, `build_flow_detailed`, `entry_points_from_detailed_observations`, `get_detailed_entry_points`, `read_console_scripts` |
 | `.extraction_service` | `InventoryResult`, `get_call_graph`, `get_docker_inventory`, `get_inventory_result`, `print_inventory_failures`, `resolve_call_observations`, `resolve_call_edges` |
@@ -102,19 +102,19 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 783 | — | — |
-| [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 1061 | — | — |
-| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3236 | — | — |
-| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4559 | — | — |
-| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4585 | — | — |
-| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4599 | — | — |
-| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4606 | — | — |
-| [_WorkflowResult](../entities/WorkflowResult.md) | 4614 | — | — |
-| [_FlowResult](../entities/FlowResult.md) | 4620 | — | — |
-| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4631 | — | — |
-| [_DependencyResult](../entities/DependencyResult.md) | 4642 | — | — |
-| [_ApiContractResult](../entities/ApiContractResult.md) | 4650 | — | — |
-| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4657 | — | — |
+| [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 784 | — | — |
+| [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 1062 | — | — |
+| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3242 | — | — |
+| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4566 | — | — |
+| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4592 | — | — |
+| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4606 | — | — |
+| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4613 | — | — |
+| [_WorkflowResult](../entities/WorkflowResult.md) | 4621 | — | — |
+| [_FlowResult](../entities/FlowResult.md) | 4627 | — | — |
+| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4638 | — | — |
+| [_DependencyResult](../entities/DependencyResult.md) | 4649 | — | — |
+| [_ApiContractResult](../entities/ApiContractResult.md) | 4657 | — | — |
+| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4664 | — | — |
 
 ## Functions
 

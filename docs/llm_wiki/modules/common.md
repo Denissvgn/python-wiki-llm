@@ -22,6 +22,7 @@ context while retaining the legacy meaning of `present`.
 |--------|---------|
 | `..config` | `EXCLUDED_DIRS`, `GitIgnoreMatcher`, `build_gitignore_matcher`, `is_agent_worktree_path` |
 | `__future__` | `annotations` |
+| `collections.abc` | `Mapping` |
 | `os` | `os` |
 | `pathlib` | `Path` |
 | `posixpath` | `posixpath` |
