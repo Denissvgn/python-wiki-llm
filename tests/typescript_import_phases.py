@@ -235,12 +235,13 @@ def check_preserved_subcycle_and_cached_sync_keep_both_compiler_projections(tmp_
     helper = resolve_helper_cache_root(PROJECT_ROOT)
     assert helper is not None
     monkeypatch.chdir(tmp_path)
+    cache = tmp_path.parent / (tmp_path.name + "-analysis-cache")
 
     def run(command, *options):
         monkeypatch.setattr(sys, "argv", ["llm-wiki", command, "--src-dir", ".",
             *([] if command == "extract" else ["--wiki-dir", "wiki"]),
             "--helper-cache-dir", str(helper.parent), *options,
-            *([] if command in {"bootstrap", "extract"} else ["--jobs", "1", "--cache-dir", str(tmp_path / "cache")])])
+            *([] if command in {"bootstrap", "extract"} else ["--jobs", "1", "--cache-dir", str(cache)])])
         cli.main()
         return capsys.readouterr().out
 
@@ -266,11 +267,17 @@ def check_preserved_subcycle_and_cached_sync_keep_both_compiler_projections(tmp_
         assert any(message.startswith("Potential import cycle") and message.endswith("a.ts ⇄ b.ts ⇄ c.ts") for message in messages)
 
     check_views()
+    page = wiki / "modules/a.md"
+    prefix, description = page.read_text().split("## Description\n", 1)
+    _generated, tail = description.split("\n## ", 1)
+    page.write_text(prefix + "## Description\n\nAuthored startup guidance, first.\n\n## " + tail)
     run("sync", "--no-plugins")
     before = {page: (wiki / page).read_bytes() for page in ("dependencies.md", "load-order.md")}
+    page.write_text(page.read_text().replace("Authored startup guidance, first.", "Authored startup guidance, second."))
     warm = run("sync", "--no-plugins")
-    assert "Sync analysis reuse: hit" in warm
+    assert "Sync analysis reuse: hit" in warm and "coverage=full" in warm, warm
     assert before == {page: (wiki / page).read_bytes() for page in before}
+    assert "Authored startup guidance, second." in page.read_text()
     check_views()
 
 
