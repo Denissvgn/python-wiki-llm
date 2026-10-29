@@ -333,6 +333,23 @@ def test_unknown_string_import_scope_stays_structural_and_conservative():
     assert normalized is not None and normalized["imports"][0]["scope"] == "future-scope"
 
 
+@pytest.mark.parametrize("language", ["python", "typescript", "javascript"])
+@pytest.mark.parametrize("scope", ["deferred", "type_checking", "future-scope"])
+def test_string_scope_subclasses_share_the_plain_json_evidence_contract(language, scope):
+    class ImportScope(str):
+        def __eq__(self, other: object) -> bool:
+            return super().__eq__(other)
+
+    ordinary = {"language": language, "classes": [], "functions": [],
+                "imports": [{"module": "dependency", "name": "Value", "scope": scope}]}
+    specialized = {**ordinary, "imports": [{**ordinary["imports"][0], "scope": ImportScope(scope)}]}
+    normalized = normalize_module_observation(specialized)
+    assert normalized is not None
+    assert normalized == normalize_module_observation(ordinary)
+    assert _module_hash(specialized) == _module_hash(ordinary)
+    assert semantic_hash_for_file(specialized) == semantic_hash_for_file(ordinary)
+
+
 def test_semantic_prose_and_call_details_are_outside_structural_hash_domain():
     inventory = _inventory("python")
     changed = deepcopy(inventory)

@@ -921,6 +921,20 @@ class TestAnalyzeDependencies:
             assert graph["edges"] == graph["type_only_edges"] == edge
             assert graph["import_time_edges"] == []
 
+    def test_string_scope_values_do_not_require_hashability(self):
+        class ImportScope(str):
+            def __eq__(self, other: object) -> bool:
+                return super().__eq__(other)
+
+        for scope, expected in (("deferred", []), ("type_checking", []),
+                                ("future-scope", [("a.ts", "b.ts")])):
+            record = MappingProxyType({"module": "./b", "name": "B", "scope": ImportScope(scope)})
+            graph = build_dependency_graph({"a.ts": _tsmod(record), "b.ts": _tsmod()})
+            assert graph["edges"] == [("a.ts", "b.ts")]
+            assert graph["import_time_edges"] == expected
+            erased = {**record, "runtime": "erased", "type_only": True, "type_only_declaration": True}
+            assert build_dependency_graph({"a.ts": _tsmod(erased), "b.ts": _tsmod()})["import_time_edges"] == []
+
     def test_typescript_type_edges_keep_coupling_without_startup_cycle(self, tmp_path):
         inventory = {
             "a.ts": _tsmod({"module": "./b", "name": "B", "type_only": True,

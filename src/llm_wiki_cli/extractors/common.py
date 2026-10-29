@@ -45,7 +45,8 @@ MAX_ONLY_FILES_ARG_CHARS = 60_000
 # consumers that model coupling (fan-in/fan-out, impact analysis) keep them.
 IMPORT_SCOPE_DEFERRED = "deferred"  # inside a function body; runs only when called
 IMPORT_SCOPE_TYPE_CHECKING = "type_checking"  # under `if TYPE_CHECKING:`; never runs
-NON_IMPORT_TIME_SCOPES = frozenset({IMPORT_SCOPE_DEFERRED, IMPORT_SCOPE_TYPE_CHECKING})
+_NON_IMPORT_TIME_SCOPE_VALUES = (IMPORT_SCOPE_DEFERRED, IMPORT_SCOPE_TYPE_CHECKING)
+NON_IMPORT_TIME_SCOPES = frozenset(_NON_IMPORT_TIME_SCOPE_VALUES)
 
 
 def executes_at_import(import_record: object) -> bool:
@@ -61,7 +62,9 @@ def executes_at_import(import_record: object) -> bool:
     scope = import_record.get("scope")
     # Direct graph callers may supply unvalidated records. An unknown scope
     # cannot establish a deferred import or suppress a possible startup edge.
-    return not isinstance(scope, str) or scope not in NON_IMPORT_TIME_SCOPES
+    # String subclasses accepted by normalization need not be hashable. Match
+    # their text without adding a hashability requirement to the import schema.
+    return not isinstance(scope, str) or scope not in _NON_IMPORT_TIME_SCOPE_VALUES
 
 # These are project-source identities, relative to the owned ``llm_wiki_cli``
 # package root.  Package markers and nested .gitignore files intentionally do
