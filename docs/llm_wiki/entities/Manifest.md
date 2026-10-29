@@ -1,6 +1,6 @@
 # _Manifest
 
-**Location:** `src/llm_wiki_cli/services/dependencies.py:785`
+**Location:** `src/llm_wiki_cli/services/dependencies.py:806`
 **Kind:** Class
 **Bases:** —
 **Module:** [services_dependencies](../modules/services_dependencies.md)

@@ -16,7 +16,7 @@ flowchart TD
 
 *No import cycles detected.*
 
-> These groups reach each other only from inside functions or under `TYPE_CHECKING`, so nothing is imported while they load and their order is well defined. They are listed because they are cyclic on paper, not because they need fixing.
+> These are cycles in the full coupling graph, but not startup cycles. Deferred, `TYPE_CHECKING`, or erased TypeScript imports break the startup cycle; other edges in a group may still run while loading.
 
 - [cli](modules/cli.md) ⇄ [init_cmd](modules/init_cmd.md) ⇄ [upgrade_cmd](modules/upgrade_cmd.md)
 - [knowledge_cmd](modules/knowledge_cmd.md) ⇄ [knowledge_storage_cmd](modules/knowledge_storage_cmd.md)

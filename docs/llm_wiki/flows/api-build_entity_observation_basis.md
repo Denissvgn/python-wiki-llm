@@ -152,8 +152,8 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | build_entity_observation_basis | _validate_basis_inputs | 380 | `_validate_basis_inputs(source_path, source_content_hash, extractor_ref, inventory_complete)` |
-| _validate_basis_inputs | _validate_source_path | 832 | `_validate_source_path(source_path)` |
-| _validate_source_path | require_repository_relative_path | 860 | `require_repository_relative_path(source_path, text_error=ValueError(...), posix_error=ValueError(...), normalized_error=ValueError(...))` |
+| _validate_basis_inputs | _validate_source_path | 840 | `_validate_source_path(source_path)` |
+| _validate_source_path | require_repository_relative_path | 868 | `require_repository_relative_path(source_path, text_error=ValueError(...), posix_error=ValueError(...), normalized_error=ValueError(...))` |
 | require_repository_relative_path | isinstance (src/llm_wiki_cli/services…_repository_relative_path) | 299 | `isinstance(value, str)` |
 | require_repository_relative_path | _syntax_key | 301 | `_syntax_key('repository', value, reject_delete_character, control_after_normalization, leading_backslash_is_absolute, normalize_posix_spelling)` |
 | _syntax_key | type (src/llm_wiki_cli/services/validation.py:_syntax_key) | 54 | `type(value)` |

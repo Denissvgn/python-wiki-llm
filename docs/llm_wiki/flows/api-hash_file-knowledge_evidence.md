@@ -63,16 +63,16 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| hash_file | sha256_bytes | 938 | `sha256_bytes(path.read_bytes(...))` |
+| hash_file | sha256_bytes | 946 | `sha256_bytes(path.read_bytes(...))` |
 | sha256_bytes | hashlib.sha256(…).hexdigest | 221 | `hashlib.sha256(value).hexdigest(data not statically known)` |
 | sha256_bytes | hashlib.sha256 | 221 | `hashlib.sha256(value)` |
-| hash_file | path.read_bytes | 938 | `path.read_bytes(data not statically known)` |
+| hash_file | path.read_bytes | 946 | `path.read_bytes(data not statically known)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| filesystem_read | `path.read_bytes` | `hash_file` | 938 |
+| filesystem_read | `path.read_bytes` | `hash_file` | 946 |
 
 ### Static analysis gaps
 

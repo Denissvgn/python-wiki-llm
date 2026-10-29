@@ -138,9 +138,9 @@ sequenceDiagram
     p1-->>p30: callback
 ```
 
-> Call sequence diagram shows 30 of 2749 interactions; 2719 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2768 interactions; 2738 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 909 (908 omitted); unresolved 1 of 884 (883 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 917 (916 omitted); unresolved 1 of 893 (892 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -154,7 +154,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 15 | - | external | 4 |
 | `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 15 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 15 | [src/llm_wiki_cli/services/wiki_surface.py](../modules/wiki_surface.md) | internal | 5 |
-> Omission summary shows 8 of 695 groups; 687 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 696 groups; 688 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

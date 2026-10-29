@@ -74,9 +74,9 @@ sequenceDiagram
     p4-->>p30: seen_names.get(name, 0)
 ```
 
-> Call sequence diagram shows 30 of 229 interactions; 199 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 240 interactions; 210 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 45 (44 omitted); unresolved 1 of 53 (52 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 45 (44 omitted); unresolved 1 of 58 (57 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -168,9 +168,9 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | module_observation_hash | _validate_inventory_complete | 278 | `_validate_inventory_complete(inventory_complete)` |
-| _validate_inventory_complete | require_bool | 839 | `require_bool(inventory_complete, error=TypeError(...))` |
+| _validate_inventory_complete | require_bool | 847 | `require_bool(inventory_complete, error=TypeError(...))` |
 | require_bool | isinstance (src/llm_wiki_cli/services…alidation.py:require_bool) | 810 | `isinstance(value, bool)` |
-| _validate_inventory_complete | TypeError | 841 | `TypeError('inventory_complete must be a boolean')` |
+| _validate_inventory_complete | TypeError | 849 | `TypeError('inventory_complete must be a boolean')` |
 | module_observation_hash | normalize_module_observation | 281 | `normalize_module_observation(file_data)` |
 | normalize_module_observation | _normalize_module_observation | 242 | `_normalize_module_observation(file_data)` |
 | _normalize_module_observation | _inventory_language | 457 | `_inventory_language(file_data)` |
@@ -193,7 +193,7 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `require_bool` | `isinstance` | 810 |
-| external_call | `_validate_inventory_complete` | `TypeError` | 841 |
+| external_call | `_validate_inventory_complete` | `TypeError` | 849 |
 | external_call | `_inventory_language` | `isinstance` | 540 |
 | unresolved_call | `_inventory_language` | `file_data.get` | 542 |
 | step_limit | `module_observation_hash` | `first 12 steps` | 0 |

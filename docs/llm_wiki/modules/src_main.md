@@ -12,10 +12,10 @@ and their output is shown in Obsidian notices or a modal.
 
 ## Imports
 
-| Source | Symbols |
-|--------|---------|
-| `child_process` | `execFile` |
-| `obsidian` | `App`, `MarkdownView`, `Modal`, `Notice`, `Plugin`, `PluginSettingTab`, `Setting` |
+| Source | Symbols | Type-only | Runtime emission |
+|--------|---------|-----------|------------------|
+| `child_process` | `execFile` | — | compiler-dependent |
+| `obsidian` | `App`, `MarkdownView`, `Modal`, `Notice`, `Plugin`, `PluginSettingTab`, `Setting` | — | compiler-dependent |
 
 ## Module Signals
 
