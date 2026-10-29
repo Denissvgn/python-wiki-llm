@@ -109,6 +109,7 @@
     "services/dependencies.py",
     "services/dependency_versions.py",
     "services/diagrams.py",
+    "services/dockerfile_parser.py",
     "services/doctor_service.py",
     "services/documentation_calibration.py",
     "services/documentation_calibration_broker.py",
@@ -344,6 +345,7 @@
       "services/extractor_helpers.py"
     ],
     "infrastructure": [
+      "services/dockerfile_parser.py",
       "services/infrastructure_inventory.py",
       "services/infrastructure_sync.py",
       "services/yaml_formats.py",

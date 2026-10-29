@@ -122,6 +122,7 @@ from .markdown_sections import (
     preserve_level_two_section_exact as _service_preserve_level_two_section_exact,
 )
 from .module_maps import build_module_dependency_maps
+from .dockerfile_parser import DOCKERFILE_STAGES_SCHEMA
 from .paths import normalize_source_path, portable_source_root_label
 from .relationships import build_entity_page_relationship_summaries
 from .schema import (
@@ -4280,8 +4281,8 @@ def _dockerfile_header_lines(filename: str, stages: list[dict]) -> list[str]:
     return [
         f"# {filename}",
         "",
-        f"**Path:** `{filename}`",
-        f"**Base Image(s):** {', '.join(f'`{img}`' for img in _dockerfile_base_images(stages))}",
+        f"**Path:** {_table_inline_code(filename, table=False)}",
+        f"**Base Image(s):** {', '.join(_table_inline_code(img, table=False) for img in _dockerfile_base_images(stages))}",
         "",
     ]
 
@@ -4309,7 +4310,7 @@ def _append_dockerfile_list_section(
     lines.append(f"## {title}")
     lines.append("")
     for value in values:
-        lines.append(f"- `{value}`")
+        lines.append(f"- {_table_inline_code(value, table=False)}")
     lines.append("")
 
 
@@ -4327,8 +4328,8 @@ def _append_dockerfile_default_table(
     lines.append(f"| {first_column} | Default |")
     lines.append("|----------|---------|")
     for row in rows:
-        default = f"`{row['default']}`" if row["default"] else "—"
-        lines.append(f"| `{row['name']}` | {default} |")
+        default = _table_inline_code(row["default"]) if row["default"] else "—"
+        lines.append(f"| {_table_inline_code(row['name'])} | {default} |")
     lines.append("")
 
 
@@ -4336,7 +4337,7 @@ def _append_dockerfile_workdir(lines: list[str], workdir: str) -> None:
     if not workdir:
         return
 
-    lines.append(f"**Working Directory:** `{workdir}`")
+    lines.append(f"**Working Directory:** {_table_inline_code(workdir, table=False)}")
     lines.append("")
 
 
@@ -4347,9 +4348,9 @@ def _append_dockerfile_entrypoint(lines: list[str], entrypoint: str, cmd: str) -
     lines.append("## Entry Point")
     lines.append("")
     if entrypoint:
-        lines.append(f"**ENTRYPOINT:** `{entrypoint}`")
+        lines.append(f"**ENTRYPOINT:** {_table_inline_code(entrypoint, table=False)}")
     if cmd:
-        lines.append(f"**CMD:** `{cmd}`")
+        lines.append(f"**CMD:** {_table_inline_code(cmd, table=False)}")
     lines.append("")
 
 
@@ -4367,10 +4368,11 @@ def _append_dockerfile_copies(
     lines.append("| Instruction | Source | Destination | From Stage |")
     lines.append("|-------------|--------|-------------|------------|")
     for copy_info in copies:
-        stage = f"`{copy_info['from_stage']}`" if copy_info.get("from_stage") else "—"
-        src_text = _format_copy_source_links(copy_info["src"], filename, module_links)
+        stage = _table_inline_code(copy_info["from_stage"]) if copy_info.get("from_stage") else "—"
+        src_text = (_table_inline_code(copy_info["src"]) if copy_info.get("from_stage") or copy_info.get("inline")
+                    else _format_copy_source_links(copy_info["src"], filename, module_links))
         lines.append(
-            f"| `{copy_info['instruction']}` | {src_text} | `{copy_info['dest']}` | {stage} |"
+            f"| {_table_inline_code(copy_info['instruction'])} | {src_text} | {_table_inline_code(copy_info['dest'])} | {stage} |"
         )
     lines.append("")
 
@@ -4384,6 +4386,8 @@ def _append_dockerfile_unsupported_copies(
     matches: list[dict[str, str]] = []
     seen: set[tuple[str, str, str]] = set()
     for copy_info in copies:
+        if copy_info.get("from_stage") or copy_info.get("inline"):
+            continue
         for match in _unsupported_copy_source_matches(
             copy_info.get("src", ""), filename, unsupported_sources
         ):
@@ -4420,7 +4424,7 @@ def _append_dockerfile_labels(lines: list[str], labels: dict[str, str]) -> None:
     lines.append("| Key | Value |")
     lines.append("|-----|-------|")
     for key, value in labels.items():
-        lines.append(f"| `{key}` | `{value}` |")
+        lines.append(f"| {_table_inline_code(key)} | {_table_inline_code(value)} |")
     lines.append("")
 
 
@@ -4428,21 +4432,12 @@ def _append_dockerfile_healthcheck(lines: list[str], healthcheck: str) -> None:
     if not healthcheck:
         return
 
-    lines.append(f"**Healthcheck:** `{healthcheck}`")
+    lines.append(f"**Healthcheck:** {_table_inline_code(healthcheck, table=False)}")
     lines.append("")
 
 
-def _generate_dockerfile_md(
-    filename: str,
-    info: dict,
-    module_links: Mapping[str, str] | set[str] | None = None,
-    unsupported_sources: dict[str, dict[str, object]] | None = None,
-) -> str:
-    """Generate markdown for a Dockerfile."""
-    stages = info.get("stages", [])
-    lines = _dockerfile_header_lines(filename, stages)
-
-    _append_dockerfile_build_stages(lines, stages)
+def _append_dockerfile_declarations(lines, filename, info, module_links, unsupported_sources):
+    """Render parsed source fields in the caller's explicitly scoped section."""
     _append_dockerfile_list_section(lines, "Exposed Ports", info.get("ports", []))
     _append_dockerfile_default_table(
         lines, "Build Arguments", "Argument", info.get("build_args", [])
@@ -4461,6 +4456,71 @@ def _generate_dockerfile_md(
     )
     _append_dockerfile_labels(lines, info.get("labels", {}))
     _append_dockerfile_healthcheck(lines, info.get("healthcheck", ""))
+    for key, instruction in (("user", "USER"), ("shell", "SHELL"), ("stop_signal", "STOPSIGNAL")):
+        if info.get(key):
+            lines.extend([f"**Declared {instruction}:** {_table_inline_code(info[key], table=False)}", ""])
+
+
+def _append_dockerfile_scoped_stages(lines, filename, info, module_links, unsupported_sources):
+    lines.extend(["**Configuration view:** source declarations owned by each stage.", "",
+        "Image defaults, variable expansion, and Docker's inheritance/reset rules also affect "
+        "effective configuration. External base-image defaults remain unknown here.", ""])
+    if info.get("global_build_args"):
+        _append_dockerfile_default_table(lines, "Build Arguments", "Global argument (before FROM)", info["global_build_args"])
+    lines.extend(["## Build Stages", ""])
+    stages = info.get("stages", [])
+    if not stages:
+        lines.extend(["*No FROM stage found; stage configuration is unavailable.*", ""])
+    for stage in stages:
+        number = stage["index"] + 1
+        alias = f" {_table_inline_code(stage['alias'], table=False)}" if stage.get("alias") else ""
+        lines.extend([f"### Stage {number}{alias}", "",
+            f"**FROM:** {_table_inline_code(stage['image'], table=False)} (source line {stage['line']})", ""])
+        if stage.get("platform"):
+            lines.extend([f"**Declared platform:** {_table_inline_code(stage['platform'], table=False)}", ""])
+        parent = stage.get("base_stage")
+        if parent is not None:
+            lines.extend([f"**Base relationship:** inherits the image from stage {parent + 1}. "
+                "The fields below show declarations authored in this stage; inherited settings follow Docker's rules.", ""])
+        elif stage.get("base_kind") == "scratch":
+            lines.extend(["**Base relationship:** independent scratch stage, with no inherited image configuration.", ""])
+        else:
+            lines.extend(["**Base relationship:** external or unresolved base; inherited defaults are unknown.", ""])
+        declared: list[str] = []
+        _append_dockerfile_declarations(declared, filename, stage, module_links, unsupported_sources)
+        if not declared:
+            declared = ["*No recognized configuration declarations in this stage.*", ""]
+        for line in declared:
+            if line.startswith("## "):
+                line = "##" + line
+            line = line.replace("**Working Directory:**", "**Declared WORKDIR:**")
+            lines.append(line)
+    unscoped = [record for record in info.get("unscoped_instructions", []) if record["instruction"] != "ARG"]
+    if unscoped:
+        lines.extend(["### Unscoped source instructions", "",
+            "These instructions precede a FROM stage; they do not establish a stage configuration.", ""])
+        lines.extend(f"- {_table_inline_code(record['instruction'])} at source line {record['line']}" for record in unscoped)
+        lines.append("")
+
+
+def _generate_dockerfile_md(
+    filename: str,
+    info: dict,
+    module_links: Mapping[str, str] | set[str] | None = None,
+    unsupported_sources: dict[str, dict[str, object]] | None = None,
+) -> str:
+    """Generate a stage-owned source view, retaining safe legacy handling."""
+    stages = info.get("stages", [])
+    lines = _dockerfile_header_lines(filename, stages)
+    if info.get("stage_schema_version") == DOCKERFILE_STAGES_SCHEMA:
+        _append_dockerfile_scoped_stages(lines, filename, info, module_links, unsupported_sources)
+    elif len(stages) > 1:
+        _append_dockerfile_build_stages(lines, stages)
+        lines.extend(["Stage ownership is unavailable in this legacy inventory. "
+            "Refresh extraction to view configuration declarations for each stage.", ""])
+    else:
+        _append_dockerfile_build_stages(lines, stages)
+        _append_dockerfile_declarations(lines, filename, info, module_links, unsupported_sources)
     return "\n".join(lines)
 
 

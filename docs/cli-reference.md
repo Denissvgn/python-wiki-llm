@@ -494,6 +494,16 @@ llm-wiki extract --src-dir /path/to/repo --allow-external-src --summary
 
 The JSON output includes `schema_version: "llm-wiki-extract/v1"` plus
 `inventory` and optional `docker` and `unsupported_sources` objects.
+Dockerfile records carry `stage_schema_version: "llm-wiki-dockerfile-stages/v1"`.
+Each stage owns its configuration declarations and ordered source instructions.
+An earlier named `FROM` stage is linked through `base_stage`; `COPY --from`
+records a file transfer. Infrastructure pages show each stage separately and
+identify inherited stages and unknown external defaults. The view records source
+declarations; effective image settings also depend on Docker's inheritance/reset
+rules, variable expansion, and build arguments. Flat configuration fields are
+qualified by `configuration_scope: "final-stage-declarations"` and `final_stage`.
+Aggregate copies and build arguments retain their owning stage and source line;
+global pre-FROM arguments are also available in `global_build_args`.
 To inspect one file without rebuilding the wiki, use
 `llm-wiki extract --src-dir . --paths src/dyn.mjs --deep --read-only`.
 The command prints JSON and uses the same prepared helper cache as other source

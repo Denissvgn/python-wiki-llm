@@ -75,8 +75,8 @@ class TestParseDockerfileBasic:
         text = "FROM alpine\nARG VERSION=1.0\nARG BUILD_DATE\n"
         result = _parse_dockerfile(text)
         assert len(result["build_args"]) == 2
-        assert result["build_args"][0] == {"name": "VERSION", "default": "1.0"}
-        assert result["build_args"][1] == {"name": "BUILD_DATE", "default": ""}
+        assert result["build_args"][0] == {"name": "VERSION", "default": "1.0", "stage": 0, "line": 2}
+        assert result["build_args"][1] == {"name": "BUILD_DATE", "default": "", "stage": 0, "line": 3}
 
     def test_labels(self):
         text = 'FROM alpine\nLABEL maintainer="test@example.com" version="1.0"\n'

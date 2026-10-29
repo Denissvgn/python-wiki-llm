@@ -7,6 +7,15 @@ versioned ``data_flow_details`` sibling because older payloads and non-Python
 extractors may not emit them. A schema version bump is reserved for
 incompatible shape changes to existing fields.
 
+Dockerfile records may add ``stage_schema_version`` (``llm-wiki-dockerfile-stages/v1``).
+Each stage owns its source declarations and ordered ``instructions`` with source
+lines. ``base_stage`` links an earlier named FROM stage; COPY --from does not
+imply configuration inheritance. ``configuration_scope`` qualifies flat
+configuration fields as final-stage declarations, rather than effective image
+defaults. Aggregate COPY/ARG records retain their stage index (or null for
+global ARG) and line, while ``global_build_args`` exposes pre-FROM declarations.
+No external base-image inspection or build-argument evaluation is performed.
+
 Dependency/load-order architecture decisions also stay additive under the
 current extract contract: deep Python inventory may include ``data_effects`` on
 function entries, including bounded ``boundary_effects`` for filesystem,
