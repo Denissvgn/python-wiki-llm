@@ -920,6 +920,44 @@ class TestTypeScriptExtractor:
             assert properties[name]["optional"] is True
             assert properties[name]["default"] == ""
 
+    @pytest.mark.parametrize("line_break", ["\n", "\r\n", "\r", "\u2028", "\u2029"])
+    @pytest.mark.parametrize("deep", [False, True])
+    def test_compiler_line_coordinates(self, tmp_path, line_break, deep):
+        source = tmp_path / "coordinates.ts"
+        source.write_bytes(line_break.join([
+            "// Every separator starts a compiler source line.",
+            "export interface Contract<T> { read(value?: T): T; }",
+            "export class Parent<T> {}",
+            "export class Client<T> extends Parent<T> { constructor(value?: T) { super(); } read(value?: T): T { return value!; } }",
+            "export type Alias = string | number;",
+            "export enum Mode { Ready }",
+            "export function convert<T>(value?: T): T | undefined;",
+            "export function convert(value?: unknown): unknown {",
+            "    return value;",
+            "}",
+            "export const arrow = (value?: number): number => value ?? 0;",
+            "export const count = 1;",
+            "const resource = require('resource');",
+            "export const server = createServer(convert);",
+            "const load = require;",
+        ]).encode("utf-8"))
+        data = TypeScriptExtractor().extract(str(tmp_path), deep=deep)[source.name]
+        classes = {item["name"]: item for item in data["classes"]}
+        assert {name: item["line"] for name, item in classes.items()} == {
+            "Contract": 2, "Parent": 3, "Client": 4, "Alias": 5, "Mode": 6,
+        }
+        functions = {item["name"]: item for item in data["functions"]}
+        assert functions["convert"]["line"] == 8
+        assert functions["convert"]["end_line"] == 10
+        assert functions["arrow"]["line"] == functions["arrow"]["end_line"] == 11
+        assert next(item for item in data["constants"] if item["name"] == "count")["line"] == 12
+        assert next(item for item in data["imports"] if item.get("module") == "resource")["line"] == 13
+        assert next(item for item in data["module_calls"] if item.get("target") == "server")["line"] == 14
+        assert data["import_gaps"] == [{"line": 15, "reason": "indirect-require-unsupported"}]
+        if deep:
+            assert functions["convert"]["overloads"][0]["line"] == 7
+            assert all(item["line"] == 4 for item in classes["Client"]["methods"])
+
     def test_optional_properties_bootstrap_and_incremental_sync(
         self, tmp_path, monkeypatch, capsys
     ):

@@ -160,6 +160,12 @@ for (const f of filesToProcess) {
 
 // ── AST extraction helpers ────────────────────────────────────────────────────
 
+function nodeLine(node, position = node.getStart()) {
+  // ts-morph's line helpers count only LF. Use the compiler's line map so CR
+  // and Unicode line separators agree with TypeScript diagnostics and tooling.
+  return node.getSourceFile().compilerNode.getLineAndCharacterOfPosition(position).line + 1;
+}
+
 function getJsDoc(node) {
   try {
     const docs = node.getJsDocs?.() ?? [];
@@ -206,7 +212,7 @@ function extractMethodInfo(method) {
 
   const info = {
     name: method.getName(),
-    line: method.getStartLineNumber(),
+    line: nodeLine(method),
     is_async: isAsync,
   };
 
@@ -229,14 +235,14 @@ function extractMethodInfo(method) {
 
 function nodeEndLine(node) {
   try {
-    return node.getEndLineNumber?.();
+    return nodeLine(node, Math.max(node.getStart(), node.getEnd() - 1));
   } catch {
     return undefined;
   }
 }
 
 function functionBaseInfo(node, name, line = null) {
-  const startLine = line ?? node.getStartLineNumber();
+  const startLine = line ?? nodeLine(node);
   const info = {
     name,
     kind: "function",
@@ -275,7 +281,7 @@ function extractFunctionInfo(fn, name, docNode = null, line = null) {
 function extractConstructorInfo(ctor) {
   const info = {
     name: "constructor",
-    line: ctor.getStartLineNumber(),
+    line: nodeLine(ctor),
     is_async: false,
     docstring: getJsDoc(ctor),
     decorators: [],
@@ -382,7 +388,7 @@ function extractTopLevelConstants(sourceFile) {
         continue;
       constants.push({
         name: decl.getName(),
-        line: decl.getStartLineNumber(),
+        line: nodeLine(decl),
         exported: stmt.isExported?.() ?? false,
       });
     }
@@ -414,7 +420,7 @@ function moduleCallFromExpression(expr, target = null, line = null) {
   const name = expressionCallName(expr);
   if (!name) return null;
 
-  const call = { name, line: line ?? expr.getStartLineNumber() };
+  const call = { name, line: line ?? nodeLine(expr) };
   if (target) call.target = target;
   if (name === "createServer" && typeof expr.getArguments === "function") {
     const firstArg = expr.getArguments()[0];
@@ -433,7 +439,7 @@ function extractModuleCalls(sourceFile) {
         const call = moduleCallFromExpression(
           decl.getInitializer(),
           decl.getName(),
-          decl.getStartLineNumber()
+          nodeLine(decl)
         );
         if (call) calls.push(call);
       }
@@ -446,13 +452,13 @@ function extractModuleCalls(sourceFile) {
       const call = moduleCallFromExpression(
         expr.getRight(),
         expr.getLeft().getText(),
-        expr.getStartLineNumber()
+        nodeLine(expr)
       );
       if (call) calls.push(call);
       continue;
     }
 
-    const call = moduleCallFromExpression(expr, null, expr.getStartLineNumber());
+    const call = moduleCallFromExpression(expr, null, nodeLine(expr));
     if (call) calls.push(call);
   }
   return calls;
@@ -500,7 +506,7 @@ function extractImportRecords(sourceFile) {
     const isDynamicImport = expression.getKind() === SyntaxKind.ImportKeyword;
     const isRequire = expression.getKind() === SyntaxKind.Identifier && expression.getText() === "require";
     if (!isRequire && !isDynamicImport) continue;
-    const line = call.getStartLineNumber();
+    const line = nodeLine(call);
     if (isRequire && requireIsShadowed(call)) {
       gaps.push({ line, reason: "shadowed-call-not-module-import" });
       continue;
@@ -522,7 +528,7 @@ function extractImportRecords(sourceFile) {
   }
   for (const declaration of sourceFile.getDescendantsOfKind(SyntaxKind.VariableDeclaration)) {
     if (declaration.getInitializer()?.getText() === "require") {
-      gaps.push({ line: declaration.getStartLineNumber(), reason: "indirect-require-unsupported" });
+      gaps.push({ line: nodeLine(declaration), reason: "indirect-require-unsupported" });
     }
   }
   return { imports, gaps };
@@ -619,7 +625,7 @@ function extractFile(sourceFile) {
     const bases = baseExpr ? [baseExpr.getText()] : [];
     const implementsExprs = cls.getImplements().map((i) => i.getText());
 
-    const clsLine = cls.getStartLineNumber();
+    const clsLine = nodeLine(cls);
     const clsName = cls.getName() ?? `<anonymous_L${clsLine}>`;
     if (deep) {
       fileEntry.classes.push({
@@ -657,7 +663,7 @@ function extractFile(sourceFile) {
         name: iface.getName(),
         kind: "interface",
         bases,
-        line: iface.getStartLineNumber(),
+        line: nodeLine(iface),
         docstring: getJsDoc(iface),
         decorators: [],
         type_params: iface.getTypeParameters().map(typeToStr),
@@ -669,7 +675,7 @@ function extractFile(sourceFile) {
         name: iface.getName(),
         kind: "interface",
         bases,
-        line: iface.getStartLineNumber(),
+        line: nodeLine(iface),
       });
     }
   }
@@ -681,7 +687,7 @@ function extractFile(sourceFile) {
         name: en.getName(),
         kind: "enum",
         bases: [],
-        line: en.getStartLineNumber(),
+        line: nodeLine(en),
         docstring: getJsDoc(en),
         decorators: getDecoratorNames(en),
         attributes: en.getMembers().map((m) => ({
@@ -696,7 +702,7 @@ function extractFile(sourceFile) {
         name: en.getName(),
         kind: "enum",
         bases: [],
-        line: en.getStartLineNumber(),
+        line: nodeLine(en),
       });
     }
   }
@@ -709,7 +715,7 @@ function extractFile(sourceFile) {
       name: ta.getName(),
       kind: "type_alias",
       bases: [],
-      line: ta.getStartLineNumber(),
+      line: nodeLine(ta),
       ...(deep ? {
         docstring: getJsDoc(ta), decorators: [], attributes: [], methods: [],
         type_params: ta.getTypeParameters().map(typeToStr),
@@ -730,7 +736,7 @@ function extractFile(sourceFile) {
     fileEntry.functions.push(
       extractFunctionInfo(
         fn,
-        fnName || `<anonymous_L${fn.getStartLineNumber()}>`
+        fnName || `<anonymous_L${nodeLine(fn)}>`
       )
     );
   }
@@ -754,7 +760,7 @@ function extractFile(sourceFile) {
       arrowFn,
       varDecl.getName(),
       stmt,
-      varDecl.getStartLineNumber()
+      nodeLine(varDecl)
     );
     if (deep) info.decorators = [];
     fileEntry.functions.push(info);
