@@ -2245,7 +2245,7 @@
             "src/llm_wiki_cli/services/bootstrap_runtime.py",
             "src/llm_wiki_cli/services/packet_field_policy.py"
           ],
-          "step_count": 3640,
+          "step_count": 3641,
           "truncated": true
         }
       },
@@ -4644,7 +4644,7 @@
             "src/llm_wiki_cli/services/maintenance_evidence.py",
             "src/llm_wiki_cli/services/packet_field_policy.py"
           ],
-          "step_count": 3793,
+          "step_count": 3794,
           "truncated": true
         }
       },
@@ -4789,7 +4789,7 @@
             "src/llm_wiki_cli/services/knowledge_observability.py",
             "src/llm_wiki_cli/services/packet_field_policy.py"
           ],
-          "step_count": 5582,
+          "step_count": 5583,
           "truncated": true
         }
       },
@@ -5897,7 +5897,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/markdown_sections.py"
           ],
-          "step_count": 5342,
+          "step_count": 5343,
           "truncated": true
         }
       },
@@ -10560,7 +10560,7 @@
             "src/llm_wiki_cli/extractors/python_bindings.py",
             "src/llm_wiki_cli/services/yaml_syntax.py"
           ],
-          "step_count": 3108,
+          "step_count": 3109,
           "truncated": true
         }
       },
@@ -11840,7 +11840,7 @@
             "src/llm_wiki_cli/services/dependency_versions.py",
             "src/llm_wiki_cli/services/maintenance_service.py"
           ],
-          "step_count": 4263,
+          "step_count": 4264,
           "truncated": true
         }
       },
@@ -13534,7 +13534,7 @@
             "src/llm_wiki_cli/services/maintenance_evidence.py",
             "src/llm_wiki_cli/services/knowledge_coverage.py"
           ],
-          "step_count": 2769,
+          "step_count": 2770,
           "truncated": true
         }
       },
@@ -20712,7 +20712,7 @@
             "src/llm_wiki_cli/services/maintenance_evidence.py",
             "src/llm_wiki_cli/services/change_selection.py"
           ],
-          "step_count": 4046,
+          "step_count": 4047,
           "truncated": true
         }
       },
@@ -32801,7 +32801,7 @@
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/wiki_write_basis.py"
           ],
-          "step_count": 3184,
+          "step_count": 3185,
           "truncated": true
         }
       },
@@ -35149,7 +35149,7 @@
             "src/llm_wiki_cli/services/markdown_sections.py",
             "src/llm_wiki_cli/services/change_selection.py"
           ],
-          "step_count": 4332,
+          "step_count": 4333,
           "truncated": true
         }
       },
@@ -35447,7 +35447,7 @@
             "src/llm_wiki_cli/services/paths.py",
             "src/llm_wiki_cli/services/wiki_write_basis.py"
           ],
-          "step_count": 2228,
+          "step_count": 2229,
           "truncated": true
         }
       },
@@ -68114,5 +68114,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:c3b9749c4878a681cb0b6217ac8a39529278e0f55798c2b083fae5194b940b5f"
+  "source_hash": "sha256:972378e511a8b4122f39cfb87623d27936be0b6c828e779ac29afbf4e25f1170"
 }
