@@ -257,7 +257,7 @@ def test_released_unknown_evidence_guarded_upgrade_and_refresh(tmp_path, monkeyp
 
 
 @skip_no_node
-def test_dynamic_import_gap_survives_bootstrap_sync_and_strict_gates(tmp_path, monkeypatch, capsys):
+def test_dynamic_import_gap_survives_bootstrap_sync_and_strict_gates(tmp_path, tmp_path_factory, monkeypatch, capsys):
     helper_root = resolve_helper_cache_root(PROJECT_ROOT)
     assert helper_root is not None
     _make_ts(tmp_path, "dyn.mjs", "export async function load(name) { return await import(name); }\n")
@@ -286,6 +286,18 @@ def test_dynamic_import_gap_survives_bootstrap_sync_and_strict_gates(tmp_path, m
     basis = manifest.evidence_baselines["modules/dyn.md"].basis
     assert basis is not None
     assert basis.is_known
+    from tests.typescript_import_phases import (
+        check_erased_cycle_bootstrap_sync_lint_and_extract_follow_source_emission,
+        check_preserved_subcycle_and_cached_sync_keep_both_compiler_projections,
+    )
+
+    for name, check in (
+        ("erased-cycle", check_erased_cycle_bootstrap_sync_lint_and_extract_follow_source_emission),
+        ("preserved-cycle", check_preserved_subcycle_and_cached_sync_keep_both_compiler_projections),
+    ):
+        fixture = tmp_path_factory.mktemp(name)
+        with monkeypatch.context() as context:
+            check(fixture, context, capsys)
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -844,6 +856,9 @@ class TestTypeScriptExtractor:
         module_names = {imp["module"] for imp in data["imports"]}
         assert "express" in module_names
         assert "path" in module_names
+        from tests.typescript_import_phases import check_import_phase_corpus
+
+        check_import_phase_corpus(tmp_path / "import-phase-controls")
 
     def test_deep_mode_includes_methods(self, tmp_path):
         _make_ts(

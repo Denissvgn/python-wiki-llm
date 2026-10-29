@@ -1,4 +1,4 @@
-"""TypeScript source markers and actual compiler emission across public consumers."""
+"""Compiler and CLI import checks run by the existing TypeScript owner nodes."""
 
 from __future__ import annotations
 
@@ -8,14 +8,12 @@ import shutil
 import subprocess
 import sys
 
-import pytest
-
 from llm_wiki_cli import cli
 from llm_wiki_cli.extractors.ts_extractor import TypeScriptExtractor
 from llm_wiki_cli.services.dependencies import analyze_dependencies, detect_cycles
 from llm_wiki_cli.services.extractor_helpers import get_prepared_typescript_root, resolve_helper_cache_root
 from llm_wiki_cli.services.sync_manifest import SyncManifest
-from tests.test_ts_extract import PROJECT_ROOT, skip_no_node
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 # The compiler observer uses compiler nodes and emitted JS; it neither calls
@@ -90,8 +88,7 @@ def _compiler_observe(paths: list[Path], *, commonjs: bool = False) -> list[dict
     return json.loads(result.stdout)
 
 
-@skip_no_node
-@pytest.mark.parametrize("declaration,runtime,emitted,filename,commonjs", [
+IMPORT_PHASE_CASES = [
     ('import type { T as Local } from "./dep"; export type Result = Local;', "erased", [[], []], "input.ts", False),
     ('import type T from "./dep"; export type Result = T;', "erased", [[], []], "input.ts", False),
     ('import type * as Types from "./dep"; export type Result = Types.T;', "erased", [[], []], "input.ts", False),
@@ -106,8 +103,10 @@ def _compiler_observe(paths: list[Path], *, commonjs: bool = False) -> list[dict
     ('import type T = require("./dep"); export type Result = T;', "erased", [[], []], "input.ts", True),
     ('import T = require("./dep"); export const result = T;', "conditional", [["./dep"], ["./dep"]], "input.ts", True),
     ('import { T } from "./dep"; export type Result = T;', "erased", [[], []], "input.d.ts", False),
-])
-def test_import_markers_and_runtime_qualification_match_compiler_emission(
+]
+
+
+def check_import_markers_and_runtime_qualification_match_compiler_emission(
     tmp_path, declaration, runtime, emitted, filename, commonjs,
 ):
     source = tmp_path / filename
@@ -125,8 +124,7 @@ def test_import_markers_and_runtime_qualification_match_compiler_emission(
     assert all(record["runtime"] == runtime for record in records)
 
 
-@skip_no_node
-def test_erased_cycle_bootstrap_sync_lint_and_extract_follow_source_emission(tmp_path, monkeypatch, capsys):
+def check_erased_cycle_bootstrap_sync_lint_and_extract_follow_source_emission(tmp_path, monkeypatch, capsys):
     a, b = tmp_path / "a.ts", tmp_path / "b.ts"
     a.write_text('import type { B } from "./b"; export interface A { b?: B; }')
     b.write_text('import type { A } from "./a"; export interface B { a?: A; }')
@@ -202,9 +200,7 @@ def test_erased_cycle_bootstrap_sync_lint_and_extract_follow_source_emission(tmp
     assert before_repeat == (load.read_bytes(), dependencies.read_bytes())
 
 
-@skip_no_node
-@pytest.mark.parametrize("bare", [False, True])
-def test_emitted_runtime_cycle_control_survives_type_partition(tmp_path, bare):
+def check_emitted_runtime_cycle_control_survives_type_partition(tmp_path, bare):
     a, b = tmp_path / "a.ts", tmp_path / "b.ts"
     if bare:
         a.write_text('import "./b"; export interface A {}')
@@ -225,8 +221,7 @@ def test_emitted_runtime_cycle_control_survives_type_partition(tmp_path, bare):
     assert analysis.get("conditional_cycles", []) == ([] if bare else [["a.ts", "b.ts"]])
 
 
-@skip_no_node
-def test_preserved_subcycle_and_cached_sync_keep_both_compiler_projections(tmp_path, monkeypatch, capsys):
+def check_preserved_subcycle_and_cached_sync_keep_both_compiler_projections(tmp_path, monkeypatch, capsys):
     a, b, c = (tmp_path / name for name in ("a.ts", "b.ts", "c.ts"))
     a.write_text('import "./b"; export interface A {}')
     b.write_text('import "./a"; import { type C } from "./c"; export interface B { c?: C; }')
@@ -277,3 +272,15 @@ def test_preserved_subcycle_and_cached_sync_keep_both_compiler_projections(tmp_p
     assert "Sync analysis reuse: hit" in warm
     assert before == {page: (wiki / page).read_bytes() for page in before}
     check_views()
+
+
+def check_import_phase_corpus(root: Path) -> None:
+    root.mkdir()
+    for index, case in enumerate(IMPORT_PHASE_CASES):
+        fixture = root / f"declaration-{index}"
+        fixture.mkdir()
+        check_import_markers_and_runtime_qualification_match_compiler_emission(fixture, *case)
+    for bare in (False, True):
+        fixture = root / f"runtime-{bare}"
+        fixture.mkdir()
+        check_emitted_runtime_cycle_control_survives_type_partition(fixture, bare)
