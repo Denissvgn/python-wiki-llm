@@ -53,9 +53,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| trim_blank_lines | len | 684 | `len(lines)` |
-| trim_blank_lines | lines[…].strip (src/llm_wiki_cli/services…ons.py:trim_blank_lines, 1) | 685 | `lines[start].strip(data not statically known)` |
-| trim_blank_lines | lines[…].strip (src/llm_wiki_cli/services…ctions.py:trim_blank_lines) | 687 | `lines[end - 1].strip(data not statically known)` |
+| trim_blank_lines | len | 692 | `len(lines)` |
+| trim_blank_lines | lines[…].strip (src/llm_wiki_cli/services…ons.py:trim_blank_lines, 1) | 693 | `lines[start].strip(data not statically known)` |
+| trim_blank_lines | lines[…].strip (src/llm_wiki_cli/services…ctions.py:trim_blank_lines) | 695 | `lines[end - 1].strip(data not statically known)` |
 
 ### Boundary effects
 
@@ -65,8 +65,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `trim_blank_lines` | `lines[start].strip` | 685 |
-| unresolved_call | `trim_blank_lines` | `lines[end - 1].strip` | 687 |
+| unresolved_call | `trim_blank_lines` | `lines[start].strip` | 693 |
+| unresolved_call | `trim_blank_lines` | `lines[end - 1].strip` | 695 |
 
 ## Behavior
 

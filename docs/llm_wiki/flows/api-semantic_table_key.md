@@ -63,11 +63,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| semantic_table_key | re.sub | 520 | `re.sub('\\[([^\\]]+)\\]\\([^)]+\\)', '\\1', cell)` |
-| semantic_table_key | key.replace(…).replace(…).replace | 521 | `key.replace('`', '').replace('*', '').replace('\\\|', '\|')` |
-| semantic_table_key | key.replace(…).replace | 521 | `key.replace('`', '').replace('*', '')` |
-| semantic_table_key | key.replace | 521 | `key.replace('`', '')` |
-| semantic_table_key | key.strip | 522 | `key.strip(data not statically known)` |
+| semantic_table_key | re.sub | 528 | `re.sub('\\[([^\\]]+)\\]\\([^)]+\\)', '\\1', cell)` |
+| semantic_table_key | key.replace(…).replace(…).replace | 529 | `key.replace('`', '').replace('*', '').replace('\\\|', '\|')` |
+| semantic_table_key | key.replace(…).replace | 529 | `key.replace('`', '').replace('*', '')` |
+| semantic_table_key | key.replace | 529 | `key.replace('`', '')` |
+| semantic_table_key | key.strip | 530 | `key.strip(data not statically known)` |
 
 ### Boundary effects
 
@@ -77,11 +77,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `semantic_table_key` | `re.sub` | 520 |
-| unresolved_call | `semantic_table_key` | `key.replace('`', '').replace('*', '').replace` | 521 |
-| unresolved_call | `semantic_table_key` | `key.replace('`', '').replace` | 521 |
-| unresolved_call | `semantic_table_key` | `key.replace` | 521 |
-| unresolved_call | `semantic_table_key` | `key.strip` | 522 |
+| external_call | `semantic_table_key` | `re.sub` | 528 |
+| unresolved_call | `semantic_table_key` | `key.replace('`', '').replace('*', '').replace` | 529 |
+| unresolved_call | `semantic_table_key` | `key.replace('`', '').replace` | 529 |
+| unresolved_call | `semantic_table_key` | `key.replace` | 529 |
+| unresolved_call | `semantic_table_key` | `key.strip` | 530 |
 
 ## Behavior
 

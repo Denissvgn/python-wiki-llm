@@ -48,8 +48,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| normalize_markdown | text.replace(…).replace | 81 | `text.replace('\r\n', '\n').replace('\r', '\n')` |
-| normalize_markdown | text.replace | 81 | `text.replace('\r\n', '\n')` |
+| normalize_markdown | text.replace(…).replace | 82 | `text.replace('\r\n', '\n').replace('\r', '\n')` |
+| normalize_markdown | text.replace | 82 | `text.replace('\r\n', '\n')` |
 
 ### Boundary effects
 
@@ -59,8 +59,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `normalize_markdown` | `text.replace('\r\n', '\n').replace` | 81 |
-| unresolved_call | `normalize_markdown` | `text.replace` | 81 |
+| unresolved_call | `normalize_markdown` | `text.replace('\r\n', '\n').replace` | 82 |
+| unresolved_call | `normalize_markdown` | `text.replace` | 82 |
 
 ## Behavior
 

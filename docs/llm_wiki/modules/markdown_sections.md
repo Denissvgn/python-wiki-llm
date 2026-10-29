@@ -54,11 +54,11 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [MarkdownSection](../entities/MarkdownSection.md) | 85 | — | One ATX heading and its exact normalized section extent. |
-| [MarkdownSectionDocument](../entities/MarkdownSectionDocument.md) | 155 | — | Normalized Markdown plus its ordered hierarchy commitment. |
-| [TableDescriptionCell](../entities/TableDescriptionCell.md) | 176 | — | One table Description cell without lossy duplicate-key collapse. |
-| [MixedTableProjection](../entities/MixedTableProjection.md) | 188 | — | Separate structural and semantic commitments for one mixed section. |
-| [_HeadingCandidate](../entities/HeadingCandidate.md) | 199 | — | — |
+| [MarkdownSection](../entities/MarkdownSection.md) | 86 | — | One ATX heading and its exact normalized section extent. |
+| [MarkdownSectionDocument](../entities/MarkdownSectionDocument.md) | 156 | — | Normalized Markdown plus its ordered hierarchy commitment. |
+| [TableDescriptionCell](../entities/TableDescriptionCell.md) | 177 | — | One table Description cell without lossy duplicate-key collapse. |
+| [MixedTableProjection](../entities/MixedTableProjection.md) | 189 | — | Separate structural and semantic commitments for one mixed section. |
+| [_HeadingCandidate](../entities/HeadingCandidate.md) | 200 | — | — |
 
 ## Functions
 
@@ -66,6 +66,7 @@ flowchart LR
 |----------|-----------|------------|-------------|
 | `normalize_markdown` | `(text: str) -> str` | — | Return *text* with CRLF and lone CR normalized to LF. |
 | `_line_content` | `(line: str) -> str` | — | — |
+| `_markdown_lines` | `(markdown: str, *, keepends: bool = False) -> list[str]` | — | Split CommonMark lines without treating Unicode content as line breaks. |
 | `_frontmatter_extent` | `(lines: list[str]) -> int` | — | Return the number of leading frontmatter lines to mask. |
 | `_atx_heading` | `(line: str) -> tuple[int, str] \| None` | — | — |
 | `_iter_structural_headings` | `(markdown: str) -> Iterable[tuple[int, str, int, int]]` | — | Yield ``(level, title, start, body_start)`` outside masked constructs. |

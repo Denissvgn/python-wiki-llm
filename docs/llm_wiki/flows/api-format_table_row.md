@@ -43,7 +43,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| format_table_row | ' \| '.join | 506 | `' \| '.join(cells)` |
+| format_table_row | ' \| '.join | 514 | `' \| '.join(cells)` |
 
 ### Boundary effects
 
@@ -53,7 +53,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `format_table_row` | `' \| '.join` | 506 |
+| unresolved_call | `format_table_row` | `' \| '.join` | 514 |
 
 ## Behavior
 

@@ -77,14 +77,14 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| preserve_level_two_section_exact | re.compile | 720 | `re.compile(...)` |
-| preserve_level_two_section_exact | re.escape | 721 | `re.escape(heading)` |
-| preserve_level_two_section_exact | pattern.search | 724 | `pattern.search(existing)` |
-| preserve_level_two_section_exact | pattern.search | 725 | `pattern.search(generated)` |
-| preserve_level_two_section_exact | old_match.group | 728 | `old_match.group(0)` |
-| preserve_level_two_section_exact | new_match.group | 729 | `new_match.group(0)` |
-| preserve_level_two_section_exact | new_match.start | 732 | `new_match.start(data not statically known)` |
-| preserve_level_two_section_exact | new_match.end | 734 | `new_match.end(data not statically known)` |
+| preserve_level_two_section_exact | re.compile | 728 | `re.compile(...)` |
+| preserve_level_two_section_exact | re.escape | 729 | `re.escape(heading)` |
+| preserve_level_two_section_exact | pattern.search | 732 | `pattern.search(existing)` |
+| preserve_level_two_section_exact | pattern.search | 733 | `pattern.search(generated)` |
+| preserve_level_two_section_exact | old_match.group | 736 | `old_match.group(0)` |
+| preserve_level_two_section_exact | new_match.group | 737 | `new_match.group(0)` |
+| preserve_level_two_section_exact | new_match.start | 740 | `new_match.start(data not statically known)` |
+| preserve_level_two_section_exact | new_match.end | 742 | `new_match.end(data not statically known)` |
 
 ### Boundary effects
 
@@ -94,14 +94,14 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `preserve_level_two_section_exact` | `re.compile` | 720 |
-| external_call | `preserve_level_two_section_exact` | `re.escape` | 721 |
-| unresolved_call | `preserve_level_two_section_exact` | `pattern.search` | 724 |
-| unresolved_call | `preserve_level_two_section_exact` | `pattern.search` | 725 |
-| unresolved_call | `preserve_level_two_section_exact` | `old_match.group` | 728 |
-| unresolved_call | `preserve_level_two_section_exact` | `new_match.group` | 729 |
-| unresolved_call | `preserve_level_two_section_exact` | `new_match.start` | 732 |
-| unresolved_call | `preserve_level_two_section_exact` | `new_match.end` | 734 |
+| external_call | `preserve_level_two_section_exact` | `re.compile` | 728 |
+| external_call | `preserve_level_two_section_exact` | `re.escape` | 729 |
+| unresolved_call | `preserve_level_two_section_exact` | `pattern.search` | 732 |
+| unresolved_call | `preserve_level_two_section_exact` | `pattern.search` | 733 |
+| unresolved_call | `preserve_level_two_section_exact` | `old_match.group` | 736 |
+| unresolved_call | `preserve_level_two_section_exact` | `new_match.group` | 737 |
+| unresolved_call | `preserve_level_two_section_exact` | `new_match.start` | 740 |
+| unresolved_call | `preserve_level_two_section_exact` | `new_match.end` | 742 |
 
 ## Behavior
 

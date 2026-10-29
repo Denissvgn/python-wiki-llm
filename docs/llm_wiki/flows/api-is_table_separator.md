@@ -53,9 +53,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| is_table_separator | all | 514 | `all(...)` |
-| is_table_separator | re.fullmatch | 514 | `re.fullmatch(':?-{3,}:?', cell.replace(...))` |
-| is_table_separator | cell.replace | 514 | `cell.replace(' ', '')` |
+| is_table_separator | all | 522 | `all(...)` |
+| is_table_separator | re.fullmatch | 522 | `re.fullmatch(':?-{3,}:?', cell.replace(...))` |
+| is_table_separator | cell.replace | 522 | `cell.replace(' ', '')` |
 
 ### Boundary effects
 
@@ -65,9 +65,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `is_table_separator` | `all` | 514 |
-| external_call | `is_table_separator` | `re.fullmatch` | 514 |
-| unresolved_call | `is_table_separator` | `cell.replace` | 514 |
+| external_call | `is_table_separator` | `all` | 522 |
+| external_call | `is_table_separator` | `re.fullmatch` | 522 |
+| unresolved_call | `is_table_separator` | `cell.replace` | 522 |
 
 ## Behavior
 

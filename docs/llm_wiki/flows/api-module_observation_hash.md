@@ -74,9 +74,9 @@ sequenceDiagram
     p4-->>p30: seen_names.get(name, 0)
 ```
 
-> Call sequence diagram shows 30 of 208 interactions; 178 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 229 interactions; 199 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 42 (41 omitted); unresolved 1 of 47 (46 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 45 (44 omitted); unresolved 1 of 53 (52 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -167,35 +167,35 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| module_observation_hash | _validate_inventory_complete | 277 | `_validate_inventory_complete(inventory_complete)` |
-| _validate_inventory_complete | require_bool | 826 | `require_bool(inventory_complete, error=TypeError(...))` |
+| module_observation_hash | _validate_inventory_complete | 278 | `_validate_inventory_complete(inventory_complete)` |
+| _validate_inventory_complete | require_bool | 839 | `require_bool(inventory_complete, error=TypeError(...))` |
 | require_bool | isinstance (src/llm_wiki_cli/services…alidation.py:require_bool) | 810 | `isinstance(value, bool)` |
-| _validate_inventory_complete | TypeError | 828 | `TypeError('inventory_complete must be a boolean')` |
-| module_observation_hash | normalize_module_observation | 280 | `normalize_module_observation(file_data)` |
-| normalize_module_observation | _normalize_module_observation | 241 | `_normalize_module_observation(file_data)` |
-| _normalize_module_observation | _inventory_language | 456 | `_inventory_language(file_data)` |
-| _inventory_language | isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language) | 539 | `isinstance(file_data, Mapping)` |
-| _inventory_language | _failure | 540 | `_failure('', 'object-required', 'inventory object', file_data)` |
-| _failure | _InventoryNormalizationError | 165 | `_InventoryNormalizationError(reason, pointer=pointer, rule=rule, expected=expected, value=value, exact=exact)` |
-| _inventory_language | file_data.get (src/llm_wiki_cli/services…ce.py:_inventory_language) | 541 | `file_data.get('language', MISSING_VALUE)` |
+| _validate_inventory_complete | TypeError | 841 | `TypeError('inventory_complete must be a boolean')` |
+| module_observation_hash | normalize_module_observation | 281 | `normalize_module_observation(file_data)` |
+| normalize_module_observation | _normalize_module_observation | 242 | `_normalize_module_observation(file_data)` |
+| _normalize_module_observation | _inventory_language | 457 | `_inventory_language(file_data)` |
+| _inventory_language | isinstance (src/llm_wiki_cli/services…ce.py:_inventory_language) | 540 | `isinstance(file_data, Mapping)` |
+| _inventory_language | _failure | 541 | `_failure('', 'object-required', 'inventory object', file_data)` |
+| _failure | _InventoryNormalizationError | 166 | `_InventoryNormalizationError(reason, pointer=pointer, rule=rule, expected=expected, value=value, exact=exact)` |
+| _inventory_language | file_data.get (src/llm_wiki_cli/services…ce.py:_inventory_language) | 542 | `file_data.get('language', MISSING_VALUE)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `class_summaries.append` | `_normalize_module_observation` | 473 |
-| mutation | `function_summaries.append` | `_normalize_module_observation` | 479 |
-| mutation | `constant_summaries.append` | `_normalize_module_observation` | 501 |
-| mutation | `call_summaries.append` | `_normalize_module_observation` | 508 |
+| mutation | `class_summaries.append` | `_normalize_module_observation` | 474 |
+| mutation | `function_summaries.append` | `_normalize_module_observation` | 480 |
+| mutation | `constant_summaries.append` | `_normalize_module_observation` | 502 |
+| mutation | `call_summaries.append` | `_normalize_module_observation` | 509 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `require_bool` | `isinstance` | 810 |
-| external_call | `_validate_inventory_complete` | `TypeError` | 828 |
-| external_call | `_inventory_language` | `isinstance` | 539 |
-| unresolved_call | `_inventory_language` | `file_data.get` | 541 |
+| external_call | `_validate_inventory_complete` | `TypeError` | 841 |
+| external_call | `_inventory_language` | `isinstance` | 540 |
+| unresolved_call | `_inventory_language` | `file_data.get` | 542 |
 | step_limit | `module_observation_hash` | `first 12 steps` | 0 |
 | truncated_flow | `module_observation_hash` | `depth limit` | 0 |
 

@@ -1,6 +1,6 @@
 # MixedTableProjection
 
-**Location:** `src/llm_wiki_cli/services/markdown_sections.py:188`
+**Location:** `src/llm_wiki_cli/services/markdown_sections.py:189`
 **Kind:** Class
 **Bases:** —
 **Module:** [markdown_sections](../modules/markdown_sections.md)

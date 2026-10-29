@@ -1797,37 +1797,37 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 6574,
+              "line": 6604,
               "step": "execute_bootstrap",
               "target": "io.StringIO"
             },
             {
               "kind": "unresolved_call",
-              "line": 4665,
+              "line": 4695,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.source_root).expanduser().resolve"
             },
             {
               "kind": "unresolved_call",
-              "line": 4665,
+              "line": 4695,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.source_root).expanduser"
             },
             {
               "kind": "unresolved_call",
-              "line": 4666,
+              "line": 4696,
               "step": "_bootstrap_run_options_from_request",
               "target": "source_root.is_dir"
             },
             {
               "kind": "unresolved_call",
-              "line": 4670,
+              "line": 4700,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.wiki_root).expanduser().resolve"
             },
             {
               "kind": "unresolved_call",
-              "line": 4670,
+              "line": 4700,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.wiki_root).expanduser"
             },
@@ -3253,7 +3253,7 @@
             "src/llm_wiki_cli/services/validation.py",
             "src/llm_wiki_cli/services/normalization_diagnostics.py"
           ],
-          "step_count": 281,
+          "step_count": 302,
           "truncated": true
         }
       },
@@ -3952,7 +3952,7 @@
             "src/llm_wiki_cli/services/knowledge_packs.py",
             "src/llm_wiki_cli/services/canonical_json.py"
           ],
-          "step_count": 4740,
+          "step_count": 4761,
           "truncated": true
         }
       },
@@ -4326,7 +4326,7 @@
             "src/llm_wiki_cli/services/validation.py",
             "src/llm_wiki_cli/services/normalization_diagnostics.py"
           ],
-          "step_count": 306,
+          "step_count": 327,
           "truncated": true
         }
       },
@@ -5094,7 +5094,7 @@
             "src/llm_wiki_cli/services/infrastructure_sync.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py"
           ],
-          "step_count": 665,
+          "step_count": 686,
           "truncated": true
         }
       },
@@ -5133,13 +5133,13 @@
             },
             {
               "kind": "unresolved_call",
-              "line": 220,
+              "line": 221,
               "step": "sha256_bytes",
               "target": "hashlib.sha256(value).hexdigest"
             },
             {
               "kind": "external_call",
-              "line": 220,
+              "line": 221,
               "step": "sha256_bytes",
               "target": "hashlib.sha256"
             },
@@ -5628,13 +5628,13 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 193,
+              "line": 194,
               "step": "canonical_json_bytes",
               "target": "canonical_json_text(value).encode"
             },
             {
               "kind": "external_call",
-              "line": 181,
+              "line": 182,
               "step": "canonical_json_text",
               "target": "json.dumps"
             }
@@ -5716,7 +5716,7 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 181,
+              "line": 182,
               "step": "canonical_json_text",
               "target": "json.dumps"
             }
@@ -6153,31 +6153,31 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 266,
+              "line": 269,
               "step": "_coerce_page_kind",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 271,
+              "line": 274,
               "step": "_coerce_page_kind",
               "target": "ValueError"
             },
             {
               "kind": "unresolved_call",
-              "line": 281,
+              "line": 284,
               "step": "_top_level_policy",
               "target": "title.casefold"
             },
             {
               "kind": "unresolved_call",
-              "line": 286,
+              "line": 289,
               "step": "_top_level_policy",
               "target": "_LOG_DATE_HEADING_RE.fullmatch"
             },
             {
               "kind": "unresolved_call",
-              "line": 384,
+              "line": 387,
               "step": "_top_level_policy",
               "target": "_HTTP_OPERATION_HEADING_RE.match"
             }
@@ -8648,7 +8648,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 581,
+              "line": 589,
               "step": "description_table_cells",
               "step_index": 1,
               "target": "cells.append"
@@ -8656,86 +8656,86 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 478,
-              "step": "split_table_row",
-              "step_index": 7,
-              "target": "current.extend"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "mutation",
               "line": 486,
               "step": "split_table_row",
-              "step_index": 7,
-              "target": "current.append"
+              "step_index": 10,
+              "target": "current.extend"
             },
             {
               "confidence": "unknown",
               "kind": "mutation",
               "line": 494,
               "step": "split_table_row",
-              "step_index": 7,
-              "target": "cells.append"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "mutation",
-              "line": 497,
-              "step": "split_table_row",
-              "step_index": 7,
+              "step_index": 10,
               "target": "current.append"
             },
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 499,
+              "line": 502,
               "step": "split_table_row",
-              "step_index": 7,
+              "step_index": 10,
+              "target": "cells.append"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "mutation",
+              "line": 505,
+              "step": "split_table_row",
+              "step_index": 10,
+              "target": "current.append"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "mutation",
+              "line": 507,
+              "step": "split_table_row",
+              "step_index": 10,
               "target": "cells.append"
             }
           ],
           "gaps": [
             {
-              "kind": "unresolved_call",
-              "line": 558,
-              "step": "description_table_cells",
-              "target": "normalize_markdown(markdown).splitlines"
+              "kind": "external_call",
+              "line": 218,
+              "step": "_markdown_lines",
+              "target": "re.findall"
             },
             {
               "kind": "unresolved_call",
-              "line": 81,
+              "line": 82,
               "step": "normalize_markdown",
               "target": "text.replace('\\r\\n', '\\n').replace"
             },
             {
               "kind": "unresolved_call",
-              "line": 81,
+              "line": 82,
               "step": "normalize_markdown",
               "target": "text.replace"
             },
             {
+              "kind": "unresolved_call",
+              "line": 212,
+              "step": "_line_content",
+              "target": "line.endswith"
+            },
+            {
               "kind": "external_call",
-              "line": 559,
+              "line": 567,
               "step": "description_table_cells",
               "target": "enumerate"
             },
             {
               "kind": "unresolved_call",
-              "line": 467,
+              "line": 475,
               "step": "split_table_row",
               "target": "line.strip"
             },
             {
               "kind": "unresolved_call",
-              "line": 468,
+              "line": 476,
               "step": "split_table_row",
               "target": "stripped.startswith"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 468,
-              "step": "split_table_row",
-              "target": "stripped.endswith"
             },
             {
               "kind": "step_limit",
@@ -8753,7 +8753,7 @@
           "modules_touched": [
             "src/llm_wiki_cli/services/markdown_sections.py"
           ],
-          "step_count": 45,
+          "step_count": 48,
           "truncated": false
         }
       },
@@ -9278,7 +9278,7 @@
             },
             {
               "kind": "external_call",
-              "line": 828,
+              "line": 841,
               "step": "_validate_inventory_complete",
               "target": "TypeError"
             },
@@ -9323,7 +9323,7 @@
             "src/llm_wiki_cli/services/knowledge_evidence.py",
             "src/llm_wiki_cli/services/validation.py"
           ],
-          "step_count": 178,
+          "step_count": 199,
           "truncated": true
         }
       },
@@ -9488,7 +9488,7 @@
             "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_cli/services/concept_identity.py"
           ],
-          "step_count": 3573,
+          "step_count": 3594,
           "truncated": true
         }
       },
@@ -11125,7 +11125,7 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 506,
+              "line": 514,
               "step": "format_table_row",
               "target": "' | '.join"
             }
@@ -11160,13 +11160,13 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 214,
+              "line": 215,
               "step": "formatted_json_bytes",
               "target": "formatted_json_text(value).encode"
             },
             {
               "kind": "external_call",
-              "line": 200,
+              "line": 201,
               "step": "formatted_json_text",
               "target": "json.dumps"
             }
@@ -11201,7 +11201,7 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 200,
+              "line": 201,
               "step": "formatted_json_text",
               "target": "json.dumps"
             }
@@ -12490,7 +12490,7 @@
             },
             {
               "kind": "unresolved_call",
-              "line": 220,
+              "line": 221,
               "step": "sha256_bytes",
               "target": "hashlib.sha256(value).hexdigest"
             },
@@ -12633,13 +12633,13 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 220,
+              "line": 221,
               "step": "sha256_bytes",
               "target": "hashlib.sha256(value).hexdigest"
             },
             {
               "kind": "external_call",
-              "line": 220,
+              "line": 221,
               "step": "sha256_bytes",
               "target": "hashlib.sha256"
             },
@@ -12651,7 +12651,7 @@
             },
             {
               "kind": "external_call",
-              "line": 200,
+              "line": 201,
               "step": "formatted_json_text",
               "target": "json.dumps"
             },
@@ -12814,7 +12814,7 @@
             {
               "confidence": "unknown",
               "kind": "filesystem_read",
-              "line": 925,
+              "line": 938,
               "step": "hash_file",
               "step_index": 1,
               "target": "path.read_bytes"
@@ -12823,13 +12823,13 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 220,
+              "line": 221,
               "step": "sha256_bytes",
               "target": "hashlib.sha256(value).hexdigest"
             },
             {
               "kind": "external_call",
-              "line": 220,
+              "line": 221,
               "step": "sha256_bytes",
               "target": "hashlib.sha256"
             }
@@ -12997,25 +12997,25 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 220,
+              "line": 221,
               "step": "sha256_bytes",
               "target": "hashlib.sha256(value).hexdigest"
             },
             {
               "kind": "external_call",
-              "line": 220,
+              "line": 221,
               "step": "sha256_bytes",
               "target": "hashlib.sha256"
             },
             {
               "kind": "unresolved_call",
-              "line": 193,
+              "line": 194,
               "step": "canonical_json_bytes",
               "target": "canonical_json_text(value).encode"
             },
             {
               "kind": "external_call",
-              "line": 181,
+              "line": 182,
               "step": "canonical_json_text",
               "target": "json.dumps"
             }
@@ -13698,13 +13698,13 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 530,
+              "line": 538,
               "step": "is_placeholder_description",
               "target": "value.strip"
             },
             {
               "kind": "unresolved_call",
-              "line": 533,
+              "line": 541,
               "step": "is_placeholder_description",
               "target": "_AUTO_GENERATED_RE.match"
             }
@@ -14039,19 +14039,19 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 514,
+              "line": 522,
               "step": "is_table_separator",
               "target": "all"
             },
             {
               "kind": "external_call",
-              "line": 514,
+              "line": 522,
               "step": "is_table_separator",
               "target": "re.fullmatch"
             },
             {
               "kind": "unresolved_call",
-              "line": 514,
+              "line": 522,
               "step": "is_table_separator",
               "target": "cell.replace"
             }
@@ -14181,13 +14181,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 175,
+              "line": 176,
               "step": "is_valid_sha256",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 175,
+              "line": 176,
               "step": "is_valid_sha256",
               "target": "_SHA256_RE.fullmatch"
             }
@@ -15996,39 +15996,39 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1191,
+              "line": 1213,
               "step": "merge_entity_semantics",
               "target": "semantics.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 1192,
+              "line": 1214,
               "step": "merge_entity_semantics",
               "target": "semantics.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 1193,
+              "line": 1215,
               "step": "merge_entity_semantics",
               "target": "semantics.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 81,
+              "line": 82,
               "step": "normalize_markdown",
               "target": "text.replace('\\r\\n', '\\n').replace"
             },
             {
               "kind": "unresolved_call",
-              "line": 81,
+              "line": 82,
               "step": "normalize_markdown",
               "target": "text.replace"
             },
             {
-              "kind": "unresolved_call",
-              "line": 695,
-              "step": "section_body",
-              "target": "normalize_markdown(markdown).splitlines"
+              "kind": "external_call",
+              "line": 218,
+              "step": "_markdown_lines",
+              "target": "re.findall"
             },
             {
               "kind": "step_limit",
@@ -16045,9 +16045,10 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/services/section_ownership.py",
-            "src/llm_wiki_cli/services/markdown_sections.py"
+            "src/llm_wiki_cli/services/markdown_sections.py",
+            "src/llm_wiki_cli/services/knowledge_evidence.py"
           ],
-          "step_count": 113,
+          "step_count": 207,
           "truncated": false
         }
       },
@@ -16068,39 +16069,39 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 1214,
+              "line": 1237,
               "step": "merge_module_semantics",
               "target": "semantics.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 1215,
+              "line": 1238,
               "step": "merge_module_semantics",
               "target": "semantics.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 1216,
+              "line": 1239,
               "step": "merge_module_semantics",
               "target": "semantics.get"
             },
             {
               "kind": "unresolved_call",
-              "line": 81,
+              "line": 82,
               "step": "normalize_markdown",
               "target": "text.replace('\\r\\n', '\\n').replace"
             },
             {
               "kind": "unresolved_call",
-              "line": 81,
+              "line": 82,
               "step": "normalize_markdown",
               "target": "text.replace"
             },
             {
-              "kind": "unresolved_call",
-              "line": 695,
-              "step": "section_body",
-              "target": "normalize_markdown(markdown).splitlines"
+              "kind": "external_call",
+              "line": 218,
+              "step": "_markdown_lines",
+              "target": "re.findall"
             },
             {
               "kind": "step_limit",
@@ -16117,9 +16118,10 @@
         "flow": {
           "modules_touched": [
             "src/llm_wiki_cli/services/section_ownership.py",
-            "src/llm_wiki_cli/services/markdown_sections.py"
+            "src/llm_wiki_cli/services/markdown_sections.py",
+            "src/llm_wiki_cli/services/knowledge_evidence.py"
           ],
-          "step_count": 113,
+          "step_count": 207,
           "truncated": false
         }
       },
@@ -16140,45 +16142,33 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 81,
+              "line": 82,
               "step": "normalize_markdown",
               "target": "text.replace('\\r\\n', '\\n').replace"
             },
             {
               "kind": "unresolved_call",
-              "line": 81,
+              "line": 82,
               "step": "normalize_markdown",
               "target": "text.replace"
             },
             {
-              "kind": "unresolved_call",
-              "line": 695,
-              "step": "section_body",
-              "target": "normalize_markdown(markdown).splitlines"
+              "kind": "external_call",
+              "line": 218,
+              "step": "_markdown_lines",
+              "target": "re.findall"
             },
             {
               "kind": "unresolved_call",
-              "line": 661,
+              "line": 212,
+              "step": "_line_content",
+              "target": "line.endswith"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 669,
               "step": "section_bounds",
               "target": "heading.casefold"
-            },
-            {
-              "kind": "external_call",
-              "line": 662,
-              "step": "section_bounds",
-              "target": "enumerate"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 663,
-              "step": "section_bounds",
-              "target": "_LEGACY_HEADING_RE.match"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 663,
-              "step": "section_bounds",
-              "target": "line.strip"
             },
             {
               "kind": "step_limit",
@@ -16259,7 +16249,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 629,
+              "line": 637,
               "step": "mixed_table_projection",
               "step_index": 1,
               "target": "semantic_cells.sort"
@@ -16267,48 +16257,8 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 581,
+              "line": 589,
               "step": "description_table_cells",
-              "step_index": 7,
-              "target": "cells.append"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "mutation",
-              "line": 478,
-              "step": "split_table_row",
-              "step_index": 11,
-              "target": "current.extend"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "mutation",
-              "line": 486,
-              "step": "split_table_row",
-              "step_index": 11,
-              "target": "current.append"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "mutation",
-              "line": 494,
-              "step": "split_table_row",
-              "step_index": 11,
-              "target": "cells.append"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "mutation",
-              "line": 497,
-              "step": "split_table_row",
-              "step_index": 11,
-              "target": "current.append"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "mutation",
-              "line": 499,
-              "step": "split_table_row",
               "step_index": 11,
               "target": "cells.append"
             }
@@ -16316,45 +16266,33 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 81,
+              "line": 82,
               "step": "normalize_markdown",
               "target": "text.replace('\\r\\n', '\\n').replace"
             },
             {
               "kind": "unresolved_call",
-              "line": 81,
+              "line": 82,
               "step": "normalize_markdown",
               "target": "text.replace"
             },
             {
-              "kind": "unresolved_call",
-              "line": 606,
-              "step": "mixed_table_projection",
-              "target": "normalized.splitlines"
+              "kind": "external_call",
+              "line": 218,
+              "step": "_markdown_lines",
+              "target": "re.findall"
             },
             {
               "kind": "unresolved_call",
-              "line": 607,
+              "line": 212,
+              "step": "_line_content",
+              "target": "line.endswith"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 615,
               "step": "mixed_table_projection",
               "target": "normalized.endswith"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 558,
-              "step": "description_table_cells",
-              "target": "normalize_markdown(markdown).splitlines"
-            },
-            {
-              "kind": "external_call",
-              "line": 559,
-              "step": "description_table_cells",
-              "target": "enumerate"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 467,
-              "step": "split_table_row",
-              "target": "line.strip"
             },
             {
               "kind": "step_limit",
@@ -16373,7 +16311,7 @@
             "src/llm_wiki_cli/services/markdown_sections.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py"
           ],
-          "step_count": 72,
+          "step_count": 75,
           "truncated": false
         }
       },
@@ -16394,7 +16332,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 473,
+              "line": 474,
               "step": "_normalize_module_observation",
               "step_index": 7,
               "target": "class_summaries.append"
@@ -16402,7 +16340,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 479,
+              "line": 480,
               "step": "_normalize_module_observation",
               "step_index": 7,
               "target": "function_summaries.append"
@@ -16410,7 +16348,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 501,
+              "line": 502,
               "step": "_normalize_module_observation",
               "step_index": 7,
               "target": "constant_summaries.append"
@@ -16418,7 +16356,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 508,
+              "line": 509,
               "step": "_normalize_module_observation",
               "step_index": 7,
               "target": "call_summaries.append"
@@ -16433,19 +16371,19 @@
             },
             {
               "kind": "external_call",
-              "line": 828,
+              "line": 841,
               "step": "_validate_inventory_complete",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 539,
+              "line": 540,
               "step": "_inventory_language",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 541,
+              "line": 542,
               "step": "_inventory_language",
               "target": "file_data.get"
             },
@@ -16472,7 +16410,7 @@
             "src/llm_wiki_cli/services/knowledge_evidence.py",
             "src/llm_wiki_cli/services/validation.py"
           ],
-          "step_count": 209,
+          "step_count": 230,
           "truncated": true
         }
       },
@@ -17131,7 +17069,7 @@
             },
             {
               "kind": "external_call",
-              "line": 884,
+              "line": 897,
               "step": "_validate_entity_coordinate",
               "target": "ValueError"
             },
@@ -17158,7 +17096,7 @@
             "src/llm_wiki_cli/services/knowledge_evidence.py",
             "src/llm_wiki_cli/services/validation.py"
           ],
-          "step_count": 176,
+          "step_count": 197,
           "truncated": false
         }
       },
@@ -17274,13 +17212,13 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 81,
+              "line": 82,
               "step": "normalize_markdown",
               "target": "text.replace('\\r\\n', '\\n').replace"
             },
             {
               "kind": "unresolved_call",
-              "line": 81,
+              "line": 82,
               "step": "normalize_markdown",
               "target": "text.replace"
             }
@@ -17315,7 +17253,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 473,
+              "line": 474,
               "step": "_normalize_module_observation",
               "step_index": 2,
               "target": "class_summaries.append"
@@ -17323,7 +17261,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 479,
+              "line": 480,
               "step": "_normalize_module_observation",
               "step_index": 2,
               "target": "function_summaries.append"
@@ -17331,7 +17269,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 501,
+              "line": 502,
               "step": "_normalize_module_observation",
               "step_index": 2,
               "target": "constant_summaries.append"
@@ -17339,7 +17277,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 508,
+              "line": 509,
               "step": "_normalize_module_observation",
               "step_index": 2,
               "target": "call_summaries.append"
@@ -17348,25 +17286,25 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 539,
+              "line": 540,
               "step": "_inventory_language",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 541,
+              "line": 542,
               "step": "_inventory_language",
               "target": "file_data.get"
             },
             {
               "kind": "external_call",
-              "line": 542,
+              "line": 543,
               "step": "_inventory_language",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 457,
+              "line": 458,
               "step": "_normalize_module_observation",
               "target": "isinstance"
             },
@@ -17387,7 +17325,7 @@
             "src/llm_wiki_cli/services/knowledge_evidence.py",
             "src/llm_wiki_cli/services/validation.py"
           ],
-          "step_count": 201,
+          "step_count": 222,
           "truncated": false
         }
       },
@@ -17773,7 +17711,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 575,
+              "line": 578,
               "step": "observe_page_sections",
               "step_index": 1,
               "target": "observations.append"
@@ -17781,7 +17719,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 338,
+              "line": 346,
               "step": "parse_markdown_document",
               "step_index": 6,
               "target": "stack.pop"
@@ -17789,7 +17727,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 350,
+              "line": 358,
               "step": "parse_markdown_document",
               "step_index": 6,
               "target": "candidates.append"
@@ -17797,7 +17735,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 362,
+              "line": 370,
               "step": "parse_markdown_document",
               "step_index": 6,
               "target": "stack.append"
@@ -17805,7 +17743,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 366,
+              "line": 374,
               "step": "parse_markdown_document",
               "step_index": 6,
               "target": "utf8_prefix_lengths.append"
@@ -17813,7 +17751,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 393,
+              "line": 401,
               "step": "parse_markdown_document",
               "step_index": 6,
               "target": "sections.append"
@@ -17822,43 +17760,43 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 266,
+              "line": 269,
               "step": "_coerce_page_kind",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 271,
+              "line": 274,
               "step": "_coerce_page_kind",
               "target": "ValueError"
             },
             {
               "kind": "external_call",
-              "line": 325,
+              "line": 333,
               "step": "parse_markdown_document",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 326,
+              "line": 334,
               "step": "parse_markdown_document",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 327,
+              "line": 335,
               "step": "parse_markdown_document",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 328,
+              "line": 336,
               "step": "parse_markdown_document",
               "target": "ValueError"
             },
             {
               "kind": "unresolved_call",
-              "line": 81,
+              "line": 82,
               "step": "normalize_markdown",
               "target": "text.replace('\\r\\n', '\\n').replace"
             },
@@ -17881,7 +17819,7 @@
             "src/llm_wiki_cli/services/markdown_sections.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py"
           ],
-          "step_count": 175,
+          "step_count": 177,
           "truncated": false
         }
       },
@@ -18399,7 +18337,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 338,
+              "line": 346,
               "step": "parse_markdown_document",
               "step_index": 1,
               "target": "stack.pop"
@@ -18407,7 +18345,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 350,
+              "line": 358,
               "step": "parse_markdown_document",
               "step_index": 1,
               "target": "candidates.append"
@@ -18415,7 +18353,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 362,
+              "line": 370,
               "step": "parse_markdown_document",
               "step_index": 1,
               "target": "stack.append"
@@ -18423,7 +18361,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 366,
+              "line": 374,
               "step": "parse_markdown_document",
               "step_index": 1,
               "target": "utf8_prefix_lengths.append"
@@ -18431,7 +18369,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 393,
+              "line": 401,
               "step": "parse_markdown_document",
               "step_index": 1,
               "target": "sections.append"
@@ -18440,45 +18378,45 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 325,
+              "line": 333,
               "step": "parse_markdown_document",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 326,
+              "line": 334,
               "step": "parse_markdown_document",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 327,
+              "line": 335,
               "step": "parse_markdown_document",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 328,
+              "line": 336,
               "step": "parse_markdown_document",
               "target": "ValueError"
             },
             {
               "kind": "unresolved_call",
-              "line": 81,
+              "line": 82,
               "step": "normalize_markdown",
               "target": "text.replace('\\r\\n', '\\n').replace"
             },
             {
               "kind": "unresolved_call",
-              "line": 81,
+              "line": 82,
               "step": "normalize_markdown",
               "target": "text.replace"
             },
             {
-              "kind": "unresolved_call",
-              "line": 251,
-              "step": "_iter_structural_headings",
-              "target": "markdown.splitlines"
+              "kind": "external_call",
+              "line": 218,
+              "step": "_markdown_lines",
+              "target": "re.findall"
             },
             {
               "kind": "step_limit",
@@ -18497,7 +18435,7 @@
             "src/llm_wiki_cli/services/markdown_sections.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py"
           ],
-          "step_count": 86,
+          "step_count": 89,
           "truncated": false
         }
       },
@@ -18518,7 +18456,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 338,
+              "line": 346,
               "step": "parse_markdown_document",
               "step_index": 2,
               "target": "stack.pop"
@@ -18526,7 +18464,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 350,
+              "line": 358,
               "step": "parse_markdown_document",
               "step_index": 2,
               "target": "candidates.append"
@@ -18534,7 +18472,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 362,
+              "line": 370,
               "step": "parse_markdown_document",
               "step_index": 2,
               "target": "stack.append"
@@ -18542,7 +18480,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 366,
+              "line": 374,
               "step": "parse_markdown_document",
               "step_index": 2,
               "target": "utf8_prefix_lengths.append"
@@ -18550,7 +18488,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 393,
+              "line": 401,
               "step": "parse_markdown_document",
               "step_index": 2,
               "target": "sections.append"
@@ -18559,45 +18497,39 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 325,
+              "line": 333,
               "step": "parse_markdown_document",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 326,
+              "line": 334,
               "step": "parse_markdown_document",
               "target": "TypeError"
             },
             {
               "kind": "external_call",
-              "line": 327,
+              "line": 335,
               "step": "parse_markdown_document",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 328,
+              "line": 336,
               "step": "parse_markdown_document",
               "target": "ValueError"
             },
             {
               "kind": "unresolved_call",
-              "line": 81,
+              "line": 82,
               "step": "normalize_markdown",
               "target": "text.replace('\\r\\n', '\\n').replace"
             },
             {
               "kind": "unresolved_call",
-              "line": 81,
+              "line": 82,
               "step": "normalize_markdown",
               "target": "text.replace"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 251,
-              "step": "_iter_structural_headings",
-              "target": "markdown.splitlines"
             },
             {
               "kind": "step_limit",
@@ -18616,7 +18548,7 @@
             "src/llm_wiki_cli/services/markdown_sections.py",
             "src/llm_wiki_cli/services/knowledge_evidence.py"
           ],
-          "step_count": 87,
+          "step_count": 90,
           "truncated": false
         }
       },
@@ -19706,49 +19638,49 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 720,
+              "line": 728,
               "step": "preserve_level_two_section_exact",
               "target": "re.compile"
             },
             {
               "kind": "external_call",
-              "line": 721,
+              "line": 729,
               "step": "preserve_level_two_section_exact",
               "target": "re.escape"
             },
             {
               "kind": "unresolved_call",
-              "line": 724,
+              "line": 732,
               "step": "preserve_level_two_section_exact",
               "target": "pattern.search"
             },
             {
               "kind": "unresolved_call",
-              "line": 725,
+              "line": 733,
               "step": "preserve_level_two_section_exact",
               "target": "pattern.search"
             },
             {
               "kind": "unresolved_call",
-              "line": 728,
+              "line": 736,
               "step": "preserve_level_two_section_exact",
               "target": "old_match.group"
             },
             {
               "kind": "unresolved_call",
-              "line": 729,
+              "line": 737,
               "step": "preserve_level_two_section_exact",
               "target": "new_match.group"
             },
             {
               "kind": "unresolved_call",
-              "line": 732,
+              "line": 740,
               "step": "preserve_level_two_section_exact",
               "target": "new_match.start"
             },
             {
               "kind": "unresolved_call",
-              "line": 734,
+              "line": 742,
               "step": "preserve_level_two_section_exact",
               "target": "new_match.end"
             }
@@ -19782,52 +19714,46 @@
           "boundary_effects": [],
           "gaps": [
             {
-              "kind": "unresolved_call",
-              "line": 877,
-              "step": "preserve_table_description_cells",
-              "target": "normalize_markdown(markdown).splitlines"
+              "kind": "external_call",
+              "line": 218,
+              "step": "_markdown_lines",
+              "target": "re.findall"
             },
             {
               "kind": "unresolved_call",
-              "line": 81,
+              "line": 82,
               "step": "normalize_markdown",
               "target": "text.replace('\\r\\n', '\\n').replace"
             },
             {
               "kind": "unresolved_call",
-              "line": 81,
+              "line": 82,
               "step": "normalize_markdown",
               "target": "text.replace"
             },
             {
               "kind": "unresolved_call",
-              "line": 661,
+              "line": 212,
+              "step": "_line_content",
+              "target": "line.endswith"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 669,
               "step": "section_bounds",
               "target": "heading.casefold"
             },
             {
               "kind": "external_call",
-              "line": 662,
+              "line": 670,
               "step": "section_bounds",
               "target": "enumerate"
             },
             {
               "kind": "unresolved_call",
-              "line": 663,
+              "line": 671,
               "step": "section_bounds",
               "target": "_LEGACY_HEADING_RE.match"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 663,
-              "step": "section_bounds",
-              "target": "line.strip"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 666,
-              "step": "section_bounds",
-              "target": "match.group"
             },
             {
               "kind": "step_limit",
@@ -19845,7 +19771,7 @@
           "modules_touched": [
             "src/llm_wiki_cli/services/markdown_sections.py"
           ],
-          "step_count": 61,
+          "step_count": 64,
           "truncated": false
         }
       },
@@ -21608,13 +21534,13 @@
             },
             {
               "kind": "unresolved_call",
-              "line": 220,
+              "line": 221,
               "step": "sha256_bytes",
               "target": "hashlib.sha256(value).hexdigest"
             },
             {
               "kind": "external_call",
-              "line": 220,
+              "line": 221,
               "step": "sha256_bytes",
               "target": "hashlib.sha256"
             },
@@ -21626,7 +21552,7 @@
             },
             {
               "kind": "external_call",
-              "line": 181,
+              "line": 182,
               "step": "canonical_json_text",
               "target": "json.dumps"
             }
@@ -22356,46 +22282,40 @@
           "boundary_effects": [],
           "gaps": [
             {
-              "kind": "unresolved_call",
-              "line": 695,
-              "step": "section_body",
-              "target": "normalize_markdown(markdown).splitlines"
+              "kind": "external_call",
+              "line": 218,
+              "step": "_markdown_lines",
+              "target": "re.findall"
             },
             {
               "kind": "unresolved_call",
-              "line": 81,
+              "line": 82,
               "step": "normalize_markdown",
               "target": "text.replace('\\r\\n', '\\n').replace"
             },
             {
               "kind": "unresolved_call",
-              "line": 81,
+              "line": 82,
               "step": "normalize_markdown",
               "target": "text.replace"
             },
             {
               "kind": "unresolved_call",
-              "line": 661,
+              "line": 212,
+              "step": "_line_content",
+              "target": "line.endswith"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 669,
               "step": "section_bounds",
               "target": "heading.casefold"
             },
             {
               "kind": "external_call",
-              "line": 662,
+              "line": 670,
               "step": "section_bounds",
               "target": "enumerate"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 663,
-              "step": "section_bounds",
-              "target": "_LEGACY_HEADING_RE.match"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 663,
-              "step": "section_bounds",
-              "target": "line.strip"
             },
             {
               "kind": "step_limit",
@@ -22414,7 +22334,7 @@
             "src/llm_wiki_cli/services/section_ownership.py",
             "src/llm_wiki_cli/services/markdown_sections.py"
           ],
-          "step_count": 38,
+          "step_count": 40,
           "truncated": false
         }
       },
@@ -22434,52 +22354,46 @@
           "boundary_effects": [],
           "gaps": [
             {
-              "kind": "unresolved_call",
-              "line": 706,
-              "step": "replace_section_body",
-              "target": "normalize_markdown(markdown).splitlines"
+              "kind": "external_call",
+              "line": 218,
+              "step": "_markdown_lines",
+              "target": "re.findall"
             },
             {
               "kind": "unresolved_call",
-              "line": 81,
+              "line": 82,
               "step": "normalize_markdown",
               "target": "text.replace('\\r\\n', '\\n').replace"
             },
             {
               "kind": "unresolved_call",
-              "line": 81,
+              "line": 82,
               "step": "normalize_markdown",
               "target": "text.replace"
             },
             {
               "kind": "unresolved_call",
-              "line": 661,
+              "line": 212,
+              "step": "_line_content",
+              "target": "line.endswith"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 669,
               "step": "section_bounds",
               "target": "heading.casefold"
             },
             {
               "kind": "external_call",
-              "line": 662,
+              "line": 670,
               "step": "section_bounds",
               "target": "enumerate"
             },
             {
               "kind": "unresolved_call",
-              "line": 663,
+              "line": 671,
               "step": "section_bounds",
               "target": "_LEGACY_HEADING_RE.match"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 663,
-              "step": "section_bounds",
-              "target": "line.strip"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 666,
-              "step": "section_bounds",
-              "target": "match.group"
             },
             {
               "kind": "step_limit",
@@ -22497,7 +22411,7 @@
           "modules_touched": [
             "src/llm_wiki_cli/services/markdown_sections.py"
           ],
-          "step_count": 24,
+          "step_count": 27,
           "truncated": false
         }
       },
@@ -25276,13 +25190,13 @@
             },
             {
               "kind": "external_call",
-              "line": 175,
+              "line": 176,
               "step": "is_valid_sha256",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 175,
+              "line": 176,
               "step": "is_valid_sha256",
               "target": "_SHA256_RE.fullmatch"
             },
@@ -25676,52 +25590,46 @@
           "boundary_effects": [],
           "gaps": [
             {
-              "kind": "unresolved_call",
-              "line": 695,
-              "step": "section_body",
-              "target": "normalize_markdown(markdown).splitlines"
+              "kind": "external_call",
+              "line": 218,
+              "step": "_markdown_lines",
+              "target": "re.findall"
             },
             {
               "kind": "unresolved_call",
-              "line": 81,
+              "line": 82,
               "step": "normalize_markdown",
               "target": "text.replace('\\r\\n', '\\n').replace"
             },
             {
               "kind": "unresolved_call",
-              "line": 81,
+              "line": 82,
               "step": "normalize_markdown",
               "target": "text.replace"
             },
             {
               "kind": "unresolved_call",
-              "line": 661,
+              "line": 212,
+              "step": "_line_content",
+              "target": "line.endswith"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 669,
               "step": "section_bounds",
               "target": "heading.casefold"
             },
             {
               "kind": "external_call",
-              "line": 662,
+              "line": 670,
               "step": "section_bounds",
               "target": "enumerate"
             },
             {
               "kind": "unresolved_call",
-              "line": 663,
+              "line": 671,
               "step": "section_bounds",
               "target": "_LEGACY_HEADING_RE.match"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 663,
-              "step": "section_bounds",
-              "target": "line.strip"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 666,
-              "step": "section_bounds",
-              "target": "match.group"
             },
             {
               "kind": "step_limit",
@@ -25739,7 +25647,7 @@
           "modules_touched": [
             "src/llm_wiki_cli/services/markdown_sections.py"
           ],
-          "step_count": 28,
+          "step_count": 31,
           "truncated": false
         }
       },
@@ -25760,55 +25668,55 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 661,
+              "line": 669,
               "step": "section_bounds",
               "target": "heading.casefold"
             },
             {
               "kind": "external_call",
-              "line": 662,
+              "line": 670,
               "step": "section_bounds",
               "target": "enumerate"
             },
             {
               "kind": "unresolved_call",
-              "line": 663,
+              "line": 671,
               "step": "section_bounds",
               "target": "_LEGACY_HEADING_RE.match"
             },
             {
               "kind": "unresolved_call",
-              "line": 663,
+              "line": 671,
               "step": "section_bounds",
               "target": "line.strip"
             },
             {
               "kind": "unresolved_call",
-              "line": 666,
+              "line": 674,
               "step": "section_bounds",
               "target": "match.group"
             },
             {
               "kind": "unresolved_call",
-              "line": 667,
+              "line": 675,
               "step": "section_bounds",
               "target": "match.group(2).strip().casefold"
             },
             {
               "kind": "unresolved_call",
-              "line": 667,
+              "line": 675,
               "step": "section_bounds",
               "target": "match.group(2).strip"
             },
             {
               "kind": "unresolved_call",
-              "line": 667,
+              "line": 675,
               "step": "section_bounds",
               "target": "match.group"
             },
             {
               "kind": "external_call",
-              "line": 671,
+              "line": 679,
               "step": "section_bounds",
               "target": "range"
             },
@@ -25849,36 +25757,6 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 300,
-              "step": "section_locator",
-              "target": "isinstance"
-            },
-            {
-              "kind": "external_call",
-              "line": 301,
-              "step": "section_locator",
-              "target": "ValueError"
-            },
-            {
-              "kind": "external_call",
-              "line": 303,
-              "step": "section_locator",
-              "target": "ValueError"
-            },
-            {
-              "kind": "external_call",
-              "line": 307,
-              "step": "section_locator",
-              "target": "ValueError"
-            },
-            {
-              "kind": "external_call",
-              "line": 308,
-              "step": "section_locator",
-              "target": "any"
-            },
-            {
-              "kind": "external_call",
               "line": 308,
               "step": "section_locator",
               "target": "isinstance"
@@ -25886,6 +25764,36 @@
             {
               "kind": "external_call",
               "line": 309,
+              "step": "section_locator",
+              "target": "ValueError"
+            },
+            {
+              "kind": "external_call",
+              "line": 311,
+              "step": "section_locator",
+              "target": "ValueError"
+            },
+            {
+              "kind": "external_call",
+              "line": 315,
+              "step": "section_locator",
+              "target": "ValueError"
+            },
+            {
+              "kind": "external_call",
+              "line": 316,
+              "step": "section_locator",
+              "target": "any"
+            },
+            {
+              "kind": "external_call",
+              "line": 316,
+              "step": "section_locator",
+              "target": "isinstance"
+            },
+            {
+              "kind": "external_call",
+              "line": 317,
               "step": "section_locator",
               "target": "ValueError"
             },
@@ -25926,7 +25834,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 624,
+              "line": 627,
               "step": "serialize_section_ownership",
               "step_index": 2,
               "target": "seen.add"
@@ -25935,31 +25843,31 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 616,
+              "line": 619,
               "step": "serialize_section_ownership",
               "target": "sorted"
             },
             {
               "kind": "unresolved_call",
-              "line": 618,
+              "line": 621,
               "step": "serialize_section_ownership",
               "target": "page.page_locator.casefold"
             },
             {
               "kind": "external_call",
-              "line": 623,
+              "line": 626,
               "step": "serialize_section_ownership",
               "target": "ValueError"
             },
             {
               "kind": "external_call",
-              "line": 626,
+              "line": 629,
               "step": "serialize_section_ownership",
               "target": "sorted"
             },
             {
               "kind": "external_call",
-              "line": 627,
+              "line": 630,
               "step": "serialize_section_ownership",
               "target": "ValueError"
             },
@@ -26071,43 +25979,43 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 896,
+              "line": 909,
               "step": "without_line_metadata",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 899,
+              "line": 912,
               "step": "without_line_metadata",
               "target": "sorted"
             },
             {
               "kind": "unresolved_call",
-              "line": 899,
+              "line": 912,
               "step": "without_line_metadata",
               "target": "value.items"
             },
             {
               "kind": "external_call",
-              "line": 902,
+              "line": 915,
               "step": "without_line_metadata",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 913,
+              "line": 926,
               "step": "semantic_hash_for_file",
               "target": "json.dumps(normalized, separators=(',', ':'), sort_keys=True).encode"
             },
             {
               "kind": "external_call",
-              "line": 913,
+              "line": 926,
               "step": "semantic_hash_for_file",
               "target": "json.dumps"
             },
             {
               "kind": "unresolved_call",
-              "line": 220,
+              "line": 221,
               "step": "sha256_bytes",
               "target": "hashlib.sha256(value).hexdigest"
             },
@@ -26148,31 +26056,31 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 520,
+              "line": 528,
               "step": "semantic_table_key",
               "target": "re.sub"
             },
             {
               "kind": "unresolved_call",
-              "line": 521,
+              "line": 529,
               "step": "semantic_table_key",
               "target": "key.replace('`', '').replace('*', '').replace"
             },
             {
               "kind": "unresolved_call",
-              "line": 521,
+              "line": 529,
               "step": "semantic_table_key",
               "target": "key.replace('`', '').replace"
             },
             {
               "kind": "unresolved_call",
-              "line": 521,
+              "line": 529,
               "step": "semantic_table_key",
               "target": "key.replace"
             },
             {
               "kind": "unresolved_call",
-              "line": 522,
+              "line": 530,
               "step": "semantic_table_key",
               "target": "key.strip"
             }
@@ -26216,7 +26124,7 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 200,
+              "line": 201,
               "step": "formatted_json_text",
               "target": "json.dumps"
             },
@@ -26514,7 +26422,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 624,
+              "line": 627,
               "step": "serialize_section_ownership",
               "step_index": 1,
               "target": "seen.add"
@@ -26523,37 +26431,37 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 616,
+              "line": 619,
               "step": "serialize_section_ownership",
               "target": "sorted"
             },
             {
               "kind": "unresolved_call",
-              "line": 618,
+              "line": 621,
               "step": "serialize_section_ownership",
               "target": "page.page_locator.casefold"
             },
             {
               "kind": "external_call",
-              "line": 623,
+              "line": 626,
               "step": "serialize_section_ownership",
               "target": "ValueError"
             },
             {
               "kind": "external_call",
-              "line": 626,
+              "line": 629,
               "step": "serialize_section_ownership",
               "target": "sorted"
             },
             {
               "kind": "external_call",
-              "line": 627,
+              "line": 630,
               "step": "serialize_section_ownership",
               "target": "ValueError"
             },
             {
               "kind": "unresolved_call",
-              "line": 632,
+              "line": 635,
               "step": "serialize_section_ownership",
               "target": "page.to_payload"
             }
@@ -26706,13 +26614,13 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 214,
+              "line": 215,
               "step": "formatted_json_bytes",
               "target": "formatted_json_text(value).encode"
             },
             {
               "kind": "external_call",
-              "line": 200,
+              "line": 201,
               "step": "formatted_json_text",
               "target": "json.dumps"
             },
@@ -26838,13 +26746,13 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 220,
+              "line": 221,
               "step": "sha256_bytes",
               "target": "hashlib.sha256(value).hexdigest"
             },
             {
               "kind": "external_call",
-              "line": 220,
+              "line": 221,
               "step": "sha256_bytes",
               "target": "hashlib.sha256"
             }
@@ -26879,31 +26787,31 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 530,
+              "line": 538,
               "step": "is_placeholder_description",
               "target": "value.strip"
             },
             {
               "kind": "unresolved_call",
-              "line": 533,
+              "line": 541,
               "step": "is_placeholder_description",
               "target": "_AUTO_GENERATED_RE.match"
             },
             {
               "kind": "unresolved_call",
-              "line": 545,
+              "line": 553,
               "step": "should_preserve_semantic_value",
               "target": "(existing or '').strip"
             },
             {
               "kind": "unresolved_call",
-              "line": 546,
+              "line": 554,
               "step": "should_preserve_semantic_value",
               "target": "(generated or '').strip"
             },
             {
               "kind": "unresolved_call",
-              "line": 549,
+              "line": 557,
               "step": "should_preserve_semantic_value",
               "target": "old_generated.strip"
             }
@@ -27328,7 +27236,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 478,
+              "line": 486,
               "step": "split_table_row",
               "step_index": 1,
               "target": "current.extend"
@@ -27336,7 +27244,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 486,
+              "line": 494,
               "step": "split_table_row",
               "step_index": 1,
               "target": "current.append"
@@ -27344,7 +27252,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 494,
+              "line": 502,
               "step": "split_table_row",
               "step_index": 1,
               "target": "cells.append"
@@ -27352,7 +27260,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 497,
+              "line": 505,
               "step": "split_table_row",
               "step_index": 1,
               "target": "current.append"
@@ -27360,7 +27268,7 @@
             {
               "confidence": "unknown",
               "kind": "mutation",
-              "line": 499,
+              "line": 507,
               "step": "split_table_row",
               "step_index": 1,
               "target": "cells.append"
@@ -27369,19 +27277,19 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 467,
+              "line": 475,
               "step": "split_table_row",
               "target": "line.strip"
             },
             {
               "kind": "unresolved_call",
-              "line": 468,
+              "line": 476,
               "step": "split_table_row",
               "target": "stripped.startswith"
             },
             {
               "kind": "unresolved_call",
-              "line": 468,
+              "line": 476,
               "step": "split_table_row",
               "target": "stripped.endswith"
             },
@@ -27724,52 +27632,46 @@
           "boundary_effects": [],
           "gaps": [
             {
-              "kind": "unresolved_call",
-              "line": 832,
-              "step": "table_description_cells",
-              "target": "normalize_markdown(markdown).splitlines"
+              "kind": "external_call",
+              "line": 218,
+              "step": "_markdown_lines",
+              "target": "re.findall"
             },
             {
               "kind": "unresolved_call",
-              "line": 81,
+              "line": 82,
               "step": "normalize_markdown",
               "target": "text.replace('\\r\\n', '\\n').replace"
             },
             {
               "kind": "unresolved_call",
-              "line": 81,
+              "line": 82,
               "step": "normalize_markdown",
               "target": "text.replace"
             },
             {
               "kind": "unresolved_call",
-              "line": 661,
+              "line": 212,
+              "step": "_line_content",
+              "target": "line.endswith"
+            },
+            {
+              "kind": "unresolved_call",
+              "line": 669,
               "step": "section_bounds",
               "target": "heading.casefold"
             },
             {
               "kind": "external_call",
-              "line": 662,
+              "line": 670,
               "step": "section_bounds",
               "target": "enumerate"
             },
             {
               "kind": "unresolved_call",
-              "line": 663,
+              "line": 671,
               "step": "section_bounds",
               "target": "_LEGACY_HEADING_RE.match"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 663,
-              "step": "section_bounds",
-              "target": "line.strip"
-            },
-            {
-              "kind": "unresolved_call",
-              "line": 666,
-              "step": "section_bounds",
-              "target": "match.group"
             },
             {
               "kind": "step_limit",
@@ -27787,7 +27689,7 @@
           "modules_touched": [
             "src/llm_wiki_cli/services/markdown_sections.py"
           ],
-          "step_count": 58,
+          "step_count": 61,
           "truncated": false
         }
       },
@@ -27968,13 +27870,13 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 685,
+              "line": 693,
               "step": "trim_blank_lines",
               "target": "lines[start].strip"
             },
             {
               "kind": "unresolved_call",
-              "line": 687,
+              "line": 695,
               "step": "trim_blank_lines",
               "target": "lines[end - 1].strip"
             }
@@ -31512,25 +31414,25 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 896,
+              "line": 909,
               "step": "without_line_metadata",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 899,
+              "line": 912,
               "step": "without_line_metadata",
               "target": "sorted"
             },
             {
               "kind": "unresolved_call",
-              "line": 899,
+              "line": 912,
               "step": "without_line_metadata",
               "target": "value.items"
             },
             {
               "kind": "external_call",
-              "line": 902,
+              "line": 915,
               "step": "without_line_metadata",
               "target": "isinstance"
             }
@@ -31593,13 +31495,13 @@
           "gaps": [
             {
               "kind": "unresolved_call",
-              "line": 214,
+              "line": 215,
               "step": "formatted_json_bytes",
               "target": "formatted_json_text(value).encode"
             },
             {
               "kind": "external_call",
-              "line": 200,
+              "line": 201,
               "step": "formatted_json_text",
               "target": "json.dumps"
             },
@@ -31748,7 +31650,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 6619,
+              "line": 6649,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -34474,7 +34376,7 @@
             "src/llm_wiki_cli/services/infrastructure_sync.py",
             "src/llm_wiki_cli/services/knowledge_index.py"
           ],
-          "step_count": 4067,
+          "step_count": 4084,
           "truncated": true
         }
       },
@@ -36679,7 +36581,7 @@
             "src/llm_wiki_cli/services/source_retirement.py",
             "src/llm_wiki_cli/services/markdown_sections.py"
           ],
-          "step_count": 2466,
+          "step_count": 2475,
           "truncated": true
         }
       },
@@ -62127,6 +62029,7 @@
       "kind": "flows",
       "mcp_uri": "llm-wiki://flows/api-merge_entity_semantics",
       "outgoing_internal_links": [
+        "modules/knowledge_evidence.md",
         "modules/markdown_sections.md",
         "modules/section_ownership.md"
       ],
@@ -62140,6 +62043,7 @@
       "kind": "flows",
       "mcp_uri": "llm-wiki://flows/api-merge_module_semantics",
       "outgoing_internal_links": [
+        "modules/knowledge_evidence.md",
         "modules/markdown_sections.md",
         "modules/section_ownership.md"
       ],
@@ -68210,5 +68114,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:d0770ea8c8ae43c0ee733fc586805b6708d1cefc481edbb5674e172d568a7709"
+  "source_hash": "sha256:481e7160554e9fac5246ebd0a18bc27a11fe3c551c39763fe5b8a76cb0934481"
 }

@@ -96,17 +96,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| section_locator | isinstance | 300 | `isinstance(page_locator, str)` |
-| section_locator | ValueError | 301 | `ValueError('page_locator must be a non-empty string')` |
-| section_locator | ValueError | 303 | `ValueError('page_locator must not already contain a fragment')` |
-| section_locator | tuple | 304 | `tuple(heading_path)` |
-| section_locator | tuple | 305 | `tuple(occurrence_path)` |
-| section_locator | len | 306 | `len(headings)` |
-| section_locator | len | 306 | `len(occurrences)` |
-| section_locator | ValueError | 307 | `ValueError('heading_path and occurrence_path must be non-empty peers')` |
-| section_locator | any | 308 | `any(...)` |
-| section_locator | isinstance | 308 | `isinstance(value, str)` |
-| section_locator | ValueError | 309 | `ValueError('heading_path entries must be strings')` |
+| section_locator | isinstance | 308 | `isinstance(page_locator, str)` |
+| section_locator | ValueError | 309 | `ValueError('page_locator must be a non-empty string')` |
+| section_locator | ValueError | 311 | `ValueError('page_locator must not already contain a fragment')` |
+| section_locator | tuple | 312 | `tuple(heading_path)` |
+| section_locator | tuple | 313 | `tuple(occurrence_path)` |
+| section_locator | len | 314 | `len(headings)` |
+| section_locator | len | 314 | `len(occurrences)` |
+| section_locator | ValueError | 315 | `ValueError('heading_path and occurrence_path must be non-empty peers')` |
+| section_locator | any | 316 | `any(...)` |
+| section_locator | isinstance | 316 | `isinstance(value, str)` |
+| section_locator | ValueError | 317 | `ValueError('heading_path entries must be strings')` |
 
 ### Boundary effects
 
@@ -116,13 +116,13 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `section_locator` | `isinstance` | 300 |
-| external_call | `section_locator` | `ValueError` | 301 |
-| external_call | `section_locator` | `ValueError` | 303 |
-| external_call | `section_locator` | `ValueError` | 307 |
-| external_call | `section_locator` | `any` | 308 |
 | external_call | `section_locator` | `isinstance` | 308 |
 | external_call | `section_locator` | `ValueError` | 309 |
+| external_call | `section_locator` | `ValueError` | 311 |
+| external_call | `section_locator` | `ValueError` | 315 |
+| external_call | `section_locator` | `any` | 316 |
+| external_call | `section_locator` | `isinstance` | 316 |
+| external_call | `section_locator` | `ValueError` | 317 |
 | step_limit | `section_locator` | `first 12 steps` | 0 |
 
 ## Behavior

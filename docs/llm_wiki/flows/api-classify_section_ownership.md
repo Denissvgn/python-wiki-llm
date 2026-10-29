@@ -81,14 +81,14 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| classify_section_ownership | _coerce_page_kind | 432 | `_coerce_page_kind(page_kind)` |
-| _coerce_page_kind | isinstance | 266 | `isinstance(page_kind, PageKind)` |
-| _coerce_page_kind | PageKind | 269 | `PageKind(page_kind)` |
-| _coerce_page_kind | ValueError | 271 | `ValueError(...)` |
-| classify_section_ownership | _top_level_policy | 442 | `_top_level_policy(kind, section.title, occurrence, index_preserved=index_preserved)` |
-| _top_level_policy | title.casefold | 281 | `title.casefold(data not statically known)` |
-| _top_level_policy | _LOG_DATE_HEADING_RE.fullmatch | 286 | `_LOG_DATE_HEADING_RE.fullmatch(title)` |
-| _top_level_policy | _HTTP_OPERATION_HEADING_RE.match | 384 | `_HTTP_OPERATION_HEADING_RE.match(title)` |
+| classify_section_ownership | _coerce_page_kind | 435 | `_coerce_page_kind(page_kind)` |
+| _coerce_page_kind | isinstance | 269 | `isinstance(page_kind, PageKind)` |
+| _coerce_page_kind | PageKind | 272 | `PageKind(page_kind)` |
+| _coerce_page_kind | ValueError | 274 | `ValueError(...)` |
+| classify_section_ownership | _top_level_policy | 445 | `_top_level_policy(kind, section.title, occurrence, index_preserved=index_preserved)` |
+| _top_level_policy | title.casefold | 284 | `title.casefold(data not statically known)` |
+| _top_level_policy | _LOG_DATE_HEADING_RE.fullmatch | 289 | `_LOG_DATE_HEADING_RE.fullmatch(title)` |
+| _top_level_policy | _HTTP_OPERATION_HEADING_RE.match | 387 | `_HTTP_OPERATION_HEADING_RE.match(title)` |
 
 ### Boundary effects
 
@@ -98,11 +98,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_coerce_page_kind` | `isinstance` | 266 |
-| external_call | `_coerce_page_kind` | `ValueError` | 271 |
-| unresolved_call | `_top_level_policy` | `title.casefold` | 281 |
-| unresolved_call | `_top_level_policy` | `_LOG_DATE_HEADING_RE.fullmatch` | 286 |
-| unresolved_call | `_top_level_policy` | `_HTTP_OPERATION_HEADING_RE.match` | 384 |
+| external_call | `_coerce_page_kind` | `isinstance` | 269 |
+| external_call | `_coerce_page_kind` | `ValueError` | 274 |
+| unresolved_call | `_top_level_policy` | `title.casefold` | 284 |
+| unresolved_call | `_top_level_policy` | `_LOG_DATE_HEADING_RE.fullmatch` | 289 |
+| unresolved_call | `_top_level_policy` | `_HTTP_OPERATION_HEADING_RE.match` | 387 |
 
 ## Behavior
 

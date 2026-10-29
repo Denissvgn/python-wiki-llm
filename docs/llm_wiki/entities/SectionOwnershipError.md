@@ -1,6 +1,6 @@
 # SectionOwnershipError
 
-**Location:** `src/llm_wiki_cli/services/section_ownership.py:59`
+**Location:** `src/llm_wiki_cli/services/section_ownership.py:60`
 **Kind:** Class
 **Bases:** `ValueError`
 **Module:** [section_ownership](../modules/section_ownership.md)

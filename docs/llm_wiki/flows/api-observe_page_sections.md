@@ -23,23 +23,23 @@ sequenceDiagram
     participant p9 as mixed_table_projection
     participant p10 as _iter_structural_headings
     participant p11 as hash_json
-    participant p12 as _frontmatter_extent
-    participant p13 as canonical_json_bytes
-    participant p14 as description_table_cells
-    participant p15 as PageKind
-    participant p16 as _top_level_policy
-    participant p17 as normalize_markdown
-    participant p18 as _HeadingCandidate
-    participant p19 as section_locator
-    participant p20 as MarkdownSection
-    participant p21 as MarkdownSectionDocument
-    participant p22 as _line_content
-    participant p23 as format_table_row
-    participant p24 as is_placeholder_description
-    participant p25 as _atx_heading
-    participant p26 as MixedTableProjection
-    participant p27 as canonical_json_text
-    participant p28 as split_table_row
+    participant p12 as _markdown_lines
+    participant p13 as _frontmatter_extent
+    participant p14 as canonical_json_bytes
+    participant p15 as description_table_cells
+    participant p16 as PageKind
+    participant p17 as _top_level_policy
+    participant p18 as normalize_markdown
+    participant p19 as _HeadingCandidate
+    participant p20 as section_locator
+    participant p21 as MarkdownSection
+    participant p22 as MarkdownSectionDocument
+    participant p23 as _line_content
+    participant p24 as format_table_row
+    participant p25 as is_placeholder_description
+    participant p26 as _atx_heading
+    participant p27 as MixedTableProjection
+    participant p28 as canonical_json_text
     participant p29 as len (src/llm_wiki_cli/services….py:observe_page_sections)
     participant p30 as section.title.casefold
     p0->>p1: _coerce_page_kind
@@ -53,30 +53,30 @@ sequenceDiagram
     p5->>p9: mixed_table_projection
     p2->>p10: _iter_structural_headings
     p2->>p11: hash_json
-    p10->>p12: _frontmatter_extent
-    p11->>p13: canonical_json_bytes
-    p9->>p14: description_table_cells
-    p1->>p15: PageKind
-    p4->>p16: _top_level_policy
-    p2->>p17: normalize_markdown
-    p2->>p18: _HeadingCandidate
-    p2->>p19: section_locator
-    p2->>p20: MarkdownSection
-    p2->>p21: MarkdownSectionDocument
-    p10->>p22: _line_content
-    p9->>p23: format_table_row
-    p9->>p24: is_placeholder_description
-    p10->>p25: _atx_heading
-    p9->>p26: MixedTableProjection
-    p13->>p27: canonical_json_text
-    p14->>p28: split_table_row
+    p10->>p12: _markdown_lines
+    p10->>p13: _frontmatter_extent
+    p11->>p14: canonical_json_bytes
+    p9->>p15: description_table_cells
+    p1->>p16: PageKind
+    p4->>p17: _top_level_policy
+    p2->>p18: normalize_markdown
+    p2->>p19: _HeadingCandidate
+    p2->>p20: section_locator
+    p2->>p21: MarkdownSection
+    p2->>p22: MarkdownSectionDocument
+    p10->>p23: _line_content
+    p9->>p24: format_table_row
+    p9->>p25: is_placeholder_description
+    p10->>p26: _atx_heading
+    p9->>p27: MixedTableProjection
+    p14->>p28: canonical_json_text
     p0-->>p29: len (src/llm_wiki_cli/services….py:observe_page_sections)(document.normalized_markdown)
     p0-->>p30: section.title.casefold
 ```
 
-> Call sequence diagram shows 30 of 174 interactions; 144 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 176 interactions; 146 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 67 (66 omitted); unresolved 1 of 61 (60 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 68 (67 omitted); unresolved 1 of 58 (57 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -85,12 +85,12 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/section_ownership.py:_coerce_page_kind` | 2 | - | external | 2 |
 | `src/llm_wiki_cli/services/markdown_sections.py:parse_markdown_document` | 6 | - | external | 15 |
 | `src/llm_wiki_cli/services/markdown_sections.py:normalize_markdown` | 11 | - | unresolved | 2 |
-| `src/llm_wiki_cli/services/markdown_sections.py:_iter_structural_headings` | 15 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/markdown_sections.py:_frontmatter_extent` | 17 | - | unresolved | 3 |
-| `src/llm_wiki_cli/services/markdown_sections.py:_frontmatter_extent` | 17 | [src/llm_wiki_cli/services/markdown_sections.py](../modules/markdown_sections.md) | internal | 2 |
-| `src/llm_wiki_cli/services/markdown_sections.py:_line_content` | 20 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/markdown_sections.py:_frontmatter_extent` | 17 | - | external | 2 |
-> Omission summary shows 8 of 43 groups; 35 further groups are not expanded here. Counts above include all omitted interactions.
+| `src/llm_wiki_cli/services/markdown_sections.py:_markdown_lines` | 16 | - | external | 1 |
+| `src/llm_wiki_cli/services/markdown_sections.py:_markdown_lines` | 16 | [src/llm_wiki_cli/services/markdown_sections.py](../modules/markdown_sections.md) | internal | 2 |
+| `src/llm_wiki_cli/services/markdown_sections.py:_line_content` | 19 | - | unresolved | 1 |
+| `src/llm_wiki_cli/services/markdown_sections.py:_frontmatter_extent` | 21 | - | unresolved | 3 |
+| `src/llm_wiki_cli/services/markdown_sections.py:_frontmatter_extent` | 21 | [src/llm_wiki_cli/services/markdown_sections.py](../modules/markdown_sections.md) | internal | 2 |
+> Omission summary shows 8 of 45 groups; 37 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 ## Data flow
@@ -168,40 +168,40 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| observe_page_sections | _coerce_page_kind | 543 | `_coerce_page_kind(page_kind)` |
-| _coerce_page_kind | isinstance (src/llm_wiki_cli/services…ship.py:_coerce_page_kind) | 266 | `isinstance(page_kind, PageKind)` |
-| _coerce_page_kind | PageKind | 269 | `PageKind(page_kind)` |
-| _coerce_page_kind | ValueError (src/llm_wiki_cli/services…ship.py:_coerce_page_kind) | 271 | `ValueError(...)` |
-| observe_page_sections | parse_markdown_document | 544 | `parse_markdown_document(markdown, page_locator)` |
-| parse_markdown_document | isinstance (src/llm_wiki_cli/services…y:parse_markdown_document) | 325 | `isinstance(markdown, str)` |
-| parse_markdown_document | TypeError | 326 | `TypeError('markdown must be a string')` |
-| parse_markdown_document | isinstance (src/llm_wiki_cli/services…y:parse_markdown_document) | 327 | `isinstance(page_locator, str)` |
-| parse_markdown_document | ValueError (src/llm_wiki_cli/services…y:parse_markdown_document) | 328 | `ValueError('page_locator must be a non-empty string')` |
-| parse_markdown_document | normalize_markdown | 330 | `normalize_markdown(markdown)` |
-| normalize_markdown | text.replace(…).replace | 81 | `text.replace('\r\n', '\n').replace('\r', '\n')` |
+| observe_page_sections | _coerce_page_kind | 546 | `_coerce_page_kind(page_kind)` |
+| _coerce_page_kind | isinstance (src/llm_wiki_cli/services…ship.py:_coerce_page_kind) | 269 | `isinstance(page_kind, PageKind)` |
+| _coerce_page_kind | PageKind | 272 | `PageKind(page_kind)` |
+| _coerce_page_kind | ValueError (src/llm_wiki_cli/services…ship.py:_coerce_page_kind) | 274 | `ValueError(...)` |
+| observe_page_sections | parse_markdown_document | 547 | `parse_markdown_document(markdown, page_locator)` |
+| parse_markdown_document | isinstance (src/llm_wiki_cli/services…y:parse_markdown_document) | 333 | `isinstance(markdown, str)` |
+| parse_markdown_document | TypeError | 334 | `TypeError('markdown must be a string')` |
+| parse_markdown_document | isinstance (src/llm_wiki_cli/services…y:parse_markdown_document) | 335 | `isinstance(page_locator, str)` |
+| parse_markdown_document | ValueError (src/llm_wiki_cli/services…y:parse_markdown_document) | 336 | `ValueError('page_locator must be a non-empty string')` |
+| parse_markdown_document | normalize_markdown | 338 | `normalize_markdown(markdown)` |
+| normalize_markdown | text.replace(…).replace | 82 | `text.replace('\r\n', '\n').replace('\r', '\n')` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `observations.append` | `observe_page_sections` | 575 |
-| mutation | `stack.pop` | `parse_markdown_document` | 338 |
-| mutation | `candidates.append` | `parse_markdown_document` | 350 |
-| mutation | `stack.append` | `parse_markdown_document` | 362 |
-| mutation | `utf8_prefix_lengths.append` | `parse_markdown_document` | 366 |
-| mutation | `sections.append` | `parse_markdown_document` | 393 |
+| mutation | `observations.append` | `observe_page_sections` | 578 |
+| mutation | `stack.pop` | `parse_markdown_document` | 346 |
+| mutation | `candidates.append` | `parse_markdown_document` | 358 |
+| mutation | `stack.append` | `parse_markdown_document` | 370 |
+| mutation | `utf8_prefix_lengths.append` | `parse_markdown_document` | 374 |
+| mutation | `sections.append` | `parse_markdown_document` | 401 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_coerce_page_kind` | `isinstance` | 266 |
-| external_call | `_coerce_page_kind` | `ValueError` | 271 |
-| external_call | `parse_markdown_document` | `isinstance` | 325 |
-| external_call | `parse_markdown_document` | `TypeError` | 326 |
-| external_call | `parse_markdown_document` | `isinstance` | 327 |
-| external_call | `parse_markdown_document` | `ValueError` | 328 |
-| unresolved_call | `normalize_markdown` | `text.replace('\r\n', '\n').replace` | 81 |
+| external_call | `_coerce_page_kind` | `isinstance` | 269 |
+| external_call | `_coerce_page_kind` | `ValueError` | 274 |
+| external_call | `parse_markdown_document` | `isinstance` | 333 |
+| external_call | `parse_markdown_document` | `TypeError` | 334 |
+| external_call | `parse_markdown_document` | `isinstance` | 335 |
+| external_call | `parse_markdown_document` | `ValueError` | 336 |
+| unresolved_call | `normalize_markdown` | `text.replace('\r\n', '\n').replace` | 82 |
 | step_limit | `observe_page_sections` | `first 12 steps` | 0 |
 
 ## Behavior

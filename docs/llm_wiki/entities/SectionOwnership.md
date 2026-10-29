@@ -1,6 +1,6 @@
 # SectionOwnership
 
-**Location:** `src/llm_wiki_cli/services/section_ownership.py:50`
+**Location:** `src/llm_wiki_cli/services/section_ownership.py:51`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [section_ownership](../modules/section_ownership.md)

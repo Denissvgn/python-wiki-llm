@@ -48,8 +48,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| is_placeholder_description | value.strip | 530 | `value.strip(data not statically known)` |
-| is_placeholder_description | _AUTO_GENERATED_RE.match | 533 | `_AUTO_GENERATED_RE.match(stripped)` |
+| is_placeholder_description | value.strip | 538 | `value.strip(data not statically known)` |
+| is_placeholder_description | _AUTO_GENERATED_RE.match | 541 | `_AUTO_GENERATED_RE.match(stripped)` |
 
 ### Boundary effects
 
@@ -59,8 +59,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `is_placeholder_description` | `value.strip` | 530 |
-| unresolved_call | `is_placeholder_description` | `_AUTO_GENERATED_RE.match` | 533 |
+| unresolved_call | `is_placeholder_description` | `value.strip` | 538 |
+| unresolved_call | `is_placeholder_description` | `_AUTO_GENERATED_RE.match` | 541 |
 
 ## Behavior
 

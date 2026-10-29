@@ -69,12 +69,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| should_preserve_semantic_value | is_placeholder_description | 543 | `is_placeholder_description(existing)` |
-| is_placeholder_description | value.strip | 530 | `value.strip(data not statically known)` |
-| is_placeholder_description | _AUTO_GENERATED_RE.match | 533 | `_AUTO_GENERATED_RE.match(stripped)` |
-| should_preserve_semantic_value | (…).strip (src/llm_wiki_cli/services…ld_preserve_semantic_value) | 545 | `(existing or '').strip(data not statically known)` |
-| should_preserve_semantic_value | (…).strip (src/llm_wiki_cli/services…preserve_semantic_value, 1) | 546 | `(generated or '').strip(data not statically known)` |
-| should_preserve_semantic_value | old_generated.strip | 549 | `old_generated.strip(data not statically known)` |
+| should_preserve_semantic_value | is_placeholder_description | 551 | `is_placeholder_description(existing)` |
+| is_placeholder_description | value.strip | 538 | `value.strip(data not statically known)` |
+| is_placeholder_description | _AUTO_GENERATED_RE.match | 541 | `_AUTO_GENERATED_RE.match(stripped)` |
+| should_preserve_semantic_value | (…).strip (src/llm_wiki_cli/services…ld_preserve_semantic_value) | 553 | `(existing or '').strip(data not statically known)` |
+| should_preserve_semantic_value | (…).strip (src/llm_wiki_cli/services…preserve_semantic_value, 1) | 554 | `(generated or '').strip(data not statically known)` |
+| should_preserve_semantic_value | old_generated.strip | 557 | `old_generated.strip(data not statically known)` |
 
 ### Boundary effects
 
@@ -84,11 +84,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `is_placeholder_description` | `value.strip` | 530 |
-| unresolved_call | `is_placeholder_description` | `_AUTO_GENERATED_RE.match` | 533 |
-| unresolved_call | `should_preserve_semantic_value` | `(existing or '').strip` | 545 |
-| unresolved_call | `should_preserve_semantic_value` | `(generated or '').strip` | 546 |
-| unresolved_call | `should_preserve_semantic_value` | `old_generated.strip` | 549 |
+| unresolved_call | `is_placeholder_description` | `value.strip` | 538 |
+| unresolved_call | `is_placeholder_description` | `_AUTO_GENERATED_RE.match` | 541 |
+| unresolved_call | `should_preserve_semantic_value` | `(existing or '').strip` | 553 |
+| unresolved_call | `should_preserve_semantic_value` | `(generated or '').strip` | 554 |
+| unresolved_call | `should_preserve_semantic_value` | `old_generated.strip` | 557 |
 
 ## Behavior
 

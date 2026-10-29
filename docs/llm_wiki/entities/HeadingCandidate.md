@@ -1,6 +1,6 @@
 # _HeadingCandidate
 
-**Location:** `src/llm_wiki_cli/services/markdown_sections.py:199`
+**Location:** `src/llm_wiki_cli/services/markdown_sections.py:200`
 **Kind:** Class
 **Bases:** —
 **Module:** [markdown_sections](../modules/markdown_sections.md)

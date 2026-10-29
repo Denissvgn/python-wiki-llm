@@ -96,33 +96,33 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| section_ownership_extension | serialize_section_ownership | 1141 | `serialize_section_ownership(pages)` |
-| serialize_section_ownership | sorted | 616 | `sorted(pages, key=...)` |
-| serialize_section_ownership | page.page_locator.casefold | 618 | `page.page_locator.casefold(data not statically known)` |
-| serialize_section_ownership | set | 620 | `set(data not statically known)` |
-| serialize_section_ownership | ValueError | 623 | `ValueError(...)` |
-| serialize_section_ownership | seen.add | 624 | `seen.add(page.page_locator)` |
-| serialize_section_ownership | sorted | 626 | `sorted(ordinals)` |
-| serialize_section_ownership | len | 626 | `len(ordinals)` |
-| serialize_section_ownership | len | 626 | `len(set(...))` |
-| serialize_section_ownership | set | 626 | `set(ordinals)` |
-| serialize_section_ownership | ValueError | 627 | `ValueError(...)` |
+| section_ownership_extension | serialize_section_ownership | 1144 | `serialize_section_ownership(pages)` |
+| serialize_section_ownership | sorted | 619 | `sorted(pages, key=...)` |
+| serialize_section_ownership | page.page_locator.casefold | 621 | `page.page_locator.casefold(data not statically known)` |
+| serialize_section_ownership | set | 623 | `set(data not statically known)` |
+| serialize_section_ownership | ValueError | 626 | `ValueError(...)` |
+| serialize_section_ownership | seen.add | 627 | `seen.add(page.page_locator)` |
+| serialize_section_ownership | sorted | 629 | `sorted(ordinals)` |
+| serialize_section_ownership | len | 629 | `len(ordinals)` |
+| serialize_section_ownership | len | 629 | `len(set(...))` |
+| serialize_section_ownership | set | 629 | `set(ordinals)` |
+| serialize_section_ownership | ValueError | 630 | `ValueError(...)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `seen.add` | `serialize_section_ownership` | 624 |
+| mutation | `seen.add` | `serialize_section_ownership` | 627 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `serialize_section_ownership` | `sorted` | 616 |
-| unresolved_call | `serialize_section_ownership` | `page.page_locator.casefold` | 618 |
-| external_call | `serialize_section_ownership` | `ValueError` | 623 |
-| external_call | `serialize_section_ownership` | `sorted` | 626 |
-| external_call | `serialize_section_ownership` | `ValueError` | 627 |
+| external_call | `serialize_section_ownership` | `sorted` | 619 |
+| unresolved_call | `serialize_section_ownership` | `page.page_locator.casefold` | 621 |
+| external_call | `serialize_section_ownership` | `ValueError` | 626 |
+| external_call | `serialize_section_ownership` | `sorted` | 629 |
+| external_call | `serialize_section_ownership` | `ValueError` | 630 |
 | step_limit | `section_ownership_extension` | `first 12 steps` | 0 |
 
 ## Behavior

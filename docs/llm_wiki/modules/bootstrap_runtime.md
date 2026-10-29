@@ -46,7 +46,7 @@ Python reference rendering distinguishes captured module-level type uses from le
 | `.knowledge_orchestration` | `RUNTIME_GENERATION_OPTION_DEFAULTS`, `RuntimeKnowledgeInputs`, `collect_runtime_repository_evidence`, `committed_governance_bundle_id`, `finalize_runtime_knowledge`, `persist_runtime_generation_policy`, `runtime_generation_options`, `runtime_graph_analyzer_limitations`, `runtime_source_snapshot_hash` |
 | `.knowledge_packs` | `LOCAL_PACKED_SCHEMA` |
 | `.maintenance_protocol` | `guard_maintenance_owner`, `maintenance_write_operation` |
-| `.markdown_sections` | `GENERATED_INDEX_ENTRY_POINT_FLOWS_HEADING`, `GENERATED_INDEX_HTTP_API_CONTRACTS_HEADING`, `GENERATED_INDEX_INTRO_WITH_GUIDES`, `GENERATED_INDEX_INTRO_WITHOUT_GUIDES`, `normalize_markdown`, `preserve_level_two_section_exact` |
+| `.markdown_sections` | `GENERATED_INDEX_ENTRY_POINT_FLOWS_HEADING`, `GENERATED_INDEX_HTTP_API_CONTRACTS_HEADING`, `GENERATED_INDEX_INTRO_WITH_GUIDES`, `GENERATED_INDEX_INTRO_WITHOUT_GUIDES`, `GENERATED_OVERLOADS_HEADING`, `normalize_markdown`, `preserve_level_two_section_exact` |
 | `.module_maps` | `build_module_dependency_maps` |
 | `.paths` | `normalize_source_path`, `portable_source_root_label` |
 | `.python_imports` | `is_python_source`, `module_binding_imports` |
@@ -102,19 +102,19 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 760 | — | — |
-| [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 1038 | — | — |
-| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3194 | — | — |
-| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4487 | — | — |
-| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4513 | — | — |
-| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4527 | — | — |
-| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4534 | — | — |
-| [_WorkflowResult](../entities/WorkflowResult.md) | 4542 | — | — |
-| [_FlowResult](../entities/FlowResult.md) | 4548 | — | — |
-| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4559 | — | — |
-| [_DependencyResult](../entities/DependencyResult.md) | 4570 | — | — |
-| [_ApiContractResult](../entities/ApiContractResult.md) | 4578 | — | — |
-| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4585 | — | — |
+| [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 783 | — | — |
+| [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 1061 | — | — |
+| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3224 | — | — |
+| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4517 | — | — |
+| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4543 | — | — |
+| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4557 | — | — |
+| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4564 | — | — |
+| [_WorkflowResult](../entities/WorkflowResult.md) | 4572 | — | — |
+| [_FlowResult](../entities/FlowResult.md) | 4578 | — | — |
+| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4589 | — | — |
+| [_DependencyResult](../entities/DependencyResult.md) | 4600 | — | — |
+| [_ApiContractResult](../entities/ApiContractResult.md) | 4608 | — | — |
+| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4615 | — | — |
 
 ## Functions
 
@@ -144,6 +144,7 @@ flowchart LR
 | `build_entity_page_map` | `(inventory: dict) -> dict[tuple[str, str], str]` | — | Return ``{(class_name, filepath): page_stem}`` qualifying collisions. |
 | `_build_relationships` | `(inventory: dict, module_page_map: dict[str, str] \| None = None, *, target_entities: set[tuple[str, str]] \| None = None, resolver: ModulePathResolver \| None = None) -> dict` | — | Cross-reference imports against known entity identities to build a usage graph. |
 | `_format_signature` | `(fn: dict) -> str` | — | Build a readable function signature string. |
+| `_append_declared_overloads` | `(lines, records, label)` | — | Render public overload declarations without replacing implementation rows. |
 | `_table_text` | `(value: object) -> str` | — | — |
 | `_table_inline_code` | `(value: object, *, table: bool = True) -> str` | — | — |
 | `_haskell_declaration_label` | `(kind: object) -> str` | — | — |
