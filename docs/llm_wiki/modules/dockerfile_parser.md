@@ -44,8 +44,8 @@ flowchart LR
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
 | `_empty_declarations` | `() -> dict` | — | — |
-| `_words` | `(value: str, escape: str = '\\') -> list[str]` | — | — |
-| `_heredoc_words` | `(value: str) -> list[str]` | — | Retain quotes and escapes so literal redirects cannot become heredocs. |
+| `_words` | `(value: str, escape: str = '\\', *, preserve_whitespace: bool = False) -> list[str]` | — | — |
+| `_source_words` | `(value: str, escape: str = '\\') -> list[str]` | — | Split source words while retaining authored quotes and escapes. |
 | `_heredocs` | `(instruction: str, value: str) -> list[tuple[str, bool]]` | — | — |
 | `_trim_continuation` | `(line: str, escape: str) -> tuple[str, bool]` | — | — |
 | `_instructions` | `(text: str)` | — | Keep continuation and heredoc bodies attached to their source owner. |

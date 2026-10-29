@@ -150,9 +150,9 @@ sequenceDiagram
     p0-->>p30: report.count (src/llm_wiki_cli/services/lint_service.py:run)('extractor_failure')
 ```
 
-> Call sequence diagram shows 30 of 3491 interactions; 3461 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3492 interactions; 3462 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1067 (1066 omitted); unresolved 1 of 1162 (1161 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1068 (1067 omitted); unresolved 1 of 1162 (1161 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

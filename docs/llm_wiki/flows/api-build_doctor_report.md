@@ -151,9 +151,9 @@ sequenceDiagram
     p0-->>p30: lint.health_details.to_payload
 ```
 
-> Call sequence diagram shows 30 of 3383 interactions; 3353 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3384 interactions; 3354 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1041 (1040 omitted); unresolved 1 of 1087 (1086 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1042 (1041 omitted); unresolved 1 of 1087 (1086 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 

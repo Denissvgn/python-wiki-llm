@@ -147,9 +147,9 @@ sequenceDiagram
     p0-->>p30: normalized.get (src/llm_wiki_cli/services…y:build_qualified_context)('knowledge_mode')
 ```
 
-> Call sequence diagram shows 30 of 5539 interactions; 5509 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 5540 interactions; 5510 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1749 (1748 omitted); unresolved 1 of 1845 (1844 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1750 (1749 omitted); unresolved 1 of 1845 (1844 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
