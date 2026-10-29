@@ -3354,7 +3354,8 @@ def _render_dependency_graph_result(
         detail == "auto" and len(nodes) > GENERATED_DIAGRAM_NODE_LIMIT
     )
 
-    cyclic_edges = _cyclic_edges(edges, analysis["cycles"])
+    startup_edges = _normalized_dependency_edges(graph.get("import_time_edges", edges), nodes)
+    cyclic_edges = _cyclic_edges(startup_edges, analysis["cycles"])
     if not use_package:
         links = {
             node: f"modules/{module_page_map.get(node, _module_name_from_path(node))}.md"

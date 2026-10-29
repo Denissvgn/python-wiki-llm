@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from llm_wiki_cli.services.dependencies import analyze_dependencies
 from llm_wiki_cli.services.module_maps import build_module_dependency_maps
+from llm_wiki_cli.services import bootstrap_runtime
 
 
 def _analysis(nodes, edges, *, cycles=None, reconciliation=None):
@@ -62,6 +63,26 @@ def test_module_maps_highlight_local_cycle_participation():
     ]
     assert result["settings.py"]["cycle_participation"] is False
     assert result["settings.py"]["cycle_edges"] == []
+
+
+def test_erased_edge_inside_runtime_component_is_not_highlighted_as_startup():
+    startup = [("a.ts", "b.ts"), ("b.ts", "c.ts"), ("c.ts", "a.ts")]
+    erased = ("a.ts", "c.ts")
+    analysis = _analysis(["a.ts", "b.ts", "c.ts"], [*startup, erased],
+                         cycles=[["a.ts", "b.ts", "c.ts"]])
+    analysis["graph"]["import_time_edges"] = startup
+    analysis["graph"]["type_only_edges"] = [erased]
+    maps = build_module_dependency_maps(analysis)
+    assert erased in maps["a.ts"]["edges"]
+    assert erased not in maps["a.ts"]["cycle_edges"]
+    assert set(maps["a.ts"]["cycle_edges"]) == set(startup)
+    assert maps["a.ts"]["type_dependencies"]
+    root = bootstrap_runtime._render_dependency_graph_result(analysis, {}, "module", {}).diagram
+    local = "\n".join(bootstrap_runtime._generate_module_dependency_section(maps["a.ts"]))
+    assert root is not None
+    for diagram in (root, local):
+        assert "n0 --> n2" in diagram and "n0 ==> n2" not in diagram
+        assert "n0 ==> n1" in diagram
 
 
 def test_module_maps_summarize_external_package_counts_per_module():

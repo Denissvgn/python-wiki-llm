@@ -150,6 +150,7 @@ def _module_summary(
     cycle_groups: list[set[str]],
     reconciliation: Mapping,
     node_limit: int,
+    startup_edges: list[tuple[str, str]],
 ) -> dict:
     inbound = sorted(
         {source for source, target in edges if target == module}, key=_sort_key
@@ -161,7 +162,7 @@ def _module_summary(
     total_neighbor_count = len(neighbors)
     visible_neighbor_limit = max(node_limit - 1, 0)
     omitted_count = max(0, total_neighbor_count - visible_neighbor_limit)
-    cycle_edges = _cycle_edges_for_module(module, edges, cycle_groups)
+    cycle_edges = _cycle_edges_for_module(module, startup_edges, cycle_groups)
 
     overflow = {
         "node_limit": node_limit,
@@ -221,9 +222,10 @@ def build_module_dependency_maps(
     cycles = _cycle_groups(analysis.get("cycles", []) or [])
     reconciliation = analysis.get("reconciliation", {}) or {}
     limit = _safe_node_limit(node_limit)
+    startup_edges = _graph_edges({"edges": graph.get("import_time_edges", edges)})
 
     result = {
-        module: _module_summary(module, edges, cycles, reconciliation, limit)
+        module: _module_summary(module, edges, cycles, reconciliation, limit, startup_edges)
         for module in nodes
     }
     conditional_nodes = {node for group in analysis.get("conditional_cycles", []) for node in group}

@@ -138,7 +138,7 @@ def test_erased_cycle_bootstrap_sync_lint_and_extract_follow_source_emission(tmp
         monkeypatch.setattr(sys, "argv", ["llm-wiki", command, "--src-dir", ".",
             *([] if command == "extract" else ["--wiki-dir", "wiki"]),
             "--helper-cache-dir", str(helper.parent), *options,
-            *([] if command == "bootstrap" else ["--jobs", "1", "--no-cache"])])
+            *([] if command in {"bootstrap", "extract"} else ["--jobs", "1", "--no-cache"])])
         cli.main()
         return capsys.readouterr().out
 
