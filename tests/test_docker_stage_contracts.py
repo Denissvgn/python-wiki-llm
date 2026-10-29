@@ -303,6 +303,33 @@ def test_multiple_arg_declarations_retain_every_owner_line_and_raw_default(escap
     assert "`LAST`" in second and "`UNKNOWN`" in second
 
 
+@pytest.mark.parametrize("name", ["memo\n\n### Stage 999\n.txt", "tick`name.py", "pipe|name.py"])
+def test_context_copy_literals_cannot_change_stage_or_table_structure(name):
+    source = ('FROM scratch AS build\nCOPY ' + json.dumps([name, "/memo"])
+              + '\nFROM scratch AS runtime\nCMD ["/application"]\n')
+    info = _parse_dockerfile(source)
+    page = _generate_dockerfile_md("Dockerfile", info, {name: "literal"})
+    first, second = _stage_sections(page)
+    assert len(info["stages"]) == 2 and "literal.md" not in second
+    if "\n" in name:
+        assert "&#10;" in first and "<pre><code>" in first
+        assert "../modules/literal.md" not in first
+    else:
+        tokens = MarkdownIt().enable("table").parse(first)
+        values = [child.content for token in tokens for child in token.children or [] if child.type == "code_inline"]
+        assert name in values
+        assert "../modules/literal.md" in first
+
+
+def test_unsupported_copy_notices_quote_literal_source_paths():
+    name = "startup`note.sh"
+    source = "FROM scratch\nCOPY " + json.dumps([name, "/entrypoint.sh"]) + "\n"
+    page = _generate_dockerfile_md("Dockerfile", _parse_dockerfile(source), {}, {"shell": {"paths": [name]}})
+    tokens = MarkdownIt().enable("table").parse(page)
+    values = [child.content for token in tokens for child in token.children or [] if child.type == "code_inline"]
+    assert values.count(name) == 3  # Copy source, notice source, and resolved path.
+
+
 def test_legacy_multistage_records_do_not_render_an_unsafe_command_pair():
     legacy = {"type": "dockerfile", "stages": [{"image": "scratch", "alias": "build"}, {"image": "scratch", "alias": "runtime"}],
               "entrypoint": '["/build-tool"]', "cmd": '["/application"]', "env_vars": [{"name": "BUILD_ONLY", "default": "1"}]}
@@ -318,7 +345,7 @@ def test_stage_sections_inherit_generated_ownership():
     assert selected and all(item.ownership is SectionOwnership.GENERATED for item in selected)
 
 
-@pytest.mark.parametrize("syntax", ["plain", "continued-from", "heredoc", "quoted-copy", "declarations"])
+@pytest.mark.parametrize("syntax", ["plain", "continued-from", "heredoc", "quoted-copy", "declarations", "copy-literal"])
 def test_stage_only_edits_flow_through_extract_bootstrap_sync_and_strict_lint(tmp_path, monkeypatch, capsys, syntax):
     (tmp_path / "demo.py").write_text("def marker():\n    pass\n")
     source = tmp_path / "Dockerfile"
@@ -332,6 +359,9 @@ def test_stage_only_edits_flow_through_extract_bootstrap_sync_and_strict_lint(tm
     elif syntax == "declarations":
         text = 'ARG GLOBAL_ONE=1 GLOBAL_TWO="two words"\n' + text.replace("ENV BUILD_ONLY=1\n",
             "ENV BUILD_ONLY=1\nENV NOTE one   two\nLABEL note one   two\nARG BUILD_ONE=1 BUILD_TWO=2\n")
+    elif syntax == "copy-literal":
+        text = text.replace("ENV BUILD_ONLY=1\n", "ENV BUILD_ONLY=1\nCOPY "
+            + json.dumps(["memo\n\n### Stage 999\n.txt", "/memo"]) + "\n")
     source.write_text(text)
     monkeypatch.chdir(tmp_path)
 

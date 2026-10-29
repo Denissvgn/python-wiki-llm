@@ -3817,10 +3817,11 @@ def _format_copy_source_links(
     formatted: list[str] = []
     for item in sources:
         page_name = _module_page_for_copy_source(item, docker_filename, module_links)
-        if page_name:
-            formatted.append(f"[`{item}`](../modules/{page_name}.md)")
+        source_code = _table_inline_code(item)
+        if page_name and not any(char in item for char in "\r\n\t"):
+            formatted.append(f"[{source_code}](../modules/{page_name}.md)")
         else:
-            formatted.append(f"`{item}`")
+            formatted.append(source_code)
     return ", ".join(formatted)
 
 
@@ -4409,7 +4410,7 @@ def _append_dockerfile_unsupported_copies(
     lines.append("|-------------|-----------------|----------|")
     for match in matches:
         lines.append(
-            f"| `{match['source']}` | `{match['path']}` | "
+            f"| {_table_inline_code(match['source'])} | {_table_inline_code(match['path'])} | "
             f"{_unsupported_language_label(match['language'])} |"
         )
     lines.append("")
