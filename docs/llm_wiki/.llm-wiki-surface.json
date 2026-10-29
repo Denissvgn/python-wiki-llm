@@ -5902,7 +5902,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/markdown_sections.py"
           ],
-          "step_count": 5360,
+          "step_count": 5364,
           "truncated": true
         }
       },
@@ -9495,7 +9495,7 @@
             "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_cli/services/concept_identity.py"
           ],
-          "step_count": 3622,
+          "step_count": 3626,
           "truncated": true
         }
       },
@@ -10568,7 +10568,7 @@
             "src/llm_wiki_cli/services/dockerfile_parser.py",
             "src/llm_wiki_cli/services/yaml_syntax.py"
           ],
-          "step_count": 3126,
+          "step_count": 3130,
           "truncated": true
         }
       },
@@ -32815,7 +32815,7 @@
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/wiki_write_basis.py"
           ],
-          "step_count": 3202,
+          "step_count": 3206,
           "truncated": true
         }
       },
@@ -34392,7 +34392,7 @@
             "src/llm_wiki_cli/services/infrastructure_sync.py",
             "src/llm_wiki_cli/services/knowledge_index.py"
           ],
-          "step_count": 4091,
+          "step_count": 4095,
           "truncated": true
         }
       },
@@ -36600,7 +36600,7 @@
             "src/llm_wiki_cli/services/source_retirement.py",
             "src/llm_wiki_cli/services/markdown_sections.py"
           ],
-          "step_count": 2492,
+          "step_count": 2496,
           "truncated": true
         }
       },
@@ -68169,5 +68169,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:a3db7739198e062174057eec6acb6c28c44e2a89fb1a97060bbf0deb067660a2"
+  "source_hash": "sha256:47a35ad748cac5ff3d98ec4c9cb30d7a0a60d372827a89a2577a0354d40bd2b0"
 }

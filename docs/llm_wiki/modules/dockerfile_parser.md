@@ -45,7 +45,9 @@ flowchart LR
 |----------|-----------|------------|-------------|
 | `_empty_declarations` | `() -> dict` | — | — |
 | `_words` | `(value: str, escape: str = '\\') -> list[str]` | — | — |
+| `_heredoc_words` | `(value: str) -> list[str]` | — | Retain quotes and escapes so literal redirects cannot become heredocs. |
 | `_heredocs` | `(instruction: str, value: str) -> list[tuple[str, bool]]` | — | — |
+| `_trim_continuation` | `(line: str, escape: str) -> tuple[str, bool]` | — | — |
 | `_instructions` | `(text: str)` | — | Keep continuation and heredoc bodies attached to their source owner. |
 | `_stage` | `(argument: str, line: int, stages: list[dict], escape: str) -> dict` | — | — |
 | `_pairs` | `(argument: str, escape: str) -> list[tuple[str, str]]` | — | — |
