@@ -466,39 +466,58 @@ function extractModuleCalls(sourceFile) {
 
 function extractImportRecords(sourceFile) {
   const imports = [];
+  const typescript = ![".js", ".jsx", ".mjs", ".cjs"].includes(path.extname(sourceFile.getFilePath()));
+  const qualification = (typeOnly, hasClause) => typescript ? {
+    ...(typeOnly ? { type_only: true, type_only_declaration: true } : {}),
+    runtime: sourceFile.isDeclarationFile() || typeOnly ? "erased" : hasClause ? "conditional" : "present",
+  } : {};
   for (const imp of sourceFile.getImportDeclarations()) {
     const moduleSpecifier = imp.getModuleSpecifierValue();
     const defaultImport = imp.getDefaultImport();
+    const namedImports = imp.getNamedImports();
+    const ns = imp.getNamespaceImport();
+    const phase = qualification(imp.isTypeOnly(), !!imp.getImportClause());
     if (defaultImport) {
       imports.push({
         module: moduleSpecifier,
         name: defaultImport.getText(),
         alias: null,
         type: "default",
+        ...phase,
       });
     }
 
-    for (const named of imp.getNamedImports()) {
+    for (const named of namedImports) {
       imports.push({
         module: moduleSpecifier,
         name: named.getName(),
         alias: named.getAliasNode()?.getText() ?? null,
         type: "named",
+        ...phase,
+        ...(named.isTypeOnly() ? { type_only: true } : {}),
       });
     }
 
-    const ns = imp.getNamespaceImport();
     if (ns) {
       imports.push({
         module: moduleSpecifier,
         name: ns.getText(),
         alias: null,
         type: "namespace",
+        ...phase,
       });
     }
-    if (!defaultImport && imp.getNamedImports().length === 0 && !ns) {
-      imports.push({ module: moduleSpecifier, name: "", alias: null, type: "side-effect" });
+    if (!defaultImport && namedImports.length === 0 && !ns) {
+      imports.push({ module: moduleSpecifier, name: "", alias: null, type: "side-effect", ...phase });
     }
+  }
+  for (const imp of sourceFile.getStatements().filter(node => node.getKind() === SyntaxKind.ImportEqualsDeclaration)) {
+    const reference = imp.getModuleReference();
+    if (reference.getKind() !== SyntaxKind.ExternalModuleReference) continue;
+    const expression = reference.getExpression();
+    if (expression?.getKind() !== SyntaxKind.StringLiteral) continue;
+    imports.push({ module: expression.getLiteralValue(), name: imp.getName(), alias: null,
+      type: "namespace", ...qualification(imp.isTypeOnly(), true) });
   }
   const gaps = [];
   for (const call of sourceFile.getDescendantsOfKind(SyntaxKind.CallExpression)) {

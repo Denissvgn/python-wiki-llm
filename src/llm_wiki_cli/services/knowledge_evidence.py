@@ -674,7 +674,14 @@ def _validate_import_record(record: Mapping[str, Any], *, language: str, pointer
     _validate_optional_strings(record, ("name", "type"), pointer)
     if "alias" in record and record["alias"] is not None:
         _validate_optional_strings(record, ("alias",), pointer)
-    _validate_optional_booleans(record, ("qualified",), pointer)
+    _validate_optional_booleans(record, ("qualified", "type_only", "type_only_declaration"), pointer)
+    if "runtime" in record and record["runtime"] not in ("erased", "conditional", "present"):
+        raise _failure(_pointer(pointer, "runtime"), "import-runtime", "erased, conditional, or present", record["runtime"])
+    if record.get("type_only_declaration") is True:
+        if record.get("type_only") is not True:
+            raise _failure(_pointer(pointer, "type_only"), "type-only-declaration", "true for a type-only declaration", record.get("type_only", MISSING_VALUE))
+        if record.get("runtime") != "erased":
+            raise _failure(_pointer(pointer, "runtime"), "type-only-declaration", "erased for a type-only declaration", record.get("runtime", MISSING_VALUE))
 
 
 def _validate_constant_record(record: Mapping[str, Any], pointer="") -> None:
@@ -756,6 +763,7 @@ _POINTER_FIELDS = frozenset({
     "default", "default_factory", "serialization_alias", "tag", "validation_alias", "value", "annotated_metadata",
     "examples", "literal_values", "constraints", "unknowns", "nullable", "optional", "required", "validator", "fields",
     "options", "model_config", "deriving", "type_params", "overloads", "exported", "attr", "rest", "target_truncated", "target_sha256",
+    "type_only", "type_only_declaration", "runtime",
 })
 
 

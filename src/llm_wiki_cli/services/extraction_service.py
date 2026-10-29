@@ -2007,6 +2007,12 @@ def _dependency_extract_block(analysis: dict) -> dict:
             ],
         },
     }
+    for key in ("type_only_edges", "conditional_import_time_edges"):
+        if key in graph:
+            result[key] = [list(edge) for edge in graph[key]]
+    for key in ("type_cycles", "conditional_cycles"):
+        if key in analysis:
+            result[key] = [list(group) for group in analysis[key]]
     version_details = reconciliation.get("version_details")
     if isinstance(version_details, dict):
         result["version_details"] = deepcopy(version_details)

@@ -16,6 +16,13 @@ Python ``if __name__ == "__main__"`` guard; and ``extract --deep`` may include
 a top-level ``data_flows`` list plus a top-level ``dependencies`` block.
 The dependency block may contain versioned ``version_details`` records; its
 legacy per-language ``versions`` map remains unchanged.
+TypeScript imports may add ``type_only`` and ``type_only_declaration`` booleans
+and ``runtime`` (``erased``, ``conditional``, or ``present``). A type-only
+specifier erases its binding, but its statement can retain module evaluation.
+Only guaranteed-erased declarations are excluded from startup constraints;
+ordinary binding imports remain conditional on compiler emission. Dependency
+projections may add ``type_only_edges``, ``conditional_import_time_edges``,
+``type_cycles``, and ``conditional_cycles`` without changing coupling ``edges``.
 Python dependency reconciliation treats ``sys.stdlib_module_names`` as the
 stdlib source when available, falls back to the bundled Python 3.9 list in
 dependency analysis, and uses the curated import-to-distribution aliases there

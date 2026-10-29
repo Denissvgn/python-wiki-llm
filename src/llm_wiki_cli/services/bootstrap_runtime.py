@@ -1394,10 +1394,15 @@ def _generate_module_dependency_section(
         lines.extend(["*No internal module dependencies detected.*", ""])
         return lines
 
+    if summary.get("type_dependencies") or summary.get("conditional_cycle"):
+        lines.extend(["This graph shows full source coupling. Type dependencies can be erased; "
+            "compiler-dependent cycle groups are runtime candidates, not confirmed initialization cycles.", ""])
     rendered = _module_dependency_graph(summary, module_page_map, diagram_style)
     if rendered and rendered.diagram:
         if summary.get("cycle_participation") and "==>" in rendered.diagram:
             lines.append(
+                "<!-- Thick arrows mark a compiler-dependent startup cycle candidate. -->"
+                if summary.get("conditional_cycle") else
                 "<!-- Thick arrows (==>) mark edges inside an import cycle. -->"
             )
         lines.append(rendered.diagram)
@@ -1565,24 +1570,31 @@ def _append_import_section(
         lines.append("")
         return
 
-    grouped: dict[str, list[str]] = defaultdict(list)
+    qualified = any("runtime" in imp or "type_only" in imp for imp in imports)
+    grouped: dict[tuple[str, str, str], list[str]] = defaultdict(list)
     unresolved: list[dict] = []
     for imp in imports:
         if not imp.get("module") and imp.get("resolution") == "unresolved":
             unresolved.append(imp)
             continue
-        grouped[imp["module"]].append(imp["name"])
+        type_only = ("Declaration" if imp.get("type_only_declaration") else "Specifier") if imp.get("type_only") else "—"
+        runtime = str(imp.get("runtime", "unclassified"))
+        if runtime == "conditional":
+            runtime = "compiler-dependent"
+        grouped[imp["module"], type_only, runtime].append(imp["name"])
 
-    lines.append("| Source | Symbols |")
-    lines.append("|--------|---------|")
-    for module, names in sorted(grouped.items()):
-        symbols = ", ".join(f"`{n}`" for n in names if n) or "—"
-        lines.append(f"| `{module}` | {symbols} |")
+    lines.append("| Source | Symbols | Type-only | Runtime emission |" if qualified else "| Source | Symbols |")
+    lines.append("|--------|---------|-----------|------------------|" if qualified else "|--------|---------|")
+    for (module, type_only, runtime), names in sorted(grouped.items()):
+        symbols = ", ".join(_table_inline_code(n) for n in names if n) or "—"
+        phase = f" {type_only} | {runtime} |" if qualified else ""
+        lines.append(f"| {_table_inline_code(module)} | {symbols} |{phase}")
     for imp in unresolved:
         reason = _md_cell(imp.get("reason"))
         location = f"line {_md_cell(imp.get('line'))}"
         scope = "; deferred" if imp.get("scope") == "deferred" else ""
-        lines.append(f"| Unresolved `{reason}` | — ({location}{scope}) |")
+        phase = " — | unclassified |" if qualified else ""
+        lines.append(f"| Unresolved `{reason}` | — ({location}{scope}) |{phase}")
     lines.append("")
 
 
@@ -3457,6 +3469,10 @@ def _generate_dependencies_md(
     page_map = module_page_map or {}
     cycles = analysis["cycles"]
     deferred_cycles = analysis.get("deferred_cycles", [])
+    type_groups = {tuple(group) for group in analysis.get("type_cycles", [])}
+    deferred_cycles = [group for group in deferred_cycles if tuple(group) not in type_groups]
+    conditional_cycles = {tuple(group) for group in analysis.get("conditional_cycles", [])}
+    type_edges = analysis.get("graph", {}).get("type_only_edges", [])
     metrics = analysis["metrics"]
 
     lines = [
@@ -3467,6 +3483,9 @@ def _generate_dependencies_md(
         "## Module graph",
         "",
     ]
+    if type_edges or analysis.get("graph", {}).get("conditional_import_time_edges"):
+        lines.extend(["This is the full coupling graph, including type dependencies. "
+            "Runtime startup cycles and explicit type dependencies are distinguished below.", ""])
     rendered = _render_dependency_graph_result(
         analysis, page_map, detail, diagram_style
     )
@@ -3506,27 +3525,41 @@ def _generate_dependencies_md(
     lines.append("")
     if cycles:
         lines.append(
-            "> Import cycles are legal but complicate load order — review the "
-            "modules below."
+            "> Static startup cycle candidates are listed below. Compiler-dependent "
+            "TypeScript imports may be erased; their runtime cycles depend on emission."
+            if conditional_cycles else
+            "> Import cycles are legal but complicate load order — review the modules below."
         )
         lines.append("")
         for cycle in cycles:
             joined = " ⇄ ".join(_dependency_module_link(fp, page_map) for fp in cycle)
-            lines.append(f"- {joined}")
+            qualifier = " *(compiler-dependent TypeScript emission)*" if tuple(cycle) in conditional_cycles else ""
+            lines.append(f"- {joined}{qualifier}")
     else:
-        lines.append("*No import cycles detected.*")
+        lines.append("*No runtime import cycles detected.*" if type_edges else "*No import cycles detected.*")
     if deferred_cycles:
         lines.append("")
         lines.append(
-            "> These groups reach each other only from inside functions or under "
-            "`TYPE_CHECKING`, so nothing is imported while they load and their "
-            "order is well defined. They are listed because they are cyclic on "
-            "paper, not because they need fixing."
+            "> These are cycles in the full coupling graph, but not startup cycles. "
+            "Deferred, `TYPE_CHECKING`, or erased TypeScript imports break the "
+            "startup cycle; other edges in a group may still run while loading."
         )
         lines.append("")
         for cycle in deferred_cycles:
             joined = " ⇄ ".join(_dependency_module_link(fp, page_map) for fp in cycle)
             lines.append(f"- {joined}")
+    if type_edges:
+        lines.extend(["", "### Explicit type dependencies", "",
+            "Type-only bindings and declaration-file dependencies remain part of the coupling graph. "
+            "Declaration-level `import type` is erased. Specifier-only type imports can retain "
+            "module evaluation depending on compiler settings; see each module's Imports table.", "",
+            "| From | To |", "|------|----|"])
+        for source, target in type_edges:
+            lines.append(f"| {_dependency_module_link(source, page_map)} | {_dependency_module_link(target, page_map)} |")
+        if analysis.get("type_cycles"):
+            lines.extend(["", "#### Type dependency cycles", ""])
+            for group in analysis["type_cycles"]:
+                lines.append("- " + " ⇄ ".join(_dependency_module_link(fp, page_map) for fp in group))
     lines.append("")
 
     lines.append("## Fan-in / Fan-out")
@@ -3590,6 +3623,10 @@ def _generate_load_order_md(
         "<!-- Dependency-first order: each module loads after the internal "
         "modules it imports. -->",
     ]
+    if analysis.get("graph", {}).get("conditional_import_time_edges"):
+        lines.extend(["", "TypeScript binding imports are possible startup constraints: "
+            "their emission depends on compiler settings. Guaranteed-erased type imports "
+            "are excluded. This is a static projection, not an emitted-JavaScript execution trace.", ""])
     if order:
         for index, filepath in enumerate(order, 1):
             lines.append(f"{index}. {_dependency_module_link(filepath, page_map)}")
@@ -3634,14 +3671,18 @@ def _generate_load_order_md(
     if cycle_groups:
         lines.append("## Indeterminate (cyclic) groups")
         lines.append("")
+        conditional_groups = {tuple(group) for group in analysis.get("conditional_cycles", [])}
         lines.append(
-            "> These modules form import cycles, so their relative load order is "
-            "indeterminate."
+            "> These groups are cyclic in the static startup projection. "
+            "Compiler-dependent groups may form runtime cycles if their imports are emitted."
+            if conditional_groups else
+            "> These modules form import cycles, so their relative load order is indeterminate."
         )
         lines.append("")
         for group in cycle_groups:
             joined = " ⇄ ".join(_dependency_module_link(fp, page_map) for fp in group)
-            lines.append(f"- {joined}")
+            qualifier = " *(compiler-dependent TypeScript emission)*" if tuple(group) in conditional_groups else ""
+            lines.append(f"- {joined}{qualifier}")
         lines.append("")
 
     lines.append("## Notes")

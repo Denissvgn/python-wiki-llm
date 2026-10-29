@@ -517,6 +517,18 @@ Reference pages distinguish the implementation row from the generated overload
 declarations. The generated section has an explicit ownership marker; unmarked
 `Overloads` sections retain their authored content. Generic arguments in declared base and interface applications are
 retained; relationship lookup uses the named base identity.
+TypeScript imports retain explicit type-only binding and declaration markers
+as `type_only` and `type_only_declaration`. Their `runtime` qualification is
+`erased`, `conditional`, or `present`. Declaration-level `import type` and
+declaration-file imports are excluded from startup constraints. A specifier-only
+`import { type T }` can retain module evaluation, and ordinary binding imports
+depend on compiler emission, so both remain qualified as compiler-dependent.
+Bare side-effect imports remain startup constraints. The dependency view keeps
+explicit type dependencies and type cycles alongside the full coupling graph;
+load-order and cycle diagnostics distinguish possible runtime cycles from
+guaranteed-erased dependencies. Deep dependency output exposes these projections
+as optional `type_only_edges`, `conditional_import_time_edges`, `type_cycles`,
+and `conditional_cycles` fields.
 Go `_test.go` files are omitted unless `--include-tests go` is supplied; Python
 test files remain part of normal Python extraction.
 Python deep extraction can capture a bounded static subset of nested helpers.

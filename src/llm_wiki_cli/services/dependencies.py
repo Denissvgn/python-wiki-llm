@@ -148,8 +148,12 @@ def build_dependency_graph(
     "nodes": [...], "unresolved": [{"file", "module", "name"}, ...]}`` with every
     list stably ordered. ``edges`` is every resolvable import, which is the
     coupling view used for fan-in/fan-out and impact analysis;
-    ``import_time_edges`` is the subset that actually runs when a module loads,
-    which is the view load order and cycle detection need. An import record with
+    ``import_time_edges`` is the subset that can run when a module loads,
+    which is the view load order and cycle detection need. Optional
+    ``type_only_edges`` retain type bindings (and declaration-file imports),
+    while ``conditional_import_time_edges`` qualify compiler-dependent emission.
+    A definitely present import to the same target overrides that uncertainty.
+    An import record with
     no ``scope`` counts as import-time, so inventories from extractors that do
     not classify imports keep the historical behavior of the two being equal.
     A supported code-language inventory entry that has no ``imports`` field still
@@ -167,6 +171,9 @@ def build_dependency_graph(
 
     edges: set[tuple[str, str]] = set()
     import_time_edges: set[tuple[str, str]] = set()
+    type_only_edges: set[tuple[str, str]] = set()
+    conditional_edges: set[tuple[str, str]] = set()
+    present_edges: set[tuple[str, str]] = set()
     unresolved: list[dict] = []
     nodes: set[str] = set()
 
@@ -204,15 +211,22 @@ def build_dependency_graph(
                 continue
             for target in targets:
                 if target != filepath:
-                    edges.add((filepath, target))
+                    edge = (filepath, target)
+                    edges.add(edge)
+                    if imp.get("type_only") is True or imp.get("runtime") == "erased":
+                        type_only_edges.add(edge)
                     if executes_at_import(imp):
-                        import_time_edges.add((filepath, target))
+                        import_time_edges.add(edge)
+                        if imp.get("runtime") == "conditional":
+                            conditional_edges.add(edge)
+                        else:
+                            present_edges.add(edge)
 
     for source, target in edges:
         nodes.add(source)
         nodes.add(target)
 
-    return {
+    result = {
         "edges": sorted(edges),
         "import_time_edges": sorted(import_time_edges),
         "nodes": sorted(nodes),
@@ -220,6 +234,11 @@ def build_dependency_graph(
             unresolved, key=lambda u: (u["file"], u["module"], u["name"])
         ),
     }
+    if type_only_edges:
+        result["type_only_edges"] = sorted(type_only_edges)
+    if conditional_edges - present_edges:
+        result["conditional_import_time_edges"] = sorted(conditional_edges - present_edges)
+    return result
 
 
 _DEPENDENCY_OBSERVATIONS_SCHEMA = "llm-wiki-dependency-observations/v1"
@@ -397,6 +416,8 @@ def build_dependency_observations(
                     "candidates": candidates,
                     "target_path": target_path,
                     "resolution": resolution,
+                    **{key: raw_import[key] for key in ("type_only", "type_only_declaration", "runtime")
+                       if key in raw_import},
                     **({"reason": raw_import["reason"]} if raw_import.get("reason") else {}),
                 }
             )
@@ -2924,10 +2945,12 @@ def analyze_dependencies(
     "side_effects", "reconciliation"}``; deterministic and never raises on slim
     inventories.
 
-    ``cycles`` and ``load_order`` describe module load: they use only imports
-    that run at import time, so a group joined solely by lazy or
-    ``TYPE_CHECKING`` imports is not reported as a cycle whose order is
-    indeterminate — it has a valid order. Those groups are kept separately in
+    ``cycles`` and ``load_order`` describe possible module load: they exclude
+    guaranteed-erased TypeScript declarations and imports classified as lazy or
+    ``TYPE_CHECKING``. Such a group is not reported as an indeterminate startup
+    cycle. Optional ``type_cycles`` and ``conditional_cycles`` distinguish type
+    binding cycles and compiler-dependent startup cycle candidates. Other
+    non-startup coupling groups are kept separately in
     ``deferred_cycles`` so the information is surfaced rather than dropped.
     ``metrics`` stays on the full edge set, since fan-in/fan-out measures
     coupling and a lazy import is still a real dependency.
@@ -2942,7 +2965,7 @@ def analyze_dependencies(
     deferred_cycles = [
         cycle for cycle in detect_cycles(graph) if tuple(cycle) not in import_time_groups
     ]
-    return {
+    result = {
         "graph": graph,
         "cycles": cycles,
         "deferred_cycles": deferred_cycles,
@@ -2956,6 +2979,14 @@ def analyze_dependencies(
             source_snapshot=source_snapshot,
         ),
     }
+    if graph.get("type_only_edges"):
+        result["type_cycles"] = detect_cycles({"nodes": graph["nodes"], "edges": graph["type_only_edges"]})
+    if graph.get("conditional_import_time_edges"):
+        conditional = set(graph["conditional_import_time_edges"])
+        confirmed = {**graph, "edges": [edge for edge in graph["import_time_edges"] if edge not in conditional]}
+        confirmed_groups = {tuple(group) for group in detect_cycles(confirmed)}
+        result["conditional_cycles"] = [group for group in cycles if tuple(group) not in confirmed_groups]
+    return result
 
 
 def top_level_package(filepath: str) -> str:

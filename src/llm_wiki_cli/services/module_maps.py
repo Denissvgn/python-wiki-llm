@@ -222,7 +222,15 @@ def build_module_dependency_maps(
     reconciliation = analysis.get("reconciliation", {}) or {}
     limit = _safe_node_limit(node_limit)
 
-    return {
+    result = {
         module: _module_summary(module, edges, cycles, reconciliation, limit)
         for module in nodes
     }
+    conditional_nodes = {node for group in analysis.get("conditional_cycles", []) for node in group}
+    typed_nodes = {node for edge in graph.get("type_only_edges", []) for node in edge}
+    for module, summary in result.items():
+        if module in conditional_nodes:
+            summary["conditional_cycle"] = True
+        if module in typed_nodes:
+            summary["type_dependencies"] = True
+    return result

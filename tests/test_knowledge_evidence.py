@@ -282,6 +282,37 @@ def test_module_import_or_signature_change_changes_observation(mutate):
     assert _module_hash(changed) != _module_hash(inventory)
 
 
+@pytest.mark.parametrize("record", [
+    {"type_only": True, "runtime": "conditional"},
+    {"type_only": True, "type_only_declaration": True, "runtime": "erased"},
+    {"runtime": "present"},
+])
+def test_typescript_import_qualification_is_structural_freshness_evidence(record):
+    inventory = {"language": "typescript", "classes": [], "functions": [],
+                 "imports": [{"module": "./b", "name": "B"}]}
+    changed = deepcopy(inventory)
+    changed["imports"][0].update(record)
+    normalized = normalize_module_observation(changed)
+    assert normalized is not None
+    assert all(normalized["imports"][0][key] == value for key, value in record.items())
+    assert _module_hash(changed) != _module_hash(inventory)
+    assert semantic_hash_for_file(changed) != semantic_hash_for_file(inventory)
+
+
+@pytest.mark.parametrize("record", [
+    {"type_only": 1}, {"type_only_declaration": "true"}, {"runtime": None},
+    {"runtime": "unknown"}, {"runtime": []},
+    {"type_only_declaration": True},
+    {"type_only_declaration": True, "type_only": False, "runtime": "erased"},
+    {"type_only_declaration": True, "type_only": True, "runtime": "conditional"},
+])
+def test_malformed_import_qualification_cannot_establish_known_evidence(record):
+    inventory = {"language": "typescript", "classes": [], "functions": [],
+                 "imports": [{"module": "./b", "name": "B", **record}]}
+    basis = _module_basis(inventory)
+    assert not basis.is_known and basis.unknown_reason == UNKNOWN_INVALID_INVENTORY
+
+
 def test_semantic_prose_and_call_details_are_outside_structural_hash_domain():
     inventory = _inventory("python")
     changed = deepcopy(inventory)

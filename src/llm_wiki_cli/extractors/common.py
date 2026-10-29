@@ -48,10 +48,15 @@ NON_IMPORT_TIME_SCOPES = frozenset({IMPORT_SCOPE_DEFERRED, IMPORT_SCOPE_TYPE_CHE
 
 
 def executes_at_import(import_record: object) -> bool:
-    """Return whether an inventory import record runs when its module loads."""
+    """Return whether an import can run when its module loads.
+
+    Conditional TypeScript emission stays a possible startup dependency. Only
+    guaranteed erasure, such as declaration-level ``import type``, excludes it.
+    """
     if not isinstance(import_record, dict):
         return True
-    return import_record.get("scope") not in NON_IMPORT_TIME_SCOPES
+    return (import_record.get("scope") not in NON_IMPORT_TIME_SCOPES
+            and import_record.get("runtime") != "erased")
 
 # These are project-source identities, relative to the owned ``llm_wiki_cli``
 # package root.  Package markers and nested .gitignore files intentionally do
