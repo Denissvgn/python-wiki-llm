@@ -1,6 +1,6 @@
 # _BootstrapGenerationResult
 
-**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4724`
+**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4725`
 **Kind:** Class
 **Bases:** —
 **Module:** [bootstrap_runtime](../modules/bootstrap_runtime.md)

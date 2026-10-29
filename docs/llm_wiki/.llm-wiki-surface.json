@@ -1797,37 +1797,37 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 6713,
+              "line": 6714,
               "step": "execute_bootstrap",
               "target": "io.StringIO"
             },
             {
               "kind": "unresolved_call",
-              "line": 4804,
+              "line": 4805,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.source_root).expanduser().resolve"
             },
             {
               "kind": "unresolved_call",
-              "line": 4804,
+              "line": 4805,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.source_root).expanduser"
             },
             {
               "kind": "unresolved_call",
-              "line": 4805,
+              "line": 4806,
               "step": "_bootstrap_run_options_from_request",
               "target": "source_root.is_dir"
             },
             {
               "kind": "unresolved_call",
-              "line": 4809,
+              "line": 4810,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.wiki_root).expanduser().resolve"
             },
             {
               "kind": "unresolved_call",
-              "line": 4809,
+              "line": 4810,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.wiki_root).expanduser"
             },
@@ -31662,7 +31662,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 6758,
+              "line": 6759,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -34392,7 +34392,7 @@
             "src/llm_wiki_cli/services/infrastructure_sync.py",
             "src/llm_wiki_cli/services/knowledge_index.py"
           ],
-          "step_count": 4095,
+          "step_count": 4096,
           "truncated": true
         }
       },
@@ -68169,5 +68169,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:47a35ad748cac5ff3d98ec4c9cb30d7a0a60d372827a89a2577a0354d40bd2b0"
+  "source_hash": "sha256:8d72200731d2eb4f806f1f85d0d0afa2e48af23832390b0594b7d31c8174591d"
 }

@@ -51,6 +51,7 @@ flowchart LR
 | `_instructions` | `(text: str)` | — | Keep continuation and heredoc bodies attached to their source owner. |
 | `_stage` | `(argument: str, line: int, stages: list[dict], escape: str) -> dict` | — | — |
 | `_pairs` | `(argument: str, escape: str) -> list[tuple[str, str]]` | — | — |
+| `_split_builder_flags` | `(argument: str, escape: str) -> tuple[str, list[str]]` | — | Decode leading flags without consuming or rewriting source arguments. |
 | `_copy` | `(argument: str, instruction: str, escape: str) -> dict` | — | — |
 | `_observe` | `(stage: dict, record: dict, escape: str) -> None` | — | — |
 | `parse_dockerfile` | `(text: str) -> dict` | — | Parse source declarations with stage ownership, without resolving defaults. |
