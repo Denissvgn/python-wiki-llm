@@ -170,7 +170,7 @@ def test_public_directional_effect_totals_match_typed_graph_materialization(
     assert materialized_observations == public_directional_coverage["emitted"]
 
 
-def test_public_detailed_flow_reports_large_fanout_bounds_and_keeps_legacy_shape(
+def test_public_detailed_flow_reports_large_fanout_bounds_and_keeps_legacy_observations(
     tmp_path,
 ):
     calls = "\n".join(f"    client.publish_{index}(value)" for index in range(16))
@@ -193,6 +193,7 @@ def test_public_detailed_flow_reports_large_fanout_bounds_and_keeps_legacy_shape
     )
 
     assert set(legacy) == {
+        "analysis",
         "id",
         "entry",
         "steps",

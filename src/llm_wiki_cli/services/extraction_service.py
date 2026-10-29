@@ -2026,7 +2026,7 @@ def _data_flow_truncation_reason(coverage: dict) -> str | None:
         return None
     limitations = coverage.get("limitations", [])
     if any(
-        isinstance(value, str) and value.startswith("upstream-")
+        isinstance(value, str) and value == "upstream-flow-depth-limit-reached"
         for value in limitations
     ):
         return "upstream-analyzer-limit"
@@ -2094,6 +2094,11 @@ def _data_flow_details_contract(
         f"unsupported-source-language:{language}"
         for language in sorted(unsupported_sources)
     ]
+    analyzer_limitations = sorted(set(analyzer_limitations) | {
+        reason for flow in flows
+        for reason in (flow.get("analysis", {}) or {}).get("limitations", [])
+        if isinstance(reason, str) and reason.startswith("upstream-")
+    })
     return {
         "schema_version": EXTRACT_DATA_FLOW_DETAILS_SCHEMA_VERSION,
         "state": state,

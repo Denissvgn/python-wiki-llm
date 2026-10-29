@@ -20,6 +20,7 @@ _GAP_LIMIT = 12
 _DATA_FLOW_OBSERVATIONS_SCHEMA = "llm-wiki-data-flow-observations/v1"
 _DATA_EFFECT_OBSERVATIONS_SCHEMA = "llm-wiki-data-effect-observations/v1"
 _FLOW_OBSERVATIONS_SCHEMA = "llm-wiki-flow-observations/v1"
+_ANALYSIS_COVERAGE_SCHEMA = "llm-wiki-callable-effect-coverage/v1"
 _EFFECT_KEYS = (
     "inputs",
     "reads",
@@ -242,7 +243,8 @@ def _call_label(edge: dict, call: dict | None) -> tuple[str, list[str]]:
 
 
 def _step_summary(
-    step: dict, index: dict[tuple[str | None, str | None], dict], step_index: int
+    step: dict, index: dict[tuple[str | None, str | None], dict], step_index: int,
+    effect_coverage: dict[tuple[str, str], dict[str, dict]] | None = None,
 ) -> dict:
     record = index.get((step.get("file"), step.get("symbol")), {})
     effects = record.get("data_effects", {}) or {}
@@ -257,7 +259,58 @@ def _step_summary(
         "writes": _effect_list(effects, "writes"),
         "returns": _effect_list(effects, "returns"),
         "boundary_effects": _effect_list(effects, "boundary_effects"),
+        "analysis": _step_analysis(step, index, effect_coverage),
     }
+
+
+def _step_analysis(step: Mapping, index: dict, effect_coverage: dict | None) -> dict:
+    if step.get("kind") in {"external", "unresolved"}:
+        return {"callable_record": "not_applicable", "effect_analysis": "not_applicable",
+                "collector_totals": "not_applicable", "limitations": []}
+    key = (step.get("file"), step.get("symbol"))
+    record = index.get(key)
+    totals = effect_coverage.get(key) if effect_coverage is not None else None
+    limitations = []
+    if record is None:
+        effects_state = "unavailable"
+        limitations.append("upstream-callable-record-unavailable")
+    elif totals is not None:
+        effects_state = "evaluated"
+    elif isinstance(record.get("data_effects"), Mapping):
+        effects_state = "partial"
+    else:
+        effects_state = "unavailable"
+        limitations.append("upstream-effect-observations-unavailable")
+    if totals is None:
+        limitations.append("upstream-effect-collector-totals-may-be-unavailable")
+    return {"callable_record": "available" if record is not None else "unavailable",
+            "effect_analysis": effects_state,
+            "collector_totals": "available" if totals is not None else "unavailable",
+            "limitations": sorted(limitations)}
+
+
+def _analysis_summary(steps: Iterable[Mapping], context: DataFlowAnalysisContext) -> dict:
+    callables = {"available": 0, "unavailable": 0}
+    effects = {"evaluated": 0, "partial": 0, "unavailable": 0}
+    totals = {"available": 0, "unavailable": 0}
+    limitations: set[str] = set()
+    source_steps = non_source_steps = 0
+    for step in steps:
+        analysis = _step_analysis(step, context.callable_index, context.data_effect_coverage)
+        if analysis["callable_record"] == "not_applicable":
+            non_source_steps += 1
+            continue
+        source_steps += 1
+        callables[analysis["callable_record"]] += 1
+        effects[analysis["effect_analysis"]] += 1
+        totals[analysis["collector_totals"]] += 1
+        limitations.update(analysis["limitations"])
+    state = ("not_applicable" if not source_steps else "evaluated" if effects["evaluated"] == source_steps
+             else "unavailable" if effects["unavailable"] == source_steps else "partial")
+    return {"schema_version": _ANALYSIS_COVERAGE_SCHEMA, "state": state,
+            "source_steps": source_steps, "non_source_steps": non_source_steps,
+            "callables": callables, "effects": effects, "collector_totals": totals,
+            "limitations": sorted(limitations)}
 
 
 def _boundary_rows(step_summary: dict) -> list[dict]:
@@ -345,7 +398,7 @@ def analyze_data_flow(
     for zero_based_index, step in enumerate(flow.get("steps", [])[:_STEP_LIMIT]):
         step_index = zero_based_index + 1
         depth = int(step.get("depth", 0))
-        summary = _step_summary(step, index, step_index)
+        summary = _step_summary(step, index, step_index, context.data_effect_coverage)
         steps.append(summary)
         new_boundaries = _boundary_rows(summary)
         boundaries.extend(new_boundaries[: max(0, _EFFECT_LIMIT - len(boundaries))])
@@ -414,6 +467,7 @@ def analyze_data_flow(
         "boundaries": boundaries,
         "gaps": gaps,
         "truncated": bool(flow.get("truncated")),
+        "analysis": _analysis_summary(flow.get("steps", []), context),
     }
 
 
@@ -493,7 +547,7 @@ def _raw_effects(
         filepath = step.get("file")
         symbol = step.get("symbol")
         record = index.get((filepath, symbol), {})
-        if not record:
+        if not record and step.get("kind") in {"external", "unresolved"}:
             continue
         effects = record.get("data_effects", {}) or {}
         if not isinstance(effects, Mapping):
@@ -703,6 +757,8 @@ def analyze_data_flow_detailed(
         if missing_effect_totals
         else []
     )
+    effect_total_limitation = sorted(set(effect_total_limitation)
+                                    | set(bounded["analysis"]["limitations"]))
     effect_kind_limit = _EFFECT_LIMIT * len(bounded["steps"]) or None
     effect_total_limit = (
         _EFFECT_LIMIT * len(bounded["steps"]) * len(_EFFECT_KEYS) or None
@@ -777,6 +833,7 @@ def analyze_data_flow_detailed(
             _GAP_LIMIT,
             [
                 "absence-of-a-gap-does-not-claim-runtime-completeness",
+                *effect_total_limitation,
                 *upstream_limitation,
             ],
         ),

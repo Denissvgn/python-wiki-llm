@@ -7,6 +7,12 @@ versioned ``data_flow_details`` sibling because older payloads and non-Python
 extractors may not emit them. A schema version bump is reserved for
 incompatible shape changes to existing fields.
 
+Static flow results may add ``analysis`` (``llm-wiki-callable-effect-coverage/v1``)
+and per-step qualifications for callable records, source effect observations,
+and collector totals. Flow assembly can be evaluated while effect analysis is
+partial or unavailable. Observation counts describe captured static evidence;
+unavailable collectors cannot establish that a handler body has no effects.
+
 Dockerfile records may add ``stage_schema_version`` (``llm-wiki-dockerfile-stages/v1``).
 Each stage owns its source declarations and ordered ``instructions`` with source
 lines. ``base_stage`` links an earlier named FROM stage; COPY --from does not

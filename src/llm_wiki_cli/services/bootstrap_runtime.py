@@ -2989,6 +2989,59 @@ def _bounded_data_flow_diagram(
     )
 
 
+def _flow_analysis_limitations(data_flow: Mapping) -> list[str]:
+    analysis = data_flow.get("analysis")
+    limitations = set(analysis.get("limitations", [])) if isinstance(analysis, Mapping) else {
+        "upstream-callable-effect-coverage-unavailable"
+    }
+    for record in (data_flow.get("coverage", {}) or {}).values():
+        if isinstance(record, Mapping):
+            limitations.update(reason for reason in record.get("limitations", [])
+                               if isinstance(reason, str) and reason.startswith("upstream-"))
+    return sorted(limitations)
+
+
+def _append_flow_analysis_coverage(lines: list[str], data_flow: Mapping) -> bool:
+    raw_analysis = data_flow.get("analysis")
+    analysis = raw_analysis if isinstance(raw_analysis, Mapping) else {}
+    state = analysis.get("state")
+    if not isinstance(state, str):
+        state = "unknown"
+    limitations = _flow_analysis_limitations(data_flow)
+    labels = {
+        "evaluated": "Effect analysis evaluated",
+        "partial": "Effect analysis partially available",
+        "unavailable": "Effect analysis unavailable",
+        "not_applicable": "No source-callable effect analysis in this trace",
+    }
+    lines.extend(["", "### Analysis coverage", "",
+        f"**{labels.get(state, 'Analysis coverage metadata unavailable')}.** "
+        "Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.", ""])
+    if isinstance(analysis.get("effects"), Mapping):
+        counts = analysis["effects"]
+        lines.extend([f"Source steps: {analysis.get('source_steps', 0)}; effect analysis evaluated: "
+            f"{counts.get('evaluated', 0)}, partial: {counts.get('partial', 0)}, "
+            f"unavailable: {counts.get('unavailable', 0)}. Counts include steps omitted from the displayed trace.", ""])
+    messages = {
+        "upstream-callable-record-unavailable": "Callable record unavailable; the selected entry symbol has no represented callable body.",
+        "upstream-effect-observations-unavailable": "Effect observations unavailable for one or more represented callables.",
+        "upstream-effect-collector-totals-may-be-unavailable": "Effect collector totals unavailable; observed counts cover captured records only.",
+        "upstream-callable-effect-coverage-unavailable": "Callable/effect coverage metadata unavailable in this legacy projection.",
+        "upstream-flow-depth-limit-reached": "Flow depth limit reached; deeper source observations are unavailable.",
+    }
+    for reason in limitations:
+        lines.append("- " + messages.get(reason, str(_table_inline_code(reason, table=False))))
+    if limitations:
+        lines.extend(["", "| Step | Callable record | Effect analysis | Collector totals |", "|---|---|---|---|"])
+        for step in data_flow.get("steps", []):
+            coverage = step.get("analysis", {}) or {}
+            lines.append("| " + " | ".join(_table_inline_code(value) for value in (
+                step.get("symbol"), coverage.get("callable_record", "unknown"),
+                coverage.get("effect_analysis", "unknown"), coverage.get("collector_totals", "unknown"))) + " |")
+        lines.append("")
+    return bool(limitations) or state not in {"evaluated", "not_applicable"}
+
+
 def _generate_data_flow_section(
     data_flow: Mapping,
     module_page_map: Mapping[str, str] | None = None,
@@ -3003,6 +3056,7 @@ def _generate_data_flow_section(
         "<!-- Auto-generated static analysis. Treat values and boundaries as "
         "best-effort hints, not runtime proof. -->",
     ]
+    coverage_limited = _append_flow_analysis_coverage(lines, data_flow)
     if rendered.diagram:
         lines.append(rendered.diagram)
         if rendered.omitted_items:
@@ -3086,7 +3140,7 @@ def _generate_data_flow_section(
                 + " |"
             )
     else:
-        lines.append("*No boundary effects detected.*")
+        lines.append("*No boundary-effect observations were captured in this static trace.*")
     lines.extend(["", "### Static analysis gaps", ""])
     gaps = data_flow.get("gaps", [])
     if gaps:
@@ -3105,7 +3159,8 @@ def _generate_data_flow_section(
                 + " |"
             )
     else:
-        lines.append("*No static analysis gaps detected.*")
+        lines.append("*No additional call-resolution gaps were captured; analysis coverage limitations above apply.*"
+                     if coverage_limited else "*No static call-resolution gaps detected in the captured trace.*")
     lines.append("")
     return lines
 
@@ -3170,7 +3225,7 @@ def _generate_flow_md(
         _append_overview_disclosure(lines, overview, page_map)
     else:
         lines.append("*No outbound interactions are available in this bounded static trace.*" if flow.get("truncated")
-                     else "*No outbound calls were detected by static analysis.*")
+                     else "*No outbound call observations are available in this static trace.*")
     if flow.get("truncated"):
         lines.append("")
         lines.append("> Trace truncated at the depth limit; deeper calls are omitted.")
@@ -5432,10 +5487,9 @@ def _write_bootstrap_flow_pages(
         flows.append(detailed_flow)
         data_flow = None
         if data_flow_enabled:
-            # Keep the historical projection for Markdown rendering. The
-            # detailed observation deliberately represents unknown locations
-            # as ``None`` and must not leak that additive contract into the
-            # byte-compatible legacy page surface.
+            # Keep historical line-zero placeholders in the page projection;
+            # detailed locations use None. Both carry additive source-analysis
+            # qualifications so empty observations cannot conceal unavailable coverage.
             data_flow = analyze_data_flow(
                 inventory, flow, edges, context=data_flow_context
             )

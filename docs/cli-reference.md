@@ -494,6 +494,13 @@ llm-wiki extract --src-dir /path/to/repo --allow-external-src --summary
 
 The JSON output includes `schema_version: "llm-wiki-extract/v1"` plus
 `inventory` and optional `docker` and `unsupported_sources` objects.
+Deep flow output separates evaluated flow assembly from source effect analysis.
+Its additive `analysis` object (`llm-wiki-callable-effect-coverage/v1`) reports
+`evaluated`, `partial`, `unavailable`, or `not_applicable` effect coverage,
+with callable-record and collector-total availability for each step. Known
+limitations also appear in generated flow pages, including when no effects or
+call-resolution gaps were captured. Empty observations from an unavailable
+collector do not establish an empty handler body or runtime completeness.
 Dockerfile records carry `stage_schema_version: "llm-wiki-dockerfile-stages/v1"`.
 Each stage owns its configuration declarations and ordered source instructions.
 An earlier named `FROM` stage is linked through `base_stage`; `COPY --from`

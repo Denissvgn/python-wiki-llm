@@ -446,6 +446,7 @@ def test_detailed_data_flow_reports_every_bound_and_uses_none_for_unknown_lines(
     detailed = analyze_data_flow_detailed(inventory, flow, external_edges)
 
     assert set(legacy) == {
+        "analysis",
         "id",
         "entry",
         "steps",

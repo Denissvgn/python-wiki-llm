@@ -4721,6 +4721,15 @@ class TestTypeScriptModuleOnlyExtraction:
     def test_deep_payload_includes_javascript_http_entrypoint_and_data_flow(
         self, tmp_path
     ):
+        (tmp_path / "inline.mjs").write_text(
+            'import { createServer } from "node:http";\n'
+            'export const server = createServer((request, response) => { response.end("ok"); });\n'
+        )
+        (tmp_path / "named.mjs").write_text(
+            'import { createServer } from "node:http";\n'
+            'export function handle(request, response) { response.end("ok"); }\n'
+            'export const server = createServer(handle);\n'
+        )
         path = tmp_path / "server.js"
         path.write_text(
             textwrap.dedent("""\
@@ -4752,6 +4761,16 @@ class TestTypeScriptModuleOnlyExtraction:
         assert any(
             flow["id"] == "http-handleRequest" for flow in result.payload["data_flows"]
         )
+        details = result.payload["data_flow_details"]
+        assert details["state"] == "evaluated"
+        for filepath, callable_state in (("inline.mjs", "unavailable"), ("named.mjs", "available")):
+            flow = next(item for item in details["flows"]
+                        if item["entry"]["category"] == "http" and item["entry"]["file"] == filepath)
+            assert flow["analysis"]["state"] == "unavailable"
+            assert flow["steps"][0]["analysis"]["callable_record"] == callable_state
+            assert flow["steps"][0]["analysis"]["effect_analysis"] == "unavailable"
+            assert "upstream-effect-collector-totals-may-be-unavailable" in flow["coverage"]["effects"]["upstream_analyzer_limitations"]
+        assert "upstream-callable-record-unavailable" in details["coverage"]["upstream_analyzer_limitations"]
 
     def test_paths_keep_pto_style_typescript_modules_in_deep_inventory(self, tmp_path):
         files = {

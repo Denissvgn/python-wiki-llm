@@ -3441,7 +3441,7 @@ class TestGenerateFlowMd:
             "truncated": False,
         }
         md = bootstrap_cmd._generate_flow_md(flow, {"m.py": "m"})
-        assert "No outbound calls were detected by static analysis." in md
+        assert "No outbound call observations are available in this static trace." in md
         assert "sequenceDiagram" not in md
         assert "manually" not in md.casefold()
         assert "placeholder" not in md.casefold()
