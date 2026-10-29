@@ -56,8 +56,12 @@ def executes_at_import(import_record: object) -> bool:
     """
     if not isinstance(import_record, Mapping):
         return True
-    return (import_record.get("scope") not in NON_IMPORT_TIME_SCOPES
-            and import_record.get("runtime") != "erased")
+    if import_record.get("runtime") == "erased":
+        return False
+    scope = import_record.get("scope")
+    # Direct graph callers may supply unvalidated records. An unknown scope
+    # cannot establish a deferred import or suppress a possible startup edge.
+    return not isinstance(scope, str) or scope not in NON_IMPORT_TIME_SCOPES
 
 # These are project-source identities, relative to the owned ``llm_wiki_cli``
 # package root.  Package markers and nested .gitignore files intentionally do

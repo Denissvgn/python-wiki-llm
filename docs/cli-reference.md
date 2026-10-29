@@ -531,6 +531,9 @@ as optional `import_time_edges` (possible startup constraints), `type_only_edges
 `preserved_cycles`, and `conditional_cycles` fields. Preserved startup cycles
 remain visible when compiler-dependent imports join them into a larger possible
 cycle group; `cycles` continues to describe the full possible startup projection.
+Import `scope` values must be strings when supplied. Malformed scope metadata
+cannot establish known inventory evidence; unclassified scopes remain possible
+startup dependencies unless a separate qualification guarantees erasure.
 Go `_test.go` files are omitted unless `--include-tests go` is supplied; Python
 test files remain part of normal Python extraction.
 Python deep extraction can capture a bounded static subset of nested helpers.

@@ -906,6 +906,21 @@ class TestAnalyzeDependencies:
         deferred = MappingProxyType({"module": "./b", "name": "B", "scope": "deferred"})
         assert build_dependency_graph({"a.ts": _tsmod(deferred), "b.ts": _tsmod()})["import_time_edges"] == []
 
+    def test_unvalidated_scopes_do_not_crash_or_hide_possible_startup_edges(self):
+        edge = [("a.ts", "b.ts")]
+        for scope in ([], {}, None, True, 7, "future-scope"):
+            unknown = {"module": "./b", "name": "B", "scope": scope}
+            graph = build_dependency_graph({"a.ts": _tsmod(unknown), "b.ts": _tsmod()})
+            assert graph["edges"] == graph["import_time_edges"] == edge
+            conditional = {**unknown, "runtime": "conditional"}
+            graph = build_dependency_graph({"a.ts": _tsmod(conditional), "b.ts": _tsmod()})
+            assert graph["import_time_edges"] == graph["conditional_import_time_edges"] == edge
+            erased = MappingProxyType({**unknown, "runtime": "erased", "type_only": True,
+                                       "type_only_declaration": True})
+            graph = build_dependency_graph({"a.ts": _tsmod(erased), "b.ts": _tsmod()})
+            assert graph["edges"] == graph["type_only_edges"] == edge
+            assert graph["import_time_edges"] == []
+
     def test_typescript_type_edges_keep_coupling_without_startup_cycle(self, tmp_path):
         inventory = {
             "a.ts": _tsmod({"module": "./b", "name": "B", "type_only": True,

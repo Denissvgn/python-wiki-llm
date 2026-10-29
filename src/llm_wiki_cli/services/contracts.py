@@ -25,6 +25,9 @@ projections may add possible startup ``import_time_edges``, ``type_only_edges``,
 ``type_cycles``, ``preserved_cycles``, and ``conditional_cycles`` without changing
 coupling ``edges`` or the possible startup SCCs in ``cycles``. Preserved cycles
 remain explicit even when compiler-dependent edges enlarge their components.
+An optional import ``scope`` is a string. Malformed scope metadata cannot
+establish known structural evidence; an unclassified scope does not prove that
+an import is deferred or erased.
 Python dependency reconciliation treats ``sys.stdlib_module_names`` as the
 stdlib source when available, falls back to the bundled Python 3.9 list in
 dependency analysis, and uses the curated import-to-distribution aliases there

@@ -313,6 +313,26 @@ def test_malformed_import_qualification_cannot_establish_known_evidence(record):
     assert not basis.is_known and basis.unknown_reason == UNKNOWN_INVALID_INVENTORY
 
 
+@pytest.mark.parametrize("language", ["python", "typescript", "javascript"])
+@pytest.mark.parametrize("scope", [None, [], {}, True, 7])
+def test_non_string_import_scope_cannot_establish_known_evidence(language, scope):
+    inventory = {"language": language, "classes": [], "functions": [],
+                 "imports": [{"module": "dependency", "name": "Value", "scope": scope}]}
+    basis = _module_basis(inventory)
+    assert not basis.is_known and basis.unknown_reason == UNKNOWN_INVALID_INVENTORY
+    if language == "typescript":
+        inventory["imports"][0].update(type_only=True, type_only_declaration=True, runtime="erased")
+        basis = _module_basis(inventory)
+        assert not basis.is_known and basis.unknown_reason == UNKNOWN_INVALID_INVENTORY
+
+
+def test_unknown_string_import_scope_stays_structural_and_conservative():
+    inventory = {"language": "typescript", "classes": [], "functions": [],
+                 "imports": [{"module": "./b", "name": "B", "scope": "future-scope"}]}
+    normalized = normalize_module_observation(inventory)
+    assert normalized is not None and normalized["imports"][0]["scope"] == "future-scope"
+
+
 def test_semantic_prose_and_call_details_are_outside_structural_hash_domain():
     inventory = _inventory("python")
     changed = deepcopy(inventory)

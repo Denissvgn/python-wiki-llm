@@ -671,7 +671,7 @@ def _validate_import_record(record: Mapping[str, Any], *, language: str, pointer
             if "scope" in record and record["scope"] != "deferred":
                 raise _failure(_pointer(pointer, "scope"), "explicit-import-gap", "deferred or omitted", record["scope"])
         raise _failure(_pointer(pointer, "module"), "import-module", "nonempty string or valid explicit unresolved-call gap", module)
-    _validate_optional_strings(record, ("name", "type"), pointer)
+    _validate_optional_strings(record, ("name", "type", "scope"), pointer)
     if "alias" in record and record["alias"] is not None:
         _validate_optional_strings(record, ("alias",), pointer)
     _validate_optional_booleans(record, ("qualified", "type_only", "type_only_declaration"), pointer)
