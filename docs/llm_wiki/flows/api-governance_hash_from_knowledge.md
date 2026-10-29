@@ -109,6 +109,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 475; effect analysis evaluated: 304, partial: 0, unavailable: 171. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `governance_hash_from_knowledge` | `available` | `evaluated` | `available` |
+| `validate_governance_projection` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…ate_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError (src/llm_wiki_cli/services…ate_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `knowledge.extensions.get (src/llm_wiki_cli/services…ate_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `knowledge.bundle.snapshot.extensions.get` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `concept.extensions.get` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `any (src/llm_wiki_cli/services…ate_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `GovernanceError` | `unavailable` | `unavailable` | `unavailable` |
+| `_object (src/llm_wiki_cli/services/knowledge_governance.py)` | `available` | `evaluated` | `available` |
+| `require_mapping` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. governance_hash_from_knowledge"]

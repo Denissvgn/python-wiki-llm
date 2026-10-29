@@ -98,6 +98,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 99; effect analysis evaluated: 58, partial: 0, unavailable: 41. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `evaluate_verification_receipt` | `available` | `evaluated` | `available` |
+| `validate_verification_receipt` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…date_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_receipt_to_payload` | `available` | `evaluated` | `available` |
+| `dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `check.to_payload` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_object` | `available` | `evaluated` | `available` |
+| `require_mapping` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `key.encode` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. evaluate_verification_receipt"]
@@ -165,7 +190,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

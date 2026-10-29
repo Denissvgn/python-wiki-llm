@@ -127,9 +127,9 @@ sequenceDiagram
     p1-->>p31: validation.packet.to_payload
 ```
 
-> Call sequence diagram shows 30 of 2387 interactions; 2357 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2394 interactions; 2364 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 765 (764 omitted); unresolved 1 of 764 (763 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 767 (766 omitted); unresolved 1 of 766 (765 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -143,7 +143,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/context_packet.py:_strict_json_payload` | 17 | - | external | 2 |
 | `src/llm_wiki_cli/services/context_packet.py:_validate_json_tree` | 24 | - | external | 1 |
 | `src/llm_wiki_cli/services/context_packet.py:_validate_json_tree` | 24 | - | unresolved | 1 |
-> Omission summary shows 8 of 542 groups; 534 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 545 groups; 537 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -151,6 +151,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 862; effect analysis evaluated: 617, partial: 0, unavailable: 245. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `reconcile_context_packet (src/llm_wiki_cli/api.py)` | `available` | `evaluated` | `available` |
+| `reconcile_context_packet (src/llm_wiki_cli/services/context_packet.py)` | `available` | `evaluated` | `available` |
+| `validate_context_packet` | `available` | `evaluated` | `available` |
+| `_coerce_packet_bytes` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `bytes (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ContextPacketMalformedError` | `unavailable` | `unavailable` | `unavailable` |
+| `len (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ContextPacketMalformedError` | `unavailable` | `unavailable` | `unavailable` |
+| `raw.startswith` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. reconcile_context_packet (src/llm_wiki_cli/api.py)"]
@@ -219,7 +244,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

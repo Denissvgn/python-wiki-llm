@@ -108,6 +108,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 656; effect analysis evaluated: 401, partial: 0, unavailable: 255. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `verify_calibration_run` | `available` | `evaluated` | `available` |
+| `_open_store` | `available` | `evaluated` | `available` |
+| `ProtectedArtifactStore` | `unavailable` | `unavailable` | `unavailable` |
+| `P0CalibrationIntegrityError` | `unavailable` | `unavailable` | `unavailable` |
+| `str (src/llm_wiki_cli/services…controller.py:_open_store)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `store.lock` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_load_run_locked` | `available` | `evaluated` | `available` |
+| `store.exists (src/llm_wiki_cli/services…oller.py:_load_run_locked)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_load_emergency_rejection` | `available` | `evaluated` | `available` |
+| `store.read_json (src/llm_wiki_cli/services…_load_emergency_rejection)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_require_exact_fields` | `available` | `evaluated` | `available` |
+| `require_exact_fields` | `available` | `evaluated` | `available` |
+
 ```mermaid
 flowchart LR
     s1["1. verify_calibration_run"]

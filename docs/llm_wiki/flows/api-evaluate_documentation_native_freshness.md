@@ -152,6 +152,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1714; effect analysis evaluated: 1229, partial: 0, unavailable: 485. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `evaluate_documentation_native_freshness` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…entation_native_freshness)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError (src/llm_wiki_cli/services…entation_native_freshness)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…entation_native_freshness)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError (src/llm_wiki_cli/services…entation_native_freshness)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_native_source_snapshot_preflight` | `available` | `evaluated` | `available` |
+| `_validated_directory` | `available` | `evaluated` | `available` |
+| `Path(…).expanduser` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path (src/llm_wiki_cli/services…e.py:_validated_directory)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `candidate.lstat` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `DocumentationNativeError` | `unavailable` | `unavailable` | `unavailable` |
+| `stat.S_ISLNK (src/llm_wiki_cli/services…e.py:_validated_directory)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. evaluate_documentation_native_freshness"]

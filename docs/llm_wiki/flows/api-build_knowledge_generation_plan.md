@@ -140,6 +140,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 2171; effect analysis evaluated: 1327, partial: 0, unavailable: 844. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `build_knowledge_generation_plan` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…wledge_generation_plan, 1)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError (src/llm_wiki_cli/services…knowledge_generation_plan)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_knowledge_validation_operation` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…edge_validation_operation)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `wiki_root.is_absolute` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError (src/llm_wiki_cli/services…edge_validation_operation)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_IndexValidationOperation` | `unavailable` | `unavailable` | `unavailable` |
+| `_INDEX_VALIDATION_OPERATION.set` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `object.__setattr__ (src/llm_wiki_cli/services…edge_validation_operation)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_INDEX_VALIDATION_OPERATION.reset` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path(…).absolute` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. build_knowledge_generation_plan"]
@@ -205,7 +230,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

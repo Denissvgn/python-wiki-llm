@@ -39,6 +39,30 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 5; effect analysis evaluated: 2, partial: 0, unavailable: 3. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `persist_runtime_generation_policy` | `available` | `evaluated` | `available` |
+| `_validate_runtime_policy` | `available` | `evaluated` | `available` |
+| `set` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `sorted` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `min` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `KnowledgeGenerationError` | `unavailable` | `unavailable` | `unavailable` |
+| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `KnowledgeGenerationError` | `unavailable` | `unavailable` | `unavailable` |
+| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `KnowledgeGenerationError` | `unavailable` | `unavailable` | `unavailable` |
+| `dict` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. persist_runtime_generation_policy"]
@@ -102,7 +126,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

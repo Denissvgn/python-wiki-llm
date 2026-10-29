@@ -84,7 +84,7 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [DataFlowAnalysisContext](../entities/DataFlowAnalysisContext.md) | 164 | — | Precomputed indexes shared by all data-flow analyses in one run. |
+| [DataFlowAnalysisContext](../entities/DataFlowAnalysisContext.md) | 165 | — | Precomputed indexes shared by all data-flow analyses in one run. |
 
 ## Functions
 
@@ -104,7 +104,9 @@ flowchart LR
 | `_target_matches` | `(call: dict, edge: dict) -> bool` | — | — |
 | `_find_call` | `(edge: dict, index: dict[tuple[str \| None, str \| None], dict]) -> dict \| None` | — | — |
 | `_call_label` | `(edge: dict, call: dict \| None) -> tuple[str, list[str]]` | — | — |
-| `_step_summary` | `(step: dict, index: dict[tuple[str \| None, str \| None], dict], step_index: int) -> dict` | — | — |
+| `_step_summary` | `(step: dict, index: dict[tuple[str \| None, str \| None], dict], step_index: int, effect_coverage: dict[tuple[str, str], dict[str, dict]] \| None = None) -> dict` | — | — |
+| `_step_analysis` | `(step: Mapping, index: dict, effect_coverage: dict \| None) -> dict` | — | — |
+| `_analysis_summary` | `(steps: Iterable[Mapping], context: DataFlowAnalysisContext) -> dict` | — | — |
 | `_boundary_rows` | `(step_summary: dict) -> list[dict]` | — | — |
 | `_edge_is_explained_by_boundary` | `(edge: dict, boundaries: list[dict]) -> bool` | — | — |
 | `_should_report_gap` | `(edge: dict, boundaries: list[dict]) -> bool` | — | — |

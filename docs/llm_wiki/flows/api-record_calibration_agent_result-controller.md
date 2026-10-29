@@ -108,6 +108,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 748; effect analysis evaluated: 451, partial: 0, unavailable: 297. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `record_calibration_agent_result` | `available` | `evaluated` | `available` |
+| `_record_p0_calibration_agent_result` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…_calibration_agent_result)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `P0CalibrationDispatchReceipt.from_dict` | `available` | `evaluated` | `available` |
+| `_json_round_trip` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…oller.py:_json_round_trip)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `P0CalibrationSchemaError` | `unavailable` | `unavailable` | `unavailable` |
+| `json.dumps` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `json.loads (src/llm_wiki_cli/services…oller.py:_json_round_trip)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `P0CalibrationSchemaError` | `unavailable` | `unavailable` | `unavailable` |
+| `isinstance (src/llm_wiki_cli/services…oller.py:_json_round_trip)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `P0CalibrationSchemaError` | `unavailable` | `unavailable` | `unavailable` |
+
 ```mermaid
 flowchart LR
     s1["1. record_calibration_agent_result"]

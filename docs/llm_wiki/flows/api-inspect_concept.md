@@ -139,9 +139,9 @@ sequenceDiagram
     p1-->>p30: callback
 ```
 
-> Call sequence diagram shows 30 of 2710 interactions; 2680 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2728 interactions; 2698 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 910 (909 omitted); unresolved 1 of 841 (840 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 914 (913 omitted); unresolved 1 of 852 (851 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -155,7 +155,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 15 | - | external | 4 |
 | `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 15 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/wiki_surface.py:validate_exact_page_coordinate` | 15 | [src/llm_wiki_cli/services/wiki_surface.py](../modules/wiki_surface.md) | internal | 5 |
-> Omission summary shows 8 of 695 groups; 687 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 700 groups; 692 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -163,6 +163,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 963; effect analysis evaluated: 715, partial: 0, unavailable: 248. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `inspect_concept` | `available` | `evaluated` | `available` |
+| `_normalize_query_input` | `available` | `evaluated` | `available` |
+| `callback` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` |
+| `str (src/llm_wiki_cli/api.py:_normalize_query_input)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `normalize_concept_coordinate` | `available` | `evaluated` | `available` |
+| `normalize_documentation_query_text` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `value.strip (src/llm_wiki_cli/services…_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `DocumentationQueryError` | `unavailable` | `unavailable` | `unavailable` |
+| `value.strip (src/llm_wiki_cli/services…_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `len (src/llm_wiki_cli/services…_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. inspect_concept"]
@@ -231,7 +256,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

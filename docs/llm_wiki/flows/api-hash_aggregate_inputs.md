@@ -54,6 +54,31 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 9; effect analysis evaluated: 6, partial: 0, unavailable: 3. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `hash_aggregate_inputs` | `available` | `evaluated` | `available` |
+| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` |
+| `list` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` |
+| `_hash_structured` | `available` | `evaluated` | `available` |
+| `payload.values` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_validate_json_tree` | `available` | `evaluated` | `available` |
+| `set` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `walk` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `sha256_bytes` | `available` | `evaluated` | `available` |
+| `hashlib.sha256(…).hexdigest` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. hash_aggregate_inputs"]
@@ -122,7 +147,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

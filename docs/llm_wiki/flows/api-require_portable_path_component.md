@@ -44,6 +44,31 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 6; effect analysis evaluated: 1, partial: 0, unavailable: 5. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `require_portable_path_component` | `available` | `evaluated` | `available` |
+| `component.encode` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `SharedValidationError` | `unavailable` | `unavailable` | `unavailable` |
+| `unicodedata.normalize` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `SharedValidationError` | `unavailable` | `unavailable` | `unavailable` |
+| `any` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ord` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ord` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `SharedValidationError` | `unavailable` | `unavailable` | `unavailable` |
+| `component.endswith` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `any` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `SharedValidationError` | `unavailable` | `unavailable` | `unavailable` |
+
 ```mermaid
 flowchart LR
     s1["1. require_portable_path_component"]
@@ -111,7 +136,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

@@ -96,6 +96,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 58; effect analysis evaluated: 53, partial: 0, unavailable: 5. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `merge_module_semantics` | `available` | `evaluated` | `available` |
+| `semantics.get` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `semantics.get` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `semantics.get` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `merge_semantic_markdown` | `available` | `evaluated` | `available` |
+| `normalize_markdown` | `available` | `evaluated` | `available` |
+| `text.replace(…).replace` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `text.replace` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `section_body` | `available` | `evaluated` | `available` |
+| `_markdown_lines` | `available` | `evaluated` | `available` |
+| `re.findall` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `normalize_markdown` | `available` | `evaluated` | `available` |
+
 ```mermaid
 flowchart LR
     s1["1. merge_module_semantics"]
@@ -164,7 +189,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

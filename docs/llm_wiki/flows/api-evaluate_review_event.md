@@ -107,6 +107,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 190; effect analysis evaluated: 88, partial: 0, unavailable: 102. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `evaluate_review_event` | `available` | `evaluated` | `available` |
+| `validate_governance_ledger` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…alidate_governance_ledger)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError (src/llm_wiki_cli/services…alidate_governance_ledger)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `GovernanceError` | `unavailable` | `unavailable` | `unavailable` |
+| `_bundle_id` | `available` | `evaluated` | `available` |
+| `validate_bundle_id` | `available` | `evaluated` | `available` |
+| `_machine_text` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` |
+| `len (src/llm_wiki_cli/services…identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` |
+
 ```mermaid
 flowchart LR
     s1["1. evaluate_review_event"]

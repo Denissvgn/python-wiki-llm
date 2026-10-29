@@ -107,6 +107,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 116; effect analysis evaluated: 76, partial: 0, unavailable: 40. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet.py)` | `available` | `evaluated` | `available` |
+| `confirmed_missing_source_paths (src/llm_wiki_cli/services/source_snapshot.py)` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…rmed_missing_source_paths)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…rmed_missing_source_paths)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `GitIgnoreMatcher` | `unavailable` | `unavailable` | `unavailable` |
+| `list` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `set` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_confirmed_source_path` | `available` | `evaluated` | `available` |
+| `SourceSnapshotError` | `unavailable` | `unavailable` | `unavailable` |
+| `require_repository_relative_path` | `available` | `evaluated` | `available` |
+
 ```mermaid
 flowchart LR
     s1["1. confirmed_missing_source_paths (src/llm_wiki_cli/services/context_packet.py)"]

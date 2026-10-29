@@ -94,6 +94,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 23; effect analysis evaluated: 12, partial: 0, unavailable: 11. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `runtime_generation_options_hash` | `available` | `evaluated` | `available` |
+| `prepare_runtime_generation_options` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…runtime_generation_options)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `dict` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `dict` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `tuple (src/llm_wiki_cli/services…runtime_generation_options)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `dict.fromkeys` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `PreparedRuntimeGenerationOptions` | `unavailable` | `unavailable` | `unavailable` |
+| `tuple (src/llm_wiki_cli/services…me_generation_options_hash)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `hash_generation_options` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…py:hash_generation_options)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. runtime_generation_options_hash"]
@@ -160,7 +185,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

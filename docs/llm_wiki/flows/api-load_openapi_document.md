@@ -93,6 +93,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 42; effect analysis evaluated: 16, partial: 0, unavailable: 26. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `load_openapi_document` | `available` | `evaluated` | `available` |
+| `_resolve_openapi_path` | `available` | `evaluated` | `available` |
+| `Path(…).resolve` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path(…).expanduser` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `candidate.is_absolute` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path(…).relative_to(…).as_posix` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path(…).relative_to` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `os.path.abspath` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ApiContractError` | `unavailable` | `unavailable` | `unavailable` |
+
 ```mermaid
 flowchart LR
     s1["1. load_openapi_document"]

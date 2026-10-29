@@ -94,6 +94,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 39; effect analysis evaluated: 20, partial: 0, unavailable: 19. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `use_calibration_host_broker_authenticator (src/llm_wiki_cli/api.py)` | `available` | `evaluated` | `available` |
+| `use_calibration_host_broker_authenticator (src/llm_wiki_cli/services…alibration/host_broker.py)` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…host_broker_authenticator)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `HostBrokerAuthenticationUnavailable` | `unavailable` | `unavailable` | `unavailable` |
+| `_require_bounded_text` | `available` | `evaluated` | `available` |
+| `require_bounded_text` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…n.py:require_bounded_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `len` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `len` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `contains_control_character` | `available` | `evaluated` | `available` |
+| `pattern.search` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. use_calibration_host_broker_authenticator (src/llm_wiki_cli/api.py)"]
@@ -162,7 +187,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

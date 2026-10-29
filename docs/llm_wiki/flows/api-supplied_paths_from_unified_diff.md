@@ -93,6 +93,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 51; effect analysis evaluated: 23, partial: 0, unavailable: 28. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `supplied_paths_from_unified_diff` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…d_paths_from_unified_diff)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `DocumentationQueryError` | `unavailable` | `unavailable` | `unavailable` |
+| `value.encode` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `DocumentationQueryError` | `unavailable` | `unavailable` | `unavailable` |
+| `len (src/llm_wiki_cli/services…d_paths_from_unified_diff)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `DocumentationQueryError` | `unavailable` | `unavailable` | `unavailable` |
+| `set` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `value.splitlines` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `line.startswith` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `DocumentationQueryError` | `unavailable` | `unavailable` | `unavailable` |
+| `shlex.split (src/llm_wiki_cli/services…d_paths_from_unified_diff)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. supplied_paths_from_unified_diff"]

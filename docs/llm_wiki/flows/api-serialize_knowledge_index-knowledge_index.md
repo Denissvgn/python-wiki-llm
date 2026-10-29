@@ -122,6 +122,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 723; effect analysis evaluated: 414, partial: 0, unavailable: 309. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `serialize_knowledge_index` | `available` | `evaluated` | `available` |
+| `_serialize_payload` | `available` | `evaluated` | `available` |
+| `json.dumps` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `KnowledgeModelError` | `unavailable` | `unavailable` | `unavailable` |
+| `knowledge_index_to_payload` | `available` | `evaluated` | `available` |
+| `_model_to_payload` | `available` | `evaluated` | `available` |
+| `_knowledge_index_to_payload_unchecked` | `available` | `evaluated` | `available` |
+| `_bundle_to_payload` | `available` | `evaluated` | `available` |
+| `_emit_extensions` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…model.py:_emit_extensions)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_parse_extensions` | `available` | `evaluated` | `available` |
+| `_wire_enum` | `available` | `evaluated` | `available` |
+
 ```mermaid
 flowchart LR
     s1["1. serialize_knowledge_index"]
@@ -194,7 +219,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

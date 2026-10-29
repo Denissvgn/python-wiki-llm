@@ -96,6 +96,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 125; effect analysis evaluated: 124, partial: 0, unavailable: 1. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `normalize_entity_observation` | `available` | `evaluated` | `available` |
+| `_validate_entity_coordinate` | `available` | `evaluated` | `available` |
+| `require_nonempty_text` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `contains_control_character` | `available` | `evaluated` | `available` |
+| `pattern.search` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ValueError` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `require_positive_int` | `available` | `evaluated` | `available` |
+| `require_nonnegative_int` | `available` | `evaluated` | `available` |
+| `require_int` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services/validation.py:require_int)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. normalize_entity_observation"]
@@ -165,7 +190,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

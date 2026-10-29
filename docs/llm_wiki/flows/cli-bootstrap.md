@@ -132,9 +132,9 @@ sequenceDiagram
     p4-->>p30: (…).resolve
 ```
 
-> Call sequence diagram shows 30 of 3517 interactions; 3487 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3522 interactions; 3492 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1190 (1189 omitted); unresolved 1 of 1019 (1018 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1193 (1192 omitted); unresolved 1 of 1020 (1019 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -156,6 +156,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1310; effect analysis evaluated: 1013, partial: 0, unavailable: 297. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `run` | `available` | `evaluated` | `available` |
+| `_bootstrap_run_options_from_args` | `available` | `evaluated` | `available` |
+| `Path (src/llm_wiki_cli/services…rap_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `validate_path` | `available` | `evaluated` | `available` |
+| `PathValidationError` | `unavailable` | `unavailable` | `unavailable` |
+| `(…).resolve` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path.cwd().resolve` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `PathValidationError` | `unavailable` | `unavailable` | `unavailable` |
+| `str (src/llm_wiki_cli/services…rap_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. run"]
@@ -213,9 +238,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | _bootstrap_run_options_from_args | 6754 | `_bootstrap_run_options_from_args(args)` |
-| _bootstrap_run_options_from_args | Path (src/llm_wiki_cli/services…rap_run_options_from_args) | 4764 | `Path(args.wiki_dir)` |
-| _bootstrap_run_options_from_args | validate_path | 4765 | `validate_path(str(...), '--wiki-dir')` |
+| run | _bootstrap_run_options_from_args | 6808 | `_bootstrap_run_options_from_args(args)` |
+| _bootstrap_run_options_from_args | Path (src/llm_wiki_cli/services…rap_run_options_from_args) | 4819 | `Path(args.wiki_dir)` |
+| _bootstrap_run_options_from_args | validate_path | 4820 | `validate_path(str(...), '--wiki-dir')` |
 | validate_path | PathValidationError | 134 | `PathValidationError(...)` |
 | validate_path | (…).resolve | 135 | `(Path.cwd() / path).resolve(data not statically known)` |
 | validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 135 | `Path.cwd(data not statically known)` |
@@ -223,13 +248,13 @@ flowchart LR
 | validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd(data not statically known)` |
 | validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 138 | `resolved.relative_to(cwd)` |
 | validate_path | PathValidationError | 140 | `PathValidationError(...)` |
-| _bootstrap_run_options_from_args | str (src/llm_wiki_cli/services…rap_run_options_from_args) | 4765 | `str(wiki_dir)` |
+| _bootstrap_run_options_from_args | str (src/llm_wiki_cli/services…rap_run_options_from_args) | 4820 | `str(wiki_dir)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 6760 |
+| output | `print` | `run` | 6814 |
 
 ### Static analysis gaps
 

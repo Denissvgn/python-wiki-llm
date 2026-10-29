@@ -145,9 +145,9 @@ sequenceDiagram
     p0-->>p30: source_root.is_dir (src/llm_wiki_cli/services…t.py:capture_context_read)
 ```
 
-> Call sequence diagram shows 30 of 5363 interactions; 5333 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 5381 interactions; 5351 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1724 (1723 omitted); unresolved 1 of 1718 (1717 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1728 (1727 omitted); unresolved 1 of 1729 (1728 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -161,7 +161,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_source_root` | 14 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 14 | - | external | 11 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 14 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
-> Omission summary shows 8 of 1350 groups; 1342 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1355 groups; 1347 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -169,6 +169,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1925; effect analysis evaluated: 1354, partial: 0, unavailable: 571. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `capture_context_read` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `callable (src/llm_wiki_cli/services…t.py:capture_context_read)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError (src/llm_wiki_cli/services…t.py:capture_context_read)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…t.py:capture_context_read)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. capture_context_read"]
@@ -232,7 +257,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

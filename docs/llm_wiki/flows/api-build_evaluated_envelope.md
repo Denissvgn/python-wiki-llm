@@ -114,6 +114,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 323; effect analysis evaluated: 219, partial: 0, unavailable: 104. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `build_evaluated_envelope` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…:build_evaluated_envelope)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError (src/llm_wiki_cli/services…:build_evaluated_envelope)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…:build_evaluated_envelope)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` |
+| `_extensions_copy` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…elope.py:_extensions_copy)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` |
+| `any (src/llm_wiki_cli/services…elope.py:_extensions_copy)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…elope.py:_extensions_copy)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` |
+| `_reject_machine_local_paths` | `available` | `evaluated` | `available` |
+
 ```mermaid
 flowchart LR
     s1["1. build_evaluated_envelope"]
@@ -182,7 +207,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

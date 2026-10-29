@@ -132,6 +132,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1246; effect analysis evaluated: 677, partial: 0, unavailable: 569. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `validate_knowledge_artifacts` | `available` | `evaluated` | `available` |
+| `validate_surface_index_bytes` | `available` | `evaluated` | `available` |
+| `_decode_json_object` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `KnowledgeArtifactError` | `unavailable` | `unavailable` | `unavailable` |
+| `content.decode` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `KnowledgeArtifactError` | `unavailable` | `unavailable` | `unavailable` |
+| `json.loads (src/llm_wiki_cli/services…ts.py:_decode_json_object)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_unique_json_object` | `available` | `evaluated` | `available` |
+| `KnowledgeArtifactError` | `unavailable` | `unavailable` | `unavailable` |
+| `_reject_json_constant` | `available` | `evaluated` | `available` |
+| `KnowledgeArtifactError` | `unavailable` | `unavailable` | `unavailable` |
+
 ```mermaid
 flowchart LR
     s1["1. validate_knowledge_artifacts"]
@@ -203,7 +228,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

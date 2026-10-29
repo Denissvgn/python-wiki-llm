@@ -80,6 +80,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 13; effect analysis evaluated: 5, partial: 0, unavailable: 8. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `runtime_consumed_inputs` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…py:runtime_consumed_inputs)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `source_snapshot.to_consumed_inputs` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_merge_explicit_consumed_input` | `available` | `evaluated` | `available` |
+| `KnowledgeGenerationError` | `unavailable` | `unavailable` | `unavailable` |
+| `KnowledgeGenerationError` | `unavailable` | `unavailable` | `unavailable` |
+| `is_valid_sha256` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…vidence.py:is_valid_sha256)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_SHA256_RE.fullmatch` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. runtime_consumed_inputs"]
@@ -147,7 +172,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

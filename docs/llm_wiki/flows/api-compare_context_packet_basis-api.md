@@ -107,6 +107,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 234; effect analysis evaluated: 114, partial: 0, unavailable: 120. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `compare_context_packet_basis (src/llm_wiki_cli/api.py)` | `available` | `evaluated` | `available` |
+| `compare_context_packet_basis (src/llm_wiki_cli/services/context_packet.py)` | `available` | `evaluated` | `available` |
+| `validate_context_packet` | `available` | `evaluated` | `available` |
+| `_coerce_packet_bytes` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `bytes (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ContextPacketMalformedError` | `unavailable` | `unavailable` | `unavailable` |
+| `len (src/llm_wiki_cli/services…t.py:_coerce_packet_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ContextPacketMalformedError` | `unavailable` | `unavailable` | `unavailable` |
+| `raw.startswith` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. compare_context_packet_basis (src/llm_wiki_cli/api.py)"]
@@ -175,7 +200,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

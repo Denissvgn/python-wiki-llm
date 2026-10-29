@@ -62,6 +62,31 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 13; effect analysis evaluated: 8, partial: 0, unavailable: 5. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `repository_identities_match` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…epository_identities_match)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…epository_identities_match)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_repository_identity` | `available` | `evaluated` | `available` |
+| `_nonempty_string` | `available` | `evaluated` | `available` |
+| `_string` | `available` | `evaluated` | `available` |
+| `require_string` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…lidation.py:require_string)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `value.encode` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `KnowledgeModelError` | `unavailable` | `unavailable` | `unavailable` |
+| `KnowledgeModelError` | `unavailable` | `unavailable` | `unavailable` |
+
 ```mermaid
 flowchart LR
     s1["1. repository_identities_match"]
@@ -131,7 +156,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

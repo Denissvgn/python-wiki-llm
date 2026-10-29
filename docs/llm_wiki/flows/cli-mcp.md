@@ -85,6 +85,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 26; effect analysis evaluated: 12, partial: 0, unavailable: 14. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `run` | `available` | `evaluated` | `available` |
+| `_mcp_service_export` | `available` | `evaluated` | `available` |
+| `globals().get` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `globals` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `getattr (src/llm_wiki_cli/commands…md.py:_mcp_service_export)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `globals` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_mcp_service_export` | `available` | `evaluated` | `available` |
+| `_mcp_service_export` | `available` | `evaluated` | `available` |
+| `_mcp_service_export` | `available` | `evaluated` | `available` |
+| `getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `bool (src/llm_wiki_cli/commands/mcp_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `getattr (src/llm_wiki_cli/commands/mcp_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. run"]

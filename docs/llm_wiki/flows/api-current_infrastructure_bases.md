@@ -105,6 +105,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 49; effect analysis evaluated: 40, partial: 0, unavailable: 9. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `current_infrastructure_bases` | `available` | `evaluated` | `available` |
+| `build_infrastructure_page_map` | `available` | `evaluated` | `available` |
+| `sorted (src/llm_wiki_cli/services…d_infrastructure_page_map)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `infrastructure_page_name` | `available` | `evaluated` | `available` |
+| `source_path.replace(…).replace(…).replace` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `source_path.replace(…).replace` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `source_path.replace` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `by_stem.setdefault(…).append` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `by_stem.setdefault` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `sorted (src/llm_wiki_cli/services…d_infrastructure_page_map)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `by_stem.items` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `len (src/llm_wiki_cli/services…d_infrastructure_page_map)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. current_infrastructure_bases"]
@@ -170,7 +195,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

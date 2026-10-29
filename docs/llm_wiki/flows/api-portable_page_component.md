@@ -69,6 +69,31 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 10; effect analysis evaluated: 5, partial: 0, unavailable: 5. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `portable_page_component` | `available` | `evaluated` | `available` |
+| `portable_page_component.<locals>.sanitize` | `available` | `evaluated` | `available` |
+| `str(…).strip` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `str` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `unicodedata.normalize (src/llm_wiki_cli/services…omponent.<locals>.sanitize)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_UNSAFE_PAGE_COMPONENT_RE.sub(…).strip` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_UNSAFE_PAGE_COMPONENT_RE.sub` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `re.sub(…).lstrip(…).rstrip` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `re.sub(…).lstrip` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `re.sub` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `safe.replace` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `is_portable_path_component` | `available` | `evaluated` | `available` |
+
 ```mermaid
 flowchart LR
     s1["1. portable_page_component"]
@@ -134,7 +159,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

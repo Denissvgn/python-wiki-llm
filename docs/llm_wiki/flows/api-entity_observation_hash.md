@@ -98,6 +98,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 130; effect analysis evaluated: 129, partial: 0, unavailable: 1. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `entity_observation_hash` | `available` | `evaluated` | `available` |
+| `_validate_inventory_complete` | `available` | `evaluated` | `available` |
+| `require_bool` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…alidation.py:require_bool)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `normalize_entity_observation` | `available` | `evaluated` | `available` |
+| `_validate_entity_coordinate` | `available` | `evaluated` | `available` |
+| `require_nonempty_text` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `contains_control_character` | `available` | `evaluated` | `available` |
+| `pattern.search` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. entity_observation_hash"]
@@ -167,7 +192,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

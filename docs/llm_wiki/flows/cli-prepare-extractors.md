@@ -113,6 +113,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 380; effect analysis evaluated: 251, partial: 0, unavailable: 129. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `run` | `available` | `evaluated` | `available` |
+| `getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_dedupe_languages` | `available` | `evaluated` | `available` |
+| `set (src/llm_wiki_cli/commands…_cmd.py:_dedupe_languages)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `result.append` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `seen.add` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `bool (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `getattr (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `bool (src/llm_wiki_cli/commands…are_extractors_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. run"]

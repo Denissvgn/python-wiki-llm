@@ -151,9 +151,9 @@ sequenceDiagram
     p3-->>p30: application.changed_files.extend(selected)
 ```
 
-> Call sequence diagram shows 30 of 6153 interactions; 6123 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 6164 interactions; 6134 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 2166 (2165 omitted); unresolved 1 of 1849 (1848 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 2171 (2170 omitted); unresolved 1 of 1852 (1851 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -167,7 +167,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/commands/sync_cmd.py:_sync_run_options_from_args` | 2 | [src/llm_wiki_cli/services/inventory_cache.py](../modules/inventory_cache.md) | internal | 1 |
 | `src/llm_wiki_cli/services/extraction_jobs.py:extraction_job_request_from_args` | 28 | - | external | 5 |
 | `src/llm_wiki_cli/services/extraction_jobs.py:extraction_job_request_from_args` | 28 | [src/llm_wiki_cli/services/extraction_jobs.py](../modules/extraction_jobs.md) | internal | 1 |
-> Omission summary shows 8 of 1376 groups; 1368 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1379 groups; 1371 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -175,6 +175,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 2142; effect analysis evaluated: 1566, partial: 0, unavailable: 576. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `run` | `available` | `evaluated` | `available` |
+| `_sync_run_options_from_args` | `available` | `evaluated` | `available` |
+| `getattr (src/llm_wiki_cli/commands…ync_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path (src/llm_wiki_cli/commands…ync_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `getattr (src/llm_wiki_cli/commands…ync_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `bool (src/llm_wiki_cli/commands…ync_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `getattr (src/llm_wiki_cli/commands…ync_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `bool (src/llm_wiki_cli/commands…ync_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `getattr (src/llm_wiki_cli/commands…ync_run_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_cache_options_from_args` | `available` | `evaluated` | `available` |
+| `cache_options_from_args` | `available` | `evaluated` | `available` |
+| `bool (src/llm_wiki_cli/services…y:cache_options_from_args)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. run"]

@@ -141,9 +141,9 @@ sequenceDiagram
     p0-->>p30: core.validate_schema (src/llm_wiki_cli/api.py:acknowledge_maintenance)('maintenance-event-v1', {...})
 ```
 
-> Call sequence diagram shows 30 of 2879 interactions; 2849 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2886 interactions; 2856 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 969 (968 omitted); unresolved 1 of 689 (688 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 971 (970 omitted); unresolved 1 of 691 (690 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -157,7 +157,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/api.py:acknowledge_maintenance` | 1 | - | unresolved | 2 |
 | `src/llm_wiki_cli/services/maintenance_state.py:_identity` | 18 | - | external | 2 |
 | `src/llm_wiki_cli/services/maintenance_state.py:_identity` | 18 | [src/llm_wiki_cli/services/maintenance_shapes.py](../modules/maintenance_shapes.md) | internal | 2 |
-> Omission summary shows 8 of 683 groups; 675 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 686 groups; 678 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -165,6 +165,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1225; effect analysis evaluated: 854, partial: 0, unavailable: 371. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `acknowledge_maintenance` | `available` | `evaluated` | `available` |
+| `type (src/llm_wiki_cli/api.py:acknowledge_maintenance)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ValueError (src/llm_wiki_cli/api.py:acknowledge_maintenance)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_detached` | `available` | `evaluated` | `available` |
+| `deepcopy (src/llm_wiki_cli/services…enance_state.py:_detached)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `MaintenanceError` | `unavailable` | `unavailable` | `unavailable` |
+| `require` | `available` | `evaluated` | `available` |
+| `MaintenanceError` | `unavailable` | `unavailable` | `unavailable` |
+| `type (src/llm_wiki_cli/services…enance_state.py:_detached)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…enance_state.py:_detached)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `maintenance_core` | `available` | `evaluated` | `available` |
+| `MaintenanceCore` | `unavailable` | `unavailable` | `unavailable` |
+
 ```mermaid
 flowchart LR
     s1["1. acknowledge_maintenance"]
@@ -234,7 +259,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

@@ -96,6 +96,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 44; effect analysis evaluated: 17, partial: 0, unavailable: 27. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `prune_manifest_for_source_selection` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…fest_for_source_selection)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `SyncManifestError` | `unavailable` | `unavailable` | `unavailable` |
+| `SourceSelectionPruneResult` | `unavailable` | `unavailable` | `unavailable` |
+| `SyncManifestError` | `unavailable` | `unavailable` | `unavailable` |
+| `set (src/llm_wiki_cli/services…fest_for_source_selection)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `source_paths.update` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `manifest.page_source_mappings.values` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `tuple (src/llm_wiki_cli/services…fest_for_source_selection)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `sorted (src/llm_wiki_cli/services…fest_for_source_selection)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `is_selected` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `SourceSelectionPruneResult` | `unavailable` | `unavailable` | `unavailable` |
+
 ```mermaid
 flowchart LR
     s1["1. prune_manifest_for_source_selection"]

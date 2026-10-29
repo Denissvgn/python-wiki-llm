@@ -1,6 +1,6 @@
 # _EntityModuleResult
 
-**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4675`
+**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4730`
 **Kind:** Class
 **Bases:** —
 **Module:** [bootstrap_runtime](../modules/bootstrap_runtime.md)

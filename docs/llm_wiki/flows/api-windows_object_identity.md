@@ -36,6 +36,28 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 4; effect analysis evaluated: 2, partial: 0, unavailable: 2. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `windows_object_identity` | `available` | `evaluated` | `available` |
+| `windows_object_identity_from_values` | `available` | `evaluated` | `available` |
+| `WindowsIdentityUnavailableError` | `unavailable` | `unavailable` | `unavailable` |
+| `WindowsObjectIdentity` | `unavailable` | `unavailable` | `unavailable` |
+| `int (src/llm_wiki_cli/services…bject_identity_from_values)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `int (src/llm_wiki_cli/services…py:windows_object_identity)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `getattr` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `int (src/llm_wiki_cli/services…py:windows_object_identity)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `getattr` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. windows_object_identity"]
@@ -90,7 +112,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

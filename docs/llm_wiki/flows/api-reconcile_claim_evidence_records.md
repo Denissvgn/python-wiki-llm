@@ -98,6 +98,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 161; effect analysis evaluated: 111, partial: 0, unavailable: 50. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `reconcile_claim_evidence_records` | `available` | `evaluated` | `available` |
+| `_normalize_claim_record` | `available` | `evaluated` | `available` |
+| `_mapping` | `available` | `evaluated` | `available` |
+| `require_mapping` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…dation.py:require_mapping)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `key.encode` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `DocumentationClaimEvidenceError` | `unavailable` | `unavailable` | `unavailable` |
+| `_exact_fields` | `available` | `evaluated` | `available` |
+| `require_exact_fields` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `str (src/llm_wiki_cli/services…n.py:require_exact_fields)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. reconcile_claim_evidence_records"]

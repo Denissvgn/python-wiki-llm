@@ -82,6 +82,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 10; effect analysis evaluated: 4, partial: 0, unavailable: 6. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `windows_current_user_sid` | `available` | `evaluated` | `available` |
+| `WindowsSecurityGuardError` | `unavailable` | `unavailable` | `unavailable` |
+| `_current_windows_user_sid` | `available` | `evaluated` | `available` |
+| `ctypes.WinDLL (src/llm_wiki_cli/services…:_current_windows_user_sid)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ctypes.WinDLL (src/llm_wiki_cli/services…:_current_windows_user_sid)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ctypes.POINTER (src/llm_wiki_cli/services…:_current_windows_user_sid)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ctypes.POINTER (src/llm_wiki_cli/services…:_current_windows_user_sid)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `wintypes.HANDLE (src/llm_wiki_cli/services…:_current_windows_user_sid)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `open_process_token` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `get_current_process` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ctypes.byref (src/llm_wiki_cli/services…:_current_windows_user_sid)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ctypes.WinError (src/llm_wiki_cli/services…:_current_windows_user_sid)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. windows_current_user_sid"]
@@ -147,7 +172,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

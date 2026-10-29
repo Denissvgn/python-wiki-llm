@@ -38,6 +38,28 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 4; effect analysis evaluated: 3, partial: 0, unavailable: 1. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `classify_section_ownership` | `available` | `evaluated` | `available` |
+| `_coerce_page_kind` | `available` | `evaluated` | `available` |
+| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `PageKind` | `unavailable` | `unavailable` | `unavailable` |
+| `ValueError` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_top_level_policy` | `available` | `evaluated` | `available` |
+| `title.casefold` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_LOG_DATE_HEADING_RE.fullmatch` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_HTTP_OPERATION_HEADING_RE.match` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. classify_section_ownership"]
@@ -92,7 +114,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

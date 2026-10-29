@@ -150,9 +150,9 @@ sequenceDiagram
     p0-->>p30: report.count (src/llm_wiki_cli/services/lint_service.py:run)('extractor_failure')
 ```
 
-> Call sequence diagram shows 30 of 3492 interactions; 3462 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3499 interactions; 3469 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1068 (1067 omitted); unresolved 1 of 1162 (1161 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1070 (1069 omitted); unresolved 1 of 1164 (1163 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -166,7 +166,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_source_root` | 24 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 24 | - | external | 11 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 36 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
-> Omission summary shows 8 of 922 groups; 914 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 925 groups; 917 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -174,6 +174,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1266; effect analysis evaluated: 1013, partial: 0, unavailable: 253. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `run` | `available` | `evaluated` | `available` |
+| `Path (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `getattr (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `bool (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `getattr (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `bool (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `getattr (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `bool (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `getattr (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `bool (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `getattr (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `bool (src/llm_wiki_cli/services/lint_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. run"]

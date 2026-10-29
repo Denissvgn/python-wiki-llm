@@ -98,6 +98,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 86; effect analysis evaluated: 45, partial: 0, unavailable: 41. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `unlink_guarded_bytes` | `available` | `evaluated` | `available` |
+| `before_wiki_write` | `available` | `evaluated` | `available` |
+| `ACTIVE_WRITE_BASIS.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `basis.before_write` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ACTIVE_SYNC_JOURNAL.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `journal.before_write` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ACTIVE_BOOTSTRAP_JOURNAL.get (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `bootstrap.before_write` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path (src/llm_wiki_cli/services…asis.py:before_wiki_write)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_unlink_guarded_bytes` | `available` | `evaluated` | `available` |
+
 ```mermaid
 flowchart LR
     s1["1. unlink_guarded_bytes"]

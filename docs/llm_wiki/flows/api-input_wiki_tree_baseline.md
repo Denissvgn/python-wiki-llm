@@ -98,6 +98,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 140; effect analysis evaluated: 88, partial: 0, unavailable: 52. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `input_wiki_tree_baseline` | `available` | `evaluated` | `available` |
+| `capture_tree_baseline` | `available` | `evaluated` | `available` |
+| `limits.items` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `DocumentationPolicyError` | `unavailable` | `unavailable` | `unavailable` |
+| `_resolve_existing_directory` | `available` | `evaluated` | `available` |
+| `Path(…).expanduser (src/llm_wiki_cli/services…esolve_existing_directory)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path (src/llm_wiki_cli/services…esolve_existing_directory)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_lstat` | `available` | `evaluated` | `available` |
+| `os.lstat (src/llm_wiki_cli/services…entation_policy.py:_lstat)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `DocumentationPolicyError` | `unavailable` | `unavailable` | `unavailable` |
+
 ```mermaid
 flowchart LR
     s1["1. input_wiki_tree_baseline"]
@@ -166,7 +191,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

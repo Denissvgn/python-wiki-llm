@@ -106,6 +106,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 349; effect analysis evaluated: 307, partial: 0, unavailable: 42. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `projection_concept_summary` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…rojection_concept_summary)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_validate_projection_structure` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…date_projection_structure)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `KnowledgeProjectionError` | `unavailable` | `unavailable` | `unavailable` |
+| `KnowledgeProjectionError` | `unavailable` | `unavailable` | `unavailable` |
+| `isinstance (src/llm_wiki_cli/services…date_projection_structure)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `KnowledgeProjectionError` | `unavailable` | `unavailable` | `unavailable` |
+| `_require_sha256` | `available` | `evaluated` | `available` |
+| `require_sha256` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…idation.py:require_sha256)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. projection_concept_summary"]
@@ -175,7 +200,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

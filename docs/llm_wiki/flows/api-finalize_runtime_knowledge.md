@@ -144,6 +144,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1579; effect analysis evaluated: 955, partial: 0, unavailable: 624. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `finalize_runtime_knowledge` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…inalize_runtime_knowledge)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError (src/llm_wiki_cli/services…inalize_runtime_knowledge)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `capture_committed_knowledge` | `available` | `evaluated` | `available` |
+| `Path(…).resolve (src/llm_wiki_cli/services…pture_committed_knowledge)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path (src/llm_wiki_cli/services…pture_committed_knowledge)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `guard_maintenance_owner` | `available` | `evaluated` | `available` |
+| `_absolute_path` | `available` | `evaluated` | `available` |
+| `Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `first_unsafe_path_component` | `available` | `evaluated` | `available` |
+| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. finalize_runtime_knowledge"]

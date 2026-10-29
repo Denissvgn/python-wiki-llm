@@ -94,6 +94,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 30; effect analysis evaluated: 15, partial: 0, unavailable: 15. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `current_review_evidence` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…py:current_review_evidence)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ReviewEvidence` | `unavailable` | `unavailable` | `unavailable` |
+| `ReviewEvidence` | `unavailable` | `unavailable` | `unavailable` |
+| `_review_evidence` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…rnance.py:_review_evidence)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `GovernanceError` | `unavailable` | `unavailable` | `unavailable` |
+| `GovernanceError` | `unavailable` | `unavailable` | `unavailable` |
+| `GovernanceError` | `unavailable` | `unavailable` | `unavailable` |
+| `ReviewEvidence` | `unavailable` | `unavailable` | `unavailable` |
+| `GovernanceError` | `unavailable` | `unavailable` | `unavailable` |
+
 ```mermaid
 flowchart LR
     s1["1. current_review_evidence"]
@@ -165,7 +190,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

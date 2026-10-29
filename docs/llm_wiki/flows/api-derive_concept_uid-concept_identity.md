@@ -95,6 +95,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 34; effect analysis evaluated: 14, partial: 0, unavailable: 20. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `derive_concept_uid` | `available` | `evaluated` | `available` |
+| `validate_bundle_id` | `available` | `evaluated` | `available` |
+| `_machine_text` | `available` | `evaluated` | `available` |
+| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` |
+| `len` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` |
+| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `any (src/llm_wiki_cli/services…_identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `character.isspace (src/llm_wiki_cli/services…_identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ConceptIdentityError` | `unavailable` | `unavailable` | `unavailable` |
+| `unicodedata.normalize (src/llm_wiki_cli/services…_identity.py:_machine_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. derive_concept_uid"]
@@ -163,7 +188,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

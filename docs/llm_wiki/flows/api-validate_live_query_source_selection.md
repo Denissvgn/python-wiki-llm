@@ -114,6 +114,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 260; effect analysis evaluated: 144, partial: 0, unavailable: 116. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `validate_live_query_source_selection` | `available` | `evaluated` | `available` |
+| `SyncManifest.load` | `available` | `evaluated` | `available` |
+| `manifest_path.exists` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `FileNotFoundError` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `json.loads (src/llm_wiki_cli/services…fest.py:SyncManifest.load)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `manifest_path.read_text` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…fest.py:SyncManifest.load)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `data.get (src/llm_wiki_cli/services…fest.py:SyncManifest.load)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `StorageReadSession` | `unavailable` | `unavailable` | `unavailable` |
+| `StorageReadSession.read` | `available` | `evaluated` | `available` |
+| `_require_relative_name` | `available` | `evaluated` | `available` |
+| `is_portable_relative_path` | `available` | `evaluated` | `available` |
+
 ```mermaid
 flowchart LR
     s1["1. validate_live_query_source_selection"]

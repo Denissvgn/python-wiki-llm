@@ -135,9 +135,9 @@ sequenceDiagram
     p0-->>p30: report.to_payload(**=...)
 ```
 
-> Call sequence diagram shows 30 of 1725 interactions; 1695 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1727 interactions; 1697 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 557 (556 omitted); unresolved 1 of 505 (504 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 557 (556 omitted); unresolved 1 of 506 (505 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -159,6 +159,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 665; effect analysis evaluated: 565, partial: 0, unavailable: 100. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `doctor` | `available` | `evaluated` | `available` |
+| `build_doctor_report` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ValueError (src/llm_wiki_cli/services…ce.py:build_doctor_report)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…ce.py:build_doctor_report)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError (src/llm_wiki_cli/services…ce.py:build_doctor_report)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ValueError (src/llm_wiki_cli/services…ce.py:build_doctor_report)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `str (src/llm_wiki_cli/services…ce.py:build_doctor_report)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. doctor"]
@@ -223,7 +248,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

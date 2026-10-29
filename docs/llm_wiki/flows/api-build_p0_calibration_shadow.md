@@ -87,6 +87,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 44; effect analysis evaluated: 10, partial: 0, unavailable: 34. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `build_p0_calibration_shadow (src/llm_wiki_cli/services…ation_run/dependencies.py)` | `available` | `evaluated` | `available` |
+| `build_p0_calibration_shadow (src/llm_wiki_cli/services/calibration/contracts.py)` | `available` | `evaluated` | `available` |
+| `validate_flow_evidence_census` | `available` | `evaluated` | `available` |
+| `payload.get` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `DocumentationCalibrationError` | `unavailable` | `unavailable` | `unavailable` |
+| `payload.get` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `DocumentationCalibrationError` | `unavailable` | `unavailable` | `unavailable` |
+| `payload.get` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…date_flow_evidence_census)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…date_flow_evidence_census)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `population.get` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `DocumentationCalibrationError` | `unavailable` | `unavailable` | `unavailable` |
+
 ```mermaid
 flowchart LR
     s1["1. build_p0_calibration_shadow (src/llm_wiki_cli/services…ation_run/dependencies.py)"]

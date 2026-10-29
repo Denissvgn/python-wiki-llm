@@ -46,6 +46,31 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 7; effect analysis evaluated: 4, partial: 0, unavailable: 3. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `require_process_host_broker_authenticator` | `available` | `evaluated` | `available` |
+| `_HOST_BROKER_AUTHENTICATOR.get` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `HostBrokerAuthenticationUnavailable` | `unavailable` | `unavailable` | `unavailable` |
+| `isinstance (src/llm_wiki_cli/services…_host_broker_authenticator)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `HostBrokerAuthenticationUnavailable` | `unavailable` | `unavailable` | `unavailable` |
+| `_require_bounded_text` | `available` | `evaluated` | `available` |
+| `require_bounded_text` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…on.py:require_bounded_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `len` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `len` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `contains_control_character` | `available` | `evaluated` | `available` |
+
 ```mermaid
 flowchart LR
     s1["1. require_process_host_broker_authenticator"]
@@ -114,7 +139,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

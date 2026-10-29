@@ -94,6 +94,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 23; effect analysis evaluated: 16, partial: 0, unavailable: 7. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `normalize_legacy_portable_relative_path` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…acy_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `value.strip().replace` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `PurePosixPath (src/llm_wiki_cli/services…acy_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `normalized_input.startswith` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `path.is_absolute (src/llm_wiki_cli/services…acy_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_WINDOWS_ABSOLUTE_RE.match (src/llm_wiki_cli/services…acy_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_WINDOWS_DRIVE_PREFIX_RE.match` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `path.as_posix (src/llm_wiki_cli/services…acy_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `require_portable_relative_path` | `available` | `evaluated` | `available` |
+
 ```mermaid
 flowchart LR
     s1["1. normalize_legacy_portable_relative_path"]
@@ -158,7 +183,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

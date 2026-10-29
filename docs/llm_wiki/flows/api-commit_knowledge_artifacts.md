@@ -117,6 +117,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 346; effect analysis evaluated: 203, partial: 0, unavailable: 143. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `commit_knowledge_artifacts` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `callable (src/llm_wiki_cli/services…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError (src/llm_wiki_cli/services…ommit_knowledge_artifacts)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `storage_writer_lock` | `available` | `evaluated` | `available` |
+| `_absolute_path` | `available` | `evaluated` | `available` |
+| `Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `first_unsafe_path_component` | `available` | `evaluated` | `available` |
+
 ```mermaid
 flowchart LR
     s1["1. commit_knowledge_artifacts"]

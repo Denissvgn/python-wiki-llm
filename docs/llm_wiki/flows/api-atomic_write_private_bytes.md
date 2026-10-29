@@ -98,6 +98,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 120; effect analysis evaluated: 69, partial: 0, unavailable: 51. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `atomic_write_private_bytes` | `available` | `evaluated` | `available` |
+| `Path (src/llm_wiki_cli/services…tomic_write_private_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `target.is_absolute` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `OSError (src/llm_wiki_cli/services…tomic_write_private_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `OSError (src/llm_wiki_cli/services…tomic_write_private_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…tomic_write_private_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError (src/llm_wiki_cli/services…tomic_write_private_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_atomic_write_private_bytes_windows` | `available` | `evaluated` | `available` |
+| `uuid.uuid4 (src/llm_wiki_cli/services…ite_private_bytes_windows)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `uuid.uuid4 (src/llm_wiki_cli/services…ite_private_bytes_windows)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `guard_windows_directory_chain` | `available` | `evaluated` | `available` |
+| `WindowsDirectoryGuardError` | `unavailable` | `unavailable` | `unavailable` |
+
 ```mermaid
 flowchart LR
     s1["1. atomic_write_private_bytes"]

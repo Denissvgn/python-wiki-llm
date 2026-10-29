@@ -98,6 +98,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 95; effect analysis evaluated: 78, partial: 0, unavailable: 17. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `run` | `available` | `evaluated` | `available` |
+| `getattr` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `getattr` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `list_bundled_skills` | `available` | `evaluated` | `available` |
+| `root.is_dir` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `sorted (src/llm_wiki_cli/services…ls.py:list_bundled_skills)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `root.iterdir` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `skill_dir.is_dir` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `manifest.is_file` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_parse_skill_frontmatter` | `available` | `evaluated` | `available` |
+| `content.replace(…).replace(…).split` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `content.replace(…).replace` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. run"]

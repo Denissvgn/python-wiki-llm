@@ -108,6 +108,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 615; effect analysis evaluated: 373, partial: 0, unavailable: 242. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `build_calibration_agent_packet` | `available` | `evaluated` | `available` |
+| `_require_choice` | `available` | `evaluated` | `available` |
+| `require_choice` | `available` | `evaluated` | `available` |
+| `require_trimmed_text` | `available` | `evaluated` | `available` |
+| `require_nonempty_text` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `contains_control_character` | `available` | `evaluated` | `available` |
+| `pattern.search` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `frozenset (src/llm_wiki_cli/services…idation.py:require_choice)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `choice_error` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `P0CalibrationSchemaError` | `unavailable` | `unavailable` | `unavailable` |
+
 ```mermaid
 flowchart LR
     s1["1. build_calibration_agent_packet"]
@@ -177,7 +202,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

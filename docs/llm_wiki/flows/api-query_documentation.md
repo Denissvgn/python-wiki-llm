@@ -143,6 +143,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 847; effect analysis evaluated: 574, partial: 0, unavailable: 273. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `query_documentation` | `available` | `evaluated` | `available` |
+| `_validate_documentation_query_request` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/api.py:_…cumentation_query_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` |
+| `next (src/llm_wiki_cli/api.py:_…cumentation_query_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/api.py:_…cumentation_query_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` |
+| `request.get (src/llm_wiki_cli/api.py:_…cumentation_query_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/api.py:_…cumentation_query_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `', '.join (src/llm_wiki_cli/api.py:_…cumentation_query_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `repr (src/llm_wiki_cli/api.py:_…cumentation_query_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` |
+
 ```mermaid
 flowchart LR
     s1["1. query_documentation"]

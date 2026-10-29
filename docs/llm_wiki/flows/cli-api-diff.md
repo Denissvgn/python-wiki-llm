@@ -108,6 +108,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 110; effect analysis evaluated: 76, partial: 0, unavailable: 34. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `run` | `available` | `evaluated` | `available` |
+| `validate_source_root` | `available` | `evaluated` | `available` |
+| `validate_path` | `available` | `evaluated` | `available` |
+| `PathValidationError` | `unavailable` | `unavailable` | `unavailable` |
+| `(…).resolve` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path.cwd().resolve` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `resolved.relative_to (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `PathValidationError` | `unavailable` | `unavailable` | `unavailable` |
+| `Path(…).expanduser (src/llm_wiki_cli/config.py:validate_source_root)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path (src/llm_wiki_cli/config.py:validate_source_root)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. run"]

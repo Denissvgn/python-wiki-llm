@@ -164,7 +164,7 @@
             "src/llm_wiki_cli/services/knowledge_reuse.py",
             "src/llm_wiki_cli/services/canonical_json.py"
           ],
-          "step_count": 2880,
+          "step_count": 2887,
           "truncated": true
         }
       },
@@ -654,7 +654,7 @@
             "src/llm_wiki_cli/services/canonical_json.py",
             "src/llm_wiki_cli/services/wiki_write_basis.py"
           ],
-          "step_count": 3159,
+          "step_count": 3166,
           "truncated": true
         }
       },
@@ -1797,37 +1797,37 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 6715,
+              "line": 6769,
               "step": "execute_bootstrap",
               "target": "io.StringIO"
             },
             {
               "kind": "unresolved_call",
-              "line": 4806,
+              "line": 4861,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.source_root).expanduser().resolve"
             },
             {
               "kind": "unresolved_call",
-              "line": 4806,
+              "line": 4861,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.source_root).expanduser"
             },
             {
               "kind": "unresolved_call",
-              "line": 4807,
+              "line": 4862,
               "step": "_bootstrap_run_options_from_request",
               "target": "source_root.is_dir"
             },
             {
               "kind": "unresolved_call",
-              "line": 4811,
+              "line": 4866,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.wiki_root).expanduser().resolve"
             },
             {
               "kind": "unresolved_call",
-              "line": 4811,
+              "line": 4866,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.wiki_root).expanduser"
             },
@@ -2246,7 +2246,7 @@
             "src/llm_wiki_cli/services/bootstrap_runtime.py",
             "src/llm_wiki_cli/services/packet_field_policy.py"
           ],
-          "step_count": 3582,
+          "step_count": 3600,
           "truncated": true
         }
       },
@@ -2519,7 +2519,7 @@
             "src/llm_wiki_cli/services/implementation_evidence.py",
             "src/llm_wiki_cli/services/maintenance_status.py"
           ],
-          "step_count": 2205,
+          "step_count": 2212,
           "truncated": true
         }
       },
@@ -2904,7 +2904,7 @@
             "src/llm_wiki_cli/services/canonical_pages.py",
             "src/llm_wiki_cli/services/health_policy.py"
           ],
-          "step_count": 3385,
+          "step_count": 3392,
           "truncated": true
         }
       },
@@ -4647,7 +4647,7 @@
             "src/llm_wiki_cli/services/maintenance_evidence.py",
             "src/llm_wiki_cli/services/packet_field_policy.py"
           ],
-          "step_count": 3735,
+          "step_count": 3753,
           "truncated": true
         }
       },
@@ -4793,7 +4793,7 @@
             "src/llm_wiki_cli/services/knowledge_observability.py",
             "src/llm_wiki_cli/services/packet_field_policy.py"
           ],
-          "step_count": 5541,
+          "step_count": 5559,
           "truncated": true
         }
       },
@@ -5902,7 +5902,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/markdown_sections.py"
           ],
-          "step_count": 5364,
+          "step_count": 5382,
           "truncated": true
         }
       },
@@ -9096,7 +9096,7 @@
             "src/llm_wiki_cli/services/sync_analysis.py",
             "src/llm_wiki_cli/services/health_policy.py"
           ],
-          "step_count": 1726,
+          "step_count": 1728,
           "truncated": true
         }
       },
@@ -10568,7 +10568,7 @@
             "src/llm_wiki_cli/services/dockerfile_parser.py",
             "src/llm_wiki_cli/services/yaml_syntax.py"
           ],
-          "step_count": 3130,
+          "step_count": 3157,
           "truncated": true
         }
       },
@@ -11849,7 +11849,7 @@
             "src/llm_wiki_cli/services/dependency_versions.py",
             "src/llm_wiki_cli/services/maintenance_service.py"
           ],
-          "step_count": 4222,
+          "step_count": 4240,
           "truncated": true
         }
       },
@@ -11993,7 +11993,7 @@
             "src/llm_wiki_cli/services/dependencies.py",
             "src/llm_wiki_cli/services/dependency_versions.py"
           ],
-          "step_count": 2455,
+          "step_count": 2462,
           "truncated": true
         }
       },
@@ -13544,7 +13544,7 @@
             "src/llm_wiki_cli/services/maintenance_evidence.py",
             "src/llm_wiki_cli/services/knowledge_coverage.py"
           ],
-          "step_count": 2711,
+          "step_count": 2729,
           "truncated": true
         }
       },
@@ -20591,7 +20591,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/change_selection.py"
           ],
-          "step_count": 2388,
+          "step_count": 2395,
           "truncated": true
         }
       },
@@ -20723,7 +20723,7 @@
             "src/llm_wiki_cli/services/maintenance_evidence.py",
             "src/llm_wiki_cli/services/change_selection.py"
           ],
-          "step_count": 3988,
+          "step_count": 4006,
           "truncated": true
         }
       },
@@ -21430,7 +21430,7 @@
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4606,
+          "step_count": 4613,
           "truncated": true
         }
       },
@@ -25083,7 +25083,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4455,
+          "step_count": 4462,
           "truncated": true
         }
       },
@@ -31662,7 +31662,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 6760,
+              "line": 6814,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -31775,7 +31775,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/maintenance_evidence.py"
           ],
-          "step_count": 3518,
+          "step_count": 3523,
           "truncated": true
         }
       },
@@ -32132,7 +32132,7 @@
             "src/llm_wiki_cli/services/health_summary.py",
             "src/llm_wiki_cli/services/metrics.py"
           ],
-          "step_count": 4555,
+          "step_count": 4562,
           "truncated": true
         }
       },
@@ -32313,7 +32313,7 @@
             "src/llm_wiki_cli/services/wiki_write_basis.py",
             "src/llm_wiki_cli/services/extraction_jobs.py"
           ],
-          "step_count": 1504,
+          "step_count": 1506,
           "truncated": true
         }
       },
@@ -32637,7 +32637,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2440,
+              "line": 2445,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32645,7 +32645,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2444,
+              "line": 2449,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32653,7 +32653,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2446,
+              "line": 2451,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32661,7 +32661,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2448,
+              "line": 2453,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32669,15 +32669,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2474,
-              "step": "run",
-              "step_index": 1,
-              "target": "print"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "output",
-              "line": 2476,
+              "line": 2479,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32693,43 +32685,21 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2485,
+              "line": 2486,
+              "step": "run",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 2490,
               "step": "run",
               "step_index": 1,
               "target": "print"
             }
           ],
           "gaps": [
-            {
-              "kind": "external_call",
-              "line": 2424,
-              "step": "run",
-              "target": "getattr"
-            },
-            {
-              "kind": "external_call",
-              "line": 2425,
-              "step": "run",
-              "target": "getattr"
-            },
-            {
-              "kind": "external_call",
-              "line": 2426,
-              "step": "run",
-              "target": "getattr"
-            },
-            {
-              "kind": "external_call",
-              "line": 2427,
-              "step": "run",
-              "target": "getattr"
-            },
-            {
-              "kind": "external_call",
-              "line": 2428,
-              "step": "run",
-              "target": "getattr"
-            },
             {
               "kind": "external_call",
               "line": 2429,
@@ -32763,6 +32733,36 @@
             {
               "kind": "external_call",
               "line": 2434,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 2435,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 2436,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 2437,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 2438,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 2439,
               "step": "run",
               "target": "getattr"
             },
@@ -32815,7 +32815,7 @@
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/wiki_write_basis.py"
           ],
-          "step_count": 3206,
+          "step_count": 3233,
           "truncated": true
         }
       },
@@ -33193,7 +33193,7 @@
             "src/llm_wiki_cli/services/rendering_lifecycle.py",
             "src/llm_wiki_cli/services/paths.py"
           ],
-          "step_count": 4087,
+          "step_count": 4089,
           "truncated": true
         }
       },
@@ -33628,7 +33628,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4455,
+          "step_count": 4462,
           "truncated": true
         }
       },
@@ -33796,7 +33796,7 @@
             "src/llm_wiki_cli/services/canonical_pages.py",
             "src/llm_wiki_cli/services/metrics.py"
           ],
-          "step_count": 3493,
+          "step_count": 3500,
           "truncated": true
         }
       },
@@ -33983,7 +33983,7 @@
             "src/llm_wiki_cli/services/request_json.py",
             "src/llm_wiki_cli/services/sync_recovery.py"
           ],
-          "step_count": 2547,
+          "step_count": 2549,
           "truncated": true
         }
       },
@@ -35166,7 +35166,7 @@
             "src/llm_wiki_cli/services/markdown_sections.py",
             "src/llm_wiki_cli/services/change_selection.py"
           ],
-          "step_count": 4274,
+          "step_count": 4292,
           "truncated": true
         }
       },
@@ -36261,7 +36261,7 @@
             "src/llm_wiki_cli/services/wiki_surface_index.py",
             "src/llm_wiki_cli/services/sync_recovery.py"
           ],
-          "step_count": 6154,
+          "step_count": 6165,
           "truncated": true
         }
       },
@@ -37103,7 +37103,7 @@
             "src/llm_wiki_cli/services/canonical_json.py",
             "src/llm_wiki_cli/services/rendering_lifecycle.py"
           ],
-          "step_count": 3961,
+          "step_count": 3963,
           "truncated": true
         }
       },
@@ -68169,5 +68169,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:9fb49baf4eb8ebc581ffb2eff5a3f012ad3ec17d1f0ed75698e07c4280143429"
+  "source_hash": "sha256:660c83a88f7743d3f93c220e4777a03b893e861bcb53f044ffd5c4ec6e4afae7"
 }

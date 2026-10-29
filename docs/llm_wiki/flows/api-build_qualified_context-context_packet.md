@@ -147,9 +147,9 @@ sequenceDiagram
     p0-->>p30: normalized.get (src/llm_wiki_cli/services…y:build_qualified_context)('knowledge_mode')
 ```
 
-> Call sequence diagram shows 30 of 5540 interactions; 5510 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 5558 interactions; 5528 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1750 (1749 omitted); unresolved 1 of 1845 (1844 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1754 (1753 omitted); unresolved 1 of 1856 (1855 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -163,7 +163,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 9 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 1 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 12 | - | external | 11 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 12 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 12 |
-> Omission summary shows 8 of 1324 groups; 1316 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1329 groups; 1321 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -171,6 +171,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1949; effect analysis evaluated: 1361, partial: 0, unavailable: 588. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `build_qualified_context` | `available` | `evaluated` | `available` |
+| `_normalized_request` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…et.py:_normalized_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ProtocolRequestError` | `unavailable` | `unavailable` | `unavailable` |
+| `deepcopy (src/llm_wiki_cli/services…et.py:_normalized_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `dict (src/llm_wiki_cli/services…et.py:_normalized_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `candidate.setdefault` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `candidate.setdefault` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_validate_protocol_request` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…validate_protocol_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `data.get (src/llm_wiki_cli/services…validate_protocol_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_validate_protocol_request_impl` | `available` | `evaluated` | `available` |
+
 ```mermaid
 flowchart LR
     s1["1. build_qualified_context"]
@@ -238,7 +263,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

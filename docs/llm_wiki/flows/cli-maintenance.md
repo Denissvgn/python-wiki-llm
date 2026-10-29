@@ -137,9 +137,9 @@ sequenceDiagram
     p9-->>p30: result.get('requires_sync')
 ```
 
-> Call sequence diagram shows 30 of 2546 interactions; 2516 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2548 interactions; 2518 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 841 (840 omitted); unresolved 1 of 548 (547 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 841 (840 omitted); unresolved 1 of 549 (548 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -161,6 +161,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1159; effect analysis evaluated: 796, partial: 0, unavailable: 363. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `run` | `available` | `evaluated` | `available` |
+| `adopt_maintenance` | `available` | `evaluated` | `available` |
+| `type (src/llm_wiki_cli/api.py:adopt_maintenance)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ValueError (src/llm_wiki_cli/api.py:adopt_maintenance)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `cast (src/llm_wiki_cli/api.py:adopt_maintenance)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `adopt_maintenance_authority` | `available` | `evaluated` | `available` |
+| `_absolute_path` | `available` | `evaluated` | `available` |
+| `Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `first_unsafe_path_component` | `available` | `evaluated` | `available` |
+| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `os.fspath (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. run"]

@@ -141,9 +141,9 @@ sequenceDiagram
     p1-->>p30: captured.source_snapshot.root.resolve
 ```
 
-> Call sequence diagram shows 30 of 3158 interactions; 3128 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3165 interactions; 3135 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1079 (1078 omitted); unresolved 1 of 732 (731 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1081 (1080 omitted); unresolved 1 of 734 (733 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -157,7 +157,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 6 | [src/llm_wiki_cli/services/knowledge_storage.py](../modules/knowledge_storage.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 6 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/maintenance_service.py:adopt_maintenance_authority` | 5 | [src/llm_wiki_cli/services/knowledge_storage_io.py](../modules/knowledge_storage_io.md) | internal | 1 |
-> Omission summary shows 8 of 752 groups; 744 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 755 groups; 747 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -165,6 +165,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1351; effect analysis evaluated: 922, partial: 0, unavailable: 429. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `adopt_maintenance` | `available` | `evaluated` | `available` |
+| `type (src/llm_wiki_cli/api.py:adopt_maintenance)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ValueError (src/llm_wiki_cli/api.py:adopt_maintenance)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `cast (src/llm_wiki_cli/api.py:adopt_maintenance)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `adopt_maintenance_authority` | `available` | `evaluated` | `available` |
+| `_absolute_path` | `available` | `evaluated` | `available` |
+| `Path (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `os.path.abspath (src/llm_wiki_cli/services…rage_io.py:_absolute_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `first_unsafe_path_component` | `available` | `evaluated` | `available` |
+| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `os.fspath (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path (src/llm_wiki_cli/services…rst_unsafe_path_component)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. adopt_maintenance"]

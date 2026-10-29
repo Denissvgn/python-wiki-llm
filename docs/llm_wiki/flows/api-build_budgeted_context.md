@@ -142,9 +142,9 @@ sequenceDiagram
     p1-->>p30: request.get (src/llm_wiki_cli/services…py:build_budgeted_context)('counter_id')
 ```
 
-> Call sequence diagram shows 30 of 3581 interactions; 3551 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3599 interactions; 3569 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1239 (1238 omitted); unresolved 1 of 1115 (1114 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1243 (1242 omitted); unresolved 1 of 1126 (1125 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -158,7 +158,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 21 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 1 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 24 | - | external | 11 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 24 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 12 |
-> Omission summary shows 8 of 879 groups; 871 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 884 groups; 876 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -166,6 +166,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1231; effect analysis evaluated: 900, partial: 0, unavailable: 331. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `build_budgeted_context (src/llm_wiki_cli/api.py)` | `available` | `evaluated` | `available` |
+| `build_budgeted_context (src/llm_wiki_cli/services/context_budget.py)` | `available` | `evaluated` | `available` |
+| `validate_request` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…udget.py:validate_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `any (src/llm_wiki_cli/services…udget.py:validate_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…udget.py:validate_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ProtocolRequestError` | `unavailable` | `unavailable` | `unavailable` |
+| `data.get (src/llm_wiki_cli/services…udget.py:validate_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ProtocolRequestError` | `unavailable` | `unavailable` | `unavailable` |
+| `set (src/llm_wiki_cli/services…udget.py:validate_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ProtocolRequestError` | `unavailable` | `unavailable` | `unavailable` |
+| `sorted (src/llm_wiki_cli/services…udget.py:validate_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. build_budgeted_context (src/llm_wiki_cli/api.py)"]

@@ -98,6 +98,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 119; effect analysis evaluated: 73, partial: 0, unavailable: 46. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `qualify_claim_evidence` | `available` | `evaluated` | `available` |
+| `_identifier` | `available` | `evaluated` | `available` |
+| `_text` | `available` | `evaluated` | `available` |
+| `require_trimmed_text` | `available` | `evaluated` | `available` |
+| `require_nonempty_text` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services….py:require_nonempty_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `value.strip` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `contains_control_character` | `available` | `evaluated` | `available` |
+| `pattern.search` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `DocumentationClaimEvidenceError` | `unavailable` | `unavailable` | `unavailable` |
+| `_SAFE_ID_RE.fullmatch` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `DocumentationClaimEvidenceError` | `unavailable` | `unavailable` | `unavailable` |
+
 ```mermaid
 flowchart LR
     s1["1. qualify_claim_evidence"]
@@ -168,7 +193,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

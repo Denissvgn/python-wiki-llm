@@ -134,6 +134,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1148; effect analysis evaluated: 691, partial: 0, unavailable: 457. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `build_knowledge_commit_plan` | `available` | `evaluated` | `available` |
+| `Path (src/llm_wiki_cli/services…ild_knowledge_commit_plan)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `KnowledgeArtifactError` | `unavailable` | `unavailable` | `unavailable` |
+| `current_manifest_format` | `available` | `evaluated` | `available` |
+| `Path (src/llm_wiki_cli/services…y:current_manifest_format)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `adoption.exists` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `adoption.is_symlink` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `path.exists (src/llm_wiki_cli/services…y:current_manifest_format)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `path.is_symlink (src/llm_wiki_cli/services…y:current_manifest_format)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `KnowledgeStorageError` | `unavailable` | `unavailable` | `unavailable` |
+| `(…).exists (src/llm_wiki_cli/services…y:current_manifest_format)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `KnowledgeStorageError` | `unavailable` | `unavailable` | `unavailable` |
+
 ```mermaid
 flowchart LR
     s1["1. build_knowledge_commit_plan"]
@@ -201,7 +226,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

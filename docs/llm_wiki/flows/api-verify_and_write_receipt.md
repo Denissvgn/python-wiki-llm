@@ -106,6 +106,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 100; effect analysis evaluated: 56, partial: 0, unavailable: 44. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `verify_and_write_receipt` | `available` | `evaluated` | `available` |
+| `verify` | `available` | `evaluated` | `available` |
+| `build_verification_receipt` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…uild_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError (src/llm_wiki_cli/services…uild_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `tuple (src/llm_wiki_cli/services…uild_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `VerificationContractError` | `unavailable` | `unavailable` | `unavailable` |
+| `any` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…uild_verification_receipt)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `VerificationContractError` | `unavailable` | `unavailable` | `unavailable` |
+| `all` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `VerificationReceipt` | `unavailable` | `unavailable` | `unavailable` |
+
 ```mermaid
 flowchart LR
     s1["1. verify_and_write_receipt"]
@@ -174,7 +199,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

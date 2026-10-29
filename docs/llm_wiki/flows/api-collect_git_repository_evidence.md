@@ -95,6 +95,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 58; effect analysis evaluated: 42, partial: 0, unavailable: 16. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `collect_git_repository_evidence` | `available` | `evaluated` | `available` |
+| `Path (src/llm_wiki_cli/services…t_git_repository_evidence)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_run_git` | `available` | `evaluated` | `available` |
+| `_run_git_result` | `available` | `evaluated` | `available` |
+| `os.environ.items (src/llm_wiki_cli/services…velope.py:_run_git_result)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `key.startswith (src/llm_wiki_cli/services…velope.py:_run_git_result)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `subprocess.run (src/llm_wiki_cli/services…velope.py:_run_git_result)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `str (src/llm_wiki_cli/services…velope.py:_run_git_result)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_GitCommandResult` | `unavailable` | `unavailable` | `unavailable` |
+| `result.stdout.strip (src/llm_wiki_cli/services…velope.py:_run_git_result)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_GitCommandResult` | `unavailable` | `unavailable` | `unavailable` |
+| `RepositoryEvidence` | `unavailable` | `unavailable` | `unavailable` |
+
 ```mermaid
 flowchart LR
     s1["1. collect_git_repository_evidence"]

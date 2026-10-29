@@ -105,17 +105,17 @@ flowchart LR
 |-------|------|-------|-------------|
 | [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 785 | — | — |
 | [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 1063 | — | — |
-| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3243 | — | — |
-| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4628 | — | — |
-| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4654 | — | — |
-| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4668 | — | — |
-| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4675 | — | — |
-| [_WorkflowResult](../entities/WorkflowResult.md) | 4683 | — | — |
-| [_FlowResult](../entities/FlowResult.md) | 4689 | — | — |
-| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4700 | — | — |
-| [_DependencyResult](../entities/DependencyResult.md) | 4711 | — | — |
-| [_ApiContractResult](../entities/ApiContractResult.md) | 4719 | — | — |
-| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4726 | — | — |
+| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3298 | — | — |
+| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4683 | — | — |
+| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4709 | — | — |
+| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4723 | — | — |
+| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4730 | — | — |
+| [_WorkflowResult](../entities/WorkflowResult.md) | 4738 | — | — |
+| [_FlowResult](../entities/FlowResult.md) | 4744 | — | — |
+| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4755 | — | — |
+| [_DependencyResult](../entities/DependencyResult.md) | 4766 | — | — |
+| [_ApiContractResult](../entities/ApiContractResult.md) | 4774 | — | — |
+| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4781 | — | — |
 
 ## Functions
 
@@ -232,6 +232,8 @@ flowchart LR
 | `_effect_label` | `(effect: Mapping) -> str` | — | — |
 | `_effects_cell` | `(effects: list[Mapping]) -> str` | — | — |
 | `_bounded_data_flow_diagram` | `(data_flow: Mapping, module_page_map: Mapping[str, str] \| None, diagram_style: Mapping[str, Any] \| None) -> _BoundedGeneratedDiagram` | — | Keep all step nodes and the longest fitting transfer/boundary prefixes. |
+| `_flow_analysis_limitations` | `(data_flow: Mapping) -> list[str]` | — | — |
+| `_append_flow_analysis_coverage` | `(lines: list[str], data_flow: Mapping) -> bool` | — | — |
 | `_generate_data_flow_section` | `(data_flow: Mapping, module_page_map: Mapping[str, str] \| None = None, diagram_style: Mapping[str, Any] \| None = None) -> list[str]` | — | — |
 | `_generate_flow_md` | `(flow: dict, module_page_map: Mapping[str, str] \| None = None, *, data_flow: Mapping \| None = None, diagram_style: Mapping[str, Any] \| None = None, api_contract_operations: Sequence[Mapping[str, Any]] \| None = None) -> str` | — | Generate a user-flow page with a Mermaid sequence diagram from *flow*. |
 | `_preserve_level_two_section` | `(existing: str, generated: str, heading: str) -> str` | — | Carry one human-owned level-two section into regenerated Markdown. |

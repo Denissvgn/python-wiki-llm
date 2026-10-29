@@ -106,6 +106,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 118; effect analysis evaluated: 59, partial: 0, unavailable: 59. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `resolve_documentation_policy` | `available` | `evaluated` | `available` |
+| `_resolve_path` | `available` | `evaluated` | `available` |
+| `Path(…).expanduser().resolve` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path(…).expanduser (src/llm_wiki_cli/services…n_policy.py:_resolve_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path (src/llm_wiki_cli/services…n_policy.py:_resolve_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `DocumentationPolicyError` | `unavailable` | `unavailable` | `unavailable` |
+| `_resolve_optional_root` | `available` | `evaluated` | `available` |
+| `_resolve_existing_directory` | `available` | `evaluated` | `available` |
+| `Path(…).expanduser (src/llm_wiki_cli/services…esolve_existing_directory)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path (src/llm_wiki_cli/services…esolve_existing_directory)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_lstat` | `available` | `evaluated` | `available` |
+| `os.lstat` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. resolve_documentation_policy"]
@@ -174,7 +199,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

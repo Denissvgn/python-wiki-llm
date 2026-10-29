@@ -62,6 +62,31 @@ sequenceDiagram
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 9; effect analysis evaluated: 6, partial: 0, unavailable: 3. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `hash_source_snapshot` | `available` | `evaluated` | `available` |
+| `set (src/llm_wiki_cli/services…pe.py:hash_source_snapshot)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `enumerate` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` |
+| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` |
+| `seen_paths.add` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `records.append` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `records.sort` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_hash_structured` | `available` | `evaluated` | `available` |
+| `payload.values` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_validate_json_tree` | `available` | `evaluated` | `available` |
+
 ```mermaid
 flowchart LR
     s1["1. hash_source_snapshot"]

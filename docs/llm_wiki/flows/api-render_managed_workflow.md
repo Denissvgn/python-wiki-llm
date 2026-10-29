@@ -96,6 +96,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 42; effect analysis evaluated: 26, partial: 0, unavailable: 16. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `render_managed_workflow` | `available` | `evaluated` | `available` |
+| `normalize_action_ref` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…er.py:normalize_action_ref)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_ACTION_REF_RE.fullmatch` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `InstallCiError` | `unavailable` | `unavailable` | `unavailable` |
+| `value.lower` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_portable_project_path` | `available` | `evaluated` | `available` |
+| `_without_github_expression` | `available` | `evaluated` | `available` |
+| `InstallCiError` | `unavailable` | `unavailable` | `unavailable` |
+| `_validated_project_path` | `available` | `evaluated` | `available` |
+| `require_repository_relative_path` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…e_repository_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. render_managed_workflow"]
@@ -166,7 +191,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

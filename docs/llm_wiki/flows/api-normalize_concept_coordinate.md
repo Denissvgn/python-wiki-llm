@@ -93,6 +93,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 36; effect analysis evaluated: 18, partial: 0, unavailable: 18. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `normalize_concept_coordinate` | `available` | `evaluated` | `available` |
+| `normalize_documentation_query_text` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…e_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `value.strip (src/llm_wiki_cli/services…e_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `DocumentationQueryError` | `unavailable` | `unavailable` | `unavailable` |
+| `value.strip (src/llm_wiki_cli/services…e_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `len (src/llm_wiki_cli/services…e_documentation_query_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `selected.encode` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `DocumentationQueryError` | `unavailable` | `unavailable` | `unavailable` |
+| `validate_exact_page_coordinate` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…date_exact_page_coordinate)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `value.strip (src/llm_wiki_cli/services…date_exact_page_coordinate)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. normalize_concept_coordinate"]
@@ -160,7 +185,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

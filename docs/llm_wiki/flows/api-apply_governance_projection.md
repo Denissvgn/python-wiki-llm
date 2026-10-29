@@ -109,6 +109,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 655; effect analysis evaluated: 427, partial: 0, unavailable: 228. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `apply_governance_projection` | `available` | `evaluated` | `available` |
+| `_event_limit` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…overnance.py:_event_limit)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…overnance.py:_event_limit)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `GovernanceError` | `unavailable` | `unavailable` | `unavailable` |
+| `strip_governance_projection` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…rip_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError (src/llm_wiki_cli/services…rip_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `dict (src/llm_wiki_cli/services…rip_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `extensions.pop` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `concepts.append (src/llm_wiki_cli/services…rip_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `replace (src/llm_wiki_cli/services…rip_governance_projection)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. apply_governance_projection"]

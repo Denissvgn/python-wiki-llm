@@ -139,9 +139,9 @@ sequenceDiagram
     p1-->>p30: prior.assert_current
 ```
 
-> Call sequence diagram shows 30 of 2454 interactions; 2424 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2461 interactions; 2431 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 819 (818 omitted); unresolved 1 of 577 (576 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 821 (820 omitted); unresolved 1 of 579 (578 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -155,7 +155,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/maintenance_state.py:_identity` | 15 | [src/llm_wiki_cli/services/maintenance_shapes.py](../modules/maintenance_shapes.md) | internal | 1 |
 | `src/llm_wiki_cli/services/maintenance_shapes.py:require` | 18 | [src/llm_wiki_cli/services/maintenance_shapes.py](../modules/maintenance_shapes.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_storage_io.py:_absolute_path` | 21 | - | external | 4 |
-> Omission summary shows 8 of 589 groups; 581 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 592 groups; 584 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -163,6 +163,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1062; effect analysis evaluated: 704, partial: 0, unavailable: 358. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `get_maintenance_status` | `available` | `evaluated` | `available` |
+| `type (src/llm_wiki_cli/api.py:get_maintenance_status)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `type (src/llm_wiki_cli/api.py:get_maintenance_status)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ValueError (src/llm_wiki_cli/api.py:get_maintenance_status)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `validate_queue_limit` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…e.py:validate_queue_limit)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ValueError (src/llm_wiki_cli/services…e.py:validate_queue_limit)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `cast (src/llm_wiki_cli/api.py:get_maintenance_status)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `get_maintenance_status_authority` | `available` | `evaluated` | `available` |
+| `_validate_status_request` | `available` | `evaluated` | `available` |
+| `type (src/llm_wiki_cli/services…:_validate_status_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. get_maintenance_status"]
@@ -229,7 +254,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

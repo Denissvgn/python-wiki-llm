@@ -117,9 +117,9 @@ sequenceDiagram
     p1-->>p30: request.get (src/llm_wiki_cli/services…_service.py:_run_protocol)('knowledge_mode')
 ```
 
-> Call sequence diagram shows 30 of 1503 interactions; 1473 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1505 interactions; 1475 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 515 (514 omitted); unresolved 1 of 456 (455 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 515 (514 omitted); unresolved 1 of 457 (456 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -141,6 +141,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 534; effect analysis evaluated: 404, partial: 0, unavailable: 130. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `run (src/llm_wiki_cli/services/context_service.py)` | `available` | `evaluated` | `available` |
+| `getattr (src/llm_wiki_cli/services/context_service.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_run_protocol` | `available` | `evaluated` | `available` |
+| `getattr (src/llm_wiki_cli/services…_service.py:_run_protocol)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_read_protocol_request` | `available` | `evaluated` | `available` |
+| `sys.stdin.read` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path(…).read_text` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path (src/llm_wiki_cli/services…py:_read_protocol_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ProtocolRequestError` | `unavailable` | `unavailable` | `unavailable` |
+| `json.loads (src/llm_wiki_cli/services…py:_read_protocol_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ProtocolRequestError` | `unavailable` | `unavailable` | `unavailable` |
+| `isinstance (src/llm_wiki_cli/services…py:_read_protocol_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. run (src/llm_wiki_cli/services/context_service.py)"]

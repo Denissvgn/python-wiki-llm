@@ -94,6 +94,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 48; effect analysis evaluated: 20, partial: 0, unavailable: 28. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `verify_windows_restrictive_dacl` | `available` | `evaluated` | `available` |
+| `WindowsSecurityGuardError` | `unavailable` | `unavailable` | `unavailable` |
+| `Path(…).lstat` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `WindowsSecurityGuardError` | `unavailable` | `unavailable` | `unavailable` |
+| `stat.S_ISDIR` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_open_windows_directory_guard` | `available` | `evaluated` | `available` |
+| `ctypes.WinDLL (src/llm_wiki_cli/services…n_windows_directory_guard)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `create_file (src/llm_wiki_cli/services…n_windows_directory_guard)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_windows_api_path` | `available` | `evaluated` | `available` |
+| `os.path.abspath` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `os.fspath` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. verify_windows_restrictive_dacl"]
@@ -161,7 +186,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

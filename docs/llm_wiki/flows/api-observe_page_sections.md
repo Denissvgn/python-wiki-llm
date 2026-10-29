@@ -96,6 +96,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 51; effect analysis evaluated: 42, partial: 0, unavailable: 9. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `observe_page_sections` | `available` | `evaluated` | `available` |
+| `_coerce_page_kind` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…ship.py:_coerce_page_kind)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `PageKind` | `unavailable` | `unavailable` | `unavailable` |
+| `ValueError (src/llm_wiki_cli/services…ship.py:_coerce_page_kind)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `parse_markdown_document` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…y:parse_markdown_document)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…y:parse_markdown_document)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ValueError (src/llm_wiki_cli/services…y:parse_markdown_document)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `normalize_markdown` | `available` | `evaluated` | `available` |
+| `text.replace(…).replace` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. observe_page_sections"]

@@ -143,9 +143,9 @@ sequenceDiagram
     p0-->>p30: stored.get('source_selection')
 ```
 
-> Call sequence diagram shows 30 of 3960 interactions; 3930 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3962 interactions; 3932 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1411 (1410 omitted); unresolved 1 of 861 (860 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1411 (1410 omitted); unresolved 1 of 862 (861 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -167,6 +167,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1690; effect analysis evaluated: 1175, partial: 0, unavailable: 515. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `run` | `available` | `evaluated` | `available` |
+| `getattr (src/llm_wiki_cli/commands/upgrade_cmd.py:run)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `validate_path` | `available` | `evaluated` | `available` |
+| `PathValidationError` | `unavailable` | `unavailable` | `unavailable` |
+| `(…).resolve` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path.cwd().resolve (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path.cwd (src/llm_wiki_cli/config.py:validate_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `resolved.relative_to` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `PathValidationError` | `unavailable` | `unavailable` | `unavailable` |
+| `require_safe_wiki_scaffold` | `available` | `evaluated` | `available` |
+| `Path (src/llm_wiki_cli/services…equire_safe_wiki_scaffold)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. run"]

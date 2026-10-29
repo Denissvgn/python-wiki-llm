@@ -107,6 +107,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 106; effect analysis evaluated: 96, partial: 0, unavailable: 10. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `build_static_api_contracts` | `available` | `evaluated` | `available` |
+| `_framework_records` | `available` | `evaluated` | `available` |
+| `inventory.items (src/llm_wiki_cli/services…cts.py:_framework_records)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `file_data.get (src/llm_wiki_cli/services…cts.py:_framework_records)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…cts.py:_framework_records)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `frameworks.get` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…cts.py:_framework_records)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `is_test_source_path` | `available` | `evaluated` | `available` |
+| `str(…).replace(…).strip` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `str(…).replace (src/llm_wiki_cli/services…hs.py:is_test_source_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `str (src/llm_wiki_cli/services…hs.py:is_test_source_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `PurePosixPath (src/llm_wiki_cli/services…hs.py:is_test_source_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. build_static_api_contracts"]

@@ -129,6 +129,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 777; effect analysis evaluated: 524, partial: 0, unavailable: 253. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `build_live_documentation_query_service` | `available` | `evaluated` | `available` |
+| `normalize_supplied_paths` | `available` | `evaluated` | `available` |
+| `_portable_supplied_path` | `available` | `evaluated` | `available` |
+| `DocumentationQueryError` | `unavailable` | `unavailable` | `unavailable` |
+| `require_portable_relative_path` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…re_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_default_path_error` | `available` | `evaluated` | `available` |
+| `SharedValidationError` | `unavailable` | `unavailable` | `unavailable` |
+| `os.fspath (src/llm_wiki_cli/services…re_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…re_portable_relative_path)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_default_path_error` | `available` | `evaluated` | `available` |
+| `_syntax_key` | `available` | `evaluated` | `available` |
+
 ```mermaid
 flowchart LR
     s1["1. build_live_documentation_query_service"]
@@ -200,7 +225,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

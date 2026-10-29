@@ -138,6 +138,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 535; effect analysis evaluated: 312, partial: 0, unavailable: 223. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `build_snapshot_documentation_query_service` | `available` | `evaluated` | `available` |
+| `_wiki_anchor` | `available` | `evaluated` | `available` |
+| `str (src/llm_wiki_cli/services…xt_packet.py:_wiki_anchor)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `directory_identity` | `available` | `evaluated` | `available` |
+| `path.stat` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `current.exists` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `root.exists` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_domain_hash` | `available` | `evaluated` | `available` |
+| `sha256_bytes` | `available` | `evaluated` | `available` |
+| `hashlib.sha256(…).hexdigest (src/llm_wiki_cli/services…_evidence.py:sha256_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `hashlib.sha256 (src/llm_wiki_cli/services…_evidence.py:sha256_bytes)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `canonical_json_bytes` | `available` | `evaluated` | `available` |
+
 ```mermaid
 flowchart LR
     s1["1. build_snapshot_documentation_query_service"]
@@ -206,7 +231,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

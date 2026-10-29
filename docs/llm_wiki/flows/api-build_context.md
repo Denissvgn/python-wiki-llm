@@ -125,9 +125,9 @@ sequenceDiagram
     p0-->>p30: validated.get(KNOWLEDGE_MODE_REQUEST_FIELD)
 ```
 
-> Call sequence diagram shows 30 of 2204 interactions; 2174 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2211 interactions; 2181 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 746 (745 omitted); unresolved 1 of 809 (808 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 748 (747 omitted); unresolved 1 of 811 (810 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -141,7 +141,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request` | 11 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 14 | - | external | 11 |
 | `src/llm_wiki_cli/services/context_service.py:_validate_protocol_request_impl` | 14 | [src/llm_wiki_cli/services/context_service.py](../modules/context_service.md) | internal | 10 |
-> Omission summary shows 8 of 487 groups; 479 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 490 groups; 482 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -149,6 +149,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 653; effect analysis evaluated: 471, partial: 0, unavailable: 182. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `build_context` | `available` | `evaluated` | `available` |
+| `_normalise_focus` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/api.py:_normalise_focus)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `list (src/llm_wiki_cli/api.py:_normalise_focus)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_normalize_optional_knowledge_mode` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `', '.join (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `repr (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `InvalidRequestError` | `unavailable` | `unavailable` | `unavailable` |
+| `cast (src/llm_wiki_cli/api.py:_…e_optional_knowledge_mode)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_validate_protocol_request` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…validate_protocol_request)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. build_context"]
@@ -216,7 +241,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

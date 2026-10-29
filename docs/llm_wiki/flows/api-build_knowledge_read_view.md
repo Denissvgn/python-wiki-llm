@@ -121,6 +121,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 628; effect analysis evaluated: 426, partial: 0, unavailable: 202. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `build_knowledge_read_view` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…build_knowledge_read_view)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError (src/llm_wiki_cli/services…build_knowledge_read_view)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_read_mode` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…consumption.py:_read_mode)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `TypeError (src/llm_wiki_cli/services…consumption.py:_read_mode)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `isinstance (src/llm_wiki_cli/services…consumption.py:_read_mode)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `KnowledgeReadMode` | `unavailable` | `unavailable` | `unavailable` |
+| `ValueError (src/llm_wiki_cli/services…consumption.py:_read_mode)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `ValueError (src/llm_wiki_cli/services…consumption.py:_read_mode)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_validate_load_result` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services….py:_validate_load_result)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. build_knowledge_read_view"]
@@ -187,7 +212,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

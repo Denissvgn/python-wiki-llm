@@ -143,6 +143,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 1151; effect analysis evaluated: 689, partial: 0, unavailable: 462. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `load_snapshot_knowledge_observability` | `available` | `evaluated` | `available` |
+| `time.perf_counter (src/llm_wiki_cli/services…t_knowledge_observability)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path (src/llm_wiki_cli/services…t_knowledge_observability)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `resolve_source_selection` | `available` | `evaluated` | `available` |
+| `Path(…).resolve (src/llm_wiki_cli/services…:resolve_source_selection)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `Path (src/llm_wiki_cli/services…:resolve_source_selection)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `SourceSelectionError` | `unavailable` | `unavailable` | `unavailable` |
+| `_override_text` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…lection.py:_override_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `override.as_posix` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `os.fspath (src/llm_wiki_cli/services…lection.py:_override_text)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `SourceSelectionError` | `unavailable` | `unavailable` | `unavailable` |
+
 ```mermaid
 flowchart LR
     s1["1. load_snapshot_knowledge_observability"]
@@ -210,7 +235,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 

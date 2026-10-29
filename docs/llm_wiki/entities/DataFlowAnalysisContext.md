@@ -1,6 +1,6 @@
 # DataFlowAnalysisContext
 
-**Location:** `src/llm_wiki_cli/services/data_flow.py:164`
+**Location:** `src/llm_wiki_cli/services/data_flow.py:165`
 **Kind:** Class
 **Bases:** —
 **Module:** [data_flow](../modules/data_flow.md)
@@ -29,19 +29,22 @@ Precomputed indexes shared by all data-flow analyses in one run.
 ```mermaid
 flowchart LR
     n0["DataFlowAnalysisContext (src/llm_wiki_cli/services/data_flow.py)"]
-    n1["_detailed_context (src/llm_wiki_cli/services/data_flow.py)"]
-    n2["analyze_data_flow (src/llm_wiki_cli/services/data_flow.py)"]
-    n3["analyze_data_flow_detailed (src/llm_wiki_cli/services/data_flow.py)"]
-    n4["build_data_flow_context (src/llm_wiki_cli/services/data_flow.py)"]
+    n1["_analysis_summary (src/llm_wiki_cli/services/data_flow.py)"]
+    n2["_detailed_context (src/llm_wiki_cli/services/data_flow.py)"]
+    n3["analyze_data_flow (src/llm_wiki_cli/services/data_flow.py)"]
+    n4["analyze_data_flow_detailed (src/llm_wiki_cli/services/data_flow.py)"]
+    n5["build_data_flow_context (src/llm_wiki_cli/services/data_flow.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
     n4 --> n0
+    n5 --> n0
     click n0 "../modules/data_flow.md"
     click n1 "../modules/data_flow.md"
     click n2 "../modules/data_flow.md"
     click n3 "../modules/data_flow.md"
     click n4 "../modules/data_flow.md"
+    click n5 "../modules/data_flow.md"
 ```
 
 ### Summary
@@ -54,6 +57,7 @@ flowchart LR
 
 | Reference | Kind | Source | Call sites |
 |---|---|---|---:|
+| `_analysis_summary` | type_reference | [data_flow](../modules/data_flow.md) | — |
 | `_detailed_context` | call | [data_flow](../modules/data_flow.md) | 1 |
 | `_detailed_context` | type_reference | [data_flow](../modules/data_flow.md) | — |
 | `analyze_data_flow` | type_reference | [data_flow](../modules/data_flow.md) | — |

@@ -90,6 +90,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 31; effect analysis evaluated: 16, partial: 0, unavailable: 15. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `build_producer_record` | `available` | `evaluated` | `available` |
+| `_build_component` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…velope.py:_build_component)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` |
+| `isinstance (src/llm_wiki_cli/services…velope.py:_build_component)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_COMPONENT_ID_RE.fullmatch` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` |
+| `set (src/llm_wiki_cli/services…velope.py:_build_component)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_validated_limitations` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services….py:_validated_limitations)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` |
+| `tuple (src/llm_wiki_cli/services….py:_validated_limitations)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. build_producer_record"]

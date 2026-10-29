@@ -93,6 +93,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 21; effect analysis evaluated: 19, partial: 0, unavailable: 2. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `mixed_table_projection` | `available` | `evaluated` | `available` |
+| `normalize_markdown` | `available` | `evaluated` | `available` |
+| `text.replace(…).replace` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `text.replace` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_markdown_lines` | `available` | `evaluated` | `available` |
+| `re.findall` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `normalize_markdown` | `available` | `evaluated` | `available` |
+| `_line_content` | `available` | `evaluated` | `available` |
+| `line.endswith` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `normalized.endswith` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `description_table_cells` | `available` | `evaluated` | `available` |
+| `_markdown_lines` | `available` | `evaluated` | `available` |
+
 ```mermaid
 flowchart LR
     s1["1. mixed_table_projection"]

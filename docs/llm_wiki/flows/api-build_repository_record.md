@@ -95,6 +95,31 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 ## Data flow
 
 <!-- Auto-generated static analysis. Treat values and boundaries as best-effort hints, not runtime proof. -->
+
+### Analysis coverage
+
+**Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
+
+Source steps: 23; effect analysis evaluated: 10, partial: 0, unavailable: 13. Counts include steps omitted from the displayed trace.
+
+- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Effect collector totals unavailable; observed counts cover captured records only.
+
+| Step | Callable record | Effect analysis | Collector totals |
+|---|---|---|---|
+| `build_repository_record` | `available` | `evaluated` | `available` |
+| `RepositoryEvidence` | `unavailable` | `unavailable` | `unavailable` |
+| `isinstance (src/llm_wiki_cli/services…py:build_repository_record)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` |
+| `isinstance (src/llm_wiki_cli/services…py:build_repository_record)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` |
+| `select_repository_identity` | `available` | `evaluated` | `available` |
+| `validate_configured_public_identity` | `available` | `evaluated` | `available` |
+| `isinstance (src/llm_wiki_cli/services…configured_public_identity)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `KnowledgeEnvelopeError` | `unavailable` | `unavailable` | `unavailable` |
+| `value.strip (src/llm_wiki_cli/services…configured_public_identity)` | `not_applicable` | `not_applicable` | `not_applicable` |
+| `_REPOSITORY_IDENTITY_RE.fullmatch (src/llm_wiki_cli/services…configured_public_identity)` | `not_applicable` | `not_applicable` | `not_applicable` |
+
 ```mermaid
 flowchart LR
     s1["1. build_repository_record"]
@@ -164,7 +189,7 @@ flowchart LR
 
 ### Boundary effects
 
-*No boundary effects detected.*
+*No boundary-effect observations were captured in this static trace.*
 
 ### Static analysis gaps
 
