@@ -161,6 +161,7 @@ def test_erased_cycle_bootstrap_sync_lint_and_extract_follow_source_emission(tmp
     payload = json.loads(run("extract", "--deep", "--read-only"))
     assert payload["inventory"]["a.ts"]["imports"][0]["type_only_declaration"] is True
     assert payload["dependencies"]["cycles"] == []
+    assert payload["dependencies"]["import_time_edges"] == []
     assert payload["dependencies"]["type_cycles"] == [["a.ts", "b.ts"]]
     assert payload["dependencies"]["type_only_edges"] == [["a.ts", "b.ts"], ["b.ts", "a.ts"]]
     assert cycle_diagnostics() == []
@@ -186,6 +187,7 @@ def test_erased_cycle_bootstrap_sync_lint_and_extract_follow_source_emission(tmp
     assert "compiler-dependent startup cycle candidate" in (wiki / "modules/a.md").read_text()
     payload = json.loads(run("extract", "--deep", "--read-only"))
     assert payload["dependencies"]["conditional_cycles"] == [["a.ts", "b.ts"]]
+    assert payload["dependencies"]["import_time_edges"] == [["a.ts", "b.ts"], ["b.ts", "a.ts"]]
     diagnostics = cycle_diagnostics()
     assert len(diagnostics) == 1 and "Potential import cycle" in diagnostics[0]["message"]
 

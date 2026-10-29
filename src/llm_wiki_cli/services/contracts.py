@@ -21,7 +21,7 @@ and ``runtime`` (``erased``, ``conditional``, or ``present``). A type-only
 specifier erases its binding, but its statement can retain module evaluation.
 Only guaranteed-erased declarations are excluded from startup constraints;
 ordinary binding imports remain conditional on compiler emission. Dependency
-projections may add ``type_only_edges``, ``conditional_import_time_edges``,
+projections may add possible startup ``import_time_edges``, ``type_only_edges``, ``conditional_import_time_edges``,
 ``type_cycles``, and ``conditional_cycles`` without changing coupling ``edges``.
 Python dependency reconciliation treats ``sys.stdlib_module_names`` as the
 stdlib source when available, falls back to the bundled Python 3.9 list in

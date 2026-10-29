@@ -2010,6 +2010,8 @@ def _dependency_extract_block(analysis: dict) -> dict:
     for key in ("type_only_edges", "conditional_import_time_edges"):
         if key in graph:
             result[key] = [list(edge) for edge in graph[key]]
+    if "type_only_edges" in graph or "conditional_import_time_edges" in graph:
+        result["import_time_edges"] = [list(edge) for edge in graph.get("import_time_edges", [])]
     for key in ("type_cycles", "conditional_cycles"):
         if key in analysis:
             result[key] = [list(group) for group in analysis[key]]
