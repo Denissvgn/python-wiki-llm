@@ -4493,7 +4493,8 @@ def _append_dockerfile_scoped_stages(lines, filename, info, module_links, unsupp
         for line in declared:
             if line.startswith("## "):
                 line = "##" + line
-            line = line.replace("**Working Directory:**", "**Declared WORKDIR:**")
+            if line.startswith("**Working Directory:**"):
+                line = line.replace("**Working Directory:**", "**Declared WORKDIR:**", 1)
             lines.append(line)
     unscoped = [record for record in info.get("unscoped_instructions", []) if record["instruction"] != "ARG"]
     if unscoped:

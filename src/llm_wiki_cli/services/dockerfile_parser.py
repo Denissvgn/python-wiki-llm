@@ -166,14 +166,43 @@ def _pairs(argument: str, escape: str) -> list[tuple[str, str]]:
     return result
 
 
-def _copy(argument: str, instruction: str, escape: str) -> dict:
-    rest = argument.split("\n", 1)[0]
-    inline = bool(_heredocs(instruction, rest))
+def _split_builder_flags(argument: str, escape: str) -> tuple[str, list[str]]:
+    """Decode leading flags without consuming or rewriting source arguments."""
+    rest = argument.lstrip()
     flags = []
-    while rest.lstrip().startswith("--"):
-        parts = rest.lstrip().split(None, 1)
-        flags.append(parts[0])
-        rest = parts[1] if len(parts) > 1 else ""
+    while rest.startswith("--"):
+        word: list[str] = []
+        quote = ""
+        index = 0
+        while index < len(rest):
+            char = rest[index]
+            if char == escape:
+                index += 1
+                if index < len(rest):
+                    word.append(rest[index])
+            elif quote:
+                if char == quote:
+                    quote = ""
+                else:
+                    word.append(char)
+            elif char in "\"'":
+                quote = char
+            elif char.isspace():
+                break
+            else:
+                word.append(char)
+            index += 1
+        flag = "".join(word)
+        rest = rest[index:].lstrip()
+        if flag == "--":
+            break
+        flags.append(flag)
+    return rest, flags
+
+
+def _copy(argument: str, instruction: str, escape: str) -> dict:
+    rest, flags = _split_builder_flags(argument.split("\n", 1)[0], escape)
+    inline = bool(_heredocs(instruction, rest))
     try:
         paths = json.loads(rest) if rest.startswith("[") else _words(rest, escape)
     except (ValueError, TypeError):

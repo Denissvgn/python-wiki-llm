@@ -203,6 +203,57 @@ def test_literal_heredoc_text_does_not_consume_following_stages(source):
     assert parsed["cmd"] == '["/application"]'
 
 
+def test_scoped_rendering_preserves_literal_values_that_resemble_its_labels():
+    marker = "**Working Directory:**"
+    entrypoint = json.dumps(["echo", marker])
+    command = json.dumps([marker])
+    source = (f'FROM scratch AS build\nENV MESSAGE="{marker}"\nLABEL message="{marker}"\n'
+              f'WORKDIR /{marker}\nENTRYPOINT {entrypoint}\nCMD {command}\nFROM scratch AS runtime\n')
+    parsed = _parse_dockerfile(source)
+    first, second = _stage_sections(_generate_dockerfile_md("Dockerfile", parsed))
+    values = [child.content for block in MarkdownIt().parse(first) for child in block.children or []
+              if child.type == "code_inline"]
+    assert values.count(marker) == 2  # Independent ENV and LABEL declarations.
+    assert "/" + marker in values and entrypoint in values and command in values
+    assert first.count("**Declared WORKDIR:**") == 1
+    assert marker not in second
+    assert parsed["stages"][0]["workdir"] == "/" + marker
+
+
+@pytest.mark.parametrize(("flags", "escape"), [
+    ('--exclude="not needed" --from="build"', "\\"),
+    ("--exclude='not needed' --from='build'", "\\"),
+    ("--exclude=not\\ needed --from=build", "\\"),
+    ('--exclude=not` needed --from="build"', "`"),
+])
+@pytest.mark.parametrize("syntax", ["shell", "json"])
+def test_copy_flags_preserve_image_origin_without_inventing_host_sources(flags, escape, syntax):
+    paths = ["builder.py", "startup.sh", "/app/"]
+    arguments = json.dumps(paths) if syntax == "json" else " ".join(paths)
+    source = (f"# escape={escape}\nFROM scratch AS build\nENV BUILD_ONLY=1\n"
+              f"FROM scratch AS runtime\nCOPY {flags} {arguments}\n")
+    parsed = _parse_dockerfile(source)
+    copy = parsed["stages"][1]["copies"][0]
+    assert copy == {"src": "builder.py startup.sh", "dest": "/app/", "from_stage": "build", "instruction": "COPY"}
+    assert parsed["copies"] == [{**copy, "stage": 1, "line": 5}]
+    assert not parsed["env_vars"] and parsed["stages"][1]["base_stage"] is None
+    first, second = _stage_sections(_generate_dockerfile_md("Dockerfile", parsed,
+        {"builder.py": "builder"}, {"shell": {"paths": ["startup.sh"]}}))
+    assert "BUILD_ONLY" in first and "BUILD_ONLY" not in second
+    assert "../modules/builder.md" not in second and "Unsupported Copied Sources" not in second
+    assert "| `build` |" in second
+
+
+@pytest.mark.parametrize("syntax", ["shell", "json"])
+def test_copy_flag_terminator_keeps_flag_looking_context_paths(syntax):
+    arguments = '["--from=build", "/app.py"]' if syntax == "json" else "--from=build /app.py"
+    parsed = _parse_dockerfile(f"FROM scratch AS build\nFROM scratch AS runtime\nCOPY -- {arguments}\n")
+    copy = parsed["stages"][1]["copies"][0]
+    assert copy == {"src": "--from=build", "dest": "/app.py", "from_stage": "", "instruction": "COPY"}
+    first, second = _stage_sections(_generate_dockerfile_md("Dockerfile", parsed, {"--from=build": "context"}))
+    assert "../modules/context.md" in second and "../modules/context.md" not in first
+
+
 def test_legacy_multistage_records_do_not_render_an_unsafe_command_pair():
     legacy = {"type": "dockerfile", "stages": [{"image": "scratch", "alias": "build"}, {"image": "scratch", "alias": "runtime"}],
               "entrypoint": '["/build-tool"]', "cmd": '["/application"]', "env_vars": [{"name": "BUILD_ONLY", "default": "1"}]}
@@ -218,7 +269,7 @@ def test_stage_sections_inherit_generated_ownership():
     assert selected and all(item.ownership is SectionOwnership.GENERATED for item in selected)
 
 
-@pytest.mark.parametrize("syntax", ["plain", "continued-from", "heredoc"])
+@pytest.mark.parametrize("syntax", ["plain", "continued-from", "heredoc", "quoted-copy"])
 def test_stage_only_edits_flow_through_extract_bootstrap_sync_and_strict_lint(tmp_path, monkeypatch, capsys, syntax):
     (tmp_path / "demo.py").write_text("def marker():\n    pass\n")
     source = tmp_path / "Dockerfile"
@@ -227,6 +278,8 @@ def test_stage_only_edits_flow_through_extract_bootstrap_sync_and_strict_lint(tm
         text = text.replace("FROM scratch AS build", "FROM scr\\\natch AS build")
     elif syntax == "heredoc":
         text = text.replace("ENV BUILD_ONLY=1\n", 'ENV BUILD_ONLY=1\nCOPY <<E"OF" /notice\nFROM scratch AS invented\nENV WRONG=1\nEOF\n')
+    elif syntax == "quoted-copy":
+        text = text.replace('CMD ["/application"]', 'COPY --exclude="not needed" --from="build" demo.py /app.py\nCMD ["/application"]')
     source.write_text(text)
     monkeypatch.chdir(tmp_path)
 
@@ -241,6 +294,7 @@ def test_stage_only_edits_flow_through_extract_bootstrap_sync_and_strict_lint(tm
     page = tmp_path / "wiki/infrastructure/Dockerfile.md"
     first, second = _stage_sections(page.read_text())
     assert "BUILD_ONLY" in first and "BUILD_ONLY" not in second
+    assert "../modules/demo.md" not in second
     payload = json.loads(run("extract", "--deep", "--read-only"))
     assert payload["docker"]["Dockerfile"]["stages"][1]["entrypoint"] == ""
     report = json.loads(run("lint", "--strict", "--profile"))
