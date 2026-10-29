@@ -16,7 +16,7 @@ from ..config import validate_path, validate_source_root
 from ..extractors.common import normalize_include_tests
 from . import wiki_media
 from .data_flow import analyze_data_flow
-from .dependencies import analyze_dependencies, describe_unscanned_scopes
+from .dependencies import analyze_dependencies, describe_unscanned_scopes, startup_cycle_groups
 from .module_coverage import classify_uncovered_python_sources
 from .diagrams import (
     GENERATED_DIAGRAM_CHAR_LIMIT,
@@ -1671,13 +1671,12 @@ def _check_dependency_coverage(
             )
         return
 
-    conditional_cycles = {tuple(group) for group in analysis.get("conditional_cycles", [])}
-    for cycle in analysis["cycles"]:
+    for cycle, conditional in startup_cycle_groups(analysis):
         _diagnose(
             report,
             "dependency_cycles",
             ("Potential import cycle (compiler-dependent TypeScript emission): "
-             if tuple(cycle) in conditional_cycles else "Import cycle: ") + " ⇄ ".join(cycle),
+             if conditional else "Import cycle: ") + " ⇄ ".join(cycle),
         )
     for language, data in sorted(analysis["reconciliation"]["languages"].items()):
         undeclared_details = {

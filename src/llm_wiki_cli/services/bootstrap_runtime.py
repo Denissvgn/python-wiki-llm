@@ -53,6 +53,7 @@ from .dependencies import (
     build_dependency_observations,
     build_external_dependency_observations,
     package_dependency_graph,
+    startup_cycle_groups,
     top_level_package,
 )
 from .diagrams import (
@@ -1397,6 +1398,11 @@ def _generate_module_dependency_section(
     if summary.get("type_dependencies") or summary.get("conditional_cycle"):
         lines.extend(["This graph shows full source coupling. Type dependencies can be erased; "
             "compiler-dependent cycle groups are runtime candidates, not confirmed initialization cycles.", ""])
+    if summary.get("preserved_cycles"):
+        lines.extend(["### Preserved startup cycles", ""])
+        for group in summary["preserved_cycles"]:
+            lines.append("- " + " ⇄ ".join(_module_dependency_cell(node, module_page_map) for node in group))
+        lines.append("")
     rendered = _module_dependency_graph(summary, module_page_map, diagram_style)
     if rendered and rendered.diagram:
         if summary.get("cycle_participation") and "==>" in rendered.diagram:
@@ -3462,13 +3468,12 @@ def _generate_dependencies_md(
     dependencies** grouped by language, and semantic ``## Notes``.
     Deterministic; degrades cleanly with no cycles or no external deps.
 
-    **Cycles** reports only groups that are cyclic while they load. Groups joined
-    solely by deferred or ``TYPE_CHECKING`` imports follow, called out as the
-    non-problem they are, so a project is not told to fix the lazy boundary it
-    deliberately built.
+    **Cycles** keeps preserved startup cycles visible alongside larger groups
+    that depend on compiler emission. Type and deferred coupling are shown
+    separately from the possible startup projection.
     """
     page_map = module_page_map or {}
-    cycles = analysis["cycles"]
+    cycles = [group for group, _conditional in startup_cycle_groups(analysis)]
     deferred_cycles = analysis.get("deferred_cycles", [])
     type_groups = {tuple(group) for group in analysis.get("type_cycles", [])}
     deferred_cycles = [group for group in deferred_cycles if tuple(group) not in type_groups]
@@ -3526,8 +3531,8 @@ def _generate_dependencies_md(
     lines.append("")
     if cycles:
         lines.append(
-            "> Static startup cycle candidates are listed below. Compiler-dependent "
-            "TypeScript imports may be erased; their runtime cycles depend on emission."
+            "> Preserved startup cycles and compiler-dependent candidates are listed below. "
+            "A smaller preserved cycle remains even when uncertain imports join more modules."
             if conditional_cycles else
             "> Import cycles are legal but complicate load order — review the modules below."
         )
@@ -3541,9 +3546,9 @@ def _generate_dependencies_md(
     if deferred_cycles:
         lines.append("")
         lines.append(
-            "> These are cycles in the full coupling graph, but not startup cycles. "
-            "Deferred, `TYPE_CHECKING`, or erased TypeScript imports break the "
-            "startup cycle; other edges in a group may still run while loading."
+            "> These additional coupling groups include deferred, `TYPE_CHECKING`, or "
+            "erased TypeScript imports. Startup cycles, including any smaller cycles "
+            "within these groups, are listed above."
         )
         lines.append("")
         for cycle in deferred_cycles:
@@ -3613,6 +3618,8 @@ def _generate_load_order_md(
     side_effects = analysis["side_effects"]
     order = load_order.get("order", [])
     cycle_groups = load_order.get("cycle_groups", [])
+    if "preserved_cycles" in analysis:
+        cycle_groups = [group for group, _conditional in startup_cycle_groups(analysis)]
 
     lines = [
         "# Load order",
@@ -3674,8 +3681,8 @@ def _generate_load_order_md(
         lines.append("")
         conditional_groups = {tuple(group) for group in analysis.get("conditional_cycles", [])}
         lines.append(
-            "> These groups are cyclic in the static startup projection. "
-            "Compiler-dependent groups may form runtime cycles if their imports are emitted."
+            "> Preserved-import cycles stay indeterminate regardless of compiler elision. "
+            "Larger compiler-dependent groups may also form runtime cycles if their imports are emitted."
             if conditional_groups else
             "> These modules form import cycles, so their relative load order is indeterminate."
         )

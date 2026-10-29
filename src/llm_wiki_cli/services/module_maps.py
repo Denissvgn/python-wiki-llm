@@ -231,6 +231,9 @@ def build_module_dependency_maps(
     conditional_nodes = {node for group in analysis.get("conditional_cycles", []) for node in group}
     typed_nodes = {node for edge in graph.get("type_only_edges", []) for node in edge}
     for module, summary in result.items():
+        preserved = [group for group in analysis.get("preserved_cycles", []) if module in group]
+        if preserved:
+            summary["preserved_cycles"] = preserved
         if module in conditional_nodes:
             summary["conditional_cycle"] = True
         if module in typed_nodes:

@@ -528,7 +528,9 @@ explicit type dependencies and type cycles alongside the full coupling graph;
 load-order and cycle diagnostics distinguish possible runtime cycles from
 guaranteed-erased dependencies. Deep dependency output exposes these projections
 as optional `import_time_edges` (possible startup constraints), `type_only_edges`, `conditional_import_time_edges`, `type_cycles`,
-and `conditional_cycles` fields.
+`preserved_cycles`, and `conditional_cycles` fields. Preserved startup cycles
+remain visible when compiler-dependent imports join them into a larger possible
+cycle group; `cycles` continues to describe the full possible startup projection.
 Go `_test.go` files are omitted unless `--include-tests go` is supplied; Python
 test files remain part of normal Python extraction.
 Python deep extraction can capture a bounded static subset of nested helpers.

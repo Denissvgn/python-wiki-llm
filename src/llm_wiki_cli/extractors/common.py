@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 import os
 import posixpath
 import re
@@ -36,8 +37,8 @@ LANGUAGE_EXTENSIONS: dict[str, tuple[str, ...]] = {
 INCLUDE_TEST_LANGUAGES = frozenset({"go"})
 MAX_ONLY_FILES_ARG_CHARS = 60_000
 
-# Import-record ``scope`` values.  An import record without a ``scope`` key
-# executes when the module is imported, which keeps older inventories and
+# Import-record ``scope`` values. Unqualified legacy records keep their
+# possible import-time behavior, which keeps older inventories and
 # extractors that do not classify imports on the historical contract.  The two
 # values below mark imports that never run at import time, so consumers that
 # model load order (cycle detection, topological order) can exclude them while
@@ -53,7 +54,7 @@ def executes_at_import(import_record: object) -> bool:
     Conditional TypeScript emission stays a possible startup dependency. Only
     guaranteed erasure, such as declaration-level ``import type``, excludes it.
     """
-    if not isinstance(import_record, dict):
+    if not isinstance(import_record, Mapping):
         return True
     return (import_record.get("scope") not in NON_IMPORT_TIME_SCOPES
             and import_record.get("runtime") != "erased")

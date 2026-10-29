@@ -153,8 +153,8 @@ def build_dependency_graph(
     ``type_only_edges`` retain type bindings (and declaration-file imports),
     while ``conditional_import_time_edges`` qualify compiler-dependent emission.
     A definitely present import to the same target overrides that uncertainty.
-    An import record with
-    no ``scope`` counts as import-time, so inventories from extractors that do
+    An import record without scope or runtime qualifications counts as
+    import-time, so inventories from extractors that do
     not classify imports keep the historical behavior of the two being equal.
     A supported code-language inventory entry that has no ``imports`` field still
     appears as an isolated node. Entries that explicitly provide an ``imports``
@@ -2948,8 +2948,10 @@ def analyze_dependencies(
     ``cycles`` and ``load_order`` describe possible module load: they exclude
     guaranteed-erased TypeScript declarations and imports classified as lazy or
     ``TYPE_CHECKING``. Such a group is not reported as an indeterminate startup
-    cycle. Optional ``type_cycles`` and ``conditional_cycles`` distinguish type
-    binding cycles and compiler-dependent startup cycle candidates. Other
+    cycle. Optional ``type_cycles``, ``preserved_cycles``, and
+    ``conditional_cycles`` distinguish type binding cycles, cycles among
+    preserved startup edges, and compiler-dependent startup cycle candidates.
+    A larger candidate never suppresses a smaller preserved cycle. Other
     non-startup coupling groups are kept separately in
     ``deferred_cycles`` so the information is surfaced rather than dropped.
     ``metrics`` stays on the full edge set, since fan-in/fan-out measures
@@ -2984,9 +2986,26 @@ def analyze_dependencies(
     if graph.get("conditional_import_time_edges"):
         conditional = set(graph["conditional_import_time_edges"])
         confirmed = {**graph, "edges": [edge for edge in graph["import_time_edges"] if edge not in conditional]}
-        confirmed_groups = {tuple(group) for group in detect_cycles(confirmed)}
+        result["preserved_cycles"] = detect_cycles(confirmed)
+        confirmed_groups = {tuple(group) for group in result["preserved_cycles"]}
         result["conditional_cycles"] = [group for group in cycles if tuple(group) not in confirmed_groups]
     return result
+
+
+def startup_cycle_groups(analysis: Mapping) -> list[tuple[list[str], bool]]:
+    """Retain preserved subcycles alongside larger compiler-dependent groups.
+
+    The boolean qualifies compiler emission, rather than runtime reachability.
+    Legacy analyses without the additive preserved projection keep their old
+    cycle groups, with any explicitly conditional groups qualified separately.
+    """
+    conditional = analysis.get("conditional_cycles", []) or []
+    conditional_keys = {tuple(group) for group in conditional}
+    preserved = analysis.get("preserved_cycles")
+    if preserved is None:
+        preserved = [group for group in analysis.get("cycles", []) or []
+                     if tuple(group) not in conditional_keys]
+    return [(list(group), False) for group in preserved] + [(list(group), True) for group in conditional]
 
 
 def top_level_package(filepath: str) -> str:

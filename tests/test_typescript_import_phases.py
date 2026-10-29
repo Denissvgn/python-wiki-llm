@@ -223,3 +223,57 @@ def test_emitted_runtime_cycle_control_survives_type_partition(tmp_path, bare):
         assert detect_cycles(graph) == [["a.ts", "b.ts"]]
     assert analysis["cycles"] == analysis["load_order"]["cycle_groups"] == [["a.ts", "b.ts"]]
     assert analysis.get("conditional_cycles", []) == ([] if bare else [["a.ts", "b.ts"]])
+
+
+@skip_no_node
+def test_preserved_subcycle_and_cached_sync_keep_both_compiler_projections(tmp_path, monkeypatch, capsys):
+    a, b, c = (tmp_path / name for name in ("a.ts", "b.ts", "c.ts"))
+    a.write_text('import "./b"; export interface A {}')
+    b.write_text('import "./a"; import { type C } from "./c"; export interface B { c?: C; }')
+    c.write_text('import { type B } from "./b"; export interface C { b?: B; }')
+    emitted = _compiler_observe([a, b, c])
+    expected = [[["a.ts", "b.ts"]], [["a.ts", "b.ts", "c.ts"]]]
+    for configuration in (0, 1):
+        graph = {"nodes": ["a.ts", "b.ts", "c.ts"], "edges": [(path.name, module[2:] + ".ts")
+            for path, observation in zip((a, b, c), emitted) for module in observation["emitted"][configuration]]}
+        assert detect_cycles(graph) == expected[configuration]
+    helper = resolve_helper_cache_root(PROJECT_ROOT)
+    assert helper is not None
+    monkeypatch.chdir(tmp_path)
+
+    def run(command, *options):
+        monkeypatch.setattr(sys, "argv", ["llm-wiki", command, "--src-dir", ".",
+            *([] if command == "extract" else ["--wiki-dir", "wiki"]),
+            "--helper-cache-dir", str(helper.parent), *options,
+            *([] if command in {"bootstrap", "extract"} else ["--jobs", "1", "--cache-dir", str(tmp_path / "cache")])])
+        cli.main()
+        return capsys.readouterr().out
+
+    run("bootstrap", "--source-adapter")
+    wiki = tmp_path / "wiki"
+    preserved = "- [a](modules/a.md) ⇄ [b](modules/b.md)"
+    candidate = preserved + " ⇄ [c](modules/c.md) *(compiler-dependent TypeScript emission)*"
+
+    def check_views():
+        for page in ("dependencies.md", "load-order.md"):
+            lines = (wiki / page).read_text().split("\n")
+            assert preserved in lines and candidate in lines
+        for name in ("a", "b"):
+            assert "### Preserved startup cycles" in (wiki / f"modules/{name}.md").read_text()
+        assert "### Preserved startup cycles" not in (wiki / "modules/c.md").read_text()
+        payload = json.loads(run("extract", "--deep", "--read-only"))["dependencies"]
+        assert payload["preserved_cycles"] == [["a.ts", "b.ts"]]
+        assert payload["cycles"] == payload["conditional_cycles"] == [["a.ts", "b.ts", "c.ts"]]
+        lint = json.loads(run("lint", "--strict", "--profile"))
+        assert lint["ok"], lint["issues"]
+        messages = [row["message"] for row in lint["diagnostics"] if row["category"] == "dependency_cycles"]
+        assert "Import cycle: a.ts ⇄ b.ts" in messages
+        assert any(message.startswith("Potential import cycle") and message.endswith("a.ts ⇄ b.ts ⇄ c.ts") for message in messages)
+
+    check_views()
+    run("sync", "--no-plugins")
+    before = {page: (wiki / page).read_bytes() for page in ("dependencies.md", "load-order.md")}
+    warm = run("sync", "--no-plugins")
+    assert "Sync analysis reuse: hit" in warm
+    assert before == {page: (wiki / page).read_bytes() for page in before}
+    check_views()
