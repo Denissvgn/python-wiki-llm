@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [team_cmd](../modules/team_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 40 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_runtime](../modules/bootstrap_runtime.md), and 41 more
 
 **Complete modules touched:**
 
@@ -13,6 +13,7 @@
 - [common](../modules/common.md)
 - [config](../modules/config.md)
 - [data_flow](../modules/data_flow.md)
+- [dockerfile_parser](../modules/dockerfile_parser.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
 - [extractor_helpers](../modules/extractor_helpers.md)
@@ -80,12 +81,12 @@ sequenceDiagram
     participant p20 as _print_payload
     participant p21 as SyncManifest.load
     participant p22 as _coerce_inventory_request
-    participant p23 as load_team_config
-    participant p24 as _parse_compose
-    participant p25 as parse_github_actions_workflow
-    participant p26 as check_plugin_requirements
-    participant p27 as _looks_like_compose
-    participant p28 as check_team_conventions
+    participant p23 as _parse_dockerfile
+    participant p24 as load_team_config
+    participant p25 as _parse_compose
+    participant p26 as parse_github_actions_workflow
+    participant p27 as check_plugin_requirements
+    participant p28 as _looks_like_compose
     participant p29 as getattr (src/llm_wiki_cli/commands/team_cmd.py:run)
     participant p30 as path.exists (src/llm_wiki_cli/commands/team_cmd.py:_run_init)
     p0->>p1: _run_init
@@ -110,19 +111,19 @@ sequenceDiagram
     p8->>p20: _print_payload
     p11->>p21: SyncManifest.load
     p12->>p22: _coerce_inventory_request
-    p7->>p23: load_team_config
-    p14->>p24: _parse_compose
-    p15->>p25: parse_github_actions_workflow
-    p16->>p26: check_plugin_requirements
-    p14->>p27: _looks_like_compose
-    p16->>p28: check_team_conventions
+    p14->>p23: _parse_dockerfile
+    p7->>p24: load_team_config
+    p14->>p25: _parse_compose
+    p15->>p26: parse_github_actions_workflow
+    p16->>p27: check_plugin_requirements
+    p14->>p28: _looks_like_compose
     p0-->>p29: getattr (src/llm_wiki_cli/commands/team_cmd.py:run)(args, 'team_action', None)
     p1-->>p30: path.exists (src/llm_wiki_cli/commands/team_cmd.py:_run_init)
 ```
 
-> Call sequence diagram shows 30 of 2474 interactions; 2444 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2491 interactions; 2461 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 704 (703 omitted); unresolved 1 of 850 (849 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 713 (712 omitted); unresolved 1 of 841 (840 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -136,7 +137,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/team.py:team_config_path` | 13 | - | external | 1 |
 | `src/llm_wiki_cli/services/team.py:write_default_team_config` | 17 | [src/llm_wiki_cli/services/team.py](../modules/team.md) | internal | 2 |
 | `src/llm_wiki_cli/services/io.py:write_json_atomic` | 19 | - | external | 1 |
-> Omission summary shows 8 of 620 groups; 612 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 631 groups; 623 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

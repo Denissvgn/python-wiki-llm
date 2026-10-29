@@ -25,11 +25,11 @@
       "infrastructure": 2,
       "load-order": 1,
       "log": 1,
-      "modules": 255,
+      "modules": 256,
       "workflows": 233
     },
     "dependency_architecture": 2,
-    "total": 1644
+    "total": 1645
   },
   "dependency_pages": {
     "count": 2,
@@ -1797,37 +1797,37 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 6653,
+              "line": 6713,
               "step": "execute_bootstrap",
               "target": "io.StringIO"
             },
             {
               "kind": "unresolved_call",
-              "line": 4744,
+              "line": 4804,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.source_root).expanduser().resolve"
             },
             {
               "kind": "unresolved_call",
-              "line": 4744,
+              "line": 4804,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.source_root).expanduser"
             },
             {
               "kind": "unresolved_call",
-              "line": 4745,
+              "line": 4805,
               "step": "_bootstrap_run_options_from_request",
               "target": "source_root.is_dir"
             },
             {
               "kind": "unresolved_call",
-              "line": 4749,
+              "line": 4809,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.wiki_root).expanduser().resolve"
             },
             {
               "kind": "unresolved_call",
-              "line": 4749,
+              "line": 4809,
               "step": "_bootstrap_run_options_from_request",
               "target": "Path(request.wiki_root).expanduser"
             },
@@ -2225,6 +2225,7 @@
             "src/llm_wiki_cli/services/maintenance_status.py",
             "src/llm_wiki_cli/services/implementation_evidence.py",
             "src/llm_wiki_cli/services/knowledge_envelope.py",
+            "src/llm_wiki_cli/services/dockerfile_parser.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
             "src/llm_wiki_cli/services/yaml_formats.py",
@@ -2245,7 +2246,7 @@
             "src/llm_wiki_cli/services/bootstrap_runtime.py",
             "src/llm_wiki_cli/services/packet_field_policy.py"
           ],
-          "step_count": 3641,
+          "step_count": 3582,
           "truncated": true
         }
       },
@@ -2865,6 +2866,7 @@
             "src/llm_wiki_cli/services/go_calls.py",
             "src/llm_wiki_cli/extractors/python_contracts.py",
             "src/llm_wiki_cli/services/source_retirement.py",
+            "src/llm_wiki_cli/services/dockerfile_parser.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
             "src/llm_wiki_cli/services/yaml_formats.py",
@@ -2902,7 +2904,7 @@
             "src/llm_wiki_cli/services/canonical_pages.py",
             "src/llm_wiki_cli/services/health_policy.py"
           ],
-          "step_count": 3427,
+          "step_count": 3384,
           "truncated": true
         }
       },
@@ -4625,6 +4627,7 @@
             "src/llm_wiki_cli/services/maintenance_status.py",
             "src/llm_wiki_cli/services/implementation_evidence.py",
             "src/llm_wiki_cli/services/knowledge_envelope.py",
+            "src/llm_wiki_cli/services/dockerfile_parser.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
             "src/llm_wiki_cli/services/yaml_formats.py",
@@ -4644,7 +4647,7 @@
             "src/llm_wiki_cli/services/maintenance_evidence.py",
             "src/llm_wiki_cli/services/packet_field_policy.py"
           ],
-          "step_count": 3794,
+          "step_count": 3735,
           "truncated": true
         }
       },
@@ -4771,6 +4774,7 @@
             "src/llm_wiki_cli/services/knowledge_graph.py",
             "src/llm_wiki_cli/services/section_ownership.py",
             "src/llm_wiki_cli/services/knowledge_reuse.py",
+            "src/llm_wiki_cli/services/dockerfile_parser.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
             "src/llm_wiki_cli/services/yaml_formats.py",
@@ -4789,7 +4793,7 @@
             "src/llm_wiki_cli/services/knowledge_observability.py",
             "src/llm_wiki_cli/services/packet_field_policy.py"
           ],
-          "step_count": 5583,
+          "step_count": 5540,
           "truncated": true
         }
       },
@@ -5882,6 +5886,7 @@
             "src/llm_wiki_cli/services/section_ownership.py",
             "src/llm_wiki_cli/services/infrastructure_sync.py",
             "src/llm_wiki_cli/services/knowledge_reuse.py",
+            "src/llm_wiki_cli/services/dockerfile_parser.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
             "src/llm_wiki_cli/services/yaml_formats.py",
@@ -5897,7 +5902,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/markdown_sections.py"
           ],
-          "step_count": 5343,
+          "step_count": 5360,
           "truncated": true
         }
       },
@@ -9058,6 +9063,7 @@
             "src/llm_wiki_cli/services/progress.py",
             "src/llm_wiki_cli/services/extraction_service.py",
             "src/llm_wiki_cli/services/source_retirement.py",
+            "src/llm_wiki_cli/services/dockerfile_parser.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
             "src/llm_wiki_cli/services/yaml_formats.py",
@@ -9090,7 +9096,7 @@
             "src/llm_wiki_cli/services/sync_analysis.py",
             "src/llm_wiki_cli/services/health_policy.py"
           ],
-          "step_count": 1785,
+          "step_count": 1726,
           "truncated": true
         }
       },
@@ -9461,6 +9467,7 @@
             "src/llm_wiki_cli/services/go_calls.py",
             "src/llm_wiki_cli/extractors/python_contracts.py",
             "src/llm_wiki_cli/services/python_imports.py",
+            "src/llm_wiki_cli/services/dockerfile_parser.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
             "src/llm_wiki_cli/services/yaml_formats.py",
@@ -9488,7 +9495,7 @@
             "src/llm_wiki_cli/services/knowledge_governance.py",
             "src/llm_wiki_cli/services/concept_identity.py"
           ],
-          "step_count": 3605,
+          "step_count": 3622,
           "truncated": true
         }
       },
@@ -10558,9 +10565,10 @@
             "src/llm_wiki_cli/services/validation.py",
             "src/llm_wiki_cli/services/python_calls.py",
             "src/llm_wiki_cli/extractors/python_bindings.py",
+            "src/llm_wiki_cli/services/dockerfile_parser.py",
             "src/llm_wiki_cli/services/yaml_syntax.py"
           ],
-          "step_count": 3109,
+          "step_count": 3126,
           "truncated": true
         }
       },
@@ -11824,6 +11832,7 @@
             "src/llm_wiki_cli/services/knowledge_graph.py",
             "src/llm_wiki_cli/services/section_ownership.py",
             "src/llm_wiki_cli/services/knowledge_reuse.py",
+            "src/llm_wiki_cli/services/dockerfile_parser.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
             "src/llm_wiki_cli/services/yaml_formats.py",
@@ -11840,7 +11849,7 @@
             "src/llm_wiki_cli/services/dependency_versions.py",
             "src/llm_wiki_cli/services/maintenance_service.py"
           ],
-          "step_count": 4264,
+          "step_count": 4221,
           "truncated": true
         }
       },
@@ -13515,6 +13524,7 @@
             "src/llm_wiki_cli/services/maintenance_status.py",
             "src/llm_wiki_cli/services/implementation_evidence.py",
             "src/llm_wiki_cli/services/knowledge_envelope.py",
+            "src/llm_wiki_cli/services/dockerfile_parser.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
             "src/llm_wiki_cli/services/yaml_formats.py",
@@ -13534,7 +13544,7 @@
             "src/llm_wiki_cli/services/maintenance_evidence.py",
             "src/llm_wiki_cli/services/knowledge_coverage.py"
           ],
-          "step_count": 2770,
+          "step_count": 2711,
           "truncated": true
         }
       },
@@ -20693,6 +20703,7 @@
             "src/llm_wiki_cli/services/knowledge_freshness.py",
             "src/llm_wiki_cli/services/implementation_evidence.py",
             "src/llm_wiki_cli/services/knowledge_envelope.py",
+            "src/llm_wiki_cli/services/dockerfile_parser.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
             "src/llm_wiki_cli/services/yaml_formats.py",
@@ -20712,7 +20723,7 @@
             "src/llm_wiki_cli/services/maintenance_evidence.py",
             "src/llm_wiki_cli/services/change_selection.py"
           ],
-          "step_count": 4047,
+          "step_count": 3988,
           "truncated": true
         }
       },
@@ -21391,6 +21402,7 @@
             "src/llm_wiki_cli/services/go_calls.py",
             "src/llm_wiki_cli/extractors/python_contracts.py",
             "src/llm_wiki_cli/services/progress.py",
+            "src/llm_wiki_cli/services/dockerfile_parser.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
             "src/llm_wiki_cli/services/yaml_formats.py",
@@ -21418,7 +21430,7 @@
             "src/llm_wiki_cli/services/knowledge_verification.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4648,
+          "step_count": 4605,
           "truncated": true
         }
       },
@@ -31650,7 +31662,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 6698,
+              "line": 6758,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32073,6 +32085,7 @@
             "src/llm_wiki_cli/services/go_calls.py",
             "src/llm_wiki_cli/extractors/python_contracts.py",
             "src/llm_wiki_cli/services/source_retirement.py",
+            "src/llm_wiki_cli/services/dockerfile_parser.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
             "src/llm_wiki_cli/services/yaml_formats.py",
@@ -32119,7 +32132,7 @@
             "src/llm_wiki_cli/services/health_summary.py",
             "src/llm_wiki_cli/services/metrics.py"
           ],
-          "step_count": 4597,
+          "step_count": 4554,
           "truncated": true
         }
       },
@@ -32798,10 +32811,11 @@
             "src/llm_wiki_cli/services/validation.py",
             "src/llm_wiki_cli/services/python_calls.py",
             "src/llm_wiki_cli/extractors/python_bindings.py",
+            "src/llm_wiki_cli/services/dockerfile_parser.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/wiki_write_basis.py"
           ],
-          "step_count": 3185,
+          "step_count": 3202,
           "truncated": true
         }
       },
@@ -33744,6 +33758,7 @@
             "src/llm_wiki_cli/services/go_calls.py",
             "src/llm_wiki_cli/extractors/python_contracts.py",
             "src/llm_wiki_cli/services/source_retirement.py",
+            "src/llm_wiki_cli/services/dockerfile_parser.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
             "src/llm_wiki_cli/services/yaml_formats.py",
@@ -33781,7 +33796,7 @@
             "src/llm_wiki_cli/services/canonical_pages.py",
             "src/llm_wiki_cli/services/metrics.py"
           ],
-          "step_count": 3535,
+          "step_count": 3492,
           "truncated": true
         }
       },
@@ -34358,6 +34373,7 @@
             "src/llm_wiki_cli/services/go_calls.py",
             "src/llm_wiki_cli/extractors/python_contracts.py",
             "src/llm_wiki_cli/services/python_imports.py",
+            "src/llm_wiki_cli/services/dockerfile_parser.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/bootstrap_runtime.py",
             "src/llm_wiki_cli/services/markdown_sections.py",
@@ -34376,7 +34392,7 @@
             "src/llm_wiki_cli/services/infrastructure_sync.py",
             "src/llm_wiki_cli/services/knowledge_index.py"
           ],
-          "step_count": 4108,
+          "step_count": 4091,
           "truncated": true
         }
       },
@@ -35113,6 +35129,7 @@
             "src/llm_wiki_cli/services/maintenance_status.py",
             "src/llm_wiki_cli/services/implementation_evidence.py",
             "src/llm_wiki_cli/services/knowledge_envelope.py",
+            "src/llm_wiki_cli/services/dockerfile_parser.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
             "src/llm_wiki_cli/services/yaml_formats.py",
@@ -35149,7 +35166,7 @@
             "src/llm_wiki_cli/services/markdown_sections.py",
             "src/llm_wiki_cli/services/change_selection.py"
           ],
-          "step_count": 4333,
+          "step_count": 4274,
           "truncated": true
         }
       },
@@ -36229,6 +36246,7 @@
             "src/llm_wiki_cli/services/concept_identity.py",
             "src/llm_wiki_cli/services/sync_generated_sections.py",
             "src/llm_wiki_cli/services/dependencies.py",
+            "src/llm_wiki_cli/services/dockerfile_parser.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
             "src/llm_wiki_cli/services/yaml_formats.py",
@@ -36243,7 +36261,7 @@
             "src/llm_wiki_cli/services/wiki_surface_index.py",
             "src/llm_wiki_cli/services/sync_recovery.py"
           ],
-          "step_count": 6213,
+          "step_count": 6154,
           "truncated": true
         }
       },
@@ -36571,6 +36589,7 @@
             "src/llm_wiki_cli/services/go_calls.py",
             "src/llm_wiki_cli/extractors/python_contracts.py",
             "src/llm_wiki_cli/services/python_imports.py",
+            "src/llm_wiki_cli/services/dockerfile_parser.py",
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/infrastructure_inventory.py",
             "src/llm_wiki_cli/services/yaml_formats.py",
@@ -36581,7 +36600,7 @@
             "src/llm_wiki_cli/services/source_retirement.py",
             "src/llm_wiki_cli/services/markdown_sections.py"
           ],
-          "step_count": 2475,
+          "step_count": 2492,
           "truncated": true
         }
       },
@@ -39884,6 +39903,7 @@
         "modules/dependency_versions.md",
         "modules/detectors.md",
         "modules/diagrams.md",
+        "modules/dockerfile_parser.md",
         "modules/docs_cmd.md",
         "modules/doctor_cmd.md",
         "modules/doctor_service.md",
@@ -49989,6 +50009,20 @@
       "title": "diagrams Module"
     },
     {
+      "canonical_path": "modules/dockerfile_parser.md",
+      "id": "dockerfile_parser",
+      "kind": "modules",
+      "mcp_uri": "llm-wiki://modules/dockerfile_parser",
+      "outgoing_internal_links": [
+        "modules/bootstrap_runtime.md",
+        "modules/dockerfile_parser.md",
+        "modules/extraction_service.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/dockerfile_parser.py",
+      "title": "dockerfile_parser Module"
+    },
+    {
       "canonical_path": "modules/docs_cmd.md",
       "id": "docs_cmd",
       "kind": "modules",
@@ -58335,6 +58369,7 @@
         "modules/context_service.md",
         "modules/data_flow.md",
         "modules/dependency_versions.md",
+        "modules/dockerfile_parser.md",
         "modules/documentation_queries.md",
         "modules/documentation_query_builder.md",
         "modules/entrypoints.md",
@@ -58544,6 +58579,7 @@
         "modules/current_contracts.md",
         "modules/data_flow.md",
         "modules/dependency_versions.md",
+        "modules/dockerfile_parser.md",
         "modules/doctor_service.md",
         "modules/documentation_queries.md",
         "modules/entrypoints.md",
@@ -59020,6 +59056,7 @@
         "modules/context_service.md",
         "modules/data_flow.md",
         "modules/dependency_versions.md",
+        "modules/dockerfile_parser.md",
         "modules/documentation_queries.md",
         "modules/documentation_query_builder.md",
         "modules/entrypoints.md",
@@ -59092,6 +59129,7 @@
         "modules/context_service.md",
         "modules/data_flow.md",
         "modules/dependency_versions.md",
+        "modules/dockerfile_parser.md",
         "modules/documentation_queries.md",
         "modules/documentation_query_builder.md",
         "modules/entrypoints.md",
@@ -59446,6 +59484,7 @@
         "modules/context_service.md",
         "modules/data_flow.md",
         "modules/dependency_versions.md",
+        "modules/dockerfile_parser.md",
         "modules/documentation_queries.md",
         "modules/documentation_query_builder.md",
         "modules/entrypoints.md",
@@ -60187,6 +60226,7 @@
         "modules/common.md",
         "modules/config.md",
         "modules/data_flow.md",
+        "modules/dockerfile_parser.md",
         "modules/doctor_service.md",
         "modules/documentation_queries.md",
         "modules/entrypoints.md",
@@ -60292,6 +60332,7 @@
         "modules/concept_identity.md",
         "modules/config.md",
         "modules/data_flow.md",
+        "modules/dockerfile_parser.md",
         "modules/documentation_native.md",
         "modules/extraction_jobs.md",
         "modules/extraction_service.md",
@@ -60584,6 +60625,7 @@
         "modules/config.md",
         "modules/data_flow.md",
         "modules/dependency_versions.md",
+        "modules/dockerfile_parser.md",
         "modules/entrypoints.md",
         "modules/extraction_jobs.md",
         "modules/extraction_service.md",
@@ -60942,6 +60984,7 @@
         "modules/context_service.md",
         "modules/data_flow.md",
         "modules/dependency_versions.md",
+        "modules/dockerfile_parser.md",
         "modules/documentation_queries.md",
         "modules/documentation_query_builder.md",
         "modules/entrypoints.md",
@@ -61355,6 +61398,7 @@
         "modules/context_service.md",
         "modules/data_flow.md",
         "modules/dependency_versions.md",
+        "modules/dockerfile_parser.md",
         "modules/documentation_queries.md",
         "modules/documentation_query_builder.md",
         "modules/entrypoints.md",
@@ -63040,6 +63084,7 @@
         "modules/context_service.md",
         "modules/data_flow.md",
         "modules/dependency_versions.md",
+        "modules/dockerfile_parser.md",
         "modules/documentation_queries.md",
         "modules/documentation_query_builder.md",
         "modules/entrypoints.md",
@@ -63226,6 +63271,7 @@
         "modules/context_packet.md",
         "modules/context_service.md",
         "modules/data_flow.md",
+        "modules/dockerfile_parser.md",
         "modules/documentation_native.md",
         "modules/entrypoints.md",
         "modules/extraction_jobs.md",
@@ -65598,6 +65644,7 @@
         "modules/current_contracts.md",
         "modules/data_flow.md",
         "modules/dependency_versions.md",
+        "modules/dockerfile_parser.md",
         "modules/doctor_service.md",
         "modules/documentation_queries.md",
         "modules/entrypoints.md",
@@ -65830,6 +65877,7 @@
         "modules/config.md",
         "modules/data_flow.md",
         "modules/dependency_versions.md",
+        "modules/dockerfile_parser.md",
         "modules/entrypoints.md",
         "modules/extraction_jobs.md",
         "modules/extraction_service.md",
@@ -66122,6 +66170,7 @@
         "modules/current_contracts.md",
         "modules/data_flow.md",
         "modules/dependency_versions.md",
+        "modules/dockerfile_parser.md",
         "modules/documentation_queries.md",
         "modules/entrypoints.md",
         "modules/evidence_diagnostics.md",
@@ -66330,6 +66379,7 @@
         "modules/concept_identity.md",
         "modules/config.md",
         "modules/data_flow.md",
+        "modules/dockerfile_parser.md",
         "modules/extraction_jobs.md",
         "modules/extraction_service.md",
         "modules/extractor_helpers.md",
@@ -66549,6 +66599,7 @@
         "modules/context_service.md",
         "modules/data_flow.md",
         "modules/dependency_versions.md",
+        "modules/dockerfile_parser.md",
         "modules/documentation_queries.md",
         "modules/documentation_query_builder.md",
         "modules/documentation_worklist.md",
@@ -66857,6 +66908,7 @@
         "modules/config.md",
         "modules/current_contracts.md",
         "modules/data_flow.md",
+        "modules/dockerfile_parser.md",
         "modules/entrypoints.md",
         "modules/extraction_jobs.md",
         "modules/extraction_service.md",
@@ -66998,6 +67050,7 @@
         "modules/common.md",
         "modules/config.md",
         "modules/data_flow.md",
+        "modules/dockerfile_parser.md",
         "modules/extraction_jobs.md",
         "modules/extraction_service.md",
         "modules/extractor_helpers.md",
@@ -67624,6 +67677,7 @@
         "modules/dependency_versions.md",
         "modules/detectors.md",
         "modules/diagrams.md",
+        "modules/dockerfile_parser.md",
         "modules/docs_cmd.md",
         "modules/doctor_cmd.md",
         "modules/doctor_service.md",
@@ -67891,6 +67945,7 @@
         "modules/dependency_versions.md",
         "modules/detectors.md",
         "modules/diagrams.md",
+        "modules/dockerfile_parser.md",
         "modules/docs_cmd.md",
         "modules/doctor_cmd.md",
         "modules/doctor_service.md",
@@ -68114,5 +68169,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:972378e511a8b4122f39cfb87623d27936be0b6c828e779ac29afbf4e25f1170"
+  "source_hash": "sha256:a3db7739198e062174057eec6acb6c28c44e2a89fb1a97060bbf0deb067660a2"
 }

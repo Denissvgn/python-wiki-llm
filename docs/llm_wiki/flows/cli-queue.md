@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [queue_cmd](../modules/queue_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), and 75 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [bootstrap_recovery](../modules/bootstrap_recovery.md), and 76 more
 
 **Complete modules touched:**
 
@@ -17,6 +17,7 @@
 - [context_service](../modules/context_service.md)
 - [data_flow](../modules/data_flow.md)
 - [dependency_versions](../modules/dependency_versions.md)
+- [dockerfile_parser](../modules/dockerfile_parser.md)
 - [documentation_queries](../modules/documentation_queries.md)
 - [documentation_query_builder](../modules/documentation_query_builder.md)
 - [documentation_worklist](../modules/documentation_worklist.md)
@@ -155,9 +156,9 @@ sequenceDiagram
     p2-->>p30: lines.append(...)
 ```
 
-> Call sequence diagram shows 30 of 4332 interactions; 4302 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 4273 interactions; 4243 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1355 (1354 omitted); unresolved 1 of 1499 (1498 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1347 (1346 omitted); unresolved 1 of 1447 (1446 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -171,7 +172,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_path` | 21 | - | unresolved | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 21 | - | external | 2 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 20 | - | unresolved | 5 |
-> Omission summary shows 8 of 1111 groups; 1103 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1110 groups; 1102 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

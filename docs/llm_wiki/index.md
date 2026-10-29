@@ -7,7 +7,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 | Surface | Count | Start here |
 |---|---:|---|
 | Entities | 673 | [Open section](#entities) |
-| Modules | 255 | [Open section](#modules) |
+| Modules | 256 | [Open section](#modules) |
 | Workflows | 233 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 466 | [Open section](#entry-point-flows) |
@@ -733,6 +733,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [dependency_versions](modules/dependency_versions.md) - Lossless, scope-aware dependency version observations.
 - [detectors](modules/detectors.md) - Sample entry-point detector hooks for LLM Wiki plugins.
 - [diagrams](modules/diagrams.md) - Pure Mermaid diagram renderers.
+- [dockerfile_parser](modules/dockerfile_parser.md) - Stage-owned Dockerfile source observations without image evaluation.
 - [docs_cmd](modules/docs_cmd.md) - Commands for deterministic standalone documentation workspaces.
 - [doctor_cmd](modules/doctor_cmd.md) - CLI adapter for the read-only knowledge health report.
 - [doctor_service](modules/doctor_service.md) - Read-only composition for the repository knowledge health report.

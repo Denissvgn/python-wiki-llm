@@ -48,10 +48,10 @@ flowchart TD
 | [knowledge_governance](modules/knowledge_governance.md) | 25 | 10 |
 | [wiki_surface_index](modules/wiki_surface_index.md) | 25 | 5 |
 | [knowledge_consumption](modules/knowledge_consumption.md) | 24 | 8 |
-| [extraction_service](modules/extraction_service.md) | 23 | 30 |
+| [extraction_service](modules/extraction_service.md) | 23 | 31 |
 | [analysis_compatibility](modules/analysis_compatibility.md) | 21 | 0 |
 | [common](modules/common.md) | 20 | 1 |
-| [bootstrap_runtime](modules/bootstrap_runtime.md) | 17 | 38 |
+| [bootstrap_runtime](modules/bootstrap_runtime.md) | 17 | 39 |
 | [maintenance_protocol](modules/maintenance_protocol.md) | 17 | 11 |
 | [plugins](modules/plugins.md) | 17 | 3 |
 | [implementation_evidence](modules/implementation_evidence.md) | 16 | 2 |
@@ -178,6 +178,7 @@ flowchart TD
 | [ci_installer](modules/ci_installer.md) | 2 | 5 |
 | [context_session](modules/context_session.md) | 2 | 11 |
 | [diagrams](modules/diagrams.md) | 2 | 2 |
+| [dockerfile_parser](modules/dockerfile_parser.md) | 2 | 0 |
 | [documentation_native](modules/documentation_native.md) | 2 | 26 |
 | [packet](modules/packet.md) | 2 | 5 |
 | [verify](modules/verify.md) | 2 | 9 |

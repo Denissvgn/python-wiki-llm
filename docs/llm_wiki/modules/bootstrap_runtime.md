@@ -33,6 +33,7 @@ Python reference rendering distinguishes captured module-level type uses from le
 | `.data_flow` | `_call_args`, `analyze_data_flow`, `analyze_data_flow_detailed`, `build_data_flow_context` |
 | `.dependencies` | `analyze_dependencies`, `build_dependency_observations`, `build_external_dependency_observations`, `package_dependency_graph`, `startup_cycle_groups`, `top_level_package` |
 | `.diagrams` | `GENERATED_DIAGRAM_CHAR_LIMIT`, `GENERATED_DIAGRAM_LINE_LIMIT`, `GENERATED_DIAGRAM_NODE_LIMIT`, `_DISPLAY_LABEL_LIMIT`, `_normalize_display_text`, `data_flow_diagram`, `flowchart`, `resolve_diagram_style`, `sequence_diagram` |
+| `.dockerfile_parser` | `DOCKERFILE_STAGES_SCHEMA` |
 | `.entrypoints` | `build_flow`, `build_flow_detailed`, `entry_points_from_detailed_observations`, `get_detailed_entry_points`, `read_console_scripts` |
 | `.extraction_service` | `InventoryResult`, `get_call_graph`, `get_docker_inventory`, `get_inventory_result`, `print_inventory_failures`, `resolve_call_observations`, `resolve_call_edges` |
 | `.flow_overview` | `FlowOverview`, `select_flow_overview`, `trim_flow_overview` |
@@ -94,27 +95,27 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (17) |
-| Outbound | `src` (38) |
+| Outbound | `src` (39) |
 
-> All 55 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 56 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 784 | — | — |
-| [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 1062 | — | — |
-| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3242 | — | — |
-| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4566 | — | — |
-| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4592 | — | — |
-| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4606 | — | — |
-| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4613 | — | — |
-| [_WorkflowResult](../entities/WorkflowResult.md) | 4621 | — | — |
-| [_FlowResult](../entities/FlowResult.md) | 4627 | — | — |
-| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4638 | — | — |
-| [_DependencyResult](../entities/DependencyResult.md) | 4649 | — | — |
-| [_ApiContractResult](../entities/ApiContractResult.md) | 4657 | — | — |
-| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4664 | — | — |
+| [_BoundedGeneratedDiagram](../entities/BoundedGeneratedDiagram.md) | 785 | — | — |
+| [_ModuleDependencyDiagram](../entities/ModuleDependencyDiagram.md) | 1063 | — | — |
+| [_RootDependencyDiagram](../entities/RootDependencyDiagram.md) | 3243 | — | — |
+| [_BootstrapRunOptions](../entities/BootstrapRunOptions.md) | 4626 | — | — |
+| [_BootstrapRunState](../entities/BootstrapRunState.md) | 4652 | — | — |
+| [_BootstrapPageMaps](../entities/BootstrapPageMaps.md) | 4666 | — | — |
+| [_EntityModuleResult](../entities/EntityModuleResult.md) | 4673 | — | — |
+| [_WorkflowResult](../entities/WorkflowResult.md) | 4681 | — | — |
+| [_FlowResult](../entities/FlowResult.md) | 4687 | — | — |
+| [_InfrastructureResult](../entities/InfrastructureResult.md) | 4698 | — | — |
+| [_DependencyResult](../entities/DependencyResult.md) | 4709 | — | — |
+| [_ApiContractResult](../entities/ApiContractResult.md) | 4717 | — | — |
+| [_BootstrapGenerationResult](../entities/BootstrapGenerationResult.md) | 4724 | — | — |
 
 ## Functions
 
@@ -288,7 +289,9 @@ flowchart LR
 | `_append_dockerfile_unsupported_copies` | `(lines: list[str], copies: list[dict], filename: str, unsupported_sources: dict[str, dict[str, object]] \| None) -> None` | — | — |
 | `_append_dockerfile_labels` | `(lines: list[str], labels: dict[str, str]) -> None` | — | — |
 | `_append_dockerfile_healthcheck` | `(lines: list[str], healthcheck: str) -> None` | — | — |
-| `_generate_dockerfile_md` | `(filename: str, info: dict, module_links: Mapping[str, str] \| set[str] \| None = None, unsupported_sources: dict[str, dict[str, object]] \| None = None) -> str` | — | Generate markdown for a Dockerfile. |
+| `_append_dockerfile_declarations` | `(lines, filename, info, module_links, unsupported_sources)` | — | Render parsed source fields in the caller's explicitly scoped section. |
+| `_append_dockerfile_scoped_stages` | `(lines, filename, info, module_links, unsupported_sources)` | — | — |
+| `_generate_dockerfile_md` | `(filename: str, info: dict, module_links: Mapping[str, str] \| set[str] \| None = None, unsupported_sources: dict[str, dict[str, object]] \| None = None) -> str` | — | Generate a stage-owned source view, retaining safe legacy handling. |
 | `_generate_compose_md` | `(filename: str, info: dict, module_links: Mapping[str, str] \| set[str] \| None = None) -> str` | — | Generate markdown for a docker-compose / compose file. |
 | `_data_flow_summary` | `(*, generated: bool, analyzed: int = 0, boundary_effects: int = 0, gaps: int = 0) -> dict` | — | — |
 | `_with_unsupported_sources` | `(payload: dict, unsupported_sources: dict[str, dict[str, object]]) -> dict` | — | — |

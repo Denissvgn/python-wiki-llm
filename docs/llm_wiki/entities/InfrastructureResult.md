@@ -1,6 +1,6 @@
 # _InfrastructureResult
 
-**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4638`
+**Location:** `src/llm_wiki_cli/services/bootstrap_runtime.py:4698`
 **Kind:** Class
 **Bases:** —
 **Module:** [bootstrap_runtime](../modules/bootstrap_runtime.md)

@@ -2,7 +2,7 @@
 
 **Entry point:** `evaluate_documentation_native_freshness` (`api`)
 **Source:** [documentation_native](../modules/documentation_native.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 46 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [common](../modules/common.md), [concept_identity](../modules/concept_identity.md), and 47 more
 
 **Complete modules touched:**
 
@@ -12,6 +12,7 @@
 - [concept_identity](../modules/concept_identity.md)
 - [config](../modules/config.md)
 - [data_flow](../modules/data_flow.md)
+- [dockerfile_parser](../modules/dockerfile_parser.md)
 - [documentation_native](../modules/documentation_native.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
@@ -127,9 +128,9 @@ sequenceDiagram
     p0-->>p30: (…).lstat
 ```
 
-> Call sequence diagram shows 30 of 3604 interactions; 3574 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3621 interactions; 3591 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 996 (995 omitted); unresolved 1 of 915 (914 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1005 (1004 omitted); unresolved 1 of 906 (905 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -143,7 +144,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/source_selection.py:resolve_source_selection` | 16 | - | external | 1 |
 | `src/llm_wiki_cli/services/source_selection.py:resolve_source_selection` | 16 | [src/llm_wiki_cli/services/source_selection.py](../modules/source_selection.md) | internal | 8 |
 | `src/llm_wiki_cli/services/source_selection.py:_override_text` | 20 | - | external | 3 |
-> Omission summary shows 8 of 926 groups; 918 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 937 groups; 929 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

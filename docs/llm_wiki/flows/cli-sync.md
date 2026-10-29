@@ -2,7 +2,7 @@
 
 **Entry point:** `run` (`cli`)
 **Source:** [sync_cmd](../modules/sync_cmd.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api_contracts](../modules/api_contracts.md), and 70 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [analysis_compatibility](../modules/analysis_compatibility.md), [api_contracts](../modules/api_contracts.md), and 71 more
 
 **Complete modules touched:**
 
@@ -16,6 +16,7 @@
 - [config](../modules/config.md)
 - [current_contracts](../modules/current_contracts.md)
 - [data_flow](../modules/data_flow.md)
+- [dockerfile_parser](../modules/dockerfile_parser.md)
 - [entrypoints](../modules/entrypoints.md)
 - [extraction_jobs](../modules/extraction_jobs.md)
 - [extraction_service](../modules/extraction_service.md)
@@ -150,9 +151,9 @@ sequenceDiagram
     p3-->>p30: application.changed_files.extend(selected)
 ```
 
-> Call sequence diagram shows 30 of 6212 interactions; 6182 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 6153 interactions; 6123 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 2174 (2173 omitted); unresolved 1 of 1901 (1900 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 2166 (2165 omitted); unresolved 1 of 1849 (1848 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -166,7 +167,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/commands/sync_cmd.py:_sync_run_options_from_args` | 2 | [src/llm_wiki_cli/services/inventory_cache.py](../modules/inventory_cache.md) | internal | 1 |
 | `src/llm_wiki_cli/services/extraction_jobs.py:extraction_job_request_from_args` | 28 | - | external | 5 |
 | `src/llm_wiki_cli/services/extraction_jobs.py:extraction_job_request_from_args` | 28 | [src/llm_wiki_cli/services/extraction_jobs.py](../modules/extraction_jobs.md) | internal | 1 |
-> Omission summary shows 8 of 1377 groups; 1369 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1376 groups; 1368 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -252,7 +253,7 @@ flowchart LR
 | _sync_run_options_from_args | getattr (src/llm_wiki_cli/commands…ync_run_options_from_args) | 2428 | `getattr(args, 'no_plugins', False)` |
 | _sync_run_options_from_args | _cache_options_from_args | 2429 | `_cache_options_from_args(args)` |
 | _cache_options_from_args | cache_options_from_args | 306 | `cache_options_from_args(args)` |
-| cache_options_from_args | bool (src/llm_wiki_cli/services…y:cache_options_from_args) | 311 | `bool(getattr(...))` |
+| cache_options_from_args | bool (src/llm_wiki_cli/services…y:cache_options_from_args) | 312 | `bool(getattr(...))` |
 
 ### Boundary effects
 

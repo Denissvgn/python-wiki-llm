@@ -50,6 +50,7 @@ narrow qualification. Failed and unavailable paths remain qualified gaps.
 | `.contracts` | `EXTRACT_DATA_FLOW_DETAILS_SCHEMA_VERSION`, `EXTRACT_SCHEMA_VERSION` |
 | `.data_flow` | `DEFAULT_DATA_FLOW_DETAILS_FLOW_LIMIT`, `analyze_data_flow`, `analyze_data_flow_detailed`, `build_data_flow_context`, `data_flow_effective_limits` |
 | `.dependencies` | `analyze_dependencies` |
+| `.dockerfile_parser` | `parse_dockerfile` |
 | `.entrypoints` | `DEFAULT_FLOW_DEPTH`, `build_flow`, `build_flow_detailed`, `detect_entry_points`, `read_console_scripts`, `get_entry_points` |
 | `.extraction_jobs` | `ExtractionJobPlan`, `ExtractionJobRequest` |
 | `.go_calls` | `attach_go_receiver_methods`, `resolve_go_call` |
@@ -101,9 +102,9 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (23) |
-| Outbound | `src` (30) |
+| Outbound | `src` (31) |
 
-> All 53 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 54 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
@@ -215,7 +216,7 @@ flowchart LR
 | `_call_observations_for_file` | `(filepath: str, data: dict, symbol_to_files: dict[str, set[str]], module_resolver) -> list[dict]` | — | — |
 | `resolve_call_observations` | `(inventory: dict) -> dict` | — | Return deterministic, versioned call observations with honest ambiguity. |
 | `resolve_call_edges` | `(inventory: dict) -> list[dict]` | — | Resolve captured ``calls`` records into caller→callee edges. |
-| `_parse_dockerfile` | `(text: str) -> dict` | — | Parse a Dockerfile into a structured dict (line-based, no external deps). |
+| `_parse_dockerfile` | `(text: str) -> dict` | — | Parse Dockerfile source declarations with their owning build stage. |
 | `_parse_inline_yaml_list` | `(value: str) -> list[str] \| None` | — | Parse an inline YAML list like ``["CMD", "curl", "-f", "http://..."]``. |
 | `_parse_compose` | `(text: str) -> dict` | — | Parse one Compose document while preserving nested YAML structures. |
 | `_valid_compose_document` | `(document: object) -> bool` | — | — |

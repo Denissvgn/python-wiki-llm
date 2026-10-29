@@ -58,7 +58,7 @@ flowchart LR
 |-------|------|-------|-------------|
 | [InventoryCacheOptions](../entities/InventoryCacheOptions.md) | 42 | — | Runtime cache controls for inventory-producing commands. |
 | [InventoryCacheStats](../entities/InventoryCacheStats.md) | 56 | — | — |
-| [InventoryCache](../entities/InventoryCache.md) | 357 | — | JSON-backed cache for per-file built-in inventory entries. |
+| [InventoryCache](../entities/InventoryCache.md) | 358 | — | JSON-backed cache for per-file built-in inventory entries. |
 
 ## Functions
 
