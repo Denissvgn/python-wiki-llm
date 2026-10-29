@@ -30,25 +30,65 @@ def _words(value: str, escape: str = "\\") -> list[str]:
         return value.split()
 
 
+def _heredoc_words(value: str) -> list[str]:
+    """Retain quotes and escapes so literal redirects cannot become heredocs."""
+    words = []
+    start = None
+    quote = ""
+    escaped = False
+    for index, char in enumerate(value):
+        if start is None:
+            if char.isspace():
+                continue
+            start = index
+        if escaped:
+            escaped = False
+        elif char == "\\" and quote != "'":
+            escaped = True
+        elif quote:
+            if char == quote:
+                quote = ""
+        elif char in "\"'":
+            quote = char
+        elif char.isspace():
+            words.append(value[start:index])
+            start = None
+    if quote:
+        return []
+    if start is not None:
+        words.append(value[start:])
+    return words
+
+
 def _heredocs(instruction: str, value: str) -> list[tuple[str, bool]]:
+    if instruction == "ONBUILD":
+        parts = value.split(None, 1)
+        if len(parts) != 2:
+            return []
+        instruction, value = parts[0].upper(), parts[1]
     if instruction not in {"RUN", "COPY", "ADD"}:
         return []
-    lexer = shlex.shlex(value, posix=False, punctuation_chars="<>")
-    lexer.whitespace_split = True
-    lexer.commenters = ""
-    try:
-        tokens = list(lexer)
-    except ValueError:
-        return []
+    tokens = _heredoc_words(value)
     result = []
-    for index, token in enumerate(tokens[:-1]):
-        if token == "<<":
-            delimiter = tokens[index + 1]
-            tabs = delimiter.startswith("-")
-            delimiter = delimiter.removeprefix("-").strip("\"'")
-            if re.fullmatch(r"[\w.-]+", delimiter):
-                result.append((delimiter, tabs))
+    for index, token in enumerate(tokens):
+        if re.fullmatch(r"\d*<<", token) and index + 1 < len(tokens):
+            token += " " + tokens[index + 1]
+        match = re.fullmatch(r"\d*<<(-?)\s*([^<]+)", token)
+        if match:
+            try:
+                delimiter = shlex.split(match[2], comments=False)
+            except ValueError:
+                continue
+            if len(delimiter) == 1 and delimiter[0]:
+                result.append((delimiter[0], bool(match[1])))
     return result
+
+
+def _trim_continuation(line: str, escape: str) -> tuple[str, bool]:
+    # Match Docker's immediate-predecessor rule, including an escape-only line.
+    token = re.escape(escape)
+    match = re.search(rf"(?<!{token}){token}[ \t]*$", line)
+    return (line[:match.start()], True) if match else (line, False)
 
 
 def _instructions(text: str):
@@ -56,28 +96,33 @@ def _instructions(text: str):
     lines = text.removeprefix("\ufeff").replace("\r\n", "\n").replace("\r", "\n").split("\n")
     escape = "\\"
     index = 0
-    started = False
+    directives_open = True
+    seen_directives: set[str] = set()
     while index < len(lines):
         raw = lines[index]
         start = index + 1
         index += 1
-        if not started:
-            directive = re.fullmatch(r"\s*#\s*escape\s*=\s*([\\`])\s*", raw, re.IGNORECASE)
-            if directive:
-                escape = directive[1]
+        if directives_open:
+            directive = re.fullmatch(r"\s*#\s*(syntax|escape|check)\s*=\s*(\S.*?)\s*", raw, re.IGNORECASE)
+            if directive and directive[1].lower() not in seen_directives:
+                seen_directives.add(directive[1].lower())
+                if directive[1].lower() == "escape" and directive[2] in {"\\", "`"}:
+                    escape = directive[2]
+            else:
+                directives_open = False
         if not raw.strip() or raw.lstrip().startswith("#"):
             continue
-        started = True
-        value = raw.rstrip()
-        while value.endswith(escape) and index < len(lines):
-            value = value[:-1] + " "
+        value, continued = _trim_continuation(raw.lstrip(), escape)
+        while continued and index < len(lines):
             following = lines[index]
             index += 1
-            while (not following.strip() or following.lstrip().startswith("#")) and index < len(lines):
-                following = lines[index]
-                index += 1
-            value += following.strip()
+            if not following.strip() or following.lstrip().startswith("#"):
+                continue
+            fragment, continued = _trim_continuation(following, escape)
+            value += fragment
         parts = value.strip().split(None, 1)
+        if not parts:
+            continue
         instruction, argument = parts[0].upper(), parts[1] if len(parts) > 1 else ""
         for delimiter, strip_tabs in _heredocs(instruction, argument):
             while index < len(lines):

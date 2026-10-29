@@ -6,6 +6,7 @@ import json
 import sys
 
 from markdown_it import MarkdownIt
+import pytest
 
 from llm_wiki_cli import cli
 from llm_wiki_cli.commands.extract_cmd import _parse_dockerfile
@@ -129,6 +130,79 @@ def test_escape_directive_and_continuation_comments_keep_stage_boundaries():
     assert parsed["workdir"] == "" and parsed["stages"][1]["base_stage"] is None
 
 
+@pytest.mark.parametrize("escape", ["\\", "`"])
+def test_continued_words_and_quoted_whitespace_keep_their_source_meaning(escape):
+    source = (f"# escape={escape}\nFROM scr{escape}\natch AS build\n"
+              f'ENV JOINED=hello{escape}\nworld SPACED="hello{escape}\n  world"\n'
+              f"FROM bu{escape}\n# ignored continuation comment\nild AS runtime\n")
+    parsed = _parse_dockerfile(source)
+    build, runtime = parsed["stages"]
+    assert build["image"] == "scratch" and build["alias"] == "build"
+    assert build["env_vars"] == [{"name": "JOINED", "default": "helloworld"},
+                                 {"name": "SPACED", "default": "hello  world"}]
+    assert runtime["base_kind"] == "stage" and runtime["base_stage"] == 0
+    first, second = _stage_sections(_generate_dockerfile_md("Dockerfile", parsed))
+    assert "helloworld" in first and "inherits the image from stage 1" in second
+
+
+@pytest.mark.parametrize("escape", ["\\", "`"])
+def test_doubled_escape_does_not_consume_the_next_stage(escape):
+    source = (f"# escape={escape}\nFROM scratch AS build\nENV BUILD_ONLY=tail{escape}{escape}\n"
+              'FROM scratch AS runtime\nCMD ["/application"]\n')
+    parsed = _parse_dockerfile(source)
+    assert [stage["alias"] for stage in parsed["stages"]] == ["build", "runtime"]
+    assert parsed["env_vars"] == [] and parsed["cmd"] == '["/application"]'
+    first, second = _stage_sections(_generate_dockerfile_md("Dockerfile", parsed))
+    assert "BUILD_ONLY" in first and "BUILD_ONLY" not in second
+
+
+@pytest.mark.parametrize("prefix", ["# ordinary comment\n", "\n", "# unknown=value\n"])
+def test_escape_directives_after_the_directive_block_are_only_comments(prefix):
+    source = prefix + '# escape=`\nFROM scratch AS build\nENV BUILD_ONLY=one`\nFROM scratch AS runtime\n'
+    parsed = _parse_dockerfile(source)
+    assert [stage["alias"] for stage in parsed["stages"]] == ["build", "runtime"]
+    assert parsed["stages"][0]["env_vars"] == [{"name": "BUILD_ONLY", "default": "one`"}]
+
+
+@pytest.mark.parametrize(("instruction", "marker", "terminator"), [("COPY", "E\"OF\"", "EOF"),
+    ("RUN", "'END OF FILE'", "END OF FILE"), ("COPY", "EOF!", "EOF!"), ("COPY", "\\EOF", "EOF")])
+def test_quoted_and_escaped_heredoc_delimiters_keep_bodies_out_of_the_inventory(instruction, marker, terminator):
+    source = (f"FROM scratch AS build\n{instruction} <<{marker}" + (" /notice" if instruction == "COPY" else "") + "\n"
+              f"FROM bogus AS invented\nENV WRONG=1\n{terminator}\n"
+              'FROM scratch AS runtime\nCOPY --from=build /notice /notice\n')
+    parsed = _parse_dockerfile(source)
+    assert [stage["alias"] for stage in parsed["stages"]] == ["build", "runtime"]
+    assert all(stage["env_vars"] == [] for stage in parsed["stages"])
+    if instruction == "COPY":
+        assert parsed["stages"][0]["copies"][0]["inline"] is True
+    assert "ENV WRONG=1" in parsed["stages"][0]["instructions"][1]["value"]
+
+
+def test_onbuild_heredoc_bodies_are_owned_by_the_trigger_instruction():
+    parsed = _parse_dockerfile('FROM scratch AS build\nONBUILD COPY <<EOF /notice\n'
+                              'FROM bogus AS invented\nENV WRONG=1\nEOF\nFROM scratch AS runtime\n')
+    assert [stage["alias"] for stage in parsed["stages"]] == ["build", "runtime"]
+    assert parsed["stages"][0]["env_vars"] == []
+    assert parsed["stages"][0]["instructions"][1]["instruction"] == "ONBUILD"
+    assert "ENV WRONG=1" in parsed["stages"][0]["instructions"][1]["value"]
+
+
+def test_nested_onbuild_fragments_remain_opaque_without_recursive_interpretation():
+    source = "ONBUILD " * 1500 + "RUN true"
+    parsed = _parse_dockerfile("FROM scratch\n" + source + "\nFROM scratch AS runtime\n")
+    assert parsed["stages"][0]["instructions"][1]["value"] == source.removeprefix("ONBUILD ")
+    assert parsed["stages"][1]["alias"] == "runtime"
+
+
+@pytest.mark.parametrize("source", ['COPY prefix"<<EOF" /notice', 'RUN echo prefix"<<EOF"',
+                                    'RUN ["echo", "<<EOF"]', 'COPY ["<<EOF", "/notice"]'])
+def test_literal_heredoc_text_does_not_consume_following_stages(source):
+    parsed = _parse_dockerfile(f'FROM scratch AS build\n{source}\nFROM scratch AS runtime\nCMD ["/application"]\n')
+    assert [stage["alias"] for stage in parsed["stages"]] == ["build", "runtime"]
+    assert parsed["stages"][0]["instructions"][1]["value"].count("\n") == 0
+    assert parsed["cmd"] == '["/application"]'
+
+
 def test_legacy_multistage_records_do_not_render_an_unsafe_command_pair():
     legacy = {"type": "dockerfile", "stages": [{"image": "scratch", "alias": "build"}, {"image": "scratch", "alias": "runtime"}],
               "entrypoint": '["/build-tool"]', "cmd": '["/application"]', "env_vars": [{"name": "BUILD_ONLY", "default": "1"}]}
@@ -144,16 +218,22 @@ def test_stage_sections_inherit_generated_ownership():
     assert selected and all(item.ownership is SectionOwnership.GENERATED for item in selected)
 
 
-def test_stage_only_edits_flow_through_extract_bootstrap_sync_and_strict_lint(tmp_path, monkeypatch, capsys):
+@pytest.mark.parametrize("syntax", ["plain", "continued-from", "heredoc"])
+def test_stage_only_edits_flow_through_extract_bootstrap_sync_and_strict_lint(tmp_path, monkeypatch, capsys, syntax):
     (tmp_path / "demo.py").write_text("def marker():\n    pass\n")
     source = tmp_path / "Dockerfile"
-    source.write_text(INDEPENDENT)
+    text = INDEPENDENT
+    if syntax == "continued-from":
+        text = text.replace("FROM scratch AS build", "FROM scr\\\natch AS build")
+    elif syntax == "heredoc":
+        text = text.replace("ENV BUILD_ONLY=1\n", 'ENV BUILD_ONLY=1\nCOPY <<E"OF" /notice\nFROM scratch AS invented\nENV WRONG=1\nEOF\n')
+    source.write_text(text)
     monkeypatch.chdir(tmp_path)
 
     def run(command, *options):
         monkeypatch.setattr(sys, "argv", ["llm-wiki", command, "--src-dir", ".",
             *([] if command == "extract" else ["--wiki-dir", "wiki"]), *options,
-            *([] if command in {"bootstrap", "extract"} else ["--jobs", "1", "--no-cache"])])
+            *([] if command in {"bootstrap", "extract"} else ["--jobs", "1"])])
         cli.main()
         return capsys.readouterr().out
 
@@ -165,7 +245,7 @@ def test_stage_only_edits_flow_through_extract_bootstrap_sync_and_strict_lint(tm
     assert payload["docker"]["Dockerfile"]["stages"][1]["entrypoint"] == ""
     report = json.loads(run("lint", "--strict", "--profile"))
     assert report["ok"], report["issues"]
-    source.write_text(INDEPENDENT.replace("BUILD_ONLY=1", "BUILD_ONLY=2"))
+    source.write_text(text.replace("BUILD_ONLY=1", "BUILD_ONLY=2"))
     run("sync", "--no-plugins")
     first, second = _stage_sections(page.read_text())
     assert "`2`" in first and "BUILD_ONLY" not in second
