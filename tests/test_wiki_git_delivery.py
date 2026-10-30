@@ -257,6 +257,26 @@ def test_promisor_repository_fails_closed_before_requesting_objects(
     assert hashes(root) == before
 
 
+def test_included_promisor_configuration_cannot_trigger_a_lazy_fetch(
+    tmp_path, monkeypatch
+):
+    root, wiki = project(tmp_path, monkeypatch)
+    git(root, "add", "--", "wiki")
+    included = tmp_path / "partial-config"
+    included.write_text('[remote "origin"]\n promisor = true\n')
+    git(root, "config", "include.path", str(included))
+
+    def forbidden(*args, **kwargs):
+        pytest.fail(
+            "included partial-clone configuration must be checked before object access"
+        )
+
+    monkeypatch.setattr(delivery, "_blobs", forbidden)
+    result = delivery.inspect_wiki_git_delivery(wiki, staged=True)
+    assert result["delivery_state"] == "indeterminate"
+    assert result["staged"]["status"] == "indeterminate" and not result["ok"]
+
+
 def test_changed_ignore_policy_during_inspection_is_indeterminate(
     tmp_path, monkeypatch
 ):
@@ -281,6 +301,7 @@ def test_missing_git_and_inspection_limits_fail_closed(tmp_path, monkeypatch):
     (root / ".git").rename(tmp_path / "saved-git")
     result = delivery.inspect_wiki_git_delivery(wiki, staged=True)
     assert result["delivery_state"] == "indeterminate" and not result["ok"]
+    assert result["staged"]["status"] == "indeterminate"
 
 
 def test_linked_worktree_with_spaces_delivers_its_own_index(tmp_path, monkeypatch):

@@ -143,7 +143,7 @@ def _staged(root: Path, expected: Mapping[str, bytes], markdown: set[str]):
         root,
         [
             "config",
-            "--local",
+            "--includes",
             "--name-only",
             "--get-regexp",
             r"(^extensions\.partialclone$|^remote\..*\.promisor$)",
@@ -221,6 +221,8 @@ def inspect_wiki_git_delivery(
         policy = classify_wiki_git_policy(wiki_dir)
         if policy.repository_root is None or policy.wiki_path is None:
             result["reason"] = policy.reason
+            if staged:
+                result["staged"] = {"status": "indeterminate"}
             return result
         repository = policy.repository_root
         root = repository / policy.wiki_path

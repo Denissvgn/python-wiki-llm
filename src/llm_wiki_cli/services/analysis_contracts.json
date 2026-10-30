@@ -269,6 +269,7 @@
     "services/validation.py",
     "services/verification_contracts.py",
     "services/versioning.py",
+    "services/wiki_git_delivery.py",
     "services/wiki_git_policy.py",
     "services/wiki_lifecycle.py",
     "services/wiki_media.py",
