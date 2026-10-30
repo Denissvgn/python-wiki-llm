@@ -3029,7 +3029,7 @@ def _append_flow_analysis_coverage(lines: list[str], data_flow: Mapping) -> bool
             f"observed: {collector_counts.get('observed', 0)}, emitted: {collector_counts.get('emitted', 0)}, "
             f"omitted: {collector_counts.get('omitted', 0)}. Unavailable totals are excluded.", ""])
     messages = {
-        "upstream-callable-record-unavailable": "Callable record unavailable; the selected entry symbol has no represented callable body.",
+        "upstream-callable-record-unavailable": "Callable record unavailable for one or more source steps; those steps have no represented callable body.",
         "upstream-effect-observations-unavailable": "Effect observations unavailable for one or more represented callables.",
         "upstream-effect-collector-totals-may-be-unavailable": "Effect collector totals unavailable; observed counts cover captured records only.",
         "upstream-effect-collector-limit-reached": "Effect collector omitted observations before flow assembly; displayed effects are partial.",

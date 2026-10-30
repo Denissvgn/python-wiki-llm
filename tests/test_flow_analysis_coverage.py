@@ -8,7 +8,7 @@ import pytest
 from llm_wiki_cli.extractors.python_extractor import PythonExtractor
 from llm_wiki_cli.services.bootstrap_runtime import _generate_flow_md
 from llm_wiki_cli.services.data_flow import analyze_data_flow, analyze_data_flow_detailed, build_data_flow_context
-from llm_wiki_cli.services.extraction_service import _data_flow_details_contract, _public_data_flow_coverage
+from llm_wiki_cli.services.extraction_service import _data_flow_details_contract, _public_data_flow_coverage, build_extract_payload
 
 
 def _flow(symbol="server", filepath: str | None = "inline.mjs"):
@@ -184,3 +184,37 @@ def test_non_source_steps_do_not_borrow_same_named_local_effects(kind):
     assert data["analysis"]["state"] == "not_applicable"
     assert data["steps"][0]["inputs"] == []
     assert data["coverage"]["effects"]["observed"] == data["coverage"]["effects"]["emitted"] == 0
+
+
+@pytest.mark.parametrize("kind", ["reads", "boundary_effects"])
+def test_public_extract_preserves_upstream_collector_truncation_cause(tmp_path, kind):
+    if kind == "reads":
+        source = "\n".join(f"CONFIG_{index} = {index}" for index in range(20))
+        body = "    return (" + ", ".join(f"CONFIG_{index}" for index in range(20)) + ")\n"
+    else:
+        source = ""
+        body = "".join(f"    print({index})\n" for index in range(20))
+    (tmp_path / "svc.py").write_text(source + '\n__all__ = ["handle"]\ndef handle():\n' + body)
+
+    details = build_extract_payload(str(tmp_path), deep=True, allow_external_src=True).payload["data_flow_details"]
+    flow = next(flow for flow in details["flows"] if flow["id"] == "api-handle")
+    assert flow["analysis"]["state"] == "partial"
+    assert flow["analysis"]["collector_observations"]["omitted"] == 12
+    collections = [flow["coverage"]["effects"], flow["coverage"]["effects"]["by_kind"][kind]]
+    if kind == "boundary_effects":
+        collections.append(flow["coverage"]["boundaries"])
+    for coverage in collections:
+        assert "upstream-effect-collector-limit-reached" in coverage["upstream_analyzer_limitations"]
+        assert coverage["truncation_reason"] == "upstream-analyzer-limit"
+    assert flow["coverage"]["effects"]["by_kind"]["inputs"]["truncation_reason"] is None
+
+
+def test_missing_downstream_callable_is_not_described_as_the_entry():
+    inventory = {"svc.py": {"functions": [{"name": "run"}]}}
+    flow = _flow("run", "svc.py")
+    flow["steps"].append({"depth": 1, "file": "svc.py", "symbol": "missing", "kind": "internal"})
+    detailed = analyze_data_flow_detailed(inventory, flow, [], data_effect_observations=_zero_coverage("svc.py", ["run"]))
+    assert detailed["steps"][0]["analysis"]["effect_analysis"] == "evaluated"
+    page = _generate_flow_md(flow, data_flow=detailed)
+    assert "Callable record unavailable for one or more source steps" in page
+    assert "the selected entry symbol has no represented callable body" not in page

@@ -2026,7 +2026,10 @@ def _data_flow_truncation_reason(coverage: dict) -> str | None:
         return None
     limitations = coverage.get("limitations", [])
     if any(
-        isinstance(value, str) and value == "upstream-flow-depth-limit-reached"
+        isinstance(value, str) and value in {
+            "upstream-flow-depth-limit-reached",
+            "upstream-effect-collector-limit-reached",
+        }
         for value in limitations
     ):
         return "upstream-analyzer-limit"
