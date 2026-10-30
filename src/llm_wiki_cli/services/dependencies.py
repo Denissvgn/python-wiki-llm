@@ -51,6 +51,7 @@ from .python_imports import is_python_source
 from .python_stdlib import python_stdlib_module_names as _python_stdlib
 from .source_snapshot import SourceSnapshot, build_source_snapshot
 from .validation import (
+    nearest_path_scope,
     path_is_under as shared_path_is_under,
     path_is_under_scope as shared_path_is_under_scope,
     positive_int_or_none,
@@ -2173,29 +2174,14 @@ def _nearest_manifest_scope(
 ) -> Optional[_ManifestScope]:
     if manifest is None:
         return None
-    matches = [
-        scope for scope in manifest.scopes if _path_under_scope(filepath, scope.root)
-    ]
-    if not matches:
-        return None
-    return max(matches, key=lambda scope: (scope.root.count("/"), len(scope.root)))
+    root = nearest_path_scope(filepath, (scope.root for scope in manifest.scopes))
+    return next((scope for scope in manifest.scopes if scope.root == root), None)
 
 
 def _scope_label(scope: Optional[_ManifestScope]) -> str | None:
     if scope is None:
         return None
     return scope.root
-
-
-def _scope_was_scanned(scope: _ManifestScope, scanned_files: frozenset[str]) -> bool:
-    """Whether any extracted source file for this language sits under *scope*.
-
-    "Declared but not imported" is only meaningful when the importing code was
-    actually read. A manifest whose sources were never extracted — excluded from
-    project-source discovery, or skipped because its toolchain is not installed —
-    would otherwise report every one of its declared dependencies as unused.
-    """
-    return any(_path_under_scope(path, scope.root) for path in scanned_files)
 
 
 def _scope_manifest_paths(root: Path, language: str, snapshot: SourceSnapshot) -> list[Path]:
@@ -2270,6 +2256,10 @@ def describe_unscanned_scopes(
     snapshot = source_snapshot or build_source_snapshot(root)
     same_root = snapshot.root == root
     paths = _scope_manifest_paths(root, language, snapshot) if same_root else []
+    scope_roots = {"" if path.parent == root else path.parent.relative_to(root).as_posix() for path in paths}
+    source_paths = snapshot.language_paths(language) if same_root else ()
+    unsupported_paths = [p.rel_path for files in snapshot.unsupported_files_by_language.values() for p in files] if same_root else []
+    owners = {path: nearest_path_scope(path, scope_roots) for path in (*source_paths, *unsupported_paths)}
     results = []
     for scope in scopes:
         # Rust's legacy empty scope denotes the complete language, potentially
@@ -2278,9 +2268,10 @@ def describe_unscanned_scopes(
         owned = [_owned_scope_sources(root, p, language) for p in manifests]
         sources = [p for group in owned for p in group]
         missing = [p.relative_to(root).as_posix() for p in sources if not p.is_file()]
-        selected = [p for p in snapshot.language_paths(language) if _path_under_scope(p, scope)] if same_root else []
-        unsupported = [p.rel_path for files in snapshot.unsupported_files_by_language.values()
-                       for p in files if _path_under_scope(p.rel_path, scope)] if same_root else []
+        selected = [p for p in source_paths if _path_under_scope(p, scope)
+                    and (language == "rust" or owners[p] in {None, scope})]
+        unsupported = [p for p in unsupported_paths if _path_under_scope(p, scope)
+                       and (language == "rust" or owners[p] in {None, scope})]
         declared_missing = _explicit_missing_scope_source(root, manifests, language, snapshot)
         owner = "llm-wiki-helper" if owned and all(owned) else "unknown"
         if owner == "llm-wiki-helper" and missing:
@@ -2333,6 +2324,8 @@ def _reconcile_scoped_language(
             nearest_cache[filepath] = _nearest_manifest_scope(manifest, filepath)
         return nearest_cache[filepath]
 
+    # Only source owned by a manifest supplies evidence for its unused verdicts.
+    scanned_scopes = {_scope_label(nearest(path)) for path in scanned_files}
     undeclared: set[str] = set()
     undeclared_files: defaultdict[str, list[str]] = defaultdict(list)
     undeclared_scopes: defaultdict[str, set[str | None]] = defaultdict(set)
@@ -2349,7 +2342,7 @@ def _reconcile_scoped_language(
     unused_scopes: defaultdict[str, set[str | None]] = defaultdict(set)
     unscanned_scopes: set[str] = set()
     for scope in manifest.scopes:
-        if not _scope_was_scanned(scope, scanned_files):
+        if scope.root not in scanned_scopes:
             if scope.required:
                 unscanned_scopes.add(scope.root)
             continue

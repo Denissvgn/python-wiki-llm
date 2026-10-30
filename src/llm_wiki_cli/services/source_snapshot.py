@@ -1479,7 +1479,8 @@ def _build_source_snapshot(
 
 
 def unsupported_source_summary(
-    snapshot: SourceSnapshot, *, supported_languages: Iterable[str] = ()
+    snapshot: SourceSnapshot, *, supported_languages: Iterable[str] = (),
+    only_files: Iterable[str] | None = None,
 ) -> dict[str, dict[str, object]]:
     """Return nonempty unsupported source counts and paths.
 
@@ -1487,14 +1488,17 @@ def unsupported_source_summary(
     coverage once a plugin or built-in extractor for that language is active.
     """
     supported = set(supported_languages)
+    selected = None if only_files is None else _normalize_only_files(snapshot.root, only_files)
     summary: dict[str, dict[str, object]] = {}
     for language, source_files in sorted(
         snapshot.unsupported_files_by_language.items()
     ):
         if language in supported or not source_files:
             continue
-        paths = [source_file.rel_path for source_file in source_files]
-        summary[language] = {"count": len(paths), "paths": paths}
+        paths = [source_file.rel_path for source_file in source_files
+                 if selected is None or source_file.rel_path in selected]
+        if paths:
+            summary[language] = {"count": len(paths), "paths": paths}
     return summary
 
 
@@ -1616,8 +1620,8 @@ def build_source_snapshot(
 
     Source language files respect ``only_files`` when supplied. Docker,
     Compose, YAML, and package-marker candidates still cover the full source
-    tree so command paths that restrict source extraction preserve their
-    existing infrastructure and package behavior.
+    tree as context. Output consumers apply their own selection to emitted
+    infrastructure and unsupported-source records.
     """
     _validate_capture_options(max_files, max_bytes, respect_ignores, coherent, respect_discovery)
     root = Path(src_dir).resolve()

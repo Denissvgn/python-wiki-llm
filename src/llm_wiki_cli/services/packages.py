@@ -16,6 +16,7 @@ from typing import TYPE_CHECKING, Sequence
 
 from ..config import EXCLUDED_DIRS
 from .python_imports import normalized_root, under_root
+from .validation import nearest_path_scope
 
 if TYPE_CHECKING:
     from .source_snapshot import SourceSnapshot
@@ -252,6 +253,12 @@ def discover_packages(
     return packages
 
 
+def package_for_path(filepath: str, packages: Sequence[PackageInfo]) -> PackageInfo | None:
+    """Return the nearest project owner without matching partial path prefixes."""
+    root = nearest_path_scope(filepath, (package.root for package in packages))
+    return next((package for package in packages if package.root == root), None)
+
+
 def stamp_inventory_packages(
     inventory: dict,
     packages: Sequence[PackageInfo],
@@ -264,8 +271,6 @@ def stamp_inventory_packages(
     whose root is a prefix of the file path.  Files that don't belong
     to any package get ``package: None``.
     """
-    # Sort packages longest-root-first for greedy matching
-    sorted_pkgs = sorted(packages, key=lambda p: len(p.root), reverse=True)
     known_paths = {path.replace("\\", "/") for path in (*inventory, *source_paths)}
     scopes = {
         package: _package_import_scope(package, known_paths) for package in packages
@@ -276,25 +281,13 @@ def stamp_inventory_packages(
         if data.get("language") != "python":
             data["package"] = None
             continue
-        fp_posix = filepath.replace("\\", "/")
-        matched = None
-        for pkg in sorted_pkgs:
-            prefix = pkg.root
-            if prefix == ".":
-                matched = pkg.name
-                data["python_import_scope"] = {
-                    "root": scopes[pkg]["root"],
-                    "search_roots": list(scopes[pkg]["search_roots"]),
-                }
-                break
-            if fp_posix == prefix or fp_posix.startswith(prefix + "/"):
-                matched = pkg.name
-                data["python_import_scope"] = {
-                    "root": scopes[pkg]["root"],
-                    "search_roots": list(scopes[pkg]["search_roots"]),
-                }
-                break
-        data["package"] = matched
+        package = package_for_path(filepath, packages)
+        if package is not None:
+            data["python_import_scope"] = {
+                "root": scopes[package]["root"],
+                "search_roots": list(scopes[package]["search_roots"]),
+            }
+        data["package"] = package.name if package is not None else None
 
 
 def _package_import_scope(package: PackageInfo, source_paths: set[str]) -> dict:

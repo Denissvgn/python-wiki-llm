@@ -474,6 +474,14 @@ def path_is_under_scope(path: str, scope_root: str) -> bool:
     return not scope_root or path_is_under(normalized, scope_root)
 
 
+def nearest_path_scope(path: str, scope_roots: Iterable[str]) -> str | None:
+    """Return the nearest owning scope, accepting both empty-root spellings."""
+    return max(
+        (root for root in scope_roots if path_is_under_scope(path, "" if root == "." else root)),
+        key=lambda root: (root not in {"", "."}, root.count("/"), len(root)), default=None,
+    )
+
+
 def path_is_within(path: Path, root: Path) -> bool:
     """Return whether *path* is equal to or lexically below *root*."""
 

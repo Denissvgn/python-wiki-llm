@@ -82,7 +82,7 @@ from .inventory_cache import (
     make_cache_entry,
 )
 from .io import write_text_output
-from .packages import discover_packages, stamp_inventory_packages
+from .packages import discover_packages, package_for_path, stamp_inventory_packages
 from .plugins import (
     get_extractor_registry,
     iter_components,
@@ -1923,6 +1923,36 @@ def _build_extract_source_snapshot(
     )
 
 
+def _canonical_extract_paths(root: Path, paths: Iterable[str]) -> list[str]:
+    """Normalize accepted path spellings without admitting paths outside root."""
+    selected: set[str] = set()
+    for path in paths:
+        try:
+            selected.add((root / Path(path).expanduser()).resolve().relative_to(root).as_posix())
+        except (OSError, ValueError):
+            continue
+    return sorted(selected)
+
+
+def _extract_output_paths(
+    snapshot: SourceSnapshot, only_files: list[str] | None, package_filter: str | None,
+) -> frozenset[str] | None:
+    """Select emitted records independently of broader snapshot context."""
+    if only_files is None and not package_filter:
+        return None
+    paths = set(only_files) if only_files is not None else set(snapshot.all_source_paths)
+    if only_files is None:
+        for candidates in (snapshot.dockerfile_candidates, snapshot.compose_candidates,
+                           snapshot.yaml_candidates, snapshot.package_markers,
+                           *snapshot.unsupported_files_by_language.values()):
+            paths.update(source.rel_path for source in candidates)
+    if package_filter:
+        packages = discover_packages(str(snapshot.root), source_snapshot=snapshot)
+        paths = {path for path in paths
+                 if (owner := package_for_path(path, packages)) is not None and owner.name == package_filter}
+    return frozenset(paths)
+
+
 def _compact_summary_names(items: Iterable, key: str | None = None) -> list[str]:
     names: list[str] = []
     seen: set[str] = set()
@@ -2164,7 +2194,7 @@ def build_extract_payload(
     if paths:
         validate_source_paths(src_root, paths, "--paths")
 
-    if changed and paths:
+    if changed and paths is not None:
         raise ValueError("--changed and --paths are mutually exclusive.")
 
     supplied_snapshot = source_snapshot
@@ -2207,8 +2237,11 @@ def build_extract_payload(
             changed_file_count = len(only_files)
         if only_files == []:
             no_changed_files = True
-    elif paths:
+    elif paths is not None:
         only_files = paths
+
+    if only_files is not None:
+        only_files = _canonical_extract_paths(src_root, only_files)
 
     if no_changed_files:
         empty_output = {"schema_version": EXTRACT_SCHEMA_VERSION, "inventory": {}}
@@ -2260,11 +2293,16 @@ def build_extract_payload(
             selection_policy=selection_policy,
         )
     )
+    output_paths = _extract_output_paths(source_snapshot, only_files, package_filter)
+    inventory_paths = only_files
+    if package_filter:
+        inventory_paths = sorted(source.rel_path for source in source_snapshot.files_by_language.get("python", ())
+                                 if output_paths is not None and source.rel_path in output_paths)
     result = get_inventory_result(
         InventoryRequest(
             src_dir=str(src_root),
             deep=deep,
-            only_files=only_files,
+            only_files=inventory_paths,
             include_empty=include_empty,
             source_snapshot=source_snapshot,
             helper_cache_dir=helper_cache_dir,
@@ -2279,6 +2317,8 @@ def build_extract_payload(
     if result.failed and not path_diagnostics:
         raise ExtractorFailureError(result)
     inventory = result.inventory
+    if output_paths is not None:
+        inventory = {path: record for path, record in inventory.items() if path in output_paths}
 
     if package_filter:
         inventory = {
@@ -2286,8 +2326,17 @@ def build_extract_payload(
             for fp, data in inventory.items()
             if data.get("package") == package_filter
         }
-        if not inventory:
-            raise ValueError(f"No files found for package '{package_filter}'.")
+
+    if output_paths is None:
+        docker_inv = get_docker_inventory(str(src_root), source_snapshot=source_snapshot)
+        unsupported_sources = unsupported_source_summary(source_snapshot, supported_languages=result.statuses)
+    else:
+        docker_inv = get_docker_inventory(str(src_root), source_snapshot=source_snapshot, only_files=output_paths)
+        unsupported_sources = unsupported_source_summary(
+            source_snapshot, supported_languages=result.statuses, only_files=output_paths,
+        )
+    if package_filter and not inventory and not docker_inv and not unsupported_sources:
+        raise ValueError(f"No files found for package '{package_filter}'.")
 
     api_contracts = (
         build_api_contracts(
@@ -2312,12 +2361,10 @@ def build_extract_payload(
             source_plugins_only=source_plugins_only,
             include_plugins=include_plugins,
         )
+        console_scripts = read_console_scripts(str(src_root), source_snapshot=source_snapshot)
         entrypoint_result = detect_entry_points(
             inventory,
-            console_scripts=read_console_scripts(
-                str(src_root),
-                source_snapshot=source_snapshot,
-            ),
+            console_scripts=console_scripts,
             root=str(src_root),
             fallback_root=(
                 None
@@ -2332,6 +2379,12 @@ def build_extract_payload(
         )
         entrypoints = entrypoint_result.entries
         entrypoints = attach_routes_to_entry_points(entrypoints, api_contracts or {})
+        if output_paths is not None:
+            selected_scripts = ({(script["name"], script["attr"]) for script in console_scripts}
+                                if "pyproject.toml" in output_paths else set())
+            entrypoints = [entry for entry in entrypoints if entry.get("file") in output_paths
+                          or (entry.get("file") is None and entry.get("category") == "process"
+                              and (entry.get("label"), entry.get("symbol")) in selected_scripts)]
         entrypoint_warnings = entrypoint_result.warnings
     else:
         entrypoints = []
@@ -2394,17 +2447,12 @@ def build_extract_payload(
     if summary:
         inventory = _summarize_inventory(inventory)
 
-    docker_inv = get_docker_inventory(str(src_root), source_snapshot=source_snapshot)
-
     output: dict = {
         "schema_version": EXTRACT_SCHEMA_VERSION,
         "inventory": inventory,
     }
     if docker_inv:
         output["docker"] = docker_inv
-    unsupported_sources = unsupported_source_summary(
-        source_snapshot, supported_languages=result.statuses
-    )
     if unsupported_sources:
         output["unsupported_sources"] = unsupported_sources
     if entrypoints:
@@ -3275,7 +3323,8 @@ def _looks_like_compose(text: str) -> bool:
 
 
 def get_docker_inventory(
-    src_dir: str | Path, *, source_snapshot: SourceSnapshot | None = None
+    src_dir: str | Path, *, source_snapshot: SourceSnapshot | None = None,
+    only_files: Iterable[str] | None = None,
 ) -> dict:
     """Discover and parse Dockerfiles and Compose files in the source tree.
 
@@ -3287,16 +3336,21 @@ def get_docker_inventory(
        catches non-standard names like ``infra.yml`` or ``core.yml`` that
        are common in split-compose layouts.
 
-    Respects .gitignore rules to skip ignored files.
+    Respects .gitignore rules to skip ignored files. ``only_files`` restricts
+    emitted candidates before their contents are parsed; an empty selection
+    emits nothing. A supplied snapshot may retain broader context.
 
     Returns a dict of relative-path -> parsed data.  Keys always use
     forward slashes regardless of the host OS.
     """
     source_snapshot = source_snapshot or build_source_snapshot(src_dir)
+    selected = None if only_files is None else set(_canonical_extract_paths(source_snapshot.root, only_files))
     inventory: dict[str, dict] = {}
 
     for source_file in source_snapshot.dockerfile_candidates:
         rel = source_file.rel_path
+        if selected is not None and rel not in selected:
+            continue
         if rel not in inventory:
             inventory[rel] = _parse_dockerfile(
                 source_file.abs_path.read_text(errors="replace")
@@ -3304,6 +3358,8 @@ def get_docker_inventory(
 
     for source_file in source_snapshot.compose_candidates:
         rel = source_file.rel_path
+        if selected is not None and rel not in selected:
+            continue
         if rel not in inventory:
             inventory[rel] = _parse_compose(
                 source_file.abs_path.read_text(errors="replace")
@@ -3311,6 +3367,8 @@ def get_docker_inventory(
 
     for source_file in source_snapshot.yaml_candidates:
         rel = source_file.rel_path
+        if selected is not None and rel not in selected:
+            continue
         if rel in inventory:
             continue
         text = source_file.abs_path.read_text(errors="replace")

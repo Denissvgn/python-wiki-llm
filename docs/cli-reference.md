@@ -492,6 +492,22 @@ llm-wiki extract --src-dir . --summary --output sources/code.json --read-only
 llm-wiki extract --src-dir /path/to/repo --allow-external-src --summary
 ```
 
+`--paths` selects emitted code, Docker/Compose records, and unsupported-source
+advisories by source-relative file path. Referenced Docker build contexts and
+`COPY` sources do not add files to that selection. `--changed` applies the same
+scope to files changed in the last commit; when a Git diff is unavailable or
+source-selection controls changed, extraction reevaluates the selected source
+tree. Use `--paths` for an exact file selection.
+`--package` uses the nearest recognized Python project marker (`pyproject.toml`
+or `setup.py`) to select Python code and infrastructure; nested projects own their own
+files. It can return infrastructure without code records. Combining package and
+path/change selectors takes their intersection. Project manifests and lockfiles
+remain context for package ownership and dependency reconciliation.
+In the Python API, an empty `paths` list selects no files; omitting `paths`
+selects the source tree.
+Scoped entry points bind to selected files. Unresolved project-script declarations
+remain visible when their `pyproject.toml` is selected, including full-tree reads.
+
 The JSON output includes `schema_version: "llm-wiki-extract/v1"` plus
 `inventory` and optional `docker` and `unsupported_sources` objects.
 Deep flow output separates evaluated flow assembly from source effect analysis.
