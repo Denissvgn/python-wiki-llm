@@ -68,10 +68,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_exact_choice | require_string | 1092 | `require_string(value, error=error)` |
-| require_string | isinstance | 744 | `isinstance(value, str)` |
-| require_string | value.encode | 748 | `value.encode('utf-8')` |
-| require_exact_choice | frozenset | 1093 | `frozenset(choices)` |
+| require_exact_choice | require_string | 1100 | `require_string(value, error=error)` |
+| require_string | isinstance | 752 | `isinstance(value, str)` |
+| require_string | value.encode | 756 | `value.encode('utf-8')` |
+| require_exact_choice | frozenset | 1101 | `frozenset(choices)` |
 
 ### Boundary effects
 
@@ -81,9 +81,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_string` | `isinstance` | 744 |
-| unresolved_call | `require_string` | `value.encode` | 748 |
-| external_call | `require_exact_choice` | `frozenset` | 1093 |
+| external_call | `require_string` | `isinstance` | 752 |
+| unresolved_call | `require_string` | `value.encode` | 756 |
+| external_call | `require_exact_choice` | `frozenset` | 1101 |
 
 ## Behavior
 

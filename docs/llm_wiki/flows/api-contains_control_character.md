@@ -52,7 +52,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| contains_control_character | pattern.search | 685 | `pattern.search(value)` |
+| contains_control_character | pattern.search | 693 | `pattern.search(value)` |
 
 ### Boundary effects
 
@@ -62,7 +62,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `contains_control_character` | `pattern.search` | 685 |
+| unresolved_call | `contains_control_character` | `pattern.search` | 693 |
 
 ## Behavior
 

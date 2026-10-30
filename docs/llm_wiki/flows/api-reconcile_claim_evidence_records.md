@@ -191,14 +191,14 @@ flowchart LR
 | reconcile_claim_evidence_records | _normalize_claim_record | 400 | `_normalize_claim_record(raw, 'claim_evidence')` |
 | _normalize_claim_record | _mapping | 592 | `_mapping(value, field_name)` |
 | _mapping | require_mapping | 1423 | `require_mapping(value, error=DocumentationClaimEvidenceError(...), require_string_keys=True)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 765 | `isinstance(value, Mapping)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 769 | `isinstance(key, str)` |
-| require_mapping | key.encode | 774 | `key.encode('utf-8')` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 773 | `isinstance(value, Mapping)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 777 | `isinstance(key, str)` |
+| require_mapping | key.encode | 782 | `key.encode('utf-8')` |
 | _mapping | DocumentationClaimEvidenceError | 1425 | `DocumentationClaimEvidenceError(...)` |
 | _normalize_claim_record | _exact_fields | 593 | `_exact_fields(record, _CLAIM_FIELDS, _CLAIM_REQUIRED, field_name)` |
 | _exact_fields | require_exact_fields | 1447 | `require_exact_fields(value, allowed=allowed, required=required, mapping_error=DocumentationClaimEvidenceError(...), missing_error=..., unknown_error=...)` |
-| require_exact_fields | isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields) | 1243 | `isinstance(value, Mapping)` |
-| require_exact_fields | str (src/llm_wiki_cli/services…n.py:require_exact_fields) | 1245 | `str(key)` |
+| require_exact_fields | isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields) | 1251 | `isinstance(value, Mapping)` |
+| require_exact_fields | str (src/llm_wiki_cli/services…n.py:require_exact_fields) | 1253 | `str(key)` |
 
 ### Boundary effects
 
@@ -211,10 +211,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_mapping` | `isinstance` | 765 |
-| external_call | `require_mapping` | `isinstance` | 769 |
-| unresolved_call | `require_mapping` | `key.encode` | 774 |
-| external_call | `require_exact_fields` | `isinstance` | 1243 |
+| external_call | `require_mapping` | `isinstance` | 773 |
+| external_call | `require_mapping` | `isinstance` | 777 |
+| unresolved_call | `require_mapping` | `key.encode` | 782 |
+| external_call | `require_exact_fields` | `isinstance` | 1251 |
 | step_limit | `reconcile_claim_evidence_records` | `first 12 steps` | 0 |
 | truncated_flow | `reconcile_claim_evidence_records` | `depth limit` | 0 |
 

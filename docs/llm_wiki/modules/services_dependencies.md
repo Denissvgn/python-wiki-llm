@@ -44,7 +44,7 @@ name mapping is best-effort per ecosystem, so undeclared/unused are advisory.
 | `.python_imports` | `is_python_source` |
 | `.python_stdlib` | `python_stdlib_module_names` |
 | `.source_snapshot` | `SourceSnapshot`, `build_source_snapshot` |
-| `.validation` | `path_is_under`, `path_is_under_scope`, `positive_int_or_none` |
+| `.validation` | `nearest_path_scope`, `path_is_under`, `path_is_under_scope`, `positive_int_or_none` |
 | `__future__` | `annotations` |
 | `collections` | `defaultdict` |
 | `dataclasses` | `dataclass` |
@@ -91,9 +91,9 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [_ManifestScope](../entities/ManifestScope.md) | 792 | — | A scoped dependency manifest rooted at a project-relative directory. |
-| [_Manifest](../entities/Manifest.md) | 806 | — | A language's declared dependencies, parsed from its manifest. |
-| [_LanguagePlugin](../entities/LanguagePlugin.md) | 828 | — | A manifest parser + import classifier for one language family. |
+| [_ManifestScope](../entities/ManifestScope.md) | 793 | — | A scoped dependency manifest rooted at a project-relative directory. |
+| [_Manifest](../entities/Manifest.md) | 807 | — | A language's declared dependencies, parsed from its manifest. |
+| [_LanguagePlugin](../entities/LanguagePlugin.md) | 829 | — | A manifest parser + import classifier for one language family. |
 
 ## Functions
 
@@ -177,7 +177,6 @@ flowchart LR
 | `_path_under_scope` | `(filepath: str, scope_root: str) -> bool` | — | — |
 | `_nearest_manifest_scope` | `(manifest: Optional[_Manifest], filepath: str) -> Optional[_ManifestScope]` | — | — |
 | `_scope_label` | `(scope: Optional[_ManifestScope]) -> str \| None` | — | — |
-| `_scope_was_scanned` | `(scope: _ManifestScope, scanned_files: frozenset[str]) -> bool` | — | Whether any extracted source file for this language sits under *scope*. |
 | `_scope_manifest_paths` | `(root: Path, language: str, snapshot: SourceSnapshot) -> list[Path]` | — | — |
 | `_owned_scope_sources` | `(root: Path, manifest: Path, language: str) -> list[Path]` | — | — |
 | `_explicit_missing_scope_source` | `(root: Path, manifests: list[Path], language: str, snapshot: SourceSnapshot) -> list[str]` | — | — |

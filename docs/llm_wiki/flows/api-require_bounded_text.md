@@ -77,12 +77,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_bounded_text | isinstance | 650 | `isinstance(value, str)` |
-| require_bounded_text | len | 651 | `len(value)` |
-| require_bounded_text | len | 652 | `len(value)` |
-| require_bounded_text | value.strip | 653 | `value.strip(data not statically known)` |
-| require_bounded_text | contains_control_character | 656 | `contains_control_character(value, reject_delete_character=reject_delete_character)` |
-| contains_control_character | pattern.search | 685 | `pattern.search(value)` |
+| require_bounded_text | isinstance | 658 | `isinstance(value, str)` |
+| require_bounded_text | len | 659 | `len(value)` |
+| require_bounded_text | len | 660 | `len(value)` |
+| require_bounded_text | value.strip | 661 | `value.strip(data not statically known)` |
+| require_bounded_text | contains_control_character | 664 | `contains_control_character(value, reject_delete_character=reject_delete_character)` |
+| contains_control_character | pattern.search | 693 | `pattern.search(value)` |
 
 ### Boundary effects
 
@@ -92,9 +92,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_bounded_text` | `isinstance` | 650 |
-| unresolved_call | `require_bounded_text` | `value.strip` | 653 |
-| unresolved_call | `contains_control_character` | `pattern.search` | 685 |
+| external_call | `require_bounded_text` | `isinstance` | 658 |
+| unresolved_call | `require_bounded_text` | `value.strip` | 661 |
+| unresolved_call | `contains_control_character` | `pattern.search` | 693 |
 
 ## Behavior
 

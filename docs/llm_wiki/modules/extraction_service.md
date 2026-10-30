@@ -57,7 +57,7 @@ narrow qualification. Failed and unavailable paths remain qualified gaps.
 | `.imports` | `build_module_path_resolver`, `stamp_go_import_scopes` |
 | `.inventory_cache` | `InventoryCache`, `InventoryCacheOptions`, `InventoryCacheStats`, `build_inventory_cache_key`, `is_valid_cache_entry`, `make_cache_entry` |
 | `.io` | `write_text_output` |
-| `.packages` | `discover_packages`, `stamp_inventory_packages` |
+| `.packages` | `discover_packages`, `package_for_path`, `stamp_inventory_packages` |
 | `.plugins` | `get_extractor_registry`, `iter_components`, `load_entry_point`, `lock_path`, `parallel_safe_extractor_entry_points`, `runtime_project_plugins_enabled` |
 | `.progress` | `observed_phase`, `current_progress`, `with_progress`, `record_counts` |
 | `.python_calls` | `PythonCallContext`, `resolve_python_call`, `resolve_python_call_decision` |
@@ -185,6 +185,8 @@ flowchart LR
 | `_git_metadata_path` | `(value: str, *, prefixed: bool) -> str \| None \| object` | — | — |
 | `_git_diff_path` | `(value: str) -> str \| None` | — | — |
 | `_build_extract_source_snapshot` | `(src_root: Path, *, only_files: Iterable[str] \| None, include_tests: Iterable[str], selection_policy: SourceSelectionPolicy \| None) -> SourceSnapshot` | — | — |
+| `_canonical_extract_paths` | `(root: Path, paths: Iterable[str]) -> list[str]` | — | Normalize accepted path spellings without admitting paths outside root. |
+| `_extract_output_paths` | `(snapshot: SourceSnapshot, only_files: list[str] \| None, package_filter: str \| None) -> frozenset[str] \| None` | — | Select emitted records independently of broader snapshot context. |
 | `_compact_summary_names` | `(items: Iterable, key: str \| None = None) -> list[str]` | — | — |
 | `_summarize_inventory` | `(inventory: dict) -> dict` | — | Produce a compact one-line-per-symbol summary from a shallow inventory. |
 | `_dependency_extract_block` | `(analysis: dict) -> dict` | — | Project dependency analysis into the public ``extract --deep`` shape. |
@@ -222,4 +224,4 @@ flowchart LR
 | `_parse_compose` | `(text: str) -> dict` | — | Parse one Compose document while preserving nested YAML structures. |
 | `_valid_compose_document` | `(document: object) -> bool` | — | — |
 | `_looks_like_compose` | `(text: str) -> bool` | — | Return True if the file content appears to be a docker-compose file. |
-| `get_docker_inventory` | `(src_dir: str \| Path, *, source_snapshot: SourceSnapshot \| None = None) -> dict` | — | Discover and parse Dockerfiles and Compose files in the source tree. |
+| `get_docker_inventory` | `(src_dir: str \| Path, *, source_snapshot: SourceSnapshot \| None = None, only_files: Iterable[str] \| None = None) -> dict` | — | Discover and parse Dockerfiles and Compose files in the source tree. |

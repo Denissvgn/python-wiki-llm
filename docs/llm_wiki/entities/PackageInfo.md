@@ -1,6 +1,6 @@
 # PackageInfo
 
-**Location:** `src/llm_wiki_cli/services/packages.py:33`
+**Location:** `src/llm_wiki_cli/services/packages.py:34`
 **Kind:** Class
 **Bases:** —
 **Module:** [packages](../modules/packages.md)
@@ -33,14 +33,17 @@ flowchart LR
     n0["PackageInfo (src/llm_wiki_cli/services/packages.py)"]
     n1["_package_import_scope (src/llm_wiki_cli/services/packages.py)"]
     n2["discover_packages (src/llm_wiki_cli/services/packages.py)"]
-    n3["stamp_inventory_packages (src/llm_wiki_cli/services/packages.py)"]
+    n3["package_for_path (src/llm_wiki_cli/services/packages.py)"]
+    n4["stamp_inventory_packages (src/llm_wiki_cli/services/packages.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
+    n4 --> n0
     click n0 "../modules/packages.md"
     click n1 "../modules/packages.md"
     click n2 "../modules/packages.md"
     click n3 "../modules/packages.md"
+    click n4 "../modules/packages.md"
 ```
 
 ### Summary
@@ -56,4 +59,5 @@ flowchart LR
 | `_package_import_scope` | type_reference | [packages](../modules/packages.md) | — |
 | `discover_packages` | call | [packages](../modules/packages.md) | 2 |
 | `discover_packages` | type_reference | [packages](../modules/packages.md) | — |
+| `package_for_path` | type_reference | [packages](../modules/packages.md) | — |
 | `stamp_inventory_packages` | type_reference | [packages](../modules/packages.md) | — |

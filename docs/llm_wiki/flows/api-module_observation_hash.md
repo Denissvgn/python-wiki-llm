@@ -197,7 +197,7 @@ flowchart LR
 |---|---|---:|---|
 | module_observation_hash | _validate_inventory_complete | 278 | `_validate_inventory_complete(inventory_complete)` |
 | _validate_inventory_complete | require_bool | 847 | `require_bool(inventory_complete, error=TypeError(...))` |
-| require_bool | isinstance (src/llm_wiki_cli/services…alidation.py:require_bool) | 810 | `isinstance(value, bool)` |
+| require_bool | isinstance (src/llm_wiki_cli/services…alidation.py:require_bool) | 818 | `isinstance(value, bool)` |
 | _validate_inventory_complete | TypeError | 849 | `TypeError('inventory_complete must be a boolean')` |
 | module_observation_hash | normalize_module_observation | 281 | `normalize_module_observation(file_data)` |
 | normalize_module_observation | _normalize_module_observation | 242 | `_normalize_module_observation(file_data)` |
@@ -220,7 +220,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_bool` | `isinstance` | 810 |
+| external_call | `require_bool` | `isinstance` | 818 |
 | external_call | `_validate_inventory_complete` | `TypeError` | 849 |
 | external_call | `_inventory_language` | `isinstance` | 540 |
 | unresolved_call | `_inventory_language` | `file_data.get` | 542 |

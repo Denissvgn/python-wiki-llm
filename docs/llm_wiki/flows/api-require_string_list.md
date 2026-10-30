@@ -74,11 +74,11 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_string_list | require_list | 991 | `require_list(value, error=error)` |
-| require_list | isinstance (src/llm_wiki_cli/services/validation.py:require_list) | 802 | `isinstance(value, list)` |
-| require_string_list | require_string | 993 | `require_string(item, error=error)` |
-| require_string | isinstance (src/llm_wiki_cli/services…lidation.py:require_string) | 744 | `isinstance(value, str)` |
-| require_string | value.encode | 748 | `value.encode('utf-8')` |
+| require_string_list | require_list | 999 | `require_list(value, error=error)` |
+| require_list | isinstance (src/llm_wiki_cli/services/validation.py:require_list) | 810 | `isinstance(value, list)` |
+| require_string_list | require_string | 1001 | `require_string(item, error=error)` |
+| require_string | isinstance (src/llm_wiki_cli/services…lidation.py:require_string) | 752 | `isinstance(value, str)` |
+| require_string | value.encode | 756 | `value.encode('utf-8')` |
 
 ### Boundary effects
 
@@ -88,9 +88,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_list` | `isinstance` | 802 |
-| external_call | `require_string` | `isinstance` | 744 |
-| unresolved_call | `require_string` | `value.encode` | 748 |
+| external_call | `require_list` | `isinstance` | 810 |
+| external_call | `require_string` | `isinstance` | 752 |
+| unresolved_call | `require_string` | `value.encode` | 756 |
 
 ## Behavior
 

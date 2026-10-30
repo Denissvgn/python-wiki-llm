@@ -52,7 +52,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| path_is_within | path.relative_to | 481 | `path.relative_to(root)` |
+| path_is_within | path.relative_to | 489 | `path.relative_to(root)` |
 
 ### Boundary effects
 
@@ -62,7 +62,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `path_is_within` | `path.relative_to` | 481 |
+| unresolved_call | `path_is_within` | `path.relative_to` | 489 |
 
 ## Behavior
 

@@ -193,15 +193,15 @@ flowchart LR
 |---|---|---:|---|
 | parse_governance_ledger | _object | 422 | `_object(payload, 'governance')` |
 | _object | require_mapping | 3173 | `require_mapping(value, error=GovernanceError(...), require_string_keys=True, key_error=GovernanceError(...))` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 765 | `isinstance(value, Mapping)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 769 | `isinstance(key, str)` |
-| require_mapping | key.encode | 774 | `key.encode('utf-8')` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 773 | `isinstance(value, Mapping)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 777 | `isinstance(key, str)` |
+| require_mapping | key.encode | 782 | `key.encode('utf-8')` |
 | _object | GovernanceError | 3175 | `GovernanceError(path, 'must be an object')` |
 | _object | GovernanceError | 3177 | `GovernanceError(path, 'must use string keys')` |
 | _object | dict (src/llm_wiki_cli/services…dge_governance.py:_object) | 3179 | `dict(selected)` |
 | parse_governance_ledger | _exact_fields | 423 | `_exact_fields(root, 'governance', {...})` |
 | _exact_fields | require_exact_fields | 3196 | `require_shared_exact_fields(value, allowed=..., required=required, mapping_error=GovernanceError(...), missing_error=..., unknown_error=...)` |
-| require_exact_fields | isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields) | 1243 | `isinstance(value, Mapping)` |
+| require_exact_fields | isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields) | 1251 | `isinstance(value, Mapping)` |
 
 ### Boundary effects
 
@@ -211,10 +211,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_mapping` | `isinstance` | 765 |
-| external_call | `require_mapping` | `isinstance` | 769 |
-| unresolved_call | `require_mapping` | `key.encode` | 774 |
-| external_call | `require_exact_fields` | `isinstance` | 1243 |
+| external_call | `require_mapping` | `isinstance` | 773 |
+| external_call | `require_mapping` | `isinstance` | 777 |
+| unresolved_call | `require_mapping` | `key.encode` | 782 |
+| external_call | `require_exact_fields` | `isinstance` | 1251 |
 | step_limit | `parse_governance_ledger` | `first 12 steps` | 0 |
 | truncated_flow | `parse_governance_ledger` | `depth limit` | 0 |
 

@@ -190,9 +190,9 @@ flowchart LR
 | preflight_runtime_capture_records | _normalize_capture_record | 540 | `_normalize_capture_record(raw, 'runtime_captures')` |
 | _normalize_capture_record | _mapping | 650 | `_mapping(value, field_name)` |
 | _mapping | require_mapping | 1423 | `require_mapping(value, error=DocumentationClaimEvidenceError(...), require_string_keys=True)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 765 | `isinstance(value, Mapping)` |
-| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 769 | `isinstance(key, str)` |
-| require_mapping | key.encode | 774 | `key.encode('utf-8')` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 773 | `isinstance(value, Mapping)` |
+| require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 777 | `isinstance(key, str)` |
+| require_mapping | key.encode | 782 | `key.encode('utf-8')` |
 | _mapping | DocumentationClaimEvidenceError | 1425 | `DocumentationClaimEvidenceError(...)` |
 | _normalize_capture_record | _exact_fields | 651 | `_exact_fields(record, _CAPTURE_FIELDS, _CAPTURE_REQUIRED, field_name)` |
 | _exact_fields | require_exact_fields | 1447 | `require_exact_fields(value, allowed=allowed, required=required, mapping_error=DocumentationClaimEvidenceError(...), missing_error=..., unknown_error=...)` |
@@ -208,9 +208,9 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | unresolved_call | `preflight_runtime_capture_records` | `Path(wiki_root).resolve` | 537 |
-| external_call | `require_mapping` | `isinstance` | 765 |
-| external_call | `require_mapping` | `isinstance` | 769 |
-| unresolved_call | `require_mapping` | `key.encode` | 774 |
+| external_call | `require_mapping` | `isinstance` | 773 |
+| external_call | `require_mapping` | `isinstance` | 777 |
+| unresolved_call | `require_mapping` | `key.encode` | 782 |
 | step_limit | `preflight_runtime_capture_records` | `first 12 steps` | 0 |
 | truncated_flow | `preflight_runtime_capture_records` | `depth limit` | 0 |
 

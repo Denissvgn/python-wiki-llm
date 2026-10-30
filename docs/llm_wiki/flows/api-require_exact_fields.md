@@ -115,17 +115,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_exact_fields | isinstance | 1243 | `isinstance(value, Mapping)` |
-| require_exact_fields | str | 1245 | `str(key)` |
-| require_exact_fields | set | 1245 | `set(value)` |
-| require_exact_fields | set | 1246 | `set(allowed)` |
-| require_exact_fields | set | 1247 | `set(required)` |
-| require_exact_fields | tuple | 1248 | `tuple(sorted(...))` |
-| require_exact_fields | sorted | 1248 | `sorted(..., key=str)` |
-| require_exact_fields | tuple | 1249 | `tuple(sorted(...))` |
-| require_exact_fields | sorted | 1249 | `sorted(..., key=str)` |
-| require_exact_fields | invalid_error | 1251 | `invalid_error(missing, unknown)` |
-| require_exact_fields | error_factory | 1259 | `error_factory(fields)` |
+| require_exact_fields | isinstance | 1251 | `isinstance(value, Mapping)` |
+| require_exact_fields | str | 1253 | `str(key)` |
+| require_exact_fields | set | 1253 | `set(value)` |
+| require_exact_fields | set | 1254 | `set(allowed)` |
+| require_exact_fields | set | 1255 | `set(required)` |
+| require_exact_fields | tuple | 1256 | `tuple(sorted(...))` |
+| require_exact_fields | sorted | 1256 | `sorted(..., key=str)` |
+| require_exact_fields | tuple | 1257 | `tuple(sorted(...))` |
+| require_exact_fields | sorted | 1257 | `sorted(..., key=str)` |
+| require_exact_fields | invalid_error | 1259 | `invalid_error(missing, unknown)` |
+| require_exact_fields | error_factory | 1267 | `error_factory(fields)` |
 
 ### Boundary effects
 
@@ -135,11 +135,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_exact_fields` | `isinstance` | 1243 |
-| external_call | `require_exact_fields` | `sorted` | 1248 |
-| external_call | `require_exact_fields` | `sorted` | 1249 |
-| unresolved_call | `require_exact_fields` | `invalid_error` | 1251 |
-| unresolved_call | `require_exact_fields` | `error_factory` | 1259 |
+| external_call | `require_exact_fields` | `isinstance` | 1251 |
+| external_call | `require_exact_fields` | `sorted` | 1256 |
+| external_call | `require_exact_fields` | `sorted` | 1257 |
+| unresolved_call | `require_exact_fields` | `invalid_error` | 1259 |
+| unresolved_call | `require_exact_fields` | `error_factory` | 1267 |
 
 ## Behavior
 

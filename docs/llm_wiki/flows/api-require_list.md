@@ -52,7 +52,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_list | isinstance | 802 | `isinstance(value, list)` |
+| require_list | isinstance | 810 | `isinstance(value, list)` |
 
 ### Boundary effects
 
@@ -62,7 +62,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_list` | `isinstance` | 802 |
+| external_call | `require_list` | `isinstance` | 810 |
 
 ## Behavior
 

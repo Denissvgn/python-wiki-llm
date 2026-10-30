@@ -180,15 +180,15 @@ flowchart LR
 |---|---|---:|---|
 | normalize_entity_observation | _validate_entity_coordinate | 260 | `_validate_entity_coordinate(entity_name, occurrence)` |
 | _validate_entity_coordinate | require_nonempty_text | 903 | `require_nonempty_text(entity_name, error=ValueError(...), reject_control_characters=False)` |
-| require_nonempty_text | isinstance (src/llm_wiki_cli/services….py:require_nonempty_text) | 623 | `isinstance(value, str)` |
-| require_nonempty_text | value.strip | 625 | `value.strip(data not statically known)` |
-| require_nonempty_text | contains_control_character | 631 | `contains_control_character(parsed, reject_delete_character=reject_delete_character)` |
-| contains_control_character | pattern.search | 685 | `pattern.search(value)` |
+| require_nonempty_text | isinstance (src/llm_wiki_cli/services….py:require_nonempty_text) | 631 | `isinstance(value, str)` |
+| require_nonempty_text | value.strip | 633 | `value.strip(data not statically known)` |
+| require_nonempty_text | contains_control_character | 639 | `contains_control_character(parsed, reject_delete_character=reject_delete_character)` |
+| contains_control_character | pattern.search | 693 | `pattern.search(value)` |
 | _validate_entity_coordinate | ValueError | 905 | `ValueError('entity_name must be a non-empty string')` |
 | _validate_entity_coordinate | require_positive_int | 908 | `require_positive_int(occurrence, invalid_error=ValueError(...))` |
-| require_positive_int | require_nonnegative_int | 848 | `require_nonnegative_int(value, error=invalid_error)` |
-| require_nonnegative_int | require_int | 826 | `require_int(value, error=error)` |
-| require_int | isinstance (src/llm_wiki_cli/services/validation.py:require_int) | 818 | `isinstance(value, bool)` |
+| require_positive_int | require_nonnegative_int | 856 | `require_nonnegative_int(value, error=invalid_error)` |
+| require_nonnegative_int | require_int | 834 | `require_int(value, error=error)` |
+| require_int | isinstance (src/llm_wiki_cli/services/validation.py:require_int) | 826 | `isinstance(value, bool)` |
 
 ### Boundary effects
 
@@ -198,11 +198,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_nonempty_text` | `isinstance` | 623 |
-| unresolved_call | `require_nonempty_text` | `value.strip` | 625 |
-| unresolved_call | `contains_control_character` | `pattern.search` | 685 |
+| external_call | `require_nonempty_text` | `isinstance` | 631 |
+| unresolved_call | `require_nonempty_text` | `value.strip` | 633 |
+| unresolved_call | `contains_control_character` | `pattern.search` | 693 |
 | external_call | `_validate_entity_coordinate` | `ValueError` | 905 |
-| external_call | `require_int` | `isinstance` | 818 |
+| external_call | `require_int` | `isinstance` | 826 |
 | step_limit | `normalize_entity_observation` | `first 12 steps` | 0 |
 
 ## Behavior

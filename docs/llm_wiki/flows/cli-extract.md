@@ -64,19 +64,19 @@ sequenceDiagram
     participant p13 as analyze_dependencies
     participant p14 as build_api_contracts
     participant p15 as _data_flow_details_contract
-    participant p16 as get_inventory_result
-    participant p17 as detect_entry_points
-    participant p18 as read_console_scripts
-    participant p19 as attach_routes_to_entry_points
-    participant p20 as resolve_call_edges
-    participant p21 as build_data_flow_context
-    participant p22 as analyze_data_flow_detailed
-    participant p23 as build_flow_detailed
-    participant p24 as _summarize_inventory
-    participant p25 as get_docker_inventory
-    participant p26 as validate_path
-    participant p27 as build_source_snapshot
-    participant p28 as build_dependency_graph
+    participant p16 as _extract_output_paths
+    participant p17 as get_inventory_result
+    participant p18 as get_docker_inventory
+    participant p19 as unsupported_source_summary
+    participant p20 as read_console_scripts
+    participant p21 as detect_entry_points
+    participant p22 as attach_routes_to_entry_points
+    participant p23 as resolve_call_edges
+    participant p24 as build_data_flow_context
+    participant p25 as analyze_data_flow_detailed
+    participant p26 as build_flow_detailed
+    participant p27 as _summarize_inventory
+    participant p28 as validate_path
     participant p29 as getattr (src/llm_wiki_cli/services/extraction_service.py:run)
     participant p30 as message.startswith
     p0->>p1: build_extract_payload
@@ -94,26 +94,26 @@ sequenceDiagram
     p1->>p13: analyze_dependencies
     p1->>p14: build_api_contracts
     p1->>p15: _data_flow_details_contract
-    p1->>p16: get_inventory_result
-    p1->>p17: detect_entry_points
-    p1->>p18: read_console_scripts
-    p1->>p19: attach_routes_to_entry_points
-    p1->>p20: resolve_call_edges
-    p1->>p21: build_data_flow_context
-    p1->>p22: analyze_data_flow_detailed
-    p1->>p23: build_flow_detailed
-    p1->>p24: _summarize_inventory
-    p1->>p25: get_docker_inventory
-    p5->>p26: validate_path
-    p9->>p27: build_source_snapshot
-    p13->>p28: build_dependency_graph
+    p1->>p16: _extract_output_paths
+    p1->>p17: get_inventory_result
+    p1->>p18: get_docker_inventory
+    p1->>p19: unsupported_source_summary
+    p1->>p20: read_console_scripts
+    p1->>p21: detect_entry_points
+    p1->>p22: attach_routes_to_entry_points
+    p1->>p23: resolve_call_edges
+    p1->>p24: build_data_flow_context
+    p1->>p25: analyze_data_flow_detailed
+    p1->>p26: build_flow_detailed
+    p1->>p27: _summarize_inventory
+    p5->>p28: validate_path
     p0-->>p29: getattr (src/llm_wiki_cli/services/extraction_service.py:run)(args, 'src_dir', '.')
     p0-->>p30: message.startswith('No files found for package')
 ```
 
-> Call sequence diagram shows 30 of 3243 interactions; 3213 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3275 interactions; 3245 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1102 (1101 omitted); unresolved 1 of 1329 (1328 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1112 (1111 omitted); unresolved 1 of 1343 (1342 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -127,7 +127,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_source_root` | 23 | - | external | 11 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 23 | [src/llm_wiki_cli/config.py](../modules/config.md) | internal | 6 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 23 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
-> Omission summary shows 8 of 725 groups; 717 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 732 groups; 724 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -140,9 +140,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 813; effect analysis evaluated: 660, partial: 37, unavailable: 116. Counts include steps omitted from the displayed trace.
+Source steps: 821; effect analysis evaluated: 668, partial: 37, unavailable: 116. Counts include steps omitted from the displayed trace.
 
-Collector observations for 697 source steps with known totals: observed: 4247, emitted: 4108, omitted: 139. Unavailable totals are excluded.
+Collector observations for 705 source steps with known totals: observed: 4289, emitted: 4150, omitted: 139. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -237,46 +237,46 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2439 | `getattr(args, 'src_dir', '.')` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2440 | `getattr(args, 'changed', False)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2441 | `getattr(args, 'summary', False)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2442 | `getattr(args, 'deep', False)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2443 | `getattr(args, 'paths', None)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2444 | `getattr(args, 'package', None)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2445 | `getattr(args, 'include_empty', False)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2446 | `getattr(args, 'output', None)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2447 | `getattr(args, 'read_only', False)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2448 | `getattr(args, 'allow_external_src', False)` |
-| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2449 | `getattr(args, 'helper_cache_dir', None)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2487 | `getattr(args, 'src_dir', '.')` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2488 | `getattr(args, 'changed', False)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2489 | `getattr(args, 'summary', False)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2490 | `getattr(args, 'deep', False)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2491 | `getattr(args, 'paths', None)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2492 | `getattr(args, 'package', None)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2493 | `getattr(args, 'include_empty', False)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2494 | `getattr(args, 'output', None)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2495 | `getattr(args, 'read_only', False)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2496 | `getattr(args, 'allow_external_src', False)` |
+| run | getattr (src/llm_wiki_cli/services/extraction_service.py:run) | 2497 | `getattr(args, 'helper_cache_dir', None)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 2455 |
-| output | `print` | `run` | 2459 |
-| output | `print` | `run` | 2461 |
-| output | `print` | `run` | 2463 |
-| output | `print` | `run` | 2489 |
-| output | `print` | `run` | 2491 |
-| output | `print` | `run` | 2496 |
-| output | `print` | `run` | 2500 |
+| output | `print` | `run` | 2503 |
+| output | `print` | `run` | 2507 |
+| output | `print` | `run` | 2509 |
+| output | `print` | `run` | 2511 |
+| output | `print` | `run` | 2537 |
+| output | `print` | `run` | 2539 |
+| output | `print` | `run` | 2544 |
+| output | `print` | `run` | 2548 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `run` | `getattr` | 2439 |
-| external_call | `run` | `getattr` | 2440 |
-| external_call | `run` | `getattr` | 2441 |
-| external_call | `run` | `getattr` | 2442 |
-| external_call | `run` | `getattr` | 2443 |
-| external_call | `run` | `getattr` | 2444 |
-| external_call | `run` | `getattr` | 2445 |
-| external_call | `run` | `getattr` | 2446 |
-| external_call | `run` | `getattr` | 2447 |
-| external_call | `run` | `getattr` | 2448 |
-| external_call | `run` | `getattr` | 2449 |
+| external_call | `run` | `getattr` | 2487 |
+| external_call | `run` | `getattr` | 2488 |
+| external_call | `run` | `getattr` | 2489 |
+| external_call | `run` | `getattr` | 2490 |
+| external_call | `run` | `getattr` | 2491 |
+| external_call | `run` | `getattr` | 2492 |
+| external_call | `run` | `getattr` | 2493 |
+| external_call | `run` | `getattr` | 2494 |
+| external_call | `run` | `getattr` | 2495 |
+| external_call | `run` | `getattr` | 2496 |
+| external_call | `run` | `getattr` | 2497 |
 | step_limit | `run` | `first 12 steps` | 0 |
 
 ## Behavior

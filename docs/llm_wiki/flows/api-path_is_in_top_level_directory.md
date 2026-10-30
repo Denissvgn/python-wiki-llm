@@ -67,10 +67,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| path_is_in_top_level_directory | path.relative_to | 510 | `path.relative_to(root)` |
-| path_is_in_top_level_directory | path.resolve().relative_to | 513 | `path.resolve().relative_to(root.resolve(...))` |
-| path_is_in_top_level_directory | path.resolve | 513 | `path.resolve(data not statically known)` |
-| path_is_in_top_level_directory | root.resolve | 513 | `path.resolve(data not statically known)` |
+| path_is_in_top_level_directory | path.relative_to | 518 | `path.relative_to(root)` |
+| path_is_in_top_level_directory | path.resolve().relative_to | 521 | `path.resolve().relative_to(root.resolve(...))` |
+| path_is_in_top_level_directory | path.resolve | 521 | `path.resolve(data not statically known)` |
+| path_is_in_top_level_directory | root.resolve | 521 | `path.resolve(data not statically known)` |
 
 ### Boundary effects
 
@@ -80,10 +80,10 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `path_is_in_top_level_directory` | `path.relative_to` | 510 |
-| unresolved_call | `path_is_in_top_level_directory` | `path.resolve().relative_to` | 513 |
-| unresolved_call | `path_is_in_top_level_directory` | `path.resolve` | 513 |
-| unresolved_call | `path_is_in_top_level_directory` | `root.resolve` | 513 |
+| unresolved_call | `path_is_in_top_level_directory` | `path.relative_to` | 518 |
+| unresolved_call | `path_is_in_top_level_directory` | `path.resolve().relative_to` | 521 |
+| unresolved_call | `path_is_in_top_level_directory` | `path.resolve` | 521 |
+| unresolved_call | `path_is_in_top_level_directory` | `root.resolve` | 521 |
 
 ## Behavior
 

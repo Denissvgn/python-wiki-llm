@@ -52,7 +52,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_existing_file | path.is_file | 589 | `path.is_file(data not statically known)` |
+| require_existing_file | path.is_file | 597 | `path.is_file(data not statically known)` |
 
 ### Boundary effects
 
@@ -62,7 +62,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `require_existing_file` | `path.is_file` | 589 |
+| unresolved_call | `require_existing_file` | `path.is_file` | 597 |
 
 ## Behavior
 

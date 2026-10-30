@@ -182,15 +182,15 @@ flowchart LR
 |---|---|---:|---|
 | entity_observation_hash | _validate_inventory_complete | 294 | `_validate_inventory_complete(inventory_complete)` |
 | _validate_inventory_complete | require_bool | 847 | `require_bool(inventory_complete, error=TypeError(...))` |
-| require_bool | isinstance (src/llm_wiki_cli/services…alidation.py:require_bool) | 810 | `isinstance(value, bool)` |
+| require_bool | isinstance (src/llm_wiki_cli/services…alidation.py:require_bool) | 818 | `isinstance(value, bool)` |
 | _validate_inventory_complete | TypeError | 849 | `TypeError('inventory_complete must be a boolean')` |
 | entity_observation_hash | normalize_entity_observation | 297 | `normalize_entity_observation(file_data, entity_name, occurrence)` |
 | normalize_entity_observation | _validate_entity_coordinate | 260 | `_validate_entity_coordinate(entity_name, occurrence)` |
 | _validate_entity_coordinate | require_nonempty_text | 903 | `require_nonempty_text(entity_name, error=ValueError(...), reject_control_characters=False)` |
-| require_nonempty_text | isinstance (src/llm_wiki_cli/services….py:require_nonempty_text) | 623 | `isinstance(value, str)` |
-| require_nonempty_text | value.strip | 625 | `value.strip(data not statically known)` |
-| require_nonempty_text | contains_control_character | 631 | `contains_control_character(parsed, reject_delete_character=reject_delete_character)` |
-| contains_control_character | pattern.search | 685 | `pattern.search(value)` |
+| require_nonempty_text | isinstance (src/llm_wiki_cli/services….py:require_nonempty_text) | 631 | `isinstance(value, str)` |
+| require_nonempty_text | value.strip | 633 | `value.strip(data not statically known)` |
+| require_nonempty_text | contains_control_character | 639 | `contains_control_character(parsed, reject_delete_character=reject_delete_character)` |
+| contains_control_character | pattern.search | 693 | `pattern.search(value)` |
 
 ### Boundary effects
 
@@ -200,11 +200,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_bool` | `isinstance` | 810 |
+| external_call | `require_bool` | `isinstance` | 818 |
 | external_call | `_validate_inventory_complete` | `TypeError` | 849 |
-| external_call | `require_nonempty_text` | `isinstance` | 623 |
-| unresolved_call | `require_nonempty_text` | `value.strip` | 625 |
-| unresolved_call | `contains_control_character` | `pattern.search` | 685 |
+| external_call | `require_nonempty_text` | `isinstance` | 631 |
+| unresolved_call | `require_nonempty_text` | `value.strip` | 633 |
+| unresolved_call | `contains_control_character` | `pattern.search` | 693 |
 | step_limit | `entity_observation_hash` | `first 12 steps` | 0 |
 | truncated_flow | `entity_observation_hash` | `depth limit` | 0 |
 

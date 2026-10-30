@@ -151,8 +151,8 @@ flowchart LR
 | _repository_identity | _nonempty_string | 1823 | `_nonempty_string(value, path)` |
 | _nonempty_string | _string | 1730 | `_string(value, path)` |
 | _string | require_string | 1719 | `require_string(value, error=KnowledgeModelError(...), utf8_error=KnowledgeModelError(...))` |
-| require_string | isinstance (src/llm_wiki_cli/services…lidation.py:require_string) | 744 | `isinstance(value, str)` |
-| require_string | value.encode | 748 | `value.encode('utf-8')` |
+| require_string | isinstance (src/llm_wiki_cli/services…lidation.py:require_string) | 752 | `isinstance(value, str)` |
+| require_string | value.encode | 756 | `value.encode('utf-8')` |
 | _string | KnowledgeModelError | 1721 | `KnowledgeModelError(path, 'must be a string')` |
 | _string | KnowledgeModelError | 1722 | `KnowledgeModelError(path, 'must contain only Unicode scalar values encodable as UTF-8')` |
 
@@ -166,8 +166,8 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `repository_identities_match` | `isinstance` | 503 |
 | external_call | `repository_identities_match` | `TypeError` | 506 |
-| external_call | `require_string` | `isinstance` | 744 |
-| unresolved_call | `require_string` | `value.encode` | 748 |
+| external_call | `require_string` | `isinstance` | 752 |
+| unresolved_call | `require_string` | `value.encode` | 756 |
 | step_limit | `repository_identities_match` | `first 12 steps` | 0 |
 
 ## Behavior

@@ -194,14 +194,14 @@ flowchart LR
 |---|---|---:|---|
 | dispatch_calibration_agent | _require_choice | 2427 | `_require_choice(role, CALIBRATION_ROLES, 'dispatch role')` |
 | _require_choice | require_choice | 6741 | `require_shared_choice(value, choices, text_error=P0CalibrationSchemaError(...), choice_error=..., reject_control_characters=False)` |
-| require_choice | require_trimmed_text | 1073 | `require_trimmed_text(value, error=text_error, reject_control_characters=reject_control_characters)` |
-| require_trimmed_text | require_nonempty_text | 696 | `require_nonempty_text(value, error=error, require_trimmed=True, reject_control_characters=reject_control_characters)` |
-| require_nonempty_text | isinstance (src/llm_wiki_cli/services….py:require_nonempty_text) | 623 | `isinstance(value, str)` |
-| require_nonempty_text | value.strip | 625 | `value.strip(data not statically known)` |
-| require_nonempty_text | contains_control_character | 631 | `contains_control_character(parsed, reject_delete_character=reject_delete_character)` |
-| contains_control_character | pattern.search | 685 | `pattern.search(value)` |
-| require_choice | frozenset (src/llm_wiki_cli/services…idation.py:require_choice) | 1078 | `frozenset(choices)` |
-| require_choice | choice_error | 1080 | `choice_error(allowed)` |
+| require_choice | require_trimmed_text | 1081 | `require_trimmed_text(value, error=text_error, reject_control_characters=reject_control_characters)` |
+| require_trimmed_text | require_nonempty_text | 704 | `require_nonempty_text(value, error=error, require_trimmed=True, reject_control_characters=reject_control_characters)` |
+| require_nonempty_text | isinstance (src/llm_wiki_cli/services….py:require_nonempty_text) | 631 | `isinstance(value, str)` |
+| require_nonempty_text | value.strip | 633 | `value.strip(data not statically known)` |
+| require_nonempty_text | contains_control_character | 639 | `contains_control_character(parsed, reject_delete_character=reject_delete_character)` |
+| contains_control_character | pattern.search | 693 | `pattern.search(value)` |
+| require_choice | frozenset (src/llm_wiki_cli/services…idation.py:require_choice) | 1086 | `frozenset(choices)` |
+| require_choice | choice_error | 1088 | `choice_error(allowed)` |
 | _require_choice | P0CalibrationSchemaError | 6744 | `P0CalibrationSchemaError(...)` |
 
 ### Boundary effects
@@ -212,11 +212,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_nonempty_text` | `isinstance` | 623 |
-| unresolved_call | `require_nonempty_text` | `value.strip` | 625 |
-| unresolved_call | `contains_control_character` | `pattern.search` | 685 |
-| external_call | `require_choice` | `frozenset` | 1078 |
-| unresolved_call | `require_choice` | `choice_error` | 1080 |
+| external_call | `require_nonempty_text` | `isinstance` | 631 |
+| unresolved_call | `require_nonempty_text` | `value.strip` | 633 |
+| unresolved_call | `contains_control_character` | `pattern.search` | 693 |
+| external_call | `require_choice` | `frozenset` | 1086 |
+| unresolved_call | `require_choice` | `choice_error` | 1088 |
 | step_limit | `dispatch_calibration_agent` | `first 12 steps` | 0 |
 | truncated_flow | `dispatch_calibration_agent` | `depth limit` | 0 |
 

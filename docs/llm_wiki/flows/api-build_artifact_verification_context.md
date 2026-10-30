@@ -207,13 +207,13 @@ flowchart LR
 | build_artifact_verification_context | TypeError (src/llm_wiki_cli/services…fact_verification_context) | 340 | `TypeError('knowledge must be a KnowledgeIndex')` |
 | build_artifact_verification_context | _sha256 | 341 | `_sha256(knowledge_hash, 'knowledge_hash')` |
 | _sha256 | require_sha256 | 1425 | `require_sha256(value, digest_error=VerificationContractError(...))` |
-| require_sha256 | isinstance (src/llm_wiki_cli/services…idation.py:require_sha256) | 1138 | `isinstance(value, str)` |
-| require_sha256 | require_trimmed_text | 1142 | `require_trimmed_text(value, error=text_error, reject_control_characters=reject_control_characters)` |
-| require_trimmed_text | require_nonempty_text | 696 | `require_nonempty_text(value, error=error, require_trimmed=True, reject_control_characters=reject_control_characters)` |
-| require_nonempty_text | isinstance (src/llm_wiki_cli/services….py:require_nonempty_text) | 623 | `isinstance(value, str)` |
-| require_nonempty_text | value.strip | 625 | `value.strip(data not statically known)` |
-| require_nonempty_text | contains_control_character | 631 | `contains_control_character(parsed, reject_delete_character=reject_delete_character)` |
-| contains_control_character | pattern.search | 685 | `pattern.search(value)` |
+| require_sha256 | isinstance (src/llm_wiki_cli/services…idation.py:require_sha256) | 1146 | `isinstance(value, str)` |
+| require_sha256 | require_trimmed_text | 1150 | `require_trimmed_text(value, error=text_error, reject_control_characters=reject_control_characters)` |
+| require_trimmed_text | require_nonempty_text | 704 | `require_nonempty_text(value, error=error, require_trimmed=True, reject_control_characters=reject_control_characters)` |
+| require_nonempty_text | isinstance (src/llm_wiki_cli/services….py:require_nonempty_text) | 631 | `isinstance(value, str)` |
+| require_nonempty_text | value.strip | 633 | `value.strip(data not statically known)` |
+| require_nonempty_text | contains_control_character | 639 | `contains_control_character(parsed, reject_delete_character=reject_delete_character)` |
+| contains_control_character | pattern.search | 693 | `pattern.search(value)` |
 
 ### Boundary effects
 
@@ -225,10 +225,10 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `build_artifact_verification_context` | `isinstance` | 339 |
 | external_call | `build_artifact_verification_context` | `TypeError` | 340 |
-| external_call | `require_sha256` | `isinstance` | 1138 |
-| external_call | `require_nonempty_text` | `isinstance` | 623 |
-| unresolved_call | `require_nonempty_text` | `value.strip` | 625 |
-| unresolved_call | `contains_control_character` | `pattern.search` | 685 |
+| external_call | `require_sha256` | `isinstance` | 1146 |
+| external_call | `require_nonempty_text` | `isinstance` | 631 |
+| unresolved_call | `require_nonempty_text` | `value.strip` | 633 |
+| unresolved_call | `contains_control_character` | `pattern.search` | 693 |
 | step_limit | `build_artifact_verification_context` | `first 12 steps` | 0 |
 | truncated_flow | `build_artifact_verification_context` | `depth limit` | 0 |
 

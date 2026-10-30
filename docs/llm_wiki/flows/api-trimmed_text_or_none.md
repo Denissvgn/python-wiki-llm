@@ -57,8 +57,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| trimmed_text_or_none | isinstance | 955 | `isinstance(value, str)` |
-| trimmed_text_or_none | value.strip | 959 | `value.strip(data not statically known)` |
+| trimmed_text_or_none | isinstance | 963 | `isinstance(value, str)` |
+| trimmed_text_or_none | value.strip | 967 | `value.strip(data not statically known)` |
 
 ### Boundary effects
 
@@ -68,8 +68,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `trimmed_text_or_none` | `isinstance` | 955 |
-| unresolved_call | `trimmed_text_or_none` | `value.strip` | 959 |
+| external_call | `trimmed_text_or_none` | `isinstance` | 963 |
+| unresolved_call | `trimmed_text_or_none` | `value.strip` | 967 |
 
 ## Behavior
 

@@ -185,11 +185,11 @@ flowchart LR
 | qualify_claim_evidence | _identifier | 238 | `_identifier(claim_id, 'claim_id')` |
 | _identifier | _text | 1362 | `_text(value, field_name)` |
 | _text | require_trimmed_text | 1390 | `require_trimmed_text(value, error=DocumentationClaimEvidenceError(...))` |
-| require_trimmed_text | require_nonempty_text | 696 | `require_nonempty_text(value, error=error, require_trimmed=True, reject_control_characters=reject_control_characters)` |
-| require_nonempty_text | isinstance (src/llm_wiki_cli/services….py:require_nonempty_text) | 623 | `isinstance(value, str)` |
-| require_nonempty_text | value.strip | 625 | `value.strip(data not statically known)` |
-| require_nonempty_text | contains_control_character | 631 | `contains_control_character(parsed, reject_delete_character=reject_delete_character)` |
-| contains_control_character | pattern.search | 685 | `pattern.search(value)` |
+| require_trimmed_text | require_nonempty_text | 704 | `require_nonempty_text(value, error=error, require_trimmed=True, reject_control_characters=reject_control_characters)` |
+| require_nonempty_text | isinstance (src/llm_wiki_cli/services….py:require_nonempty_text) | 631 | `isinstance(value, str)` |
+| require_nonempty_text | value.strip | 633 | `value.strip(data not statically known)` |
+| require_nonempty_text | contains_control_character | 639 | `contains_control_character(parsed, reject_delete_character=reject_delete_character)` |
+| contains_control_character | pattern.search | 693 | `pattern.search(value)` |
 | _text | DocumentationClaimEvidenceError | 1392 | `DocumentationClaimEvidenceError(...)` |
 | _identifier | _SAFE_ID_RE.fullmatch | 1363 | `_SAFE_ID_RE.fullmatch(text)` |
 | _identifier | DocumentationClaimEvidenceError | 1364 | `DocumentationClaimEvidenceError(...)` |
@@ -202,9 +202,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `require_nonempty_text` | `isinstance` | 623 |
-| unresolved_call | `require_nonempty_text` | `value.strip` | 625 |
-| unresolved_call | `contains_control_character` | `pattern.search` | 685 |
+| external_call | `require_nonempty_text` | `isinstance` | 631 |
+| unresolved_call | `require_nonempty_text` | `value.strip` | 633 |
+| unresolved_call | `contains_control_character` | `pattern.search` | 693 |
 | unresolved_call | `_identifier` | `_SAFE_ID_RE.fullmatch` | 1363 |
 | step_limit | `qualify_claim_evidence` | `first 12 steps` | 0 |
 | truncated_flow | `qualify_claim_evidence` | `depth limit` | 0 |

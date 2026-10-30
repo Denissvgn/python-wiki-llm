@@ -30,7 +30,7 @@ flowchart TD
 
 | Module | Fan-in | Fan-out |
 |--------|--------|---------|
-| [validation](modules/validation.md) | 71 | 0 |
+| [validation](modules/validation.md) | 72 | 0 |
 | [config](modules/config.md) | 60 | 3 |
 | [source_snapshot](modules/source_snapshot.md) | 53 | 7 |
 | [io](modules/io.md) | 47 | 2 |
@@ -192,7 +192,7 @@ flowchart TD
 | [knowledge_storage_diagnostics](modules/knowledge_storage_diagnostics.md) | 2 | 13 |
 | [module_maps](modules/module_maps.md) | 2 | 1 |
 | [normalization_diagnostics](modules/normalization_diagnostics.md) | 2 | 1 |
-| [packages](modules/packages.md) | 2 | 3 |
+| [packages](modules/packages.md) | 2 | 4 |
 | [protected_artifacts](modules/protected_artifacts.md) | 2 | 2 |
 | [python_calls](modules/python_calls.md) | 2 | 3 |
 | [python_observations](modules/python_observations.md) | 2 | 2 |

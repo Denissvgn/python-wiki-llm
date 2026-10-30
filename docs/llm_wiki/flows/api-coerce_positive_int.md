@@ -63,9 +63,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| coerce_positive_int | coerce_nonnegative_int | 936 | `coerce_nonnegative_int(value, error=error)` |
-| coerce_nonnegative_int | int | 925 | `int(value)` |
-| coerce_nonnegative_int | isinstance | 928 | `isinstance(value, bool)` |
+| coerce_positive_int | coerce_nonnegative_int | 944 | `coerce_nonnegative_int(value, error=error)` |
+| coerce_nonnegative_int | int | 933 | `int(value)` |
+| coerce_nonnegative_int | isinstance | 936 | `isinstance(value, bool)` |
 
 ### Boundary effects
 
@@ -75,7 +75,7 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `coerce_nonnegative_int` | `isinstance` | 928 |
+| external_call | `coerce_nonnegative_int` | `isinstance` | 936 |
 
 ## Behavior
 

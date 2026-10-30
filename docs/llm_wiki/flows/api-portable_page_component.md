@@ -148,17 +148,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| portable_page_component | portable_page_component.<locals>.sanitize | 608 | `sanitize(value)` |
-| portable_page_component.<locals>.sanitize | str(…).strip | 598 | `str(candidate).strip(data not statically known)` |
-| portable_page_component.<locals>.sanitize | str | 598 | `str(candidate)` |
-| portable_page_component.<locals>.sanitize | unicodedata.normalize (src/llm_wiki_cli/services…omponent.<locals>.sanitize) | 599 | `unicodedata.normalize('NFC', raw)` |
-| portable_page_component.<locals>.sanitize | _UNSAFE_PAGE_COMPONENT_RE.sub(…).strip | 600 | `_UNSAFE_PAGE_COMPONENT_RE.sub('_', normalized).strip('_')` |
-| portable_page_component.<locals>.sanitize | _UNSAFE_PAGE_COMPONENT_RE.sub | 600 | `_UNSAFE_PAGE_COMPONENT_RE.sub('_', normalized)` |
-| portable_page_component.<locals>.sanitize | re.sub(…).lstrip(…).rstrip | 601 | `re.sub('_+', '_', safe).lstrip('.').rstrip('. ')` |
-| portable_page_component.<locals>.sanitize | re.sub(…).lstrip | 601 | `re.sub('_+', '_', safe).lstrip('.')` |
-| portable_page_component.<locals>.sanitize | re.sub | 601 | `re.sub('_+', '_', safe)` |
-| portable_page_component.<locals>.sanitize | safe.replace | 603 | `safe.replace('..', '._')` |
-| portable_page_component.<locals>.sanitize | is_portable_path_component | 604 | `is_portable_path_component(safe)` |
+| portable_page_component | portable_page_component.<locals>.sanitize | 616 | `sanitize(value)` |
+| portable_page_component.<locals>.sanitize | str(…).strip | 606 | `str(candidate).strip(data not statically known)` |
+| portable_page_component.<locals>.sanitize | str | 606 | `str(candidate)` |
+| portable_page_component.<locals>.sanitize | unicodedata.normalize (src/llm_wiki_cli/services…omponent.<locals>.sanitize) | 607 | `unicodedata.normalize('NFC', raw)` |
+| portable_page_component.<locals>.sanitize | _UNSAFE_PAGE_COMPONENT_RE.sub(…).strip | 608 | `_UNSAFE_PAGE_COMPONENT_RE.sub('_', normalized).strip('_')` |
+| portable_page_component.<locals>.sanitize | _UNSAFE_PAGE_COMPONENT_RE.sub | 608 | `_UNSAFE_PAGE_COMPONENT_RE.sub('_', normalized)` |
+| portable_page_component.<locals>.sanitize | re.sub(…).lstrip(…).rstrip | 609 | `re.sub('_+', '_', safe).lstrip('.').rstrip('. ')` |
+| portable_page_component.<locals>.sanitize | re.sub(…).lstrip | 609 | `re.sub('_+', '_', safe).lstrip('.')` |
+| portable_page_component.<locals>.sanitize | re.sub | 609 | `re.sub('_+', '_', safe)` |
+| portable_page_component.<locals>.sanitize | safe.replace | 611 | `safe.replace('..', '._')` |
+| portable_page_component.<locals>.sanitize | is_portable_path_component | 612 | `is_portable_path_component(safe)` |
 
 ### Boundary effects
 
@@ -168,14 +168,14 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `portable_page_component.<locals>.sanitize` | `str(candidate).strip` | 598 |
-| external_call | `portable_page_component.<locals>.sanitize` | `unicodedata.normalize` | 599 |
-| unresolved_call | `portable_page_component.<locals>.sanitize` | `_UNSAFE_PAGE_COMPONENT_RE.sub('_', normalized).strip` | 600 |
-| unresolved_call | `portable_page_component.<locals>.sanitize` | `_UNSAFE_PAGE_COMPONENT_RE.sub` | 600 |
-| unresolved_call | `portable_page_component.<locals>.sanitize` | `re.sub('_+', '_', safe).lstrip('.').rstrip` | 601 |
-| unresolved_call | `portable_page_component.<locals>.sanitize` | `re.sub('_+', '_', safe).lstrip` | 601 |
-| external_call | `portable_page_component.<locals>.sanitize` | `re.sub` | 601 |
-| unresolved_call | `portable_page_component.<locals>.sanitize` | `safe.replace` | 603 |
+| unresolved_call | `portable_page_component.<locals>.sanitize` | `str(candidate).strip` | 606 |
+| external_call | `portable_page_component.<locals>.sanitize` | `unicodedata.normalize` | 607 |
+| unresolved_call | `portable_page_component.<locals>.sanitize` | `_UNSAFE_PAGE_COMPONENT_RE.sub('_', normalized).strip` | 608 |
+| unresolved_call | `portable_page_component.<locals>.sanitize` | `_UNSAFE_PAGE_COMPONENT_RE.sub` | 608 |
+| unresolved_call | `portable_page_component.<locals>.sanitize` | `re.sub('_+', '_', safe).lstrip('.').rstrip` | 609 |
+| unresolved_call | `portable_page_component.<locals>.sanitize` | `re.sub('_+', '_', safe).lstrip` | 609 |
+| external_call | `portable_page_component.<locals>.sanitize` | `re.sub` | 609 |
+| unresolved_call | `portable_page_component.<locals>.sanitize` | `safe.replace` | 611 |
 | step_limit | `portable_page_component` | `first 12 steps` | 0 |
 
 ## Behavior

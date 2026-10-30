@@ -2,7 +2,7 @@
 
 **Entry point:** `build_static_api_contracts` (`api`)
 **Source:** [api_contracts](../modules/api_contracts.md)
-**Modules touched:** [api_contracts](../modules/api_contracts.md), [config](../modules/config.md), [imports](../modules/imports.md), [packages](../modules/packages.md), and 2 more
+**Modules touched:** [api_contracts](../modules/api_contracts.md), [config](../modules/config.md), [imports](../modules/imports.md), [packages](../modules/packages.md), and 3 more
 
 **Complete modules touched:**
 
@@ -12,6 +12,7 @@
 - [packages](../modules/packages.md)
 - [paths](../modules/paths.md)
 - [python_imports](../modules/python_imports.md)
+- [validation](../modules/validation.md)
 
 ## Call sequence
 
@@ -47,8 +48,8 @@ sequenceDiagram
     participant p24 as _read_ts_path_aliases
     participant p25 as PythonModuleIndex.build
     participant p26 as _package_import_scope
-    participant p27 as _go_module_dir_is_agent_worktree
-    participant p28 as _parse_tsconfig_aliases
+    participant p27 as package_for_path
+    participant p28 as _go_module_dir_is_agent_worktree
     participant p29 as isinstance (src/llm_wiki_cli/services…uild_static_api_contracts)
     participant p30 as fastapi.get (src/llm_wiki_cli/services…uild_static_api_contracts)
     p0->>p1: _operation_methods
@@ -77,15 +78,15 @@ sequenceDiagram
     p16->>p24: _read_ts_path_aliases
     p16->>p25: PythonModuleIndex.build
     p19->>p26: _package_import_scope
-    p22->>p27: _go_module_dir_is_agent_worktree
-    p24->>p28: _parse_tsconfig_aliases
+    p19->>p27: package_for_path
+    p22->>p28: _go_module_dir_is_agent_worktree
     p0-->>p29: isinstance (src/llm_wiki_cli/services…uild_static_api_contracts)(record, Mapping)
     p0-->>p30: fastapi.get (src/llm_wiki_cli/services…uild_static_api_contracts)(kind, [...])
 ```
 
-> Call sequence diagram shows 30 of 610 interactions; 580 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 612 interactions; 582 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 225 (224 omitted); unresolved 1 of 280 (279 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 225 (224 omitted); unresolved 1 of 279 (278 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -99,7 +100,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/api_contracts.py:_operation_methods` | 25 | - | external | 4 |
 | `src/llm_wiki_cli/services/api_contracts.py:_operation_methods` | 25 | - | unresolved | 3 |
 | `src/llm_wiki_cli/services/api_contracts.py:_operation_methods` | 25 | [src/llm_wiki_cli/services/api_contracts.py](../modules/api_contracts.md) | internal | 1 |
-> Omission summary shows 8 of 116 groups; 108 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 121 groups; 113 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -112,9 +113,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 106; effect analysis evaluated: 83, partial: 13, unavailable: 10. Counts include steps omitted from the displayed trace.
+Source steps: 109; effect analysis evaluated: 86, partial: 13, unavailable: 10. Counts include steps omitted from the displayed trace.
 
-Collector observations for 96 source steps with known totals: observed: 672, emitted: 637, omitted: 35. Unavailable totals are excluded.
+Collector observations for 99 source steps with known totals: observed: 680, emitted: 645, omitted: 35. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

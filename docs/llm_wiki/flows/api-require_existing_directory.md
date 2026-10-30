@@ -57,8 +57,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| require_existing_directory | path.exists | 582 | `path.exists(data not statically known)` |
-| require_existing_directory | path.is_dir | 582 | `path.is_dir(data not statically known)` |
+| require_existing_directory | path.exists | 590 | `path.exists(data not statically known)` |
+| require_existing_directory | path.is_dir | 590 | `path.is_dir(data not statically known)` |
 
 ### Boundary effects
 
@@ -68,8 +68,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `require_existing_directory` | `path.exists` | 582 |
-| unresolved_call | `require_existing_directory` | `path.is_dir` | 582 |
+| unresolved_call | `require_existing_directory` | `path.exists` | 590 |
+| unresolved_call | `require_existing_directory` | `path.is_dir` | 590 |
 
 ## Behavior
 
