@@ -74,6 +74,16 @@ def _fail(field: str, message: str, code: str = "storage-invalid") -> NoReturn:
     raise KnowledgeStorageError(field, message, code=code)
 
 
+def _selected_collections(collections: Iterable[str] | None) -> set[str]:
+    """Validate a projection before any selected record is materialized."""
+    if isinstance(collections, (str, bytes)):
+        _fail("collections", "requires a collection of record collection names")
+    selected = set(COLLECTIONS[:5] if collections is None else collections)
+    if not selected or not selected <= set(COLLECTIONS[:5]):
+        _fail("collections", "requires known record collections")
+    return selected
+
+
 def _fields(value: Any, names: set[str], field: str) -> dict[str, Any]:
     if not isinstance(value, dict) or set(value) != names:
         _fail(field, "must contain exactly " + ", ".join(sorted(names)))
@@ -830,11 +840,7 @@ class KnowledgeStoreReader:
     def select(self, selectors: Iterable[str], *, max_records: int = 1000,
                collections: Iterable[str] | None = None) -> KnowledgeSlice:
         projected = collections is not None
-        if isinstance(collections, (str, bytes)):
-            _fail("collections", "requires a collection of record collection names")
-        selected_collections = set(COLLECTIONS[:5] if collections is None else collections)
-        if not selected_collections or not selected_collections <= set(COLLECTIONS[:5]):
-            _fail("collections", "requires known record collections")
+        selected_collections = _selected_collections(collections)
         selectors = sorted(set(selectors))
         if len(selectors) > 100:
             _fail("selectors", "at most 100 selectors are supported", "storage-limit")

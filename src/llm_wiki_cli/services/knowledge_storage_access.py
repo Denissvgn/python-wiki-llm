@@ -19,6 +19,7 @@ from .knowledge_model import _parse_bundle
 from .knowledge_storage import (
     LOGICAL_SCHEMA, MAX_EXPANDED_BYTES, MAX_OBJECT_BYTES, MAX_ROOT_BYTES, ROOT_FILENAME, STORE_SCHEMA,
     KnowledgeSlice, KnowledgeStorageError, KnowledgeStoreReader, canonical_bytes, digest,
+    _selected_collections,
 )
 from .knowledge_storage_io import StorageReadSession
 from .knowledge_packs import PACKED_SCHEMAS, open_knowledge_store
@@ -129,11 +130,12 @@ def _capture_slice(session, keys, max_bytes, max_records, max_expanded_bytes, in
         if isinstance(collections, (str, bytes)):
             raise KnowledgeStorageError("collections", "requires a collection of record collection names")
         collections = tuple(collections)
-    # Graph anchors are validation dependencies even when concepts are omitted
-    # from the caller's output projection. Keep their reads in this capture.
-    seed_collections = collections
-    if include_graph and collections is not None and "concepts" not in collections:
-        seed_collections = (*collections, "concepts")
+        _selected_collections(collections)
+    # Only concepts seed graph routes. Materializing requested edges here would
+    # repeat their expansion and validation in the final selection and spend
+    # its budget twice. Anchors remain captured validation dependencies even
+    # when the caller omits concepts from the output projection.
+    seed_collections = ("concepts",) if include_graph else collections
     selected = reader.select(keys, max_records=max_records, collections=seed_collections)
     if include_graph:
         seeds = selected.to_payload()
