@@ -123,7 +123,7 @@ Source steps: 218; effect analysis evaluated: 160, partial: 4, unavailable: 54. 
 
 Collector observations for 164 source steps with known totals: observed: 774, emitted: 738, omitted: 36. Unavailable totals are excluded.
 
-- Callable record unavailable; the selected entry symbol has no represented callable body.
+- Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
 - Effect collector totals unavailable; observed counts cover captured records only.
 

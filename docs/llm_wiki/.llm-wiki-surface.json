@@ -32637,7 +32637,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2445,
+              "line": 2448,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32645,7 +32645,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2449,
+              "line": 2452,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32653,7 +32653,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2451,
+              "line": 2454,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32661,7 +32661,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2453,
+              "line": 2456,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32669,7 +32669,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2479,
+              "line": 2482,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32677,7 +32677,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2481,
+              "line": 2484,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32685,7 +32685,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2486,
+              "line": 2489,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32693,31 +32693,13 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2490,
+              "line": 2493,
               "step": "run",
               "step_index": 1,
               "target": "print"
             }
           ],
           "gaps": [
-            {
-              "kind": "external_call",
-              "line": 2429,
-              "step": "run",
-              "target": "getattr"
-            },
-            {
-              "kind": "external_call",
-              "line": 2430,
-              "step": "run",
-              "target": "getattr"
-            },
-            {
-              "kind": "external_call",
-              "line": 2431,
-              "step": "run",
-              "target": "getattr"
-            },
             {
               "kind": "external_call",
               "line": 2432,
@@ -32763,6 +32745,24 @@
             {
               "kind": "external_call",
               "line": 2439,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 2440,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 2441,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 2442,
               "step": "run",
               "target": "getattr"
             },
@@ -68169,5 +68169,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:cb9c48c1432bd396afd28d789b0f1f14a71b9689ca94b9cba164448384bee581"
+  "source_hash": "sha256:d2b338f8435332de85828b5f948ac7e62b7d1aae1f4cce840e81d5ba95302671"
 }
