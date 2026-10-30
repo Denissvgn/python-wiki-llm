@@ -10569,7 +10569,7 @@
             "src/llm_wiki_cli/services/python_calls.py",
             "src/llm_wiki_cli/extractors/python_bindings.py"
           ],
-          "step_count": 3200,
+          "step_count": 3203,
           "truncated": true
         }
       },
@@ -32638,23 +32638,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2503,
-              "step": "run",
-              "step_index": 1,
-              "target": "print"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "output",
               "line": 2507,
-              "step": "run",
-              "step_index": 1,
-              "target": "print"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "output",
-              "line": 2509,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32670,7 +32654,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2537,
+              "line": 2513,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32678,7 +32662,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2539,
+              "line": 2515,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32686,7 +32670,15 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2544,
+              "line": 2541,
+              "step": "run",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 2543,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32698,33 +32690,17 @@
               "step": "run",
               "step_index": 1,
               "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 2552,
+              "step": "run",
+              "step_index": 1,
+              "target": "print"
             }
           ],
           "gaps": [
-            {
-              "kind": "external_call",
-              "line": 2487,
-              "step": "run",
-              "target": "getattr"
-            },
-            {
-              "kind": "external_call",
-              "line": 2488,
-              "step": "run",
-              "target": "getattr"
-            },
-            {
-              "kind": "external_call",
-              "line": 2489,
-              "step": "run",
-              "target": "getattr"
-            },
-            {
-              "kind": "external_call",
-              "line": 2490,
-              "step": "run",
-              "target": "getattr"
-            },
             {
               "kind": "external_call",
               "line": 2491,
@@ -32764,6 +32740,30 @@
             {
               "kind": "external_call",
               "line": 2497,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 2498,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 2499,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 2500,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 2501,
               "step": "run",
               "target": "getattr"
             },
@@ -32816,7 +32816,7 @@
             "src/llm_wiki_cli/extractors/python_bindings.py",
             "src/llm_wiki_cli/services/wiki_write_basis.py"
           ],
-          "step_count": 3276,
+          "step_count": 3279,
           "truncated": true
         }
       },
@@ -68172,5 +68172,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:92c4794ec7a3764e7bfc8262a45f05237e0b5282a95e207e97418c2a78753350"
+  "source_hash": "sha256:025df72ed618a8ffb61b1c1817942c906ad25cb8d346596032448b9ac51c509e"
 }
