@@ -19,7 +19,7 @@ import os
 import re
 import stat
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import InitVar, dataclass, field
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
@@ -253,14 +253,26 @@ class VerificationContext:
     scope_locator: str | None = None
     artifact_integrity: bool = True
     artifact_diagnostics: tuple[VerificationDiagnostic, ...] = ()
+    _validated_artifacts: InitVar[object | None] = None
 
-    def __post_init__(self) -> None:
+    def __post_init__(self, _validated_artifacts: object | None = None) -> None:
         if not isinstance(self.knowledge, KnowledgeIndex):
             raise VerificationContractError("knowledge must be a KnowledgeIndex")
         try:
-            normalized_knowledge = parse_knowledge_index(
-                knowledge_index_to_payload(self.knowledge)
-            )
+            if _validated_artifacts is None:
+                normalized_knowledge = parse_knowledge_index(
+                    knowledge_index_to_payload(self.knowledge)
+                )
+            else:
+                from .knowledge_artifacts import require_validated_artifacts
+
+                artifacts = require_validated_artifacts(_validated_artifacts)
+                if (artifacts.knowledge is not self.knowledge
+                        or artifacts.knowledge_index_hash != self.knowledge_hash):
+                    raise VerificationContractError(
+                        "context differs from its validated knowledge artifacts"
+                    )
+                normalized_knowledge = artifacts.knowledge
         except (TypeError, ValueError) as exc:
             raise VerificationContractError(
                 f"knowledge is not a valid supplied index: {exc}"
@@ -325,6 +337,7 @@ def build_artifact_verification_context(
     scope_locator: str | None = None,
     artifact_integrity: bool = True,
     artifact_diagnostics: Sequence[VerificationDiagnostic] = (),
+    _validated_artifacts: object | None = None,
 ) -> VerificationContext:
     """Build the canonical receipt context for one committed artifact set.
 
@@ -344,7 +357,22 @@ def build_artifact_verification_context(
     if governance_hash is not None:
         _sha256(governance_hash, "governance_hash")
 
-    payload = knowledge_index_to_payload(knowledge)
+    if _validated_artifacts is None:
+        payload = knowledge_index_to_payload(knowledge)
+    else:
+        from .knowledge_artifacts import require_validated_artifacts
+
+        artifacts = require_validated_artifacts(_validated_artifacts)
+        if artifacts.knowledge is not knowledge or (
+            knowledge_hash, surface_index_hash, evaluated_envelope_hash, governance_hash,
+        ) != (
+            artifacts.knowledge_index_hash, artifacts.surface_index_hash,
+            artifacts.evaluated_envelope_hash, artifacts.governance_hash,
+        ):
+            raise VerificationContractError(
+                "context differs from its validated knowledge artifacts"
+            )
+        payload = artifacts.knowledge_payload
     governance_key = "llm-wiki/governance-v1"
     if scope_locator is None:
         projected = knowledge.extensions.get(governance_key)
@@ -407,6 +435,7 @@ def build_artifact_verification_context(
         scope_locator=scope_locator,
         artifact_integrity=artifact_integrity,
         artifact_diagnostics=tuple(artifact_diagnostics),
+        _validated_artifacts=_validated_artifacts,
     )
 
 

@@ -15,6 +15,7 @@ from llm_wiki_cli.services import (
     knowledge_graph,
     knowledge_index,
     knowledge_model,
+    verification_contracts,
 )
 from llm_wiki_cli.services.contracts import (
     SECTION_OWNERSHIP_EXTENSION_KEY,
@@ -53,10 +54,17 @@ from llm_wiki_cli.services.knowledge_packs import open_knowledge_store
 from llm_wiki_cli.services.knowledge_storage import KnowledgeStorageError
 from llm_wiki_cli.services.knowledge_storage_access import capture_knowledge_slice
 from llm_wiki_cli.services.sync_manifest import MANIFEST_FILENAME
+from llm_wiki_cli.services.verification_contracts import (
+    ARTIFACT_INTEGRITY_CHECKER_ID,
+    VerificationContractError,
+    build_artifact_verification_context,
+    verify_and_write_receipt,
+)
 from tests.test_knowledge_loader import _committed_knowledge_state
 from tests.knowledge_fixtures import one_module_two_entities_fixture
 from tests.test_knowledge_generation import _planner_inputs
 from tests.test_knowledge_loader import _write_fixture_pages
+from tests.test_knowledge_verification_view import _context
 
 
 STORAGE_FORMATS = (
@@ -117,6 +125,7 @@ def _count_validation(monkeypatch):
 
     monkeypatch.setattr(knowledge_model, "parse_knowledge_index", parse)
     monkeypatch.setattr(knowledge_index, "parse_knowledge_index", parse)
+    monkeypatch.setattr(verification_contracts, "parse_knowledge_index", parse)
     monkeypatch.setattr(knowledge_graph, "validate_typed_graph", graph)
     return calls
 
@@ -532,3 +541,92 @@ def test_uid_edge_ownership_rejects_misdirected_or_ambiguous_concept_lookup(
     monkeypatch.setattr(store, "_lookup_references", altered)
     with pytest.raises(KnowledgeStorageError, match="(identity|ambiguous)"):
         store._concept_owner(uid)
+
+
+@pytest.mark.parametrize("storage_format", STORAGE_FORMATS)
+@pytest.mark.parametrize("scope", ("bundle", "concept"))
+def test_snapshot_receipt_evaluation_reuses_validated_model_and_graph(
+    tmp_path, monkeypatch, storage_format, scope
+):
+    _committed_snapshot(tmp_path, storage_format, governed=True)
+    view = load_knowledge_read_view(tmp_path, snapshot_only=True)
+    verify_and_write_receipt(
+        tmp_path,
+        _context(view, scope_locator=MODULE_LOCATOR if scope == "concept" else None),
+        [ARTIFACT_INTEGRITY_CHECKER_ID],
+    )
+    monkeypatch.chdir(tmp_path)
+    calls = _count_validation(monkeypatch)
+
+    result = api.query_documentation(
+        {"operation": "concept", "value": MODULE_LOCATOR}, wiki_dir="."
+    )
+    concept = result.get("concept")
+    assert (
+        isinstance(concept, dict) and concept["machine_verification"]["valid"] is True
+    )
+    assert calls == {"model": 1, "bundle": 1, "graph": 1}
+
+
+@pytest.mark.parametrize("scope_locator", (None, MODULE_LOCATOR))
+def test_verification_context_reuses_exact_payload_and_keeps_public_context_checks(
+    tmp_path, scope_locator
+):
+    _committed_snapshot(tmp_path, "v1", governed=True)
+    view = load_knowledge_read_view(tmp_path, snapshot_only=True)
+    artifacts = require_validated_artifacts(view.validated_artifacts)
+    options = {
+        "knowledge_hash": artifacts.knowledge_index_hash,
+        "surface_index_hash": artifacts.surface_index_hash,
+        "evaluated_envelope_hash": artifacts.evaluated_envelope_hash,
+        "governance_hash": artifacts.governance_hash,
+        "scope_locator": scope_locator,
+    }
+    context = build_artifact_verification_context(
+        artifacts.knowledge, **options, _validated_artifacts=artifacts
+    )
+    assert context == _context(view, scope_locator=scope_locator)
+    assert context.knowledge is artifacts.knowledge
+    assert "_validated_artifacts" not in vars(context)
+    invalid = replace(artifacts.knowledge, schema_version="invalid")
+    with pytest.raises(VerificationContractError, match="valid supplied index"):
+        replace(context, knowledge=invalid)
+    for value in (object(), replace(artifacts)):
+        with pytest.raises((TypeError, VerificationContractError)):
+            build_artifact_verification_context(
+                artifacts.knowledge, **options, _validated_artifacts=value
+            )
+    for name in (
+        "knowledge_hash",
+        "surface_index_hash",
+        "evaluated_envelope_hash",
+        "governance_hash",
+    ):
+        changed = {**options, name: sha256_bytes(b"other")}
+        with pytest.raises(VerificationContractError, match="differs"):
+            build_artifact_verification_context(
+                artifacts.knowledge, **changed, _validated_artifacts=artifacts
+            )
+
+
+def test_snapshot_receipt_invalidation_keeps_one_full_model_validation(
+    tmp_path, monkeypatch
+):
+    _committed_snapshot(tmp_path, "packed-v4-deflate", governed=True)
+    view = load_knowledge_read_view(tmp_path, snapshot_only=True)
+    verify_and_write_receipt(
+        tmp_path,
+        _context(view, knowledge_hash=sha256_bytes(b"older-knowledge")),
+        [ARTIFACT_INTEGRITY_CHECKER_ID],
+    )
+    monkeypatch.chdir(tmp_path)
+    calls = _count_validation(monkeypatch)
+    result = api.query_documentation(
+        {"operation": "concept", "value": MODULE_LOCATOR}, wiki_dir="."
+    )
+    concept = result.get("concept")
+    assert (
+        isinstance(concept, dict) and concept["machine_verification"]["valid"] is False
+    )
+    assert concept["machine_verification"]["invalidation_reasons"]
+    assert calls == {"model": 1, "bundle": 1, "graph": 1}

@@ -30,6 +30,7 @@ from .knowledge_consumption import (
     KnowledgeAvailability,
     KnowledgeReadReason,
     KnowledgeReadView,
+    _validated_artifacts_for_view,
 )
 from .immutable import freeze
 from .knowledge_artifacts import (
@@ -129,37 +130,6 @@ def _ineligible_knowledge_status(
     }:
         return "degraded", "surface-validation-failed"
     return knowledge_view.availability.value, knowledge_view.reason_code
-
-
-def _query_artifacts(
-    view: KnowledgeReadView,
-) -> ValidatedKnowledgeArtifacts | None:
-    """Reuse only the validator-issued values bound to this captured view."""
-    try:
-        artifacts = require_validated_artifacts(view.validated_artifacts)
-    except TypeError:
-        return None
-    marker = (
-        None if view.manifest_basis is None else view.manifest_basis.artifact_hashes
-    )
-    if (
-        artifacts.knowledge is not view.knowledge
-        or artifacts.surface_payload is not view.surface
-        or marker is None
-        or (
-            marker.surface_index_hash,
-            marker.knowledge_index_hash,
-            marker.evaluated_envelope_hash,
-            marker.governance_hash,
-        ) != (
-            artifacts.surface_index_hash,
-            artifacts.knowledge_index_hash,
-            artifacts.evaluated_envelope_hash,
-            artifacts.governance_hash,
-        )
-    ):
-        return None
-    return artifacts
 
 
 class DocumentationQueryError(ValueError):
@@ -1985,7 +1955,7 @@ class DocumentationGraphQueryService:
                 "a ready knowledge_view must contain validated knowledge."
             )
 
-        artifacts = _query_artifacts(knowledge_view)
+        artifacts = _validated_artifacts_for_view(knowledge_view)
         try:
             payload = (
                 artifacts.knowledge_payload
