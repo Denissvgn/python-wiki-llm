@@ -19,6 +19,7 @@ from . import context_packet as packets, context_service as context
 from .change_selection import select_changes
 from .context_budget import _accounted_render
 from .dependencies import analyze_dependencies
+from .contracts import GOVERNANCE_EXTENSION_KEY
 from .documentation_query_builder import assemble_documentation_query_service
 from .extraction_service import InventoryResult
 from .knowledge_envelope import ConsumedInput, hash_source_snapshot
@@ -158,6 +159,21 @@ def _storage_receipt(native: ScopedKnowledgeRead | None, *, status: str, reason:
     return result
 
 
+def _edge_matches_concept(edge: Mapping[str, Any], concept: Mapping[str, Any]) -> bool:
+    """Match either native endpoint identity to the captured concept."""
+    governance = concept.get("extensions", {}).get(GOVERNANCE_EXTENSION_KEY)
+    uid = governance.get("uid") if isinstance(governance, Mapping) else None
+    for endpoint in (edge.get("from"), edge.get("target")):
+        if not isinstance(endpoint, Mapping) or endpoint.get("kind") != "concept":
+            continue
+        coordinates = set(endpoint) & {"locator", "uid"}
+        if coordinates == {"locator"} and endpoint["locator"] == concept["locator"]:
+            return True
+        if coordinates == {"uid"} and isinstance(uid, str) and endpoint["uid"] == uid:
+            return True
+    return False
+
+
 def _native_observation(native, requirement, snapshot, paths, scope, limit, implementation_report=None):
     selector, facet = requirement["selector"], requirement["facet"]
     selected = native.slice.to_payload()
@@ -202,9 +218,8 @@ def _native_observation(native, requirement, snapshot, paths, scope, limit, impl
         values = [qualified]
     elif facet == "typed-relationships":
         field = "edges"
-        locator = concept["locator"]
         values = [row["value"] for row in selected["records"]["edges"]
-                  if row["value"]["from"].get("locator") == locator or row["value"]["target"].get("locator") == locator]
+                  if _edge_matches_concept(row["value"], concept)]
     elif facet == "semantic-section":
         field = "sections"
         path = concept["document"]["canonical_path"]
@@ -612,8 +627,7 @@ def validate_scoped_bindings(payload, normalized, profile):
             elif page_inputs[0]["hash"] != page_hash:
                 raise ValueError("native observation is not bound to its consumed page")
             if fact["facet"] == "typed-relationships":
-                locator = concept["locator"]
-                if any(edge["from"].get("locator") != locator and edge["target"].get("locator") != locator
+                if any(not _edge_matches_concept(edge, concept)
                        for edge in fact["observation"]["edges"]):
                     raise ValueError("typed relationship belongs to a different concept")
         elif fact["facet"] == "source-contract":

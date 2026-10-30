@@ -2520,6 +2520,33 @@ def _supersession_edges(
     return edges
 
 
+def _validate_selected_supersession_edges(
+    edges: Sequence[Mapping[str, Any]],
+    *,
+    states: Mapping[str, tuple[Lifecycle, str | None, LifecycleEvent | None]],
+    concept_map_hash: str,
+    governance_hash: str,
+) -> None:
+    """Check consumed authority-owned edges without claiming unread graph parity."""
+    for edge in edges:
+        if edge.get("kind") != "supersedes" or edge.get("origin") != "governance":
+            continue
+        uid = edge["from"].get("uid")
+        state = states.get(uid) if isinstance(uid, str) else None
+        if (state is None or state[0] is not Lifecycle.SUPERSEDED
+                or state[1] is None or state[2] is None):
+            raise GovernanceError(
+                "governance_projection", "selected supersession does not match the authoritative ledger",
+                code="governance-projection-mismatch",
+            )
+        expected = _supersession_edges([(uid, state[1], state[2])], concept_map_hash, governance_hash)[0]
+        if canonical_json_text(edge) != canonical_json_text(expected):
+            raise GovernanceError(
+                "governance_projection", "selected supersession does not match the authoritative ledger",
+                code="governance-projection-mismatch",
+            )
+
+
 def _governance_supersession_edge_payloads(
     knowledge: KnowledgeIndex,
 ) -> tuple[str, ...]:
