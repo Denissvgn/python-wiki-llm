@@ -23,6 +23,27 @@ from llm_wiki_cli.services.entrypoints import (
 )
 
 
+@pytest.mark.parametrize("surface", ["legacy", "detailed", "recovered"])
+def test_unbound_console_declarations_keep_distinct_stable_identities(surface):
+    scripts = [{"name": "beta", "module": "missing.second", "attr": "main"},
+               {"name": "alpha", "module": "missing.first", "attr": "main"}]
+
+    def selected(records):
+        if surface == "legacy":
+            return get_entry_points({}, console_scripts=records, include_plugins=False)
+        detailed = get_detailed_entry_points({}, console_scripts=records, include_plugins=False)
+        assert detailed["coverage"]["observed"] == detailed["coverage"]["emitted"] == 2
+        if surface == "detailed":
+            return [row["entry"] for row in detailed["observations"] if row["selected"]]
+        return entrypoint_service.entry_points_from_detailed_observations(detailed)
+
+    forward = selected(scripts)
+    assert [entry["label"] for entry in forward] == ["alpha", "beta"]
+    assert len({entry["id"] for entry in forward}) == 2
+    assert all(entry["file"] is None and entry["symbol"] == "main" for entry in forward)
+    assert selected(list(reversed(scripts))) == forward
+
+
 def _body_line_count(function) -> int:
     source = textwrap.dedent(inspect.getsource(function))
     function_node = ast.parse(source).body[0]

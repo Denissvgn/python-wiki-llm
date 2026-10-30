@@ -508,6 +508,8 @@ In the Python API, an empty `paths` list selects no files; omitting `paths`
 selects the source tree.
 Scoped entry points bind to selected files. Unresolved project-script declarations
 remain visible when their `pyproject.toml` is selected, including full-tree reads.
+Distinct unresolved script names remain separate entries even when they share a
+callable name such as `main`; their handler analysis remains unavailable.
 
 The JSON output includes `schema_version: "llm-wiki-extract/v1"` plus
 `inventory` and optional `docker` and `unsupported_sources` objects.

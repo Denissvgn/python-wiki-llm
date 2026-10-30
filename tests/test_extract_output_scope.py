@@ -275,3 +275,21 @@ def test_cli_rejects_an_empty_package_selector_without_emitting_inventory(projec
     assert error.value.code == 2
     assert captured.out == ""
     assert "--package must be a non-empty package name" in captured.err
+
+
+@pytest.mark.parametrize("summary", [False, True])
+def test_selected_manifest_retains_scripts_with_same_unresolved_callable_name(project, summary):
+    (project / "pyproject.toml").write_text(
+        '[project]\nname = "scripts-owner"\n[project.scripts]\n'
+        'first = "missing.first:main"\nsecond = "missing.second:main"\n', encoding="utf-8")
+    result = _extract(project, paths=["pyproject.toml"], deep=True, summary=summary)
+    assert result.payload["inventory"] == {} and "docker" not in result.payload
+    assert {entry["label"] for entry in result.payload["entrypoints"]} == {"first", "second"}
+    assert {flow["entry"]["label"] for flow in result.payload["data_flows"]} == {"first", "second"}
+    details = result.payload["data_flow_details"]["flows"]
+    assert {flow["entry"]["label"] for flow in details} == {"first", "second"}
+    assert len({flow["id"] for flow in details}) == 2
+    assert all(flow["entry"]["file"] is None and flow["analysis"]["state"] == "unavailable" for flow in details)
+    public = extract_source(str(project), paths=["pyproject.toml"], deep=True, summary=summary, allow_external_src=True)
+    assert "entrypoints" in public
+    assert public["entrypoints"] == result.payload["entrypoints"]
