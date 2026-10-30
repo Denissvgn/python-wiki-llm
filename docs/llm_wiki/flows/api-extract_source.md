@@ -111,9 +111,9 @@ sequenceDiagram
     p2-->>p30: seen.add (src/llm_wiki_cli/api.py:_caused_by)(id(...))
 ```
 
-> Call sequence diagram shows 30 of 3161 interactions; 3131 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3167 interactions; 3137 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1052 (1051 omitted); unresolved 1 of 1299 (1298 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1054 (1053 omitted); unresolved 1 of 1303 (1302 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -142,7 +142,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 811; effect analysis evaluated: 654, partial: 37, unavailable: 120. Counts include steps omitted from the displayed trace.
 
-Collector observations for 691 source steps with known totals: observed: 4204, emitted: 4080, omitted: 124. Unavailable totals are excluded.
+Collector observations for 691 source steps with known totals: observed: 4212, emitted: 4088, omitted: 124. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -218,7 +218,7 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | extract_source | build_extract_payload | 1143 | `extract_cmd.build_extract_payload(src_dir, changed=changed, summary=summary, deep=deep, paths=paths, package_filter=package, include_empty=include_empty, allow_external_src=allow_external_src, read_only=read_only, source_selection=source_selection)` |
-| build_extract_payload | validate_source_root | 2150 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
+| build_extract_payload | validate_source_root | 2157 | `validate_source_root(src_dir, '--src-dir', allow_external=allow_external_src)` |
 | validate_source_root | validate_path | 160 | `validate_path(path, label)` |
 | validate_path | PathValidationError | 134 | `PathValidationError(...)` |
 | validate_path | (…).resolve | 135 | `(Path.cwd() / path).resolve(data not statically known)` |

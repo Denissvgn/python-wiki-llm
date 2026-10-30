@@ -10568,7 +10568,7 @@
             "src/llm_wiki_cli/services/dockerfile_parser.py",
             "src/llm_wiki_cli/services/yaml_syntax.py"
           ],
-          "step_count": 3162,
+          "step_count": 3168,
           "truncated": true
         }
       },
@@ -32637,7 +32637,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2448,
+              "line": 2455,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32645,7 +32645,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2452,
+              "line": 2459,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32653,7 +32653,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2454,
+              "line": 2461,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32661,23 +32661,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2456,
-              "step": "run",
-              "step_index": 1,
-              "target": "print"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "output",
-              "line": 2482,
-              "step": "run",
-              "step_index": 1,
-              "target": "print"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "output",
-              "line": 2484,
+              "line": 2463,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32693,55 +32677,29 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2493,
+              "line": 2491,
+              "step": "run",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 2496,
+              "step": "run",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 2500,
               "step": "run",
               "step_index": 1,
               "target": "print"
             }
           ],
           "gaps": [
-            {
-              "kind": "external_call",
-              "line": 2432,
-              "step": "run",
-              "target": "getattr"
-            },
-            {
-              "kind": "external_call",
-              "line": 2433,
-              "step": "run",
-              "target": "getattr"
-            },
-            {
-              "kind": "external_call",
-              "line": 2434,
-              "step": "run",
-              "target": "getattr"
-            },
-            {
-              "kind": "external_call",
-              "line": 2435,
-              "step": "run",
-              "target": "getattr"
-            },
-            {
-              "kind": "external_call",
-              "line": 2436,
-              "step": "run",
-              "target": "getattr"
-            },
-            {
-              "kind": "external_call",
-              "line": 2437,
-              "step": "run",
-              "target": "getattr"
-            },
-            {
-              "kind": "external_call",
-              "line": 2438,
-              "step": "run",
-              "target": "getattr"
-            },
             {
               "kind": "external_call",
               "line": 2439,
@@ -32763,6 +32721,48 @@
             {
               "kind": "external_call",
               "line": 2442,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 2443,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 2444,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 2445,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 2446,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 2447,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 2448,
+              "step": "run",
+              "target": "getattr"
+            },
+            {
+              "kind": "external_call",
+              "line": 2449,
               "step": "run",
               "target": "getattr"
             },
@@ -32815,7 +32815,7 @@
             "src/llm_wiki_cli/services/yaml_syntax.py",
             "src/llm_wiki_cli/services/wiki_write_basis.py"
           ],
-          "step_count": 3238,
+          "step_count": 3244,
           "truncated": true
         }
       },
@@ -68169,5 +68169,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:d2b338f8435332de85828b5f948ac7e62b7d1aae1f4cce840e81d5ba95302671"
+  "source_hash": "sha256:1e66de3184a4f0667566bdc015310ea6d4f9e64bdcea997bdb2a916b57aafdf0"
 }

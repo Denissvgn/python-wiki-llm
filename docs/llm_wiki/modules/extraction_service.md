@@ -69,6 +69,7 @@ narrow qualification. Failed and unavailable paths remain qualified gaps.
 | `.source_snapshot` | `SourceFile`, `SourceSnapshot`, `SourceSnapshotError`, `build_source_snapshot`, `format_unsupported_source_summary`, `unsupported_source_summary`, `SourceSnapshotMutationError` |
 | `.yaml_syntax` | `load_yaml_documents` |
 | `__future__` | `annotations` |
+| `collections.abc` | `Mapping` |
 | `concurrent.futures` | `ThreadPoolExecutor` |
 | `copy` | `deepcopy` |
 | `dataclasses` | `dataclass`, `field` |
@@ -110,15 +111,15 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ExtractorStatus](../entities/ExtractorStatus.md) | 141 | — | — |
-| [InventoryRequest](../entities/InventoryRequest.md) | 149 | — | — |
-| [InventoryResult](../entities/InventoryResult.md) | 180 | — | — |
-| [ExtractPayloadResult](../entities/ExtractPayloadResult.md) | 221 | — | — |
-| [ExtractorFailureError](../entities/ExtractorFailureError.md) | 241 | `RuntimeError` | Raised when one or more extractors fail during payload construction. |
-| [_ExtractionPlan](../entities/ExtractionPlan.md) | 266 | — | — |
-| [_ExtractionOutcome](../entities/ExtractionOutcome.md) | 279 | — | — |
-| [_InventoryBuildContext](../entities/InventoryBuildContext.md) | 292 | — | — |
-| [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 314 | — | — |
+| [ExtractorStatus](../entities/ExtractorStatus.md) | 142 | — | — |
+| [InventoryRequest](../entities/InventoryRequest.md) | 150 | — | — |
+| [InventoryResult](../entities/InventoryResult.md) | 181 | — | — |
+| [ExtractPayloadResult](../entities/ExtractPayloadResult.md) | 222 | — | — |
+| [ExtractorFailureError](../entities/ExtractorFailureError.md) | 242 | `RuntimeError` | Raised when one or more extractors fail during payload construction. |
+| [_ExtractionPlan](../entities/ExtractionPlan.md) | 267 | — | — |
+| [_ExtractionOutcome](../entities/ExtractionOutcome.md) | 280 | — | — |
+| [_InventoryBuildContext](../entities/InventoryBuildContext.md) | 293 | — | — |
+| [_InventoryPlanningResult](../entities/InventoryPlanningResult.md) | 315 | — | — |
 
 ## Functions
 

@@ -1,6 +1,6 @@
 # ExtractorStatus
 
-**Location:** `src/llm_wiki_cli/services/extraction_service.py:141`
+**Location:** `src/llm_wiki_cli/services/extraction_service.py:142`
 **Kind:** Class
 **Bases:** —
 **Module:** [extraction_service](../modules/extraction_service.md)
