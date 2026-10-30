@@ -61,11 +61,11 @@ flowchart LR
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
 | [KnowledgeStorageError](../entities/KnowledgeStorageError.md) | 45 | `ValueError` | A storage contract, integrity or bounded-work failure. |
-| [KnowledgeStorePlan](../entities/KnowledgeStorePlan.md) | 195 | — | — |
-| [_Encoder](../entities/Encoder.md) | 202 | — | — |
-| [_TreeBuilder](../entities/TreeBuilder.md) | 228 | — | — |
-| [KnowledgeSlice](../entities/KnowledgeSlice.md) | 488 | — | Detached scoped data; deliberately not ValidatedKnowledgeArtifacts. |
-| [KnowledgeStoreReader](../entities/KnowledgeStoreReader.md) | 497 | — | Read committed objects through a caller-owned bounded I/O boundary. |
+| [KnowledgeStorePlan](../entities/KnowledgeStorePlan.md) | 205 | — | — |
+| [_Encoder](../entities/Encoder.md) | 212 | — | — |
+| [_TreeBuilder](../entities/TreeBuilder.md) | 238 | — | — |
+| [KnowledgeSlice](../entities/KnowledgeSlice.md) | 498 | — | Detached scoped data; deliberately not ValidatedKnowledgeArtifacts. |
+| [KnowledgeStoreReader](../entities/KnowledgeStoreReader.md) | 507 | — | Read committed objects through a caller-owned bounded I/O boundary. |
 
 ## Functions
 
@@ -75,6 +75,7 @@ flowchart LR
 | `digest` | `(data: bytes) -> str` | — | — |
 | `logical_digest` | `(value: Any) -> str` | — | Hash logical JSON without allocating a second monolithic serialization. |
 | `_fail` | `(field: str, message: str, code: str = 'storage-invalid') -> NoReturn` | — | — |
+| `_selected_collections` | `(collections: Iterable[str] \| None) -> set[str]` | — | Validate a projection before any selected record is materialized. |
 | `_fields` | `(value: Any, names: set[str], field: str) -> dict[str, Any]` | — | — |
 | `_integer` | `(value: Any, field: str, maximum: int, minimum: int = 0) -> int` | — | — |
 | `_text` | `(value: Any, field: str, maximum: int = 16384) -> str` | — | — |
