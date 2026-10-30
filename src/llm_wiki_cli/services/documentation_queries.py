@@ -19,7 +19,7 @@ from itertools import islice
 from pathlib import PurePosixPath
 from typing import Any, Callable, Iterable, Mapping, Optional, ParamSpec, Sequence, cast
 
-from .contracts import SECTION_OWNERSHIP_EXTENSION_KEY
+from .contracts import SECTION_OWNERSHIP_EXTENSION_KEY, TYPED_GRAPH_EXTENSION_KEY
 from .dependencies import (
     build_dependency_graph,
     dependency_metrics,
@@ -30,6 +30,11 @@ from .knowledge_consumption import (
     KnowledgeAvailability,
     KnowledgeReadReason,
     KnowledgeReadView,
+)
+from .immutable import freeze
+from .knowledge_artifacts import (
+    ValidatedKnowledgeArtifacts,
+    require_validated_artifacts,
 )
 from .knowledge_graph import (
     CORE_RELATIONSHIP_KINDS,
@@ -124,6 +129,37 @@ def _ineligible_knowledge_status(
     }:
         return "degraded", "surface-validation-failed"
     return knowledge_view.availability.value, knowledge_view.reason_code
+
+
+def _query_artifacts(
+    view: KnowledgeReadView,
+) -> ValidatedKnowledgeArtifacts | None:
+    """Reuse only the validator-issued values bound to this captured view."""
+    try:
+        artifacts = require_validated_artifacts(view.validated_artifacts)
+    except TypeError:
+        return None
+    marker = (
+        None if view.manifest_basis is None else view.manifest_basis.artifact_hashes
+    )
+    if (
+        artifacts.knowledge is not view.knowledge
+        or artifacts.surface_payload is not view.surface
+        or marker is None
+        or (
+            marker.surface_index_hash,
+            marker.knowledge_index_hash,
+            marker.evaluated_envelope_hash,
+            marker.governance_hash,
+        ) != (
+            artifacts.surface_index_hash,
+            artifacts.knowledge_index_hash,
+            artifacts.evaluated_envelope_hash,
+            artifacts.governance_hash,
+        )
+    ):
+        return None
+    return artifacts
 
 
 class DocumentationQueryError(ValueError):
@@ -1949,15 +1985,20 @@ class DocumentationGraphQueryService:
                 "a ready knowledge_view must contain validated knowledge."
             )
 
+        artifacts = _query_artifacts(knowledge_view)
         try:
-            payload = knowledge_index_to_payload(knowledge_view.knowledge)
+            payload = (
+                artifacts.knowledge_payload
+                if artifacts is not None
+                else freeze(knowledge_index_to_payload(knowledge_view.knowledge))
+            )
         except (TypeError, ValueError) as exc:
             raise DocumentationQueryError(
                 f"knowledge_view.knowledge is invalid: {exc}"
             ) from exc
 
         concepts = [
-            _jsonable_mapping(cast(Mapping[str, Any], concept))
+            cast(dict[str, Any], concept)
             for concept in payload["concepts"]
         ]
         source_concepts: dict[str, dict[str, dict[str, Any]]] = defaultdict(dict)
@@ -1997,7 +2038,7 @@ class DocumentationGraphQueryService:
                     source_concepts[source_path][locator] = concept
 
         relationships = tuple(
-            _jsonable_mapping(cast(Mapping[str, Any], relationship))
+            cast(dict[str, Any], relationship)
             for relationship in payload["relationships"]
         )
         outbound: dict[str, list[int]] = defaultdict(list)
@@ -2044,7 +2085,8 @@ class DocumentationGraphQueryService:
                 ),
                 str(relationship.get("from", "")),
                 str(relationship.get("resolution", "")),
-                _canonical_json(relationship),
+                # Canonical payload order already breaks ties by the complete
+                # relationship JSON; retain that rank without serializing it.
                 index,
             )
             for index, relationship in enumerate(relationships)
@@ -2083,7 +2125,7 @@ class DocumentationGraphQueryService:
             for source_path, by_locator in sorted(source_concepts.items())
         }
         self._build_section_ownership_indexes(payload)
-        self._build_typed_graph_indexes(payload)
+        self._build_typed_graph_indexes(payload, validated_artifacts=artifacts)
 
     def _build_section_ownership_indexes(
         self,
@@ -2123,7 +2165,7 @@ class DocumentationGraphQueryService:
                     "section ownership extension page is invalid."
                 )
             sections = [
-                _jsonable_mapping(cast(Mapping[str, Any], section))
+                cast(dict[str, Any], section)
                 for section in raw_sections
                 if isinstance(section, Mapping)
             ]
@@ -2148,18 +2190,33 @@ class DocumentationGraphQueryService:
             "schema_version": extension.get("schema_version"),
         }
 
-    def _build_typed_graph_indexes(self, payload: Mapping[str, Any]) -> None:
+    def _build_typed_graph_indexes(
+        self,
+        payload: Mapping[str, Any],
+        *,
+        validated_artifacts: ValidatedKnowledgeArtifacts | None = None,
+    ) -> None:
         extensions = payload.get("extensions", {})
         if not isinstance(extensions, Mapping):
             raise DocumentationQueryError("knowledge extensions must be an object.")
         try:
-            graph = typed_graph_from_knowledge_extensions(
-                extensions,
-                concept_kinds={
-                    locator: cast(str, concept.get("concept_kind"))
-                    for locator, concept in self.concept_by_locator.items()
-                },
-            )
+            if validated_artifacts is None:
+                graph = freeze(
+                    typed_graph_from_knowledge_extensions(
+                        extensions,
+                        concept_kinds={
+                            locator: cast(str, concept.get("concept_kind"))
+                            for locator, concept in self.concept_by_locator.items()
+                        },
+                    )
+                )
+            else:
+                artifacts = require_validated_artifacts(validated_artifacts)
+                if artifacts.knowledge_payload is not payload:
+                    raise DocumentationQueryError(
+                        "typed graph belongs to another knowledge payload."
+                    )
+                graph = extensions.get(TYPED_GRAPH_EXTENSION_KEY)
         except KnowledgeGraphError as exc:
             raise DocumentationQueryError(
                 f"typed graph extension is invalid: {exc}"
@@ -2174,7 +2231,7 @@ class DocumentationGraphQueryService:
             return
 
         edges = tuple(
-            _jsonable_mapping(cast(Mapping[str, Any], edge)) for edge in graph["edges"]
+            cast(dict[str, Any], edge) for edge in graph["edges"]
         )
         outgoing: dict[str, list[int]] = defaultdict(list)
         incoming: dict[str, list[int]] = defaultdict(list)

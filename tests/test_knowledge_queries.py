@@ -7,6 +7,7 @@ import io
 import json
 import socket
 import subprocess
+from copy import deepcopy
 from dataclasses import replace
 from pathlib import Path
 
@@ -747,8 +748,9 @@ def test_query_compact_preserves_hints_and_full_respects_available_commitments(
 
 def test_explain_evidence_has_a_truthful_serialized_byte_cap(tmp_path):
     service = _knowledge_service(_ready_view(tmp_path))
-    concept = service.concept_by_locator[USER_LOCATOR]
+    concept = deepcopy(service.concept_by_locator[USER_LOCATOR])
     concept["facets"]["structure"]["oversized_diagnostic"] = "x" * (2 << 20)
+    service.concept_by_locator[USER_LOCATOR] = concept
 
     explained = service.explain_evidence(USER_LOCATOR)
     byte_bound = explained["bounds"]["raw_evidence_bytes"]
@@ -1392,7 +1394,7 @@ def test_knowledge_is_normalized_and_indexed_only_during_construction(
         recording_normalizer,
     )
     service = _knowledge_service(view)
-    assert len(calls) == 1
+    assert calls == []
 
     class NoIterationDict(dict):
         def __iter__(self):
@@ -1418,7 +1420,7 @@ def test_knowledge_is_normalized_and_indexed_only_during_construction(
         assert service.list_concept_sections(USER_LOCATOR)["found"] is True
         assert service.related_concepts(USER_LOCATOR)["total"] == 2
         assert service.explain_evidence(USER_LOCATOR)["total"] == 2
-    assert len(calls) == 1
+    assert calls == []
 
 
 def test_service_and_knowledge_queries_perform_no_io_or_external_work(

@@ -33,8 +33,11 @@ from .infrastructure_sync import (
 )
 from .knowledge_envelope import EvaluatedEnvelope, INVENTORY_HASH_EXTENSION
 from .knowledge_evidence import formatted_json_bytes, is_valid_sha256, sha256_bytes
-from .knowledge_graph import KnowledgeGraphError, typed_graph_from_knowledge_extensions
-from .knowledge_index import _validated_index_serialization, validate_knowledge_index, _model_to_payload
+from .knowledge_graph import KnowledgeGraphError, _validate_typed_graph_concept_bindings
+from .knowledge_index import (
+    _validated_index_data, _validated_index_serialization,
+    validate_knowledge_index, _model_to_payload,
+)
 from .knowledge_storage import (
     STORE_SCHEMA, MAX_EXPANDED_BYTES, GIT_FAILURE_BYTES, KnowledgeStorageError, logical_digest,
 )
@@ -135,6 +138,9 @@ class ValidatedKnowledgeArtifacts:
     governance_hash: str | None = None
     storage_objects: Mapping[str, bytes] = field(default_factory=dict, repr=False)
     storage_statistics: Mapping[str, Any] = field(default_factory=dict, repr=False)
+    knowledge_payload: Mapping[str, Any] = field(
+        default_factory=dict, repr=False, compare=False
+    )
     # init=False prevents dataclasses.replace from carrying authority to new data.
     _validation: _ArtifactValidation | None = field(
         default=None, init=False, repr=False, compare=False
@@ -149,6 +155,7 @@ class _ArtifactValidation:
         knowledge_bytes: bytes,
     ):
         self.knowledge = artifacts.knowledge
+        self.knowledge_payload = artifacts.knowledge_payload
         self.surface = artifacts.surface_payload
         self.storage_objects = artifacts.storage_objects
         self.storage_statistics = artifacts.storage_statistics
@@ -173,6 +180,7 @@ def require_validated_artifacts(value: object) -> ValidatedKnowledgeArtifacts:
     if (
         not isinstance(validation, _ArtifactValidation)
         or validation.knowledge is not value.knowledge
+        or validation.knowledge_payload is not value.knowledge_payload
         or validation.surface is not value.surface_payload
         or validation.storage_objects is not value.storage_objects
         or validation.storage_statistics is not value.storage_statistics
@@ -382,8 +390,9 @@ def validate_knowledge_artifacts(
         if store_reader is None:
             if receipt_model is not None:
                 knowledge, expected_knowledge_bytes = receipt_model, knowledge_index_bytes
+                canonical_payload = freeze(_model_to_payload(knowledge))
             else:
-                knowledge, expected_knowledge_bytes = _validated_index_serialization(knowledge_payload)
+                knowledge, canonical_payload, expected_knowledge_bytes = _validated_index_data(knowledge_payload)
         else:
             if storage_receipt_model is not None:
                 if logical_digest(knowledge_payload) != logical_digest(_model_to_payload(storage_receipt_model)):
@@ -391,7 +400,9 @@ def validate_knowledge_artifacts(
                 knowledge = storage_receipt_model
             else:
                 knowledge = validate_knowledge_index(knowledge_payload)
-            if logical_digest(_model_to_payload(knowledge)) != store_reader.root["logical_hash"]:
+            knowledge = freeze(knowledge)
+            canonical_payload = freeze(_model_to_payload(knowledge))
+            if logical_digest(canonical_payload) != store_reader.root["logical_hash"]:
                 raise KnowledgeStorageError("knowledge", "logical records are not canonical native v1 values")
             expected_knowledge_bytes = knowledge_index_bytes
     except (TypeError, ValueError) as exc:
@@ -413,8 +424,6 @@ def validate_knowledge_artifacts(
             "must use the canonical knowledge-index v1 wire encoding",
         )
     del knowledge_payload, expected_knowledge_bytes
-    if store_reader is not None:
-        knowledge = freeze(knowledge)
 
     surface_hash = sha256_bytes(surface_index_bytes)
     if knowledge.bundle.snapshot.surface_index_hash != surface_hash:
@@ -423,17 +432,19 @@ def validate_knowledge_artifacts(
             "does not match the exact surface-index bytes",
         )
     try:
-        graph = typed_graph_from_knowledge_extensions(
-            knowledge.extensions,
-            concept_kinds={
-                concept.locator: (
-                    concept.concept_kind.value
-                    if isinstance(concept.concept_kind, ConceptKind)
-                    else concept.concept_kind
-                )
-                for concept in knowledge.concepts
-            },
-        )
+        graph = knowledge.extensions.get(TYPED_GRAPH_EXTENSION_KEY)
+        if graph is not None:
+            _validate_typed_graph_concept_bindings(
+                graph,
+                concept_kinds={
+                    concept.locator: (
+                        concept.concept_kind.value
+                        if isinstance(concept.concept_kind, ConceptKind)
+                        else concept.concept_kind
+                    )
+                    for concept in knowledge.concepts
+                },
+            )
     except KnowledgeGraphError as exc:
         field = exc.field
         if field.startswith("typed_graph"):
@@ -513,6 +524,7 @@ def validate_knowledge_artifacts(
         governance_hash=governance_hash,
         storage_objects=storage_objects,
         storage_statistics=storage_statistics,
+        knowledge_payload=canonical_payload,
     )
     object.__setattr__(
         validated,

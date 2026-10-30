@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from copy import deepcopy
 from dataclasses import replace
 
 import pytest
@@ -216,6 +217,7 @@ def test_evidence_and_plugin_relationships_are_explicit_opt_ins(tmp_path):
 
 def test_explicit_typed_raw_evidence_has_a_truthful_serialized_byte_cap(tmp_path):
     service = _service(tmp_path)
+    service._typed_graph_edges = tuple(deepcopy(edge) for edge in service._typed_graph_edges)
     edge = next(item for item in service._typed_graph_edges if item["kind"] == "calls")
     edge["evidence"]["samples"][0]["attributes"]["oversized"] = "x" * (2 << 20)
 
