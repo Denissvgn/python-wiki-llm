@@ -151,7 +151,7 @@ def _node_aliases(node: Any) -> set[str]:
     if not isinstance(node, dict):
         return set()
     result = set()
-    for field, prefix in (("locator", "concept:"), ("source_path", "source:"),
+    for field, prefix in (("locator", "concept:"), ("uid", "concept:"), ("source_path", "source:"),
                           ("canonical_path", "page:")):
         if isinstance(node.get(field), str):
             result.add(prefix + node[field])
@@ -303,6 +303,14 @@ def build_knowledge_store(payload: Mapping[str, Any], *, target_bytes: int = TAR
     encoder = _Encoder(basis)
     records: dict[str, list[dict[str, Any]]] = {name: [] for name in COLLECTIONS}
     concept_owners: dict[str, str] = {c["locator"]: _owner(c) for c in payload["concepts"]}
+    from .contracts import GOVERNANCE_EXTENSION_KEY
+
+    uid_owners = {
+        governance["uid"]: _owner(concept)
+        for concept in payload["concepts"]
+        if isinstance(governance := concept.get("extensions", {}).get(GOVERNANCE_EXTENSION_KEY), dict)
+        and isinstance(governance.get("uid"), str)
+    }
     page_owners: dict[str, str] = {c["document"]["canonical_path"]: _owner(c) for c in payload["concepts"]}
     lookup: dict[tuple[str, str, str], set[str]] = defaultdict(set)
 
@@ -334,8 +342,13 @@ def build_knowledge_store(payload: Mapping[str, Any], *, target_bytes: int = TAR
             aliases = _node_aliases(from_node)
             edge_owner = next(iter(sorted(a for a in aliases if a.startswith("source:"))), None)
             if edge_owner is None:
-                locator = _text(from_node.get("locator") if isinstance(from_node, dict) else from_node, "edge.from")
-                edge_owner = concept_owners.get(locator, next(iter(sorted(aliases)), "edge:" + edge["key"]))
+                coordinate = _text(
+                    from_node.get("locator", from_node.get("uid")) if isinstance(from_node, dict) else from_node,
+                    "edge.from",
+                )
+                edge_owner = concept_owners.get(coordinate, uid_owners.get(
+                    coordinate, next(iter(sorted(aliases)), "edge:" + edge["key"]),
+                ))
             edge_owner = _text(edge_owner, "edge.owner")
             edge_aliases = {edge_owner, *("out:" + a for a in aliases),
                             *("in:" + a for a in _node_aliases(edge["target"]))}
@@ -763,17 +776,24 @@ class KnowledgeStoreReader:
         if locator not in self._concept_owners:
             matched = []
             for ref in self._lookup_references("concept:" + locator):
-                if ref["collection"] == "concepts" and ref["id"] == locator:
+                if ref["collection"] == "concepts":
                     matched.append(ref)
             if len(matched) != 1:
                 _fail("lookup", "source concept ownership is missing or ambiguous")
             ref = matched[0]
-            row = self.record("concepts", _text(ref["owner"], "owner"), locator)
+            row = self.record("concepts", _text(ref["owner"], "owner"), _text(ref["id"], "concept.id"))
             value = self.expand_record(row)
             _validate_selected_record("concepts", row, value, producer=self.root["bundle"]["producer"])
+            from .contracts import GOVERNANCE_EXTENSION_KEY
+
+            governance = value.get("extensions", {}).get(GOVERNANCE_EXTENSION_KEY)
+            uid = governance.get("uid") if isinstance(governance, dict) else None
+            if locator != value["locator"] and locator != uid:
+                _fail("lookup", "source concept identity does not match its coordinate")
             self._validated_records["concepts"].add((row["owner"], row["id"]))
             self._concept_owners[locator] = _owner(value)
-            self.consumed_concepts[locator] = value
+            self._concept_owners[value["locator"]] = _owner(value)
+            self.consumed_concepts[value["locator"]] = value
         return self._concept_owners[locator]
 
     def _record_aliases(self, collection: str, row: dict[str, Any], value: Any) -> set[str]:
@@ -790,7 +810,10 @@ class KnowledgeStoreReader:
             aliases.update("in:" + a for a in _node_aliases(value["target"]))
         elif collection == "edges":
             source = value["from"]
-            locator = source["locator"] if isinstance(source, dict) else source
+            locator = _text(
+                source.get("locator", source.get("uid")) if isinstance(source, dict) else source,
+                "edge.from",
+            )
             owner = self._concept_owner(locator)
             aliases = {owner, *("out:" + a for a in _node_aliases(source)),
                        *("in:" + a for a in _node_aliases(value["target"]))}
