@@ -61,10 +61,10 @@ flowchart TD
 | [progress](modules/progress.md) | 15 | 1 |
 | [documentation_query_builder](modules/documentation_query_builder.md) | 14 | 19 |
 | [immutable](modules/immutable.md) | 14 | 0 |
+| [knowledge_graph](modules/knowledge_graph.md) | 14 | 6 |
 | [llm_wiki_cli___init__](modules/llm_wiki_cli___init__.md) | 13 | 0 |
 | [context_packet](modules/context_packet.md) | 13 | 34 |
 | [services_dependencies](modules/services_dependencies.md) | 13 | 8 |
-| [knowledge_graph](modules/knowledge_graph.md) | 13 | 6 |
 | [maintenance_state](modules/maintenance_state.md) | 13 | 4 |
 | [paths](modules/paths.md) | 13 | 0 |
 | [knowledge_packs](modules/knowledge_packs.md) | 12 | 3 |
@@ -208,7 +208,7 @@ flowchart TD
 | [storage_sort](modules/storage_sort.md) | 2 | 1 |
 | [sync_recovery](modules/sync_recovery.md) | 2 | 10 |
 | [task_compact_readable](modules/task_compact_readable.md) | 2 | 0 |
-| [task_context_v2](modules/task_context_v2.md) | 2 | 28 |
+| [task_context_v2](modules/task_context_v2.md) | 2 | 29 |
 | [task_evidence](modules/task_evidence.md) | 2 | 5 |
 | [task_implementation](modules/task_implementation.md) | 2 | 5 |
 | [versioning](modules/versioning.md) | 2 | 0 |

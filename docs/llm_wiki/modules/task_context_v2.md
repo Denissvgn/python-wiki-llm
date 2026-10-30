@@ -20,6 +20,7 @@ Composes explicit task-v2 context from existing source and native evidence owner
 | `.extraction_service` | `InventoryResult` |
 | `.implementation_evidence` | `compare_knowledge_implementation` |
 | `.knowledge_envelope` | `ConsumedInput`, `hash_source_snapshot` |
+| `.knowledge_graph` | `KnowledgeGraphError`, `_normalise_edge` |
 | `.knowledge_packs` | `PACK_NAME`, `INDEX_PAGE_NAME`, `INDEX_PAGE_BYTES`, `MAX_INDEX_BYTES`, `MAX_PACK_BYTES` |
 | `.knowledge_storage` | `KnowledgeStorageError`, `_concept_aliases`, `digest`, `COLLECTIONS`, `COLLECTIONS` |
 | `.knowledge_storage_access` | `ScopedKnowledgeRead`, `capture_knowledge_slice` |
@@ -64,15 +65,15 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | `src` (2) |
-| Outbound | `src` (28) |
+| Outbound | `src` (29) |
 
-> All 29 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
+> All 30 module neighbor(s) are summarized by package because the module-level view exceeds the 12-node limit.
 
 ## Classes
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ScopedTaskState](../entities/ScopedTaskState.md) | 274 | — | — |
+| [ScopedTaskState](../entities/ScopedTaskState.md) | 275 | — | — |
 
 ## Functions
 

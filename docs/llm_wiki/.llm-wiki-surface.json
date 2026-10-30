@@ -9976,7 +9976,7 @@
             "src/llm_wiki_cli/services/task_compact_readable.py",
             "src/llm_wiki_cli/services/context_budget.py"
           ],
-          "step_count": 284,
+          "step_count": 285,
           "truncated": true
         }
       },
@@ -21996,10 +21996,11 @@
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/concept_identity.py",
             "src/llm_wiki_cli/services/maintenance_status.py",
+            "src/llm_wiki_cli/services/knowledge_graph.py",
             "src/llm_wiki_cli/services/task_compact_readable.py",
             "src/llm_wiki_cli/services/context_budget.py"
           ],
-          "step_count": 893,
+          "step_count": 918,
           "truncated": true
         }
       },
@@ -28719,10 +28720,11 @@
             "src/llm_wiki_cli/services/validation.py",
             "src/llm_wiki_cli/services/knowledge_storage_io.py",
             "src/llm_wiki_cli/services/maintenance_status.py",
+            "src/llm_wiki_cli/services/knowledge_graph.py",
             "src/llm_wiki_cli/services/task_compact_readable.py",
             "src/llm_wiki_cli/services/context_budget.py"
           ],
-          "step_count": 601,
+          "step_count": 607,
           "truncated": true
         }
       },
@@ -57524,6 +57526,7 @@
       "outgoing_internal_links": [
         "modules/knowledge_envelope.md",
         "modules/knowledge_evidence.md",
+        "modules/knowledge_graph.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_io.md",
         "modules/maintenance_status.md",
@@ -63537,6 +63540,7 @@
         "modules/implementation_evidence.md",
         "modules/knowledge_envelope.md",
         "modules/knowledge_evidence.md",
+        "modules/knowledge_graph.md",
         "modules/knowledge_packs.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_io.md",
@@ -65016,6 +65020,7 @@
         "modules/implementation_evidence.md",
         "modules/knowledge_envelope.md",
         "modules/knowledge_evidence.md",
+        "modules/knowledge_graph.md",
         "modules/knowledge_storage.md",
         "modules/knowledge_storage_io.md",
         "modules/maintenance_status.md",
@@ -68286,5 +68291,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:c5b83a1cc72fbca35008aedbbc0bf112d46b66e70f0c9f6bc1c559fc2b8df5ea"
+  "source_hash": "sha256:60fe104fe79d400132b336f842e8e6f8c28f17b954d148cd495395e468343d81"
 }

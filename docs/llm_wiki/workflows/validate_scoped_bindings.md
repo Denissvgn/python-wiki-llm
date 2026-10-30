@@ -1,7 +1,7 @@
 # validate_scoped_bindings
 
 **Entry point:** `task_context_v2.validate_scoped_bindings`
-**Modules involved:** [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [maintenance_status](../modules/maintenance_status.md), [storage_receipts](../modules/storage_receipts.md), [task_context](../modules/task_context.md), [task_context_v2](../modules/task_context_v2.md), [validation](../modules/validation.md), [workflow_profile](../modules/workflow_profile.md)
+**Modules involved:** [knowledge_envelope](../modules/knowledge_envelope.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_graph](../modules/knowledge_graph.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [maintenance_status](../modules/maintenance_status.md), [storage_receipts](../modules/storage_receipts.md), [task_context](../modules/task_context.md), [task_context_v2](../modules/task_context_v2.md), [validation](../modules/validation.md), [workflow_profile](../modules/workflow_profile.md)
 
 > Validate portable scope and consumed-input bindings, without claiming authenticity.
 
@@ -26,11 +26,13 @@
 16. `task_context._result_fields`
 17. `knowledge_evidence.is_valid_sha256`
 18. `knowledge_evidence.is_valid_sha256`
+19. `knowledge_graph._normalise_edge`
 
 ## Touches
 
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
+- [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [maintenance_status](../modules/maintenance_status.md)

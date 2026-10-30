@@ -2,7 +2,7 @@
 
 **Entry point:** `render_compact_task_context` (`api`)
 **Source:** [api](../modules/api.md)
-**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [api](../modules/api.md), [change_selection](../modules/change_selection.md), [concept_identity](../modules/concept_identity.md), and 24 more
+**Modules touched:** [analysis_capture](../modules/analysis_capture.md), [api](../modules/api.md), [change_selection](../modules/change_selection.md), [concept_identity](../modules/concept_identity.md), and 25 more
 
 **Complete modules touched:**
 
@@ -17,6 +17,7 @@
 - [implementation_evidence](../modules/implementation_evidence.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
+- [knowledge_graph](../modules/knowledge_graph.md)
 - [knowledge_packs](../modules/knowledge_packs.md)
 - [knowledge_storage](../modules/knowledge_storage.md)
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
@@ -105,9 +106,9 @@ sequenceDiagram
     p4-->>p30: facts[…][…].items
 ```
 
-> Call sequence diagram shows 30 of 892 interactions; 862 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 917 interactions; 887 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 451 (450 omitted); unresolved 1 of 215 (214 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 455 (454 omitted); unresolved 1 of 216 (215 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -121,7 +122,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 8 | - | external | 10 |
 | `src/llm_wiki_cli/services/task_contract.py:normalize_task_request` | 8 | [src/llm_wiki_cli/services/workflow_profile.py](../modules/workflow_profile.md) | internal | 16 |
 | `src/llm_wiki_cli/services/workflow_profile.py:bounded_text` | 20 | - | external | 2 |
-> Omission summary shows 8 of 161 groups; 153 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 163 groups; 155 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -134,9 +135,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 227; effect analysis evaluated: 158, partial: 2, unavailable: 67. Counts include steps omitted from the displayed trace.
+Source steps: 247; effect analysis evaluated: 172, partial: 3, unavailable: 72. Counts include steps omitted from the displayed trace.
 
-Collector observations for 160 source steps with known totals: observed: 715, emitted: 711, omitted: 4. Unavailable totals are excluded.
+Collector observations for 175 source steps with known totals: observed: 793, emitted: 788, omitted: 5. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
