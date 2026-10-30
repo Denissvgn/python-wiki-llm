@@ -151,7 +151,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_source_root` | 22 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 22 | - | external | 11 |
 | `src/llm_wiki_cli/services/filesystem_guard.py:windows_current_user_sid` | 34 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
-> Omission summary shows 8 of 498 groups; 490 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 497 groups; 489 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.

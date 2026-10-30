@@ -172,7 +172,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_path` | 21 | - | unresolved | 3 |
 | `src/llm_wiki_cli/config.py:validate_path` | 21 | - | external | 2 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 20 | - | unresolved | 5 |
-> Omission summary shows 8 of 1120 groups; 1112 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 1119 groups; 1111 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -187,7 +187,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 1488; effect analysis evaluated: 1113, partial: 75, unavailable: 300. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1188 source steps with known totals: observed: 7480, emitted: 7110, omitted: 370. Unavailable totals are excluded.
+Collector observations for 1188 source steps with known totals: observed: 7478, emitted: 7108, omitted: 370. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

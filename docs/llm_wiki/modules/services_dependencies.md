@@ -180,6 +180,7 @@ flowchart LR
 | `_scope_manifest_paths` | `(root: Path, language: str, snapshot: SourceSnapshot) -> list[Path]` | — | — |
 | `_owned_scope_sources` | `(root: Path, manifest: Path, language: str) -> list[Path]` | — | — |
 | `_explicit_missing_scope_source` | `(root: Path, manifests: list[Path], language: str, snapshot: SourceSnapshot) -> list[str]` | — | — |
+| `_source_scope_owners` | `(paths: tuple[str, ...], scope_roots: set[str]) -> dict[str, str \| None]` | — | — |
 | `describe_unscanned_scopes` | `(project_root: str \| Path, language: str, scopes: list[str], source_snapshot: SourceSnapshot \| None = None) -> list[dict[str, Any]]` | — | Explain existing skip records without changing reconciliation or discovery. |
 | `_reconcile_scoped_language` | `(used_packages: dict[str, list[str]], manifest: Optional[_Manifest], scanned_files: frozenset[str] = frozenset()) -> dict` | — | — |
 | `_python_internal_distribution_uses` | `(inventory: dict, _graph: dict, manifest: Optional[_Manifest]) -> dict[str, list[str]]` | — | — |

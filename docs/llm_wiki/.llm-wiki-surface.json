@@ -2891,7 +2891,7 @@
             "src/llm_wiki_cli/services/canonical_pages.py",
             "src/llm_wiki_cli/services/health_policy.py"
           ],
-          "step_count": 3415,
+          "step_count": 3412,
           "truncated": true
         }
       },
@@ -32177,7 +32177,7 @@
             "src/llm_wiki_cli/services/health_summary.py",
             "src/llm_wiki_cli/services/metrics.py"
           ],
-          "step_count": 4585,
+          "step_count": 4582,
           "truncated": true
         }
       },
@@ -33843,7 +33843,7 @@
             "src/llm_wiki_cli/services/canonical_pages.py",
             "src/llm_wiki_cli/services/metrics.py"
           ],
-          "step_count": 3523,
+          "step_count": 3520,
           "truncated": true
         }
       },
@@ -68339,5 +68339,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:1a9cec9c8309b6847cbc747b2c1d0325da68326a19dda187d411ef5af779e05c"
+  "source_hash": "sha256:98df2cac166087c6817e89dd21113c9caaa2701b5299b960b45a33b5ef4aa96e"
 }
