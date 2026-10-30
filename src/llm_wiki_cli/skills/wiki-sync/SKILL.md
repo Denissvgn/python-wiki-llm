@@ -47,12 +47,12 @@ contract from this entry skill.
 
 ## Managed repository preflight
 
-Follow the user and applicable repository rules. Before the first wiki write
-and again before handoff, run
-`git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md`: exit 0 is
-local-only, exit 1 is conditionally Git-eligible but not authorization, and any
-other result fails closed to local-only. Never force-add or change
-ignore/exclude rules. Apply the exact repository-handoff topic above.
+Follow the user and applicable repository rules. Before the first wiki write,
+check root/index ignore policy using the repository-handoff topic. After sync,
+run `llm-wiki knowledge git-check --wiki-dir <wiki-dir>`; require `git-eligible`
+before separately authorized staging, then require the command with `--staged`
+before commit. Ignored, mixed or indeterminate stays local-only. Never force-add
+or change ignore/exclude rules. Apply the exact repository-handoff topic above.
 
 ## Preconditions
 

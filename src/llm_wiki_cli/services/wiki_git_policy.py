@@ -192,11 +192,8 @@ def _indeterminate(
     )
 
 
-def _run_git(
-    root: Path,
-    *arguments: str,
-    timeout: float,
-) -> _GitResult:
+def _git_environment() -> dict[str, str]:
+    """Keep effective exclude configuration without repository/index redirection."""
     environment = dict(os.environ)
     for key in _GIT_REPOSITORY_REDIRECTION_ENV:
         environment.pop(key, None)
@@ -208,6 +205,17 @@ def _run_git(
     environment["GIT_OPTIONAL_LOCKS"] = "0"
     environment["GIT_TERMINAL_PROMPT"] = "0"
     environment["LC_ALL"] = "C"
+    environment["GIT_NO_LAZY_FETCH"] = "1"
+    environment["GIT_NO_REPLACE_OBJECTS"] = "1"
+    return environment
+
+
+def _run_git(
+    root: Path,
+    *arguments: str,
+    timeout: float,
+) -> _GitResult:
+    environment = _git_environment()
 
     command = [
         "git",

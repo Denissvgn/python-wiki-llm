@@ -7,7 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.4.0] - 2026-10-30
+
+### Added
+
+- Read-only native wiki Git-delivery diagnostics identify ignored required
+  artifacts and incomplete staged snapshots. Handoff guidance checks all
+  referenced files while preserving intentionally local-only wikis.
+
 ### Fixed
+
+- TypeScript reference pages preserve optional/rest parameters, generics, alias
+  expressions and interface identity.
+- Explicit type-only TypeScript imports remain type dependencies and no longer
+  create runtime startup cycles.
+- Dockerfile documentation retains stage ownership and inherited configuration
+  without combining independent build stages.
+- JavaScript HTTP flow pages disclose missing handler and effect-analysis
+  coverage instead of treating empty observations as complete analysis.
+- Exact-path extraction applies the same selection to infrastructure output.
+- Snapshot queries reuse validated immutable knowledge and graph models within
+  a request while retaining integrity, custody and compatibility checks.
+- Bootstrap recovery handles interrupted ownership setup without replacing
+  existing wiki history.
+- Combined native and source context respects one shared response budget.
 
 - Symbol page lookup accepts source-qualified class names while retaining
   ambiguity for duplicate definitions and existing callable lookup behavior.

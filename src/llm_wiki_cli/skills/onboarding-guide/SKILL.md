@@ -11,10 +11,12 @@ When a guide needs screenshots, terminal recordings, or other usage media, finis
 
 ## Managed repository preflight
 
-Before the first managed wiki write and handoff, run
-`git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md`. Keep ignored,
-mixed, or indeterminate state local-only; Git eligibility never authorizes
-staging, force-add, or ignore/exclude changes. Apply the managed contract at
+Before the first managed wiki write, check root/index ignore policy as described
+in the repository-handoff topic. After sync, run
+`llm-wiki knowledge git-check --wiki-dir <wiki-dir>`; require `git-eligible`
+before separately authorized staging, then require the same command with
+`--staged` before commit. Keep ignored, mixed or indeterminate state local-only;
+never force-add or change ignore/exclude rules. Apply the managed contract at
 `.claude/skills/wiki-reference/references/repository-handoff.md` for Claude or
 `.llm-wiki/skills/wiki-reference/references/repository-handoff.md` for other
 configured agents.

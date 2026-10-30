@@ -18,6 +18,7 @@ from llm_wiki_cli.services import mcp_server, skills
 
 
 _SAFE_PLACEHOLDERS = {
+    "<wiki-dir>": "docs/llm_wiki",
     "<repo>": "contract-repo",
     "<project>": "contract-project",
     "<identity>": "configured-public:contract-project",

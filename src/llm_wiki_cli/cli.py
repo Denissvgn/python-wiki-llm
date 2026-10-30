@@ -855,6 +855,17 @@ def _add_knowledge_command(subparsers):
     storage_check.add_argument("--git-base", default=None, help="Explicit excluded commit/ref; no upstream is inferred")
     storage_check.add_argument("--git-head", default=None, help="Explicit included commit/ref")
     storage_check.add_argument("--format", choices=["json"], default="json")
+    git_check = actions.add_parser(
+        "git-check",
+        help="Inspect Git delivery policy for every required native snapshot file",
+    )
+    _add_knowledge_wiki_argument(git_check)
+    git_check.add_argument(
+        "--staged",
+        action="store_true",
+        help="Require a complete current staged snapshot and Git-eligible policy",
+    )
+    git_check.add_argument("--format", choices=["json"], default="json")
     for action in ("inspect-storage", "diff-storage"):
         review = actions.add_parser(action, help="Review logical knowledge records independently of physical storage")
         _add_knowledge_wiki_argument(review)

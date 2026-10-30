@@ -2708,6 +2708,33 @@ managed instruction block or change its compact/expanded delivery, use
 
 ## `knowledge`
 
+### Git delivery completeness
+
+```bash
+llm-wiki knowledge git-check --wiki-dir wiki
+llm-wiki knowledge git-check --wiki-dir wiki --staged
+```
+
+The read-only diagnostic follows the validated native snapshot, including
+referenced packs, manifest catalogs, governance records, Markdown and assets.
+It reports `delivery_state` as `git-eligible`, `local-only`, `mixed` or
+`indeterminate`, with counts and bounded ignored-path samples. Effective Git
+rules include nested ignores, repository excludes and global excludes. A check
+of only the wiki directory and `index.md` cannot establish completeness.
+
+Without `--staged`, a known local-only or mixed state is advisory and exits 0;
+inspect `delivery_state` before separately authorized staging. Intentionally
+local-only wikis can still pass local integrity checks. With `--staged`, success
+requires Git eligibility and every required file in the index with current
+content. Native and binary bytes must match exactly; Markdown newline
+normalization is accepted. Missing, unmerged or mismatched files fail, and an
+unavailable or changing snapshot/index is indeterminate. Unreferenced caches
+and orphan objects are outside this snapshot check.
+
+Run the staged gate after authorized staging and before commit or delivery.
+Neither command authorizes Git writes, changes ignore rules, force-adds files,
+prepares helpers, accesses the network or changes the storage format.
+
 Read eligibility and freshness diagnostics without enabling governance:
 
 ```bash

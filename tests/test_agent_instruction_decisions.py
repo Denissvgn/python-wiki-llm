@@ -204,8 +204,13 @@ def test_git_handoff_and_repository_content_rules_fail_closed(
     normalized_handoff = " ".join(handoff.split())
 
     assert "git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md" in handoff
-    assert "missing Git/worktree, or contradictory evidence" in handoff
+    assert "missing Git/worktree, or contradictory evidence" in normalized_handoff
     assert "Fail closed to the local-only handoff" in handoff
+    assert "llm-wiki knowledge git-check --wiki-dir <wiki-dir>" in handoff
+    assert "--staged" in handoff
+    assert "Stop if the staged gate fails" in handoff
+    assert handoff.index("--staged\n") < handoff.index("git commit -m")
+    assert "exit 0 can describe a known local-only" in normalized_handoff
     assert "Never force-add, edit ignore or exclude rules" in normalized_handoff
     assert "only after the exact target passes `git check-ignore -q -- <path>`" in combined
     assert "missing Git or an unignored/indeterminate target" in combined
