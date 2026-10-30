@@ -204,9 +204,9 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | apply_governance_projection | _event_limit | 1813 | `_event_limit(event_limit)` |
-| _event_limit | isinstance (src/llm_wiki_cli/services…overnance.py:_event_limit) | 2665 | `isinstance(value, bool)` |
-| _event_limit | isinstance (src/llm_wiki_cli/services…overnance.py:_event_limit) | 2666 | `isinstance(value, int)` |
-| _event_limit | GovernanceError | 2669 | `GovernanceError('event_limit', ...)` |
+| _event_limit | isinstance (src/llm_wiki_cli/services…overnance.py:_event_limit) | 2692 | `isinstance(value, bool)` |
+| _event_limit | isinstance (src/llm_wiki_cli/services…overnance.py:_event_limit) | 2693 | `isinstance(value, int)` |
+| _event_limit | GovernanceError | 2696 | `GovernanceError('event_limit', ...)` |
 | apply_governance_projection | strip_governance_projection | 1814 | `strip_governance_projection(knowledge)` |
 | strip_governance_projection | isinstance (src/llm_wiki_cli/services…rip_governance_projection) | 1646 | `isinstance(knowledge, KnowledgeIndex)` |
 | strip_governance_projection | TypeError (src/llm_wiki_cli/services…rip_governance_projection) | 1647 | `TypeError('knowledge must be a KnowledgeIndex')` |
@@ -228,8 +228,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_event_limit` | `isinstance` | 2665 |
-| external_call | `_event_limit` | `isinstance` | 2666 |
+| external_call | `_event_limit` | `isinstance` | 2692 |
+| external_call | `_event_limit` | `isinstance` | 2693 |
 | external_call | `strip_governance_projection` | `isinstance` | 1646 |
 | external_call | `strip_governance_projection` | `TypeError` | 1647 |
 | external_call | `strip_governance_projection` | `replace` | 1653 |

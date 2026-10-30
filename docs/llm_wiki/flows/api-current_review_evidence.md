@@ -183,12 +183,12 @@ flowchart LR
 | current_review_evidence | ReviewEvidence | 1530 | `ReviewEvidence(mode='no-source')` |
 | current_review_evidence | ReviewEvidence | 1534 | `ReviewEvidence(mode='no-source')` |
 | current_review_evidence | _review_evidence | 1553 | `_review_evidence(ReviewEvidence(...), 'evidence')` |
-| _review_evidence | isinstance (src/llm_wiki_cli/services…rnance.py:_review_evidence) | 3009 | `isinstance(value, ReviewEvidence)` |
-| _review_evidence | GovernanceError | 3010 | `GovernanceError(path, 'must be ReviewEvidence')` |
-| _review_evidence | GovernanceError | 3012 | `GovernanceError(..., "must be 'source' or 'no-source'")` |
-| _review_evidence | GovernanceError | 3018 | `GovernanceError(path, 'no-source evidence cannot carry basis IDs or hashes')` |
-| _review_evidence | ReviewEvidence | 3022 | `ReviewEvidence(mode='no-source')` |
-| _review_evidence | GovernanceError | 3024 | `GovernanceError(path, 'source evidence requires basis IDs and hashes')` |
+| _review_evidence | isinstance (src/llm_wiki_cli/services…rnance.py:_review_evidence) | 3036 | `isinstance(value, ReviewEvidence)` |
+| _review_evidence | GovernanceError | 3037 | `GovernanceError(path, 'must be ReviewEvidence')` |
+| _review_evidence | GovernanceError | 3039 | `GovernanceError(..., "must be 'source' or 'no-source'")` |
+| _review_evidence | GovernanceError | 3045 | `GovernanceError(path, 'no-source evidence cannot carry basis IDs or hashes')` |
+| _review_evidence | ReviewEvidence | 3049 | `ReviewEvidence(mode='no-source')` |
+| _review_evidence | GovernanceError | 3051 | `GovernanceError(path, 'source evidence requires basis IDs and hashes')` |
 
 ### Boundary effects
 
@@ -200,7 +200,7 @@ flowchart LR
 |---|---|---|---:|
 | external_call | `current_review_evidence` | `isinstance` | 1525 |
 | external_call | `current_review_evidence` | `TypeError` | 1526 |
-| external_call | `_review_evidence` | `isinstance` | 3009 |
+| external_call | `_review_evidence` | `isinstance` | 3036 |
 | step_limit | `current_review_evidence` | `first 12 steps` | 0 |
 
 ## Behavior

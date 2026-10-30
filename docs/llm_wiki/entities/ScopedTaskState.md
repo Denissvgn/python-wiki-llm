@@ -1,6 +1,6 @@
 # ScopedTaskState
 
-**Location:** `src/llm_wiki_cli/services/task_context_v2.py:259`
+**Location:** `src/llm_wiki_cli/services/task_context_v2.py:274`
 **Kind:** Class
 **Bases:** —
 **Module:** [task_context_v2](../modules/task_context_v2.md)

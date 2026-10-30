@@ -46,8 +46,8 @@ flowchart LR
     n7["_supersession_records (src/llm_wiki_cli/services/knowledge_governance.py)"]
     n8["_validate_lifecycle_event_fields (src/llm_wiki_cli/services/knowledge_governance.py)"]
     n9["_validate_lifecycle_histories (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n10["current_lifecycle (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n11["lifecycle_state_by_uid (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n10["_validate_selected_supersession_edges (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n11["current_lifecycle (src/llm_wiki_cli/services/knowledge_governance.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -93,7 +93,7 @@ flowchart LR
 | `_supersession_records` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
 | `_validate_lifecycle_event_fields` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
 | `_validate_lifecycle_histories` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `_validate_selected_supersession_edges` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
 | `current_lifecycle` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
-| `lifecycle_state_by_uid` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
 
-> References: showing 12 of 13 logical references; 1 omitted by the 12-row generated summary limit.
+> References: showing 12 of 14 logical references; 2 omitted by the 12-row generated summary limit.

@@ -18,7 +18,7 @@ Graph expansion resolves anchor concepts as internal dependencies even when the 
 | `.io` | `decode_markdown_bytes` |
 | `.knowledge_artifacts` | `_decode_json_object`, `_decode_json_object`, `_decode_json_object` |
 | `.knowledge_envelope` | `EvaluatedEnvelope` |
-| `.knowledge_governance` | `GOVERNANCE_FILENAME`, `parse_governance_ledger`, `lifecycle_state_by_uid` |
+| `.knowledge_governance` | `GOVERNANCE_FILENAME`, `parse_governance_ledger`, `lifecycle_state_by_uid`, `_validate_selected_supersession_edges` |
 | `.knowledge_model` | `_parse_bundle`, `parse_knowledge_index` |
 | `.knowledge_packs` | `PACKED_SCHEMAS`, `open_knowledge_store` |
 | `.knowledge_storage` | `LOGICAL_SCHEMA`, `MAX_EXPANDED_BYTES`, `MAX_OBJECT_BYTES`, `MAX_ROOT_BYTES`, `ROOT_FILENAME`, `STORE_SCHEMA`, `KnowledgeSlice`, `KnowledgeStorageError`, `KnowledgeStoreReader`, `canonical_bytes`, `digest` |
@@ -62,7 +62,7 @@ flowchart LR
 
 | Class | Line | Bases | Description |
 |-------|------|-------|-------------|
-| [ScopedKnowledgeRead](../entities/ScopedKnowledgeRead.md) | 31 | — | Request-owned observations that require a final authoritative recheck. |
+| [ScopedKnowledgeRead](../entities/ScopedKnowledgeRead.md) | 32 | — | Request-owned observations that require a final authoritative recheck. |
 
 ## Functions
 

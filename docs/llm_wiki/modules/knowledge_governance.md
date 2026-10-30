@@ -148,6 +148,7 @@ flowchart LR
 | `_add_supersession_edges` | `(extensions: dict[str, Any], ledger: GovernanceLedger, concepts: Sequence[ConceptRecord], governance_hash: str, *, inventory_hash: object = None) -> dict[str, Any]` | — | — |
 | `_supersession_records` | `(ledger: GovernanceLedger) -> list[tuple[str, str, LifecycleEvent]]` | — | — |
 | `_supersession_edges` | `(supersessions: Sequence[tuple[str, str, LifecycleEvent]], aggregate_hash: str, governance_hash: str) -> list[dict[str, Any]]` | — | Build only the authority-owned edges for both projection and custody. |
+| `_validate_selected_supersession_edges` | `(edges: Sequence[Mapping[str, Any]], *, states: Mapping[str, tuple[Lifecycle, str \| None, LifecycleEvent \| None]], concept_map_hash: str, governance_hash: str) -> None` | — | Check consumed authority-owned edges without claiming unread graph parity. |
 | `_governance_supersession_edge_payloads` | `(knowledge: KnowledgeIndex) -> tuple[str, ...]` | — | Return exact canonical governance-edge payloads for ledger parity. |
 | `_validate_supersession_projection` | `(knowledge: KnowledgeIndex, expected: set[tuple[str, str]]) -> None` | — | — |
 | `_section_records_by_locator` | `(knowledge: KnowledgeIndex) -> dict[str, Mapping[str, object]]` | — | — |

@@ -59,8 +59,9 @@
 51. `concept_identity.natural_key_for`
 52. `knowledge_storage.KnowledgeStorageError`
 53. `knowledge_storage.KnowledgeStorageError`
-54. `knowledge_storage.KnowledgeStorageError`
+54. `knowledge_governance._validate_selected_supersession_edges`
 55. `knowledge_storage.KnowledgeStorageError`
+56. `knowledge_storage.KnowledgeStorageError`
 
 ## Touches
 

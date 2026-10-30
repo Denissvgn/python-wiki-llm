@@ -192,15 +192,15 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | parse_governance_ledger | _object | 422 | `_object(payload, 'governance')` |
-| _object | require_mapping | 3260 | `require_mapping(value, error=GovernanceError(...), require_string_keys=True, key_error=GovernanceError(...))` |
+| _object | require_mapping | 3287 | `require_mapping(value, error=GovernanceError(...), require_string_keys=True, key_error=GovernanceError(...))` |
 | require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 773 | `isinstance(value, Mapping)` |
 | require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 777 | `isinstance(key, str)` |
 | require_mapping | key.encode | 782 | `key.encode('utf-8')` |
-| _object | GovernanceError | 3262 | `GovernanceError(path, 'must be an object')` |
-| _object | GovernanceError | 3264 | `GovernanceError(path, 'must use string keys')` |
-| _object | dict (src/llm_wiki_cli/services…dge_governance.py:_object) | 3266 | `dict(selected)` |
+| _object | GovernanceError | 3289 | `GovernanceError(path, 'must be an object')` |
+| _object | GovernanceError | 3291 | `GovernanceError(path, 'must use string keys')` |
+| _object | dict (src/llm_wiki_cli/services…dge_governance.py:_object) | 3293 | `dict(selected)` |
 | parse_governance_ledger | _exact_fields | 423 | `_exact_fields(root, 'governance', {...})` |
-| _exact_fields | require_exact_fields | 3283 | `require_shared_exact_fields(value, allowed=..., required=required, mapping_error=GovernanceError(...), missing_error=..., unknown_error=...)` |
+| _exact_fields | require_exact_fields | 3310 | `require_shared_exact_fields(value, allowed=..., required=required, mapping_error=GovernanceError(...), missing_error=..., unknown_error=...)` |
 | require_exact_fields | isinstance (src/llm_wiki_cli/services…n.py:require_exact_fields) | 1251 | `isinstance(value, Mapping)` |
 
 ### Boundary effects

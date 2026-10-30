@@ -34,7 +34,7 @@ flowchart TD
 | [config](modules/config.md) | 60 | 3 |
 | [source_snapshot](modules/source_snapshot.md) | 53 | 7 |
 | [io](modules/io.md) | 47 | 2 |
-| [services_contracts](modules/services_contracts.md) | 45 | 0 |
+| [services_contracts](modules/services_contracts.md) | 46 | 0 |
 | [knowledge_storage](modules/knowledge_storage.md) | 42 | 9 |
 | [sync_manifest](modules/sync_manifest.md) | 41 | 14 |
 | [wiki_surface](modules/wiki_surface.md) | 40 | 1 |
@@ -208,7 +208,7 @@ flowchart TD
 | [storage_sort](modules/storage_sort.md) | 2 | 1 |
 | [sync_recovery](modules/sync_recovery.md) | 2 | 10 |
 | [task_compact_readable](modules/task_compact_readable.md) | 2 | 0 |
-| [task_context_v2](modules/task_context_v2.md) | 2 | 27 |
+| [task_context_v2](modules/task_context_v2.md) | 2 | 28 |
 | [task_evidence](modules/task_evidence.md) | 2 | 5 |
 | [task_implementation](modules/task_implementation.md) | 2 | 5 |
 | [versioning](modules/versioning.md) | 2 | 0 |

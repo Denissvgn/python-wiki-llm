@@ -1,6 +1,6 @@
 # ScopedKnowledgeRead
 
-**Location:** `src/llm_wiki_cli/services/knowledge_storage_access.py:31`
+**Location:** `src/llm_wiki_cli/services/knowledge_storage_access.py:32`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_storage_access](../modules/knowledge_storage_access.md)

@@ -675,7 +675,7 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 3388,
+              "line": 3415,
               "step": "_alias_type",
               "target": "isinstance"
             },
@@ -965,13 +965,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 2665,
+              "line": 2692,
               "step": "_event_limit",
               "target": "isinstance"
             },
             {
               "kind": "external_call",
-              "line": 2666,
+              "line": 2693,
               "step": "_event_limit",
               "target": "isinstance"
             },
@@ -8306,7 +8306,7 @@
             },
             {
               "kind": "external_call",
-              "line": 3009,
+              "line": 3036,
               "step": "_review_evidence",
               "target": "isinstance"
             },
@@ -21999,7 +21999,7 @@
             "src/llm_wiki_cli/services/task_compact_readable.py",
             "src/llm_wiki_cli/services/context_budget.py"
           ],
-          "step_count": 884,
+          "step_count": 893,
           "truncated": true
         }
       },
@@ -24756,25 +24756,25 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 3425,
+              "line": 3452,
               "step": "_section_locator",
               "target": "isinstance"
             },
             {
               "kind": "unresolved_call",
-              "line": 3426,
+              "line": 3453,
               "step": "_section_locator",
               "target": "value.startswith"
             },
             {
               "kind": "unresolved_call",
-              "line": 3429,
+              "line": 3456,
               "step": "_section_locator",
               "target": "value.strip"
             },
             {
               "kind": "unresolved_call",
-              "line": 3435,
+              "line": 3462,
               "step": "_section_locator",
               "target": "value.partition"
             },
@@ -25106,7 +25106,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4437,
+          "step_count": 4452,
           "truncated": true
         }
       },
@@ -28722,7 +28722,7 @@
             "src/llm_wiki_cli/services/task_compact_readable.py",
             "src/llm_wiki_cli/services/context_budget.py"
           ],
-          "step_count": 602,
+          "step_count": 601,
           "truncated": true
         }
       },
@@ -33669,7 +33669,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4437,
+          "step_count": 4452,
           "truncated": true
         }
       },
@@ -36491,7 +36491,7 @@
             "src/llm_wiki_cli/services/task_implementation.py",
             "src/llm_wiki_cli/services/wiki_write_basis.py"
           ],
-          "step_count": 1456,
+          "step_count": 1455,
           "truncated": true
         }
       },
@@ -68286,5 +68286,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:f254e0f031e4b743d9459f72c772e02ef5b36958a80510931cbd69ae71f93b3a"
+  "source_hash": "sha256:c5b83a1cc72fbca35008aedbbc0bf112d46b66e70f0c9f6bc1c559fc2b8df5ea"
 }
