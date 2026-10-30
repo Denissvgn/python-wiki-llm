@@ -151,9 +151,9 @@ sequenceDiagram
     p0-->>p30: lint.health_details.to_payload
 ```
 
-> Call sequence diagram shows 30 of 3409 interactions; 3379 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 3412 interactions; 3382 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 1050 (1049 omitted); unresolved 1 of 1097 (1096 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 1051 (1050 omitted); unresolved 1 of 1098 (1097 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -180,9 +180,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1263; effect analysis evaluated: 965, partial: 50, unavailable: 248. Counts include steps omitted from the displayed trace.
+Source steps: 1264; effect analysis evaluated: 965, partial: 51, unavailable: 248. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1015 source steps with known totals: observed: 6078, emitted: 5819, omitted: 259. Unavailable totals are excluded.
+Collector observations for 1016 source steps with known totals: observed: 6092, emitted: 5830, omitted: 262. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

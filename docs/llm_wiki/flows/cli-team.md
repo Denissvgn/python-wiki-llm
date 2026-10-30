@@ -82,11 +82,11 @@ sequenceDiagram
     participant p21 as SyncManifest.load
     participant p22 as _coerce_inventory_request
     participant p23 as load_team_config
-    participant p24 as _parse_dockerfile
-    participant p25 as _parse_compose
-    participant p26 as parse_github_actions_workflow
-    participant p27 as check_plugin_requirements
-    participant p28 as check_team_conventions
+    participant p24 as parse_github_actions_workflow
+    participant p25 as check_plugin_requirements
+    participant p26 as _parse_dockerfile
+    participant p27 as check_team_conventions
+    participant p28 as validate_persisted_source_selection_identity
     participant p29 as getattr (src/llm_wiki_cli/commands/team_cmd.py:run)
     participant p30 as path.exists (src/llm_wiki_cli/commands/team_cmd.py:_run_init)
     p0->>p1: _run_init
@@ -112,18 +112,18 @@ sequenceDiagram
     p11->>p21: SyncManifest.load
     p12->>p22: _coerce_inventory_request
     p7->>p23: load_team_config
-    p14->>p24: _parse_dockerfile
-    p14->>p25: _parse_compose
-    p15->>p26: parse_github_actions_workflow
-    p16->>p27: check_plugin_requirements
-    p16->>p28: check_team_conventions
+    p15->>p24: parse_github_actions_workflow
+    p16->>p25: check_plugin_requirements
+    p14->>p26: _parse_dockerfile
+    p16->>p27: check_team_conventions
+    p11->>p28: validate_persisted_source_selection_identity
     p0-->>p29: getattr (src/llm_wiki_cli/commands/team_cmd.py:run)(args, 'team_action', None)
     p1-->>p30: path.exists (src/llm_wiki_cli/commands/team_cmd.py:_run_init)
 ```
 
-> Call sequence diagram shows 30 of 2501 interactions; 2471 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2504 interactions; 2474 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 715 (714 omitted); unresolved 1 of 844 (843 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 716 (715 omitted); unresolved 1 of 845 (844 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -150,9 +150,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 943; effect analysis evaluated: 681, partial: 37, unavailable: 225. Counts include steps omitted from the displayed trace.
+Source steps: 944; effect analysis evaluated: 681, partial: 38, unavailable: 225. Counts include steps omitted from the displayed trace.
 
-Collector observations for 718 source steps with known totals: observed: 4085, emitted: 3904, omitted: 181. Unavailable totals are excluded.
+Collector observations for 719 source steps with known totals: observed: 4099, emitted: 3915, omitted: 184. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
