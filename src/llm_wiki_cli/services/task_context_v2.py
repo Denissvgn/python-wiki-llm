@@ -23,6 +23,7 @@ from .contracts import GOVERNANCE_EXTENSION_KEY
 from .documentation_query_builder import assemble_documentation_query_service
 from .extraction_service import InventoryResult
 from .knowledge_envelope import ConsumedInput, hash_source_snapshot
+from .knowledge_graph import KnowledgeGraphError, _normalise_edge
 from .knowledge_storage import KnowledgeStorageError, _concept_aliases, digest
 from .knowledge_storage_access import ScopedKnowledgeRead, capture_knowledge_slice
 from .knowledge_storage_io import ReadObservation, StorageReadSession, range_batches
@@ -630,6 +631,18 @@ def validate_scoped_bindings(payload, normalized, profile):
                 if any(not _edge_matches_concept(edge, concept)
                        for edge in fact["observation"]["edges"]):
                     raise ValueError("typed relationship belongs to a different concept")
+                # Portable results are untrusted even when one endpoint binds
+                # to the selected concept. Validate each bounded raw record,
+                # including its other endpoint, identity and evidence counts.
+                edge_keys: set[str] = set()
+                for edge in fact["observation"]["edges"]:
+                    try:
+                        _normalise_edge(edge, "typed_relationship", None)
+                    except KnowledgeGraphError as exc:
+                        raise ValueError("typed relationship observation is invalid") from exc
+                    if edge["key"] in edge_keys:
+                        raise ValueError("typed relationship observations contain duplicate identities")
+                    edge_keys.add(edge["key"])
         elif fact["facet"] == "source-contract":
             observed = fact["observation"]
             if fact["selector"] != observed["selector"] or type(observed["line"]) is not int or observed["line"] < 1:
