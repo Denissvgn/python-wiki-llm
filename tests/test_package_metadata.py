@@ -234,7 +234,7 @@ def test_project_distribution_name_is_pypi_safe_name():
 
 def test_project_version_is_release_target():
     data = _pyproject()
-    assert data["project"]["version"] == "3.3.0"
+    assert data["project"]["version"] == "3.4.0"
 
 
 def test_standalone_guide_is_installed_as_canonical_shared_documentation():
@@ -383,7 +383,10 @@ def test_readme_documents_fork_first_policy():
     assert "freely fork it" in readme
     assert "CONTRIBUTING.md" not in readme
     assert not (PROJECT_ROOT / "CONTRIBUTING.md").exists()
-    assert not (PROJECT_ROOT / ".github/PULL_REQUEST_TEMPLATE.md").exists()
+    assert not any(
+        path.name.casefold() in {"pull_request_template.md", "pull_request_template"}
+        for path in (PROJECT_ROOT / ".github").iterdir()
+    )
 
 
 def test_cli_reference_documents_resource_aware_execution():

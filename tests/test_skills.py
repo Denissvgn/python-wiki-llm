@@ -53,12 +53,13 @@ def test_canonical_wiki_mutators_require_repository_aware_handoff():
 
         assert "## Managed repository preflight" in manifest, skill_id
         assert (
-            "git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md" in manifest
+            "llm-wiki knowledge git-check --wiki-dir <wiki-dir>" in manifest
         ), skill_id
+        assert "git-eligible" in normalized_lower and "--staged" in normalized, skill_id
         assert "local-only" in normalized_lower, skill_id
         assert (
             "fails closed" in normalized_lower
-            or "indeterminate state local-only" in normalized_lower
+            or ("indeterminate" in normalized_lower and "local-only" in normalized_lower)
         ), skill_id
         assert "force-add" in normalized_lower, skill_id
         assert "ignore/exclude" in normalized_lower, skill_id
@@ -84,7 +85,9 @@ def test_bundled_skills_never_stage_a_wiki_unconditionally():
             continue
         command_files.append(path.relative_to(skills.BUNDLED_SKILLS_ROOT).as_posix())
         normalized = " ".join(text.split())
-        assert "Only if the state is conditionally eligible (exit 1)" in normalized
+        assert "Only if `delivery_state` is `git-eligible`" in normalized
+        assert "Stop if the staged gate fails" in normalized
+        assert normalized.index("--staged") < normalized.index("git commit -m")
         assert "applicable local rules authorize a separate wiki commit" in normalized
         assert "never force-add" in normalized.lower()
 
@@ -105,9 +108,11 @@ def test_wiki_reference_defines_fail_closed_git_policy():
 
     assert "# Repository handoff" in reference
     assert "git check-ignore --no-index -- <wiki-dir>/ <wiki-dir>/index.md" in reference
-    assert "| Exit 0 | Local-only |" in reference
-    assert "| Exit 1 | Conditionally Git-eligible |" in reference
-    assert "Any other exit, missing Git/worktree" in reference
+    for state in ("git-eligible", "local-only", "mixed", "indeterminate"):
+        assert f"| `{state}` |" in reference
+    assert "Exit 1 says nothing about required descendants" in normalized
+    assert "missing Git/worktree" in normalized
+    assert "exit 0 can describe a known local-only or mixed snapshot" in normalized
     assert "Fail closed to the local-only handoff" in normalized
     assert "nested `.gitignore`, `.git/info/exclude`" in normalized
     assert "never stage a partial native snapshot" in normalized_lower

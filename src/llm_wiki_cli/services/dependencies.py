@@ -2172,10 +2172,9 @@ def _path_under_scope(filepath: str, scope_root: str) -> bool:
 def _nearest_manifest_scope(
     manifest: Optional[_Manifest], filepath: str
 ) -> Optional[_ManifestScope]:
-    if manifest is None:
-        return None
-    root = nearest_path_scope(filepath, (scope.root for scope in manifest.scopes))
-    return next((scope for scope in manifest.scopes if scope.root == root), None)
+    scopes = manifest.scopes if manifest is not None else ()
+    root = nearest_path_scope(filepath, (scope.root for scope in scopes))
+    return next((scope for scope in scopes if scope.root == root), None)
 
 
 def _scope_label(scope: Optional[_ManifestScope]) -> str | None:
@@ -2245,6 +2244,10 @@ def _explicit_missing_scope_source(root: Path, manifests: list[Path], language: 
     return []
 
 
+def _source_scope_owners(paths: tuple[str, ...], scope_roots: set[str]) -> dict[str, str | None]:
+    return {path: nearest_path_scope(path, scope_roots) for path in paths}
+
+
 def describe_unscanned_scopes(
     project_root: str | Path, language: str, scopes: list[str],
     source_snapshot: SourceSnapshot | None = None,
@@ -2259,7 +2262,7 @@ def describe_unscanned_scopes(
     scope_roots = {"" if path.parent == root else path.parent.relative_to(root).as_posix() for path in paths}
     source_paths = snapshot.language_paths(language) if same_root else ()
     unsupported_paths = [p.rel_path for files in snapshot.unsupported_files_by_language.values() for p in files] if same_root else []
-    owners = {path: nearest_path_scope(path, scope_roots) for path in (*source_paths, *unsupported_paths)}
+    owners = _source_scope_owners((*source_paths, *unsupported_paths), scope_roots)
     results = []
     for scope in scopes:
         # Rust's legacy empty scope denotes the complete language, potentially

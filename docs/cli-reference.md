@@ -2735,6 +2735,8 @@ Run the staged gate after authorized staging and before commit or delivery.
 Neither command authorizes Git writes, changes ignore rules, force-adds files,
 prepares helpers, accesses the network or changes the storage format.
 
+### Coverage and governance
+
 Read eligibility and freshness diagnostics without enabling governance:
 
 ```bash
