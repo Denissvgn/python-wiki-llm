@@ -2,10 +2,11 @@
 from __future__ import annotations
 
 import json
+from types import SimpleNamespace
 
 import pytest
 
-from llm_wiki_cli.api import extract_source
+from llm_wiki_cli.api import InvalidRequestError, extract_source
 from llm_wiki_cli.services import extraction_service as service
 from llm_wiki_cli.services.dependencies import describe_unscanned_scopes
 from llm_wiki_cli.services.source_selection import SOURCE_SELECTION_SCHEMA_VERSION
@@ -248,3 +249,29 @@ def test_public_scope_bounds_provider_output_and_retains_explicit_custom_sources
     assert set(result.payload["inventory"]) == selected
     assert {entry["file"] for entry in result.payload["entrypoints"]} == selected
     assert "docker" not in result.payload
+
+
+@pytest.mark.parametrize("package", ["", " \t", False, []])
+def test_invalid_package_selector_is_rejected_before_extraction(project, monkeypatch, package):
+    def reject(_request):
+        raise AssertionError("invalid package selector reached extraction")
+    monkeypatch.setattr(service, "get_inventory_result", reject)
+    with pytest.raises(ValueError, match="--package must be a non-empty package name"):
+        _extract(project, package_filter=package, deep=True)
+
+
+@pytest.mark.parametrize("package", ["", "   "])
+def test_python_api_rejects_an_empty_package_selector(project, package):
+    with pytest.raises(InvalidRequestError, match="--package must be a non-empty package name"):
+        extract_source(str(project), package=package, deep=True, allow_external_src=True)
+
+
+def test_cli_rejects_an_empty_package_selector_without_emitting_inventory(project, capsys):
+    args = SimpleNamespace(src_dir=str(project), changed=False, paths=None, package="", summary=False,
+                           deep=True, output=None, include_empty=False, read_only=True, allow_external_src=True)
+    with pytest.raises(SystemExit) as error:
+        service.run(args)
+    captured = capsys.readouterr()
+    assert error.value.code == 2
+    assert captured.out == ""
+    assert "--package must be a non-empty package name" in captured.err

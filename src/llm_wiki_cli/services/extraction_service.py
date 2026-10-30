@@ -2189,6 +2189,10 @@ def build_extract_payload(
         "--src-dir",
         allow_external=allow_external_src,
     )
+    if package_filter is not None and (
+        not isinstance(package_filter, str) or not package_filter.strip()
+    ):
+        raise ValueError("--package must be a non-empty package name.")
     if openapi_file is not None and not deep:
         raise ValueError("--openapi-file requires --deep.")
     if paths:

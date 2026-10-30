@@ -500,7 +500,8 @@ source-selection controls changed, extraction reevaluates the selected source
 tree. Use `--paths` for an exact file selection.
 `--package` uses the nearest recognized Python project marker (`pyproject.toml`
 or `setup.py`) to select Python code and infrastructure; nested projects own their own
-files. It can return infrastructure without code records. Combining package and
+files. Its name must be a non-empty string; blank selectors are rejected before
+extraction. It can return infrastructure without code records. Combining package and
 path/change selectors takes their intersection. Project manifests and lockfiles
 remain context for package ownership and dependency reconciliation.
 In the Python API, an empty `paths` list selects no files; omitting `paths`
