@@ -11,6 +11,7 @@ import re
 import shlex
 import subprocess
 import sys
+from collections.abc import Mapping
 from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 from dataclasses import dataclass, field
@@ -2097,11 +2098,17 @@ def _data_flow_details_contract(
         f"unsupported-source-language:{language}"
         for language in sorted(unsupported_sources)
     ]
-    analyzer_limitations = sorted(set(analyzer_limitations) | {
-        reason for flow in flows
-        for reason in (flow.get("analysis", {}) or {}).get("limitations", [])
-        if isinstance(reason, str) and reason.startswith("upstream-")
-    })
+    for flow in flows:
+        records = [flow.get("analysis")]
+        coverage = flow.get("coverage")
+        if isinstance(coverage, Mapping):
+            records.extend(coverage.values())
+        analyzer_limitations.extend(
+            reason for record in records if isinstance(record, Mapping)
+            for reason in record.get("limitations", [])
+            if isinstance(reason, str) and reason.startswith("upstream-")
+        )
+    analyzer_limitations = sorted(set(analyzer_limitations))
     return {
         "schema_version": EXTRACT_DATA_FLOW_DETAILS_SCHEMA_VERSION,
         "state": state,

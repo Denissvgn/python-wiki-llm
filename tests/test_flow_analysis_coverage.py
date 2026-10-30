@@ -8,6 +8,7 @@ import pytest
 from llm_wiki_cli.extractors.python_extractor import PythonExtractor
 from llm_wiki_cli.services.bootstrap_runtime import _generate_flow_md
 from llm_wiki_cli.services.data_flow import analyze_data_flow, analyze_data_flow_detailed, build_data_flow_context
+from llm_wiki_cli.services.entrypoints import build_flow_detailed
 from llm_wiki_cli.services.extraction_service import _data_flow_details_contract, _public_data_flow_coverage, build_extract_payload
 
 
@@ -218,3 +219,33 @@ def test_missing_downstream_callable_is_not_described_as_the_entry():
     page = _generate_flow_md(flow, data_flow=detailed)
     assert "Callable record unavailable for one or more source steps" in page
     assert "the selected entry symbol has no represented callable body" not in page
+
+
+@pytest.mark.parametrize("omit_flow", [False, True])
+def test_extract_summary_preserves_depth_coverage_even_when_flow_is_omitted(omit_flow):
+    inventory = {"svc.py": {"functions": [{"name": "run"}]}}
+    flow = _flow("run", "svc.py")
+    sidecar = _zero_coverage("svc.py", ["run"])
+    supported = analyze_data_flow_detailed(inventory, flow, [], data_effect_observations=sidecar)
+    edge = {"from": {"file": "svc.py", "symbol": "run"},
+            "to": {"file": "svc.py", "symbol": "deeper"}, "kind": "internal", "line": 2}
+    bounded = build_flow_detailed(flow["entry"], [edge], max_depth=0)
+    limited = analyze_data_flow_detailed(inventory, bounded, [edge], data_effect_observations=sidecar)
+    assert limited["analysis"]["state"] == "evaluated"
+    assert limited["analysis"]["limitations"] == []
+    assert limited["coverage"]["steps"]["omitted"] == 1
+    flows = ([deepcopy(supported) for _ in range(100)] if omit_flow else []) + [limited]
+    public = _data_flow_details_contract(deep=True, inventory=inventory, unsupported_sources={}, flows=flows)
+    assert len(public["flows"]) == (100 if omit_flow else 1)
+    assert public["coverage"]["omitted"] == int(omit_flow)
+    assert public["coverage"]["truncation_reason"] == ("collection-limit" if omit_flow else None)
+    assert public["coverage"]["upstream_analyzer_limitations"] == ["upstream-flow-depth-limit-reached"]
+
+
+def test_extract_summary_retains_legacy_collector_qualifications():
+    inventory = {"named.mjs": {"functions": [{"name": "handle"}]}}
+    flow = analyze_data_flow_detailed(inventory, _flow("handle", "named.mjs"), [])
+    flow.pop("analysis")
+    public = _data_flow_details_contract(deep=True, inventory=inventory, unsupported_sources={}, flows=[flow])
+    assert public["coverage"]["upstream_analyzer_limitations"] == [
+        "upstream-effect-collector-totals-may-be-unavailable", "upstream-effect-observations-unavailable"]
