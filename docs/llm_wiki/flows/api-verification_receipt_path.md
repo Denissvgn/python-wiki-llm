@@ -52,7 +52,7 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| verification_receipt_path | Path | 946 | `Path(wiki_dir)` |
+| verification_receipt_path | Path | 975 | `Path(wiki_dir)` |
 
 ### Boundary effects
 

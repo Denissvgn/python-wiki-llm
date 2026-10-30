@@ -191,15 +191,15 @@ flowchart LR
 |---|---|---:|---|
 | unresolved_endpoint | list | 296 | `list(candidates)` |
 | unresolved_endpoint | _normalise_endpoint | 297 | `_normalise_endpoint(value, 'endpoint')` |
-| _normalise_endpoint | _object | 1411 | `_object(value, path)` |
-| _object | require_mapping | 2309 | `require_mapping(value, error=KnowledgeGraphError(...), require_string_keys=True, key_error=KnowledgeGraphError(...))` |
+| _normalise_endpoint | _object | 1431 | `_object(value, path)` |
+| _object | require_mapping | 2329 | `require_mapping(value, error=KnowledgeGraphError(...), require_string_keys=True, key_error=KnowledgeGraphError(...))` |
 | require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 773 | `isinstance(value, Mapping)` |
 | require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 777 | `isinstance(key, str)` |
 | require_mapping | key.encode | 782 | `key.encode('utf-8')` |
-| _object | KnowledgeGraphError | 2311 | `KnowledgeGraphError(path, 'must be an object')` |
-| _object | KnowledgeGraphError | 2313 | `KnowledgeGraphError(path, 'object keys must be strings')` |
-| _object | dict | 2315 | `dict(selected)` |
-| _normalise_endpoint | _enum | 1412 | `_enum(endpoint.get(...), ENDPOINT_KINDS, ...)` |
+| _object | KnowledgeGraphError | 2331 | `KnowledgeGraphError(path, 'must be an object')` |
+| _object | KnowledgeGraphError | 2333 | `KnowledgeGraphError(path, 'object keys must be strings')` |
+| _object | dict | 2335 | `dict(selected)` |
+| _normalise_endpoint | _enum | 1432 | `_enum(endpoint.get(...), ENDPOINT_KINDS, ...)` |
 
 ### Boundary effects
 

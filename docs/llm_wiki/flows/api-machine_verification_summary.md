@@ -57,8 +57,8 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| machine_verification_summary | diagnostic.to_payload | 252 | `diagnostic.to_payload(data not statically known)` |
-| machine_verification_summary | check.diagnostic_coverage.to_payload | 254 | `check.diagnostic_coverage.to_payload(data not statically known)` |
+| machine_verification_summary | diagnostic.to_payload | 259 | `diagnostic.to_payload(data not statically known)` |
+| machine_verification_summary | check.diagnostic_coverage.to_payload | 261 | `check.diagnostic_coverage.to_payload(data not statically known)` |
 
 ### Boundary effects
 
@@ -68,8 +68,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| unresolved_call | `machine_verification_summary` | `diagnostic.to_payload` | 252 |
-| unresolved_call | `machine_verification_summary` | `check.diagnostic_coverage.to_payload` | 254 |
+| unresolved_call | `machine_verification_summary` | `diagnostic.to_payload` | 259 |
+| unresolved_call | `machine_verification_summary` | `check.diagnostic_coverage.to_payload` | 261 |
 
 ## Behavior
 

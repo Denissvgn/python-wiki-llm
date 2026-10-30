@@ -116,9 +116,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 343; effect analysis evaluated: 131, partial: 9, unavailable: 203. Counts include steps omitted from the displayed trace.
+Source steps: 343; effect analysis evaluated: 129, partial: 11, unavailable: 203. Counts include steps omitted from the displayed trace.
 
-Collector observations for 140 source steps with known totals: observed: 811, emitted: 723, omitted: 88. Unavailable totals are excluded.
+Collector observations for 140 source steps with known totals: observed: 813, emitted: 723, omitted: 90. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -208,12 +208,12 @@ flowchart LR
 | From | To | Line | Call |
 |---|---|---:|---|
 | build_knowledge_index | _validate_and_join_inputs | 222 | `_validate_and_join_inputs(inputs)` |
-| _validate_and_join_inputs | isinstance (src/llm_wiki_cli/services…_validate_and_join_inputs) | 453 | `isinstance(inputs, KnowledgeIndexInputs)` |
-| _validate_and_join_inputs | TypeError (src/llm_wiki_cli/services…_validate_and_join_inputs) | 454 | `TypeError('inputs must be a KnowledgeIndexInputs')` |
-| _validate_and_join_inputs | _validated_bundle | 455 | `_validated_bundle(inputs.envelope)` |
-| _validated_bundle | isinstance (src/llm_wiki_cli/services…ndex.py:_validated_bundle) | 554 | `isinstance(envelope, EvaluatedEnvelope)` |
-| _validated_bundle | KnowledgeIndexBuildError | 555 | `KnowledgeIndexBuildError('envelope', 'must be an already evaluated envelope')` |
-| _validated_bundle | evaluated_envelope_to_payload | 560 | `evaluated_envelope_to_payload(envelope)` |
+| _validate_and_join_inputs | isinstance (src/llm_wiki_cli/services…_validate_and_join_inputs) | 462 | `isinstance(inputs, KnowledgeIndexInputs)` |
+| _validate_and_join_inputs | TypeError (src/llm_wiki_cli/services…_validate_and_join_inputs) | 463 | `TypeError('inputs must be a KnowledgeIndexInputs')` |
+| _validate_and_join_inputs | _validated_bundle | 464 | `_validated_bundle(inputs.envelope)` |
+| _validated_bundle | isinstance (src/llm_wiki_cli/services…ndex.py:_validated_bundle) | 563 | `isinstance(envelope, EvaluatedEnvelope)` |
+| _validated_bundle | KnowledgeIndexBuildError | 564 | `KnowledgeIndexBuildError('envelope', 'must be an already evaluated envelope')` |
+| _validated_bundle | evaluated_envelope_to_payload | 569 | `evaluated_envelope_to_payload(envelope)` |
 | evaluated_envelope_to_payload | isinstance (src/llm_wiki_cli/services…uated_envelope_to_payload) | 1141 | `isinstance(envelope, EvaluatedEnvelope)` |
 | evaluated_envelope_to_payload | TypeError (src/llm_wiki_cli/services…uated_envelope_to_payload) | 1142 | `TypeError('envelope must be an EvaluatedEnvelope')` |
 | evaluated_envelope_to_payload | KnowledgeEnvelopeError | 1144 | `KnowledgeEnvelopeError('schema_version', ...)` |
@@ -224,17 +224,17 @@ flowchart LR
 | Kind | Target | Step | Line |
 |---|---|---|---:|
 | mutation | `relationships.extend` | `build_knowledge_index` | 229 |
-| mutation | `joined.append` | `_validate_and_join_inputs` | 512 |
-| mutation | `joined.sort` | `_validate_and_join_inputs` | 533 |
+| mutation | `joined.append` | `_validate_and_join_inputs` | 521 |
+| mutation | `joined.sort` | `_validate_and_join_inputs` | 542 |
 | mutation | `snapshot_extensions.pop` | `_validated_bundle_payload` | 1947 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_validate_and_join_inputs` | `isinstance` | 453 |
-| external_call | `_validate_and_join_inputs` | `TypeError` | 454 |
-| external_call | `_validated_bundle` | `isinstance` | 554 |
+| external_call | `_validate_and_join_inputs` | `isinstance` | 462 |
+| external_call | `_validate_and_join_inputs` | `TypeError` | 463 |
+| external_call | `_validated_bundle` | `isinstance` | 563 |
 | external_call | `evaluated_envelope_to_payload` | `isinstance` | 1141 |
 | external_call | `evaluated_envelope_to_payload` | `TypeError` | 1142 |
 | step_limit | `build_knowledge_index` | `first 12 steps` | 0 |

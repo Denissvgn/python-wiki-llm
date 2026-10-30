@@ -1,6 +1,6 @@
 # DocumentationGraphQueryService
 
-**Location:** `src/llm_wiki_cli/services/documentation_queries.py:853`
+**Location:** `src/llm_wiki_cli/services/documentation_queries.py:859`
 **Kind:** Class
 **Bases:** —
 **Module:** [documentation_queries](../modules/documentation_queries.md)
@@ -40,7 +40,7 @@ owner. Query identity, result-byte and collection bounds remain in force.
 | `explain_evidence` | `(locator_or_exact_route: object) -> dict[str, Any]` | `@_bounded_query_result` | Return full stored and computed evidence for one exact identity. |
 | `_build_knowledge_indexes` | `(knowledge_view: Optional[KnowledgeReadView]) -> None` | — | — |
 | `_build_section_ownership_indexes` | `(payload: Mapping[str, Any]) -> None` | — | — |
-| `_build_typed_graph_indexes` | `(payload: Mapping[str, Any]) -> None` | — | — |
+| `_build_typed_graph_indexes` | `(payload: Mapping[str, Any], *, validated_artifacts: ValidatedKnowledgeArtifacts \| None = None) -> None` | — | — |
 | `_typed_graph_concept_locator` | `(endpoint: object) -> str \| None` | — | Resolve a locator- or durable-UID concept endpoint. |
 | `_knowledge_selection_result` | `(query: str) -> dict[str, Any]` | — | — |
 | `_compact_knowledge_concept` | `(locator: str) -> dict[str, Any]` | — | — |

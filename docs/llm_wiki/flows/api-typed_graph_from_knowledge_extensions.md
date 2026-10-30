@@ -43,7 +43,7 @@ sequenceDiagram
     participant p21 as _limitation
     participant p22 as _validate_resolution_target
     participant p23 as _normalise_evidence
-    participant p24 as _validate_endpoint_concept_references
+    participant p24 as _validate_edge_concept_references
     participant p25 as relationship_edge_key
     participant p26 as _validate_core_direction
     participant p27 as require_sha256
@@ -73,7 +73,7 @@ sequenceDiagram
     p9->>p21: _limitation
     p11->>p22: _validate_resolution_target
     p11->>p23: _normalise_evidence
-    p11->>p24: _validate_endpoint_concept_references
+    p11->>p24: _validate_edge_concept_references
     p11->>p25: relationship_edge_key
     p11->>p26: _validate_core_direction
     p16->>p27: require_sha256
@@ -98,7 +98,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_graph.py:_only_fields` | 15 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 16 | - | external | 9 |
 | `src/llm_wiki_cli/services/validation.py:require_exact_fields` | 16 | - | unresolved | 2 |
-> Omission summary shows 8 of 101 groups; 93 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 102 groups; 94 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -113,7 +113,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 214; effect analysis evaluated: 147, partial: 2, unavailable: 65. Counts include steps omitted from the displayed trace.
 
-Collector observations for 149 source steps with known totals: observed: 656, emitted: 651, omitted: 5. Unavailable totals are excluded.
+Collector observations for 149 source steps with known totals: observed: 654, emitted: 649, omitted: 5. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -214,11 +214,11 @@ flowchart LR
 | typed_graph_from_knowledge_extensions | validate_typed_graph | 535 | `validate_typed_graph(value, concept_kinds=concept_kinds)` |
 | validate_typed_graph | _parse_typed_graph | 407 | `_parse_typed_graph(payload, concept_kinds=concept_kinds, complete=True)` |
 | _parse_typed_graph | _object | 421 | `_object(payload, 'typed_graph')` |
-| _object | require_mapping | 2309 | `require_mapping(value, error=KnowledgeGraphError(...), require_string_keys=True, key_error=KnowledgeGraphError(...))` |
+| _object | require_mapping | 2329 | `require_mapping(value, error=KnowledgeGraphError(...), require_string_keys=True, key_error=KnowledgeGraphError(...))` |
 | require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 773 | `isinstance(value, Mapping)` |
 | require_mapping | isinstance (src/llm_wiki_cli/services…dation.py:require_mapping) | 777 | `isinstance(key, str)` |
 | require_mapping | key.encode | 782 | `key.encode('utf-8')` |
-| _object | KnowledgeGraphError | 2311 | `KnowledgeGraphError(path, 'must be an object')` |
+| _object | KnowledgeGraphError | 2331 | `KnowledgeGraphError(path, 'must be an object')` |
 
 ### Boundary effects
 

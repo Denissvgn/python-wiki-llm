@@ -2,7 +2,7 @@
 
 **Entry point:** `knowledge_index_to_payload` (`api`)
 **Source:** [knowledge_index](../modules/knowledge_index.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [concept_identity](../modules/concept_identity.md), [immutable](../modules/immutable.md), and 21 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [concept_identity](../modules/concept_identity.md), [immutable](../modules/immutable.md), and 22 more
 
 **Complete modules touched:**
 
@@ -10,6 +10,7 @@
 - [concept_identity](../modules/concept_identity.md)
 - [immutable](../modules/immutable.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
+- [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_envelope](../modules/knowledge_envelope.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
@@ -101,9 +102,9 @@ sequenceDiagram
     p5-->>p30: model.bundle.snapshot.extensions.get(INVENTORY_HASH_EXTENSION)
 ```
 
-> Call sequence diagram shows 30 of 1725 interactions; 1695 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1711 interactions; 1681 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 443 (442 omitted); unresolved 1 of 268 (267 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 439 (438 omitted); unresolved 1 of 252 (251 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -117,7 +118,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_model.py:_parse_extensions` | 7 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_wire_enum` | 17 | - | external | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_component_to_payload` | 21 | - | external | 1 |
-> Omission summary shows 8 of 397 groups; 389 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 399 groups; 391 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -130,9 +131,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1015; effect analysis evaluated: 565, partial: 20, unavailable: 430. Counts include steps omitted from the displayed trace.
+Source steps: 1021; effect analysis evaluated: 569, partial: 20, unavailable: 432. Counts include steps omitted from the displayed trace.
 
-Collector observations for 585 source steps with known totals: observed: 2954, emitted: 2728, omitted: 226. Unavailable totals are excluded.
+Collector observations for 589 source steps with known totals: observed: 2928, emitted: 2712, omitted: 216. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

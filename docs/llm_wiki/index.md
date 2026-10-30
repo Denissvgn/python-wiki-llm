@@ -8,7 +8,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 |---|---:|---|
 | Entities | 673 | [Open section](#entities) |
 | Modules | 256 | [Open section](#modules) |
-| Workflows | 233 | [Open section](#workflows) |
+| Workflows | 236 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 466 | [Open section](#entry-point-flows) |
 | Infrastructure | 2 | [Open section](#infrastructure) |
@@ -956,6 +956,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [ContextSession___init__](workflows/ContextSession___init__.md) - entry: `context_session.ContextSession.__init__`
 - [ContextSession__canonical_receipt](workflows/ContextSession__canonical_receipt.md) - entry: `context_session.ContextSession._canonical_receipt`
 - [ContextSession__read](workflows/ContextSession__read.md) - entry: `context_session.ContextSession._read`
+- [DocumentationGraphQueryService__build_knowledge_indexes](workflows/DocumentationGraphQueryService__build_knowledge_indexes.md) - entry: `documentation_queries.DocumentationGraphQueryService._build_knowledge_indexes`
+- [DocumentationGraphQueryService__build_typed_graph_indexes](workflows/DocumentationGraphQueryService__build_typed_graph_indexes.md) - entry: `documentation_queries.DocumentationGraphQueryService._build_typed_graph_indexes`
 - [McpWikiService_build_budgeted_context](workflows/McpWikiService_build_budgeted_context.md) - entry: `mcp_server.McpWikiService.build_budgeted_context`
 - [McpWikiService_build_task_context](workflows/McpWikiService_build_task_context.md) - entry: `mcp_server.McpWikiService.build_task_context`
 - [McpWikiService_get_status](workflows/McpWikiService_get_status.md) - entry: `mcp_server.McpWikiService.get_status`
@@ -984,6 +986,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [backup](workflows/backup.md) - entry: `knowledge_storage_lifecycle._backup`
 - [bootstrap_write_operation](workflows/bootstrap_write_operation.md) - entry: `bootstrap_recovery.bootstrap_write_operation`
 - [build_analysis](workflows/build_analysis.md) - entry: `review_service.build_analysis`
+- [build_artifact_verification_context](workflows/build_artifact_verification_context.md) - entry: `verification_contracts.build_artifact_verification_context`
 - [build_budgeted_context](workflows/build_budgeted_context.md) - entry: `context_budget.build_budgeted_context`
 - [build_builtin_extraction_kwargs](workflows/build_builtin_extraction_kwargs.md) - entry: `extraction_service._build_builtin_extraction_kwargs`
 - [build_capability_diagnostics](workflows/build_capability_diagnostics.md) - entry: `capability_diagnostics.build_capability_diagnostics`

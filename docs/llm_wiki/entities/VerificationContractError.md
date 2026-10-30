@@ -97,7 +97,7 @@ flowchart LR
 | `_scope_uid` | call | [verification_contracts](../modules/verification_contracts.md) | 1 |
 | `_selected_contracts` | call | [verification_contracts](../modules/verification_contracts.md) | 4 |
 | `_sha256` | call | [verification_contracts](../modules/verification_contracts.md) | 1 |
-| `build_artifact_verification_context` | call | [verification_contracts](../modules/verification_contracts.md) | 1 |
+| `build_artifact_verification_context` | call | [verification_contracts](../modules/verification_contracts.md) | 2 |
 | `build_verification_receipt` | call | [verification_contracts](../modules/verification_contracts.md) | 2 |
 | `CheckerContract.__post_init__` | call | [verification_contracts](../modules/verification_contracts.md) | 1 |
 

@@ -2,13 +2,14 @@
 
 **Entry point:** `validate_knowledge_payload` (`api`)
 **Source:** [knowledge_model](../modules/knowledge_model.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [concept_identity](../modules/concept_identity.md), [implementation_evidence](../modules/implementation_evidence.md), and 16 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [concept_identity](../modules/concept_identity.md), [implementation_evidence](../modules/implementation_evidence.md), and 17 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
 - [concept_identity](../modules/concept_identity.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
+- [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
@@ -56,12 +57,12 @@ sequenceDiagram
     participant p20 as _parse_relationship_target
     participant p21 as validate_maintenance_binding
     participant p22 as validate_maintenance_state
-    participant p23 as _object (src/llm_wiki_cli/services/knowledge_governance.py)
-    participant p24 as _open_enum_value
-    participant p25 as canonical_hash
-    participant p26 as _exact_fields
-    participant p27 as _parse_extensions
-    participant p28 as validate_section_ownership
+    participant p23 as _open_enum_value
+    participant p24 as canonical_hash
+    participant p25 as _parse_extensions
+    participant p26 as validate_section_ownership
+    participant p27 as _object (src/llm_wiki_cli/services/knowledge_governance.py)
+    participant p28 as _parse_relationship_evidence
     participant p29 as tuple (src/llm_wiki_cli/services….py:parse_knowledge_index)
     participant p30 as validated.get
     p0->>p1: parse_knowledge_index
@@ -86,19 +87,19 @@ sequenceDiagram
     p5->>p20: _parse_relationship_target
     p9->>p21: validate_maintenance_binding
     p9->>p22: validate_maintenance_state
-    p10->>p23: _object (src/llm_wiki_cli/services/knowledge_governance.py)
-    p4->>p24: _open_enum_value
-    p9->>p25: canonical_hash
-    p10->>p26: _exact_fields
-    p2->>p27: _parse_extensions
-    p6->>p28: validate_section_ownership
+    p4->>p23: _open_enum_value
+    p9->>p24: canonical_hash
+    p2->>p25: _parse_extensions
+    p6->>p26: validate_section_ownership
+    p10->>p27: _object (src/llm_wiki_cli/services/knowledge_governance.py)
+    p5->>p28: _parse_relationship_evidence
     p1-->>p29: tuple (src/llm_wiki_cli/services….py:parse_knowledge_index)(...)
     p8-->>p30: validated.get(IMPLEMENTATION_KEY)
 ```
 
-> Call sequence diagram shows 30 of 1720 interactions; 1690 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1708 interactions; 1678 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 470 (469 omitted); unresolved 1 of 308 (307 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 462 (461 omitted); unresolved 1 of 302 (301 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -112,7 +113,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_model.py:_record` | 3 | - | external | 4 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_record` | 3 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 5 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_parse_extensions` | 21 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 7 |
-> Omission summary shows 8 of 413 groups; 405 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 419 groups; 411 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -125,9 +126,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 943; effect analysis evaluated: 595, partial: 15, unavailable: 333. Counts include steps omitted from the displayed trace.
+Source steps: 945; effect analysis evaluated: 602, partial: 15, unavailable: 328. Counts include steps omitted from the displayed trace.
 
-Collector observations for 610 source steps with known totals: observed: 2972, emitted: 2809, omitted: 163. Unavailable totals are excluded.
+Collector observations for 617 source steps with known totals: observed: 2996, emitted: 2833, omitted: 163. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

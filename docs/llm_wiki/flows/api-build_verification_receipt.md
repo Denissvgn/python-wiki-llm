@@ -109,15 +109,15 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_verification_receipt | isinstance | 731 | `isinstance(context, VerificationContext)` |
-| build_verification_receipt | TypeError | 732 | `TypeError('context must be a VerificationContext')` |
-| build_verification_receipt | tuple | 733 | `tuple(checks)` |
-| build_verification_receipt | VerificationContractError | 735 | `VerificationContractError('checks must not be empty')` |
-| build_verification_receipt | any | 736 | `any(...)` |
-| build_verification_receipt | isinstance | 737 | `isinstance(check, VerificationCheckResult)` |
-| build_verification_receipt | VerificationContractError | 740 | `VerificationContractError('checks must contain VerificationCheckResult values')` |
-| build_verification_receipt | all | 745 | `all(...)` |
-| build_verification_receipt | VerificationReceipt | 751 | `VerificationReceipt(knowledge_hash=context.knowledge_hash, scope_uid=context.scope_uid, scope_hash=context.scope_hash, evidence=context.evidence, evidence_hash=context.evidence_hash, evaluated_snapshot=context.evaluated_snapshot, snapshot_hash=context.snapshot_hash, result=result, checks=normalized_checks)` |
+| build_verification_receipt | isinstance | 760 | `isinstance(context, VerificationContext)` |
+| build_verification_receipt | TypeError | 761 | `TypeError('context must be a VerificationContext')` |
+| build_verification_receipt | tuple | 762 | `tuple(checks)` |
+| build_verification_receipt | VerificationContractError | 764 | `VerificationContractError('checks must not be empty')` |
+| build_verification_receipt | any | 765 | `any(...)` |
+| build_verification_receipt | isinstance | 766 | `isinstance(check, VerificationCheckResult)` |
+| build_verification_receipt | VerificationContractError | 769 | `VerificationContractError('checks must contain VerificationCheckResult values')` |
+| build_verification_receipt | all | 774 | `all(...)` |
+| build_verification_receipt | VerificationReceipt | 780 | `VerificationReceipt(knowledge_hash=context.knowledge_hash, scope_uid=context.scope_uid, scope_hash=context.scope_hash, evidence=context.evidence, evidence_hash=context.evidence_hash, evaluated_snapshot=context.evaluated_snapshot, snapshot_hash=context.snapshot_hash, result=result, checks=normalized_checks)` |
 
 ### Boundary effects
 
@@ -127,11 +127,11 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_verification_receipt` | `isinstance` | 731 |
-| external_call | `build_verification_receipt` | `TypeError` | 732 |
-| external_call | `build_verification_receipt` | `any` | 736 |
-| external_call | `build_verification_receipt` | `isinstance` | 737 |
-| external_call | `build_verification_receipt` | `all` | 745 |
+| external_call | `build_verification_receipt` | `isinstance` | 760 |
+| external_call | `build_verification_receipt` | `TypeError` | 761 |
+| external_call | `build_verification_receipt` | `any` | 765 |
+| external_call | `build_verification_receipt` | `isinstance` | 766 |
+| external_call | `build_verification_receipt` | `all` | 774 |
 
 ## Behavior
 

@@ -22,7 +22,7 @@ rather than treating a fresh basis as an owning commit or review.
 | Source | Symbols |
 |--------|---------|
 | `.implementation_evidence` | `ImplementationReport`, `ImplementationReport`, `DECLARATIONS_KEY`, `IMPLEMENTATION_KEY`, `compare_knowledge_implementation`, `compare_knowledge_implementation` |
-| `.knowledge_artifacts` | `require_validated_artifacts` |
+| `.knowledge_artifacts` | `ValidatedKnowledgeArtifacts`, `require_validated_artifacts`, `require_validated_artifacts` |
 | `.knowledge_freshness` | `KnowledgeFreshnessReport`, `LiveKnowledgeEvaluation`, `evaluate_knowledge_freshness` |
 | `.knowledge_loader` | `KnowledgeLoadIssue`, `KnowledgeLoadResult`, `KnowledgeMismatchPolicy`, `KnowledgeStateLoadError`, `load_knowledge_state` |
 | `.knowledge_model` | `ComputedFreshness`, `EvidenceState`, `KnowledgeIndex`, `KnowledgeLoadState` |
@@ -66,18 +66,19 @@ flowchart LR
 
 | Class | Kind | Line | Bases / Target | Description |
 |-------|------|------|----------------|-------------|
-| [KnowledgeAvailability](../entities/KnowledgeAvailability.md) | Enum | 45 | `str`, `Enum` | Knowledge capability available to every native read consumer. |
-| [KnowledgeReadMode](../entities/KnowledgeReadMode.md) | Enum | 54 | `str`, `Enum` | Whether a read session evaluates live concept freshness. |
-| [KnowledgeReadReason](../entities/KnowledgeReadReason.md) | Enum | 62 | `str`, `Enum` | Stable cross-consumer reasons for knowledge availability. |
-| [MachineVerificationAvailability](../entities/MachineVerificationAvailability.md) | Enum | 77 | `str`, `Enum` | Whether the read session evaluated a disposable machine receipt. |
-| [MachineVerificationReadView](../entities/MachineVerificationReadView.md) | Class | 115 | — | One receipt evaluation shared by all consumers in a read operation. |
-| [KnowledgeReadCounts](../entities/KnowledgeReadCounts.md) | Class | 269 | — | Aggregate counts derived only from a ready knowledge projection. |
-| [KnowledgeReadView](../entities/KnowledgeReadView.md) | Class | 291 | — | Validated, immutable-by-contract state for one native read operation. |
+| [KnowledgeAvailability](../entities/KnowledgeAvailability.md) | Enum | 46 | `str`, `Enum` | Knowledge capability available to every native read consumer. |
+| [KnowledgeReadMode](../entities/KnowledgeReadMode.md) | Enum | 55 | `str`, `Enum` | Whether a read session evaluates live concept freshness. |
+| [KnowledgeReadReason](../entities/KnowledgeReadReason.md) | Enum | 63 | `str`, `Enum` | Stable cross-consumer reasons for knowledge availability. |
+| [MachineVerificationAvailability](../entities/MachineVerificationAvailability.md) | Enum | 78 | `str`, `Enum` | Whether the read session evaluated a disposable machine receipt. |
+| [MachineVerificationReadView](../entities/MachineVerificationReadView.md) | Class | 116 | — | One receipt evaluation shared by all consumers in a read operation. |
+| [KnowledgeReadCounts](../entities/KnowledgeReadCounts.md) | Class | 270 | — | Aggregate counts derived only from a ready knowledge projection. |
+| [KnowledgeReadView](../entities/KnowledgeReadView.md) | Class | 292 | — | Validated, immutable-by-contract state for one native read operation. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
+| `_validated_artifacts_for_view` | `(view: KnowledgeReadView) -> ValidatedKnowledgeArtifacts \| None` | — | Reuse only the validator-issued values bound to this captured view. |
 | `_machine_invalidation_reasons` | `(value: object) -> tuple[str, ...]` | — | — |
 | `_machine_verification_checks` | `(value: object) -> Mapping[str, Mapping[str, Any]]` | — | — |
 | `_machine_verification_check` | `(checker_id: str, value: object) -> Mapping[str, Any]` | — | — |

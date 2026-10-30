@@ -17,7 +17,7 @@ from diagnostics.
 |--------|---------|
 | `.canonical_json` | `canonical_chunks`, `scalar_size` |
 | `.concept_identity` | `ConceptIdentityError`, `natural_key_for`, `validate_locator` |
-| `.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY`, `GOVERNANCE_EXTENSION_KEY` |
+| `.contracts` | `SECTION_OWNERSHIP_EXTENSION_KEY`, `TYPED_GRAPH_EXTENSION_KEY`, `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_EXTENSION_KEY`, `GOVERNANCE_EXTENSION_KEY` |
 | `.implementation_evidence` | `validate_concept_implementation` |
 | `.knowledge_audit` | `audit_logical_records` |
 | `.knowledge_envelope` | `INVENTORY_HASH_EXTENSION` |
@@ -64,8 +64,8 @@ flowchart LR
 | [KnowledgeStorePlan](../entities/KnowledgeStorePlan.md) | 195 | — | — |
 | [_Encoder](../entities/Encoder.md) | 202 | — | — |
 | [_TreeBuilder](../entities/TreeBuilder.md) | 228 | — | — |
-| [KnowledgeSlice](../entities/KnowledgeSlice.md) | 475 | — | Detached scoped data; deliberately not ValidatedKnowledgeArtifacts. |
-| [KnowledgeStoreReader](../entities/KnowledgeStoreReader.md) | 484 | — | Read committed objects through a caller-owned bounded I/O boundary. |
+| [KnowledgeSlice](../entities/KnowledgeSlice.md) | 488 | — | Detached scoped data; deliberately not ValidatedKnowledgeArtifacts. |
+| [KnowledgeStoreReader](../entities/KnowledgeStoreReader.md) | 497 | — | Read committed objects through a caller-owned bounded I/O boundary. |
 
 ## Functions
 

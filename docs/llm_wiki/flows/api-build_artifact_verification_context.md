@@ -2,13 +2,14 @@
 
 **Entry point:** `build_artifact_verification_context` (`api`)
 **Source:** [verification_contracts](../modules/verification_contracts.md)
-**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [concept_identity](../modules/concept_identity.md), [implementation_evidence](../modules/implementation_evidence.md), and 17 more
+**Modules touched:** [analysis_compatibility](../modules/analysis_compatibility.md), [concept_identity](../modules/concept_identity.md), [implementation_evidence](../modules/implementation_evidence.md), and 18 more
 
 **Complete modules touched:**
 
 - [analysis_compatibility](../modules/analysis_compatibility.md)
 - [concept_identity](../modules/concept_identity.md)
 - [implementation_evidence](../modules/implementation_evidence.md)
+- [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_governance](../modules/knowledge_governance.md)
 - [knowledge_graph](../modules/knowledge_graph.md)
@@ -37,69 +38,69 @@ sequenceDiagram
     participant p0 as build_artifact_verification_context
     participant p1 as _sha256
     participant p2 as knowledge_index_to_payload
-    participant p3 as VerificationContractError
-    participant p4 as hash_json
-    participant p5 as VerificationContext
-    participant p6 as require_sha256
-    participant p7 as _emit_extensions
-    participant p8 as _bundle_to_payload
-    participant p9 as _concept_to_payload
-    participant p10 as _relationship_to_payload
-    participant p11 as parse_knowledge_index
-    participant p12 as _knowledge_index_to_payload_unchecked
-    participant p13 as _record
-    participant p14 as require_trimmed_text
-    participant p15 as _parse_extensions
-    participant p16 as _basis_to_payload
-    participant p17 as _relationship_target_to_payload
-    participant p18 as _parse_bundle
-    participant p19 as _component_to_payload
-    participant p20 as _relationship_evidence_to_payload
-    participant p21 as _actor_to_payload
-    participant p22 as _parse_concept
-    participant p23 as _parse_relationship
-    participant p24 as _document_to_payload
-    participant p25 as _validated_reserved_extensions
-    participant p26 as _validate_index_references
-    participant p27 as validate_implementation_collection
-    participant p28 as validate_maintenance_projection
+    participant p3 as require_validated_artifacts
+    participant p4 as VerificationContractError
+    participant p5 as hash_json
+    participant p6 as VerificationContext
+    participant p7 as require_sha256
+    participant p8 as _emit_extensions
+    participant p9 as _bundle_to_payload
+    participant p10 as _concept_to_payload
+    participant p11 as _relationship_to_payload
+    participant p12 as parse_knowledge_index
+    participant p13 as _knowledge_index_to_payload_unchecked
+    participant p14 as _record
+    participant p15 as require_trimmed_text
+    participant p16 as _parse_extensions
+    participant p17 as _basis_to_payload
+    participant p18 as _relationship_target_to_payload
+    participant p19 as _parse_bundle
+    participant p20 as _component_to_payload
+    participant p21 as _relationship_evidence_to_payload
+    participant p22 as _actor_to_payload
+    participant p23 as _parse_concept
+    participant p24 as _parse_relationship
+    participant p25 as _document_to_payload
+    participant p26 as _validated_reserved_extensions
+    participant p27 as _validate_index_references
+    participant p28 as validate_implementation_collection
     participant p29 as isinstance (src/llm_wiki_cli/services…fact_verification_context)
     participant p30 as knowledge.extensions.get (src/llm_wiki_cli/services…fact_verification_context)
     p0->>p1: _sha256
     p0->>p2: knowledge_index_to_payload
-    p0->>p3: VerificationContractError
-    p0->>p4: hash_json
-    p0->>p5: VerificationContext
-    p1->>p6: require_sha256
-    p2->>p7: _emit_extensions
-    p2->>p8: _bundle_to_payload
-    p2->>p9: _concept_to_payload
-    p2->>p10: _relationship_to_payload
-    p2->>p11: parse_knowledge_index
-    p2->>p12: _knowledge_index_to_payload_unchecked
-    p11->>p13: _record
-    p6->>p14: require_trimmed_text
-    p7->>p15: _parse_extensions
-    p9->>p16: _basis_to_payload
-    p10->>p17: _relationship_target_to_payload
-    p11->>p18: _parse_bundle
-    p8->>p19: _component_to_payload
-    p10->>p20: _relationship_evidence_to_payload
-    p9->>p21: _actor_to_payload
-    p11->>p22: _parse_concept
-    p11->>p23: _parse_relationship
-    p9->>p24: _document_to_payload
-    p11->>p25: _validated_reserved_extensions
-    p11->>p26: _validate_index_references
-    p11->>p27: validate_implementation_collection
-    p11->>p28: validate_maintenance_projection
+    p0->>p3: require_validated_artifacts
+    p0->>p4: VerificationContractError
+    p0->>p5: hash_json
+    p0->>p6: VerificationContext
+    p1->>p7: require_sha256
+    p2->>p8: _emit_extensions
+    p2->>p9: _bundle_to_payload
+    p2->>p10: _concept_to_payload
+    p2->>p11: _relationship_to_payload
+    p2->>p12: parse_knowledge_index
+    p2->>p13: _knowledge_index_to_payload_unchecked
+    p12->>p14: _record
+    p7->>p15: require_trimmed_text
+    p8->>p16: _parse_extensions
+    p10->>p17: _basis_to_payload
+    p11->>p18: _relationship_target_to_payload
+    p12->>p19: _parse_bundle
+    p9->>p20: _component_to_payload
+    p11->>p21: _relationship_evidence_to_payload
+    p10->>p22: _actor_to_payload
+    p12->>p23: _parse_concept
+    p12->>p24: _parse_relationship
+    p10->>p25: _document_to_payload
+    p12->>p26: _validated_reserved_extensions
+    p12->>p27: _validate_index_references
+    p12->>p28: validate_implementation_collection
     p0-->>p29: isinstance (src/llm_wiki_cli/services…fact_verification_context)(knowledge, KnowledgeIndex)
     p0-->>p30: knowledge.extensions.get (src/llm_wiki_cli/services…fact_verification_context)(governance_key)
 ```
 
-> Call sequence diagram shows 30 of 1310 interactions; 1280 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1298 interactions; 1268 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 345 (344 omitted); unresolved 1 of 209 (208 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 341 (340 omitted); unresolved 1 of 193 (192 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -113,7 +114,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 8 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
 | `src/llm_wiki_cli/services/validation.py:contains_control_character` | 11 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_sha256` | 5 | - | unresolved | 1 |
-> Omission summary shows 8 of 299 groups; 291 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 302 groups; 294 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -126,9 +127,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 757; effect analysis evaluated: 486, partial: 13, unavailable: 258. Counts include steps omitted from the displayed trace.
+Source steps: 765; effect analysis evaluated: 492, partial: 12, unavailable: 261. Counts include steps omitted from the displayed trace.
 
-Collector observations for 499 source steps with known totals: observed: 2408, emitted: 2256, omitted: 152. Unavailable totals are excluded.
+Collector observations for 504 source steps with known totals: observed: 2385, emitted: 2244, omitted: 141. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -136,7 +137,7 @@ Collector observations for 499 source steps with known totals: observed: 2408, e
 
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
-| `build_artifact_verification_context` | `available` | `evaluated` | `available` | `14` | `14` | `0` |
+| `build_artifact_verification_context` | `available` | `partial` | `available` | `15` | `14` | `1` |
 | `isinstance (src/llm_wiki_cli/services…fact_verification_context)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `TypeError (src/llm_wiki_cli/services…fact_verification_context)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
 | `_sha256` | `available` | `evaluated` | `available` | `3` | `3` | `0` |
@@ -203,10 +204,10 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_artifact_verification_context | isinstance (src/llm_wiki_cli/services…fact_verification_context) | 339 | `isinstance(knowledge, KnowledgeIndex)` |
-| build_artifact_verification_context | TypeError (src/llm_wiki_cli/services…fact_verification_context) | 340 | `TypeError('knowledge must be a KnowledgeIndex')` |
-| build_artifact_verification_context | _sha256 | 341 | `_sha256(knowledge_hash, 'knowledge_hash')` |
-| _sha256 | require_sha256 | 1425 | `require_sha256(value, digest_error=VerificationContractError(...))` |
+| build_artifact_verification_context | isinstance (src/llm_wiki_cli/services…fact_verification_context) | 352 | `isinstance(knowledge, KnowledgeIndex)` |
+| build_artifact_verification_context | TypeError (src/llm_wiki_cli/services…fact_verification_context) | 353 | `TypeError('knowledge must be a KnowledgeIndex')` |
+| build_artifact_verification_context | _sha256 | 354 | `_sha256(knowledge_hash, 'knowledge_hash')` |
+| _sha256 | require_sha256 | 1454 | `require_sha256(value, digest_error=VerificationContractError(...))` |
 | require_sha256 | isinstance (src/llm_wiki_cli/services…idation.py:require_sha256) | 1146 | `isinstance(value, str)` |
 | require_sha256 | require_trimmed_text | 1150 | `require_trimmed_text(value, error=text_error, reject_control_characters=reject_control_characters)` |
 | require_trimmed_text | require_nonempty_text | 704 | `require_nonempty_text(value, error=error, require_trimmed=True, reject_control_characters=reject_control_characters)` |
@@ -223,8 +224,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_artifact_verification_context` | `isinstance` | 339 |
-| external_call | `build_artifact_verification_context` | `TypeError` | 340 |
+| external_call | `build_artifact_verification_context` | `isinstance` | 352 |
+| external_call | `build_artifact_verification_context` | `TypeError` | 353 |
 | external_call | `require_sha256` | `isinstance` | 1146 |
 | external_call | `require_nonempty_text` | `isinstance` | 631 |
 | unresolved_call | `require_nonempty_text` | `value.strip` | 633 |

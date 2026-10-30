@@ -2,11 +2,12 @@
 
 **Entry point:** `load_machine_verification_read_view` (`api`)
 **Source:** [knowledge_verification](../modules/knowledge_verification.md)
-**Modules touched:** [io](../modules/io.md), [knowledge_consumption](../modules/knowledge_consumption.md), [knowledge_evidence](../modules/knowledge_evidence.md), [knowledge_verification](../modules/knowledge_verification.md), and 2 more
+**Modules touched:** [io](../modules/io.md), [knowledge_artifacts](../modules/knowledge_artifacts.md), [knowledge_consumption](../modules/knowledge_consumption.md), [knowledge_evidence](../modules/knowledge_evidence.md), and 3 more
 
 **Complete modules touched:**
 
 - [io](../modules/io.md)
+- [knowledge_artifacts](../modules/knowledge_artifacts.md)
 - [knowledge_consumption](../modules/knowledge_consumption.md)
 - [knowledge_evidence](../modules/knowledge_evidence.md)
 - [knowledge_verification](../modules/knowledge_verification.md)
@@ -22,70 +23,70 @@
 sequenceDiagram
     participant p0 as load_machine_verification_read_view
     participant p1 as load_verification_receipt
-    participant p2 as evaluate_verification_receipt
-    participant p3 as MachineVerificationReadView
-    participant p4 as hash_json
-    participant p5 as machine_verification_summary
-    participant p6 as _read_regular_receipt
-    participant p7 as deserialize_verification_receipt
-    participant p8 as validate_verification_receipt
-    participant p9 as serialize_verification_receipt
-    participant p10 as formatted_json_bytes
-    participant p11 as verification_receipt_to_payload
-    participant p12 as _object
-    participant p13 as _exact_fields
-    participant p14 as _string
-    participant p15 as _receipt_hash
-    participant p16 as _scope_uid
-    participant p17 as _receipt_anchor_mapping
-    participant p18 as _parse_check
-    participant p19 as _sha256
-    participant p20 as _checker_id
-    participant p21 as _normalized_anchor_mapping
-    participant p22 as canonical_json_bytes
-    participant p23 as _checker_version
-    participant p24 as _array
-    participant p25 as _parse_diagnostic
-    participant p26 as _parse_coverage
-    participant p27 as first_unsafe_path_component
-    participant p28 as VerificationReceiptError
+    participant p2 as _validated_artifacts_for_view
+    participant p3 as evaluate_verification_receipt
+    participant p4 as MachineVerificationReadView
+    participant p5 as hash_json
+    participant p6 as machine_verification_summary
+    participant p7 as _read_regular_receipt
+    participant p8 as deserialize_verification_receipt
+    participant p9 as validate_verification_receipt
+    participant p10 as serialize_verification_receipt
+    participant p11 as formatted_json_bytes
+    participant p12 as verification_receipt_to_payload
+    participant p13 as _object
+    participant p14 as _exact_fields
+    participant p15 as _string
+    participant p16 as _receipt_hash
+    participant p17 as _scope_uid
+    participant p18 as _receipt_anchor_mapping
+    participant p19 as _parse_check
+    participant p20 as _sha256
+    participant p21 as _checker_id
+    participant p22 as _normalized_anchor_mapping
+    participant p23 as canonical_json_bytes
+    participant p24 as _checker_version
+    participant p25 as _array
+    participant p26 as _parse_diagnostic
+    participant p27 as _parse_coverage
+    participant p28 as require_validated_artifacts
     participant p29 as isinstance (src/llm_wiki_cli/services…ne_verification_read_view)
     participant p30 as context
     p0->>p1: load_verification_receipt
-    p0->>p2: evaluate_verification_receipt
-    p0->>p3: MachineVerificationReadView
-    p0->>p4: hash_json
-    p0->>p5: machine_verification_summary
-    p1->>p6: _read_regular_receipt
-    p1->>p7: deserialize_verification_receipt
-    p7->>p8: validate_verification_receipt
-    p7->>p9: serialize_verification_receipt
-    p9->>p10: formatted_json_bytes
-    p9->>p11: verification_receipt_to_payload
-    p8->>p12: _object
-    p8->>p13: _exact_fields
-    p8->>p14: _string
-    p8->>p15: _receipt_hash
-    p8->>p16: _scope_uid
-    p8->>p17: _receipt_anchor_mapping
-    p8->>p18: _parse_check
-    p15->>p19: _sha256
-    p18->>p20: _checker_id
-    p17->>p21: _normalized_anchor_mapping
-    p4->>p22: canonical_json_bytes
-    p18->>p23: _checker_version
-    p18->>p24: _array
-    p18->>p25: _parse_diagnostic
-    p18->>p26: _parse_coverage
-    p1->>p27: first_unsafe_path_component
-    p1->>p28: VerificationReceiptError
+    p0->>p2: _validated_artifacts_for_view
+    p0->>p3: evaluate_verification_receipt
+    p0->>p4: MachineVerificationReadView
+    p0->>p5: hash_json
+    p0->>p6: machine_verification_summary
+    p1->>p7: _read_regular_receipt
+    p1->>p8: deserialize_verification_receipt
+    p8->>p9: validate_verification_receipt
+    p8->>p10: serialize_verification_receipt
+    p10->>p11: formatted_json_bytes
+    p10->>p12: verification_receipt_to_payload
+    p9->>p13: _object
+    p9->>p14: _exact_fields
+    p9->>p15: _string
+    p9->>p16: _receipt_hash
+    p9->>p17: _scope_uid
+    p9->>p18: _receipt_anchor_mapping
+    p9->>p19: _parse_check
+    p16->>p20: _sha256
+    p19->>p21: _checker_id
+    p18->>p22: _normalized_anchor_mapping
+    p5->>p23: canonical_json_bytes
+    p19->>p24: _checker_version
+    p19->>p25: _array
+    p19->>p26: _parse_diagnostic
+    p19->>p27: _parse_coverage
+    p2->>p28: require_validated_artifacts
     p0-->>p29: isinstance (src/llm_wiki_cli/services…ne_verification_read_view)(knowledge_view, KnowledgeReadView)
     p0-->>p30: context(None)
 ```
 
-> Call sequence diagram shows 30 of 272 interactions; 242 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 278 interactions; 248 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 103 (102 omitted); unresolved 1 of 43 (42 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 107 (106 omitted); unresolved 1 of 43 (42 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -93,13 +94,13 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | --- | --- | --- | --- | --- |
 | `src/llm_wiki_cli/services/knowledge_verification.py:load_machine_verification_read_view` | 1 | - | external | 10 |
 | `src/llm_wiki_cli/services/verification_contracts.py:load_verification_receipt` | 5 | - | external | 1 |
+| `src/llm_wiki_cli/services/verification_contracts.py:load_verification_receipt` | 5 | [src/llm_wiki_cli/services/io.py](../modules/io.md) | internal | 1 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 7 | - | external | 20 |
 | `src/llm_wiki_cli/services/io.py:first_unsafe_path_component` | 7 | - | unresolved | 5 |
+| `src/llm_wiki_cli/services/verification_contracts.py:load_verification_receipt` | 5 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 3 |
 | `src/llm_wiki_cli/services/verification_contracts.py:load_verification_receipt` | 5 | - | unresolved | 1 |
-| `src/llm_wiki_cli/services/verification_contracts.py:load_verification_receipt` | 5 | [src/llm_wiki_cli/services/verification_contracts.py](../modules/verification_contracts.md) | internal | 2 |
 | `src/llm_wiki_cli/services/verification_contracts.py:verification_receipt_path` | 36 | - | external | 1 |
-| `src/llm_wiki_cli/services/verification_contracts.py:_read_regular_receipt` | 38 | - | unresolved | 3 |
-> Omission summary shows 8 of 75 groups; 67 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 77 groups; 69 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -112,9 +113,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 127; effect analysis evaluated: 67, partial: 2, unavailable: 58. Counts include steps omitted from the displayed trace.
+Source steps: 129; effect analysis evaluated: 69, partial: 2, unavailable: 58. Counts include steps omitted from the displayed trace.
 
-Collector observations for 69 source steps with known totals: observed: 298, emitted: 294, omitted: 4. Unavailable totals are excluded.
+Collector observations for 71 source steps with known totals: observed: 306, emitted: 302, omitted: 4. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -191,12 +192,12 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| load_machine_verification_read_view | isinstance (src/llm_wiki_cli/services…ne_verification_read_view) | 75 | `isinstance(knowledge_view, KnowledgeReadView)` |
-| load_machine_verification_read_view | TypeError (src/llm_wiki_cli/services…ne_verification_read_view) | 76 | `TypeError('knowledge_view must be a KnowledgeReadView')` |
-| load_machine_verification_read_view | MachineVerificationReadView | 80 | `MachineVerificationReadView(availability=MachineVerificationAvailability.ABSENT, reason='verification-receipt-not-present')` |
-| load_machine_verification_read_view | load_verification_receipt | 86 | `load_verification_receipt(Path(...))` |
-| load_verification_receipt | Path (src/llm_wiki_cli/services…load_verification_receipt) | 956 | `Path(wiki_dir)` |
-| load_verification_receipt | first_unsafe_path_component | 957 | `first_unsafe_path_component(root)` |
+| load_machine_verification_read_view | isinstance (src/llm_wiki_cli/services…ne_verification_read_view) | 76 | `isinstance(knowledge_view, KnowledgeReadView)` |
+| load_machine_verification_read_view | TypeError (src/llm_wiki_cli/services…ne_verification_read_view) | 77 | `TypeError('knowledge_view must be a KnowledgeReadView')` |
+| load_machine_verification_read_view | MachineVerificationReadView | 81 | `MachineVerificationReadView(availability=MachineVerificationAvailability.ABSENT, reason='verification-receipt-not-present')` |
+| load_machine_verification_read_view | load_verification_receipt | 87 | `load_verification_receipt(Path(...))` |
+| load_verification_receipt | Path (src/llm_wiki_cli/services…load_verification_receipt) | 985 | `Path(wiki_dir)` |
+| load_verification_receipt | first_unsafe_path_component | 986 | `first_unsafe_path_component(root)` |
 | first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 51 | `Path(os.fspath(...))` |
 | first_unsafe_path_component | os.fspath | 51 | `os.fspath(path)` |
 | first_unsafe_path_component | Path (src/llm_wiki_cli/services…rst_unsafe_path_component) | 59 | `Path(os.path.abspath(...))` |
@@ -213,8 +214,8 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `load_machine_verification_read_view` | `isinstance` | 75 |
-| external_call | `load_machine_verification_read_view` | `TypeError` | 76 |
+| external_call | `load_machine_verification_read_view` | `isinstance` | 76 |
+| external_call | `load_machine_verification_read_view` | `TypeError` | 77 |
 | external_call | `first_unsafe_path_component` | `os.fspath` | 51 |
 | external_call | `first_unsafe_path_component` | `os.path.abspath` | 59 |
 | unresolved_call | `first_unsafe_path_component` | `lexical.is_absolute` | 60 |

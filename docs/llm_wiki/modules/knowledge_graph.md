@@ -85,6 +85,7 @@ flowchart LR
 | `_parse_typed_graph` | `(payload: object, *, concept_kinds: Mapping[str, str] \| None, complete: bool) -> dict[str, Any]` | — | — |
 | `serialize_typed_graph` | `(payload: object, *, concept_kinds: Mapping[str, str] \| None = None) -> str` | — | Return deterministic JSON for a standalone typed graph. |
 | `typed_graph_from_knowledge_extensions` | `(extensions: Mapping[str, Any], *, concept_kinds: Mapping[str, str] \| None = None) -> dict[str, Any] \| None` | — | Validate the reserved graph extension, returning ``None`` when absent. |
+| `_validate_typed_graph_concept_bindings` | `(graph: Mapping[str, Any], *, concept_kinds: Mapping[str, str]) -> None` | — | Bind an already normalized graph to its enclosing validated concepts. |
 | `_materialization_state` | `(inputs: KnowledgeGraphInputs, concepts: tuple[GraphConcept, ...], input_hashes: dict[str, str]) -> _MaterializationState` | — | — |
 | `_materialize_contains` | `(state: _MaterializationState) -> None` | — | — |
 | `_materialize_imports` | `(state: _MaterializationState) -> None` | — | — |
@@ -98,6 +99,7 @@ flowchart LR
 | `_normalise_graph_concepts` | `(values: Sequence[GraphConcept]) -> tuple[GraphConcept, ...]` | — | — |
 | `_graph_concept_payload` | `(value: GraphConcept) -> dict[str, Any]` | — | — |
 | `_normalise_edge` | `(value: object, path: str, concept_kinds: Mapping[str, str] \| None) -> dict[str, Any]` | — | — |
+| `_validate_edge_concept_references` | `(edge: Mapping[str, Any], concept_kinds: Mapping[str, str] \| None, path: str) -> None` | — | — |
 | `_normalise_endpoint` | `(value: object, path: str) -> dict[str, Any]` | — | — |
 | `_normalise_evidence` | `(value: object, path: str) -> dict[str, Any]` | — | — |
 | `_normalise_evidence_sample` | `(value: object, path: str) -> dict[str, Any]` | — | — |

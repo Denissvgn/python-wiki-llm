@@ -1,6 +1,6 @@
 # MachineVerificationAvailability
 
-**Location:** `src/llm_wiki_cli/services/knowledge_consumption.py:77`
+**Location:** `src/llm_wiki_cli/services/knowledge_consumption.py:78`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_consumption](../modules/knowledge_consumption.md)

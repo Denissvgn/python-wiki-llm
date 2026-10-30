@@ -42,11 +42,12 @@ flowchart LR
     n3["_lifecycle_event_summary (src/llm_wiki_cli/services/knowledge_governance.py)"]
     n4["_ordered_lifecycle_events (src/llm_wiki_cli/services/knowledge_governance.py)"]
     n5["_parse_lifecycle_event (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n6["_validate_lifecycle_event_fields (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n7["_validate_lifecycle_histories (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n8["current_lifecycle (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n9["lifecycle_state_by_uid (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n10["set_lifecycle (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n6["_supersession_edges (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n7["_supersession_records (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n8["_validate_lifecycle_event_fields (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n9["_validate_lifecycle_histories (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n10["current_lifecycle (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n11["lifecycle_state_by_uid (src/llm_wiki_cli/services/knowledge_governance.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -57,6 +58,7 @@ flowchart LR
     n8 --> n0
     n9 --> n0
     n10 --> n0
+    n11 --> n0
     click n0 "../modules/knowledge_governance.md"
     click n1 "../modules/knowledge_cmd.md"
     click n2 "../modules/knowledge_governance.md"
@@ -68,6 +70,7 @@ flowchart LR
     click n8 "../modules/knowledge_governance.md"
     click n9 "../modules/knowledge_governance.md"
     click n10 "../modules/knowledge_governance.md"
+    click n11 "../modules/knowledge_governance.md"
 ```
 
 ### Summary
@@ -86,8 +89,11 @@ flowchart LR
 | `_ordered_lifecycle_events` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
 | `_parse_lifecycle_event` | call | [knowledge_governance](../modules/knowledge_governance.md) | 1 |
 | `_parse_lifecycle_event` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `_supersession_edges` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `_supersession_records` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
 | `_validate_lifecycle_event_fields` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
 | `_validate_lifecycle_histories` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
 | `current_lifecycle` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
 | `lifecycle_state_by_uid` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
-| `set_lifecycle` | call | [knowledge_governance](../modules/knowledge_governance.md) | 1 |
+
+> References: showing 12 of 13 logical references; 1 omitted by the 12-row generated summary limit.

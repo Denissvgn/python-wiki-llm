@@ -98,9 +98,9 @@ sequenceDiagram
     p3-->>p30: counts.get(state, 0)
 ```
 
-> Call sequence diagram shows 30 of 1963 interactions; 1933 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1947 interactions; 1917 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 521 (520 omitted); unresolved 1 of 338 (337 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 509 (508 omitted); unresolved 1 of 332 (331 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -114,7 +114,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/validation.py:require_mapping` | 13 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_object` | 11 | [src/llm_wiki_cli/services/knowledge_model.py](../modules/knowledge_model.md) | internal | 3 |
 | `src/llm_wiki_cli/services/knowledge_model.py:_record` | 10 | - | external | 4 |
-> Omission summary shows 8 of 473 groups; 465 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 478 groups; 470 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -127,9 +127,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1105; effect analysis evaluated: 720, partial: 23, unavailable: 362. Counts include steps omitted from the displayed trace.
+Source steps: 1107; effect analysis evaluated: 727, partial: 23, unavailable: 357. Counts include steps omitted from the displayed trace.
 
-Collector observations for 743 source steps with known totals: observed: 3732, emitted: 3511, omitted: 221. Unavailable totals are excluded.
+Collector observations for 750 source steps with known totals: observed: 3756, emitted: 3535, omitted: 221. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -205,10 +205,10 @@ flowchart LR
 |---|---|---:|---|
 | evaluate_knowledge_freshness | isinstance (src/llm_wiki_cli/services…luate_knowledge_freshness) | 264 | `isinstance(knowledge, ValidatedKnowledgeArtifacts)` |
 | evaluate_knowledge_freshness | require_validated_artifacts | 263 | `require_validated_artifacts(knowledge)` |
-| require_validated_artifacts | isinstance (src/llm_wiki_cli/services…quire_validated_artifacts) | 170 | `isinstance(value, ValidatedKnowledgeArtifacts)` |
-| require_validated_artifacts | TypeError (src/llm_wiki_cli/services…quire_validated_artifacts) | 171 | `TypeError('expected validator-issued knowledge artifacts')` |
-| require_validated_artifacts | isinstance (src/llm_wiki_cli/services…quire_validated_artifacts) | 174 | `isinstance(validation, _ArtifactValidation)` |
-| require_validated_artifacts | TypeError (src/llm_wiki_cli/services…quire_validated_artifacts) | 187 | `TypeError('knowledge artifacts were not issued by the validator or were replaced')` |
+| require_validated_artifacts | isinstance (src/llm_wiki_cli/services…quire_validated_artifacts) | 177 | `isinstance(value, ValidatedKnowledgeArtifacts)` |
+| require_validated_artifacts | TypeError (src/llm_wiki_cli/services…quire_validated_artifacts) | 178 | `TypeError('expected validator-issued knowledge artifacts')` |
+| require_validated_artifacts | isinstance (src/llm_wiki_cli/services…quire_validated_artifacts) | 181 | `isinstance(validation, _ArtifactValidation)` |
+| require_validated_artifacts | TypeError (src/llm_wiki_cli/services…quire_validated_artifacts) | 195 | `TypeError('knowledge artifacts were not issued by the validator or were replaced')` |
 | evaluate_knowledge_freshness | isinstance (src/llm_wiki_cli/services…luate_knowledge_freshness) | 266 | `isinstance(knowledge, KnowledgeIndex)` |
 | evaluate_knowledge_freshness | parse_knowledge_index | 265 | `parse_knowledge_index(_knowledge_index_to_payload_unchecked(...))` |
 | parse_knowledge_index | _record | 526 | `_record(payload, '', {...}, required={...})` |
@@ -224,10 +224,10 @@ flowchart LR
 | Kind | Step | Target | Line |
 |---|---|---|---:|
 | external_call | `evaluate_knowledge_freshness` | `isinstance` | 264 |
-| external_call | `require_validated_artifacts` | `isinstance` | 170 |
-| external_call | `require_validated_artifacts` | `TypeError` | 171 |
-| external_call | `require_validated_artifacts` | `isinstance` | 174 |
-| external_call | `require_validated_artifacts` | `TypeError` | 187 |
+| external_call | `require_validated_artifacts` | `isinstance` | 177 |
+| external_call | `require_validated_artifacts` | `TypeError` | 178 |
+| external_call | `require_validated_artifacts` | `isinstance` | 181 |
+| external_call | `require_validated_artifacts` | `TypeError` | 195 |
 | external_call | `evaluate_knowledge_freshness` | `isinstance` | 266 |
 | step_limit | `evaluate_knowledge_freshness` | `first 12 steps` | 0 |
 | truncated_flow | `evaluate_knowledge_freshness` | `depth limit` | 0 |

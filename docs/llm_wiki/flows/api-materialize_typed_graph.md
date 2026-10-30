@@ -98,7 +98,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 17 | - | external | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 17 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/validation.py:require_nonempty_text` | 17 | [src/llm_wiki_cli/services/validation.py](../modules/validation.md) | internal | 1 |
-> Omission summary shows 8 of 202 groups; 194 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 203 groups; 195 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -113,7 +113,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 383; effect analysis evaluated: 284, partial: 4, unavailable: 95. Counts include steps omitted from the displayed trace.
 
-Collector observations for 288 source steps with known totals: observed: 1314, emitted: 1298, omitted: 16. Unavailable totals are excluded.
+Collector observations for 288 source steps with known totals: observed: 1312, emitted: 1296, omitted: 16. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -202,19 +202,19 @@ flowchart LR
 | materialize_typed_graph | isinstance (src/llm_wiki_cli/services…y:materialize_typed_graph) | 322 | `isinstance(inputs.evidence_limit, int)` |
 | materialize_typed_graph | KnowledgeGraphError | 325 | `KnowledgeGraphError('evidence_limit', ...)` |
 | materialize_typed_graph | _normalise_graph_concepts | 329 | `_normalise_graph_concepts(inputs.concepts)` |
-| _normalise_graph_concepts | isinstance (src/llm_wiki_cli/services…_normalise_graph_concepts) | 1243 | `isinstance(values, (...))` |
-| _normalise_graph_concepts | isinstance (src/llm_wiki_cli/services…_normalise_graph_concepts) | 1243 | `isinstance(values, Sequence)` |
-| _normalise_graph_concepts | KnowledgeGraphError | 1244 | `KnowledgeGraphError('concepts', 'must be a sequence')` |
-| _normalise_graph_concepts | set (src/llm_wiki_cli/services…_normalise_graph_concepts) | 1246 | `set(data not statically known)` |
-| _normalise_graph_concepts | enumerate (src/llm_wiki_cli/services…_normalise_graph_concepts) | 1247 | `enumerate(values)` |
+| _normalise_graph_concepts | isinstance (src/llm_wiki_cli/services…_normalise_graph_concepts) | 1263 | `isinstance(values, (...))` |
+| _normalise_graph_concepts | isinstance (src/llm_wiki_cli/services…_normalise_graph_concepts) | 1263 | `isinstance(values, Sequence)` |
+| _normalise_graph_concepts | KnowledgeGraphError | 1264 | `KnowledgeGraphError('concepts', 'must be a sequence')` |
+| _normalise_graph_concepts | set (src/llm_wiki_cli/services…_normalise_graph_concepts) | 1266 | `set(data not statically known)` |
+| _normalise_graph_concepts | enumerate (src/llm_wiki_cli/services…_normalise_graph_concepts) | 1267 | `enumerate(values)` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `seen.add` | `_normalise_graph_concepts` | 1254 |
-| mutation | `concepts.append` | `_normalise_graph_concepts` | 1274 |
-| mutation | `concepts.sort` | `_normalise_graph_concepts` | 1284 |
+| mutation | `seen.add` | `_normalise_graph_concepts` | 1274 |
+| mutation | `concepts.append` | `_normalise_graph_concepts` | 1294 |
+| mutation | `concepts.sort` | `_normalise_graph_concepts` | 1304 |
 
 ### Static analysis gaps
 
@@ -224,8 +224,8 @@ flowchart LR
 | external_call | `materialize_typed_graph` | `TypeError` | 319 |
 | external_call | `materialize_typed_graph` | `isinstance` | 321 |
 | external_call | `materialize_typed_graph` | `isinstance` | 322 |
-| external_call | `_normalise_graph_concepts` | `isinstance` | 1243 |
-| external_call | `_normalise_graph_concepts` | `enumerate` | 1247 |
+| external_call | `_normalise_graph_concepts` | `isinstance` | 1263 |
+| external_call | `_normalise_graph_concepts` | `enumerate` | 1267 |
 | step_limit | `materialize_typed_graph` | `first 12 steps` | 0 |
 | truncated_flow | `materialize_typed_graph` | `depth limit` | 0 |
 

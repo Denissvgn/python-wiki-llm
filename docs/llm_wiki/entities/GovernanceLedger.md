@@ -47,8 +47,8 @@ flowchart LR
     n7["_status_payload (src/llm_wiki_cli/commands/knowledge_cmd.py)"]
     n8["src/llm_wiki_cli/services/knowledge_generation.py"]
     n9["_add_supersession_edges (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n10["add_alias (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n11["add_review_event (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n10["_governance_concept_summaries (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n11["_governance_projection_payload (src/llm_wiki_cli/services/knowledge_governance.py)"]
     n1 --> n0
     n2 --> n0
     n3 --> n0
@@ -94,7 +94,7 @@ flowchart LR
 | `_status_payload` | type_reference | [knowledge_cmd](../modules/knowledge_cmd.md) | — |
 | `knowledge_generation` | import | [knowledge_generation](../modules/knowledge_generation.md) | — |
 | `_add_supersession_edges` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
-| `add_alias` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
-| `add_review_event` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `_governance_concept_summaries` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `_governance_projection_payload` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
 
-> References: showing 12 of 29 logical references; 17 omitted by the 12-row generated summary limit.
+> References: showing 12 of 33 logical references; 21 omitted by the 12-row generated summary limit.

@@ -37,11 +37,11 @@ flowchart LR
     n6["_lifecycle_event_summary (src/llm_wiki_cli/services/knowledge_governance.py)"]
     n7["_ordered_lifecycle_events (src/llm_wiki_cli/services/knowledge_governance.py)"]
     n8["_parse_lifecycle_event (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n9["_validate_concept_summary (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n10["_validate_lifecycle_event_fields (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n11["_validate_lifecycle_histories (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n12["_validate_lifecycle_summary (src/llm_wiki_cli/services/knowledge_governance.py)"]
-    n13["current_lifecycle (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n9["_supersession_edges (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n10["_supersession_records (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n11["_validate_concept_summary (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n12["_validate_lifecycle_event_fields (src/llm_wiki_cli/services/knowledge_governance.py)"]
+    n13["_validate_lifecycle_histories (src/llm_wiki_cli/services/knowledge_governance.py)"]
     n0 --> n1
     n0 --> n2
     n3 --> n0
@@ -93,10 +93,10 @@ flowchart LR
 | `_ordered_lifecycle_events` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
 | `_parse_lifecycle_event` | call | [knowledge_governance](../modules/knowledge_governance.md) | 2 |
 | `_parse_lifecycle_event` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `_supersession_edges` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
+| `_supersession_records` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
 | `_validate_concept_summary` | call | [knowledge_governance](../modules/knowledge_governance.md) | 1 |
 | `_validate_lifecycle_event_fields` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
 | `_validate_lifecycle_histories` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
-| `_validate_lifecycle_summary` | call | [knowledge_governance](../modules/knowledge_governance.md) | 2 |
-| `current_lifecycle` | type_reference | [knowledge_governance](../modules/knowledge_governance.md) | — |
 
-> References: showing 12 of 17 logical references; 5 omitted by the 12-row generated summary limit.
+> References: showing 12 of 20 logical references; 8 omitted by the 12-row generated summary limit.

@@ -180,17 +180,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| serialize_verification_receipt | formatted_json_bytes | 790 | `formatted_json_bytes(verification_receipt_to_payload(...))` |
+| serialize_verification_receipt | formatted_json_bytes | 819 | `formatted_json_bytes(verification_receipt_to_payload(...))` |
 | formatted_json_bytes | formatted_json_text(…).encode | 215 | `formatted_json_text(value).encode('utf-8')` |
 | formatted_json_bytes | formatted_json_text | 215 | `formatted_json_text(value)` |
 | formatted_json_text | json.dumps (src/llm_wiki_cli/services…ce.py:formatted_json_text) | 201 | `json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False)` |
-| serialize_verification_receipt | verification_receipt_to_payload | 790 | `verification_receipt_to_payload(value)` |
-| verification_receipt_to_payload | validate_verification_receipt | 781 | `validate_verification_receipt(value)` |
-| validate_verification_receipt | isinstance (src/llm_wiki_cli/services…date_verification_receipt) | 806 | `isinstance(value, VerificationReceipt)` |
-| validate_verification_receipt | _receipt_to_payload | 805 | `_receipt_to_payload(value)` |
-| _receipt_to_payload | dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload) | 1101 | `dict(receipt.evidence)` |
-| _receipt_to_payload | dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload) | 1103 | `dict(receipt.evaluated_snapshot)` |
-| _receipt_to_payload | check.to_payload | 1107 | `check.to_payload(data not statically known)` |
+| serialize_verification_receipt | verification_receipt_to_payload | 819 | `verification_receipt_to_payload(value)` |
+| verification_receipt_to_payload | validate_verification_receipt | 810 | `validate_verification_receipt(value)` |
+| validate_verification_receipt | isinstance (src/llm_wiki_cli/services…date_verification_receipt) | 835 | `isinstance(value, VerificationReceipt)` |
+| validate_verification_receipt | _receipt_to_payload | 834 | `_receipt_to_payload(value)` |
+| _receipt_to_payload | dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload) | 1130 | `dict(receipt.evidence)` |
+| _receipt_to_payload | dict (src/llm_wiki_cli/services…ts.py:_receipt_to_payload) | 1132 | `dict(receipt.evaluated_snapshot)` |
+| _receipt_to_payload | check.to_payload | 1136 | `check.to_payload(data not statically known)` |
 
 ### Boundary effects
 
@@ -202,8 +202,8 @@ flowchart LR
 |---|---|---|---:|
 | unresolved_call | `formatted_json_bytes` | `formatted_json_text(value).encode` | 215 |
 | external_call | `formatted_json_text` | `json.dumps` | 201 |
-| external_call | `validate_verification_receipt` | `isinstance` | 806 |
-| unresolved_call | `_receipt_to_payload` | `check.to_payload` | 1107 |
+| external_call | `validate_verification_receipt` | `isinstance` | 835 |
+| unresolved_call | `_receipt_to_payload` | `check.to_payload` | 1136 |
 | step_limit | `serialize_verification_receipt` | `first 12 steps` | 0 |
 | truncated_flow | `serialize_verification_receipt` | `depth limit` | 0 |
 

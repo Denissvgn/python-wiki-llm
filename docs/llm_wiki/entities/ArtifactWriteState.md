@@ -1,6 +1,6 @@
 # ArtifactWriteState
 
-**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:95`
+**Location:** `src/llm_wiki_cli/services/knowledge_artifacts.py:98`
 **Kind:** Enum
 **Bases:** `str`, `Enum`
 **Module:** [knowledge_artifacts](../modules/knowledge_artifacts.md)

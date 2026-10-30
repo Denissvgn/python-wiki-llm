@@ -53,22 +53,22 @@ sequenceDiagram
     participant p5 as SyncManifest.from_payload
     participant p6 as StorageReadSession.recheck
     participant p7 as open_knowledge_store
-    participant p8 as _validated_index_serialization
-    participant p9 as _validate_surface_knowledge_parity
-    participant p10 as _validate_manifest_knowledge_parity
-    participant p11 as validate_reuse_artifact_parity
-    participant p12 as governance_hash_from_knowledge
-    participant p13 as KnowledgeArtifactError
-    participant p14 as _model_to_payload
-    participant p15 as _decode_json_object
-    participant p16 as StorageReadSession
-    participant p17 as KnowledgeStorageError
-    participant p18 as physical_objects
-    participant p19 as _is_future_schema_version
-    participant p20 as logical_digest
-    participant p21 as validate_knowledge_index
-    participant p22 as sha256_bytes
-    participant p23 as typed_graph_from_knowledge_extensions
+    participant p8 as _validated_index_data
+    participant p9 as _validate_typed_graph_concept_bindings
+    participant p10 as _validate_surface_knowledge_parity
+    participant p11 as _validate_manifest_knowledge_parity
+    participant p12 as validate_reuse_artifact_parity
+    participant p13 as governance_hash_from_knowledge
+    participant p14 as KnowledgeArtifactError
+    participant p15 as _model_to_payload
+    participant p16 as _decode_json_object
+    participant p17 as StorageReadSession
+    participant p18 as KnowledgeStorageError
+    participant p19 as physical_objects
+    participant p20 as _is_future_schema_version
+    participant p21 as logical_digest
+    participant p22 as validate_knowledge_index
+    participant p23 as sha256_bytes
     participant p24 as validate_section_ownership
     participant p25 as ValidatedKnowledgeArtifacts
     participant p26 as EvaluatedEnvelope
@@ -83,22 +83,22 @@ sequenceDiagram
     p0->>p5: SyncManifest.from_payload
     p0->>p6: StorageReadSession.recheck
     p0->>p7: open_knowledge_store
-    p0->>p8: _validated_index_serialization
-    p0->>p9: _validate_surface_knowledge_parity
-    p0->>p10: _validate_manifest_knowledge_parity
-    p0->>p11: validate_reuse_artifact_parity
-    p0->>p12: governance_hash_from_knowledge
-    p0->>p13: KnowledgeArtifactError
-    p0->>p14: _model_to_payload
-    p0->>p15: _decode_json_object
-    p0->>p16: StorageReadSession
-    p0->>p17: KnowledgeStorageError
-    p0->>p18: physical_objects
-    p0->>p19: _is_future_schema_version
-    p0->>p20: logical_digest
-    p0->>p21: validate_knowledge_index
-    p0->>p22: sha256_bytes
-    p0->>p23: typed_graph_from_knowledge_extensions
+    p0->>p8: _validated_index_data
+    p0->>p9: _validate_typed_graph_concept_bindings
+    p0->>p10: _validate_surface_knowledge_parity
+    p0->>p11: _validate_manifest_knowledge_parity
+    p0->>p12: validate_reuse_artifact_parity
+    p0->>p13: governance_hash_from_knowledge
+    p0->>p14: KnowledgeArtifactError
+    p0->>p15: _model_to_payload
+    p0->>p16: _decode_json_object
+    p0->>p17: StorageReadSession
+    p0->>p18: KnowledgeStorageError
+    p0->>p19: physical_objects
+    p0->>p20: _is_future_schema_version
+    p0->>p21: logical_digest
+    p0->>p22: validate_knowledge_index
+    p0->>p23: sha256_bytes
     p0->>p24: validate_section_ownership
     p0->>p25: ValidatedKnowledgeArtifacts
     p0->>p26: EvaluatedEnvelope
@@ -108,9 +108,9 @@ sequenceDiagram
     p0-->>p30: Path(…).resolve
 ```
 
-> Call sequence diagram shows 30 of 2253 interactions; 2223 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 2306 interactions; 2276 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 632 (631 omitted); unresolved 1 of 376 (375 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 636 (635 omitted); unresolved 1 of 375 (374 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -124,7 +124,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_artifacts.py:_reject_json_constant` | 11 | [src/llm_wiki_cli/services/knowledge_artifacts.py](../modules/knowledge_artifacts.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_artifacts.py:_validate_surface_payload` | 17 | [src/llm_wiki_cli/services/knowledge_artifacts.py](../modules/knowledge_artifacts.md) | internal | 8 |
 | `src/llm_wiki_cli/services/knowledge_artifacts.py:_validate_utf8_json` | 18 | - | external | 5 |
-> Omission summary shows 8 of 510 groups; 502 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 532 groups; 524 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -137,9 +137,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 1246; effect analysis evaluated: 650, partial: 27, unavailable: 569. Counts include steps omitted from the displayed trace.
+Source steps: 1296; effect analysis evaluated: 688, partial: 31, unavailable: 577. Counts include steps omitted from the displayed trace.
 
-Collector observations for 677 source steps with known totals: observed: 3402, emitted: 3228, omitted: 174. Unavailable totals are excluded.
+Collector observations for 719 source steps with known totals: observed: 3628, emitted: 3449, omitted: 179. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -147,7 +147,7 @@ Collector observations for 677 source steps with known totals: observed: 3402, e
 
 | Step | Callable record | Effect analysis | Collector totals | Observed | Emitted | Omitted |
 |---|---|---|---|---:|---:|---:|
-| `validate_knowledge_artifacts` | `available` | `partial` | `available` | `34` | `17` | `17` |
+| `validate_knowledge_artifacts` | `available` | `partial` | `available` | `35` | `17` | `18` |
 | `validate_surface_index_bytes` | `available` | `evaluated` | `available` | `2` | `2` | `0` |
 | `_decode_json_object` | `available` | `evaluated` | `available` | `5` | `5` | `0` |
 | `isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object)` | `not_applicable` | `not_applicable` | `not_applicable` | — | — | — |
@@ -217,17 +217,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| validate_knowledge_artifacts | validate_surface_index_bytes | 300 | `validate_surface_index_bytes(surface_index_bytes)` |
-| validate_surface_index_bytes | _decode_json_object | 263 | `_decode_json_object(surface_index_bytes, 'surface_index_bytes')` |
-| _decode_json_object | isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object) | 930 | `isinstance(content, bytes)` |
-| _decode_json_object | KnowledgeArtifactError | 931 | `KnowledgeArtifactError(field, 'must be bytes')` |
-| _decode_json_object | content.decode | 933 | `content.decode('utf-8')` |
-| _decode_json_object | KnowledgeArtifactError | 935 | `KnowledgeArtifactError(field, 'must be valid UTF-8')` |
-| _decode_json_object | json.loads (src/llm_wiki_cli/services…ts.py:_decode_json_object) | 937 | `json.loads(text, object_pairs_hook=..., parse_constant=...)` |
-| _decode_json_object | _unique_json_object | 939 | `_unique_json_object(pairs, field)` |
-| _unique_json_object | KnowledgeArtifactError | 958 | `KnowledgeArtifactError(field, ...)` |
-| _decode_json_object | _reject_json_constant | 940 | `_reject_json_constant(value, field)` |
-| _reject_json_constant | KnowledgeArtifactError | 964 | `KnowledgeArtifactError(field, ...)` |
+| validate_knowledge_artifacts | validate_surface_index_bytes | 308 | `validate_surface_index_bytes(surface_index_bytes)` |
+| validate_surface_index_bytes | _decode_json_object | 271 | `_decode_json_object(surface_index_bytes, 'surface_index_bytes')` |
+| _decode_json_object | isinstance (src/llm_wiki_cli/services…ts.py:_decode_json_object) | 942 | `isinstance(content, bytes)` |
+| _decode_json_object | KnowledgeArtifactError | 943 | `KnowledgeArtifactError(field, 'must be bytes')` |
+| _decode_json_object | content.decode | 945 | `content.decode('utf-8')` |
+| _decode_json_object | KnowledgeArtifactError | 947 | `KnowledgeArtifactError(field, 'must be valid UTF-8')` |
+| _decode_json_object | json.loads (src/llm_wiki_cli/services…ts.py:_decode_json_object) | 949 | `json.loads(text, object_pairs_hook=..., parse_constant=...)` |
+| _decode_json_object | _unique_json_object | 951 | `_unique_json_object(pairs, field)` |
+| _unique_json_object | KnowledgeArtifactError | 970 | `KnowledgeArtifactError(field, ...)` |
+| _decode_json_object | _reject_json_constant | 952 | `_reject_json_constant(value, field)` |
+| _reject_json_constant | KnowledgeArtifactError | 976 | `KnowledgeArtifactError(field, ...)` |
 
 ### Boundary effects
 
@@ -237,9 +237,9 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `_decode_json_object` | `isinstance` | 930 |
-| unresolved_call | `_decode_json_object` | `content.decode` | 933 |
-| external_call | `_decode_json_object` | `json.loads` | 937 |
+| external_call | `_decode_json_object` | `isinstance` | 942 |
+| unresolved_call | `_decode_json_object` | `content.decode` | 945 |
+| external_call | `_decode_json_object` | `json.loads` | 949 |
 | step_limit | `validate_knowledge_artifacts` | `first 12 steps` | 0 |
 | truncated_flow | `validate_knowledge_artifacts` | `depth limit` | 0 |
 

@@ -14,7 +14,7 @@ checker, and returns the same coordinate-keyed summaries to every consumer.
 
 | Source | Symbols |
 |--------|---------|
-| `.knowledge_consumption` | `KnowledgeReadView`, `MachineVerificationAvailability`, `MachineVerificationReadView` |
+| `.knowledge_consumption` | `KnowledgeReadView`, `MachineVerificationAvailability`, `MachineVerificationReadView`, `_validated_artifacts_for_view` |
 | `.knowledge_evidence` | `hash_json` |
 | `.knowledge_governance` | `GOVERNANCE_EXTENSION_KEY` |
 | `.verification_contracts` | `VerificationReceipt`, `VerificationResult`, `build_artifact_verification_context`, `evaluate_verification_receipt`, `load_verification_receipt` |

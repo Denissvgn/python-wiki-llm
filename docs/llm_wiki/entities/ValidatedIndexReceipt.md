@@ -1,6 +1,6 @@
 # _ValidatedIndexReceipt
 
-**Location:** `src/llm_wiki_cli/services/knowledge_index.py:382`
+**Location:** `src/llm_wiki_cli/services/knowledge_index.py:391`
 **Kind:** Class
 **Bases:** —
 **Module:** [knowledge_index](../modules/knowledge_index.md)

@@ -150,32 +150,32 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run_verification | isinstance (src/llm_wiki_cli/services…tracts.py:run_verification) | 719 | `isinstance(context, VerificationContext)` |
-| run_verification | TypeError | 720 | `TypeError('context must be a VerificationContext')` |
-| run_verification | _selected_contracts | 721 | `_selected_contracts(checker_ids)` |
-| _selected_contracts | isinstance (src/llm_wiki_cli/services…cts.py:_selected_contracts) | 681 | `isinstance(checker_ids, (...))` |
-| _selected_contracts | VerificationContractError | 682 | `VerificationContractError('checker_ids must be a sequence of checker ids, not text')` |
-| _selected_contracts | tuple (src/llm_wiki_cli/services…cts.py:_selected_contracts) | 686 | `tuple(sorted(...))` |
-| _selected_contracts | sorted | 686 | `sorted(_CHECKER_REGISTRY)` |
-| _selected_contracts | tuple (src/llm_wiki_cli/services…cts.py:_selected_contracts) | 688 | `tuple(checker_ids)` |
-| _selected_contracts | VerificationContractError | 691 | `VerificationContractError('at least one checker must be selected')` |
-| _selected_contracts | len | 692 | `len(selected)` |
-| _selected_contracts | VerificationContractError | 693 | `VerificationContractError('too many checkers were selected')` |
+| run_verification | isinstance (src/llm_wiki_cli/services…tracts.py:run_verification) | 748 | `isinstance(context, VerificationContext)` |
+| run_verification | TypeError | 749 | `TypeError('context must be a VerificationContext')` |
+| run_verification | _selected_contracts | 750 | `_selected_contracts(checker_ids)` |
+| _selected_contracts | isinstance (src/llm_wiki_cli/services…cts.py:_selected_contracts) | 710 | `isinstance(checker_ids, (...))` |
+| _selected_contracts | VerificationContractError | 711 | `VerificationContractError('checker_ids must be a sequence of checker ids, not text')` |
+| _selected_contracts | tuple (src/llm_wiki_cli/services…cts.py:_selected_contracts) | 715 | `tuple(sorted(...))` |
+| _selected_contracts | sorted | 715 | `sorted(_CHECKER_REGISTRY)` |
+| _selected_contracts | tuple (src/llm_wiki_cli/services…cts.py:_selected_contracts) | 717 | `tuple(checker_ids)` |
+| _selected_contracts | VerificationContractError | 720 | `VerificationContractError('at least one checker must be selected')` |
+| _selected_contracts | len | 721 | `len(selected)` |
+| _selected_contracts | VerificationContractError | 722 | `VerificationContractError('too many checkers were selected')` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| mutation | `contracts.append` | `_selected_contracts` | 707 |
+| mutation | `contracts.append` | `_selected_contracts` | 736 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `run_verification` | `isinstance` | 719 |
-| external_call | `run_verification` | `TypeError` | 720 |
-| external_call | `_selected_contracts` | `isinstance` | 681 |
-| external_call | `_selected_contracts` | `sorted` | 686 |
+| external_call | `run_verification` | `isinstance` | 748 |
+| external_call | `run_verification` | `TypeError` | 749 |
+| external_call | `_selected_contracts` | `isinstance` | 710 |
+| external_call | `_selected_contracts` | `sorted` | 715 |
 | step_limit | `run_verification` | `first 12 steps` | 0 |
 
 ## Behavior

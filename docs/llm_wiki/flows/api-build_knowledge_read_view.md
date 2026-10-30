@@ -97,9 +97,9 @@ sequenceDiagram
     p4-->>p30: evidence.get(state, 0)
 ```
 
-> Call sequence diagram shows 30 of 1123 interactions; 1093 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1105 interactions; 1075 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
-> Captured boundary calls: external 1 of 309 (308 omitted); unresolved 1 of 187 (186 omitted). These counts cover the captured static trace.
+> Captured boundary calls: external 1 of 299 (298 omitted); unresolved 1 of 176 (175 omitted). These counts cover the captured static trace.
 
 Omitted captured detail, grouped by actual caller occurrence and target module:
 
@@ -113,7 +113,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/services/knowledge_consumption.py:_unsupported_reason` | 29 | - | unresolved | 1 |
 | `src/llm_wiki_cli/services/knowledge_consumption.py:_loaded_freshness` | 32 | [src/llm_wiki_cli/services/knowledge_artifacts.py](../modules/knowledge_artifacts.md) | internal | 1 |
 | `src/llm_wiki_cli/services/knowledge_artifacts.py:require_validated_artifacts` | 33 | - | external | 4 |
-> Omission summary shows 8 of 221 groups; 213 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 224 groups; 216 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -126,9 +126,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 628; effect analysis evaluated: 402, partial: 24, unavailable: 202. Counts include steps omitted from the displayed trace.
+Source steps: 631; effect analysis evaluated: 403, partial: 24, unavailable: 204. Counts include steps omitted from the displayed trace.
 
-Collector observations for 426 source steps with known totals: observed: 2295, emitted: 2146, omitted: 149. Unavailable totals are excluded.
+Collector observations for 427 source steps with known totals: observed: 2301, emitted: 2152, omitted: 149. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -201,17 +201,17 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| build_knowledge_read_view | isinstance (src/llm_wiki_cli/services…build_knowledge_read_view) | 587 | `isinstance(load_result, KnowledgeLoadResult)` |
-| build_knowledge_read_view | TypeError (src/llm_wiki_cli/services…build_knowledge_read_view) | 588 | `TypeError('load_result must be a KnowledgeLoadResult')` |
-| build_knowledge_read_view | _read_mode | 589 | `_read_mode(snapshot_only=snapshot_only, mode=mode)` |
-| _read_mode | isinstance (src/llm_wiki_cli/services…consumption.py:_read_mode) | 734 | `isinstance(snapshot_only, bool)` |
-| _read_mode | TypeError (src/llm_wiki_cli/services…consumption.py:_read_mode) | 735 | `TypeError('snapshot_only must be a boolean')` |
-| _read_mode | isinstance (src/llm_wiki_cli/services…consumption.py:_read_mode) | 745 | `isinstance(mode, KnowledgeReadMode)` |
-| _read_mode | KnowledgeReadMode | 746 | `KnowledgeReadMode(mode)` |
-| _read_mode | ValueError (src/llm_wiki_cli/services…consumption.py:_read_mode) | 749 | `ValueError("mode must be 'evaluate-freshness' or 'snapshot-only'")` |
-| _read_mode | ValueError (src/llm_wiki_cli/services…consumption.py:_read_mode) | 753 | `ValueError('snapshot_only conflicts with the requested mode')` |
-| build_knowledge_read_view | _validate_load_result | 590 | `_validate_load_result(load_result)` |
-| _validate_load_result | isinstance (src/llm_wiki_cli/services….py:_validate_load_result) | 854 | `isinstance(result.status, KnowledgeLoadState)` |
+| build_knowledge_read_view | isinstance (src/llm_wiki_cli/services…build_knowledge_read_view) | 621 | `isinstance(load_result, KnowledgeLoadResult)` |
+| build_knowledge_read_view | TypeError (src/llm_wiki_cli/services…build_knowledge_read_view) | 622 | `TypeError('load_result must be a KnowledgeLoadResult')` |
+| build_knowledge_read_view | _read_mode | 623 | `_read_mode(snapshot_only=snapshot_only, mode=mode)` |
+| _read_mode | isinstance (src/llm_wiki_cli/services…consumption.py:_read_mode) | 768 | `isinstance(snapshot_only, bool)` |
+| _read_mode | TypeError (src/llm_wiki_cli/services…consumption.py:_read_mode) | 769 | `TypeError('snapshot_only must be a boolean')` |
+| _read_mode | isinstance (src/llm_wiki_cli/services…consumption.py:_read_mode) | 779 | `isinstance(mode, KnowledgeReadMode)` |
+| _read_mode | KnowledgeReadMode | 780 | `KnowledgeReadMode(mode)` |
+| _read_mode | ValueError (src/llm_wiki_cli/services…consumption.py:_read_mode) | 783 | `ValueError("mode must be 'evaluate-freshness' or 'snapshot-only'")` |
+| _read_mode | ValueError (src/llm_wiki_cli/services…consumption.py:_read_mode) | 787 | `ValueError('snapshot_only conflicts with the requested mode')` |
+| build_knowledge_read_view | _validate_load_result | 624 | `_validate_load_result(load_result)` |
+| _validate_load_result | isinstance (src/llm_wiki_cli/services….py:_validate_load_result) | 888 | `isinstance(result.status, KnowledgeLoadState)` |
 
 ### Boundary effects
 
@@ -221,14 +221,14 @@ flowchart LR
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `build_knowledge_read_view` | `isinstance` | 587 |
-| external_call | `build_knowledge_read_view` | `TypeError` | 588 |
-| external_call | `_read_mode` | `isinstance` | 734 |
-| external_call | `_read_mode` | `TypeError` | 735 |
-| external_call | `_read_mode` | `isinstance` | 745 |
-| external_call | `_read_mode` | `ValueError` | 749 |
-| external_call | `_read_mode` | `ValueError` | 753 |
-| external_call | `_validate_load_result` | `isinstance` | 854 |
+| external_call | `build_knowledge_read_view` | `isinstance` | 621 |
+| external_call | `build_knowledge_read_view` | `TypeError` | 622 |
+| external_call | `_read_mode` | `isinstance` | 768 |
+| external_call | `_read_mode` | `TypeError` | 769 |
+| external_call | `_read_mode` | `isinstance` | 779 |
+| external_call | `_read_mode` | `ValueError` | 783 |
+| external_call | `_read_mode` | `ValueError` | 787 |
+| external_call | `_validate_load_result` | `isinstance` | 888 |
 | step_limit | `build_knowledge_read_view` | `first 12 steps` | 0 |
 | truncated_flow | `build_knowledge_read_view` | `depth limit` | 0 |
 

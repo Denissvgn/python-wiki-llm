@@ -97,4 +97,4 @@ flowchart LR
 | `_validated_bundle_payload` | call | [knowledge_envelope](../modules/knowledge_envelope.md) | 1 |
 | `_basis_incompatibility_reason` | type_reference | [knowledge_freshness](../modules/knowledge_freshness.md) | — |
 
-> References: showing 12 of 57 logical references; 45 omitted by the 12-row generated summary limit.
+> References: showing 12 of 60 logical references; 48 omitted by the 12-row generated summary limit.

@@ -23,12 +23,13 @@ it is not stored as a timeless boolean.
 |--------|---------|
 | `.contracts` | `VERIFICATION_RECEIPT_SCHEMA_VERSION` |
 | `.io` | `first_unsafe_path_component`, `write_bytes_atomic` |
+| `.knowledge_artifacts` | `require_validated_artifacts`, `require_validated_artifacts` |
 | `.knowledge_evidence` | `formatted_json_bytes`, `hash_json` |
 | `.knowledge_model` | `KnowledgeIndex`, `RelationshipKind`, `Resolution`, `TargetClass`, `knowledge_index_to_payload`, `parse_knowledge_index` |
 | `.validation` | `require_exact_fields`, `require_bounded_text`, `require_list`, `require_mapping`, `require_nonnegative_int`, `require_sha256`, `require_string` |
 | `__future__` | `annotations` |
 | `collections.abc` | `Callable`, `Mapping`, `Sequence` |
-| `dataclasses` | `dataclass`, `field` |
+| `dataclasses` | `InitVar`, `dataclass`, `field` |
 | `enum` | `Enum` |
 | `json` | `json` |
 | `os` | `os` |
@@ -47,51 +48,63 @@ flowchart LR
     n2["src/llm_wiki_cli/services/doctor_service.py"]
     n3["src/llm_wiki_cli/services/documentation_run/dependencies.py"]
     n4["src/llm_wiki_cli/services/io.py"]
-    n5["src/llm_wiki_cli/services/knowledge_evidence.py"]
-    n6["src/llm_wiki_cli/services/knowledge_model.py"]
-    n7["src/llm_wiki_cli/services/knowledge_verification.py"]
-    n8["src/llm_wiki_cli/services/lint_service.py"]
-    n9["src/llm_wiki_cli/services/validation.py"]
-    n10["src/llm_wiki_cli/services/verification_contracts.py"]
+    n5["src/llm_wiki_cli/services/knowledge_artifacts.py"]
+    n6["src/llm_wiki_cli/services/knowledge_evidence.py"]
+    n7["src/llm_wiki_cli/services/knowledge_model.py"]
+    n8["src/llm_wiki_cli/services/knowledge_verification.py"]
+    n9["src/llm_wiki_cli/services/lint_service.py"]
+    n10["src/llm_wiki_cli/services/validation.py"]
+    n11["src/llm_wiki_cli/services/verification_contracts.py"]
     n0 --> n4
-    n0 --> n6
-    n0 --> n10
+    n0 --> n5
+    n0 --> n7
+    n0 --> n11
     n2 --> n1
-    n2 --> n6
-    n2 --> n8
-    n2 --> n10
+    n2 --> n5
+    n2 --> n7
+    n2 --> n9
+    n2 --> n11
     n3 --> n1
     n3 --> n4
-    n3 --> n9
+    n3 --> n5
     n3 --> n10
-    n4 --> n5
-    n5 --> n9
-    n6 --> n1
-    n6 --> n5
-    n6 --> n9
-    n7 --> n5
+    n3 --> n11
+    n4 --> n6
+    n5 --> n1
+    n5 --> n4
+    n5 --> n6
+    n5 --> n7
+    n5 --> n10
+    n6 --> n10
+    n7 --> n1
+    n7 --> n6
     n7 --> n10
-    n8 --> n4
     n8 --> n6
-    n8 --> n7
-    n8 --> n9
-    n8 --> n10
-    n10 --> n1
-    n10 --> n4
-    n10 --> n5
-    n10 --> n6
-    n10 --> n9
+    n8 --> n11
+    n9 --> n4
+    n9 --> n5
+    n9 --> n7
+    n9 --> n8
+    n9 --> n10
+    n9 --> n11
+    n11 --> n1
+    n11 --> n4
+    n11 --> n5
+    n11 --> n6
+    n11 --> n7
+    n11 --> n10
     click n0 "../modules/knowledge_cmd.md"
     click n1 "../modules/services_contracts.md"
     click n2 "../modules/doctor_service.md"
     click n3 "../modules/documentation_run_dependencies.md"
     click n4 "../modules/io.md"
-    click n5 "../modules/knowledge_evidence.md"
-    click n6 "../modules/knowledge_model.md"
-    click n7 "../modules/knowledge_verification.md"
-    click n8 "../modules/lint_service.md"
-    click n9 "../modules/validation.md"
-    click n10 "../modules/verification_contracts.md"
+    click n5 "../modules/knowledge_artifacts.md"
+    click n6 "../modules/knowledge_evidence.md"
+    click n7 "../modules/knowledge_model.md"
+    click n8 "../modules/knowledge_verification.md"
+    click n9 "../modules/lint_service.md"
+    click n10 "../modules/validation.md"
+    click n11 "../modules/verification_contracts.md"
 ```
 
 ### Internal neighbors
@@ -105,6 +118,7 @@ flowchart LR
 | Inbound | [lint_service](../modules/lint_service.md) |
 | Outbound | [services_contracts](../modules/services_contracts.md) |
 | Outbound | [io](../modules/io.md) |
+| Outbound | [knowledge_artifacts](../modules/knowledge_artifacts.md) |
 | Outbound | [knowledge_evidence](../modules/knowledge_evidence.md) |
 | Outbound | [knowledge_model](../modules/knowledge_model.md) |
 | Outbound | [validation](../modules/validation.md) |
@@ -122,15 +136,15 @@ flowchart LR
 | [DiagnosticCoverage](../entities/DiagnosticCoverage.md) | Class | 139 | — | Disclosure for deterministic diagnostic truncation. |
 | [VerificationCheckResult](../entities/VerificationCheckResult.md) | Class | 187 | — | Normalized output from one application-owned checker. |
 | [VerificationContext](../entities/VerificationContext.md) | Class | 244 | — | All already evaluated inputs available to pure checkers. |
-| [CheckerContract](../entities/CheckerContract.md) | Class | 417 | — | One immutable application-owned checker registration. |
-| [VerificationReceipt](../entities/VerificationReceipt.md) | Class | 453 | — | Deterministic recorded evidence from one explicit verification run. |
-| [VerificationReceiptEvaluation](../entities/VerificationReceiptEvaluation.md) | Class | 537 | — | Live validity of one recorded receipt against current anchors. |
+| [CheckerContract](../entities/CheckerContract.md) | Class | 446 | — | One immutable application-owned checker registration. |
+| [VerificationReceipt](../entities/VerificationReceipt.md) | Class | 482 | — | Deterministic recorded evidence from one explicit verification run. |
+| [VerificationReceiptEvaluation](../entities/VerificationReceiptEvaluation.md) | Class | 566 | — | Live validity of one recorded receipt against current anchors. |
 
 ## Functions
 
 | Function | Signature | Decorators | Description |
 |----------|-----------|------------|-------------|
-| `build_artifact_verification_context` | `(knowledge: KnowledgeIndex, *, knowledge_hash: str, surface_index_hash: str, evaluated_envelope_hash: str, governance_hash: str \| None = None, scope_locator: str \| None = None, artifact_integrity: bool = True, artifact_diagnostics: Sequence[VerificationDiagnostic] = ()) -> VerificationContext` | — | Build the canonical receipt context for one committed artifact set. |
+| `build_artifact_verification_context` | `(knowledge: KnowledgeIndex, *, knowledge_hash: str, surface_index_hash: str, evaluated_envelope_hash: str, governance_hash: str \| None = None, scope_locator: str \| None = None, artifact_integrity: bool = True, artifact_diagnostics: Sequence[VerificationDiagnostic] = (), _validated_artifacts: object \| None = None) -> VerificationContext` | — | Build the canonical receipt context for one committed artifact set. |
 | `_bounded_result` | `(checker_id: str, checker_version: str, *, passed: bool, diagnostics: Sequence[VerificationDiagnostic]) -> VerificationCheckResult` | — | — |
 | `_artifact_integrity_checker` | `(context: VerificationContext) -> VerificationCheckResult` | — | — |
 | `_internal_links_checker` | `(context: VerificationContext) -> VerificationCheckResult` | — | — |
