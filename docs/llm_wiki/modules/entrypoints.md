@@ -116,7 +116,7 @@ flowchart LR
 | `read_console_scripts` | `(project_root: str = '.', *, source_snapshot: SourceSnapshot \| None = None) -> list[dict]` | — | Read ``[project.scripts]`` from ``pyproject.toml`` (best-effort). |
 | `_slug` | `(text: str) -> str` | — | — |
 | `_label_rank` | `(entry: dict) -> int` | — | Prefer a specific label (script name, symbol) over the bare module stem. |
-| `_dedup` | `(entries: list[dict]) -> list[dict]` | — | Collapse entries sharing ``(category, file, symbol)``, keeping the best label. |
+| `_dedup` | `(entries: list[dict]) -> list[dict]` | — | Merge known owners while preserving distinct unbound declarations. |
 | `_assign_ids` | `(entries: list[dict]) -> list[dict]` | — | Assign stable, collision-safe ids of the form ``<category>-<slug>``. |
 | `_builtin_entry_points` | `(inventory: dict, console_scripts: list[dict] \| None, *, root: str \| Path, include_details: bool = False) -> list[dict]` | — | — |
 | `_callable_record` | `(inventory: Mapping, entry: Mapping) -> Mapping[str, Any]` | — | — |
