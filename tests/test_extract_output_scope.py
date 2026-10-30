@@ -293,3 +293,33 @@ def test_selected_manifest_retains_scripts_with_same_unresolved_callable_name(pr
     public = extract_source(str(project), paths=["pyproject.toml"], deep=True, summary=summary, allow_external_src=True)
     assert "entrypoints" in public
     assert public["entrypoints"] == result.payload["entrypoints"]
+
+
+@pytest.mark.parametrize("path", ["app/Dockerfile", "compose.yaml", "app/infra.yaml"])
+@pytest.mark.parametrize("iterator", [False, True])
+def test_direct_infrastructure_selection_matches_exact_path_discovery(project, path, iterator):
+    (project / ".gitignore").write_text("app/Dockerfile\ncompose.yaml\napp/infra.yaml\n", encoding="utf-8")
+    assert path not in service.get_docker_inventory(project)
+    selected = iter([path]) if iterator else [path]
+    direct = service.get_docker_inventory(project, only_files=selected)
+    payload = _extract(project, paths=[path], deep=True).payload
+    assert direct == payload["docker"]
+    assert set(direct) == {path}
+
+
+def test_direct_infrastructure_selection_keeps_supplied_snapshot_authoritative(project, monkeypatch):
+    (project / ".gitignore").write_text("app/Dockerfile\n", encoding="utf-8")
+    snapshot = build_source_snapshot(project)
+    def reject(*args, **kwargs):
+        raise AssertionError("a supplied snapshot was rediscovered")
+    monkeypatch.setattr(service, "build_source_snapshot", reject)
+    assert service.get_docker_inventory(project, source_snapshot=snapshot, only_files=["app/Dockerfile"]) == {}
+    assert set(service.get_docker_inventory(project, source_snapshot=snapshot, only_files=iter(["app/infra.yaml"]))) == {"app/infra.yaml"}
+
+
+def test_direct_infrastructure_selection_retains_profile_exclusions(project):
+    (project / "selection.json").write_text(json.dumps({"schema_version": SOURCE_SELECTION_SCHEMA_VERSION,
+        "include": ["app"], "exclude": ["app/Dockerfile"]}), encoding="utf-8")
+    snapshot = build_source_snapshot(project, source_selection="selection.json")
+    selected = iter(["app/Dockerfile", "app/infra.yaml"])
+    assert set(service.get_docker_inventory(project, source_snapshot=snapshot, only_files=selected)) == {"app/infra.yaml"}

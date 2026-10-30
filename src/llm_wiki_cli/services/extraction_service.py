@@ -3340,15 +3340,19 @@ def get_docker_inventory(
        catches non-standard names like ``infra.yml`` or ``core.yml`` that
        are common in split-compose layouts.
 
-    Respects .gitignore rules to skip ignored files. ``only_files`` restricts
-    emitted candidates before their contents are parsed; an empty selection
-    emits nothing. A supplied snapshot may retain broader context.
+    Respects .gitignore by default. An explicit ``only_files`` selection follows
+    exact-path discovery, including its ignored-file opt-in, and filters before
+    parsing. Empty selections emit nothing. A supplied snapshot remains the
+    authority for available candidates and is never expanded by this filter.
 
     Returns a dict of relative-path -> parsed data.  Keys always use
     forward slashes regardless of the host OS.
     """
-    source_snapshot = source_snapshot or build_source_snapshot(src_dir)
-    selected = None if only_files is None else set(_canonical_extract_paths(source_snapshot.root, only_files))
+    root = source_snapshot.root if source_snapshot is not None else Path(src_dir).resolve()
+    selected = None if only_files is None else set(_canonical_extract_paths(root, only_files))
+    if source_snapshot is None:
+        source_snapshot = (build_source_snapshot(src_dir) if selected is None
+                           else build_source_snapshot(src_dir, only_files=selected))
     inventory: dict[str, dict] = {}
 
     for source_file in source_snapshot.dockerfile_candidates:

@@ -494,7 +494,9 @@ llm-wiki extract --src-dir /path/to/repo --allow-external-src --summary
 
 `--paths` selects emitted code, Docker/Compose records, and unsupported-source
 advisories by source-relative file path. Referenced Docker build contexts and
-`COPY` sources do not add files to that selection. `--changed` applies the same
+`COPY` sources do not add files to that selection. Explicit ignored files can be
+inspected with `--paths`; configured source-selection exclusions still apply.
+`--changed` applies the same
 scope to files changed in the last commit; when a Git diff is unavailable or
 source-selection controls changed, extraction reevaluates the selected source
 tree. Use `--paths` for an exact file selection.
