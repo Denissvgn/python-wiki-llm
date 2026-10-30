@@ -25,11 +25,11 @@
       "infrastructure": 2,
       "load-order": 1,
       "log": 1,
-      "modules": 256,
-      "workflows": 236
+      "modules": 257,
+      "workflows": 237
     },
     "dependency_architecture": 2,
-    "total": 1648
+    "total": 1650
   },
   "dependency_pages": {
     "count": 2,
@@ -24964,7 +24964,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 57,
+              "line": 60,
               "step": "run",
               "step_index": 2,
               "target": "print"
@@ -24972,7 +24972,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 59,
+              "line": 62,
               "step": "run",
               "step_index": 2,
               "target": "print"
@@ -25067,6 +25067,8 @@
             "src/llm_wiki_cli/services/implementation_evidence.py",
             "src/llm_wiki_cli/services/concept_identity.py",
             "src/llm_wiki_cli/services/validation.py",
+            "src/llm_wiki_cli/services/wiki_git_delivery.py",
+            "src/llm_wiki_cli/services/wiki_git_policy.py",
             "src/llm_wiki_cli/services/knowledge_stream_audit.py",
             "src/llm_wiki_cli/services/storage_sort.py",
             "src/llm_wiki_cli/services/knowledge_audit.py",
@@ -25107,7 +25109,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4458,
+          "step_count": 4600,
           "truncated": true
         }
       },
@@ -32879,7 +32881,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 658,
+              "line": 664,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32887,7 +32889,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 683,
+              "line": 689,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32895,7 +32897,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 697,
+              "line": 703,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32903,7 +32905,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 730,
+              "line": 736,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32911,7 +32913,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 731,
+              "line": 737,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32919,7 +32921,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 732,
+              "line": 738,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32927,7 +32929,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 733,
+              "line": 739,
               "step": "run",
               "step_index": 1,
               "target": "print"
@@ -32936,13 +32938,13 @@
           "gaps": [
             {
               "kind": "external_call",
-              "line": 639,
+              "line": 645,
               "step": "run",
               "target": "getattr"
             },
             {
               "kind": "external_call",
-              "line": 640,
+              "line": 646,
               "step": "run",
               "target": "getattr"
             },
@@ -33021,7 +33023,7 @@
             "src/llm_wiki_cli/services/knowledge_observability.py",
             "src/llm_wiki_cli/services/secure_file.py"
           ],
-          "step_count": 1377,
+          "step_count": 1380,
           "truncated": true
         }
       },
@@ -33528,7 +33530,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 57,
+              "line": 60,
               "step": "run",
               "step_index": 2,
               "target": "print"
@@ -33536,7 +33538,7 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 59,
+              "line": 62,
               "step": "run",
               "step_index": 2,
               "target": "print"
@@ -33631,6 +33633,8 @@
             "src/llm_wiki_cli/services/implementation_evidence.py",
             "src/llm_wiki_cli/services/concept_identity.py",
             "src/llm_wiki_cli/services/validation.py",
+            "src/llm_wiki_cli/services/wiki_git_delivery.py",
+            "src/llm_wiki_cli/services/wiki_git_policy.py",
             "src/llm_wiki_cli/services/knowledge_stream_audit.py",
             "src/llm_wiki_cli/services/storage_sort.py",
             "src/llm_wiki_cli/services/knowledge_audit.py",
@@ -33671,7 +33675,7 @@
             "src/llm_wiki_cli/services/maintenance_service.py",
             "src/llm_wiki_cli/services/verification_contracts.py"
           ],
-          "step_count": 4458,
+          "step_count": 4600,
           "truncated": true
         }
       },
@@ -36789,7 +36793,7 @@
             "src/llm_wiki_cli/services/secure_file.py",
             "src/llm_wiki_cli/services/redaction.py"
           ],
-          "step_count": 859,
+          "step_count": 861,
           "truncated": true
         }
       },
@@ -38322,38 +38326,6 @@
             {
               "confidence": "unknown",
               "kind": "output",
-              "line": 2664,
-              "step": "main",
-              "step_index": 1,
-              "target": "print"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "output",
-              "line": 2667,
-              "step": "main",
-              "step_index": 1,
-              "target": "print"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "output",
-              "line": 2670,
-              "step": "main",
-              "step_index": 1,
-              "target": "print"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "environment_read",
-              "line": 2673,
-              "step": "main",
-              "step_index": 1,
-              "target": "os.environ.get"
-            },
-            {
-              "confidence": "unknown",
-              "kind": "output",
               "line": 2675,
               "step": "main",
               "step_index": 1,
@@ -38363,6 +38335,38 @@
               "confidence": "unknown",
               "kind": "output",
               "line": 2678,
+              "step": "main",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 2681,
+              "step": "main",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "environment_read",
+              "line": 2684,
+              "step": "main",
+              "step_index": 1,
+              "target": "os.environ.get"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 2686,
+              "step": "main",
+              "step_index": 1,
+              "target": "print"
+            },
+            {
+              "confidence": "unknown",
+              "kind": "output",
+              "line": 2689,
               "step": "main",
               "step_index": 1,
               "target": "print"
@@ -38436,7 +38440,7 @@
             "src/llm_wiki_cli/services/progress.py",
             "src/llm_wiki_cli/services/resource_diagnostics.py"
           ],
-          "step_count": 724,
+          "step_count": 728,
           "truncated": false
         }
       },
@@ -40154,6 +40158,7 @@
         "modules/verification_contracts.md",
         "modules/verify.md",
         "modules/versioning.md",
+        "modules/wiki_git_delivery.md",
         "modules/wiki_git_policy.md",
         "modules/wiki_lifecycle.md",
         "modules/wiki_media.md",
@@ -40268,6 +40273,7 @@
         "workflows/input_key.md",
         "workflows/inspect_native_concept.md",
         "workflows/inspect_targets.md",
+        "workflows/inspect_wiki_git_delivery.md",
         "workflows/install_cmd_flow.md",
         "workflows/inventory_result.md",
         "workflows/is_pristine_wiki_target.md",
@@ -51454,7 +51460,8 @@
         "modules/knowledge_storage_diagnostics.md",
         "modules/knowledge_storage_io.md",
         "modules/knowledge_storage_lifecycle.md",
-        "modules/knowledge_stream_audit.md"
+        "modules/knowledge_stream_audit.md",
+        "modules/wiki_git_delivery.md"
       ],
       "role": "semantic",
       "source_path": "src/llm_wiki_cli/commands/knowledge_storage_cmd.py",
@@ -53637,6 +53644,24 @@
       "title": "versioning Module"
     },
     {
+      "canonical_path": "modules/wiki_git_delivery.md",
+      "id": "wiki_git_delivery",
+      "kind": "modules",
+      "mcp_uri": "llm-wiki://modules/wiki_git_delivery",
+      "outgoing_internal_links": [
+        "modules/io.md",
+        "modules/knowledge_storage.md",
+        "modules/knowledge_storage_cmd.md",
+        "modules/knowledge_storage_diagnostics.md",
+        "modules/knowledge_storage_lifecycle.md",
+        "modules/wiki_git_delivery.md",
+        "modules/wiki_git_policy.md"
+      ],
+      "role": "semantic",
+      "source_path": "src/llm_wiki_cli/services/wiki_git_delivery.py",
+      "title": "wiki_git_delivery Module"
+    },
+    {
       "canonical_path": "modules/wiki_git_policy.md",
       "id": "wiki_git_policy",
       "kind": "modules",
@@ -53646,6 +53671,7 @@
         "entities/WikiGitDisposition.md",
         "entities/WikiGitPolicy.md",
         "modules/generate_prompt_cmd.md",
+        "modules/wiki_git_delivery.md",
         "modules/wiki_git_policy.md"
       ],
       "role": "semantic",
@@ -55551,6 +55577,21 @@
       "title": "inspect_targets"
     },
     {
+      "canonical_path": "workflows/inspect_wiki_git_delivery.md",
+      "id": "inspect_wiki_git_delivery",
+      "kind": "workflows",
+      "mcp_uri": "llm-wiki://workflows/inspect_wiki_git_delivery",
+      "outgoing_internal_links": [
+        "modules/knowledge_storage.md",
+        "modules/knowledge_storage_lifecycle.md",
+        "modules/wiki_git_delivery.md",
+        "modules/wiki_git_policy.md"
+      ],
+      "role": "mixed",
+      "source_path": "src/llm_wiki_cli/services/wiki_git_delivery.py",
+      "title": "inspect_wiki_git_delivery"
+    },
+    {
       "canonical_path": "workflows/install_cmd_flow.md",
       "id": "install_cmd_flow",
       "kind": "workflows",
@@ -55623,7 +55664,8 @@
         "modules/knowledge_storage_diagnostics.md",
         "modules/knowledge_storage_io.md",
         "modules/knowledge_storage_lifecycle.md",
-        "modules/knowledge_stream_audit.md"
+        "modules/knowledge_stream_audit.md",
+        "modules/wiki_git_delivery.md"
       ],
       "role": "mixed",
       "source_path": "src/llm_wiki_cli/commands/knowledge_storage_cmd.py",
@@ -64284,6 +64326,8 @@
         "modules/sync_manifest.md",
         "modules/validation.md",
         "modules/verification_contracts.md",
+        "modules/wiki_git_delivery.md",
+        "modules/wiki_git_policy.md",
         "modules/wiki_media.md",
         "modules/wiki_surface.md",
         "modules/wiki_surface_index.md",
@@ -66263,6 +66307,8 @@
         "modules/sync_manifest.md",
         "modules/validation.md",
         "modules/verification_contracts.md",
+        "modules/wiki_git_delivery.md",
+        "modules/wiki_git_policy.md",
         "modules/wiki_media.md",
         "modules/wiki_surface.md",
         "modules/wiki_surface_index.md",
@@ -68005,6 +68051,7 @@
         "modules/verification_contracts.md",
         "modules/verify.md",
         "modules/versioning.md",
+        "modules/wiki_git_delivery.md",
         "modules/wiki_git_policy.md",
         "modules/wiki_lifecycle.md",
         "modules/wiki_media.md",
@@ -68273,6 +68320,7 @@
         "modules/verification_contracts.md",
         "modules/verify.md",
         "modules/versioning.md",
+        "modules/wiki_git_delivery.md",
         "modules/wiki_git_policy.md",
         "modules/wiki_lifecycle.md",
         "modules/wiki_media.md",
@@ -68291,5 +68339,5 @@
     }
   ],
   "schema_version": "llm-wiki-surface-index/v1",
-  "source_hash": "sha256:b4f541ab290c79d7e8bea1c9428e3fb6a9eba543b06b57f77fac5ac19879aa95"
+  "source_hash": "sha256:1a9cec9c8309b6847cbc747b2c1d0325da68326a19dda187d411ef5af779e05c"
 }

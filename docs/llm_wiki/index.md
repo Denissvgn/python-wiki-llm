@@ -7,8 +7,8 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 | Surface | Count | Start here |
 |---|---:|---|
 | Entities | 673 | [Open section](#entities) |
-| Modules | 256 | [Open section](#modules) |
-| Workflows | 236 | [Open section](#workflows) |
+| Modules | 257 | [Open section](#modules) |
+| Workflows | 237 | [Open section](#workflows) |
 | Guides | 11 | [Open section](#guides) |
 | Entry-point flows | 466 | [Open section](#entry-point-flows) |
 | Infrastructure | 2 | [Open section](#infrastructure) |
@@ -939,6 +939,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [verification_contracts](modules/verification_contracts.md) - Pure, application-owned machine-verification contracts.
 - [verify](modules/verify.md) - Documentation-run verify services.
 - [versioning](modules/versioning.md) - `src/llm_wiki_cli/services/versioning.py`
+- [wiki_git_delivery](modules/wiki_git_delivery.md) - Read-only completeness of an owned native snapshot under effective Git policy.
 - [wiki_git_policy](modules/wiki_git_policy.md) - Read-only Git policy for handing generated wiki files to version control.
 - [wiki_lifecycle](modules/wiki_lifecycle.md) - Read-only classification for wiki bootstrap, sync, and migration routing.
 - [wiki_media](modules/wiki_media.md) - Media reference parsing for wiki pages and agent-owned assets.
@@ -1070,6 +1071,7 @@ Guides lead supported tasks. The generated indexes are exhaustive reference inve
 - [input_key](workflows/input_key.md) - entry: `sync_analysis_cache.input_key`
 - [inspect_native_concept](workflows/inspect_native_concept.md) - entry: `native_inspection.inspect_native_concept`
 - [inspect_targets](workflows/inspect_targets.md) - entry: `analysis_targets.inspect_targets`
+- [inspect_wiki_git_delivery](workflows/inspect_wiki_git_delivery.md) - entry: `wiki_git_delivery.inspect_wiki_git_delivery`
 - [install_cmd_flow](workflows/install_cmd_flow.md) - entry: `install_cmd.run`
 - [inventory_result](workflows/inventory_result.md) - entry: `sync_analysis_cache.inventory_result`
 - [is_pristine_wiki_target](workflows/is_pristine_wiki_target.md) - entry: `wiki_lifecycle.is_pristine_wiki_target`

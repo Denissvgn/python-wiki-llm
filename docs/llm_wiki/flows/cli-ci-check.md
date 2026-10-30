@@ -191,7 +191,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 Source steps: 1786; effect analysis evaluated: 1336, partial: 64, unavailable: 386. Counts include steps omitted from the displayed trace.
 
-Collector observations for 1400 source steps with known totals: observed: 7956, emitted: 7624, omitted: 332. Unavailable totals are excluded.
+Collector observations for 1400 source steps with known totals: observed: 7961, emitted: 7629, omitted: 332. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.

@@ -33,9 +33,9 @@ flowchart TD
 | [validation](modules/validation.md) | 72 | 0 |
 | [config](modules/config.md) | 60 | 3 |
 | [source_snapshot](modules/source_snapshot.md) | 53 | 7 |
-| [io](modules/io.md) | 47 | 2 |
+| [io](modules/io.md) | 48 | 2 |
 | [services_contracts](modules/services_contracts.md) | 46 | 0 |
-| [knowledge_storage](modules/knowledge_storage.md) | 42 | 9 |
+| [knowledge_storage](modules/knowledge_storage.md) | 43 | 9 |
 | [sync_manifest](modules/sync_manifest.md) | 41 | 14 |
 | [wiki_surface](modules/wiki_surface.md) | 40 | 1 |
 | [knowledge_model](modules/knowledge_model.md) | 35 | 13 |
@@ -114,6 +114,7 @@ flowchart TD
 | [refresh](modules/refresh.md) | 5 | 9 |
 | [health_summary](modules/health_summary.md) | 5 | 3 |
 | [knowledge_projection](modules/knowledge_projection.md) | 5 | 14 |
+| [knowledge_storage_lifecycle](modules/knowledge_storage_lifecycle.md) | 5 | 17 |
 | [legacy_hooks](modules/legacy_hooks.md) | 5 | 4 |
 | [metrics](modules/metrics.md) | 5 | 9 |
 | [storage_spool](modules/storage_spool.md) | 5 | 1 |
@@ -125,7 +126,6 @@ flowchart TD
 | [documentation_wiki_input](modules/documentation_wiki_input.md) | 4 | 19 |
 | [freshness_wording](modules/freshness_wording.md) | 4 | 0 |
 | [knowledge_index](modules/knowledge_index.md) | 4 | 13 |
-| [knowledge_storage_lifecycle](modules/knowledge_storage_lifecycle.md) | 4 | 17 |
 | [maintenance_evidence](modules/maintenance_evidence.md) | 4 | 8 |
 | [maintenance_queue](modules/maintenance_queue.md) | 4 | 7 |
 | [maintenance_service](modules/maintenance_service.md) | 4 | 22 |
@@ -157,6 +157,7 @@ flowchart TD
 | [health_policy](modules/health_policy.md) | 3 | 2 |
 | [knowledge_coverage](modules/knowledge_coverage.md) | 3 | 3 |
 | [knowledge_storage_access](modules/knowledge_storage_access.md) | 3 | 16 |
+| [knowledge_storage_diagnostics](modules/knowledge_storage_diagnostics.md) | 3 | 13 |
 | [search_discovery](modules/search_discovery.md) | 3 | 5 |
 | [search_rank](modules/search_rank.md) | 3 | 0 |
 | [search_service](modules/search_service.md) | 3 | 14 |
@@ -189,7 +190,6 @@ flowchart TD
 | [knowledge_audit](modules/knowledge_audit.md) | 2 | 4 |
 | [knowledge_generation](modules/knowledge_generation.md) | 2 | 21 |
 | [knowledge_links](modules/knowledge_links.md) | 2 | 4 |
-| [knowledge_storage_diagnostics](modules/knowledge_storage_diagnostics.md) | 2 | 13 |
 | [module_maps](modules/module_maps.md) | 2 | 1 |
 | [normalization_diagnostics](modules/normalization_diagnostics.md) | 2 | 1 |
 | [packages](modules/packages.md) | 2 | 4 |
@@ -212,6 +212,7 @@ flowchart TD
 | [task_evidence](modules/task_evidence.md) | 2 | 5 |
 | [task_implementation](modules/task_implementation.md) | 2 | 5 |
 | [versioning](modules/versioning.md) | 2 | 0 |
+| [wiki_git_policy](modules/wiki_git_policy.md) | 2 | 0 |
 | [cli](modules/cli.md) | 1 | 44 |
 | [api_diff_cmd](modules/api_diff_cmd.md) | 1 | 2 |
 | [bump_cmd](modules/bump_cmd.md) | 1 | 1 |
@@ -219,7 +220,7 @@ flowchart TD
 | [doctor_cmd](modules/doctor_cmd.md) | 1 | 6 |
 | [hook_cmd](modules/hook_cmd.md) | 1 | 1 |
 | [install_cmd](modules/install_cmd.md) | 1 | 3 |
-| [knowledge_storage_cmd](modules/knowledge_storage_cmd.md) | 1 | 7 |
+| [knowledge_storage_cmd](modules/knowledge_storage_cmd.md) | 1 | 8 |
 | [mcp_cmd](modules/mcp_cmd.md) | 1 | 2 |
 | [metrics_cmd](modules/metrics_cmd.md) | 1 | 2 |
 | [obsidian_cmd](modules/obsidian_cmd.md) | 1 | 4 |
@@ -271,7 +272,7 @@ flowchart TD
 | [sync_transition_execution](modules/sync_transition_execution.md) | 1 | 7 |
 | [task_compact_delivery](modules/task_compact_delivery.md) | 1 | 4 |
 | [typescript_helper_identity](modules/typescript_helper_identity.md) | 1 | 4 |
-| [wiki_git_policy](modules/wiki_git_policy.md) | 1 | 0 |
+| [wiki_git_delivery](modules/wiki_git_delivery.md) | 1 | 5 |
 | [wiki_scaffold](modules/wiki_scaffold.md) | 1 | 0 |
 | [yaml_formats](modules/yaml_formats.md) | 1 | 1 |
 | [render_summary](modules/render_summary.md) | 0 | 3 |

@@ -32,10 +32,13 @@ itself authorization to stage or commit anything.
 ```mermaid
 flowchart LR
     n0["src/llm_wiki_cli/commands/generate_prompt_cmd.py"]
-    n1["src/llm_wiki_cli/services/wiki_git_policy.py"]
-    n0 --> n1
+    n1["src/llm_wiki_cli/services/wiki_git_delivery.py"]
+    n2["src/llm_wiki_cli/services/wiki_git_policy.py"]
+    n0 --> n2
+    n1 --> n2
     click n0 "../modules/generate_prompt_cmd.md"
-    click n1 "../modules/wiki_git_policy.md"
+    click n1 "../modules/wiki_git_delivery.md"
+    click n2 "../modules/wiki_git_policy.md"
 ```
 
 ### Internal neighbors
@@ -43,6 +46,7 @@ flowchart LR
 | Direction | Module |
 |---|---|
 | Inbound | [generate_prompt_cmd](../modules/generate_prompt_cmd.md) |
+| Inbound | [wiki_git_delivery](../modules/wiki_git_delivery.md) |
 
 ## Classes
 
@@ -58,4 +62,5 @@ flowchart LR
 |----------|-----------|------------|-------------|
 | `classify_wiki_git_policy` | `(wiki_dir: str \| Path, *, cwd: Path \| None = None, timeout: float = _DEFAULT_TIMEOUT_SECONDS) -> WikiGitPolicy` | — | Classify the configured wiki path using the effective Git ignore rules. |
 | `_indeterminate` | `(reason: str, *, repository_root: Path \| None = None, wiki_path: str \| None = None) -> WikiGitPolicy` | — | — |
+| `_git_environment` | `() -> dict[str, str]` | — | Keep effective exclude configuration without repository/index redirection. |
 | `_run_git` | `(root: Path, *arguments: str, timeout: float) -> _GitResult` | — | — |

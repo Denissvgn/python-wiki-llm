@@ -261,6 +261,7 @@ Topological module load / startup order and import-time side effects.
 254. [mcp_server](modules/mcp_server.md)
 255. [task_compact_delivery](modules/task_compact_delivery.md)
 256. [task_context_v2](modules/task_context_v2.md)
+257. [wiki_git_delivery](modules/wiki_git_delivery.md)
 
 ## Module-level side effects
 
@@ -380,6 +381,7 @@ Topological module load / startup order and import-time side effects.
 | [validation](modules/validation.md) | `_WINDOWS_ABSOLUTE_RE = re.compile`, `_WINDOWS_DRIVE_PREFIX_RE = re.compile`, `_WINDOWS_RESERVED_NAMES = frozenset`, `_WINDOWS_FORBIDDEN_PATH_CHARS = frozenset`, `_UNSAFE_PAGE_COMPONENT_RE = re.compile`, `_SHA256_RE = re.compile`, `_ZERO_UTC_OFFSET = timedelta`, `_PATH_SYNTAX = OrderedDict`, `_PATH_SYNTAX_LOCK = RLock`, `_ASCII_CONTROL = re.compile`, `_ASCII_CONTROL_DELETE = re.compile`, `_EnumValue = TypeVar` |
 | [verification_contracts](modules/verification_contracts.md) | `_CHECKER_ID_RE = re.compile`, `_CHECKER_VERSION_RE = re.compile`, `_MACHINE_CODE_RE = re.compile`, `_ANCHOR_ID_RE = re.compile`, `_SCOPE_UID_RE = re.compile`, `_WINDOWS_ABSOLUTE_RE = re.compile`, `_DIAGNOSTIC_SUBJECT_RE = re.compile`, `_CHECKER_REGISTRY = MappingProxyType` |
 | [versioning](modules/versioning.md) | `VERSION_RE = re.compile`, `_TABLE_RE = re.compile` |
+| [wiki_git_delivery](modules/wiki_git_delivery.md) | `_OID = re.compile` |
 | [wiki_git_policy](modules/wiki_git_policy.md) | `_GIT_REPOSITORY_REDIRECTION_ENV = frozenset` |
 | [wiki_media](modules/wiki_media.md) | `IMAGE_EXTENSIONS = frozenset`, `VIDEO_EXTENSIONS = frozenset`, `_MARKDOWN_TITLE_RE = re.compile`, `_AUTHORITY_USERINFO_RE = re.compile`, `_URI_AUTHORITY_PREFIX_RE = re.compile`, `_URI_TOKEN_START_RE = re.compile`, `_REFERENCE_DEFINITION_RE = re.compile`, `_REFERENCE_IMAGE_RE = re.compile`, `_README_ASSET_RE = re.compile`, `_MERMAID_CLICK_RE = re.compile` |
 | [wiki_surface](modules/wiki_surface.md) | `_PAGE_ID_RE = re.compile`, `_ASSET_SURFACE = WikiAssetSurface` |

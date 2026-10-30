@@ -1,7 +1,7 @@
 # knowledge_storage_cmd_flow
 
 **Entry point:** `knowledge_storage_cmd.run`
-**Modules involved:** [filesystem_guard](../modules/filesystem_guard.md), [knowledge_cmd](../modules/knowledge_cmd.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_cmd](../modules/knowledge_storage_cmd.md), [knowledge_storage_diagnostics](../modules/knowledge_storage_diagnostics.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md), [knowledge_stream_audit](../modules/knowledge_stream_audit.md)
+**Modules involved:** [filesystem_guard](../modules/filesystem_guard.md), [knowledge_cmd](../modules/knowledge_cmd.md), [knowledge_storage](../modules/knowledge_storage.md), [knowledge_storage_cmd](../modules/knowledge_storage_cmd.md), [knowledge_storage_diagnostics](../modules/knowledge_storage_diagnostics.md), [knowledge_storage_io](../modules/knowledge_storage_io.md), [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md), [knowledge_stream_audit](../modules/knowledge_stream_audit.md), [wiki_git_delivery](../modules/wiki_git_delivery.md)
 
 ## Sequence
 
@@ -19,8 +19,9 @@
 11. `knowledge_storage.canonical_bytes`
 12. `knowledge_storage_lifecycle.restore_pruned_storage`
 13. `knowledge_storage_diagnostics.review_storage`
-14. `knowledge_stream_audit.audit_knowledge_stream`
-15. `knowledge_storage_diagnostics.storage_report`
+14. `wiki_git_delivery.inspect_wiki_git_delivery`
+15. `knowledge_stream_audit.audit_knowledge_stream`
+16. `knowledge_storage_diagnostics.storage_report`
 
 ## Touches
 
@@ -32,6 +33,7 @@
 - [knowledge_storage_io](../modules/knowledge_storage_io.md)
 - [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md)
 - [knowledge_stream_audit](../modules/knowledge_stream_audit.md)
+- [wiki_git_delivery](../modules/wiki_git_delivery.md)
 
 ## Behavior
 

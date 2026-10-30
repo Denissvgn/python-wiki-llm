@@ -16,6 +16,7 @@ Adapts explicit storage migration, recovery, export, cleanup, diagnostics and lo
 | `..services.knowledge_storage_io` | `read_guarded` |
 | `..services.knowledge_storage_lifecycle` | `migrate_knowledge_storage`, `recover_knowledge_storage`, `export_knowledge_v1`, `prune_knowledge_storage`, `restore_pruned_storage`, `_outside_tree` |
 | `..services.knowledge_stream_audit` | `audit_knowledge_stream` |
+| `..services.wiki_git_delivery` | `inspect_wiki_git_delivery` |
 | `.knowledge_cmd` | `_wiki_root` |
 | `__future__` | `annotations` |
 | `json` | `json` |
@@ -34,6 +35,7 @@ flowchart LR
     n5["src/llm_wiki_cli/services/knowledge_storage_io.py"]
     n6["src/llm_wiki_cli/services/knowledge_storage_lifecycle.py"]
     n7["src/llm_wiki_cli/services/knowledge_stream_audit.py"]
+    n8["src/llm_wiki_cli/services/wiki_git_delivery.py"]
     n0 --> n1
     n0 --> n5
     n1 --> n0
@@ -43,6 +45,7 @@ flowchart LR
     n1 --> n5
     n1 --> n6
     n1 --> n7
+    n1 --> n8
     n4 --> n3
     n4 --> n5
     n4 --> n6
@@ -53,6 +56,9 @@ flowchart LR
     n6 --> n5
     n7 --> n3
     n7 --> n5
+    n8 --> n3
+    n8 --> n4
+    n8 --> n6
     click n0 "../modules/knowledge_cmd.md"
     click n1 "../modules/knowledge_storage_cmd.md"
     click n2 "../modules/filesystem_guard.md"
@@ -61,6 +67,7 @@ flowchart LR
     click n5 "../modules/knowledge_storage_io.md"
     click n6 "../modules/knowledge_storage_lifecycle.md"
     click n7 "../modules/knowledge_stream_audit.md"
+    click n8 "../modules/wiki_git_delivery.md"
 ```
 
 ### Internal neighbors
@@ -75,6 +82,7 @@ flowchart LR
 | Outbound | [knowledge_storage_io](../modules/knowledge_storage_io.md) |
 | Outbound | [knowledge_storage_lifecycle](../modules/knowledge_storage_lifecycle.md) |
 | Outbound | [knowledge_stream_audit](../modules/knowledge_stream_audit.md) |
+| Outbound | [wiki_git_delivery](../modules/wiki_git_delivery.md) |
 
 ## Functions
 

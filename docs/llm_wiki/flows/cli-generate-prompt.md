@@ -101,7 +101,7 @@ sequenceDiagram
     p9-->>p30: read_config(…).get('agent')
 ```
 
-> Call sequence diagram shows 30 of 1376 interactions; 1346 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
+> Call sequence diagram shows 30 of 1379 interactions; 1349 omitted to keep the visualization within the 30-interaction and generated-diagram limits, with uncertain identities omitted rather than inferred.
 
 > Captured boundary calls: external 1 of 424 (423 omitted); unresolved 1 of 386 (385 omitted). These counts cover the captured static trace.
 
@@ -117,7 +117,7 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 | `src/llm_wiki_cli/config.py:validate_source_root` | 14 | - | unresolved | 5 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 14 | - | external | 11 |
 | `src/llm_wiki_cli/config.py:validate_source_root` | 14 | [src/llm_wiki_cli/services/filesystem_guard.py](../modules/filesystem_guard.md) | internal | 1 |
-> Omission summary shows 8 of 390 groups; 382 further groups are not expanded here. Counts above include all omitted interactions.
+> Omission summary shows 8 of 391 groups; 383 further groups are not expanded here. Counts above include all omitted interactions.
 > Detailed flow queries retain their own coverage and limits; omitted paths may execute at runtime.
 
 > Trace truncated at the depth limit; deeper calls are omitted.
@@ -130,9 +130,9 @@ Omitted captured detail, grouped by actual caller occurrence and target module:
 
 **Effect analysis partially available.** Flow assembly and source effect analysis are separate; empty observations do not prove an empty handler body.
 
-Source steps: 567; effect analysis evaluated: 348, partial: 20, unavailable: 199. Counts include steps omitted from the displayed trace.
+Source steps: 570; effect analysis evaluated: 351, partial: 20, unavailable: 199. Counts include steps omitted from the displayed trace.
 
-Collector observations for 368 source steps with known totals: observed: 2069, emitted: 1998, omitted: 71. Unavailable totals are excluded.
+Collector observations for 371 source steps with known totals: observed: 2071, emitted: 2000, omitted: 71. Unavailable totals are excluded.
 
 - Callable record unavailable for one or more source steps; those steps have no represented callable body.
 - Effect collector omitted observations before flow assembly; displayed effects are partial.
@@ -227,9 +227,9 @@ flowchart LR
 
 | From | To | Line | Call |
 |---|---|---:|---|
-| run | getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run) | 639 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
-| run | getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run) | 640 | `getattr(args, 'src_dir', '.')` |
-| run | validate_path | 641 | `validate_path(wiki_dir, '--wiki-dir')` |
+| run | getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run) | 645 | `getattr(args, 'wiki_dir', DEFAULT_WIKI_DIR)` |
+| run | getattr (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run) | 646 | `getattr(args, 'src_dir', '.')` |
+| run | validate_path | 647 | `validate_path(wiki_dir, '--wiki-dir')` |
 | validate_path | PathValidationError | 134 | `PathValidationError(...)` |
 | validate_path | (…).resolve | 135 | `(Path.cwd() / path).resolve(data not statically known)` |
 | validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 135 | `Path.cwd(data not statically known)` |
@@ -237,26 +237,26 @@ flowchart LR
 | validate_path | Path.cwd (src/llm_wiki_cli/config.py:validate_path) | 136 | `Path.cwd(data not statically known)` |
 | validate_path | resolved.relative_to (src/llm_wiki_cli/config.py:validate_path) | 138 | `resolved.relative_to(cwd)` |
 | validate_path | PathValidationError | 140 | `PathValidationError(...)` |
-| run | bool (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run) | 642 | `bool(getattr(...))` |
+| run | bool (src/llm_wiki_cli/commands…enerate_prompt_cmd.py:run) | 648 | `bool(getattr(...))` |
 
 ### Boundary effects
 
 | Kind | Target | Step | Line |
 |---|---|---|---:|
-| output | `print` | `run` | 658 |
-| output | `print` | `run` | 683 |
-| output | `print` | `run` | 697 |
-| output | `print` | `run` | 730 |
-| output | `print` | `run` | 731 |
-| output | `print` | `run` | 732 |
-| output | `print` | `run` | 733 |
+| output | `print` | `run` | 664 |
+| output | `print` | `run` | 689 |
+| output | `print` | `run` | 703 |
+| output | `print` | `run` | 736 |
+| output | `print` | `run` | 737 |
+| output | `print` | `run` | 738 |
+| output | `print` | `run` | 739 |
 
 ### Static analysis gaps
 
 | Kind | Step | Target | Line |
 |---|---|---|---:|
-| external_call | `run` | `getattr` | 639 |
-| external_call | `run` | `getattr` | 640 |
+| external_call | `run` | `getattr` | 645 |
+| external_call | `run` | `getattr` | 646 |
 | unresolved_call | `validate_path` | `(Path.cwd() / path).resolve` | 135 |
 | external_call | `validate_path` | `Path.cwd` | 135 |
 | unresolved_call | `validate_path` | `Path.cwd().resolve` | 136 |
