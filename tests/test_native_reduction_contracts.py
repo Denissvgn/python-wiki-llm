@@ -132,7 +132,9 @@ def test_onboarding_skill_disclaims_human_outcomes_and_runtime_assurance():
         / skills.REFERENCE_SKILL_ID
         / "references/repository-handoff.md"
     ).read_text(encoding="utf-8")
-    assert "conditionally eligible (exit 1)" in handoff
+    assert "Only if `delivery_state` is `git-eligible`" in handoff
+    assert "Stop if the staged gate fails" in handoff
+    assert "llm-wiki knowledge git-check --wiki-dir <wiki-dir> --staged" in handoff
     assert "applicable local rules authorize a separate wiki commit" in handoff
     assert "guides/<persona>-onboarding.md" not in combined
     assert "docs(wiki): add onboarding guides" not in combined

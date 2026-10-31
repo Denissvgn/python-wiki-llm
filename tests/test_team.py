@@ -478,7 +478,9 @@ class TestTeamPromptAndPluginRequirements:
         prompt = Path(".git/llm-wiki-prompt.txt").read_text(encoding="utf-8")
         assert "TEAM TEMPLATE docs/llm_wiki bugfix" in prompt
         assert prompt.count("## Repository Policy & Handoff") == 1
-        assert "eligibility, not authorization" in prompt
+        assert "not descendant completeness or authorization" in prompt
+        assert "delivery_state: git-eligible" in prompt
+        assert "--staged || exit 1" in prompt
 
     def test_explicit_template_overrides_team_default(self, tmp_project):
         plugins.install_plugin(

@@ -143,12 +143,14 @@ def test_extended_validation_and_handoff_live_in_their_direct_topics() -> None:
         assert contract in maintenance
 
     for contract in (
-        "| Result | Delivery state | Permitted handoff |",
+        "| `delivery_state` | Permitted handoff |",
         "| Delivery state | Review evidence before handoff | Result |",
-        "git add <wiki-dir>/",
+        "git add -- <wiki-dir>/",
+        "llm-wiki knowledge git-check --wiki-dir <wiki-dir> --staged",
+        "Stop if the staged gate fails",
         'git commit -m "docs(wiki): <short description of what changed and why>"',
         "An empty Git diff proves nothing about ignored files",
-        "Never stage a partial native snapshot",
+        "never stage a partial native snapshot",
         "never require or mutate target Git state",
         "Never reuse the hook's literal",
         "`auto-update [bot]`",
