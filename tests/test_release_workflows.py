@@ -1378,12 +1378,25 @@ def test_static_qualification_installs_analyzed_extras_and_uses_blocking_runner(
 
 def test_toolchain_audits_require_complete_owner_suite_evidence() -> None:
     workflow = _yaml("release-qualification.yml")
-    steps = workflow["jobs"]["toolchains"]["steps"]
+    job = workflow["jobs"]["toolchains"]
+    assert job["timeout-minutes"] == 90
+    steps = job["steps"]
     names = [step.get("name") for step in steps]
+    prepare_index = names.index("Install source and prepare every extractor")
+    precheck_index = names.index("Preflight frozen native observations")
     suite_index = names.index("Run toolchain owner suites")
+    capture_index = names.index("Capture Linux Python and helper observation compatibility")
     verifier_index = names.index("Enforce complete toolchain owner evidence")
     audit_index = names.index("Audit exact helper dependency trees")
-    assert suite_index < verifier_index < audit_index
+    assert prepare_index < precheck_index < suite_index < capture_index < verifier_index < audit_index
+    precheck = steps[precheck_index]
+    assert precheck.get("if") is None and precheck.get("continue-on-error") is None
+    assert "incoming/tools/release/analysis_conformance.py" in precheck["run"]
+    for fixture in ("analysis-portability.json", "analysis-helper-portability.json"):
+        assert f"--fixture candidate/tests/fixtures/{fixture}" in precheck["run"]
+    assert '${RUNNER_TEMP}/native-conformance-preflight' in precheck["run"]
+    assert "--output evidence/analysis-python.json" in steps[capture_index]["run"]
+    assert "--output evidence/analysis-helpers.json" in steps[capture_index]["run"]
     suite = steps[suite_index]
     for control in (
         "tests/test_native_helper_path_diagnostics.py",

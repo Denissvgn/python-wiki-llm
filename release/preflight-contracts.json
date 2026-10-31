@@ -701,7 +701,7 @@
       ],
       "condition": "${{ !inputs.discovery-mode && !inputs.bandit-parity-verification && !inputs.knowledge-policy-shadow }}",
       "cost": "heavy",
-      "declaration_sha256": "05d711bdaedd066d47efcddd6c734121592263ca1efe8dc9bd2a141b74434dae",
+      "declaration_sha256": "7cff28a4d54b076371f7eb7cc7b981f8cf7588dea18fd0e41203d1abc3c7cbe7",
       "environments": [
         "ubuntu-24.04"
       ],
@@ -718,7 +718,7 @@
       ],
       "normal_required": true,
       "owner": "release/qualification.py",
-      "timeout_minutes": 45
+      "timeout_minutes": 90
     },
     {
       "applicability": "normal",
