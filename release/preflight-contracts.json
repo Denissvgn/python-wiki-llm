@@ -445,7 +445,7 @@
       ],
       "condition": "${{ !inputs.bandit-parity-verification && needs.freeze.outputs.core-layout == 'windows-sharded' && !inputs.knowledge-policy-shadow }}",
       "cost": "moderate",
-      "declaration_sha256": "65aec53387c5b9cafe906f57a73069e9c46730d1dab9f2ac4f1c9e1c22e4c359",
+      "declaration_sha256": "b19608c0fa5ee485c5f26501dcb6fdebffedcf555f17444ab3ab5357a7d6b05b",
       "environments": [
         "windows-2025"
       ],
@@ -473,7 +473,7 @@
       ],
       "condition": "${{ !inputs.bandit-parity-verification && needs.freeze.outputs.core-layout == 'windows-sharded' && !inputs.knowledge-policy-shadow }}",
       "cost": "heavy",
-      "declaration_sha256": "5c04a47d6e35ce999e6bf6f4e1361e9ac357fe15bc733d16713322d0a89b6b73",
+      "declaration_sha256": "9e673042dd7f427f66f03d528300e1cd7f01865903ff9ca095e9ec4c99aa3d2b",
       "environments": [
         "windows-2025"
       ],
@@ -508,7 +508,7 @@
       ],
       "condition": "${{ !cancelled() && !inputs.bandit-parity-verification && needs.freeze.result == 'success'\n    && (needs.freeze.outputs.core-layout == 'unsharded'\n        || (needs.core-windows-plan.result == 'success' && needs.core-windows-shards.result == 'success')) && !inputs.knowledge-policy-shadow }}",
       "cost": "heavy",
-      "declaration_sha256": "98683791ee7bfc6bd0c92ac0cc5f72ed8de6a53471416386a9f06df31cc37d04",
+      "declaration_sha256": "7bfd5aca006fc2a986b64b4c2482bef6c2de8a9f8b34e2468a69a5ef7340ef78",
       "environments": [
         "windows-2025"
       ],
