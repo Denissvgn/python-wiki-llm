@@ -1803,6 +1803,20 @@ def _validate_analysis_conformance_inputs(root: Path) -> None:
     paths.append((windows, "win32", [3, 13]))
     def validate(path, platform_name, python_version, raw, fixture, components):
         record = load_json(path)
+        expected_runtimes = dict(runtimes)
+        if ("services/typescript_helper_identity.py" in registry["providers"]["typescript"]
+                and any(component.endswith(("/typescript", "/javascript")) for component in components)):
+            artifact = _require_object(record.get("helper_artifact"), name="native helper artifact",
+                                       keys=("scope", "fingerprint"))
+            if artifact["scope"] != "typescript-node-modules/v1":
+                raise QualificationError("native helper artifact scope is unsupported")
+            if not isinstance(artifact["fingerprint"], str) or re.fullmatch(r"sha256:[0-9a-f]{64}", artifact["fingerprint"]) is None:
+                raise QualificationError("native helper artifact fingerprint is invalid")
+            for language in ("typescript", "javascript"):
+                expected_runtimes["llm-wiki/extractor/" + language] = digest({
+                    "python": portable_python, "helper": helper,
+                    "dependencies": {"helper_artifact": artifact},
+                })
         if (record.get("schema_version") != "llm-wiki-analysis-conformance/v1"
                 or record.get("status") != "pass" or record.get("platform") != platform_name
                 or record.get("python") != python_version
@@ -1810,7 +1824,7 @@ def _validate_analysis_conformance_inputs(root: Path) -> None:
                 or record.get("fixture_sha256") != _sha256_bytes(raw)
                 or record.get("observations") != fixture["observations"]
                 or any(record.get("components", {}).get(component, {}).get("implementation") != implementations[component]
-                       or record.get("components", {}).get(component, {}).get("runtime") != runtimes[component]
+                       or record.get("components", {}).get(component, {}).get("runtime") != expected_runtimes[component]
                        for component in components)):
             raise QualificationError("native analysis conformance differs from frozen inputs")
     for path, platform_name, python_version in paths:

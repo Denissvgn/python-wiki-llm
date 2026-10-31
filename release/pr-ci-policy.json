@@ -1,0 +1,734 @@
+{
+  "schema": "agent-wiki-pr-ci/v1",
+  "groups": {
+    "python": {
+      "tests": [],
+      "lanes": [
+        "ubuntu"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
+    },
+    "docs": {
+      "tests": [
+        "tests/test_public_docs_vocabulary.py"
+      ],
+      "lanes": [
+        "ubuntu"
+      ],
+      "jobs": [],
+      "helpers": []
+    },
+    "query": {
+      "tests": [
+        "tests/test_source_class_queries.py",
+        "tests/test_documentation_queries.py",
+        "tests/test_knowledge_queries.py",
+        "tests/test_knowledge_query_adapters.py",
+        "tests/test_native_query_boundaries.py",
+        "tests/test_typed_graph_queries.py",
+        "tests/test_api.py",
+        "tests/test_api_exception_taxonomy.py"
+      ],
+      "lanes": [
+        "ubuntu"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
+    },
+    "inventory": {
+      "tests": [
+        "tests/test_source_selection.py",
+        "tests/test_analysis_input_preflight.py",
+        "tests/test_analysis_targets.py",
+        "tests/test_architecture_layers.py",
+        "tests/test_api_exception_taxonomy.py"
+      ],
+      "lanes": [
+        "ubuntu"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
+    },
+    "defaults": {
+      "tests": [
+        "tests/test_current_install_defaults.py",
+        "tests/test_default_development_workflow.py",
+        "tests/test_skills.py",
+        "tests/test_evidence_recovery_guidance.py",
+        "tests/test_agent_instruction_decisions.py",
+        "tests/test_skill_policy_routes.py",
+        "tests/test_helper_preparation.py",
+        "tests/test_instruction_ownership.py",
+        "tests/test_schema.py",
+        "tests/test_schema_context_baselines.py",
+        "tests/test_reference_skill_verifier.py",
+        "tests/test_native_skill_preflight_and_reanchor.py",
+        "tests/test_skill_contracts.py",
+        "tests/test_wiki_reference_skill.py",
+        "tests/test_skill_ownership_boundaries.py",
+        "tests/test_skill_contracts_all.py"
+      ],
+      "lanes": [
+        "ubuntu"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
+    },
+    "packet": {
+      "tests": [
+        "tests/test_context_packet.py",
+        "tests/test_context_packet_knowledge.py",
+        "tests/test_packet_field_policy.py",
+        "tests/test_native_knowledge_semantics_docs.py"
+      ],
+      "lanes": [
+        "ubuntu"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
+    },
+    "storage": {
+      "tests": [
+        "tests/test_knowledge_storage.py",
+        "tests/test_wiki_review_snapshot.py",
+        "tests/test_sync_recovery.py"
+      ],
+      "lanes": [
+        "ubuntu"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
+    },
+    "release": {
+      "tests": [
+        "tests/test_package_validation.py",
+        "tests/test_package_metadata.py",
+        "tests/test_preflight.py",
+        "tests/test_preflight_targets.py",
+        "tests/test_preflight_contracts.py",
+        "tests/test_preflight_runner.py",
+        "tests/test_release_workflows.py",
+        "tests/test_release_qualification.py",
+        "tests/test_core_shards.py",
+        "tests/test_core_shard_workflow.py",
+        "tests/test_core_shard_runner.py"
+      ],
+      "lanes": [
+        "ubuntu"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
+    },
+    "portability": {
+      "tests": [
+        "tests/test_readonly_subprocess_stdin.py",
+        "tests/test_native_helper_path_diagnostics.py",
+        "tests/test_python_go_path_diagnostics.py"
+      ],
+      "lanes": [
+        "ubuntu"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
+    },
+    "action": {
+      "tests": [
+        "tests/test_github_action.py",
+        "tests/test_github_action_shell.py"
+      ],
+      "lanes": [
+        "ubuntu"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
+    },
+    "ci-policy": {
+      "tests": [
+        "tests/test_pr_ci.py",
+        "tests/test_pr_ci_impact.py",
+        "tests/test_release_automation_workflow.py",
+        "tests/test_release_workflows.py",
+        "tests/test_preflight_contracts.py",
+        "tests/test_dependency_setup_workflow.py",
+        "tests/test_core_shard_workflow.py"
+      ],
+      "lanes": [
+        "ubuntu"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
+    },
+    "sdk": {
+      "tests": [
+        "tests/test_mcp_sdk.py",
+        "tests/test_owned_packet_recovery.py::test_registered_sdk_keeps_structured_authority_failure"
+      ],
+      "lanes": [
+        "ubuntu"
+      ],
+      "jobs": [
+        "typecheck",
+        "mcp-sdk"
+      ],
+      "helpers": []
+    },
+    "hosted-action": {
+      "tests": [
+        "tests/test_github_action.py",
+        "tests/test_github_action_shell.py"
+      ],
+      "lanes": [
+        "ubuntu"
+      ],
+      "jobs": [
+        "typecheck",
+        "action"
+      ],
+      "helpers": []
+    },
+    "dependency-controls": {
+      "tests": [
+        "tests/test_dependency_downloads.py",
+        "tests/test_dependency_setup_probe.py",
+        "tests/test_dependency_setup_workflow.py"
+      ],
+      "lanes": [
+        "ubuntu"
+      ],
+      "jobs": [
+        "typecheck",
+        "dependency-controls"
+      ],
+      "helpers": []
+    },
+    "packaging": {
+      "tests": [
+        "tests/test_package_metadata.py",
+        "tests/test_package_validation.py",
+        "tests/test_current_install_defaults.py"
+      ],
+      "lanes": [
+        "ubuntu",
+        "minimum-python",
+        "windows"
+      ],
+      "jobs": [
+        "typecheck",
+        "mcp-sdk",
+        "package"
+      ],
+      "helpers": []
+    },
+    "native-portability": {
+      "tests": [
+        "tests/test_readonly_subprocess_stdin.py",
+        "tests/test_native_helper_path_diagnostics.py",
+        "tests/test_python_go_path_diagnostics.py"
+      ],
+      "lanes": [
+        "ubuntu",
+        "windows",
+        "macos"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
+    },
+    "typescript": {
+      "tests": [
+        "tests/test_typescript_helper_identity.py",
+        "tests/test_helper_preparation.py",
+        "tests/test_ts_extract.py"
+      ],
+      "lanes": [
+        "ubuntu",
+        "windows",
+        "macos"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": [
+        "typescript"
+      ]
+    },
+    "oci": {
+      "tests": [
+        "tests/test_documentation_calibration_oci_integration.py"
+      ],
+      "lanes": [
+        "ubuntu"
+      ],
+      "jobs": [
+        "typecheck",
+        "p0-oci-integration"
+      ],
+      "helpers": []
+    },
+    "shared-tests": {
+      "tests": [
+        "tests/test_agent_instruction_decisions.py",
+        "tests/test_analysis_input_preflight.py",
+        "tests/test_analysis_targets.py",
+        "tests/test_api_exception_taxonomy.py",
+        "tests/test_architecture_layers.py",
+        "tests/test_context_packet.py",
+        "tests/test_context_packet_knowledge.py",
+        "tests/test_core_shard_runner.py",
+        "tests/test_core_shard_workflow.py",
+        "tests/test_core_shards.py",
+        "tests/test_current_install_defaults.py",
+        "tests/test_default_development_workflow.py",
+        "tests/test_evidence_recovery_guidance.py",
+        "tests/test_helper_preparation.py",
+        "tests/test_instruction_ownership.py",
+        "tests/test_knowledge_storage.py",
+        "tests/test_native_helper_path_diagnostics.py",
+        "tests/test_native_knowledge_semantics_docs.py",
+        "tests/test_native_skill_preflight_and_reanchor.py",
+        "tests/test_package_metadata.py",
+        "tests/test_package_validation.py",
+        "tests/test_packet_field_policy.py",
+        "tests/test_preflight.py",
+        "tests/test_preflight_contracts.py",
+        "tests/test_preflight_runner.py",
+        "tests/test_preflight_targets.py",
+        "tests/test_python_go_path_diagnostics.py",
+        "tests/test_readonly_subprocess_stdin.py",
+        "tests/test_reference_skill_verifier.py",
+        "tests/test_release_qualification.py",
+        "tests/test_release_workflows.py",
+        "tests/test_schema.py",
+        "tests/test_schema_context_baselines.py",
+        "tests/test_skill_contracts.py",
+        "tests/test_skill_contracts_all.py",
+        "tests/test_skill_ownership_boundaries.py",
+        "tests/test_skill_policy_routes.py",
+        "tests/test_skills.py",
+        "tests/test_source_selection.py",
+        "tests/test_sync_recovery.py",
+        "tests/test_wiki_reference_skill.py",
+        "tests/test_wiki_review_snapshot.py"
+      ],
+      "lanes": [
+        "ubuntu"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
+    },
+    "core-performance": {
+      "tests": [
+        "tests/test_core_check_performance.py"
+      ],
+      "lanes": [
+        "ubuntu"
+      ],
+      "jobs": [
+        "typecheck",
+        "core-check-inputs",
+        "core-check-comparison"
+      ],
+      "helpers": []
+    },
+    "helper-boundaries": {
+      "tests": [
+        "tests/test_helper_preparation.py",
+        "tests/test_native_helper_path_diagnostics.py",
+        "tests/test_readonly_subprocess_stdin.py",
+        "tests/test_native_helper_path_diagnostics.py",
+        "tests/test_python_go_path_diagnostics.py"
+      ],
+      "lanes": [
+        "ubuntu",
+        "windows",
+        "macos"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": []
+    },
+    "go": {
+      "tests": [
+        "tests/test_go_extract.py",
+        "tests/test_examples.py::test_go_http_tutorial"
+      ],
+      "lanes": [
+        "toolchains"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": [
+        "go"
+      ]
+    },
+    "rust": {
+      "tests": [
+        "tests/test_rust_extract.py"
+      ],
+      "lanes": [
+        "toolchains"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": [
+        "rust"
+      ]
+    },
+    "haskell": {
+      "tests": [
+        "tests/test_haskell_extract.py"
+      ],
+      "lanes": [
+        "toolchains"
+      ],
+      "jobs": [
+        "typecheck"
+      ],
+      "helpers": [
+        "haskell"
+      ]
+    }
+  },
+  "rules": [
+    {
+      "paths": [
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE",
+        "docs/**"
+      ],
+      "groups": [
+        "docs"
+      ]
+    },
+    {
+      "paths": [
+        "src/llm_wiki_cli/skills/**"
+      ],
+      "groups": [
+        "defaults"
+      ]
+    },
+    {
+      "paths": [
+        "src/llm_wiki_cli/services/documentation_queries.py",
+        "src/llm_wiki_cli/services/documentation_query_builder.py",
+        "src/llm_wiki_cli/services/knowledge_queries.py",
+        "src/llm_wiki_cli/services/typed_graph_queries.py"
+      ],
+      "groups": [
+        "query"
+      ]
+    },
+    {
+      "paths": [
+        "src/llm_wiki_cli/services/typescript_helper_identity.py",
+        "src/llm_wiki_cli/extractors/ts_scripts/**",
+        "src/llm_wiki_cli/extractors/ts_extractor.py"
+      ],
+      "groups": [
+        "typescript"
+      ]
+    },
+    {
+      "paths": [
+        "src/llm_wiki_cli/services/*storage*.py",
+        "src/llm_wiki_cli/services/*integrity*.py",
+        "src/llm_wiki_cli/services/*filesystem*.py"
+      ],
+      "groups": [
+        "storage",
+        "native-portability"
+      ]
+    },
+    {
+      "paths": [
+        "src/llm_wiki_cli/services/subprocess*.py",
+        "src/llm_wiki_cli/services/readonly*.py",
+        "src/llm_wiki_cli/services/safe_process*.py"
+      ],
+      "groups": [
+        "native-portability"
+      ]
+    },
+    {
+      "paths": [
+        "src/llm_wiki_cli/mcp/**"
+      ],
+      "groups": [
+        "sdk"
+      ]
+    },
+    {
+      "paths": [
+        "src/llm_wiki_cli/schemas/**",
+        "src/llm_wiki_cli/services/analysis_contracts.json",
+        ".llm-wiki/source-selection.json",
+        ".gitignore"
+      ],
+      "groups": [
+        "inventory",
+        "defaults",
+        "storage"
+      ]
+    },
+    {
+      "paths": [
+        "pyproject.toml",
+        "MANIFEST.in",
+        "release_build_backend.py"
+      ],
+      "groups": [
+        "packaging",
+        "defaults",
+        "sdk"
+      ]
+    },
+    {
+      "paths": [
+        "src/llm_wiki_cli/examples/**",
+        "examples/**"
+      ],
+      "groups": [
+        "defaults",
+        "packaging"
+      ]
+    },
+    {
+      "paths": [
+        ".github/**",
+        "release/pr_ci.py",
+        "release/pr_ci_pytest.py",
+        "release/pr_ci_impact.py",
+        "release/pr-ci-impact-requirements.txt",
+        "release/pr-ci-policy.json"
+      ],
+      "groups": [
+        "ci-policy"
+      ]
+    },
+    {
+      "paths": [
+        "integrations/github-action/**",
+        "integrations/wiki-integrity/**"
+      ],
+      "groups": [
+        "hosted-action"
+      ]
+    },
+    {
+      "paths": [
+        "release/*requirements*",
+        "release/dependency_downloads.py",
+        "release/dependency_setup_probe.py"
+      ],
+      "groups": [
+        "dependency-controls",
+        "packaging"
+      ]
+    },
+    {
+      "paths": [
+        "release/qualification*.py",
+        "release/hosted_evidence.py",
+        "release/knowledge_maintenance.py",
+        "release/*policy*.json",
+        "release/preflight*.py",
+        "release/preflight-contracts.json",
+        "release/automation.json",
+        "release/skip-allowlist.json",
+        "release/core_shard*.py",
+        "release/core-shard-timings.json",
+        "release/toolchain-lock.json"
+      ],
+      "groups": [
+        "release",
+        "ci-policy"
+      ]
+    },
+    {
+      "paths": [
+        "tests/conftest.py",
+        "tests/pytest_portability.py",
+        "tests/python_source_inventory.py",
+        "setup.cfg",
+        "pytest.ini",
+        "tox.ini"
+      ],
+      "groups": [
+        "shared-tests"
+      ]
+    },
+    {
+      "paths": [
+        "tests/test_*.py"
+      ],
+      "groups": [
+        "python"
+      ]
+    },
+    {
+      "paths": [
+        ".github/workflows/ci.yml",
+        "release/core_check_performance.py",
+        "tests/test_architecture_layers.py",
+        "tests/python_source_inventory.py",
+        "tests/test_python_source_inventory.py",
+        "tests/test_public_docs_performance.py",
+        "tests/test_core_check_performance.py"
+      ],
+      "groups": [
+        "core-performance"
+      ]
+    },
+    {
+      "paths": [
+        "src/llm_wiki_cli/services/extractor_helpers.py"
+      ],
+      "groups": [
+        "helper-boundaries"
+      ]
+    },
+    {
+      "paths": [
+        "src/llm_wiki_cli/extractors/go_extractor.py",
+        "src/llm_wiki_cli/extractors/go_scripts/**"
+      ],
+      "groups": [
+        "go"
+      ]
+    },
+    {
+      "paths": [
+        "src/llm_wiki_cli/extractors/rust_extractor.py",
+        "src/llm_wiki_cli/extractors/rust_scripts/**"
+      ],
+      "groups": [
+        "rust"
+      ]
+    },
+    {
+      "paths": [
+        "src/llm_wiki_cli/extractors/haskell_extractor.py",
+        "src/llm_wiki_cli/extractors/haskell_scripts/**"
+      ],
+      "groups": [
+        "haskell"
+      ]
+    },
+    {
+      "paths": [
+        ".github/scripts/setup-llm-wiki-ci-toolchains.sh",
+        "release/qualification.py",
+        "release/toolchain-lock.json",
+        ".github/workflows/action-selftest.yml",
+        "tests/provider_conformance/**",
+        "tests/fixtures/context-health-action/source/**",
+        "pyproject.toml"
+      ],
+      "groups": [
+        "hosted-action"
+      ]
+    }
+  ],
+  "owners": {
+    "tests/test_ts_extract.py": [
+      "typescript"
+    ],
+    "tests/test_typescript_helper_identity.py": [
+      "typescript"
+    ],
+    "tests/test_scoped_sync_repair.py": [
+      "typescript"
+    ],
+    "tests/test_native_helper_path_diagnostics.py": [
+      "typescript",
+      "go",
+      "rust",
+      "haskell"
+    ],
+    "tests/test_go_extract.py": [
+      "go"
+    ],
+    "tests/test_rust_extract.py": [
+      "rust"
+    ],
+    "tests/test_haskell_extract.py": [
+      "haskell"
+    ],
+    "tests/test_multilanguage_wiki.py": [
+      "typescript",
+      "go",
+      "rust",
+      "haskell"
+    ],
+    "tests/test_migrate.py": [
+      "typescript",
+      "go",
+      "rust",
+      "haskell"
+    ],
+    "tests/test_extract.py": [
+      "typescript",
+      "go",
+      "rust",
+      "haskell"
+    ],
+    "tests/test_lint.py": [
+      "typescript",
+      "go",
+      "rust",
+      "haskell"
+    ],
+    "tests/test_documentation_dogfood.py": [
+      "typescript",
+      "go",
+      "rust",
+      "haskell"
+    ],
+    "tests/test_qualified_empty_modules.py": [
+      "typescript",
+      "go",
+      "rust",
+      "haskell"
+    ],
+    "tests/test_javascript_module_coverage.py": [
+      "typescript"
+    ],
+    "tests/test_examples.py": [
+      "go"
+    ],
+    "tests/test_verified_bug_migrations.py": [
+      "typescript"
+    ]
+  },
+  "always": [],
+  "revision": 2
+}

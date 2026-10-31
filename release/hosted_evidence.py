@@ -299,8 +299,19 @@ class GitHub:
         raise EvidenceError("hosted evidence page bound exceeded")
 
     def archive(self, artifact_id: int) -> bytes:
+        return self._archive_bytes(artifact_id, MAX_ARCHIVE)
+
+    def qualified_bundle_archive(self, artifact: dict, run: dict, producer: dict) -> bytes:
+        """Read only an authenticated final bundle at its exact declared size."""
+        repository = self.root.removeprefix("https://api.github.com/repos/")
+        size = qualified_bundle_metadata(repository, artifact, run, producer)
+        raw = self._archive_bytes(artifact["id"], size)
+        _qualified_transport(raw, artifact, size)
+        return raw
+
+    def _archive_bytes(self, artifact_id: int, maximum: int) -> bytes:
         status, headers, raw = _http(
-            f"{self.root}/actions/artifacts/{artifact_id}/zip", self.token, MAX_ARCHIVE
+            f"{self.root}/actions/artifacts/{artifact_id}/zip", self.token, maximum
         )
         for _ in range(4):
             if status == 200:
@@ -313,7 +324,7 @@ class GitHub:
                 (v for k, v in headers.items() if k.lower() == "location"), ""
             )
             # Redirects use a signed URL; never forward GitHub credentials.
-            status, headers, raw = _http(location, None, MAX_ARCHIVE)
+            status, headers, raw = _http(location, None, maximum)
         raise EvidenceError("artifact redirect bound exceeded")
 
 
@@ -325,7 +336,84 @@ def timestamp(value: Any) -> datetime:
 
 
 def zip_inventory(raw: bytes) -> dict[str, str]:
-    require(len(raw) <= MAX_ARCHIVE, "artifact archive exceeds byte limit")
+    return _zip_inventory(raw, MAX_ARCHIVE)
+
+
+def qualified_bundle_metadata(repository: str, artifact: dict, run: dict, producer: dict) -> int:
+    """Validate API-owned final-bundle bindings before admitting transport.
+
+    Final ZIP transport uses the existing expanded-envelope budget. The generic
+    source/producer transport budget, expanded-byte and member limits are intact.
+    """
+    require(isinstance(repository, str) and re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository) is not None,
+            "invalid qualified artifact repository")
+    require(all(isinstance(value, dict) for value in (artifact, run, producer)),
+            "qualified artifact metadata must be objects")
+    require(type(run.get("id")) is int and run["id"] > 0
+            and type(run.get("run_attempt")) is int and run["run_attempt"] > 0
+            and isinstance(run.get("head_sha"), str) and re.fullmatch(r"[0-9a-f]{40}", run["head_sha"]) is not None,
+            "invalid qualified artifact run identity")
+    require(isinstance(run.get("path"), str) and run["path"].partition("@")[0] == WORKFLOW
+            and run.get("name") == "Release qualification"
+            and type(run.get("workflow_id")) is int and run["workflow_id"] > 0
+            and run.get("event") == "workflow_dispatch"
+            and run.get("status") == "completed" and run.get("conclusion") == "success",
+            "qualified artifact workflow did not succeed")
+    repository_info, head_info = run.get("repository"), run.get("head_repository")
+    if not isinstance(repository_info, dict) or not isinstance(head_info, dict):
+        raise EvidenceError("qualified artifact repositories are unavailable")
+    repositories = [repository_info, head_info]
+    require(all(type(value.get("id")) is int and value["id"] > 0
+                and isinstance(value.get("full_name"), str)
+                and value["full_name"].casefold() == repository.casefold() for value in repositories)
+            and repositories[0]["id"] == repositories[1]["id"],
+            "qualified artifact repository IDs differ")
+    binding = artifact.get("workflow_run")
+    require(type(artifact.get("id")) is int and artifact["id"] > 0
+            and artifact.get("name") == "qualified-release" and artifact.get("expired") is False,
+            "invalid qualified artifact identity")
+    require(isinstance(binding, dict) and binding.get("id") == run["id"]
+            and type(binding.get("id")) is int and binding.get("head_sha") == run["head_sha"]
+            and type(binding.get("repository_id")) is int
+            and type(binding.get("head_repository_id")) is int
+            and binding["repository_id"] == repository_info["id"]
+            and binding["head_repository_id"] == head_info["id"],
+            "qualified artifact producer mismatch")
+    require(type(artifact.get("size_in_bytes")) is int and 0 < artifact["size_in_bytes"] <= MAX_EXPANDED,
+            "qualified artifact transport byte limit exceeded or unavailable")
+    require(isinstance(artifact.get("digest"), str)
+            and re.fullmatch(r"sha256:[0-9a-f]{64}", artifact["digest"]) is not None,
+            "qualified artifact archive digest is invalid")
+    require(type(producer.get("id")) is int and producer["id"] > 0
+            and producer.get("name") == "Assemble immutable qualified release"
+            and producer.get("status") == "completed" and producer.get("conclusion") == "success"
+            and type(producer.get("run_id")) is int and producer["run_id"] == run["id"]
+            and type(producer.get("run_attempt")) is int and producer["run_attempt"] == run["run_attempt"]
+            and producer.get("head_sha") == run["head_sha"],
+            "qualified bundle job identity differs or did not succeed")
+    try:
+        valid_time = (timestamp(producer.get("started_at")) <= timestamp(artifact.get("created_at"))
+                      <= timestamp(artifact.get("updated_at")) <= timestamp(producer.get("completed_at")))
+    except (ValueError, TypeError, OverflowError):
+        raise EvidenceError("qualified artifact producer timestamps are invalid") from None
+    require(valid_time, "qualified artifact is outside its producer attempt")
+    return artifact["size_in_bytes"]
+
+
+def _qualified_transport(raw: bytes, artifact: dict, size: int) -> None:
+    require(isinstance(raw, bytes) and len(raw) == size, "qualified artifact archive length differs")
+    require("sha256:" + sha256(raw) == artifact["digest"], "qualified artifact archive digest differs")
+
+
+def qualified_bundle_inventory(raw: bytes, *, repository: str, artifact: dict,
+                               run: dict, producer: dict) -> dict[str, str]:
+    size = qualified_bundle_metadata(repository, artifact, run, producer)
+    _qualified_transport(raw, artifact, size)
+    return _zip_inventory(raw, MAX_EXPANDED)
+
+
+def _zip_inventory(raw: bytes, maximum: int) -> dict[str, str]:
+    require(len(raw) <= maximum, "artifact archive exceeds byte limit")
     result = {}
     with zipfile.ZipFile(io.BytesIO(raw)) as archive:
         members = archive.infolist()
@@ -333,6 +421,9 @@ def zip_inventory(raw: bytes) -> dict[str, str]:
             len(members) <= 10000 and sum(m.file_size for m in members) <= MAX_EXPANDED,
             "artifact expansion bound exceeded",
         )
+        names: set[str] = set()
+        files: set[str] = set()
+        canonical = []
         for member in members:
             # ZipInfo normalizes Windows separators and truncates at NUL.
             # Reject any rewritten header name before interpreting its path.
@@ -348,6 +439,7 @@ def zip_inventory(raw: bytes) -> dict[str, str]:
             path = PurePosixPath(name)
             require(
                 bool(name)
+                and bool(path.parts)
                 and path.as_posix() == name
                 and not path.is_absolute()
                 and ".." not in path.parts
@@ -359,6 +451,18 @@ def zip_inventory(raw: bytes) -> dict[str, str]:
                 not stat.S_ISLNK(member.external_attr >> 16),
                 "artifact symlinks are forbidden",
             )
+            require(stat.S_IFMT(member.external_attr >> 16) in
+                    (0, stat.S_IFDIR if member.is_dir() else stat.S_IFREG),
+                    "artifact member is not a regular file or directory")
+            require(name.casefold() not in names, "duplicate or case-colliding artifact member")
+            names.add(name.casefold())
+            if not member.is_dir():
+                files.add(name.casefold())
+            canonical.append((member, name, path))
+        for _, _, path in canonical:
+            require(not any(parent.as_posix().casefold() in files for parent in path.parents
+                            if parent.as_posix() != "."), "artifact member conflicts with a file path")
+        for member, name, _ in canonical:
             if member.is_dir():
                 continue
             require(name not in result, "duplicate artifact member")
