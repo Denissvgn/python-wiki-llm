@@ -569,22 +569,27 @@ class TestTypeScriptExtractor:
         assert inv == {}
 
     def test_single_file_with_class(self, tmp_path):
+        from llm_wiki_cli.services.knowledge_evidence import normalize_module_observation
+
+        fixture = json.loads(
+            (PROJECT_ROOT / "tests/fixtures/analysis-helper-portability.json").read_text(
+                encoding="utf-8"
+            )
+        )
         _make_ts(
             tmp_path,
             "models.ts",
-            """
-            export class User {
-                name: string;
-                age: number;
-            }
-            """,
+            fixture["sources"]["model.ts"],
         )
-        inv = TypeScriptExtractor().extract(str(tmp_path))
+        inv = TypeScriptExtractor().extract(str(tmp_path), deep=True)
         assert len(inv) == 1
         data = list(inv.values())[0]
         assert len(data["classes"]) == 1
         assert data["classes"][0]["name"] == "User"
         assert data["classes"][0]["kind"] == "class"
+        observation = normalize_module_observation(data)
+        assert observation is not None
+        assert observation["classes"] == fixture["observations"]["model.ts"]["classes"]
 
     def test_language_field_stamped(self, tmp_path):
         _make_ts(tmp_path, "a.ts", "export class A {}")
